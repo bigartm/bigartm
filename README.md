@@ -6,4 +6,4 @@ The state-of-the-art platform for topic modeling.
   Please refer to the [BigARTM Docs](http://bigartm.readthedocs.org/).
 
 ## License
-  BigARTM is released under [New BSD License](https://raw.github.com/bigartm/bigart/master/LICENSE).
+  BigARTM is released under [New BSD License](https://raw.github.com/bigartm/bigartm/master/LICENSE).
