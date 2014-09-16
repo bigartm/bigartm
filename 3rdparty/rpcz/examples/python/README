@@ -1,0 +1,7 @@
+Python examples for RPCZ
+
+FIRST STEP: Run generate_protos.py to generate Python modules for the example
+protocol buffers.
+
+Then, start example_client.py and example_server.py in two different
+terminals.

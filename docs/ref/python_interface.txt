@@ -1,0 +1,57 @@
+================
+Python Interface
+================
+
+This document explains all classes in python interface of
+BigARTM library.
+
+
+ArtmLibrary
+===========
+
+.. class:: python_interface.ArtmLibrary
+
+Provides a wrapper around ``artm.dll`` (Windows) or ``artm.so`` (Linux).
+
+.. function:: def __init__(self, location)
+
+Creates :class:`python_interface.ArtmLibrary` and wraps the binary at specified location.
+
+.. function:: def CreateMasterComponent(self, config = messages_pb2.MasterComponentConfig())
+
+Creates :class:`python_interface.MasterComponent`
+and configures it with provided :ref:`MasterComponentConfig`.
+
+.. function:: def CreateNodeController(self, endpoint)
+
+Creates :class:`python_interface.NodeController`
+and configures it with provided endpoint.
+
+
+MasterComponent
+===============
+
+.. class:: python_interface.MasterComponent
+
+
+class NodeController
+====================
+
+.. class:: python_interface.NodeController
+
+
+Model
+=====
+
+.. class:: python_interface.Model
+
+class Regularizer
+=================
+
+.. class:: python_interface.Regularizer
+
+
+class Dictionary
+================
+
+.. class:: python_interface.Dictionary

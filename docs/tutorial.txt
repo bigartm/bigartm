@@ -1,0 +1,131 @@
+Tutorial
+=========
+
+This tutorial provides a basic Python programmer's introduction to BigARTM.
+It demonstrates how to
+
+* install BigARTM library on your computer,
+* configure basic BigARTM parameters,
+* load the text collection into BigARTM,
+* infer topic model and retrieve the results.
+
+Installation on Windows
+-----------------------
+
+Prerequisites
+
+* Python 2.7 (https://www.python.org/downloads/)
+
+Installation
+
+* Download and unpack `BigARTM distribution package.
+  <https://s3-eu-west-1.amazonaws.com/artm/BigARTM_v1.0_beta.7z>`_
+  This package contains all files you need in this tutorial.
+
+* Setup *Google Protocol Buffers* library, included in the BigARTM distributive. 
+  Unpack and follow the instructions in ``README`` file in directory ``protobuf/python/``.
+  Skip this step if you have already set up Google Protocol Buffers earlier.
+
+Installation on Linux
+---------------------
+
+Currently there is no distribution package of BigARTM for Linux.
+BigARTM had been tested on several Linux OS, and it is known to work well,
+but you have to get the source code and compile it locally on your machine.
+Please, refer to :doc:`Developer's Guide </devguide>` for further instructions.
+
+First steps
+-----------
+
+Run ``artm_example.py`` script from BigARTM distributive. It
+will load the text collection from disk, perform 7 scans over
+the collection to infer 4 topic models. Then it outputs top
+works in each topic and topic classification of 5 random
+documents. Running the script produces the following output:
+
+.. code-block:: bash
+
+   >python artm_example.py
+
+   Loading data... Done.
+   Iter# = 1, Perplexity = NaN
+   Iter# = 2, Perplexity = 6803.63264939
+   Iter# = 3, Perplexity = 2538.98778912
+   Iter# = 4, Perplexity = 2482.95994578
+   Iter# = 5, Perplexity = 2400.76747443
+   Iter# = 6, Perplexity = 2329.40415524
+   Iter# = 7, Perplexity = 2280.03126665
+
+   #1: november, bush, iraq, war, administration,
+   #2: republicans, party, house, senate, voters,
+   #3: bush, kerry, dean, president, state,
+   #4: people, campaign, million, time, democratic,
+
+   ThetaMatrix (first 5 documents):
+   Topic0:  0.493  0.536   0.610   0.547   0.396
+   Topic1:  0.009  0.372   0.007   0.010   0.045
+   Topic2:  0.247  0.059   0.071   0.114   0.201
+   Topic3:  0.252  0.032   0.312   0.329   0.358
+
+ArtmLibrary and MasterComponent
+-------------------------------
+
+The following code is typical for every BigARTM application.
+
+.. code-block:: python
+
+    from python_interface import *
+    os.environ['PATH'] = ';'.join([os.path.abspath(os.curdir) + '\\BigARTM', os.environ['PATH']])
+    library = ArtmLibrary(os.path.abspath(os.curdir) + '\\BigARTM\\artm.dll')
+
+    with library.CreateMasterComponent() as master:
+      # Use master
+
+Most of BigARTM is implemented in C++, and exposed in single
+binary ``artm.dll`` (or ``artm.so`` if you are on Linux).
+Python module ``ArtmLibrary`` is simply a wrapper around
+``artm.dll`` that enables you to access its methods from
+Python. When you create ArtmLibrary you have to specify the
+location of ``artm.dll`` and make sure that this location is
+added to ``PATH``.
+
+Basic configuration
+-------------------
+
+The configuration of BigARTM library happens through the
+``MasterComponent``. To pass the configuration you use
+configuration object
+:py:class:`messages_pb2.MasterComponentConfig` and several
+methods of :py:class:`python_interface.MasterComponent`.
+
+.. code-block:: python
+
+  # Setup basic configuration
+  master_config = master.config()
+  master_config.processors_count = 2
+  master_config.cache_theta = 1
+  master.Reconfigure(master_config)
+
+  # Configure a perplexity score calculator
+  master.CreateScore(
+    'perplexity_score',
+    ScoreConfig_Type_Perplexity,
+    messages_pb2.PerplexityScore())
+
+  # Configure the model
+  model_config = messages_pb2.ModelConfig()
+  model_config.topics_count = 4
+  model_config.inner_iterations_count = 10
+  model_config.score_name.append("perplexity_score")
+  model = master.CreateModel(model_config)
+
+Load text collection
+--------------------
+
+
+Invoke iterative scans
+----------------------
+
+
+Retrieve and visualize results
+------------------------------

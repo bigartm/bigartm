@@ -1,0 +1,18 @@
+BigARTM FAQ
+===========
+
+Can I use BigARTM from other programming languages (not Python)?
+----------------------------------------------------------------
+
+Yes, as long as your language has an implementation of Google
+Protocol Buffers (the list can be found `here
+<https://code.google.com/p/protobuf/wiki/ThirdPartyAddOns>`_).
+Note that Google officially supports C++, Python and Java.
+
+The following figure shows how to call BigARTM methods directly
+on ``artm.dll`` (Windows) or ``artm.so`` (Linux).
+
+.. image:: _images/APIs.png
+   :alt: Connecting to BigARTM from different languages
+
+To write your API please refer to :doc:`/ref/c_interface`.
