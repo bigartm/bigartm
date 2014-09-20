@@ -4,6 +4,7 @@
 #define SRC_ARTM_CPP_INTERFACE_H_
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 #include "artm/messages.pb.h"

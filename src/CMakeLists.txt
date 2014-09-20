@@ -39,6 +39,7 @@ endif()
 # can it be avoided?
 include_directories(${3RD_PARTY_DIR}/rpcz/include)
 include_directories(${CMAKE_BINARY_DIR}/3rdparty/rpcz/src)
+include_directories(${GFLAGS_INCLUDE_DIRS})
 
 add_subdirectory(artm)
 add_subdirectory(artm_tests)
