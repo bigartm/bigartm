@@ -1,0 +1,81 @@
+Introduction
+============
+
+.. warning::
+
+   Please note that this is a beta version of the BigARTM library
+   which is still undergoing final testing before its official release.
+   Should you encounter any bugs, lack of functionality or
+   other problems with our library, please let us know immediately.
+   Your help in this regard is greatly appreciated.
+
+This is the documentation for the BigARTM library.
+BigARTM is a tool to infer `topic models`_,
+based on a novel technique called
+`Additive Regularization of Topic Models`_.
+This technique effectively builds multi-objective models
+by adding the weighted sums of regularizers to the optimization criterion.
+BigARTM is known to combine well
+very different objectives, including sparsing, smoothing, topics decorrelation and many others.
+Such combinations of regularizers significantly improves
+several quality measures at once almost without any loss of the perplexity.
+
+.. sidebar:: Getting help
+
+  Having trouble? We'd like to help!
+
+  * Try the :doc:`FAQ <faq>` -- it's got answers to many common questions.
+
+  * Looking for specific information? Try the :ref:`genindex`,
+    :ref:`search` or :ref:`glossary`.
+
+  * Search for information in the archives of the `artm-users`_ mailing list, or
+    `post a question`_.
+
+  * Report bugs with BigARTM in our `ticket tracker`_.
+
+  .. _artm-users: https://groups.google.com/group/artm-users
+  .. _post a question: https://groups.google.com/d/forum/artm-users
+  .. _ticket tracker: https://github.com/sashafrey/topicmod/issues
+
+**Online**.
+BigARTM never stores the entire text collection
+in the main memory. Instead the collection is split into
+small chunks called 'batches', and BigARTM always loads a limited
+number of batches into memory at any time.
+
+**Parallel**.
+BigARTM can concurrently process several batches,
+and by doing so it substantially improves the throughput
+on multi-core machines. The library hosts all computation
+in several threads withing a single process,
+which enables efficient usage of shared memory across application threads.
+
+**Distributed**.
+BigARTM is able to distribute all CPU-intensive
+processing onto several machines, interconnected by network.
+We aim to scale up to hundreds of machines,
+but the real scalability have not been fully tested yet.
+
+**Extensible API**.
+BigARTM comes with an API in Python,
+but can be easily extended for all other languages
+that have an implementation of `Google Protocol Buffers`_.
+
+**Cross-platform**.
+BigARTM is known to be compatible with gcc,
+clang and the Microsoft
+compiler (VS 2012). We have tested our library on Windows, Ubuntu
+and Fedora.
+
+**Open source**.
+BigARTM is released under the `New BSD License`_.
+If you plan to use our library commercially, please beware that
+BigARTM depends on ZeroMQ. Please, make sure to review
+`ZeroMQ license`_.
+
+.. _Additive Regularization of Topic Models: http://www.machinelearning.ru/wiki/images/1/1f/Voron14aist.pdf
+.. _topic models: http://en.wikipedia.org/wiki/Topic_model
+.. _Google Protocol Buffers: https://code.google.com/p/protobuf/
+.. _New BSD license: http://opensource.org/licenses/BSD-3-Clause
+.. _ZeroMQ license: http://zeromq.org/area:licensing

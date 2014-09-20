@@ -1,0 +1,88 @@
+# emacs backup files
+*~
+
+# generated .batch files
+*.batch
+
+# python files
+*.pyc
+
+# Dependencies
+*.depends
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Other libraries
+vowpal_wabbit/*
+datasets/docword.*.txt
+
+# Visual studio garbage
+*.opensdf
+*.sdf
+*.suo
+*/ipch/*
+*.vcxproj.user
+
+# Auto-generated files (by pdflatex)
+collateral/*.aux
+collateral/*.log
+collateral/*.pdf
+collateral/*.toc
+collateral/*.synctex.gz
+collateral/*.bbl
+collateral/*.blg
+collateral/*.dvi
+collateral/*.out
+collateral/*.ps
+collateral/*.synctex
+
+docs/*.bak
+docs/*/*.bak
+
+src/Intermediate/*
+src/Win32/*
+
+*.log.INFO.*
+*.log.WARNING.*
+*.log.ERROR.*
+*.batch
+
+# Binaries
+/src/artm/unittests/
+/src/cpp_client/cpp_client
+/src/Intermediate/
+/src/Win32/
+/src/artm/Debug/
+/src/artm/Release/
+
+
+/3rdparty/protobuf/vsprojects/Debug/*
+/3rdparty/protobuf/vsprojects/Release/*
+/3rdparty/glog/Debug/*
+/3rdparty/glog/Release/*
+/3rdparty/glog/vsprojects/libglog/Debug/*
+/3rdparty/glog/vsprojects/libglog/Release/*
+/3rdparty/glog/vsprojects/libglog_static/Debug/*
+/3rdparty/glog/vsprojects/libglog_static/Release/*
+/3rdparty/rpcz/vsprojects/Intermediate/*
+/3rdparty/rpcz/vsprojects/Win32/*
+
+/libs/libboost*
+/libs/v100/*
+/libs/v110/*
+
+docs/_build/*
+
+build/*

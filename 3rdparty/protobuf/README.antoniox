@@ -1,0 +1,3 @@
+Sources were taken by running:
+
+svn checkout http://protobuf.googlecode.com/svn/trunk/ protobuf

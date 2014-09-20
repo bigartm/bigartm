@@ -1,0 +1,2 @@
+To compile this .proto message, copy protoc.exe and protoc-gen-rpcz_plugin.exe into this folder and execute
+    protoc.exe -cpp_out=. --rpcz_plugin_out=. search.proto

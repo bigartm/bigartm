@@ -1,0 +1,159 @@
+package artm.core;
+
+import "artm/messages.proto";
+
+// ======= General messages =========
+
+// Mask message is similar to std::vector<bool>
+message Mask {
+  repeated bool value = 1 [packed = true];
+}
+
+message Bool {
+  optional bool value = 1;
+}
+
+message Int {
+  optional int32 value = 1;
+}
+
+message String {
+  optional string value = 1;
+}
+
+message Void {
+}
+
+// ======= Specific messages =========
+
+message DataLoaderCacheEntry {
+  optional string model_name = 1;
+  optional string batch_uuid = 2;
+  repeated int32 item_id = 3;
+  repeated FloatArray theta = 4;
+}
+
+// A message containing all data to transfer from DataLoader to Processor
+message ProcessorInput
+{
+  required Batch batch = 1;
+
+  // Identificator of the batch
+  required string batch_uuid = 2;
+
+  // Information about streams (for example, training and testing items).
+  // Withing each stream the length of flags vector
+  // is the same as number of items in the batch.
+  repeated Mask stream_mask = 4;
+  repeated string stream_name = 5;
+
+  // Contains information about theta matrix on previous iteration.
+  repeated DataLoaderCacheEntry cached_theta = 6;
+}
+
+// All information, gathered by Processor for a particular batch and model.
+message ModelIncrement {
+  required string model_name = 1;
+  required int32 topics_count = 2;
+
+  // Newly discovered tokens, not yet included in matrix Phi.
+  repeated string discovered_token = 3;
+  repeated string discovered_token_class_id = 4;
+
+  // Known tokens
+  repeated string token = 5;
+  repeated string class_id = 6;
+
+  // n_wt values for this batch; the length of this repeated field
+  // equals the number of known tokens.
+  // For each token, the length of Counters array equals topics_count.
+  repeated FloatArray token_increment = 7;
+
+  repeated string score_name = 8;
+  repeated bytes score = 9;
+
+  // Cached thetas from previous iteration
+  repeated int32 item_id = 10;
+  repeated FloatArray theta = 11;
+
+  // Identificators of all batches, contributing to this model increment.
+  repeated string batch_uuid = 12;
+}
+
+// ======== MasterComponentService ========
+
+message BatchIds {
+  repeated string batch_id = 1;
+}
+
+service MasterComponentService {
+  rpc UpdateModel(ModelIncrement) returns (Void);
+  rpc RetrieveModel(String) returns (TopicModel);
+
+  rpc RequestBatches(Int) returns (BatchIds);
+  rpc ReportBatches(BatchIds) returns (Void);
+}
+
+// ===== NodeControllerService ======
+
+message CreateOrReconfigureModelArgs {
+  optional string model_name = 2;
+  optional ModelConfig config = 3;
+}
+
+message DisposeModelArgs {
+  optional string model_name = 2;
+}
+
+message CreateOrReconfigureRegularizerArgs {
+  optional string regularizer_name = 2;
+  optional RegularizerConfig config = 3;
+}
+
+message DisposeRegularizerArgs {
+  optional string regularizer_name = 2;
+}
+
+message CreateOrReconfigureDictionaryArgs {
+  optional DictionaryConfig dictionary = 2;
+}
+
+message DisposeDictionaryArgs {
+  optional string dictionary_name = 2;
+}
+
+message RequestScoreArgs {
+  optional string model_name = 1;
+  optional string score_name = 2;
+}
+
+service NodeControllerService {
+  rpc CreateOrReconfigureInstance(MasterComponentConfig) returns (Void);
+  rpc DisposeInstance(Void) returns (Void);
+
+  rpc CreateOrReconfigureMasterComponent(MasterComponentConfig) returns (Void);
+  rpc DisposeMasterComponent(Void) returns (Void);
+
+  rpc CreateOrReconfigureModel(CreateOrReconfigureModelArgs) returns (Void);
+  rpc DisposeModel(DisposeModelArgs) returns (Void);
+
+  rpc CreateOrReconfigureRegularizer(CreateOrReconfigureRegularizerArgs) returns (Void);
+  rpc DisposeRegularizer(DisposeRegularizerArgs) returns (Void);
+
+  rpc CreateOrReconfigureDictionary(CreateOrReconfigureDictionaryArgs) returns (Void);
+  rpc DisposeDictionary(DisposeDictionaryArgs) returns (Void);
+
+  rpc ForcePullTopicModel(Void) returns (Void);
+  rpc ForcePushTopicModelIncrement(Void) returns (Void);
+
+  rpc OverwriteTopicModel(TopicModel) returns (Void);
+  rpc RequestTopicModel(String) returns (TopicModel);
+  rpc RequestRegularizerState(String) returns (RegularizerInternalState);
+  rpc RequestThetaMatrix(String) returns (ThetaMatrix);
+  rpc RequestScore(RequestScoreArgs) returns (ScoreData);
+
+  rpc AddBatch(Batch) returns (Void);
+  rpc InvokeIteration(Void) returns (Void);
+  rpc WaitIdle(Void) returns (Int);
+  rpc InvokePhiRegularizers(Void) returns (Void);
+}

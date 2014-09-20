@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{f18d2fb0-7884-49e6-a3d3-f7804bac305c}</ProjectGuid>
+    <ProjectName>librpcz</ProjectName>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RepositoryRoot>$(SolutionDir)\..\..\..</RepositoryRoot>
+  </PropertyGroup>
+  <Import Project="$(RepositoryRoot)\utils\targets\Artm.VisualStudioVersion.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(RepositoryRoot)\utils\Artm.targets" />
+  <ItemGroup>
+    <ClInclude Include="..\include\rpcz\application.hpp" />
+    <ClInclude Include="..\include\rpcz\callback.hpp" />
+    <ClInclude Include="..\include\rpcz\connection_manager.hpp" />
+    <ClInclude Include="..\include\rpcz\macros.hpp" />
+    <ClInclude Include="..\include\rpcz\rpc.hpp" />
+    <ClInclude Include="..\include\rpcz\rpcz.hpp" />
+    <ClInclude Include="..\include\rpcz\rpcz.pb.h" />
+    <ClInclude Include="..\include\rpcz\rpc_channel.hpp" />
+    <ClInclude Include="..\include\rpcz\server.hpp" />
+    <ClInclude Include="..\include\rpcz\service.hpp" />
+    <ClInclude Include="..\include\rpcz\sync_event.hpp" />
+    <ClInclude Include="..\include\rpcz\zmq_utils.hpp" />
+    <ClInclude Include="..\src\rpcz\clock.hpp" />
+    <ClInclude Include="..\src\rpcz\logging.hpp" />
+    <ClInclude Include="..\src\rpcz\reactor.hpp" />
+    <ClInclude Include="..\src\rpcz\rpc_channel_impl.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\include\rpcz\rpcz.pb.cc" />
+    <ClCompile Include="..\src\rpcz\application.cc" />
+    <ClCompile Include="..\src\rpcz\clock.cc" />
+    <ClCompile Include="..\src\rpcz\connection_manager.cc" />
+    <ClCompile Include="..\src\rpcz\reactor.cc" />
+    <ClCompile Include="..\src\rpcz\rpc.cc" />
+    <ClCompile Include="..\src\rpcz\rpc_channel_impl.cc" />
+    <ClCompile Include="..\src\rpcz\server.cc" />
+    <ClCompile Include="..\src\rpcz\sync_event.cc" />
+    <ClCompile Include="..\src\rpcz\zmq_utils.cc" />
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>$(LIBZEROMQ);libprotobuf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

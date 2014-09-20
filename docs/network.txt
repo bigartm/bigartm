@@ -1,0 +1,78 @@
+Networking
+==========
+
+In :doc:`Tutorial <tutorial>` you learned how to use BigARTM
+locally on your machine, within single process. Now we are
+going to deploy BigARTM on several machines.
+
+Network modus operandi
+----------------------
+
+First think you do to distribute CPU-intensive processing onto
+several machines is to launch there a :class:`python_interface.NodeController` component.
+
+One simple way to do so is to use ``node_controller`` application,
+included in BigARTM distributive.
+
+.. code-block:: bash
+
+   >node_controller.exe
+
+   Usage:
+       ./node_controller <endpoint>
+
+   Example:
+       ./node_controller tcp://*:5555
+
+   To connect to node_controller from master replace '*' with fully qualified DNS name of the host.
+
+After NodeControler is launched, you may add its endpoint to
+:attr:`MasterComponentConfig.node_connect_endpoint` list
+and then use your :class:`python_interface.MasterComponent` as usual.
+No further actions is required on the remote nodes.
+
+.. warning::
+
+   Some requirements and limitations apply in network mode.
+
+   * :attr:`MasterComponentConfig.modus_operandi` must be set to ``Network``,
+   * :attr:`MasterComponentConfig.disk_path` must be set to a network file share,
+     accessible from all node controllers.
+   * :attr:`MasterComponentConfig.cache_theta` does not work in Network mode.
+
+
+Proxy to MasterComponent
+------------------------
+
+BigARTM also supports a special ``proxy`` mode,
+which allows you to perform experiments on a remote cluster.
+As before, you start by running ``node_controller`` executable
+on your target machines. Then you deploy MasterComponent
+in one of you target machines.
+
+.. code-block:: bash
+
+   library = ArtmLibrary('artm.dll')
+
+   master_proxy_config = messages_pb2.MasterProxyConfig()
+   master_proxy_config.node_connect_endpoint = 'tcp://192.168.0.2:5555'
+
+   with library.CreateMasterComponent(master_proxy_config) as master_proxy:
+     # Use master_proxy in the same way you usually use master component
+
+Or, if you launched several nodes, you can utilize all of them
+by configuring your remote MasterComponent to work in Network modus operandi.
+
+.. code-block:: bash
+
+   library = ArtmLibrary('artm.dll')
+
+   master_proxy_config = messages_pb2.MasterProxyConfig()
+   master_proxy_config.node_connect_endpoint = 'tcp://192.168.0.2:5555'
+   master_proxy_config.config.modus_operandi = MasterComponentConfig_ModusOperandi_Network
+   master_proxy_config.disk_path = '/fileshare'
+   master_proxy_config.node_connect_addpoint.append('tcp://192.168.0.3:5555');
+   master_proxy_config.node_connect_addpoint.append('tcp://192.168.0.4:5555');
+
+   with library.CreateMasterComponent(master_proxy_config) as master_proxy:
+     # Use master_proxy in the same way you usually use master component

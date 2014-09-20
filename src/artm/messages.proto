@@ -1,0 +1,365 @@
+// File messages.proto defines all messages that can be transefer in or out from BigARTM library.
+package artm;
+
+// Represents an array of double-precision floating point values
+message DoubleArray {
+  repeated double value = 1 [packed = true];
+}
+
+// Represents an array of single-precision floating point values
+message FloatArray {
+  repeated float value = 1 [packed = true];
+}
+
+// Represents an array of boolean values
+message BoolArray {
+  repeated bool value = 1 [packed = true];
+}
+
+// Represents an array of string values
+message StringArray {
+  repeated string value = 1;
+}
+
+// Represents a unit of textual information.
+message Item
+{
+  optional int32 id = 1;
+  repeated Field field = 2;
+}
+
+// Represents a field withing an item.
+message Field
+{
+  optional string name = 1 [default = "@body"];
+  repeated int32 token_id = 2;
+  repeated int32 token_count = 3;
+}
+
+// Represents a set of items.
+message Batch {
+  repeated string token = 1;
+  repeated string class_id = 2;
+  repeated Item item = 3;
+}
+
+// Represents a configuration of a stream.
+message Stream {
+  enum Type {
+    Global = 0;
+    ItemIdModulus = 1;
+  }
+
+  optional Type type = 1 [default = Global];
+  optional string name = 2 [default = "@global"];
+  optional int32 modulus = 3;
+  repeated int32 residuals = 4;
+}
+
+// Represents a configuration of a master component
+message MasterComponentConfig {
+  enum ModusOperandi {
+    Local = 0;
+    Network = 1;
+  }
+
+  optional ModusOperandi modus_operandi = 1 [default = Local];
+  optional string disk_path = 2;
+  repeated Stream stream = 3;
+  optional bool compact_batches = 4 [default = true];
+  optional bool cache_theta = 5 [default = false];
+  optional int32 processors_count = 6 [default = 1];
+  optional int32 processor_queue_max_size = 7 [default = 10];
+  optional int32 merger_queue_max_size = 8 [default = 10];
+  repeated ScoreConfig score_config = 9;
+  optional string create_endpoint = 10;
+  optional string connect_endpoint = 11;
+  repeated string node_connect_endpoint = 12;
+}
+
+// Represents a configuration of a NodeController
+message NodeControllerConfig {
+  optional string create_endpoint = 1;
+}
+
+// Represents a configuration of a proxy to MasterComponent.
+message MasterProxyConfig {
+  optional string node_connect_endpoint = 1;
+  optional MasterComponentConfig config = 2;
+  optional int32 communication_timeout = 3 [default = 1000];
+  optional int32 polling_frequency = 4 [default = 50];
+}
+
+// Represents a configuration of a topic model.
+message ModelConfig {
+  optional string name = 1 [default = "@model"];
+  optional int32 topics_count = 2 [default = 32];
+  optional bool enabled = 3 [default = true];
+  optional int32 inner_iterations_count = 4 [default = 10];
+  optional string field_name = 5 [default = "@body"];
+  optional string stream_name = 6 [default = "@global"];
+  repeated string score_name = 7;
+  optional bool reuse_theta = 8 [default = false];
+  repeated string regularizer_name = 9;
+  repeated double regularizer_tau = 10;
+  repeated string class_id = 11;
+  repeated float class_weight = 12;  
+}
+
+// Represents a configuration of a general regularizer
+message RegularizerConfig {
+  enum Type {
+    DirichletTheta = 0;
+    DirichletPhi = 1;
+    SmoothSparseTheta = 2;
+    SmoothSparsePhi = 3;
+    DecorrelatorPhi = 4;
+    MultiLanguagePhi = 5;
+  }
+
+  optional string name = 1;
+  optional Type type = 2;
+  optional bytes config = 3;
+}
+
+// Represents a configuration of a Dirichlet Theta regularizer
+message DirichletThetaConfig {
+  repeated DoubleArray alpha = 1;
+}
+
+// Represents a configuration of a Dirichlet Phi regularizer
+message DirichletPhiConfig {
+  optional string dictionary_name = 1;
+}
+
+// Represents a configuration of a SmoothSparse Theta regularizer
+message SmoothSparseThetaConfig {
+  optional int32 background_topics_count = 1;
+  optional FloatArray alpha_topic = 2;
+  optional FloatArray alpha_iter = 3;
+}
+
+// Represents a configuration of a SmoothSparse Phi regularizer
+message SmoothSparsePhiConfig {
+  optional int32 background_topics_count = 1;
+  optional FloatArray topics_coefficients = 2;
+  optional string dictionary_name = 3;
+}
+
+// Represents a configuration of a Decorrelator Phi regularizer
+message DecorrelatorPhiConfig {
+  optional BoolArray topics_to_regularize = 1;
+}
+
+// Represents a configuration of a MultiLanguage Phi regularizer
+message MultiLanguagePhiConfig {
+}
+
+// Represents an internal state of a general regularizer
+message RegularizerInternalState {
+  enum Type {
+    MultiLanguagePhi = 5;
+  }
+
+  optional string name = 1;
+  optional Type type = 2;
+  optional bytes data = 3;
+}
+
+// Represents an internal state of a MultiLanguage Phi regularizer
+message MultiLanguagePhiInternalState {
+  optional int32 no_regularization_calls = 1 [default = 0];
+}
+
+// Represents a static dictionary.
+message DictionaryConfig {
+  optional string name = 1;
+  repeated DictionaryEntry entry = 2;
+  optional int32 total_token_count = 3;
+  optional int32 total_items_count = 4;
+}
+
+// Represents one entry in a static dictionary
+message DictionaryEntry {
+  optional string key_token = 1;
+  optional string class_id = 2;
+  optional float value = 3;
+  repeated string value_tokens = 4;
+  optional FloatArray values = 5;
+  optional int32 token_count = 6;
+  optional int32 items_count = 7;
+}
+
+// Represents a configuration of a general score
+message ScoreConfig {
+  enum Type {
+    Perplexity = 0;
+    SparsityTheta = 1;
+    SparsityPhi = 2;
+    ItemsProcessed = 3;
+    TopTokens = 4;
+    ThetaSnippet = 5;
+    TopicKernel = 6;
+  }
+
+  optional string name = 1;
+  optional Type type = 2;
+  optional bytes config = 3;
+}
+
+// Represents a result of score calculation
+message ScoreData {
+  enum Type {
+    Perplexity = 0;
+    SparsityTheta = 1;
+    SparsityPhi = 2;
+    ItemsProcessed = 3;
+    TopTokens = 4;
+    ThetaSnippet = 5;
+    TopicKernel = 6;
+  }
+
+  optional string name = 1;
+  optional Type type = 2;
+  optional bytes data = 3;
+}
+
+// Represents a configuration of a perplexity score
+message PerplexityScoreConfig {
+  enum Type {
+    UnigramDocumentModel = 0;
+    UnigramCollectionModel = 1;
+  }
+  optional string field_name = 1 [default = "@body"];
+  optional string stream_name = 2 [default = "@global"];
+  optional Type model_type = 3 [default = UnigramDocumentModel];
+  optional string dictionary_name = 4;
+}
+
+// Represents a result of calculation of a perplexity score
+message PerplexityScore {
+  optional double value = 1;
+  optional double raw = 2;
+  optional double normalizer = 3;
+  optional int32 zero_words = 4;
+}
+
+// Represents a configuration of a theta sparsity score
+message SparsityThetaScoreConfig {
+  optional string field_name = 1 [default = "@body"];
+  optional string stream_name = 2 [default = "@global"];
+  optional float eps = 3 [default = 1e-37];
+  optional BoolArray topics_to_score = 4;
+}
+
+// Represents a result of calculation of a theta sparsity score
+message SparsityThetaScore {
+  optional double value = 1;
+  optional int32 zero_topics = 2;
+  optional int32 total_topics = 3;
+}
+
+// Represents a configuration of a sparsity phi score
+message SparsityPhiScoreConfig {
+  optional float eps = 1 [default = 1e-37];
+  optional BoolArray topics_to_score = 2;
+}
+
+// Represents a result of calculation of a phi sparsity score
+message SparsityPhiScore {
+  optional double value = 1;
+  optional int32 zero_tokens = 2;
+  optional int32 total_tokens = 3;
+}
+
+// Represents a configuration of an items processed score
+message ItemsProcessedScoreConfig {
+  optional string field_name = 1 [default = "@body"];
+  optional string stream_name = 2 [default = "@global"];
+}
+
+// Represents a result of calculation of an items processed score
+message ItemsProcessedScore {
+  optional int32 value = 1;
+}
+
+// Represents a configuration of a top tokens score
+message TopTokensScoreConfig {
+  optional int32 num_tokens = 1 [default = 10];
+  repeated int32 topic_id = 2 [packed = true];
+}
+
+// Represents a result of calculation of a top tokens score
+message TopTokensScore {
+  repeated StringArray values = 1;
+}
+
+// Represents a configuration of a theta snippet score
+message ThetaSnippetScoreConfig {
+  optional string field_name = 1 [default = "@body"];
+  optional string stream_name = 2 [default = "@global"];
+  repeated int32 item_id = 3 [packed = true];
+}
+
+
+// Represents a result of calculation of a theta snippet score
+message ThetaSnippetScore {
+  repeated int32 item_id = 1;
+  repeated FloatArray values = 2;
+}
+
+// Represents a configuration of a topic kernel score
+message TopicKernelScoreConfig {
+  optional float eps = 1 [default = 1e-37];
+  optional BoolArray topics_to_score = 2;
+  optional double probability_mass_threshold = 3 [default = 0.1];
+}
+
+// Represents a result of calculation of a topic kernel score
+message TopicKernelScore {
+  optional DoubleArray kernel_size = 1;
+  optional DoubleArray kernel_purity = 2;
+  optional DoubleArray kernel_contrast = 3;
+  optional double average_kernel_size = 4;
+  optional double average_kernel_purity = 5;
+  optional double average_kernel_contrast = 6;
+}
+
+// Represents a topic model
+message TopicModel {
+  optional string name = 1 [default = "@model"];
+  optional int32 topics_count = 2;
+  repeated string token = 3;
+  repeated FloatArray token_weights = 4;
+  repeated string class_id = 5;
+
+  message TopicModelInternals {
+    repeated FloatArray n_wt = 1;
+    repeated FloatArray r_wt = 2;
+  }
+
+  optional bytes internals = 6;
+}
+
+// Represents a theta matrix.
+message ThetaMatrix {
+  optional string model_name = 1 [default = "@model"];
+  repeated int32 item_id = 2;
+  repeated FloatArray item_weights = 3;
+}
+
+// Represents a configuration of a collection parser.
+message CollectionParserConfig {
+  enum Format {
+    BagOfWordsUci = 0;
+  }
+
+  optional Format format = 1 [default = BagOfWordsUci];
+  optional string docword_file_path = 2;
+  optional string vocab_file_path = 3;
+  optional string target_folder = 4;
+  optional string dictionary_file_name = 5;
+  optional int32 num_items_per_batch = 6 [default = 1000];
+  optional string cooccurrence_file_name = 7;
+  repeated string cooccurrence_token = 8;
+}

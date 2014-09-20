@@ -1,0 +1,3 @@
+This folder must exist to avoid the following sphinx warning during "make html"
+
+copying static files... WARNING: html_static_path entry u'****\\docs\\_static' does not exist

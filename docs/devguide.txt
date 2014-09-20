@@ -1,0 +1,241 @@
+BigARTM Developer's Guide
+=========================
+
+This document describes the development process of BigARTM
+library.
+
+Since BigARTM is in pre-peleased stage, its source code is
+hosted in a private GitHub repository. If you don't have a user
+on GitHub, please register `here <https://github.com/>`_. Use the free plan.
+Then email the name of your user to artm_dev@googlegroups.com
+(please, set title of your e-mail to "BigARTM: request access").
+In few days you should receive a reply confirming that access had been
+granted.
+
+Build C++ code on Windows
+-------------------------
+
+The following steps describe the procedure to build BigARTM's C++ code on Windows.
+
+* Download and install `GitHub for Windows <http://windows.github.com/>`_.
+
+* Clone https://github.com/sashafrey/topicmod/ repository to any location on your computer.
+  This location is further refered to as ``$(BIGARTM_ROOT)``.
+
+* Download and install Visual Studio 2012 or any newer version.
+  BigARTM will compile just fine with any edition, including any Visual Studio Express edition (available
+  at `www.visualstudio.com <http://www.visualstudio.com/en-us/products/visual-studio-express-vs.aspx>`_).
+
+* Install `CMake <http://www.cmake.org/cmake/resources/software.html>`_
+  (tested with cmake-3.0.1, Win32 Installer).
+
+  Make sure that CMake executable is added to the ``PATH`` environmental variable.
+  To achieve this either select the option *"Add CMake to the system PATH for all users"*
+  during installation of CMake, or add it to the ``PATH`` manually.
+
+* Download and install Boost 1.55 or any newer version.
+
+  We suggest to use the `Prebuilt Windows Binaries <http://sourceforge.net/projects/boost/files/boost-binaries/>`_.
+  Make sure to select version that match your version of Visual Studio.
+  You may choose to work with either x64 or Win32 configuration, both of them are supported.
+
+* Configure system variables ``BOOST_ROOT`` and ``Boost_LIBRARY_DIR``.
+
+  If you have installed boost from the link above, and used the default location, then the setting should look similar to this:
+
+  .. code-block:: bash
+
+   setx BOOST_ROOT C:\local\boost_1_56_0
+   setx BOOST_LIBRARYDIR C:\local\boost_1_56_0\lib32-msvc-12.0
+
+  For all future details please refer to the documentation of `FindBoost module <http://www.cmake.org/cmake/help/v3.0/module/FindBoost.html>`_.
+  We also encourage new CMake users to step through `CMake tutorial <http://www.cmake.org/cmake/help/cmake_tutorial.html>`_.
+
+* Install Python 2.7
+  (tested with `Python 2.7.6 <https://www.python.org/ftp/python/2.7.6/python-2.7.6.msi>`_).
+
+  You may choose to work with either x64 or Win32 version of the Python,
+  but make sure this matches the configuration of BigARTM you have choosed earlier.
+  The x64 installation of python will be incompatible with 32 bit BigARTM,
+  and virse versus.
+
+* Use CMake to generate Visual Studio projects and solution files.
+  To do so, open a command prompt, change working directory to ``$(BIGARTM_ROOT)``
+  and execute the following commands:
+
+  .. code-block:: bash
+
+     mkdir build
+     cd build
+     cmake ..
+
+  You might have to explicitly specify the `cmake generator <http://www.cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html>`_,
+  especially if you are working with x64 configuration. To do so, use the following syntax:
+
+  .. code-block:: bash
+
+     cmake .. -G"Visual Studio 12 Win64"
+
+  CMake will generate Visual Studio under ``$(BIGARTM_ROOT)/build/``.
+
+* Open generated solution in Visual Studio and build it as you would usually build any other Visual Studio solution.
+  You may also use MSBuild from Visual Studio command prompt.
+
+  The build will output result into the following folders:
+
+  * ``$(BIGARTM_ROOT)/build/bin/[Debug|Release]`` --- binaries (.dll and .exe)
+
+  * ``$(BIGARTM_ROOT)/build/lib/[Debug|Release]`` --- static libraries
+
+
+At this point you should be able to run BigARTM tests, located here:
+``$(BIGARTM_ROOT)/build/bin/*/artm_tests.exe``.
+
+Python code on Windows
+----------------------
+
+* Install Python 2.7 (this step is already done if you are following the instructions above),
+
+* Add Python to the ``PATH`` environmental variable
+
+  http://stackoverflow.com/questions/6318156/adding-python-path-on-windows-7
+
+* Follow the instructions in ``README`` file in directory ``$(BIGARTM_ROOT)/3rdparty/protobuf/python/``.
+  In brief, this instructions ask you to run the following commands:
+
+  .. code-block:: bash
+
+     python setup.py build
+     python setup.py test
+     python setup.py install
+
+  On second step you fill see two failing tests:
+
+  .. code-block:: bash
+
+     Ran 216 tests in 1.252s
+     FAILED (failures=2)
+
+  This 2 failures are OK to ignore.
+
+At this point you should be able to run BigARTM tests for Python, located here:
+``$(BIGARTM_ROOT)/src/python_tests/python_tests.py``.
+
+* [Optional] Download and add to MSVS Python Tools 2.0.
+  All necessary instructions can be found at https://pytools.codeplex.com/.
+  This will allow you debug you Python scripts using Visual Studio.
+  You may start with the following solution: ``$(BIGARTM_ROOT)/src/artm_vs2012.sln``.
+
+Build C++ code on Linux
+-----------------------
+
+Simply run CMake on from the root of the project.
+
+The following script had been tested in Ubuntu.
+
+.. code-block:: bash
+
+   sudo apt-get install git make cmake build-essential libboost-all-dev -q -y
+   git clone https://github.com/sashafrey/topicmod
+   cd ~/topicmod
+   mkdir build
+   cd build
+   cmake ..
+   make -j8
+
+   ~/topicmode/build/src/artm_tests/artm_tests
+
+It is also possible to use BigARTM from Python on Linux.
+Just make sure to setup protobuf library as described
+``$(BIGARTM_ROOT)/3rdparty/protobuf/python/README``,
+and then you can simply run python scripts under ``$(BIGARTM_ROOT)/python_tests/``
+or ``$(BIGARTM_ROOT)/python_client/``.
+
+
+Compiling .proto files on Windows
+---------------------------------
+
+1. Open a new command prompt
+
+2. Copy the following two files into ``$(BIGARTM_ROOT)/src/``
+
+   * ``$(BIGARTM_ROOT)/build/bin/CONFIG/protoc.exe``
+   * ``$(BIGARTM_ROOT)/build/bin/CONFIG/protoc-gen-cpp_rpcz.exe``
+
+   Here CONFIG can be either Debug or Release (both options will work equally well).
+
+3. Rename ``protoc-gen-cpp_rpcz.exe`` to ``protoc-gen-rpcz_plugin.exe``.
+
+4. Change working directory to ``$(BIGARTM_ROOT)/src/``
+
+5. Run the following commands
+
+   .. code-block:: bash
+
+      .\protoc.exe --cpp_out=. --python_out=. .\artm\messages.proto
+      .\protoc.exe --cpp_out=. --rpcz_plugin_out=. .\artm\core\internals.proto
+
+Submit your change
+------------------
+
+Every new feature should be developed in a separate git branch.
+Use `pull request <https://help.github.com/articles/using-pull-requests>`_
+mechanism to submit your change for integration.
+Alternatively, you may merge your change into
+`artm_integration <https://github.com/sashafrey/topicmod/tree/artm_integration>`_ branch,
+and withing one week it will be reviewed by `the integrator <https://github.com/sashafrey/>`_
+and then itegrated into
+`master <https://github.com/sashafrey/topicmod/tree/master>`_ branch.
+
+Before submiting your change please check the following:
+
+* No build failures and compiler warnings on your platform (either on Windows or on Linux)
+* All unit test passes
+* Perplexity in ``cpp_client`` and ``python_client`` looks reasonable
+* Documentation in ``$(BIGARTM_ROOT)/docs`` is updated if needed
+* Run ``$(BIGARTM_ROOT)/utils/cpplint_all.bat`` script to verify code style.
+
+Code style
+----------
+
+.. sidebar:: Configure Visual Studio
+
+      Open *Tools / Text Editor / All languages / Tabs*
+      and configure as follows:
+
+      * Indenting - smart,
+      * Tab size - 2,
+      * Indent size - 2,
+      * Select "insert spaces".
+
+      We also suggest to configure Visual Studio to
+      `show space and tab crlf characters <http://stackoverflow.com/questions/4065815/how-to-turn-off-showing-whitespace-characters-in-visual-studio-ide>`_
+      (shortcut: Ctrl+R, Ctrl+W),
+      and `enable vertical line at 100 characters <http://stackoverflow.com/questions/9894397/100-characters-line-marker-in-visual-studio>`_.
+
+In the code we follow
+`google code style <http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml>`_
+with the following changes:
+
+* Exceptions are allowed
+* Indentation must be 2 spaces. Tabs are not allowed.
+* No lines should exceed 100 characters.
+
+All .h and .cpp files under ``$(BIGARTM_ROOT)/src/artm/`` must be verified for code style with
+`cpplint.py <http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py>`_ script.
+Files, generated by protobuf compiler, are the only exceptions from this rule.
+
+To run the script you need some version of Python installed on your machine.
+Then execute the script like this:
+
+  ``python cpplint.py --linelength=100 <filename>``
+
+On Windows you may run this master-script to check all required files:
+
+  ``$(BIGARTM_ROOT/utils/cpplint_all.bat``.
+
+
+Code review
+-----------
+
+We use pull requests mechanism on GitHub to conduct code reviews.

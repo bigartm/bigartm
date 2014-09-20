@@ -8,4 +8,21 @@
 Welcome to BigARTM's documentation!
 ===================================
 
-This is a placeholder for BigARTM documentation.
+.. toctree::
+   :maxdepth: 2
+
+   intro
+   tutorial
+   network
+   faq
+   glossary
+   devguide
+   ref/index
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+* :ref:`glossary`
