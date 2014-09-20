@@ -12,19 +12,53 @@ It demonstrates how to
 Installation on Windows
 -----------------------
 
-Prerequisites
+* Download and install Python 2.7 (https://www.python.org/downloads/).
 
-* Python 2.7 (https://www.python.org/downloads/)
+* Download and unpack the latest BigARTM release (https://github.com/bigartm/bigartm/releases).
+  Choose carefully between win32 and x64 version.
+  The version of BigART package must match your version Python installed on your machine.
 
-Installation
+* Setup *Google Protocol Buffers* library, included in the BigARTM release package.
+  To do so, follow the instructions in `protobuf/python/README
+  <https://raw.githubusercontent.com/bigartm/bigartm/master/3rdparty/protobuf/python/README.txt>`_.
 
-* Download and unpack `BigARTM distribution package.
-  <https://s3-eu-west-1.amazonaws.com/artm/BigARTM_v1.0_beta.7z>`_
-  This package contains all files you need in this tutorial.
+The BigARTM package will contain the following files:
 
-* Setup *Google Protocol Buffers* library, included in the BigARTM distributive. 
-  Unpack and follow the instructions in ``README`` file in directory ``protobuf/python/``.
-  Skip this step if you have already set up Google Protocol Buffers earlier.
+  ==================== ==============================================================================================
+  ``bin/``             Precompiled binaries of BigARTM for Windows. Two files are particularly important:
+
+                       * The ``bin/artm.dll`` contains the core functionality of the BigARTM library.
+
+                       * The ``bin/node_controller.exe`` is an executable that hosts BigARTM nodes
+                         in a distributed setting.
+
+  ``protobuf/``        A minimalistic version of `Google Protocol Buffers
+                       <https://code.google.com/p/protobuf/>`_
+                       library, required to run BigARTM from Python.
+                       To setup this package follow the instructions in ``protobuf/python/README`` file.
+
+  ``src/``             Several programming interfaces to BigARTM library.
+
+                       * ``c_interface.h`` -
+                         :doc:`low-level BigARTM interface </ref/c_interface>` in plain C.
+
+                       * ``cpp_interface.h``, ``cpp_interface.cc``, ``messages.pb.h`` and ``messages.pb.cc``
+                         provide C++ interface of BigARTM (not documented).
+
+                       * ``python_interface.py`` and ``messages_pb2.py`` provide
+                         :doc:`Python interface of BigARTM </ref/python_interface>`.
+
+                       * ``messages.proto`` describe all protocol buffer messages that appear in the API of BigaRTM.
+
+  ``artm_example.py``  A script to demonstrate typical usage of BigARTM in Python.
+
+  ``*.kos.txt``        Files ``docword.kos.txt`` and ``vocab.kos.txt`` represent a simple
+                       collection of text files in Bag-Of-Words format.
+                       The files are taken from `UCI Machine Learning Repository
+                       <https://archive.ics.uci.edu/ml/datasets/Bag+of+Words>`_.
+
+  ``LICENSE``          License file of BigARTM.
+  ==================== ==============================================================================================
 
 Installation on Linux
 ---------------------
