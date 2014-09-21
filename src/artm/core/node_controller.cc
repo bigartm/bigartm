@@ -35,11 +35,16 @@ NodeController::ServiceEndpoint::~ServiceEndpoint() {
 NodeController::ServiceEndpoint::ServiceEndpoint(const std::string& endpoint,
                                                  NodeControllerServiceImpl* impl)
     : endpoint_(endpoint), application_(nullptr), impl_(impl), thread_() {
-  rpcz::application::options options(3);
-  options.zeromq_context = ZmqContext::singleton().get();
-  application_.reset(new rpcz::application(options));
-  boost::thread t(&NodeController::ServiceEndpoint::ThreadFunction, this);
-  thread_.swap(t);
+  try {
+    rpcz::application::options options(3);
+    options.zeromq_context = ZmqContext::singleton().get();
+    application_.reset(new rpcz::application(options));
+    boost::thread t(&NodeController::ServiceEndpoint::ThreadFunction, this);
+    thread_.swap(t);
+  } catch (...) {
+    LOG(ERROR) << "Unable to establish service endpoint at " << endpoint;
+    throw;
+  }
 }
 
 void NodeController::ServiceEndpoint::ThreadFunction() {

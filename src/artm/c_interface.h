@@ -39,8 +39,8 @@ extern "C" {
 
   DLL_PUBLIC int ArtmAddBatch(int master_id, int length, const char* batch);
   DLL_PUBLIC int ArtmInvokeIteration(int master_id, int iterations_count);
-  DLL_PUBLIC int ArtmInvokePhiRegularizers(int master_id);
   DLL_PUBLIC int ArtmWaitIdle(int master_id, int timeout_milliseconds);
+  DLL_PUBLIC int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args);
 
   DLL_PUBLIC int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model);
 

@@ -84,7 +84,7 @@ void rpcz_protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "rieveModel\022\021.artm.core.String\032\020.artm.Top"
     "icModel\0225\n\016RequestBatches\022\016.artm.core.In"
     "t\032\023.artm.core.BatchIds\0225\n\rReportBatches\022"
-    "\023.artm.core.BatchIds\032\017.artm.core.Void2\217\013"
+    "\023.artm.core.BatchIds\032\017.artm.core.Void2\225\013"
     "\n\025NodeControllerService\022K\n\033CreateOrRecon"
     "figureInstance\022\033.artm.MasterComponentCon"
     "fig\032\017.artm.core.Void\0223\n\017DisposeInstance\022"
@@ -119,8 +119,8 @@ void rpcz_protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "rtm.Batch\032\017.artm.core.Void\0223\n\017InvokeIter"
     "ation\022\017.artm.core.Void\032\017.artm.core.Void\022"
     "+\n\010WaitIdle\022\017.artm.core.Void\032\016.artm.core"
-    ".Int\0229\n\025InvokePhiRegularizers\022\017.artm.cor"
-    "e.Void\032\017.artm.core.Void", 2943);
+    ".Int\022\?\n\020SynchronizeModel\022\032.artm.Synchron"
+    "izeModelArgs\032\017.artm.core.Void", 2949);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&rpcz_protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto);
@@ -462,10 +462,10 @@ void NodeControllerService::WaitIdle(const ::artm::core::Void&,
               "Method WaitIdle() not implemented.");
 }
 
-void NodeControllerService::InvokePhiRegularizers(const ::artm::core::Void&,
+void NodeControllerService::SynchronizeModel(const ::artm::SynchronizeModelArgs&,
                          ::rpcz::reply< ::artm::core::Void> reply) {
   reply.Error(::rpcz::application_error::METHOD_NOT_IMPLEMENTED,
-              "Method InvokePhiRegularizers() not implemented.");
+              "Method SynchronizeModel() not implemented.");
 }
 
 void NodeControllerService::call_method(const ::google::protobuf::MethodDescriptor* method,
@@ -574,8 +574,8 @@ void NodeControllerService::call_method(const ::google::protobuf::MethodDescript
           ::rpcz::reply< ::artm::core::Int>(channel));
       break;
     case 20:
-      InvokePhiRegularizers(
-          *::google::protobuf::down_cast<const ::artm::core::Void*>(&request),
+      SynchronizeModel(
+          *::google::protobuf::down_cast<const ::artm::SynchronizeModelArgs*>(&request),
           ::rpcz::reply< ::artm::core::Void>(channel));
       break;
     default:
@@ -629,7 +629,7 @@ const ::google::protobuf::Message& NodeControllerService::GetRequestPrototype(
     case 19:
       return ::artm::core::Void::default_instance();
     case 20:
-      return ::artm::core::Void::default_instance();
+      return ::artm::SynchronizeModelArgs::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
       return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
@@ -1121,7 +1121,7 @@ void NodeControllerService_Stub::WaitIdle(const ::artm::core::Void& request,
     throw ::rpcz::rpc_error(rpc);
   }
 }
-void NodeControllerService_Stub::InvokePhiRegularizers(const ::artm::core::Void& request,
+void NodeControllerService_Stub::SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
                               ::artm::core::Void* response,
                               ::rpcz::rpc* rpc,
                               ::rpcz::closure* done) {
@@ -1129,7 +1129,7 @@ void NodeControllerService_Stub::InvokePhiRegularizers(const ::artm::core::Void&
                         NodeControllerService::descriptor()->method(20),
                         request, response, rpc, done);
 }
-void NodeControllerService_Stub::InvokePhiRegularizers(const ::artm::core::Void& request,
+void NodeControllerService_Stub::SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
                               ::artm::core::Void* response,
                               long deadline_ms) {
   ::rpcz::rpc rpc;

@@ -209,12 +209,12 @@ bool MasterProxy::WaitIdle(int timeout) {
   }
 }
 
-void MasterProxy::InvokePhiRegularizers() {
+void MasterProxy::SynchronizeModel(const SynchronizeModelArgs& args) {
   make_rpcz_call([&]() {
     Void response;
-    node_controller_service_proxy_->InvokePhiRegularizers(
-      Void(), &response, communication_timeout_);
-  }, "InvokePhiRegularizers");
+    node_controller_service_proxy_->SynchronizeModel(
+      args, &response, communication_timeout_);
+  }, "SynchronizeModel");
 }
 
 }  // namespace core

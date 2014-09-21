@@ -77,6 +77,7 @@ class TopicModel;
 class TopicModel_TopicModelInternals;
 class ThetaMatrix;
 class CollectionParserConfig;
+class SynchronizeModelArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -5306,6 +5307,103 @@ class CollectionParserConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static CollectionParserConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class SynchronizeModelArgs : public ::google::protobuf::Message {
+ public:
+  SynchronizeModelArgs();
+  virtual ~SynchronizeModelArgs();
+
+  SynchronizeModelArgs(const SynchronizeModelArgs& from);
+
+  inline SynchronizeModelArgs& operator=(const SynchronizeModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SynchronizeModelArgs& default_instance();
+
+  void Swap(SynchronizeModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  SynchronizeModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SynchronizeModelArgs& from);
+  void MergeFrom(const SynchronizeModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string model_name = 2;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 2;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // optional float decay_weight = 3 [default = 1];
+  inline bool has_decay_weight() const;
+  inline void clear_decay_weight();
+  static const int kDecayWeightFieldNumber = 3;
+  inline float decay_weight() const;
+  inline void set_decay_weight(float value);
+
+  // @@protoc_insertion_point(class_scope:artm.SynchronizeModelArgs)
+ private:
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+  inline void set_has_decay_weight();
+  inline void clear_has_decay_weight();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* model_name_;
+  float decay_weight_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static SynchronizeModelArgs* default_instance_;
 };
 // ===================================================================
 
@@ -10928,6 +11026,102 @@ CollectionParserConfig::cooccurrence_token() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 CollectionParserConfig::mutable_cooccurrence_token() {
   return &cooccurrence_token_;
+}
+
+// -------------------------------------------------------------------
+
+// SynchronizeModelArgs
+
+// optional string model_name = 2;
+inline bool SynchronizeModelArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void SynchronizeModelArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void SynchronizeModelArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void SynchronizeModelArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& SynchronizeModelArgs::model_name() const {
+  return *model_name_;
+}
+inline void SynchronizeModelArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void SynchronizeModelArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void SynchronizeModelArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* SynchronizeModelArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* SynchronizeModelArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void SynchronizeModelArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional float decay_weight = 3 [default = 1];
+inline bool SynchronizeModelArgs::has_decay_weight() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void SynchronizeModelArgs::set_has_decay_weight() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void SynchronizeModelArgs::clear_has_decay_weight() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void SynchronizeModelArgs::clear_decay_weight() {
+  decay_weight_ = 1;
+  clear_has_decay_weight();
+}
+inline float SynchronizeModelArgs::decay_weight() const {
+  return decay_weight_;
+}
+inline void SynchronizeModelArgs::set_decay_weight(float value) {
+  set_has_decay_weight();
+  decay_weight_ = value;
 }
 
 

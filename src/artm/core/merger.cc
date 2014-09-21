@@ -51,7 +51,7 @@ Merger::~Merger() {
 
 void Merger::DisposeModel(ModelName model_name) {
   topic_model_.erase(model_name);
-  internal_task_queue_.push(MergerTask(kDisposeModel, model_name));
+  internal_task_queue_.push(MergerTask(kDisposeModel, model_name, 0.0f));
 }
 
 void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
@@ -89,21 +89,28 @@ void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
   topic_model_.set(topic_model.name(), new_ttm);
 }
 
+void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {
+  rpcz::sync_event sync_event;
+  internal_task_queue_.push(MergerTask(kForceSynchronizeTopicModel, args.model_name(),
+                                       args.decay_weight(), &sync_event));
+  sync_event.wait();
+}
+
 void Merger::ForceResetScores(ModelName model_name) {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForceResetScores, model_name, &sync_event));
+  internal_task_queue_.push(MergerTask(kForceResetScores, model_name, 0.0f, &sync_event));
   sync_event.wait();
 }
 
 void Merger::ForcePullTopicModel() {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForcePullTopicModel, ModelName(), &sync_event));
+  internal_task_queue_.push(MergerTask(kForcePullTopicModel, ModelName(), 0.0f, &sync_event));
   sync_event.wait();
 }
 
 void Merger::ForcePushTopicModelIncrement() {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForcePushTopicModelIncrement, ModelName(), &sync_event));
+  internal_task_queue_.push(MergerTask(kForcePushTopicModelIncrement, ModelName(), 0.0f, &sync_event));
   sync_event.wait();
 }
 
@@ -112,41 +119,32 @@ Merger::GetLatestTopicModel(ModelName model_name) const {
   return topic_model_.get(model_name);
 }
 
-void Merger::InvokePhiRegularizers() {
+void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
   auto schema = schema_->get();
-  std::vector<ModelName> model_names = schema->GetModelNames();
+  auto& model = schema->model_config(topic_model->model_name());
+  auto& reg_names = model.regularizer_name();
+  auto& reg_tau = model.regularizer_tau();
 
-  std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
-    const ModelConfig& model = schema->model_config(model_name);
-    auto cur_ttm = topic_model_.get(model_name);
+  for (auto reg_name_iterator = reg_names.begin();
+       reg_name_iterator != reg_names.end();
+       reg_name_iterator++) {
+    auto regularizer = schema->regularizer(reg_name_iterator->c_str());
 
-    if (cur_ttm.get() != nullptr) {
-      auto reg_names = model.regularizer_name();
-      auto reg_tau = model.regularizer_tau();
-      auto new_ttm = std::make_shared<::artm::core::TopicModel>(*cur_ttm);
+    if (regularizer != nullptr) {
+      auto tau_index = reg_name_iterator - reg_names.begin();
+      double tau = reg_tau.Get(tau_index);
 
-      for (auto reg_name_iterator = reg_names.begin(); reg_name_iterator != reg_names.end();
-        reg_name_iterator++) {
-        auto regularizer = schema->regularizer(reg_name_iterator->c_str());
-
-        if (regularizer != nullptr) {
-          auto tau_index = reg_name_iterator - reg_names.begin();
-          double tau = reg_tau.Get(tau_index);
-
-          bool retval = regularizer->RegularizePhi(new_ttm.get(), tau);
-          if (!retval) {
-            LOG(ERROR) << "Problems with type or number of parameters in Phi regularizer <" <<
-              reg_name_iterator->c_str() <<
-              ">. On this iteration this regularizer was turned off.\n";
-          }
-        } else {
-          LOG(ERROR) << "Phi Regularizer with name <" <<
-            reg_name_iterator->c_str() << "> does not exist.\n";
-        }
+      bool retval = regularizer->RegularizePhi(topic_model, tau);
+      if (!retval) {
+        LOG(ERROR) << "Problems with type or number of parameters in Phi regularizer <" <<
+          reg_name_iterator->c_str() <<
+          ">. On this iteration this regularizer was turned off.\n";
       }
-      topic_model_.set(model_name, new_ttm);
+    } else {
+      LOG(ERROR) << "Phi Regularizer with name <" <<
+        reg_name_iterator->c_str() << "> does not exist.\n";
     }
-  });
+  }
 }
 
 void Merger::ThreadFunction() {
@@ -180,6 +178,9 @@ void Merger::ThreadFunction() {
               break;
             case kForcePushTopicModelIncrement:
               PushTopicModelIncrement();
+              break;
+            case kForceSynchronizeTopicModel:
+              SynchronizeModel(merger_task.model_name, merger_task.decay_weight);
               break;
             case kForceResetScores:
               ResetScores(merger_task.model_name);
@@ -239,41 +240,29 @@ void Merger::ThreadFunction() {
 }
 
 void Merger::PullTopicModel() {
+  if (master_component_service_ == nullptr) {
+    return;  // no-op in local modus operandi
+  }
+
   auto model_names = topic_model_.keys();
   for (auto &model_name : model_names) {
-    auto old_ttm = topic_model_.get(model_name);
-    if (old_ttm.get() == nullptr)
-      return;  // model had been disposed during ongoing processing;
+    try {
+      auto old_ttm = topic_model_.get(model_name);
+      if (old_ttm.get() == nullptr)
+        return;  // model had been disposed during ongoing processing;
 
-    if (master_component_service_ == nullptr) {
-      auto inc_ttm = topic_model_inc_.find(model_name);
-      if (inc_ttm == topic_model_inc_.end())
-       return;  // model had been disposed during ongoing processing;
+      ::artm::core::String request;
+      request.set_value(model_name);
+      ::artm::TopicModel reply;
+      master_component_service_->RetrieveModel(request, &reply);
+      std::shared_ptr<::artm::core::TopicModel> new_global_ttm(
+        new ::artm::core::TopicModel(reply));
 
-      // Old mode: accumulate counters in topic model forever
-      // auto new_ttm = std::make_shared<::artm::core::TopicModel>(*old_ttm);
-
-      // New mode: accumulate counters only accross one iteration, then re-calculate Phi from scratch.
-      auto new_ttm = std::make_shared<::artm::core::TopicModel>(old_ttm->model_name(),
-                                                                old_ttm->topic_size());
-      new_ttm->ApplyDiff(*inc_ttm->second);
-      topic_model_.set(model_name, new_ttm);
-      topic_model_inc_.erase(model_name);
-    } else {
-      try {
-        ::artm::core::String request;
-        request.set_value(model_name);
-        ::artm::TopicModel reply;
-        master_component_service_->RetrieveModel(request, &reply);
-        std::shared_ptr<::artm::core::TopicModel> new_global_ttm(
-          new ::artm::core::TopicModel(reply));
-
-        topic_model_.set(model_name, new_global_ttm);
-        topic_model_inc_.erase(model_name);
-      } catch(const rpcz::rpc_error&) {
-        LOG(ERROR) << "Merger failed to pull topic model from the master component service.";
-        throw;
-      }
+      topic_model_.set(model_name, new_global_ttm);
+      // topic_model_inc_.erase(model_name);  // Why is this line here? This looks like a bug!!!
+    } catch(const rpcz::rpc_error&) {
+      LOG(ERROR) << "Merger failed to pull topic model from the master component service.";
+      throw;
     }
   }
 }
@@ -432,6 +421,41 @@ bool Merger::RequestScore(const ModelName& model_name, const ScoreName& score_na
   return scores_merger_.RequestScore(model_name, score_name, score_data);
 }
 
+void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight) {
+  if (master_component_service_ != nullptr) {
+    return;  // no-op in network modus operandi
+  }
+
+  auto model_names = topic_model_.keys();
+  if (!model_name.empty()) {
+    model_names.clear();
+    model_names.push_back(model_name);
+  }
+
+  for (auto &name : model_names) {
+    auto old_ttm = topic_model_.get(name);
+    if (old_ttm.get() == nullptr) {
+      LOG(ERROR) << "Topic model " << name << " does not exist.";
+      return;
+    }
+
+    auto inc_ttm = topic_model_inc_.find(name);
+    if (inc_ttm == topic_model_inc_.end())
+      LOG(WARNING) << "SynchronizeModel() did not found any increments to topic model " << name;
+
+    // Accumulate counters in topic model with decay coefficient.
+    auto new_ttm = std::make_shared<::artm::core::TopicModel>(*old_ttm, decay_weight);
+
+    // Apply increment
+    if (inc_ttm != topic_model_inc_.end())
+      new_ttm->ApplyDiff(*inc_ttm->second);
+
+    InvokePhiRegularizers(new_ttm.get());
+    topic_model_.set(name, new_ttm);
+
+    topic_model_inc_.erase(name);
+  }
+}
+
 }  // namespace core
 }  // namespace artm
-

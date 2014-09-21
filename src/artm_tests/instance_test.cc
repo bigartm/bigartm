@@ -115,6 +115,10 @@ TEST(Instance, Basic) {
 
   instance->local_data_loader()->InvokeIteration(20);
   instance->local_data_loader()->WaitIdle();
+  ::artm::SynchronizeModelArgs sync_model_args;
+  sync_model_args.set_model_name(model_name);
+  sync_model_args.set_decay_weight(1.0);
+  instance->merger()->ForceSynchronizeModel(sync_model_args);
 
   config.set_enabled(false);
   instance->CreateOrReconfigureModel(config);
@@ -180,8 +184,9 @@ TEST(Instance, MultipleStreamsAndModels) {
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 100; ++iter) {
-  test.instance()->local_data_loader()->InvokeIteration(1);
+    test.instance()->local_data_loader()->InvokeIteration(1);
     test.instance()->local_data_loader()->WaitIdle();
+    test.instance()->merger()->ForceSynchronizeModel(::artm::SynchronizeModelArgs());
   }
 
   artm::TopicModel m1t;

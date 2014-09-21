@@ -324,16 +324,30 @@ ArtmInvokeIteration
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
 
-ArtmInvokePhiRegularizers
--------------------------
 
-.. c:function::  int ArtmInvokePhiRegularizers(int master_id)
+ArtmSynchronizeModel
+--------------------
+
+.. c:function::  int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args)
+
+   Synchronizes topic model.
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
+   :param const_char* sync_model_args:
+      Serialized :ref:`SynchronizeModelArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the ``sync_model_args`` message.
+
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
+
+   This operation updates the Phi matrix of the topic model with all model increments, collected
+   since last call to ArtmSynchronizeModel. In addition, this operation invokes
+   all Phi-regularizers for the requested topic model.
+
 
 ArtmWaitIdle
 ------------

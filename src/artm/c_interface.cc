@@ -44,10 +44,15 @@ static void set_last_error(const std::string& error) {
 static void EnableLogging() {
   static bool logging_enabled = false;
   if (!logging_enabled) {
-    logging_enabled = true;
     FLAGS_log_dir = ".";
     FLAGS_logbufsecs = 0;
-    ::google::InitGoogleLogging(".");
+    try {
+      ::google::InitGoogleLogging(".");
+      logging_enabled = true;
+    }
+    catch (...) {
+      std::cerr << "InitGoogleLogging() failed.\n";
+    }
   }
 }
 
@@ -285,9 +290,11 @@ int ArtmDisposeRegularizer(int master_id, const char* regularizer_name) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmInvokePhiRegularizers(int master_id) {
+int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args) {
   try {
-    master_component(master_id)->InvokePhiRegularizers();
+    ::artm::SynchronizeModelArgs args;
+    ParseFromArray(sync_model_args, length, &args);
+    master_component(master_id)->SynchronizeModel(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }

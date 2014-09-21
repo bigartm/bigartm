@@ -109,7 +109,7 @@ class TopicWeightIterator {
 class TopicModel : public Regularizable {
  public:
   explicit TopicModel(ModelName model_name, int topics_count);
-  explicit TopicModel(const TopicModel& rhs);
+  explicit TopicModel(const TopicModel& rhs, float decay);
   explicit TopicModel(const ::artm::TopicModel& external_topic_model);
   explicit TopicModel(const ::artm::core::ModelIncrement& model_increment);
 

@@ -69,7 +69,6 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
 
   virtual void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   virtual void DisposeRegularizer(const std::string& name);
-  virtual void InvokePhiRegularizers();
 
   virtual void CreateOrReconfigureDictionary(const DictionaryConfig& config);
   virtual void DisposeDictionary(const std::string& name);
@@ -77,6 +76,7 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
   // Returns false if BigARTM is still processing the collection, otherwise true.
   virtual bool WaitIdle(int timeout = -1);
   virtual void InvokeIteration(int iterations_count);
+  virtual void SynchronizeModel(const SynchronizeModelArgs& args);
   virtual void AddBatch(const Batch& batch);
 
   // Throws InvalidOperation exception if new config is invalid.

@@ -210,8 +210,13 @@ void Model::Disable() {
   Reconfigure(config_copy_);
 }
 
-void Model::InvokePhiRegularizers() {
-  HandleErrorCode(ArtmInvokePhiRegularizers(master_id()));
+void Model::Synchronize(double decay) {
+  SynchronizeModelArgs args;
+  args.set_model_name(this->name());
+  args.set_decay_weight(static_cast<float>(decay));
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmSynchronizeModel(master_id(), blob.size(), blob.c_str()));
 }
 
 Regularizer::Regularizer(const MasterComponent& master_component, const RegularizerConfig& config)

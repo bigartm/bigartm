@@ -121,7 +121,7 @@ class Model {
   void Overwrite(const TopicModel& topic_model);
   void Enable();
   void Disable();
-  void InvokePhiRegularizers();
+  void Synchronize(double decay);
 
   int master_id() const { return master_id_; }
   const std::string& name() const { return config_.name(); }

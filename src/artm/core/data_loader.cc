@@ -153,8 +153,6 @@ bool LocalDataLoader::WaitIdle(int timeout) {
     }
   }
 
-  instance()->merger()->ForcePushTopicModelIncrement();
-  instance()->merger()->ForcePullTopicModel();
   return true;
 }
 
