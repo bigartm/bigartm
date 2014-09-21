@@ -79,8 +79,8 @@ void MasterComponent::DisposeDictionary(const std::string& name) {
   network_client_interface_->DisposeDictionary(name);
 }
 
-void MasterComponent::InvokePhiRegularizers() {
-  instance_->merger()->InvokePhiRegularizers();
+void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
+  instance_->merger()->ForceSynchronizeModel(args);
 
   if (isInNetworkModusOperandi()) {
     network_client_interface_->ForcePullTopicModel();
@@ -200,7 +200,7 @@ bool MasterComponent::WaitIdle(int timeout) {
       }
     }
 
-    // Ask all nodes to pull the new model
+    // Ask all nodes to push their increments to master
     network_client_interface_->ForcePushTopicModelIncrement();
 
     // Wait merger on master to process all model increments and set them as active topic model
@@ -217,11 +217,6 @@ bool MasterComponent::WaitIdle(int timeout) {
       instance_->merger()->WaitIdle(timeout);
     }
 
-    instance_->merger()->ForcePushTopicModelIncrement();
-    instance_->merger()->ForcePullTopicModel();
-
-    // Ask all nodes to push their updates to topic model
-    network_client_interface_->ForcePullTopicModel();
     return true;
   }
 

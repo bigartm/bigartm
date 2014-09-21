@@ -359,13 +359,13 @@ void NodeControllerServiceImpl::WaitIdle(
   } CATCH_EXCEPTIONS_AND_SEND_ERROR;
 }
 
-void NodeControllerServiceImpl::InvokePhiRegularizers(
-    const ::artm::core::Void& request,
+void NodeControllerServiceImpl::SynchronizeModel(
+    const ::artm::SynchronizeModelArgs& request,
     ::rpcz::reply< ::artm::core::Void> response) {
   try {
     boost::lock_guard<boost::mutex> guard(lock_);
     if (master_ != nullptr) {
-      master_->InvokePhiRegularizers();
+      master_->SynchronizeModel(request);
     } else {
       LOG(ERROR) << "No master component exist in node controller";
     }

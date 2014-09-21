@@ -361,8 +361,14 @@ class Model:
                     len(model_config_blob), model_config_blob_p))
     self.config_.CopyFrom(config)
 
-  def InvokePhiRegularizers(self):
-    HandleErrorCode(self.lib_, self.lib_.ArtmInvokePhiRegularizers(self.master_id_))
+  def Synchronize(self, decay_weight):
+    args = messages_pb2.SynchronizeModelArgs();
+    args.model_name = self.name()
+    args.decay_weight = decay_weight
+    args_blob = args.SerializeToString()
+    args_blob_p = ctypes.create_string_buffer(args_blob)
+    HandleErrorCode(self.lib_, self.lib_.ArtmSynchronizeModel(
+                     self.master_id_, len(args_blob), args_blob_p))
 
   def Overwrite(self, topic_model):
     blob = topic_model.SerializeToString()

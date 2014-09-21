@@ -35,29 +35,25 @@ TopicModel::TopicModel(ModelName model_name, int topics_count)
   CreateNormalizerVector(DefaultClass, topics_count_);
 }
 
-TopicModel::TopicModel(const TopicModel& rhs)
+TopicModel::TopicModel(const TopicModel& rhs, float decay)
     : model_name_(rhs.model_name_),
-      token_to_token_id_(rhs.token_to_token_id_),
-      token_id_to_token_(rhs.token_id_to_token_),
+      token_to_token_id_(),
+      token_id_to_token_(),
       topics_count_(rhs.topics_count_),
       n_wt_(),  // must be deep-copied
       r_wt_(),  // must be deep-copied
-      n_t_(rhs.n_t_),
+      n_t_(),
       n_t_default_class_(nullptr),
       batch_uuid_(rhs.batch_uuid_) {
-  for (size_t i = 0; i < rhs.n_wt_.size(); i++) {
-    float* values = new float[topics_count_];
-    n_wt_.push_back(values);
-    memcpy(values, rhs.n_wt_[i], sizeof(float) * topics_count_);
+  CreateNormalizerVector(DefaultClass, topics_count_);
+  for (size_t token_id = 0; token_id < rhs.n_wt_.size(); token_id++) {
+    AddToken(rhs.token(token_id), false);
+    auto iter = rhs.GetTopicWeightIterator(token_id);
+    while (iter.NextTopic() < topic_size()) {
+      SetTokenWeight(token_id, iter.TopicIndex(), decay * iter.NotNormalizedWeight());
+      // Here we intentionally do not skip copying regularizers (r_wt_).
+    }
   }
-
-  for (size_t i = 0; i < rhs.r_wt_.size(); i++) {
-    float* values = new float[topics_count_];
-    r_wt_.push_back(values);
-    memcpy(values, rhs.r_wt_[i], sizeof(float) * topics_count_);
-  }
-
-  n_t_default_class_ = &(n_t_.find(DefaultClass)->second);
 }
 
 TopicModel::TopicModel(const ::artm::TopicModel& external_topic_model) {

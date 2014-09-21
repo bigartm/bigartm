@@ -363,3 +363,9 @@ message CollectionParserConfig {
   optional string cooccurrence_file_name = 7;
   repeated string cooccurrence_token = 8;
 }
+
+// Represents an argument of 'synchronize model' operation
+message SynchronizeModelArgs {
+  optional string model_name = 2;
+  optional float decay_weight = 3 [default = 1.0];
+}

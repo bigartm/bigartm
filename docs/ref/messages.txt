@@ -1337,6 +1337,8 @@ Represents a theta matrix.
 CollectionParserConfig
 ======================
 
+.. class:: messages_pb2.CollectionParserConfig
+
 Represents a configuration of a collection parser.
 
 .. code-block:: bash
@@ -1459,3 +1461,35 @@ Represents a configuration of a collection parser.
    A list of tokens to collect cooccurrence information.
    A cooccurrence of the pair `<first>~<second>` will be collected only when both tokens are present in
    :attr:`CollectionParserConfig.cooccurrence_token`.
+
+
+.. _SynchronizeModelArgs:
+
+SynchronizeModelArgs
+====================
+
+.. class:: messages_pb2.SynchronizeModelArgs
+
+Represents an argument of synchronize model operation.
+
+.. code-block:: bash
+
+  message SynchronizeModelArgs {
+    optional string model_name = 2;
+    optional float decay_weight = 3 [default = 1.0];
+  }
+
+.. attribute:: SynchronizeModelArgs.model_name
+
+  The name of the model to be synchronized.
+  This value is optional. When not set, all models will be synchronized with the same decay weight.
+
+.. attribute:: SynchronizeModelArgs.decay_weight
+
+  The decay weight to apply to current version of the topic model.
+  Expected values of this parameter are between 0.0 and 1.0.
+
+  Decay weight 0.0 states that the previous Phi matrix of the topic model will be disregarded completely,
+  and the new Phi matrix will be formed based on new increments gathered since last model synchronize.
+
+  Decay weight 1.0 states that new increments will be appended to the current Phi matrix without any decay.

@@ -48,6 +48,7 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
   // instance_size = 2 or higher defines the number of node controllers to create in this process,
   //                   used in the same way as if they were on remote nodes.
   bool is_network_mode = (instance_size != 1);
+  bool online = false;
 
   MasterComponentConfig master_config;
   std::vector<std::shared_ptr<::artm::NodeController>> node_controller;
@@ -255,8 +256,16 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
 
   for (int iter = 0; iter < 10; ++iter) {
     master_component.InvokeIteration(1);
-    master_component.WaitIdle(120000);
-    model.InvokePhiRegularizers();
+    if (online) {
+      bool done = false;
+      while (!done) {
+        done = master_component.WaitIdle(100);
+        model.Synchronize(0.9);
+      }
+    } else {
+      master_component.WaitIdle();
+      model.Synchronize(0.0);
+    }
 
     topic_model = master_component.GetTopicModel(model);
     test_perplexity = master_component.GetScoreAs<::artm::PerplexityScore>(model, "test_perplexity");

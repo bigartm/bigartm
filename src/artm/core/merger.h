@@ -45,9 +45,9 @@ class Merger : boost::noncopyable {
 
   // Returns false if BigARTM is still processing the collection, otherwise true.
   bool WaitIdle(int timeout = -1);
+  void ForceSynchronizeModel(const SynchronizeModelArgs& args);
   void ForcePullTopicModel();
   void ForcePushTopicModelIncrement();
-  void InvokePhiRegularizers();
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
 
   std::shared_ptr<const ::artm::core::TopicModel> GetLatestTopicModel(ModelName model_name) const;
@@ -85,19 +85,24 @@ class Merger : boost::noncopyable {
     kDisposeModel,
     kForcePullTopicModel,
     kForcePushTopicModelIncrement,
+    kForceSynchronizeTopicModel,
     kForceResetScores,
   };
 
   struct MergerTask {
     MergerTask() {}
-    MergerTask(MergerTaskType _task_type, ModelName _model_name)
-        : task_type(_task_type), model_name(_model_name), sync_event(nullptr) {}
 
-    MergerTask(MergerTaskType _task_type, ModelName _model_name, rpcz::sync_event* _sync_event)
-        : task_type(_task_type), model_name(_model_name), sync_event(_sync_event) {}
+    MergerTask(MergerTaskType _task_type, ModelName _model_name, float _decay_weight)
+        : task_type(_task_type), model_name(_model_name), decay_weight(_decay_weight), sync_event(nullptr) {}
+
+    MergerTask(MergerTaskType _task_type, ModelName _model_name, float _decay_weight,
+               rpcz::sync_event* _sync_event)
+        : task_type(_task_type), model_name(_model_name), decay_weight(_decay_weight),
+          sync_event(_sync_event) {}
 
     MergerTaskType task_type;
     ModelName model_name;
+    float decay_weight;
     rpcz::sync_event* sync_event;
   };
 
@@ -117,8 +122,10 @@ class Merger : boost::noncopyable {
   boost::thread thread_;
   void ThreadFunction();
 
+  void SynchronizeModel(const ModelName& model_name, float decay_weight);
   void PullTopicModel();
   void PushTopicModelIncrement();
+  void InvokePhiRegularizers(::artm::core::TopicModel* topic_model);
   void ResetScores(ModelName model_name);
 };
 

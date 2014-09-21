@@ -136,6 +136,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   for (int iter = 0; iter < 5; ++iter) {
     master_component->InvokeIteration(1);
     master_component->WaitIdle();
+    model.Synchronize(0.0);
     topic_model = master_component->GetTopicModel(model);
     std::shared_ptr<::artm::PerplexityScore> perplexity =
       master_component->GetScoreAs<::artm::PerplexityScore>(model, "PerplexityScore");
@@ -165,7 +166,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   EXPECT_TRUE(master_component->WaitIdle());
 
   auto old_state_wrapper = master_component->GetRegularizerState(reg_multilang_name);
-  model.InvokePhiRegularizers();
+  model.Synchronize(1.0);
   auto new_state_wrapper = master_component->GetRegularizerState(reg_multilang_name);
 
   artm::MultiLanguagePhiInternalState old_state;
