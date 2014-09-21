@@ -5,6 +5,7 @@ compiler:
 
 before_install:
   - cd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && cd ..
+  - cd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && cd ../../..
   - mkdir datasets && cd datasets
   - wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz && gunzip docword.kos.txt.gz
   - wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
