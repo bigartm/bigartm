@@ -5,6 +5,10 @@ compiler:
 
 before_install:
   - cd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && cd ..
+  - mkdir datasets && cd datasets
+  - wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz && gunzip docword.kos.txt.gz
+  - wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
+  - cd ..
 
 install:
   - wget -O boost_1_55_0.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz/download
@@ -18,11 +22,10 @@ install:
   - cd ..
 
 before_script:
-  - mkdir build
-  - cd build
-  - cmake ..
+  - mkdir build && cd build && cmake .. && cd ..
 
 script:
-  - make -j4
-  - cd src/artm_tests
-  - ./artm_tests
+  - cd build && make -j4 && cd ..
+  - cd build/src/artm_tests && ./artm_tests && cd ../../..
+  - cd src/python_tests && python tests.py && cd ../..
+  - cd src/python_client && python python_client.py && cd ../..
