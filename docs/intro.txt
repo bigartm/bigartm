@@ -36,7 +36,7 @@ several quality measures at once almost without any loss of the perplexity.
 
   .. _artm-users: https://groups.google.com/group/artm-users
   .. _post a question: https://groups.google.com/d/forum/artm-users
-  .. _ticket tracker: https://github.com/bigartm/topicmod/issues
+  .. _ticket tracker: https://github.com/bigartm/bigartm/issues
 
 **Online**.
 BigARTM never stores the entire text collection
