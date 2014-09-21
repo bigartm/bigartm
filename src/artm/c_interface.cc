@@ -44,10 +44,15 @@ static void set_last_error(const std::string& error) {
 static void EnableLogging() {
   static bool logging_enabled = false;
   if (!logging_enabled) {
-    logging_enabled = true;
     FLAGS_log_dir = ".";
     FLAGS_logbufsecs = 0;
-    ::google::InitGoogleLogging(".");
+    try {
+      ::google::InitGoogleLogging(".");
+      logging_enabled = true;
+    }
+    catch (...) {
+      std::cerr << "InitGoogleLogging() failed.\n";
+    }
   }
 }
 
