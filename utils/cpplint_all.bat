@@ -1,0 +1,1 @@
+for /f %%x in (cpplint_files.txt) do python .\cpplint.py --linelength=120 %%x
