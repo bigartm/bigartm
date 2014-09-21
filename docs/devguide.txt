@@ -4,13 +4,21 @@ BigARTM Developer's Guide
 This document describes the development process of BigARTM
 library.
 
-Since BigARTM is in pre-peleased stage, its source code is
-hosted in a private GitHub repository. If you don't have a user
-on GitHub, please register `here <https://github.com/>`_. Use the free plan.
-Then email the name of your user to artm_dev@googlegroups.com
-(please, set title of your e-mail to "BigARTM: request access").
-In few days you should receive a reply confirming that access had been
-granted.
+Source code
+-----------
+
+BigARTM is hosted in public GitHub repository:
+
+https://github.com/bigartm/bigartm
+
+To contribute a fix you should `fork <https://help.github.com/articles/fork-a-repo>`_ the repository,
+code your fix and submit a `pull request <https://help.github.com/articles/using-pull-requests>`_.
+All pull requests are regularly monitored by BigARTM maintainers and will be soon merged into
+BigARTM's master branch.
+Please, keep monitoring the status of your pull request
+`on travis <https://travis-ci.org/bigartm/bigartm/pull_requests>`_,
+which is a continuous integration system used by BigARTM project.
+
 
 Build C++ code on Windows
 -------------------------
@@ -19,7 +27,7 @@ The following steps describe the procedure to build BigARTM's C++ code on Window
 
 * Download and install `GitHub for Windows <http://windows.github.com/>`_.
 
-* Clone https://github.com/sashafrey/topicmod/ repository to any location on your computer.
+* Clone https://github.com/bigartm/bigartm/ repository to any location on your computer.
   This location is further refered to as ``$(BIGARTM_ROOT)``.
 
 * Download and install Visual Studio 2012 or any newer version.
@@ -136,7 +144,7 @@ The following script had been tested in Ubuntu.
 .. code-block:: bash
 
    sudo apt-get install git make cmake build-essential libboost-all-dev -q -y
-   git clone https://github.com/sashafrey/topicmod
+   git clone https://github.com/bigartm/bigartm
    cd ~/topicmod
    mkdir build
    cd build
@@ -175,25 +183,6 @@ Compiling .proto files on Windows
       .\protoc.exe --cpp_out=. --python_out=. .\artm\messages.proto
       .\protoc.exe --cpp_out=. --rpcz_plugin_out=. .\artm\core\internals.proto
 
-Submit your change
-------------------
-
-Every new feature should be developed in a separate git branch.
-Use `pull request <https://help.github.com/articles/using-pull-requests>`_
-mechanism to submit your change for integration.
-Alternatively, you may merge your change into
-`artm_integration <https://github.com/sashafrey/topicmod/tree/artm_integration>`_ branch,
-and withing one week it will be reviewed by `the integrator <https://github.com/sashafrey/>`_
-and then itegrated into
-`master <https://github.com/sashafrey/topicmod/tree/master>`_ branch.
-
-Before submiting your change please check the following:
-
-* No build failures and compiler warnings on your platform (either on Windows or on Linux)
-* All unit test passes
-* Perplexity in ``cpp_client`` and ``python_client`` looks reasonable
-* Documentation in ``$(BIGARTM_ROOT)/docs`` is updated if needed
-* Run ``$(BIGARTM_ROOT)/utils/cpplint_all.bat`` script to verify code style.
 
 Code style
 ----------
@@ -233,9 +222,3 @@ Then execute the script like this:
 On Windows you may run this master-script to check all required files:
 
   ``$(BIGARTM_ROOT/utils/cpplint_all.bat``.
-
-
-Code review
------------
-
-We use pull requests mechanism on GitHub to conduct code reviews.
