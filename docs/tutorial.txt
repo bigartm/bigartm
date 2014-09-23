@@ -16,7 +16,7 @@ Installation on Windows
 
 * Download and unpack the latest BigARTM release (https://github.com/bigartm/bigartm/releases).
   Choose carefully between win32 and x64 version.
-  The version of BigART package must match your version Python installed on your machine.
+  The version of BigARTM package must match your version Python installed on your machine.
 
 * Setup *Google Protocol Buffers* library, included in the BigARTM release package.
   To do so, follow the instructions in `protobuf/python/README
