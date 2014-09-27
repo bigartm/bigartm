@@ -98,7 +98,14 @@ class Library:
       else:
         artm_shared_library = 'artm.dll'
 
-    self.lib_ = ctypes.CDLL(artm_shared_library)
+    
+    try:
+      self.lib_ = ctypes.CDLL(artm_shared_library)
+      return
+    except OSError as e:
+      print str(e) + ", fall back to ARTM_SHARED_LIBRARY environment variable"
+
+    self.lib_ = ctypes.CDLL(os.environ['ARTM_SHARED_LIBRARY'])
 
   def CreateMasterComponent(self, config = messages_pb2.MasterComponentConfig()):
     return MasterComponent(config, self.lib_)

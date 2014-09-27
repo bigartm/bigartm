@@ -22,7 +22,7 @@ for item_id in range(0, num_items):
     field.token_count.append(background_count + topical_count)
 
 # Set the following value to false if you are already running remote node_controller process
-create_local_node_controller = False
+create_local_node_controller = True
 if (create_local_node_controller):
   node_controller = artm.library.NodeController('tcp://*:5555')
 
