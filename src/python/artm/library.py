@@ -6,6 +6,7 @@ import os
 import ctypes
 import uuid
 import random
+import glob
 from ctypes import *
 
 #################################################################################
@@ -45,6 +46,8 @@ ScoreData_Type_TopicKernel = 6
 PerplexityScoreConfig_Type_UnigramDocumentModel = 0
 PerplexityScoreConfig_Type_UnigramCollectionModel = 1
 CollectionParserConfig_Format_BagOfWordsUci = 0
+MasterComponentConfig_ModusOperandi_Local = 0
+MasterComponentConfig_ModusOperandi_Network = 1
 
 #################################################################################
 
@@ -64,7 +67,7 @@ def GetLastErrorMessage(lib):
 
 
 def HandleErrorCode(lib, artm_error_code):
-  if (artm_error_code == ARTM_SUCCESS) | (artm_error_code >= 0):
+  if (artm_error_code == ARTM_SUCCESS) or (artm_error_code == ARTM_STILL_WORKING) or (artm_error_code >= 0):
     return artm_error_code
   elif artm_error_code == ARTM_INTERNAL_ERROR:
     raise InternalError(GetLastErrorMessage(lib))
@@ -133,10 +136,28 @@ class Library:
     dictionary.ParseFromString(dictionary_blob)
     return dictionary
 
+  def ParseCollectionOrLoadDictionary(self, docword_file_path, vocab_file_path, target_folder):
+    batches_found = len(glob.glob(target_folder + "/*.batch"))
+    if batches_found == 0:
+      print "No batches found, parsing them from textual collection...",
+      collection_parser_config = messages_pb2.CollectionParserConfig();
+      collection_parser_config.format = CollectionParserConfig_Format_BagOfWordsUci
+
+      collection_parser_config.docword_file_path = docword_file_path
+      collection_parser_config.vocab_file_path = vocab_file_path
+      collection_parser_config.target_folder = target_folder
+      collection_parser_config.dictionary_file_name = 'dictionary'
+      unique_tokens = self.ParseCollection(collection_parser_config);
+      print " OK."
+      return unique_tokens
+    else:
+      print "Found " + str(batches_found) + " batches, using them."
+      return self.LoadDictionary(target_folder + '/dictionary');
+
 #################################################################################
 
 class MasterComponent:
-  def __init__(self, config = messages_pb2.MasterComponentConfig(), lib = None, disk_path = None):
+  def __init__(self, config = messages_pb2.MasterComponentConfig(), lib = None, disk_path = None, proxy_endpoint = None):
     if (lib is None):
       lib = Library().lib_
 
@@ -172,9 +193,7 @@ class MasterComponent:
     self.id_ = -1
 
   def config(self):
-    master_config = messages_pb2.MasterComponentConfig()
-    master_config.CopyFrom(self.config_)
-    return master_config
+    return self.config_
 
   def CreateModel(self, config = messages_pb2.ModelConfig(), 
                   topics_count = None, inner_iterations_count = None):
@@ -232,9 +251,11 @@ class MasterComponent:
     self.Reconfigure(master_config)
     return Score(self, name)
 
-  def CreatePerplexityScore(self, name = None, config = messages_pb2.PerplexityScoreConfig()):
+  def CreatePerplexityScore(self, name = None, config = messages_pb2.PerplexityScoreConfig(), stream_name = None):
     if (name is None):
       name = "PerplexityScore:" + uuid.uuid1().urn
+    if (stream_name is not None):
+      config.stream_name = stream_name
     return self.CreateScore(name, ScoreConfig_Type_Perplexity, config)
 
   def CreateSparsityThetaScore(self, name = None, config = messages_pb2.SparsityThetaScoreConfig()):
@@ -256,7 +277,7 @@ class MasterComponent:
     if (name is None):
       name = "TopTokensScore:" + uuid.uuid1().urn
     if (num_tokens is not None):
-      config.num_token = num_tokens
+      config.num_tokens = num_tokens
     return self.CreateScore(name, ScoreConfig_Type_TopTokens, config)
 
   def CreateThetaSnippetScore(self, name = None, config = messages_pb2.ThetaSnippetScoreConfig()):
@@ -280,7 +301,9 @@ class MasterComponent:
   def RemoveDictionary(self, dictionary):
     dictionary.__Dispose__()
 
-  def Reconfigure(self, config):
+  def Reconfigure(self, config = None):
+    if (config is None):
+      config = self.config_
     config_blob = config.SerializeToString()
     config_blob_p = ctypes.create_string_buffer(config_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmReconfigureMasterComponent(self.id_, len(config_blob), config_blob_p))
@@ -296,10 +319,8 @@ class MasterComponent:
 
   def WaitIdle(self, timeout = -1):
     result = self.lib_.ArtmWaitIdle(self.id_, timeout)
-    if result == ARTM_STILL_WORKING:
-        print "WaitIdle() is still working, timeout is over.";
-    else:
-        HandleErrorCode(self.lib_, result)
+    result = HandleErrorCode(self.lib_, result)
+    return False if (result == ARTM_STILL_WORKING) else True
 
   def CreateStream(self, stream):
     s = self.config_.stream.add()
@@ -403,7 +424,13 @@ class Model:
   def topics_count(self):
     return self.config_.topics_count
 
-  def Reconfigure(self, config):
+  def config(self):
+    return self.config_
+
+  def Reconfigure(self, config = None):
+    if (config is None):
+      config = self.config_
+
     model_config_blob = config.SerializeToString()
     model_config_blob_p = ctypes.create_string_buffer(model_config_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmReconfigureModel(self.master_id_,
@@ -587,3 +614,22 @@ class Score:
     raise InvalidMessage(GetLastErrorMessage(self.lib_))
 
 #################################################################################
+
+class Visualizers:
+  @staticmethod
+  def PrintTopTokensScore(top_tokens_score):
+    print '\nTop tokens per topic:'
+    for i in range(0, len(top_tokens_score.values)):
+      print "Topic#" + str(i+1) + ": ",
+      for value in top_tokens_score.values[i].value:
+        print value + " ",
+      print "\n",
+
+  @staticmethod
+  def PrintThetaSnippetScore(theta_snippet_score):
+    print '\nSnippet of theta matrix:'
+    for i in range(0, len(theta_snippet_score.values)):
+      print "Item#" + str(theta_snippet_score.item_id[i]) + ": ",
+      for value in theta_snippet_score.values[i].value:
+        print "%.3f\t" % value,
+      print "\n",
