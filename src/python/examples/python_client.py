@@ -1,18 +1,5 @@
-import sys
-import os
-
-if sys.platform.count('linux') == 1:
-    interface_address = os.path.abspath(os.path.join(os.curdir, os.pardir, 'python_interface'))
-    sys.path.append(interface_address)
-else:
-    sys.path.append('../python_interface/')
-
-import messages_pb2
-from python_interface import *
-import operator
-import random
-import glob
-
+import artm.library, artm.messages_pb2
+import operator, random, glob, sys
 
 # Some configuration numbers
 batch_size = 500
@@ -24,91 +11,87 @@ outer_iteration_count = 10
 inner_iterations_count = 10
 top_tokens_count_to_visualize = 4
 
-vocab_file = '../../datasets/vocab.kos.txt'
-docword_file = '../../datasets/docword.kos.txt'
+vocab_file = 'vocab.kos.txt'
+docword_file = 'docword.kos.txt'
 target_folder = 'batches'
 dictionary_file = 'kos.dictionary'
 
-address = os.path.abspath(os.path.join(os.curdir, os.pardir))
-
-if sys.platform.count('linux') == 1:
-    library = ArtmLibrary(address + '/../build/src/artm/libartm.so')
-else:
-    os.environ['PATH'] = ';'.join([address + '..\\..\\build\\bin\\Release', os.environ['PATH']])
-    library = ArtmLibrary(address + '..\\..\\build\\bin\\Release\\artm.dll')
+artm_library = artm.library.Library()
 
 batches_found = len(glob.glob(target_folder + "/*.batch"))
 if batches_found == 0:
     print "No batches found, parsing them from textual collection ",
     collection_parser_config = messages_pb2.CollectionParserConfig();
     collection_parser_config.format = CollectionParserConfig_Format_BagOfWordsUci
-    collection_parser_config.docword_file_path = docword_file
-    collection_parser_config.vocab_file_path = vocab_file
+
+    data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ""
+    collection_parser_config.docword_file_path = data_folder + docword_file
+    collection_parser_config.vocab_file_path = data_folder + vocab_file
     collection_parser_config.target_folder = target_folder
     collection_parser_config.dictionary_file_name = dictionary_file
-    unique_tokens = library.ParseCollection(collection_parser_config);
+    unique_tokens = artm_library.ParseCollection(collection_parser_config);
     print " OK."
 else:
     print "Found " + str(batches_found) + " batches, using them."
-    unique_tokens = library.LoadDictionary(target_folder + "/" + dictionary_file);
+    unique_tokens = artm_library.LoadDictionary(target_folder + "/" + dictionary_file);
 
-master_config = messages_pb2.MasterComponentConfig()
+master_config = artm.messages_pb2.MasterComponentConfig()
 master_config.processors_count = processors_count
 master_config.cache_theta = 1
 master_config.disk_path = target_folder
 
-perplexity_config = messages_pb2.PerplexityScoreConfig();
+perplexity_config = artm.messages_pb2.PerplexityScoreConfig();
 score_config = master_config.score_config.add()
-score_config.config = messages_pb2.PerplexityScoreConfig().SerializeToString();
-score_config.type = ScoreConfig_Type_Perplexity;
+score_config.config = artm.messages_pb2.PerplexityScoreConfig().SerializeToString();
+score_config.type = artm.library.ScoreConfig_Type_Perplexity;
 perplexity_score_name = "perplexity_score"
 score_config.name = perplexity_score_name
 
-sparsity_theta_config = messages_pb2.SparsityThetaScoreConfig();
+sparsity_theta_config = artm.messages_pb2.SparsityThetaScoreConfig();
 score_config = master_config.score_config.add()
-score_config.config = messages_pb2.SparsityThetaScoreConfig().SerializeToString();
-score_config.type = ScoreConfig_Type_SparsityTheta;
+score_config.config = artm.messages_pb2.SparsityThetaScoreConfig().SerializeToString();
+score_config.type = artm.library.ScoreConfig_Type_SparsityTheta;
 sparsity_theta_score_name = "sparsity_theta_score"
 score_config.name = sparsity_theta_score_name
 
-sparsity_phi_config = messages_pb2.SparsityPhiScoreConfig();
+sparsity_phi_config = artm.messages_pb2.SparsityPhiScoreConfig();
 score_config = master_config.score_config.add()
-score_config.config = messages_pb2.SparsityPhiScoreConfig().SerializeToString();
-score_config.type = ScoreConfig_Type_SparsityPhi;
+score_config.config = artm.messages_pb2.SparsityPhiScoreConfig().SerializeToString();
+score_config.type = artm.library.ScoreConfig_Type_SparsityPhi;
 sparsity_phi_score_name = "sparsity_phi_score"
 score_config.name = sparsity_phi_score_name
 
-topic_kernel_config = messages_pb2.TopicKernelScoreConfig();
+topic_kernel_config = artm.messages_pb2.TopicKernelScoreConfig();
 score_config = master_config.score_config.add()
-score_config.config = messages_pb2.TopicKernelScoreConfig().SerializeToString();
-score_config.type = ScoreConfig_Type_TopicKernel;
+score_config.config = artm.messages_pb2.TopicKernelScoreConfig().SerializeToString();
+score_config.type = artm.library.ScoreConfig_Type_TopicKernel;
 topic_kernel_score_name = "topic_kernel_score"
 score_config.name = topic_kernel_score_name
 
-with library.CreateMasterComponent(master_config) as master_component:
-    model_config = messages_pb2.ModelConfig()
+with artm.library.MasterComponent(master_config) as master_component:
+    model_config = artm.messages_pb2.ModelConfig()
     model_config.topics_count = topics_count
     model_config.inner_iterations_count = inner_iterations_count
     model_config.score_name.append('perplexity_score')
 
     ################################################################################
-    regularizer_config_theta = messages_pb2.DirichletThetaConfig()
+    regularizer_config_theta = artm.messages_pb2.DirichletThetaConfig()
     regularizer_name_theta = 'regularizer_theta'
     regularizer_theta = master_component.CreateRegularizer(
       regularizer_name_theta,
-      RegularizerConfig_Type_DirichletTheta,
+      artm.library.RegularizerConfig_Type_DirichletTheta,
       regularizer_config_theta)
 
-    regularizer_config_decor = messages_pb2.DecorrelatorPhiConfig()
+    regularizer_config_decor = artm.messages_pb2.DecorrelatorPhiConfig()
 #     regularizer_decor_config.background_topics_count = background_topics_count
     regularizer_name_decor = 'regularizer_decor'
     regularizer_decor = master_component.CreateRegularizer(
       regularizer_name_decor,
-      RegularizerConfig_Type_DecorrelatorPhi,
+      artm.library.RegularizerConfig_Type_DecorrelatorPhi,
       regularizer_config_decor)
 
     ################################################################################
-    model_config = messages_pb2.ModelConfig()
+    model_config = artm.messages_pb2.ModelConfig()
     model_config.topics_count = topics_count
     model_config.inner_iterations_count = inner_iterations_count
 
@@ -123,7 +106,7 @@ with library.CreateMasterComponent(master_config) as master_component:
 #     model_config.regularizer_tau.append(200000)
 
     model = master_component.CreateModel(model_config)
-    initial_topic_model = messages_pb2.TopicModel();
+    initial_topic_model = artm.messages_pb2.TopicModel();
     initial_topic_model.topics_count = topics_count;
     initial_topic_model.name = model.name()
 

@@ -1,6 +1,7 @@
 # Copyright 2014, Additive Regularization of Topic Models.
 
 import messages_pb2
+import sys
 import os
 import ctypes
 import uuid
@@ -85,17 +86,21 @@ def HandleErrorCode(lib, artm_error_code):
 
 #################################################################################
 
-class ArtmLibrary:
-  def __init__(self, location):
-    self.lib_ = ctypes.CDLL(location)
+class Library:
+  def __init__(self, artm_shared_library = ""):
+    if not artm_shared_library:
+      if sys.platform.count('linux') == 1:
+        artm_shared_library = 'libartm.so'
+      else:
+        artm_shared_library = 'artm.dll'
+
+    self.lib_ = ctypes.CDLL(artm_shared_library)
 
   def CreateMasterComponent(self, config = messages_pb2.MasterComponentConfig()):
     return MasterComponent(config, self.lib_)
 
   def CreateNodeController(self, endpoint):
-    config = messages_pb2.NodeControllerConfig();
-    config.create_endpoint = endpoint;
-    return NodeController(config, self.lib_)
+    return NodeController(endpoint, self.lib_)
 
   def SaveBatch(self, batch, disk_path):
     batch_blob = batch.SerializeToString()
@@ -130,7 +135,10 @@ class ArtmLibrary:
 #################################################################################
 
 class MasterComponent:
-  def __init__(self, config, lib):
+  def __init__(self, config = messages_pb2.MasterComponentConfig(), lib = None):
+    if (lib is None):
+      lib = Library().lib_
+
     self.lib_ = lib
     master_config_blob = config.SerializeToString()
     master_config_blob_p = ctypes.create_string_buffer(master_config_blob)
@@ -309,7 +317,13 @@ class MasterComponent:
 #################################################################################
 
 class NodeController:
-  def __init__(self, config, lib):
+  def __init__(self, endpoint, lib = None):
+    config = messages_pb2.NodeControllerConfig();
+    config.create_endpoint = endpoint;
+
+    if (lib is None):
+      lib = Library().lib_
+
     self.lib_ = lib
     config_blob = config.SerializeToString()
     config_blob_p = ctypes.create_string_buffer(config_blob)

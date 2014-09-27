@@ -1,11 +1,10 @@
-import sys
-sys.path.append('src')
+import artm.messages_pb2
+import artm.library
+from artm.library import *
 
-from python_interface import *
-import glob, random
+import sys, glob, random
 
-os.environ['PATH'] = ';'.join([os.path.abspath(os.curdir) + '\\bin', os.environ['PATH']])
-library = ArtmLibrary(os.path.abspath(os.curdir) + '\\bin\\artm.dll')
+artm_library = Library()
 
 # Parse collection
 batches_found = len(glob.glob("kos/*.batch"))
@@ -13,21 +12,23 @@ if batches_found == 0:
   print "No batches found, parsing them from textual collection...",
   collection_parser_config = messages_pb2.CollectionParserConfig();
   collection_parser_config.format = CollectionParserConfig_Format_BagOfWordsUci
-  collection_parser_config.docword_file_path = 'docword.kos.txt'
-  collection_parser_config.vocab_file_path = 'vocab.kos.txt'
+  
+  data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ""
+  collection_parser_config.docword_file_path = data_folder + 'docword.kos.txt'
+  collection_parser_config.vocab_file_path = data_folder + 'vocab.kos.txt'
   collection_parser_config.target_folder = 'kos'
   collection_parser_config.dictionary_file_name = 'dictionary'
-  unique_tokens = library.ParseCollection(collection_parser_config);
+  unique_tokens = artm_library.ParseCollection(collection_parser_config);
   print " OK."
 else:
   print "Found " + str(batches_found) + " batches, using them."
-  unique_tokens = library.LoadDictionary('kos/dictionary');
+  unique_tokens = artm_library.LoadDictionary('kos/dictionary');
 
 # Create master component and infer topic model
 master_component_config = messages_pb2.MasterComponentConfig()
 master_component_config.disk_path = 'kos'
 master_component_config.processors_count = 2
-with library.CreateMasterComponent(master_component_config) as master:
+with artm.library.MasterComponent(master_component_config) as master:
 
   # Configure a perplexity score calculator
   master.CreateScore('perplexity_score',
