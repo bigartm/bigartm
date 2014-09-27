@@ -80,7 +80,7 @@ entry_2.value = 0.6
 artm_library = Library()
 with MasterComponent() as master_component:
   master_component.Reconfigure(master_config)
-  master_component.CreateScore('perplexity_score', ScoreConfig_Type_Perplexity, perplexity_config)
+  perplexity_score = master_component.CreateScore('perplexity_score', ScoreConfig_Type_Perplexity, perplexity_config)
   master_component.CreateStream(stream)
   master_component.RemoveStream(stream)
   model = master_component.CreateModel(model_config)
@@ -102,7 +102,7 @@ with MasterComponent() as master_component:
   model.Disable()
   topic_model = master_component.GetTopicModel(model)
   theta_matrix = master_component.GetThetaMatrix(model)
-  perplexity_score = master_component.GetScore(model, 'perplexity_score')
+  perplexity_score = perplexity_score.GetValue(model)
 
   model.Overwrite(topic_model);
 
