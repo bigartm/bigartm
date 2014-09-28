@@ -48,5 +48,8 @@ add_subdirectory(node_controller)
 
 add_dependencies(artm-static rpcz)
 
-install(FILES python_interface/python_interface.py python_interface/messages_pb2.py DESTINATION src)
-install(FILES ../datasets/docword.kos.txt ../datasets/vocab.kos.txt python_client/artm_example.py DESTINATION .)
+install(FILES python/artm/library.py python/artm/messages_pb2.py python/artm/__init__.py DESTINATION python/artm)
+install(FILES ../datasets/docword.kos.txt ../datasets/vocab.kos.txt DESTINATION python/examples)
+
+FILE(GLOB PYTHON_EXAMPLES python/examples/*.py)
+install(FILES ${PYTHON_EXAMPLES} DESTINATION python/examples)

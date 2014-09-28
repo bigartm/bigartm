@@ -60,4 +60,10 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
     master.InvokeIteration(1)        # Invoke one scan of the entire collection...
     master.WaitIdle();               # and wait until it completes.
     model.Synchronize();             # Synchronize topic model.
-    print "Iter#" + str(iter) + ": Perplexity = %.3f" % perplexity_score.GetValue(model).value
+    print "Iter#" + str(iter),
+    print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value,
+    print ", Phi sparsity = %.3f" % sparsity_phi_score.GetValue(model).value,
+    print ", Theta sparsity = %.3f" % sparsity_theta_score.GetValue(model).value
+
+  artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue(model))
+  artm.library.Visualizers.PrintThetaSnippetScore(theta_snippet_score.GetValue(model))
