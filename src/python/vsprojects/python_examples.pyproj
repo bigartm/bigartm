@@ -3,22 +3,20 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>b69c8560-ac5d-4d49-97f7-44fa0e68239c</ProjectGuid>
-    <ProjectHome>
-    </ProjectHome>
-    <StartupFile>../python_tests/tests.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <ProjectGuid>8cbe34f8-5d46-4832-b615-db183812f81f</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>..\examples\example01_synthetic_collection.py</StartupFile>
+    <SearchPath>..\..\python</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>python_tests</Name>
-    <RootNamespace>PythonApplication1</RootNamespace>
-    <IsWindowsApplication>False</IsWindowsApplication>
+    <Name>python_client</Name>
+    <RootNamespace>python_client</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments />
+    <CommandLineArguments>..\..\..\datasets\</CommandLineArguments>
     <InterpreterPath />
     <InterpreterArguments />
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,7 +27,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\python_tests\tests.py" />
+    <Compile Include="../examples/example01_synthetic_collection.py" />
+    <Compile Include="../examples/example02_parse_collection.py" />
+    <Compile Include="../examples/example03_concurrency.py" />
+    <Compile Include="../examples/example04_online_algorithm.py" />
+    <Compile Include="../examples/example05_train_and_test_stream.py" />
+    <Compile Include="../examples/example06_use_dictionaries.py" />
+    <Compile Include="../examples/example07_master_component_proxy.py" />
+    <Compile Include="../examples/example08_network_modus_operandi.py" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>

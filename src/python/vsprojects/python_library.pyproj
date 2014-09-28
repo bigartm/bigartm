@@ -3,21 +3,20 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>8cbe34f8-5d46-4832-b615-db183812f81f</ProjectGuid>
+    <ProjectGuid>2adc9dc7-a191-4800-867b-a25ee6cb8838</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>../python_client/python_client.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <StartupFile>
+    </StartupFile>
+    <SearchPath>..\python_interface</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>python_client</Name>
-    <RootNamespace>python_client</RootNamespace>
+    <Name>python_interface</Name>
+    <RootNamespace>python_interface</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <CommandLineArguments />
     <InterpreterPath />
     <InterpreterArguments />
-    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
-    <IsWindowsApplication>False</IsWindowsApplication>
+    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -27,8 +26,15 @@
     <DebugSymbols>true</DebugSymbols>
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <PtvsTargetsFile>$(VSToolsPath)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\python_client\python_client.py" />
+    <Compile Include="../artm/library.py" />
+    <Compile Include="../artm/messages_pb2.py" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <Import Condition="Exists($(PtvsTargetsFile))" Project="$(PtvsTargetsFile)" />
+  <Import Condition="!Exists($(PtvsTargetsFile))" Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>

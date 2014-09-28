@@ -5,15 +5,20 @@ Python Interface
 This document explains all classes in python interface of
 BigARTM library.
 
-.. py:module:: python_interface
+.. py:module:: artm.library
 
-ArtmLibrary
-===========
+Library
+=======
 
-.. py:class:: ArtmLibrary(location)
+.. py:class:: Library(artm_shared_library = "")
 
    Creates an ArtmLibrary object, wrapping the BigARTM shared library.
-   The *location* argument must provide a path to *artm* shared library (``artm.dll`` on Windows or ``artm.so`` on Linux).
+   
+   The *artm_shared_library* is an optional argument, which provides full file name of artm shared library
+   (a disk path plus ``artm.dll`` on Windows or ``artm.so`` on Linux).
+   When *artm_shared_library* is not specified the shared library will be searched in folders listed in
+   ``PATH`` system variable. You may also configure ``ARTM_SHARED_LIBRARY`` system variable
+   to provide full file name of artm shared library.
 
    .. py:method:: CreateMasterComponent(config = messages_pb2.MasterComponentConfig())
 
@@ -33,27 +38,47 @@ ArtmLibrary
 
    .. py:method:: ParseCollection(collection_parser_config)
 
-     Parses a text collection as defined by *collection_parser_config* (:ref:`CollectionParserConfig`).
-     Returns an instance of :ref:`DictionaryConfig` which carry all unique words in the collection and their frequencies.
+      Parses a text collection as defined by *collection_parser_config* (:ref:`CollectionParserConfig`).
+      Returns an instance of :ref:`DictionaryConfig` which carry all unique words in the collection and their frequencies.
 
-     For more information refer to :c:func:`ArtmRequestParseCollection` and :c:func:`ArtmRequestLoadDictionary`.
+      For more information refer to :c:func:`ArtmRequestParseCollection` and :c:func:`ArtmRequestLoadDictionary`.
 
    .. py:method:: LoadDictionary(full_filename)
 
-     Loads a :ref:`DictionaryConfig` from the file, defined by *full_filename* argument.
+      Loads a :ref:`DictionaryConfig` from the file, defined by *full_filename* argument.
 
-     For more information refer to :c:func:ArtmRequestLoadDictionary`.
+      For more information refer to :c:func:`ArtmRequestLoadDictionary`.
+
+   .. py:method:: ParseCollectionOrLoadDictionary(docword_file_path, vocab_file_path, target_folder)
+
+      A simple helper method that runs :py:meth:`ParseCollection` when *target_folder* is empty,
+      otherwise tried to use :py:meth:`LoadDictionary` to load the dictionary from *target_folder*.
+
+      The *docword_file_path* and *vocab_file_path* arguments should provide the disk location
+      of docword and vocab files of the collection to be parsed.
 
 
 MasterComponent
 ===============
 
-.. py:class:: MasterComponent(config, lib)
+.. py:class:: MasterComponent(config = messages_pb2.MasterComponentConfig(), lib = None, disk_path = None, proxy_endpoint = None)
 
-   Creates a master component with a specific :ref:`MasterComponentConfig`.
-   The *lib* argument must refer to :py:class:`ArtmLibrary` that will be used to operate the master component.
+   Creates a master component.
+   
+   *config* is an optional instance of :ref:`MasterComponentConfig`, providing an initial configuration of the master component.
+   
+   *lib* is an optional argument pointing to :py:class:`Library`.
+   When not specified, a default library will be used.
+   Check the constructor of :py:class:`Library` for more details.
 
-   The recommended way of creating a master component is through :py:meth:`ArtmLibrary.CreateMasterComponent` method.
+   *disk_path* is an optional value providing the disk folder with batches to process by this master component.
+   If *disk_path* is not specified, MasterComponent will go for in-memory mode.
+   In this mode you may add data with :py:meth:`AddBatch` method, and process as usual.
+   Note that changing *disk_path* is not supported (you must recreate a new instance MasterComponent to do so).
+
+   *proxy_endpoint* is an optional string value that provides connect endpoint of a remote node controller.
+   When specified, the master component will operate in a proxy mode (that is, it will redirect all commands
+   to the remote master component instantiated in the remote node controller).
 
    .. py:method:: Dispose()
 
@@ -63,11 +88,13 @@ MasterComponent
 
       Returns current :ref:`MasterComponentConfig` of the master component.
 
-   .. py:method:: CreateModel(config)
+   .. py:method:: CreateModel(config = messages_pb2.ModelConfig(), topics_count = None, inner_iterations_count = None)
 
       Creates and returns an instance of :py:class:`Model` class based on a given :ref:`ModelConfig`.
       Note that the model has to be further tuned by several iterative scans over the text collection.
       Use :py:meth:`InvokeIteration` to perform such scans.
+
+      Parameters *topics_count* and *inner_iterations_count* will override values, specified in *config*.
 
    .. py:method:: RemoveModel(model)
 
@@ -81,6 +108,26 @@ MasterComponent
       *type* can be any regularizer type (for example, the :py:data:`RegularizerConfig_Type_DirichletTheta`).
       *config* can be any regularizer config (for example, a :ref:`DirichletThetaConfig`).
 
+   .. py:method:: CreateDirichletThetaRegularizer(name = None, config = messages_pb2.DirichletThetaConfig())
+
+      Creates an instance of DirichletThetaRegularizer.
+
+   .. py:method:: CreateDirichletPhiRegularizer(name = None, config = messages_pb2.DirichletPhiConfig())
+
+      Creates an instance of DirichletPhiRegularizer.
+
+   .. py:method:: CreateSmoothSparseThetaRegularizer(name = None, config = messages_pb2.SmoothSparseThetaConfig())
+
+      Creates an instance of SmoothSparseThetaRegularizer.
+
+   .. py:method:: CreateSmoothSparsePhiRegularizer(name = None, config = messages_pb2.SmoothSparsePhiConfig())
+
+      Creates an instance of SmoothSparsePhiRegularizer.
+
+   .. py:method:: CreateDecorrelatorPhiRegularizer(name = None, config = messages_pb2.DecorrelatorPhiConfig())
+
+      Creates an instance of DecorrelatorPhiRegularizer.
+
    .. py:method:: RemoveRegularizer(regularizer)
 
       Removes an instance of :py:class:`Regularizer` from the master component.
@@ -92,6 +139,34 @@ MasterComponent
       *name* can be any unique identifier, that you can further use to identify the score (for example, in :attr:`ModelConfig.score_name`).
       *type* can be any score type (for example, the :py:data:`ScoreConfig_Type_Perplexity`).
       *config* can be any score config (for example, a :ref:`PerplexityScoreConfig`).
+
+   .. py:method:: CreatePerplexityScore(self, name = None, config = messages_pb2.PerplexityScoreConfig(), stream_name = None)
+
+      Creates an instance of PerplexityScore.
+
+   .. py:method:: CreateSparsityThetaScore(self, name = None, config = messages_pb2.SparsityThetaScoreConfig())
+
+      Creates an instance of SparsityThetaScore.
+
+   .. py:method:: CreateSparsityPhiScore(self, name = None, config = messages_pb2.SparsityPhiScoreConfig())
+
+      Creates an instance of SparsityPhiScore.
+
+   .. py:method:: CreateItemsProcessedScore(self, name = None, config = messages_pb2.ItemsProcessedScoreConfig())
+
+      Creates an instance of ItemsProcessedScore.
+
+   .. py:method:: CreateTopTokensScore(self, name = None, config = messages_pb2.TopTokensScoreConfig(), num_tokens = None)
+
+      Creates an instance of TopTokensScore.
+
+   .. py:method:: CreateThetaSnippetScore(self, name = None, config = messages_pb2.ThetaSnippetScoreConfig())
+
+      Creates an instance of ThetaSnippetScore.
+
+   .. py:method:: CreateTopicKernelScore(self, name = None, config = messages_pb2.TopicKernelScoreConfig())
+
+      Creates an instance of TopicKernelScore.
 
    .. py:method:: RemoveScore(name)
 
@@ -106,7 +181,7 @@ MasterComponent
       Removes an instance of :py:class:`Dictionary` from the master component.
       After this operation the *dictionary* object became invalid and must not be used.
 
-   .. py:method:: Reconfigure(config)
+   .. py:method:: Reconfigure(config = None)
 
       Updates the configuration of the master component with new :ref:`MasterComponentConfig` value, provided by *config* parameter.
       Remember that some changes of the configuration are not allowed (for example, the :attr:`MasterComponentConfig.disk_path` must not change).
@@ -154,23 +229,16 @@ MasterComponent
       This operation is not supported when :attr:`MasterComponentConfig.modus_operandi` is *Network*.
       This operation require all ThetaMatrix to fit into the CPU memory, and for this reason it is turned off by default.
 
-   .. py:method:: GetScore(model, score_name)
-
-      Retrieves a given score for a given model.
-      The *model* argument should be an instance of :py:class:`Model` class.
-      The *score_name* argument must be a string identifier of the desired score.
-      This method returns a specific score data object (for example, a :ref:`PerplexityScore`).
-
-
 NodeController
 ==============
 
-.. py:class:: NodeController(config, lib)
+.. py:class:: NodeController(endpoint, lib = None)
 
-   Creates a node controller with a specific :ref:`NodeControllerConfig`.
-   The *lib* argument must refer to :py:class:`ArtmLibrary` that will be used to operate the node controller.
+   Creates a node controller on a specific endpoint. See :ref:`NodeControllerConfig` for more details.
 
-   The recommended way of creating a node controller is through :py:meth:`ArtmLibrary.CreateNodeController` method.
+   *lib* is an optional argument pointing to :py:class:`Library`.
+   When not specified, a default library will be used.
+   Check the constructor of :py:class:`Library` for more details.
 
    .. py:method:: Dispose()
 
@@ -188,18 +256,33 @@ Model
 
       Returns the string name of the model.
 
-   .. py:method:: Reconfigure(config)
+   .. py:method:: Reconfigure(config = None)
 
       Updates the configuration of the topic model with new :ref:`ModelConfig` value, provided by *config* parameter.
       Remember that some changes of the configuration are not allowed (for example, the :attr:`ModelConfig.topics_count` must not change).
       Such configuration parameters must be provided in the :py:meth:`MasterComponent.CreateModel` method.
 
-   .. py:method:: Synchronize(decay_weight)
+   .. py:method:: topics_count()
+
+      Returns the number of topics in the model.
+
+   .. py:method:: config()
+
+      Returns current :ref:`ModelConfig` of the topic model.
+
+   .. py:method:: Synchronize(decay_weight = 0.0)
 
       This operation updates the Phi matrix of the topic model with all model increments, collected since last call to :py:meth:`Synchronize` method.
       The weights in the Phi matrix are decreased according to *decay_weight* (refer to :attr:`SynchronizeModelArgs.decay_weight` for more details).
 
       Remember to call :py:meth:`Synchronize` operation every time after call :py:meth:`MasterComponent.WaitIdle`.
+
+   .. py:method:: Initialize(tokens, random = random.Random())
+
+      Generates a random initial approximation for the Phi matrix of the topic model.
+
+      *tokens* must be an instance of :ref:`DictionaryConfig` class.
+      Typically you may use the dictinoary returned by :py:meth:`Library.LoadDictinoary` method.
 
    .. py:method:: Overwrite(topic_model)
 
@@ -208,6 +291,22 @@ Model
    .. py:method:: Enable()
 
       Sets :attr:`ModelConfig.enabled` to *True* for the current topic model. This means that the model will be updated on :py:meth:`MasterComponent.InvokeIteration`.
+
+   .. py:method:: EnableScore(score)
+
+      By default model does calculate any scores even if they are created with
+      :py:meth:`MasterComponent.CreateScore`.
+      Method *EnableScore* tells to the model that *score* should be applied to the model.
+      Parameter *tau* defines the regularization coefficient of the regularizer.
+      *score* must be an instance of :py:class:`Score` class.
+
+   .. py:method:: EnableRegularizer(regularizer, tau)
+
+      By default model does not use any regularizers even if they are created with
+      :py:meth:`MasterComponent.CreateRegularizer`.
+      Method *EnableRegularizer* tells to the model that *regularizer* should be applied to the model.
+      Parameter *tau* defines the regularization coefficient of the regularizer.
+      *regularizer* must be an instance of :py:class:`Regularizer` class.
 
    .. py:method:: Disable()
 
@@ -220,7 +319,9 @@ Regularizer
 .. py:class:: Regularizer
 
    This constructor must not be used explicitly.
-   The only correct way of creating a Regularizer is through :py:meth:`MasterComponent.CreateRegularizer` method.
+   The only correct way of creating a Regularizer is through :py:meth:`MasterComponent.CreateRegularizer` method
+   (or similar methods in :py:class:`MasterComponent` class, dedicated to a particular type of the regularizer).
+   
 
    .. py:method:: name()
 
@@ -231,6 +332,23 @@ Regularizer
       Updates the configuration of the regularizer with new regularizer configuration, provided by *config* parameter.
       The *config* object can be, for example, of :ref:`DirichletThetaConfig` type (or similar).
       The type must match the current type of the regularizer.
+
+Score
+=====
+
+.. py:class:: Score
+
+   This constructor must not be used explicitly.
+   The only correct way of creating a Score is through :py:meth:`MasterComponent.CreateScore` method
+   (or similar methods in :py:class:`MasterComponent` class, dedicated to a particular type of the score).
+
+   .. py:method:: name()
+
+      Returns the string name of the score.
+
+   .. py:method:: GetValue(model)
+
+      Retrieves the score for a specific model.
 
 Dictionary
 ==========
@@ -247,6 +365,21 @@ Dictionary
    .. py:method:: Reconfigure(config)
 
       Updates the configuration of the dictionary with new :ref:`DictionaryConfig` value, provided by *config* parameter.
+
+Visualizers
+===========
+
+.. py:class:: Visualizers
+
+   This class provides a set of static method to visualize some scores.
+
+   .. py:method:: PrintTopTokensScore(top_tokens_score)
+
+   Prints the TopTokensScore.
+
+   .. py:method:: PrintThetaSnippetScore(theta_snippet_score)
+
+   Prints the ThetaSnippetScore.
 
 Exceptions
 ==========
@@ -334,3 +467,6 @@ Constants
 
 .. py:data:: CollectionParserConfig_Format_BagOfWordsUci
 
+.. py:data:: MasterComponentConfig_ModusOperandi_Local
+
+.. py:data:: MasterComponentConfig_ModusOperandi_Network

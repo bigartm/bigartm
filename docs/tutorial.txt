@@ -18,6 +18,15 @@ Installation on Windows
   Choose carefully between win32 and x64 version.
   The version of BigARTM package must match your version Python installed on your machine.
 
+* Add BigARTM to your ``PATH`` and ``PYTHONPATH`` system variables as follows:
+
+  .. code-block:: bash
+  
+     set PATH=%PATH%;C:\BigARTM\bin
+     set PYTHONPATH=%PYTHONPATH%;C:\BigARTM\Python
+     
+  Remebmer to change ``C:\BigARTM`` if you unpacked BigARTM to a different location.
+
 * Setup *Google Protocol Buffers* library, included in the BigARTM release package.
   To do so, follow the instructions in `protobuf/python/README
   <https://raw.githubusercontent.com/bigartm/bigartm/master/3rdparty/protobuf/python/README.txt>`_.
@@ -32,10 +41,45 @@ The BigARTM package will contain the following files:
                        * The ``bin/node_controller.exe`` is an executable that hosts BigARTM nodes
                          in a distributed setting.
 
+                       This folder must be added to ``PATH`` system variable.
+
   ``protobuf/``        A minimalistic version of `Google Protocol Buffers
                        <https://code.google.com/p/protobuf/>`_
                        library, required to run BigARTM from Python.
                        To setup this package follow the instructions in ``protobuf/python/README`` file.
+
+  ``python/artm/``     Python programming interface to BigARTM library.
+
+                       * ``library.py`` implements all classes of BigARTM python interface.
+
+                       * ``messages_pb2.py`` contains all protobuf messages that can be transfered in and out BigARTM
+                         core library. Most common features are exposed with their own API methods,
+                         so normally you do not use python protobuf messages to operate BigARTM.
+
+                       This folder must be added to ``PYTHONPATH`` system variable.
+
+  ``python/examples/`` Python examples of how to use BigARTM:
+
+                       * example01_synthetic_collection.py
+
+                       * example02_parse_collection.py
+
+                       * example03_concurrency.py
+
+                       * example04_online_algorithm.py
+
+                       * example05_train_and_test_stream.py
+
+                       * example06_use_dictionaries.py
+
+                       * example07_master_component_proxy.py
+
+                       * example08_network_modus_operandi.py
+
+                       Files ``docword.kos.txt`` and ``vocab.kos.txt`` represent a simple
+                       collection of text files in Bag-Of-Words format.
+                       The files are taken from `UCI Machine Learning Repository
+                       <https://archive.ics.uci.edu/ml/datasets/Bag+of+Words>`_.
 
   ``src/``             Several programming interfaces to BigARTM library.
 
@@ -45,18 +89,8 @@ The BigARTM package will contain the following files:
                        * ``cpp_interface.h``, ``cpp_interface.cc``, ``messages.pb.h`` and ``messages.pb.cc``
                          provide C++ interface of BigARTM (not documented).
 
-                       * ``python_interface.py`` and ``messages_pb2.py`` provide
-                         :doc:`Python interface of BigARTM </ref/python_interface>`.
-
                        * ``messages.proto`` describe all protocol buffer messages
                          that appear in the API of BigARTM (documented :doc:`here </ref/messages>`).
-
-  ``artm_example.py``  A script to demonstrate typical usage of BigARTM in Python.
-
-  ``*.kos.txt``        Files ``docword.kos.txt`` and ``vocab.kos.txt`` represent a simple
-                       collection of text files in Bag-Of-Words format.
-                       The files are taken from `UCI Machine Learning Repository
-                       <https://archive.ics.uci.edu/ml/datasets/Bag+of+Words>`_.
 
   ``LICENSE``          License file of BigARTM.
   ==================== ==============================================================================================
@@ -77,7 +111,7 @@ script and the latest `continuous integration build
 First steps
 -----------
 
-Run `artm_example.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python_client/artm_example.py>`_ 
+Run `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example02_parse_collection.py>`_ 
 script from BigARTM distributive. It
 will load a text collection from disk and use iterative scans
 over the collection to infer some topic models.
@@ -86,7 +120,7 @@ documents. Running the script produces the following output:
 
 .. code-block:: bash
 
-   >python artm_example.py
+   >python example02_parse_collection.py
 
     No batches found, parsing them from textual collection...  OK.
     Iter#0 : Perplexity = 6921.336 , Phi sparsity = 0.046  , Theta sparsity = 0.050
@@ -120,64 +154,58 @@ documents. Running the script produces the following output:
     Item#8:  0.759  0.000   0.229   0.013   0.000   0.000   0.000   0.000   0.000
     Item#9:  0.258  0.000   0.070   0.453   0.000   0.000   0.218   0.000   0.000
 
-ArtmLibrary
------------
-
-The following code is typical for every BigARTM application.
-
-.. code-block:: python
-
-    from python_interface import *
-    os.environ['PATH'] = ';'.join([os.path.abspath(os.curdir) + '\\BigARTM', os.environ['PATH']])
-    library = ArtmLibrary(os.path.abspath(os.curdir) + '\\BigARTM\\artm.dll')
-
-This code creates ArtmLibrary object, which wraps the artm shared library
-(``artm.dll`` or ``artm.so`` depending on your platform).
-When creating an ArtmLibrary object you must point it to the disk location of artm shared library,
-and also add that location to ``PATH`` system variable.
-
 Parse collection
 ----------------
 
-The following part of the script parses ``docword.kos.txt`` and ``vocab.kos.txt`` files,
+The following python script parses ``docword.kos.txt`` and ``vocab.kos.txt`` files
 and converts them into a set of binary-serialized :ref:`batches <Batch>`, stored on disk.
+In addition the script creates a :ref:`dictionary <DictionaryConfig>` with all unique tokens 
+in the collection and stored it on disk.
+The script also detects if it had been already executed, and in this case it just loads the
+dictionary and save it in *unique_tokens* variable.
+
+The same logic is implemented in a helper-method 
+:py:meth:`ParseCollectionOrLoadDictionary <artm.library.Library.ParseCollectionOrLoadDictionary>`
+method.
 
 .. code-block:: python
 
-    # Parse collection
-    batches_found = len(glob.glob("kos/*.batch"))
+    data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
+    target_folder = 'kos'
+    collection_name = 'kos'
+
+    batches_found = len(glob.glob(target_folder + "/*.batch"))
     if batches_found == 0:
       print "No batches found, parsing them from textual collection...",
-      collection_parser_config = messages_pb2.CollectionParserConfig()
-      collection_parser_config.format = CollectionParserConfig_Format_BagOfWordsUci
-      collection_parser_config.docword_file_path = 'docword.kos.txt'
-      collection_parser_config.vocab_file_path = 'vocab.kos.txt'
-      collection_parser_config.target_folder = 'kos'
+      collection_parser_config = artm.messages_pb2.CollectionParserConfig();
+      collection_parser_config.format = artm.library.CollectionParserConfig_Format_BagOfWordsUci
+
+      collection_parser_config.docword_file_path = data_folder + 'docword.'+ collection_name + '.txt'
+      collection_parser_config.vocab_file_path = data_folder + 'vocab.'+ collection_name + '.txt'
+      collection_parser_config.target_folder = target_folder
       collection_parser_config.dictionary_file_name = 'dictionary'
-      unique_tokens = library.ParseCollection(collection_parser_config)
+      unique_tokens = artm.library.Library().ParseCollection(collection_parser_config);
       print " OK."
     else:
       print "Found " + str(batches_found) + " batches, using them."
-      unique_tokens = library.LoadDictionary('kos/dictionary')
-
-For further details refer to :c:func:`ArtmRequestParseCollection`
-and :c:func:`ArtmRequestLoadDictionary` methods.
+      unique_tokens  = artm.library.Library().LoadDictionary(target_folder + '/dictionary');
 
 You may also download larger collections from the following links:
 
-========= ======= ======= ======= ================================================================================ ======================================================================================================= =======================================================================================================
-Task      Source  #Words  #Items  Precompiled batches                                                              docword file                                                                                            vocab file
-========= ======= ======= ======= ================================================================================ ======================================================================================================= =======================================================================================================
-kos       `UCI`_  6906    3430    `kos_1k (700 KB)     <https://s3-eu-west-1.amazonaws.com/artm/kos_1k.7z>`_       `docword.kos.txt.gz (1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz>`_               `vocab.kos.txt (54 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt>`_      
-
-nips      `UCI`_  12419   1500    `nips_200 (1.5 MB)   <https://s3-eu-west-1.amazonaws.com/artm/nips_200.7z>`_     `docword.nips.txt.gz (2.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nips.txt.gz>`_           `vocab.nips.txt (98 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nips.txt>`_
-
-enron     `UCI`_  28102   39861   `enron_1k (7.1 MB)   <https://s3-eu-west-1.amazonaws.com/artm/enron_1k.7z>`_     `docword.enron.txt.gz (11.7 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.enron.txt.gz>`_        `vocab.enron.txt (230 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.enron.txt>`_
-
-nytimes   `UCI`_  102660  300000  `nytimes_1k (131 MB) <https://s3-eu-west-1.amazonaws.com/artm/nytimes_1k.7z>`_   `docword.nytimes.txt.gz (223 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nytimes.txt.gz>`_     `vocab.nytimes.txt (1.2 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nytimes.txt>`_
-
-pubmed    `UCI`_  141043  8200000 `pubmed_10k (595 MB) <https://s3-eu-west-1.amazonaws.com/artm/pubmed_10k.7z>`_   `docword.pubmed.txt.gz (1.7 GB) <https://s3-eu-west-1.amazonaws.com/artm/docword.pubmed.txt.gz>`_       `vocab.pubmed.txt (1.3 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.pubmed.txt>`_
-========= ======= ======= ======= ================================================================================ ======================================================================================================= =======================================================================================================
+========= ======= ======= ======= ==================================================================================== ======================================================================================================= =======================================================================================================
+Task      Source  #Words  #Items  Precompiled batches and dictionary                                                            docword file                                                                                            vocab file
+========= ======= ======= ======= ==================================================================================== ======================================================================================================= =======================================================================================================
+kos       `UCI`_  6906    3430    `kos_1k (700 KB)     <https://s3-eu-west-1.amazonaws.com/artm/kos_1k.7z>`_           `docword.kos.txt.gz (1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz>`_               `vocab.kos.txt (54 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt>`_      
+                                  `kos_dictionary      <https://s3-eu-west-1.amazonaws.com/artm/kos_dictionary>`_
+nips      `UCI`_  12419   1500    `nips_200 (1.5 MB)   <https://s3-eu-west-1.amazonaws.com/artm/nips_200.7z>`_         `docword.nips.txt.gz (2.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nips.txt.gz>`_           `vocab.nips.txt (98 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nips.txt>`_
+                                  `nips_dictionary     <https://s3-eu-west-1.amazonaws.com/artm/nips_dictionary>`_
+enron     `UCI`_  28102   39861   `enron_1k (7.1 MB)   <https://s3-eu-west-1.amazonaws.com/artm/enron_1k.7z>`_         `docword.enron.txt.gz (11.7 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.enron.txt.gz>`_        `vocab.enron.txt (230 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.enron.txt>`_
+                                  `enron_dictionary    <https://s3-eu-west-1.amazonaws.com/artm/enron_dictionary>`_
+nytimes   `UCI`_  102660  300000  `nytimes_1k (131 MB) <https://s3-eu-west-1.amazonaws.com/artm/nytimes_1k.7z>`_       `docword.nytimes.txt.gz (223 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nytimes.txt.gz>`_     `vocab.nytimes.txt (1.2 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nytimes.txt>`_
+                                  `nytimes_dictionary  <https://s3-eu-west-1.amazonaws.com/artm/nytimes_dictionary>`_
+pubmed    `UCI`_  141043  8200000 `pubmed_10k (595 MB) <https://s3-eu-west-1.amazonaws.com/artm/pubmed_10k.7z>`_       `docword.pubmed.txt.gz (1.7 GB) <https://s3-eu-west-1.amazonaws.com/artm/docword.pubmed.txt.gz>`_       `vocab.pubmed.txt (1.3 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.pubmed.txt>`_
+                                  `pubmed_dictionary   <https://s3-eu-west-1.amazonaws.com/artm/pubmed_dictionary>`_
+========= ======= ======= ======= ==================================================================================== ======================================================================================================= =======================================================================================================
 
 .. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words
 
@@ -185,85 +213,33 @@ pubmed    `UCI`_  141043  8200000 `pubmed_10k (595 MB) <https://s3-eu-west-1.ama
 MasterComponent
 ---------------
 
-In BigARTM only a few simple operations are executed directly on ArtmLibrary object.
-More complex operations require a master component.
+Master component is you main entry-point to all BigARTM functionality.
+The following script creates master component and configures it with
+several regularizers and score calculators.
 
 .. code-block:: python
 
-    # Create a master component
-    master_component_config = messages_pb2.MasterComponentConfig()
-    master_component_config.disk_path = 'kos'
-    master_component_config.processors_count = 2
-    with library.CreateMasterComponent(master_component_config) as master:
-      # Use 'master'
+    with artm.library.MasterComponent(disk_path = target_folder) as master:
+      perplexity_score     = master.CreatePerplexityScore()
+      sparsity_theta_score = master.CreateSparsityThetaScore()
+      sparsity_phi_score   = master.CreateSparsityPhiScore()
+      top_tokens_score     = master.CreateTopTokensScore()
+      theta_snippet_score  = master.CreateThetaSnippetScore()
+
+      dirichlet_theta_reg  = master.CreateDirichletThetaRegularizer()
+      dirichlet_phi_reg    = master.CreateDirichletPhiRegularizer()
+      decorrelator_reg     = master.CreateDecorrelatorPhiRegularizer()
 
 Master component must be configured with a disk path, which should contain a set of batches
 produced in the previous step of this tutorial.
 
-Master component can utilize several concurrent workers to speedup the processing.
-The number of workers can be specified in :attr:`MasterComponentConfig.processors_count`.
-
-For further details about master component refer to :ref:`MasterComponentConfig`.
-
-
-Configure Score Calculators
----------------------------
-
 Score calculators allows you to retrieve important quality measures for your topic model.
 Perplexity, sparsity of theta and phi matrices, lists of tokens with highest probability
 within each topic are all examples of such scores.
+By default BigARTM does not calculate any scores, so you have to create in master component.
+The same is true for regularizers, that allow you to customize your topic model.
 
-By default BigARTM does not calculate any scores.
-You must deploy score calculators yourself because
-most of them have some required parameters.
-
-The following code demonstrates how to deploy score calculators in master component.
-Each score being deployed must receive a unique string name that will be further
-used to identify this score.
-
-.. code-block:: python
-
-      # Configure a perplexity score calculator
-      master.CreateScore(
-        'perplexity_score', ScoreConfig_Type_Perplexity, messages_pb2.PerplexityScoreConfig())
-
-      # Configure a theta sparsity score calculator
-      master.CreateScore(
-        'theta_sparsity_score', ScoreConfig_Type_SparsityTheta, messages_pb2.SparsityThetaScoreConfig())
-
-      # Configure a phi sparsity score calculator
-      master.CreateScore(
-        'phi_sparsity_score', ScoreConfig_Type_SparsityPhi, messages_pb2.SparsityPhiScoreConfig())
-
-      # Configure a top tokens score calculator
-      master.CreateScore(
-        'top_tokens_score', ScoreConfig_Type_TopTokens, messages_pb2.TopTokensScoreConfig())
-
-      # Configure a theta matrix snippet score calculator
-      theta_snippet_config = messages_pb2.ThetaSnippetScoreConfig()
-      for i in range(1, 11): theta_snippet_config.item_id.append(i)
-      master.CreateScore(
-        'theta_snippet_score', ScoreConfig_Type_ThetaSnippet, theta_snippet_config)
-
-
-Configure Regularizers
-----------------------
-
-Regularizers allows you to customize your topic model.
-By default BigARTM does not apply any regularizers to your topic model,
-all of them must be deployed to the master component.
-
-.. code-block:: python
-
-      # Configure basic regularizers
-      master.CreateRegularizer(
-        'reg_theta', RegularizerConfig_Type_DirichletTheta, messages_pb2.DirichletThetaConfig())
-
-      master.CreateRegularizer(
-        'reg_phi', RegularizerConfig_Type_DirichletPhi, messages_pb2.DirichletPhiConfig())
-
-      master.CreateRegularizer(
-        'reg_decorrelator', RegularizerConfig_Type_DecorrelatorPhi, messages_pb2.DecorrelatorPhiConfig())
+For further details about master component refer to :ref:`MasterComponentConfig`.
 
 
 Configure Topic Model
@@ -275,44 +251,22 @@ For further details about model configuration  refer to :ref:`ModelConfig`.
 
 .. code-block:: python
 
-      model_config = messages_pb2.ModelConfig()
-      model_config.topics_count = 9
-      model_config.inner_iterations_count = 10
-      model_config.score_name.append("perplexity_score")
-      model_config.score_name.append("phi_sparsity_score")
-      model_config.score_name.append("theta_sparsity_score")
-      model_config.score_name.append("top_tokens_score")
-      model_config.score_name.append("theta_snippet_score")
-      model_config.regularizer_name.append('reg_theta')
-      model_config.regularizer_tau.append(-0.1)
-      model_config.regularizer_name.append('reg_phi')
-      model_config.regularizer_tau.append(-0.2)
-      model_config.regularizer_name.append('reg_decorrelator')
-      model_config.regularizer_tau.append(1000000)
-      model = master.CreateModel(model_config)
+    model = master.CreateModel(topics_count = 10, inner_iterations_count = 10)
+    model.EnableScore(perplexity_score)
+    model.EnableScore(sparsity_phi_score)
+    model.EnableScore(sparsity_theta_score)
+    model.EnableScore(top_tokens_score)
+    model.EnableScore(theta_snippet_score)
+    model.EnableRegularizer(dirichlet_theta_reg, -0.1)
+    model.EnableRegularizer(dirichlet_phi_reg, -0.2)
+    model.EnableRegularizer(decorrelator_reg, 1000000)
+    model.Initialize(unique_tokens)    # Setup initial approximation for Phi matrix.
 
-
-Setup initial approximation
----------------------------
-
-It is a good idea to provide the initial approximation of Phi matrix.
+Note that on the last step we configured the initial approximation of Phi matrix.
 This step is optional --- BigARTM is able to collect all tokens dynamically
 during first scan of the collection. However, a deterministic initial approximation
 helps to reproduce the same results from run to run.
 
-.. code-block:: python
-
-      random.seed(123)
-      initial_topic_model = messages_pb2.TopicModel();
-      initial_topic_model.topics_count = model_config.topics_count;
-      initial_topic_model.name = model.name()
-      for i in range(0, len(unique_tokens.entry)):
-        token = unique_tokens.entry[i].key_token
-        initial_topic_model.token.append(token);
-        weights = initial_topic_model.token_weights.add();
-        for topic_index in range(0, model_config.topics_count):
-          weights.value.append(random.random())
-      model.Overwrite(initial_topic_model)
 
 Invoke Iterations
 -----------------
@@ -323,17 +277,14 @@ It is good idea to output some information after every step.
 
 .. code-block:: python
 
-      for iter in range(0, 8):
-        master.InvokeIteration(1)        # Invoke one scan of the entire collection...
-        master.WaitIdle();               # and wait until it completes.
-        model.Synchronize(0.0);          # Synchronize topic model with 0.0 decay
-        perplexity_score = master.GetScore(model, 'perplexity_score')
-        sparsity_phi_score = master.GetScore(model, 'phi_sparsity_score')
-        sparsity_theta_score = master.GetScore(model, 'theta_sparsity_score')
-        print "Iter#" + str(iter),
-        print ": Perplexity = %.3f" % perplexity_score.value,
-        print ", Phi sparsity = %.3f " % sparsity_phi_score.value,
-        print ", Theta sparsity = %.3f" % sparsity_theta_score.value
+    for iter in range(0, 8):
+      master.InvokeIteration(1)        # Invoke one scan of the entire collection...
+      master.WaitIdle();               # and wait until it completes.
+      model.Synchronize();             # Synchronize topic model.
+      print "Iter#" + str(iter),
+      print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value,
+      print ", Phi sparsity = %.3f" % sparsity_phi_score.GetValue(model).value,
+      print ", Theta sparsity = %.3f" % sparsity_theta_score.GetValue(model).value
 
 If your collection is very large you may want to utilize online algorithm
 that updates topic model several times during each iteration,
@@ -348,6 +299,7 @@ as it is demonstrated by the following script:
       if (done):                     # append all increments and invoke all regularizers.
 	    break;
 
+
 Retrieve and visualize scores
 -----------------------------
 
@@ -355,18 +307,5 @@ Finally, you are interested in retrieving and visualizing all collected scores.
 
 .. code-block:: python
 
-      print '\nTop tokens per topic:'
-      top_tokens_score = master.GetScore(model, 'top_tokens_score')
-      for i in range(0, len(top_tokens_score.values)):
-        print "Topic#" + str(i+1) + ": ",
-        for value in top_tokens_score.values[i].value:
-          print value + " ",
-        print "\n",
-
-      print '\nSnippet of theta matrix:'
-      theta_snippet_score = master.GetScore(model, 'theta_snippet_score')
-      for i in range(0, len(theta_snippet_score.values)):
-        print "Item#" + str(theta_snippet_score.item_id[i]) + ": ",
-        for value in theta_snippet_score.values[i].value:
-          print "%.3f\t" % value,
-        print "\n",
+    artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue(model))
+    artm.library.Visualizers.PrintThetaSnippetScore(theta_snippet_score.GetValue(model))

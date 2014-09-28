@@ -1,9 +1,12 @@
 # Copyright 2014, Additive Regularization of Topic Models.
 
 import messages_pb2
+import sys
 import os
 import ctypes
 import uuid
+import random
+import glob
 from ctypes import *
 
 #################################################################################
@@ -43,6 +46,8 @@ ScoreData_Type_TopicKernel = 6
 PerplexityScoreConfig_Type_UnigramDocumentModel = 0
 PerplexityScoreConfig_Type_UnigramCollectionModel = 1
 CollectionParserConfig_Format_BagOfWordsUci = 0
+MasterComponentConfig_ModusOperandi_Local = 0
+MasterComponentConfig_ModusOperandi_Network = 1
 
 #################################################################################
 
@@ -62,7 +67,7 @@ def GetLastErrorMessage(lib):
 
 
 def HandleErrorCode(lib, artm_error_code):
-  if (artm_error_code == ARTM_SUCCESS) | (artm_error_code >= 0):
+  if (artm_error_code == ARTM_SUCCESS) or (artm_error_code == ARTM_STILL_WORKING) or (artm_error_code >= 0):
     return artm_error_code
   elif artm_error_code == ARTM_INTERNAL_ERROR:
     raise InternalError(GetLastErrorMessage(lib))
@@ -85,17 +90,28 @@ def HandleErrorCode(lib, artm_error_code):
 
 #################################################################################
 
-class ArtmLibrary:
-  def __init__(self, location):
-    self.lib_ = ctypes.CDLL(location)
+class Library:
+  def __init__(self, artm_shared_library = ""):
+    if not artm_shared_library:
+      if sys.platform.count('linux') == 1:
+        artm_shared_library = 'libartm.so'
+      else:
+        artm_shared_library = 'artm.dll'
+
+    
+    try:
+      self.lib_ = ctypes.CDLL(artm_shared_library)
+      return
+    except OSError as e:
+      print str(e) + ", fall back to ARTM_SHARED_LIBRARY environment variable"
+
+    self.lib_ = ctypes.CDLL(os.environ['ARTM_SHARED_LIBRARY'])
 
   def CreateMasterComponent(self, config = messages_pb2.MasterComponentConfig()):
     return MasterComponent(config, self.lib_)
 
   def CreateNodeController(self, endpoint):
-    config = messages_pb2.NodeControllerConfig();
-    config.create_endpoint = endpoint;
-    return NodeController(config, self.lib_)
+    return NodeController(endpoint, self.lib_)
 
   def SaveBatch(self, batch, disk_path):
     batch_blob = batch.SerializeToString()
@@ -127,10 +143,34 @@ class ArtmLibrary:
     dictionary.ParseFromString(dictionary_blob)
     return dictionary
 
+  def ParseCollectionOrLoadDictionary(self, docword_file_path, vocab_file_path, target_folder):
+    batches_found = len(glob.glob(target_folder + "/*.batch"))
+    if batches_found == 0:
+      print "No batches found, parsing them from textual collection...",
+      collection_parser_config = messages_pb2.CollectionParserConfig();
+      collection_parser_config.format = CollectionParserConfig_Format_BagOfWordsUci
+
+      collection_parser_config.docword_file_path = docword_file_path
+      collection_parser_config.vocab_file_path = vocab_file_path
+      collection_parser_config.target_folder = target_folder
+      collection_parser_config.dictionary_file_name = 'dictionary'
+      unique_tokens = self.ParseCollection(collection_parser_config);
+      print " OK."
+      return unique_tokens
+    else:
+      print "Found " + str(batches_found) + " batches, using them."
+      return self.LoadDictionary(target_folder + '/dictionary');
+
 #################################################################################
 
 class MasterComponent:
-  def __init__(self, config, lib):
+  def __init__(self, config = messages_pb2.MasterComponentConfig(), lib = None, disk_path = None, proxy_endpoint = None):
+    if (lib is None):
+      lib = Library().lib_
+
+    if (disk_path is not None):
+      config.disk_path = disk_path
+
     self.lib_ = lib
     master_config_blob = config.SerializeToString()
     master_config_blob_p = ctypes.create_string_buffer(master_config_blob)
@@ -160,11 +200,14 @@ class MasterComponent:
     self.id_ = -1
 
   def config(self):
-    master_config = messages_pb2.MasterComponentConfig()
-    master_config.CopyFrom(self.config_)
-    return master_config
+    return self.config_
 
-  def CreateModel(self, config):
+  def CreateModel(self, config = messages_pb2.ModelConfig(), 
+                  topics_count = None, inner_iterations_count = None):
+    if (topics_count is not None):
+      config.topics_count = topics_count
+    if (inner_iterations_count is not None):
+      config.inner_iterations_count = inner_iterations_count
     return Model(self, config)
 
   def RemoveModel(self, model):
@@ -180,6 +223,31 @@ class MasterComponent:
   def RemoveRegularizer(self, regularizer):
     regularizer.__Dispose__()
 
+  def CreateDirichletThetaRegularizer(self, name = None, config = messages_pb2.DirichletThetaConfig()):
+    if (name is None):
+      name = "DirichletThetaRegularizer:" + uuid.uuid1().urn
+    return self.CreateRegularizer(name, RegularizerConfig_Type_DirichletTheta, config)
+
+  def CreateDirichletPhiRegularizer(self, name = None, config = messages_pb2.DirichletPhiConfig()):
+    if (name is None):
+      name = "DirichletPhiRegularizer:" + uuid.uuid1().urn
+    return self.CreateRegularizer(name, RegularizerConfig_Type_DirichletPhi, config)
+
+  def CreateSmoothSparseThetaRegularizer(self, name = None, config = messages_pb2.SmoothSparseThetaConfig()):
+    if (name is None):
+      name = "SmoothSparseThetaRegularizer:" + uuid.uuid1().urn
+    return self.CreateRegularizer(name, RegularizerConfig_Type_SmoothSparseTheta, config)
+
+  def CreateSmoothSparsePhiRegularizer(self, name = None, config = messages_pb2.SmoothSparsePhiConfig()):
+    if (name is None):
+      name = "SmoothSparsePhiRegularizer:" + uuid.uuid1().urn
+    return self.CreateRegularizer(name, RegularizerConfig_Type_SmoothSparsePhi, config)
+
+  def CreateDecorrelatorPhiRegularizer(self, name = None, config = messages_pb2.DecorrelatorPhiConfig()):
+    if (name is None):
+      name = "DecorrelatorPhiRegularizer:" + uuid.uuid1().urn
+    return self.CreateRegularizer(name, RegularizerConfig_Type_DecorrelatorPhi, config)
+
   def CreateScore(self, name, type, config):
     master_config = messages_pb2.MasterComponentConfig();
     master_config.CopyFrom(self.config_);
@@ -188,6 +256,48 @@ class MasterComponent:
     score_config.type = type;
     score_config.config = config.SerializeToString();
     self.Reconfigure(master_config)
+    return Score(self, name)
+
+  def CreatePerplexityScore(self, name = None, config = messages_pb2.PerplexityScoreConfig(), stream_name = None):
+    if (name is None):
+      name = "PerplexityScore:" + uuid.uuid1().urn
+    if (stream_name is not None):
+      config.stream_name = stream_name
+    return self.CreateScore(name, ScoreConfig_Type_Perplexity, config)
+
+  def CreateSparsityThetaScore(self, name = None, config = messages_pb2.SparsityThetaScoreConfig()):
+    if (name is None):
+      name = "SparsityThetaScore:" + uuid.uuid1().urn
+    return self.CreateScore(name, ScoreConfig_Type_SparsityTheta, config)
+
+  def CreateSparsityPhiScore(self, name = None, config = messages_pb2.SparsityPhiScoreConfig()):
+    if (name is None):
+      name = "SparsityPhiScore:" + uuid.uuid1().urn
+    return self.CreateScore(name, ScoreConfig_Type_SparsityPhi, config)
+
+  def CreateItemsProcessedScore(self, name = None, config = messages_pb2.ItemsProcessedScoreConfig()):
+    if (name is None):
+      name = "ItemsProcessedScore:" + uuid.uuid1().urn
+    return self.CreateScore(name, ScoreConfig_Type_ItemsProcessed, config)
+
+  def CreateTopTokensScore(self, name = None, config = messages_pb2.TopTokensScoreConfig(), num_tokens = None):
+    if (name is None):
+      name = "TopTokensScore:" + uuid.uuid1().urn
+    if (num_tokens is not None):
+      config.num_tokens = num_tokens
+    return self.CreateScore(name, ScoreConfig_Type_TopTokens, config)
+
+  def CreateThetaSnippetScore(self, name = None, config = messages_pb2.ThetaSnippetScoreConfig()):
+    if (name is None):
+      name = "ThetaSnippetScore:" + uuid.uuid1().urn
+    if (len(config.item_id) == 0):
+      for i in range(1, 11): config.item_id.append(i)
+    return self.CreateScore(name, ScoreConfig_Type_ThetaSnippet, config)
+
+  def CreateTopicKernelScore(self, name = None, config = messages_pb2.TopicKernelScoreConfig()):
+    if (name is None):
+      name = "TopicKernelScore:" + uuid.uuid1().urn
+    return self.CreateScore(name, ScoreConfig_Type_TopicKernel, config)
 
   def RemoveScore(self, name):
     raise NotImplementedError
@@ -198,7 +308,9 @@ class MasterComponent:
   def RemoveDictionary(self, dictionary):
     dictionary.__Dispose__()
 
-  def Reconfigure(self, config):
+  def Reconfigure(self, config = None):
+    if (config is None):
+      config = self.config_
     config_blob = config.SerializeToString()
     config_blob_p = ctypes.create_string_buffer(config_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmReconfigureMasterComponent(self.id_, len(config_blob), config_blob_p))
@@ -214,11 +326,8 @@ class MasterComponent:
 
   def WaitIdle(self, timeout = -1):
     result = self.lib_.ArtmWaitIdle(self.id_, timeout)
-    if result == ARTM_STILL_WORKING:
-        print "WaitIdle() is still working, timeout is over.";
-    else:
-        HandleErrorCode(self.lib_, result)
-
+    result = HandleErrorCode(self.lib_, result)
+    return False if (result == ARTM_STILL_WORKING) else True
 
   def CreateStream(self, stream):
     s = self.config_.stream.add()
@@ -265,51 +374,16 @@ class MasterComponent:
     theta_matrix.ParseFromString(blob)
     return theta_matrix
 
-  def GetScore(self, model, score_name):
-    length = HandleErrorCode(self.lib_,
-                             self.lib_.ArtmRequestScore(self.id_, model.name(), score_name))
-    blob = ctypes.create_string_buffer(length)
-    HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
-
-    score_data = messages_pb2.ScoreData()
-    score_data.ParseFromString(blob)
-
-    if (score_data.type == ScoreData_Type_Perplexity):
-      score = messages_pb2.PerplexityScore();
-      score.ParseFromString(score_data.data);
-      return score;
-    elif (score_data.type == ScoreData_Type_SparsityTheta):
-      score = messages_pb2.SparsityThetaScore();
-      score.ParseFromString(score_data.data);
-      return score;
-    elif (score_data.type == ScoreData_Type_SparsityPhi):
-      score = messages_pb2.SparsityPhiScore();
-      score.ParseFromString(score_data.data);
-      return score;
-    elif (score_data.type == ScoreData_Type_ItemsProcessed):
-      score = messages_pb2.ItemsProcessedScore()
-      score.ParseFromString(score_data.data)
-      return score
-    elif (score_data.type == ScoreData_Type_TopTokens):
-      score = messages_pb2.TopTokensScore()
-      score.ParseFromString(score_data.data)
-      return score
-    elif (score_data.type == ScoreData_Type_ThetaSnippet):
-      score = messages_pb2.ThetaSnippetScore()
-      score.ParseFromString(score_data.data)
-      return score
-    elif (score_data.type == ScoreData_Type_TopicKernel):
-      score = messages_pb2.TopicKernelScore()
-      score.ParseFromString(score_data.data)
-      return score
-
-    # Unknown score type
-    raise InvalidMessage(GetLastErrorMessage(self.lib_))
-
 #################################################################################
 
 class NodeController:
-  def __init__(self, config, lib):
+  def __init__(self, endpoint, lib = None):
+    config = messages_pb2.NodeControllerConfig();
+    config.create_endpoint = endpoint;
+
+    if (lib is None):
+      lib = Library().lib_
+
     self.lib_ = lib
     config_blob = config.SerializeToString()
     config_blob_p = ctypes.create_string_buffer(config_blob)
@@ -354,14 +428,23 @@ class Model:
   def name(self):
     return self.config_.name
 
-  def Reconfigure(self, config):
+  def topics_count(self):
+    return self.config_.topics_count
+
+  def config(self):
+    return self.config_
+
+  def Reconfigure(self, config = None):
+    if (config is None):
+      config = self.config_
+
     model_config_blob = config.SerializeToString()
     model_config_blob_p = ctypes.create_string_buffer(model_config_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmReconfigureModel(self.master_id_,
                     len(model_config_blob), model_config_blob_p))
     self.config_.CopyFrom(config)
 
-  def Synchronize(self, decay_weight):
+  def Synchronize(self, decay_weight = 0.0):
     args = messages_pb2.SynchronizeModelArgs();
     args.model_name = self.name()
     args.decay_weight = decay_weight
@@ -369,6 +452,19 @@ class Model:
     args_blob_p = ctypes.create_string_buffer(args_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmSynchronizeModel(
                      self.master_id_, len(args_blob), args_blob_p))
+
+  
+  def Initialize(self, tokens, random = random.Random()):
+    initial_topic_model = messages_pb2.TopicModel();
+    initial_topic_model.topics_count = self.topics_count();
+    initial_topic_model.name = self.name()
+    for i in range(0, len(tokens.entry)):
+      token = tokens.entry[i].key_token
+      initial_topic_model.token.append(token);
+      weights = initial_topic_model.token_weights.add();
+      for topic_index in range(0, self.topics_count()):
+        weights.value.append(random.random())
+    self.Overwrite(initial_topic_model)
 
   def Overwrite(self, topic_model):
     blob = topic_model.SerializeToString()
@@ -386,6 +482,19 @@ class Model:
     config_copy_ = messages_pb2.ModelConfig()
     config_copy_.CopyFrom(self.config_)
     config_copy_.enabled = False
+    self.Reconfigure(config_copy_)
+
+  def EnableScore(self, score):
+    config_copy_ = messages_pb2.ModelConfig()
+    config_copy_.CopyFrom(self.config_)
+    config_copy_.score_name.append(score.name())
+    self.Reconfigure(config_copy_)
+
+  def EnableRegularizer(self, regularizer, tau):
+    config_copy_ = messages_pb2.ModelConfig()
+    config_copy_.CopyFrom(self.config_)
+    config_copy_.regularizer_name.append(regularizer.name())
+    config_copy_.regularizer_tau.append(tau)
     self.Reconfigure(config_copy_)
 
 #################################################################################
@@ -460,3 +569,74 @@ class Dictionary:
     self.config_.CopyFrom(config)
 
 #################################################################################
+
+class Score:
+  def __init__(self, master_component, score_name):
+    self.master_id_  = master_component.id_
+    self.lib_        = master_component.lib_
+    self.score_name_ = score_name
+
+  def name(self) :
+    return self.score_name_
+
+  def GetValue(self, model) :
+    length = HandleErrorCode(self.lib_,
+                             self.lib_.ArtmRequestScore(self.master_id_, model.name(), self.score_name_))
+    blob = ctypes.create_string_buffer(length)
+    HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
+
+    score_data = messages_pb2.ScoreData()
+    score_data.ParseFromString(blob)
+
+    if (score_data.type == ScoreData_Type_Perplexity):
+      score = messages_pb2.PerplexityScore();
+      score.ParseFromString(score_data.data);
+      return score;
+    elif (score_data.type == ScoreData_Type_SparsityTheta):
+      score = messages_pb2.SparsityThetaScore();
+      score.ParseFromString(score_data.data);
+      return score;
+    elif (score_data.type == ScoreData_Type_SparsityPhi):
+      score = messages_pb2.SparsityPhiScore();
+      score.ParseFromString(score_data.data);
+      return score;
+    elif (score_data.type == ScoreData_Type_ItemsProcessed):
+      score = messages_pb2.ItemsProcessedScore()
+      score.ParseFromString(score_data.data)
+      return score
+    elif (score_data.type == ScoreData_Type_TopTokens):
+      score = messages_pb2.TopTokensScore()
+      score.ParseFromString(score_data.data)
+      return score
+    elif (score_data.type == ScoreData_Type_ThetaSnippet):
+      score = messages_pb2.ThetaSnippetScore()
+      score.ParseFromString(score_data.data)
+      return score
+    elif (score_data.type == ScoreData_Type_TopicKernel):
+      score = messages_pb2.TopicKernelScore()
+      score.ParseFromString(score_data.data)
+      return score
+
+    # Unknown score type
+    raise InvalidMessage(GetLastErrorMessage(self.lib_))
+
+#################################################################################
+
+class Visualizers:
+  @staticmethod
+  def PrintTopTokensScore(top_tokens_score):
+    print '\nTop tokens per topic:'
+    for i in range(0, len(top_tokens_score.values)):
+      print "Topic#" + str(i+1) + ": ",
+      for value in top_tokens_score.values[i].value:
+        print value + " ",
+      print "\n",
+
+  @staticmethod
+  def PrintThetaSnippetScore(theta_snippet_score):
+    print '\nSnippet of theta matrix:'
+    for i in range(0, len(theta_snippet_score.values)):
+      print "Item#" + str(theta_snippet_score.item_id[i]) + ": ",
+      for value in theta_snippet_score.values[i].value:
+        print "%.3f\t" % value,
+      print "\n",
