@@ -100,6 +100,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   model_config.add_regularizer_tau(1);
   model_config.add_regularizer_name(reg_multilang_name);
   model_config.add_regularizer_tau(1);
+  model_config.set_name("model_config1");
   artm::Model model(*master_component, model_config);
 
   // Load doc-token matrix
@@ -291,6 +292,7 @@ TEST(CppInterface, ModelExceptions) {
   // Create model
   artm::ModelConfig model_config;
   model_config.set_topics_count(10);
+  model_config.set_name("model_config1");
   artm::Model model(master_component, model_config);
 
   model.mutable_config()->set_topics_count(20);
