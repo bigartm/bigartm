@@ -365,7 +365,8 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     }
 
     merger_.reset(new Merger(&merger_queue_, &schema_,
-                              master_component_service_proxy_.get(), notifiable));
+                             master_component_service_proxy_.get(),
+                             &dictionaries_, notifiable));
 
     is_configured_  = true;
   } else {

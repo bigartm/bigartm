@@ -119,6 +119,7 @@ class Model {
 
   void Reconfigure(const ModelConfig& config);
   void Overwrite(const TopicModel& topic_model);
+  void Initialize(const Dictionary& dictionary);
   void Enable();
   void Disable();
   void Synchronize(double decay);
@@ -161,6 +162,7 @@ class Dictionary {
 
   int master_id() const { return master_id_; }
   const DictionaryConfig& config() const { return config_; }
+  const std::string name() const { return config_.name(); }
 
  private:
   int master_id_;

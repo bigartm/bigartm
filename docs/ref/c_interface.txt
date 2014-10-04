@@ -349,6 +349,26 @@ ArtmSynchronizeModel
    all Phi-regularizers for the requested topic model.
 
 
+ArtmInitializeModel
+--------------------
+
+.. c:function::  int ArtmSynchronizeModel(int master_id, int length, const char* init_model_args)
+
+   Initializes the phi matrix of a topic model with some random initial approximation.
+
+   :param int master_id: The ID of a master component or a master proxy,
+      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* init_model_args:
+      Serialized :ref:`InitializeModelArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the ``init_model_args`` message.
+
+   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
+            otherwise returns one of the :ref:`error codes <error-codes>`.
+
+
 ArtmWaitIdle
 ------------
 

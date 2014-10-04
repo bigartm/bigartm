@@ -471,7 +471,7 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "re.String\032\020.artm.TopicModel\0225\n\016RequestBa"
     "tches\022\016.artm.core.Int\032\023.artm.core.BatchI"
     "ds\0225\n\rReportBatches\022\023.artm.core.BatchIds"
-    "\032\017.artm.core.Void2\225\013\n\025NodeControllerServ"
+    "\032\017.artm.core.Void2\324\013\n\025NodeControllerServ"
     "ice\022K\n\033CreateOrReconfigureInstance\022\033.art"
     "m.MasterComponentConfig\032\017.artm.core.Void"
     "\0223\n\017DisposeInstance\022\017.artm.core.Void\032\017.a"
@@ -507,7 +507,8 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "id\032\017.artm.core.Void\022+\n\010WaitIdle\022\017.artm.c"
     "ore.Void\032\016.artm.core.Int\022\?\n\020SynchronizeM"
     "odel\022\032.artm.SynchronizeModelArgs\032\017.artm."
-    "core.Void", 3049);
+    "core.Void\022=\n\017InitializeModel\022\031.artm.Init"
+    "ializeModelArgs\032\017.artm.core.Void", 3112);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();

@@ -456,19 +456,14 @@ class Model:
                      self.master_id_, len(args_blob), args_blob_p))
 
   
-  def Initialize(self, tokens, random = random.Random()):
-    initial_topic_model = messages_pb2.TopicModel();
-    initial_topic_model.topics_count = self.topics_count();
-    initial_topic_model.name = self.name()
-    for i in range(0, len(tokens.entry)):
-      token = tokens.entry[i].key_token
-      initial_topic_model.token.append(token);
-      weights = initial_topic_model.token_weights.add();
-      for topic_index in range(0, self.topics_count()):
-        weights.value.append(random.random())
-    self.Overwrite(initial_topic_model)
-    self.master_component.WaitIdle()
-    self.Synchronize(invoke_regularizers = False)
+  def Initialize(self, dictionary):
+    args = messages_pb2.InitializeModelArgs()
+    args.model_name = self.name()
+    args.dictionary_name = dictionary.name();
+    blob = args.SerializeToString()
+    blob_p = ctypes.create_string_buffer(blob)
+    HandleErrorCode(self.lib_,
+                    self.lib_.ArtmInitializeModel(self.master_id_, len(blob), blob_p))
 
   def Overwrite(self, topic_model):
     blob = topic_model.SerializeToString()

@@ -87,6 +87,14 @@ void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
   }
 }
 
+void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
+  instance_->merger()->InitializeModel(args);
+
+  if (isInNetworkModusOperandi()) {
+    network_client_interface_->ForcePullTopicModel();
+  }
+}
+
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
   ValidateConfig(config);
   config_.set(std::make_shared<MasterComponentConfig>(config));

@@ -1475,9 +1475,9 @@ Represents an argument of synchronize model operation.
 .. code-block:: bash
 
   message SynchronizeModelArgs {
-    optional string model_name = 2;
-    optional float decay_weight = 3 [default = 1.0];
-    optional bool invoke_regularizers = 4 [default = true];
+    optional string model_name = 1;
+    optional float decay_weight = 2 [default = 1.0];
+    optional bool invoke_regularizers = 3 [default = true];
   }
 
 .. attribute:: SynchronizeModelArgs.model_name
@@ -1498,3 +1498,28 @@ Represents an argument of synchronize model operation.
 .. attribute:: SynchronizeModelArgs.invoke_regularizers
 
   A flag indicating whether to invoke all phi-regularizers.
+
+
+.. _InitializeModelArgs:
+
+InitializeModelArgs
+====================
+
+.. class:: messages_pb2.InitializeModelArgs
+
+Represents an argument of initialize model operation.
+
+.. code-block:: bash
+
+  message InitializeModelArgs {
+    optional string model_name = 1;
+    optional string dictionary_name = 2;
+  }
+
+.. attribute:: InitializeModelArgs.model_name
+
+  The name of the model to be initialized.
+
+.. attribute:: InitializeModelArgs.dictionary_name
+
+  The name of the dictionary containing all tokens that should be initialized.

@@ -278,12 +278,11 @@ Model
 
       Remember to call :py:meth:`Synchronize` operation every time after call :py:meth:`MasterComponent.WaitIdle`.
 
-   .. py:method:: Initialize(tokens, random = random.Random())
+   .. py:method:: Initialize(tokens, dictionary)
 
       Generates a random initial approximation for the Phi matrix of the topic model.
 
-      *tokens* must be an instance of :ref:`DictionaryConfig` class.
-      Typically you may use the dictinoary returned by :py:meth:`Library.LoadDictinoary` method.
+      *dictionary* must be an instance of :py:class:`Dictionary` class.
 
    .. py:method:: Overwrite(topic_model)
 

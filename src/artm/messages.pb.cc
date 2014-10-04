@@ -160,6 +160,9 @@ const ::google::protobuf::EnumDescriptor* CollectionParserConfig_Format_descript
 const ::google::protobuf::Descriptor* SynchronizeModelArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   SynchronizeModelArgs_reflection_ = NULL;
+const ::google::protobuf::Descriptor* InitializeModelArgs_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  InitializeModelArgs_reflection_ = NULL;
 
 }  // namespace
 
@@ -934,6 +937,22 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SynchronizeModelArgs));
+  InitializeModelArgs_descriptor_ = file->message_type(43);
+  static const int InitializeModelArgs_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs, model_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs, dictionary_name_),
+  };
+  InitializeModelArgs_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      InitializeModelArgs_descriptor_,
+      InitializeModelArgs::default_instance_,
+      InitializeModelArgs_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(InitializeModelArgs));
 }
 
 namespace {
@@ -1034,6 +1053,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     CollectionParserConfig_descriptor_, &CollectionParserConfig::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     SynchronizeModelArgs_descriptor_, &SynchronizeModelArgs::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    InitializeModelArgs_descriptor_, &InitializeModelArgs::default_instance());
 }
 
 }  // namespace
@@ -1142,6 +1163,8 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete CollectionParserConfig_reflection_;
   delete SynchronizeModelArgs::default_instance_;
   delete SynchronizeModelArgs_reflection_;
+  delete InitializeModelArgs::default_instance_;
+  delete InitializeModelArgs_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fmessages_2eproto() {
@@ -1284,9 +1307,11 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "tems_per_batch\030\006 \001(\005:\0041000\022\036\n\026cooccurren"
     "ce_file_name\030\007 \001(\t\022\032\n\022cooccurrence_token"
     "\030\010 \003(\t\"\033\n\006Format\022\021\n\rBagOfWordsUci\020\000\"f\n\024S"
-    "ynchronizeModelArgs\022\022\n\nmodel_name\030\002 \001(\t\022"
-    "\027\n\014decay_weight\030\003 \001(\002:\0011\022!\n\023invoke_regul"
-    "arizers\030\004 \001(\010:\004true", 5419);
+    "ynchronizeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022"
+    "\027\n\014decay_weight\030\002 \001(\002:\0011\022!\n\023invoke_regul"
+    "arizers\030\003 \001(\010:\004true\"B\n\023InitializeModelAr"
+    "gs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dictionary_nam"
+    "e\030\002 \001(\t", 5487);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -1363,6 +1388,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   ThetaMatrix::default_instance_ = new ThetaMatrix();
   CollectionParserConfig::default_instance_ = new CollectionParserConfig();
   SynchronizeModelArgs::default_instance_ = new SynchronizeModelArgs();
+  InitializeModelArgs::default_instance_ = new InitializeModelArgs();
   DoubleArray::default_instance_->InitAsDefaultInstance();
   FloatArray::default_instance_->InitAsDefaultInstance();
   BoolArray::default_instance_->InitAsDefaultInstance();
@@ -1407,6 +1433,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   ThetaMatrix::default_instance_->InitAsDefaultInstance();
   CollectionParserConfig::default_instance_->InitAsDefaultInstance();
   SynchronizeModelArgs::default_instance_->InitAsDefaultInstance();
+  InitializeModelArgs::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fmessages_2eproto);
 }
 
@@ -15325,8 +15352,8 @@ bool SynchronizeModelArgs::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string model_name = 2;
-      case 2: {
+      // optional string model_name = 1;
+      case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
@@ -15337,12 +15364,12 @@ bool SynchronizeModelArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(29)) goto parse_decay_weight;
+        if (input->ExpectTag(21)) goto parse_decay_weight;
         break;
       }
 
-      // optional float decay_weight = 3 [default = 1];
-      case 3: {
+      // optional float decay_weight = 2 [default = 1];
+      case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
          parse_decay_weight:
@@ -15353,12 +15380,12 @@ bool SynchronizeModelArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(32)) goto parse_invoke_regularizers;
+        if (input->ExpectTag(24)) goto parse_invoke_regularizers;
         break;
       }
 
-      // optional bool invoke_regularizers = 4 [default = true];
-      case 4: {
+      // optional bool invoke_regularizers = 3 [default = true];
+      case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_invoke_regularizers:
@@ -15391,23 +15418,23 @@ bool SynchronizeModelArgs::MergePartialFromCodedStream(
 
 void SynchronizeModelArgs::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional string model_name = 2;
+  // optional string model_name = 1;
   if (has_model_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->model_name().data(), this->model_name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->model_name(), output);
+      1, this->model_name(), output);
   }
 
-  // optional float decay_weight = 3 [default = 1];
+  // optional float decay_weight = 2 [default = 1];
   if (has_decay_weight()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(3, this->decay_weight(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(2, this->decay_weight(), output);
   }
 
-  // optional bool invoke_regularizers = 4 [default = true];
+  // optional bool invoke_regularizers = 3 [default = true];
   if (has_invoke_regularizers()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(4, this->invoke_regularizers(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->invoke_regularizers(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -15418,24 +15445,24 @@ void SynchronizeModelArgs::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* SynchronizeModelArgs::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // optional string model_name = 2;
+  // optional string model_name = 1;
   if (has_model_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->model_name().data(), this->model_name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->model_name(), target);
+        1, this->model_name(), target);
   }
 
-  // optional float decay_weight = 3 [default = 1];
+  // optional float decay_weight = 2 [default = 1];
   if (has_decay_weight()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(3, this->decay_weight(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(2, this->decay_weight(), target);
   }
 
-  // optional bool invoke_regularizers = 4 [default = true];
+  // optional bool invoke_regularizers = 3 [default = true];
   if (has_invoke_regularizers()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(4, this->invoke_regularizers(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->invoke_regularizers(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -15449,19 +15476,19 @@ int SynchronizeModelArgs::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string model_name = 2;
+    // optional string model_name = 1;
     if (has_model_name()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->model_name());
     }
 
-    // optional float decay_weight = 3 [default = 1];
+    // optional float decay_weight = 2 [default = 1];
     if (has_decay_weight()) {
       total_size += 1 + 4;
     }
 
-    // optional bool invoke_regularizers = 4 [default = true];
+    // optional bool invoke_regularizers = 3 [default = true];
     if (has_invoke_regularizers()) {
       total_size += 1 + 1;
     }
@@ -15539,6 +15566,288 @@ void SynchronizeModelArgs::Swap(SynchronizeModelArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = SynchronizeModelArgs_descriptor_;
   metadata.reflection = SynchronizeModelArgs_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int InitializeModelArgs::kModelNameFieldNumber;
+const int InitializeModelArgs::kDictionaryNameFieldNumber;
+#endif  // !_MSC_VER
+
+InitializeModelArgs::InitializeModelArgs()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void InitializeModelArgs::InitAsDefaultInstance() {
+}
+
+InitializeModelArgs::InitializeModelArgs(const InitializeModelArgs& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void InitializeModelArgs::SharedCtor() {
+  _cached_size_ = 0;
+  model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+InitializeModelArgs::~InitializeModelArgs() {
+  SharedDtor();
+}
+
+void InitializeModelArgs::SharedDtor() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void InitializeModelArgs::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* InitializeModelArgs::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return InitializeModelArgs_descriptor_;
+}
+
+const InitializeModelArgs& InitializeModelArgs::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
+  return *default_instance_;
+}
+
+InitializeModelArgs* InitializeModelArgs::default_instance_ = NULL;
+
+InitializeModelArgs* InitializeModelArgs::New() const {
+  return new InitializeModelArgs;
+}
+
+void InitializeModelArgs::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_model_name()) {
+      if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        model_name_->clear();
+      }
+    }
+    if (has_dictionary_name()) {
+      if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        dictionary_name_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool InitializeModelArgs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string model_name = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_model_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->model_name().data(), this->model_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_dictionary_name;
+        break;
+      }
+
+      // optional string dictionary_name = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_dictionary_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_dictionary_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->dictionary_name().data(), this->dictionary_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void InitializeModelArgs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string model_name = 1;
+  if (has_model_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->model_name().data(), this->model_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->model_name(), output);
+  }
+
+  // optional string dictionary_name = 2;
+  if (has_dictionary_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->dictionary_name().data(), this->dictionary_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->dictionary_name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* InitializeModelArgs::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string model_name = 1;
+  if (has_model_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->model_name().data(), this->model_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->model_name(), target);
+  }
+
+  // optional string dictionary_name = 2;
+  if (has_dictionary_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->dictionary_name().data(), this->dictionary_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->dictionary_name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int InitializeModelArgs::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string model_name = 1;
+    if (has_model_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->model_name());
+    }
+
+    // optional string dictionary_name = 2;
+    if (has_dictionary_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->dictionary_name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void InitializeModelArgs::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const InitializeModelArgs* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const InitializeModelArgs*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void InitializeModelArgs::MergeFrom(const InitializeModelArgs& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_model_name()) {
+      set_model_name(from.model_name());
+    }
+    if (from.has_dictionary_name()) {
+      set_dictionary_name(from.dictionary_name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void InitializeModelArgs::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void InitializeModelArgs::CopyFrom(const InitializeModelArgs& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool InitializeModelArgs::IsInitialized() const {
+
+  return true;
+}
+
+void InitializeModelArgs::Swap(InitializeModelArgs* other) {
+  if (other != this) {
+    std::swap(model_name_, other->model_name_);
+    std::swap(dictionary_name_, other->dictionary_name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata InitializeModelArgs::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = InitializeModelArgs_descriptor_;
+  metadata.reflection = InitializeModelArgs_reflection_;
   return metadata;
 }
 

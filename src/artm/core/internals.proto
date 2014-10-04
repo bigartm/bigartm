@@ -160,4 +160,5 @@ service NodeControllerService {
   rpc InvokeIteration(Void) returns (Void);
   rpc WaitIdle(Void) returns (Int);
   rpc SynchronizeModel(SynchronizeModelArgs) returns (Void);
+  rpc InitializeModel(InitializeModelArgs) returns (Void);
 }

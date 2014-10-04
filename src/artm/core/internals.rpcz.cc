@@ -87,7 +87,7 @@ void rpcz_protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "re.String\032\020.artm.TopicModel\0225\n\016RequestBa"
     "tches\022\016.artm.core.Int\032\023.artm.core.BatchI"
     "ds\0225\n\rReportBatches\022\023.artm.core.BatchIds"
-    "\032\017.artm.core.Void2\225\013\n\025NodeControllerServ"
+    "\032\017.artm.core.Void2\324\013\n\025NodeControllerServ"
     "ice\022K\n\033CreateOrReconfigureInstance\022\033.art"
     "m.MasterComponentConfig\032\017.artm.core.Void"
     "\0223\n\017DisposeInstance\022\017.artm.core.Void\032\017.a"
@@ -123,7 +123,8 @@ void rpcz_protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "id\032\017.artm.core.Void\022+\n\010WaitIdle\022\017.artm.c"
     "ore.Void\032\016.artm.core.Int\022\?\n\020SynchronizeM"
     "odel\022\032.artm.SynchronizeModelArgs\032\017.artm."
-    "core.Void", 3049);
+    "core.Void\022=\n\017InitializeModel\022\031.artm.Init"
+    "ializeModelArgs\032\017.artm.core.Void", 3112);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&rpcz_protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto);
@@ -471,6 +472,12 @@ void NodeControllerService::SynchronizeModel(const ::artm::SynchronizeModelArgs&
               "Method SynchronizeModel() not implemented.");
 }
 
+void NodeControllerService::InitializeModel(const ::artm::InitializeModelArgs&,
+                         ::rpcz::reply< ::artm::core::Void> reply) {
+  reply.Error(::rpcz::application_error::METHOD_NOT_IMPLEMENTED,
+              "Method InitializeModel() not implemented.");
+}
+
 void NodeControllerService::call_method(const ::google::protobuf::MethodDescriptor* method,
                              const ::google::protobuf::Message& request,
                              ::rpcz::server_channel* channel) {
@@ -581,6 +588,11 @@ void NodeControllerService::call_method(const ::google::protobuf::MethodDescript
           *::google::protobuf::down_cast<const ::artm::SynchronizeModelArgs*>(&request),
           ::rpcz::reply< ::artm::core::Void>(channel));
       break;
+    case 21:
+      InitializeModel(
+          *::google::protobuf::down_cast<const ::artm::InitializeModelArgs*>(&request),
+          ::rpcz::reply< ::artm::core::Void>(channel));
+      break;
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
       break;
@@ -633,6 +645,8 @@ const ::google::protobuf::Message& NodeControllerService::GetRequestPrototype(
       return ::artm::core::Void::default_instance();
     case 20:
       return ::artm::SynchronizeModelArgs::default_instance();
+    case 21:
+      return ::artm::InitializeModelArgs::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
       return *reinterpret_cast< ::google::protobuf::Message*>(NULL);
@@ -684,6 +698,8 @@ const ::google::protobuf::Message& NodeControllerService::GetResponsePrototype(
     case 19:
       return ::artm::core::Int::default_instance();
     case 20:
+      return ::artm::core::Void::default_instance();
+    case 21:
       return ::artm::core::Void::default_instance();
     default:
       GOOGLE_LOG(FATAL) << "Bad method index; this should never happen.";
@@ -1139,6 +1155,27 @@ void NodeControllerService_Stub::SynchronizeModel(const ::artm::SynchronizeModel
   rpc.set_deadline_ms(deadline_ms);
   channel_->call_method(service_name_,
                         NodeControllerService::descriptor()->method(20),
+                        request, response, &rpc, NULL);
+  rpc.wait();
+  if (!rpc.ok()) {
+    throw ::rpcz::rpc_error(rpc);
+  }
+}
+void NodeControllerService_Stub::InitializeModel(const ::artm::InitializeModelArgs& request,
+                              ::artm::core::Void* response,
+                              ::rpcz::rpc* rpc,
+                              ::rpcz::closure* done) {
+  channel_->call_method(service_name_,
+                        NodeControllerService::descriptor()->method(21),
+                        request, response, rpc, done);
+}
+void NodeControllerService_Stub::InitializeModel(const ::artm::InitializeModelArgs& request,
+                              ::artm::core::Void* response,
+                              long deadline_ms) {
+  ::rpcz::rpc rpc;
+  rpc.set_deadline_ms(deadline_ms);
+  channel_->call_method(service_name_,
+                        NodeControllerService::descriptor()->method(21),
                         request, response, &rpc, NULL);
   rpc.wait();
   if (!rpc.ok()) {

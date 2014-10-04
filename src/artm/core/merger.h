@@ -20,6 +20,7 @@
 #include "rpcz/sync_event.hpp"
 
 #include "artm/core/common.h"
+#include "artm/core/dictionary.h"
 #include "artm/core/internals.rpcz.h"
 #include "artm/core/thread_safe_holder.h"
 #include "artm/score_calculator_interface.h"
@@ -35,6 +36,7 @@ class Merger : boost::noncopyable {
   Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
          ThreadSafeHolder<InstanceSchema>* schema,
          MasterComponentService_Stub* master_component_service,
+         const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
          Notifiable* notifiable);
 
   ~Merger();
@@ -49,6 +51,7 @@ class Merger : boost::noncopyable {
   void ForcePullTopicModel();
   void ForcePushTopicModelIncrement();
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
+  void InitializeModel(const InitializeModelArgs& args);
 
   std::shared_ptr<const ::artm::core::TopicModel> GetLatestTopicModel(ModelName model_name) const;
   bool RetrieveExternalTopicModel(ModelName model_name, ::artm::TopicModel* topic_model) const;
@@ -113,6 +116,8 @@ class Merger : boost::noncopyable {
   mutable std::atomic<bool> is_idle_;
   ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue_;
   ThreadSafeQueue<MergerTask> internal_task_queue_;
+
+  const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;
 
   Notifiable* notifiable_;
 

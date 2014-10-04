@@ -41,6 +41,7 @@ class MasterInterface {
   virtual void InvokeIteration(int iterations_count) = 0;
   virtual bool WaitIdle(int timeout = -1) = 0;
   virtual void SynchronizeModel(const SynchronizeModelArgs& args) = 0;
+  virtual void InitializeModel(const InitializeModelArgs& args) = 0;
 };
 
 typedef TemplateManager<MasterInterface> MasterComponentManager;

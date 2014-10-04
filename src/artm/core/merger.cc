@@ -3,6 +3,7 @@
 #include "artm/core/merger.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include "boost/lexical_cast.hpp"
 
@@ -25,6 +26,7 @@ namespace core {
 Merger::Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
                artm::core::MasterComponentService_Stub* master_component_service,
+               const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
                Notifiable* notifiable)
     : topic_model_(),
       topic_model_inc_(),
@@ -33,6 +35,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_q
       scores_merger_(schema, &topic_model_),
       is_idle_(true),
       merger_queue_(merger_queue),
+      dictionaries_(dictionaries),
       notifiable_(notifiable),
       is_stopping(false),
       thread_() {
@@ -491,6 +494,29 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
 
     topic_model_inc_.erase(name);
   }
+}
+
+void Merger::InitializeModel(const InitializeModelArgs& args) {
+  if (master_component_service_ != nullptr) {
+    return;  // no-op in network modus operandi
+  }
+
+  auto schema = schema_->get();
+  const ModelConfig& model = schema->model_config(args.model_name());
+  auto new_ttm = std::make_shared<::artm::core::TopicModel>(model.name(), model.topics_count());
+  std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
+  if (dict == nullptr) {
+    std::stringstream ss;
+    ss << "Dictionary " << args.dictionary_name() << " does not exist";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  }
+
+  for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
+    ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
+    new_ttm->AddToken(class_id, iter->second.key_token(), true);
+  }
+
+  topic_model_.set(args.model_name(), new_ttm);
 }
 
 }  // namespace core

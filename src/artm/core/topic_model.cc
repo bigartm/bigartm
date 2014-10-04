@@ -272,7 +272,7 @@ void TopicModel::CopyFromExternalTopicModel(const ::artm::TopicModel& external_t
 }
 
 int TopicModel::AddToken(ClassId class_id, std::string keyword, bool random_init) {
-  return TopicModel::AddToken(Token(keyword, class_id), random_init);
+  return TopicModel::AddToken(Token(class_id, keyword), random_init);
 }
 
 int TopicModel::AddToken(const Token& token, bool random_init) {

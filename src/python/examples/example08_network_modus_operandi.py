@@ -23,10 +23,11 @@ master_config.node_connect_endpoint.append('tcp://localhost:5555')
 master_config.node_connect_endpoint.append('tcp://localhost:5556')
 
 with artm.library.MasterComponent(config = master_config) as master:
+  dictionary = master.CreateDictionary(unique_tokens)
   perplexity_score = master.CreatePerplexityScore()
   model = master.CreateModel(topics_count = 10, inner_iterations_count = 10)
   model.EnableScore(perplexity_score)
-  model.Initialize(unique_tokens)
+  model.Initialize(dictionary)
 
   for iter in range(0, 8):
     master.InvokeIteration(1)        # Invoke one scan of the entire collection...

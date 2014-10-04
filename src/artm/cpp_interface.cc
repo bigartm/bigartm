@@ -210,6 +210,15 @@ void Model::Disable() {
   Reconfigure(config_copy_);
 }
 
+void Model::Initialize(const Dictionary& dictionary) {
+  InitializeModelArgs args;
+  args.set_model_name(this->name());
+  args.set_dictionary_name(dictionary.name());
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmInitializeModel(master_id(), blob.size(), blob.c_str()));
+}
+
 void Model::Synchronize(double decay) {
   Synchronize(decay, true);
 }
