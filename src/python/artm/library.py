@@ -407,6 +407,7 @@ class Model:
   def __init__(self, master_component, config):
     self.lib_ = master_component.lib_
     self.master_id_ = master_component.id_
+    self.master_component = master_component
     self.config_ = config
     self.config_.name = uuid.uuid1().urn
     model_config_blob = config.SerializeToString()
@@ -444,10 +445,11 @@ class Model:
                     len(model_config_blob), model_config_blob_p))
     self.config_.CopyFrom(config)
 
-  def Synchronize(self, decay_weight = 0.0):
+  def Synchronize(self, decay_weight = 0.0, invoke_regularizers = True):
     args = messages_pb2.SynchronizeModelArgs();
     args.model_name = self.name()
     args.decay_weight = decay_weight
+    args.invoke_regularizers = invoke_regularizers
     args_blob = args.SerializeToString()
     args_blob_p = ctypes.create_string_buffer(args_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmSynchronizeModel(
@@ -465,6 +467,8 @@ class Model:
       for topic_index in range(0, self.topics_count()):
         weights.value.append(random.random())
     self.Overwrite(initial_topic_model)
+    self.master_component.WaitIdle()
+    self.Synchronize(invoke_regularizers = False)
 
   def Overwrite(self, topic_model):
     blob = topic_model.SerializeToString()

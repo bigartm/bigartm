@@ -208,8 +208,6 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   }
 
   model_config.set_name("model2_name");
-  model_config.clear_regularizer_name();
-  model_config.clear_regularizer_tau();
   artm::Model model2(*master_component, model_config);
   if (!is_network_mode) {
     // Test overwrite topic model
@@ -227,7 +225,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
 
     model2.Overwrite(new_topic_model);
     master_component->WaitIdle();
-    model2.Synchronize(0.0);
+    model2.Synchronize(0.0, false);
 
     auto new_topic_model2 = master_component->GetTopicModel(model2);
     ASSERT_EQ(new_topic_model2->token_size(), 2);

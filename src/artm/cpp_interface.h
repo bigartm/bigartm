@@ -122,6 +122,7 @@ class Model {
   void Enable();
   void Disable();
   void Synchronize(double decay);
+  void Synchronize(double decay, bool invoke_regularizers);
 
   int master_id() const { return master_id_; }
   const std::string& name() const { return config_.name(); }

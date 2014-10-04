@@ -211,9 +211,14 @@ void Model::Disable() {
 }
 
 void Model::Synchronize(double decay) {
+  Synchronize(decay, true);
+}
+
+void Model::Synchronize(double decay, bool invoke_regularizers) {
   SynchronizeModelArgs args;
   args.set_model_name(this->name());
   args.set_decay_weight(static_cast<float>(decay));
+  args.set_invoke_regularizers(invoke_regularizers);
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmSynchronizeModel(master_id(), blob.size(), blob.c_str()));

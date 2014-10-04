@@ -918,9 +918,10 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(CollectionParserConfig));
   CollectionParserConfig_Format_descriptor_ = CollectionParserConfig_descriptor_->enum_type(0);
   SynchronizeModelArgs_descriptor_ = file->message_type(42);
-  static const int SynchronizeModelArgs_offsets_[2] = {
+  static const int SynchronizeModelArgs_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, decay_weight_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, invoke_regularizers_),
   };
   SynchronizeModelArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1282,9 +1283,10 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\t\022\034\n\024dictionary_file_name\030\005 \001(\t\022!\n\023num_i"
     "tems_per_batch\030\006 \001(\005:\0041000\022\036\n\026cooccurren"
     "ce_file_name\030\007 \001(\t\022\032\n\022cooccurrence_token"
-    "\030\010 \003(\t\"\033\n\006Format\022\021\n\rBagOfWordsUci\020\000\"C\n\024S"
+    "\030\010 \003(\t\"\033\n\006Format\022\021\n\rBagOfWordsUci\020\000\"f\n\024S"
     "ynchronizeModelArgs\022\022\n\nmodel_name\030\002 \001(\t\022"
-    "\027\n\014decay_weight\030\003 \001(\002:\0011", 5384);
+    "\027\n\014decay_weight\030\003 \001(\002:\0011\022!\n\023invoke_regul"
+    "arizers\030\004 \001(\010:\004true", 5419);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -15245,6 +15247,7 @@ void CollectionParserConfig::Swap(CollectionParserConfig* other) {
 #ifndef _MSC_VER
 const int SynchronizeModelArgs::kModelNameFieldNumber;
 const int SynchronizeModelArgs::kDecayWeightFieldNumber;
+const int SynchronizeModelArgs::kInvokeRegularizersFieldNumber;
 #endif  // !_MSC_VER
 
 SynchronizeModelArgs::SynchronizeModelArgs()
@@ -15265,6 +15268,7 @@ void SynchronizeModelArgs::SharedCtor() {
   _cached_size_ = 0;
   model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   decay_weight_ = 1;
+  invoke_regularizers_ = true;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -15309,6 +15313,7 @@ void SynchronizeModelArgs::Clear() {
       }
     }
     decay_weight_ = 1;
+    invoke_regularizers_ = true;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -15348,6 +15353,22 @@ bool SynchronizeModelArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(32)) goto parse_invoke_regularizers;
+        break;
+      }
+
+      // optional bool invoke_regularizers = 4 [default = true];
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_invoke_regularizers:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &invoke_regularizers_)));
+          set_has_invoke_regularizers();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -15384,6 +15405,11 @@ void SynchronizeModelArgs::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteFloat(3, this->decay_weight(), output);
   }
 
+  // optional bool invoke_regularizers = 4 [default = true];
+  if (has_invoke_regularizers()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(4, this->invoke_regularizers(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -15407,6 +15433,11 @@ void SynchronizeModelArgs::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(3, this->decay_weight(), target);
   }
 
+  // optional bool invoke_regularizers = 4 [default = true];
+  if (has_invoke_regularizers()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(4, this->invoke_regularizers(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -15428,6 +15459,11 @@ int SynchronizeModelArgs::ByteSize() const {
     // optional float decay_weight = 3 [default = 1];
     if (has_decay_weight()) {
       total_size += 1 + 4;
+    }
+
+    // optional bool invoke_regularizers = 4 [default = true];
+    if (has_invoke_regularizers()) {
+      total_size += 1 + 1;
     }
 
   }
@@ -15463,6 +15499,9 @@ void SynchronizeModelArgs::MergeFrom(const SynchronizeModelArgs& from) {
     if (from.has_decay_weight()) {
       set_decay_weight(from.decay_weight());
     }
+    if (from.has_invoke_regularizers()) {
+      set_invoke_regularizers(from.invoke_regularizers());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -15488,6 +15527,7 @@ void SynchronizeModelArgs::Swap(SynchronizeModelArgs* other) {
   if (other != this) {
     std::swap(model_name_, other->model_name_);
     std::swap(decay_weight_, other->decay_weight_);
+    std::swap(invoke_regularizers_, other->invoke_regularizers_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

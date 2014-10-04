@@ -365,11 +365,27 @@ ArtmOverwriteTopicModel
 
 .. c:function::  int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model)
 
+   This operation schedules an update of an entire topic model or of it subpart.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
+   :param const_char* topic_model:
+      Serialized :ref:`TopicModel` message,
+      describing the new topic model.
+
+   :param int length: The length in bytes of the *topic_model* message.
+
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
+
+   Note that this operation only schedules the update of a topic model.
+   To make sure the update is completed you must call :c:func:`ArtmWaitIdle`
+   and :c:func:`ArtmSynchronizeModel`.
+   Remember that by default :c:func:`ArtmSynchronizeModel` will calculate
+   all regularizers enabled in the configuration of the topic model.
+   The may result in a different topic model than the one you passed as *topic_model* parameter.
+   To avoid this behavior set :attr:`SynchronizeModelArgs.invoke_regularizers` to ``false``.
 
 ArtmRequestThetaMatrix
 ----------------------

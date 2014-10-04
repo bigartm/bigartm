@@ -5383,20 +5383,30 @@ class SynchronizeModelArgs : public ::google::protobuf::Message {
   inline float decay_weight() const;
   inline void set_decay_weight(float value);
 
+  // optional bool invoke_regularizers = 4 [default = true];
+  inline bool has_invoke_regularizers() const;
+  inline void clear_invoke_regularizers();
+  static const int kInvokeRegularizersFieldNumber = 4;
+  inline bool invoke_regularizers() const;
+  inline void set_invoke_regularizers(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.SynchronizeModelArgs)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
   inline void set_has_decay_weight();
   inline void clear_has_decay_weight();
+  inline void set_has_invoke_regularizers();
+  inline void clear_has_invoke_regularizers();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
   float decay_weight_;
+  bool invoke_regularizers_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -11122,6 +11132,28 @@ inline float SynchronizeModelArgs::decay_weight() const {
 inline void SynchronizeModelArgs::set_decay_weight(float value) {
   set_has_decay_weight();
   decay_weight_ = value;
+}
+
+// optional bool invoke_regularizers = 4 [default = true];
+inline bool SynchronizeModelArgs::has_invoke_regularizers() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void SynchronizeModelArgs::set_has_invoke_regularizers() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void SynchronizeModelArgs::clear_has_invoke_regularizers() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void SynchronizeModelArgs::clear_invoke_regularizers() {
+  invoke_regularizers_ = true;
+  clear_has_invoke_regularizers();
+}
+inline bool SynchronizeModelArgs::invoke_regularizers() const {
+  return invoke_regularizers_;
+}
+inline void SynchronizeModelArgs::set_invoke_regularizers(bool value) {
+  set_has_invoke_regularizers();
+  invoke_regularizers_ = value;
 }
 
 
