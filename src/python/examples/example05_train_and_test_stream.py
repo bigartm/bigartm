@@ -13,6 +13,7 @@ unique_tokens = artm.library.Library().ParseCollectionOrLoadDictionary(
   target_folder)
 
 with artm.library.MasterComponent(disk_path = target_folder) as master:
+  dictionary = master.CreateDictionary(unique_tokens)
   # Configure test and train streams
   train_stream = artm.messages_pb2.Stream()
   train_stream.name = 'train_stream'
@@ -37,7 +38,7 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   model.config().stream_name = train_stream.name
   model.EnableScore(perplexity_train_score)
   model.EnableScore(perplexity_test_score)
-  model.Initialize(unique_tokens)    # Setup initial approximation for Phi matrix.
+  model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
   for iter in range(0, 8):
     master.InvokeIteration(1)        # Invoke one scan of the entire collection...

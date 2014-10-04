@@ -374,6 +374,21 @@ void NodeControllerServiceImpl::SynchronizeModel(
   } CATCH_EXCEPTIONS_AND_SEND_ERROR;
 }
 
+void NodeControllerServiceImpl::InitializeModel(
+    const ::artm::InitializeModelArgs& request,
+    ::rpcz::reply< ::artm::core::Void> response) {
+  try {
+    boost::lock_guard<boost::mutex> guard(lock_);
+    if (master_ != nullptr) {
+      master_->InitializeModel(request);
+    } else {
+      LOG(ERROR) << "No master component exist in node controller";
+    }
+
+    response.send(Void());
+  } CATCH_EXCEPTIONS_AND_SEND_ERROR;
+}
+
 Instance* NodeControllerServiceImpl::instance() {
   return instance_.get();
 }

@@ -270,23 +270,24 @@ Model
 
       Returns current :ref:`ModelConfig` of the topic model.
 
-   .. py:method:: Synchronize(decay_weight = 0.0)
+   .. py:method:: Synchronize(decay_weight = 0.0, invoke_regularizers = True)
 
-      This operation updates the Phi matrix of the topic model with all model increments, collected since last call to :py:meth:`Synchronize` method.
+      This operation updates the Phi matrix of the topic model with all model increments, collected since the last call to :py:meth:`Synchronize` method.
       The weights in the Phi matrix are decreased according to *decay_weight* (refer to :attr:`SynchronizeModelArgs.decay_weight` for more details).
+      Depending on *invoke_regularizers* parameter this operation may also invoke all regularizers.
 
       Remember to call :py:meth:`Synchronize` operation every time after call :py:meth:`MasterComponent.WaitIdle`.
 
-   .. py:method:: Initialize(tokens, random = random.Random())
+   .. py:method:: Initialize(tokens, dictionary)
 
       Generates a random initial approximation for the Phi matrix of the topic model.
 
-      *tokens* must be an instance of :ref:`DictionaryConfig` class.
-      Typically you may use the dictinoary returned by :py:meth:`Library.LoadDictinoary` method.
+      *dictionary* must be an instance of :py:class:`Dictionary` class.
 
    .. py:method:: Overwrite(topic_model)
 
-      Updates the current Phi matrix with new values, defined by *topic_model* (:ref:`TopicModel`).
+      Schedules an update of the current Phi matrix with new values, defined by *topic_model* (:ref:`TopicModel`).
+      To apply the update you must call :py:meth:`MasterComponent.WaitIdle` and then :py:meth:`Model.Synchronize`.
 
    .. py:method:: Enable()
 

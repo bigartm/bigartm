@@ -3,6 +3,7 @@
 #include "artm/core/merger.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include "boost/lexical_cast.hpp"
 
@@ -25,6 +26,7 @@ namespace core {
 Merger::Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
                artm::core::MasterComponentService_Stub* master_component_service,
+               const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
                Notifiable* notifiable)
     : topic_model_(),
       topic_model_inc_(),
@@ -33,6 +35,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_q
       scores_merger_(schema, &topic_model_),
       is_idle_(true),
       merger_queue_(merger_queue),
+      dictionaries_(dictionaries),
       notifiable_(notifiable),
       is_stopping(false),
       thread_() {
@@ -51,7 +54,7 @@ Merger::~Merger() {
 
 void Merger::DisposeModel(ModelName model_name) {
   topic_model_.erase(model_name);
-  internal_task_queue_.push(MergerTask(kDisposeModel, model_name, 0.0f));
+  internal_task_queue_.push(MergerTask(kDisposeModel, model_name, 0.0f, false, nullptr));
 }
 
 void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
@@ -85,32 +88,64 @@ void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  std::shared_ptr<::artm::core::TopicModel> new_ttm(new ::artm::core::TopicModel(topic_model));
-  topic_model_.set(topic_model.name(), new_ttm);
+  bool has_classes = false;
+  if (topic_model.class_id_size() != 0) {
+    has_classes = true;
+    if (topic_model.class_id_size() != topic_model.token_size()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "TopicModel.class_id_size() != TopicModel.token_size()"));
+    }
+  }
+
+  bool remove_tokens = true;
+  if (topic_model.token_weights_size() != 0) {
+    remove_tokens = false;
+    if (topic_model.token_weights_size() != topic_model.token_size()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "TopicModel.token_weights_size() != TopicModel.token_size()"));
+    }
+  }
+
+  auto model_increment = std::make_shared<ModelIncrement>();
+  model_increment->set_model_name(topic_model.name());
+  model_increment->set_topics_count(topic_model.topics_count());
+  for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
+    model_increment->add_token(topic_model.token(token_index));
+    model_increment->add_class_id(has_classes ? topic_model.class_id(token_index) : DefaultClass);
+    artm::FloatArray* token_increment = model_increment->add_token_increment();
+    if (remove_tokens) {
+      model_increment->add_operation_type(ModelIncrement_OperationType_DeleteToken);
+    } else {
+      token_increment->CopyFrom(topic_model.token_weights(token_index));
+      model_increment->add_operation_type(ModelIncrement_OperationType_OverwriteValue);
+    }
+  }
+
+  merger_queue_->push(model_increment);
 }
 
 void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {
   rpcz::sync_event sync_event;
   internal_task_queue_.push(MergerTask(kForceSynchronizeTopicModel, args.model_name(),
-                                       args.decay_weight(), &sync_event));
+                            args.decay_weight(), args.invoke_regularizers(), &sync_event));
   sync_event.wait();
 }
 
 void Merger::ForceResetScores(ModelName model_name) {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForceResetScores, model_name, 0.0f, &sync_event));
+  internal_task_queue_.push(MergerTask(kForceResetScores, model_name, 0.0f, false, &sync_event));
   sync_event.wait();
 }
 
 void Merger::ForcePullTopicModel() {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForcePullTopicModel, ModelName(), 0.0f, &sync_event));
+  internal_task_queue_.push(MergerTask(kForcePullTopicModel, ModelName(), 0.0f, false, &sync_event));
   sync_event.wait();
 }
 
 void Merger::ForcePushTopicModelIncrement() {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForcePushTopicModelIncrement, ModelName(), 0.0f, &sync_event));
+  internal_task_queue_.push(MergerTask(kForcePushTopicModelIncrement, ModelName(), 0.0f, false, &sync_event));
   sync_event.wait();
 }
 
@@ -180,7 +215,8 @@ void Merger::ThreadFunction() {
               PushTopicModelIncrement();
               break;
             case kForceSynchronizeTopicModel:
-              SynchronizeModel(merger_task.model_name, merger_task.decay_weight);
+              SynchronizeModel(merger_task.model_name, merger_task.decay_weight,
+                               merger_task.invoke_regularizers);
               break;
             case kForceResetScores:
               ResetScores(merger_task.model_name);
@@ -421,7 +457,8 @@ bool Merger::RequestScore(const ModelName& model_name, const ScoreName& score_na
   return scores_merger_.RequestScore(model_name, score_name, score_data);
 }
 
-void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight) {
+void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
+                              bool invoke_regularizers) {
   if (master_component_service_ != nullptr) {
     return;  // no-op in network modus operandi
   }
@@ -450,11 +487,36 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight) {
     if (inc_ttm != topic_model_inc_.end())
       new_ttm->ApplyDiff(*inc_ttm->second);
 
-    InvokePhiRegularizers(new_ttm.get());
+    if (invoke_regularizers)
+      InvokePhiRegularizers(new_ttm.get());
+
     topic_model_.set(name, new_ttm);
 
     topic_model_inc_.erase(name);
   }
+}
+
+void Merger::InitializeModel(const InitializeModelArgs& args) {
+  if (master_component_service_ != nullptr) {
+    return;  // no-op in network modus operandi
+  }
+
+  auto schema = schema_->get();
+  const ModelConfig& model = schema->model_config(args.model_name());
+  auto new_ttm = std::make_shared<::artm::core::TopicModel>(model.name(), model.topics_count());
+  std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
+  if (dict == nullptr) {
+    std::stringstream ss;
+    ss << "Dictionary " << args.dictionary_name() << " does not exist";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  }
+
+  for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
+    ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
+    new_ttm->AddToken(class_id, iter->second.key_token(), true);
+  }
+
+  topic_model_.set(args.model_name(), new_ttm);
 }
 
 }  // namespace core

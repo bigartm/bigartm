@@ -57,6 +57,8 @@ class NodeControllerServiceImpl : public NodeControllerService {
                        ::rpcz::reply< ::artm::core::Int> response);
   virtual void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
+  virtual void InitializeModel(const ::artm::InitializeModelArgs& request,
+                       ::rpcz::reply< ::artm::core::Void> response);
 
   // The following methods talks to instance_ or master_
   virtual void CreateOrReconfigureModel(const ::artm::core::CreateOrReconfigureModelArgs& request,

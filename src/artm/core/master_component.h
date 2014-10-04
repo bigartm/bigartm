@@ -77,6 +77,7 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
   virtual bool WaitIdle(int timeout = -1);
   virtual void InvokeIteration(int iterations_count);
   virtual void SynchronizeModel(const SynchronizeModelArgs& args);
+  virtual void InitializeModel(const InitializeModelArgs& args);
   virtual void AddBatch(const Batch& batch);
 
   // Throws InvalidOperation exception if new config is invalid.

@@ -407,6 +407,7 @@ class Model:
   def __init__(self, master_component, config):
     self.lib_ = master_component.lib_
     self.master_id_ = master_component.id_
+    self.master_component = master_component
     self.config_ = config
     self.config_.name = uuid.uuid1().urn
     model_config_blob = config.SerializeToString()
@@ -444,27 +445,25 @@ class Model:
                     len(model_config_blob), model_config_blob_p))
     self.config_.CopyFrom(config)
 
-  def Synchronize(self, decay_weight = 0.0):
+  def Synchronize(self, decay_weight = 0.0, invoke_regularizers = True):
     args = messages_pb2.SynchronizeModelArgs();
     args.model_name = self.name()
     args.decay_weight = decay_weight
+    args.invoke_regularizers = invoke_regularizers
     args_blob = args.SerializeToString()
     args_blob_p = ctypes.create_string_buffer(args_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmSynchronizeModel(
                      self.master_id_, len(args_blob), args_blob_p))
 
   
-  def Initialize(self, tokens, random = random.Random()):
-    initial_topic_model = messages_pb2.TopicModel();
-    initial_topic_model.topics_count = self.topics_count();
-    initial_topic_model.name = self.name()
-    for i in range(0, len(tokens.entry)):
-      token = tokens.entry[i].key_token
-      initial_topic_model.token.append(token);
-      weights = initial_topic_model.token_weights.add();
-      for topic_index in range(0, self.topics_count()):
-        weights.value.append(random.random())
-    self.Overwrite(initial_topic_model)
+  def Initialize(self, dictionary):
+    args = messages_pb2.InitializeModelArgs()
+    args.model_name = self.name()
+    args.dictionary_name = dictionary.name();
+    blob = args.SerializeToString()
+    blob_p = ctypes.create_string_buffer(blob)
+    HandleErrorCode(self.lib_,
+                    self.lib_.ArtmInitializeModel(self.master_id_, len(blob), blob_p))
 
   def Overwrite(self, topic_model):
     blob = topic_model.SerializeToString()

@@ -22,7 +22,7 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   dirichlet_phi_reg    = master.CreateDirichletPhiRegularizer()
 
   # Create dictionary with tokens frequencies
-  master.CreateDictionary(unique_tokens)
+  dictionary = master.CreateDictionary(unique_tokens)
 
   # Default perplexity has type PerplexityScoreConfig_Type_UnigramDocumentModel
   perplexity_document_score = master.CreatePerplexityScore()
@@ -39,7 +39,7 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   model.EnableScore(perplexity_collection_score)
   model.EnableRegularizer(dirichlet_theta_reg, -1.0)
   model.EnableRegularizer(dirichlet_phi_reg, -1.0)
-  model.Initialize(unique_tokens)    # Setup initial approximation for Phi matrix.
+  model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
   for iter in range(0, 8):
     master.InvokeIteration(1)        # Invoke one scan of the entire collection...

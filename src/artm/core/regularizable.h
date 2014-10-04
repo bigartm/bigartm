@@ -28,6 +28,7 @@ class Regularizable {
   virtual TopicWeightIterator GetTopicWeightIterator(const Token& token) const = 0;
   virtual TopicWeightIterator GetTopicWeightIterator(int token_id) const = 0;
 
+  virtual ~Regularizable() {}
 };
 
 

@@ -2,6 +2,8 @@
 
 #include "artm/core/instance_schema.h"
 
+#include <sstream>
+
 #include "artm/regularizer_interface.h"
 #include "artm/score_calculator_interface.h"
 #include "artm/messages.pb.h"
@@ -42,6 +44,12 @@ void InstanceSchema::set_model_config(
 
 const ModelConfig& InstanceSchema::model_config(ModelName id) const {
   auto iter = models_config_.find(id);
+  if (iter == models_config_.end()) {
+    std::stringstream ss;
+    ss << "Model " << id << " does not exist";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  }
+
   return *(iter->second);
 }
 

@@ -15,10 +15,12 @@ unique_tokens = artm.library.Library().ParseCollectionOrLoadDictionary(
 # Create master component and infer topic model
 for processors_count in [4,2,1]:
   with artm.library.MasterComponent(disk_path = target_folder) as master:
+    dictionary = master.CreateDictionary(unique_tokens)
+
     perplexity_score = master.CreatePerplexityScore()
     model = master.CreateModel(topics_count = 10, inner_iterations_count = 10)
     model.EnableScore(perplexity_score)
-    model.Initialize(unique_tokens)    # Setup initial approximation for Phi matrix.
+    model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
     print "Setting processors_count to " + str(processors_count)
     master.config().processors_count = processors_count

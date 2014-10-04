@@ -20,6 +20,7 @@
 #include "rpcz/sync_event.hpp"
 
 #include "artm/core/common.h"
+#include "artm/core/dictionary.h"
 #include "artm/core/internals.rpcz.h"
 #include "artm/core/thread_safe_holder.h"
 #include "artm/score_calculator_interface.h"
@@ -35,6 +36,7 @@ class Merger : boost::noncopyable {
   Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
          ThreadSafeHolder<InstanceSchema>* schema,
          MasterComponentService_Stub* master_component_service,
+         const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
          Notifiable* notifiable);
 
   ~Merger();
@@ -49,6 +51,7 @@ class Merger : boost::noncopyable {
   void ForcePullTopicModel();
   void ForcePushTopicModelIncrement();
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
+  void InitializeModel(const InitializeModelArgs& args);
 
   std::shared_ptr<const ::artm::core::TopicModel> GetLatestTopicModel(ModelName model_name) const;
   bool RetrieveExternalTopicModel(ModelName model_name, ::artm::TopicModel* topic_model) const;
@@ -92,17 +95,15 @@ class Merger : boost::noncopyable {
   struct MergerTask {
     MergerTask() {}
 
-    MergerTask(MergerTaskType _task_type, ModelName _model_name, float _decay_weight)
-        : task_type(_task_type), model_name(_model_name), decay_weight(_decay_weight), sync_event(nullptr) {}
-
     MergerTask(MergerTaskType _task_type, ModelName _model_name, float _decay_weight,
-               rpcz::sync_event* _sync_event)
+               bool _invoke_regularizers, rpcz::sync_event* _sync_event)
         : task_type(_task_type), model_name(_model_name), decay_weight(_decay_weight),
-          sync_event(_sync_event) {}
+          invoke_regularizers(_invoke_regularizers), sync_event(_sync_event) {}
 
     MergerTaskType task_type;
     ModelName model_name;
     float decay_weight;
+    bool invoke_regularizers;
     rpcz::sync_event* sync_event;
   };
 
@@ -116,13 +117,15 @@ class Merger : boost::noncopyable {
   ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue_;
   ThreadSafeQueue<MergerTask> internal_task_queue_;
 
+  const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;
+
   Notifiable* notifiable_;
 
   mutable std::atomic<bool> is_stopping;
   boost::thread thread_;
   void ThreadFunction();
 
-  void SynchronizeModel(const ModelName& model_name, float decay_weight);
+  void SynchronizeModel(const ModelName& model_name, float decay_weight, bool invoke_regularizers);
   void PullTopicModel();
   void PushTopicModelIncrement();
   void InvokePhiRegularizers(::artm::core::TopicModel* topic_model);

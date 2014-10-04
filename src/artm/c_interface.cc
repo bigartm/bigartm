@@ -236,6 +236,15 @@ int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) 
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmInitializeModel(int master_id, int length, const char* init_model_args) {
+  try {
+    artm::InitializeModelArgs args;
+    ParseFromArray(init_model_args, length, &args);
+    master_component(master_id)->InitializeModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmDisposeMasterComponent(int master_id) {
   try {
     artm::core::MasterComponentManager::singleton().Erase(master_id);

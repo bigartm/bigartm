@@ -33,6 +33,10 @@ else:
 
 # Create master component and infer topic model
 with artm.library.MasterComponent(disk_path = target_folder) as master:
+  # Create dictionary with tokens frequencies
+  dictionary           = master.CreateDictionary(unique_tokens)
+
+  # Configure basic scores
   perplexity_score     = master.CreatePerplexityScore()
   sparsity_theta_score = master.CreateSparsityThetaScore()
   sparsity_phi_score   = master.CreateSparsityPhiScore()
@@ -54,7 +58,7 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   model.EnableRegularizer(dirichlet_theta_reg, -0.1)
   model.EnableRegularizer(dirichlet_phi_reg, -0.2)
   model.EnableRegularizer(decorrelator_reg, 1000000)
-  model.Initialize(unique_tokens)    # Setup initial approximation for Phi matrix.
+  model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
   for iter in range(0, 8):
     master.InvokeIteration(1)        # Invoke one scan of the entire collection...
