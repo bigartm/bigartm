@@ -62,27 +62,30 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
   }
 
   for (int token_index = 0; token_index < tokens_size; token_index++) {
-    ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token_index);
+    if (topic_model.token(token_index).class_id == artm::core::DefaultClass) {
+      ::artm::core::TopicWeightIterator topic_iter = 
+          topic_model.GetTopicWeightIterator(token_index);
 
-    // calculate normalizer
-    double normalizer = 0.0;
-    while (topic_iter.NextTopic() < topics_size) {
-      if (topics_to_score.value(topic_iter.TopicIndex())) {
-        normalizer += topic_iter.Weight() * topic_iter.GetNormalizer()[topic_iter.TopicIndex()];
+      // calculate normalizer
+      double normalizer = 0.0;
+      while (topic_iter.NextTopic() < topics_size) {
+        if (topics_to_score.value(topic_iter.TopicIndex())) {
+          normalizer += topic_iter.Weight() * topic_iter.GetNormalizer()[topic_iter.TopicIndex()];
+        }
       }
-    }
-    topic_iter.Reset();
-    while (topic_iter.NextTopic() < topics_size) {
-      int topic_index = topic_iter.TopicIndex();
-      if (topics_to_score.value(topic_index)) {
-        double p_tw = topic_iter.Weight() *
-          topic_iter.GetNormalizer()[topic_index] / normalizer;
+      topic_iter.Reset();
+      while (topic_iter.NextTopic() < topics_size) {
+        int topic_index = topic_iter.TopicIndex();
+        if (topics_to_score.value(topic_index)) {
+          double p_tw = topic_iter.Weight() *
+            topic_iter.GetNormalizer()[topic_index] / normalizer;
 
-        if (p_tw >= probability_mass_threshold) {
-          artm::core::repeated_field_append(kernel_size->mutable_value(), topic_index, 1.0);
-          artm::core::repeated_field_append(kernel_purity->mutable_value(), topic_index,
-                                            topic_iter.Weight());
-          artm::core::repeated_field_append(kernel_contrast->mutable_value(), topic_index, p_tw);
+          if (p_tw >= probability_mass_threshold) {
+            artm::core::repeated_field_append(kernel_size->mutable_value(), topic_index, 1.0);
+            artm::core::repeated_field_append(kernel_purity->mutable_value(), topic_index,
+                                              topic_iter.Weight());
+            artm::core::repeated_field_append(kernel_contrast->mutable_value(), topic_index, p_tw);
+          }
         }
       }
     }

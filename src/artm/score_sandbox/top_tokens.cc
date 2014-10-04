@@ -28,15 +28,17 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
 
   for (int token_index = 0; token_index < tokens_size; token_index++) {
     auto token = topic_model.token(token_index);
-    ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-    int topic_index = 0;
-    while (topic_iter.NextTopic() < topics_size && topic_index < config_.topic_id_size()) {
-      if (topic_iter.TopicIndex() < config_.topic_id(topic_index)) {
-        continue;
+    if (token.class_id == artm::core::DefaultClass) {
+      ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
+      int topic_index = 0;
+      while (topic_iter.NextTopic() < topics_size && topic_index < config_.topic_id_size()) {
+        if (topic_iter.TopicIndex() < config_.topic_id(topic_index)) {
+          continue;
+        }
+        float weight = topic_iter.Weight();
+        p_wt[topic_index].push_back(std::pair<float, artm::core::Token>(weight, token));
+        ++topic_index;
       }
-      float weight = topic_iter.Weight();
-      p_wt[topic_index].push_back(std::pair<float, artm::core::Token>(weight, token));
-      ++topic_index;
     }
   }
 
