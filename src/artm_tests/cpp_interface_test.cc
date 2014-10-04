@@ -256,10 +256,10 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   artm::Model model3(*master_component, model_config);
   model3.Initialize(dict);
   auto new_topic_model3 = master_component->GetTopicModel(model3);
-  ASSERT_EQ( new_topic_model3->token_size(), 3);
-  ASSERT_EQ( new_topic_model3->token(0), "my_tok_1");
-  ASSERT_EQ( new_topic_model3->token(1), "my_tok_2");
-  ASSERT_EQ( new_topic_model3->token(2), "my_tok_3");
+  ASSERT_EQ(new_topic_model3->token_size(), 3);
+  ASSERT_EQ(new_topic_model3->token(0), "my_tok_1");
+  ASSERT_EQ(new_topic_model3->token(1), "my_tok_2");
+  ASSERT_EQ(new_topic_model3->token(2), "my_tok_3");
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode
