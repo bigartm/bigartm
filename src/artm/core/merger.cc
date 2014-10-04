@@ -85,8 +85,40 @@ void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  std::shared_ptr<::artm::core::TopicModel> new_ttm(new ::artm::core::TopicModel(topic_model));
-  topic_model_.set(topic_model.name(), new_ttm);
+  bool has_classes = false;
+  if (topic_model.class_id_size() != 0) {
+    has_classes = true;
+    if (topic_model.class_id_size() != topic_model.token_size()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "TopicModel.class_id_size() != TopicModel.token_size()"));
+    }
+  }
+
+  bool remove_tokens = true;
+  if (topic_model.token_weights_size() != 0) {
+    remove_tokens = false;
+    if (topic_model.token_weights_size() != topic_model.token_size()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "TopicModel.token_weights_size() != TopicModel.token_size()"));
+    }
+  }
+
+  auto model_increment = std::make_shared<ModelIncrement>();
+  model_increment->set_model_name(topic_model.name());
+  model_increment->set_topics_count(topic_model.topics_count());
+  for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
+    model_increment->add_token(topic_model.token(token_index));
+    model_increment->add_class_id(has_classes ? topic_model.class_id(token_index) : DefaultClass);
+    artm::FloatArray* token_increment = model_increment->add_token_increment();
+    if (remove_tokens) {
+      model_increment->add_operation_type(ModelIncrement_OperationType_DeleteToken);
+    } else {
+      token_increment->CopyFrom(topic_model.token_weights(token_index));
+      model_increment->add_operation_type(ModelIncrement_OperationType_OverwriteValue);
+    }
+  }
+
+  merger_queue_->push(model_increment);
 }
 
 void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {

@@ -183,7 +183,16 @@ bool MasterComponent::RequestThetaMatrix(ModelName model_name, ::artm::ThetaMatr
 
 bool MasterComponent::WaitIdle(int timeout) {
   if (isInLocalModusOperandi()) {
-    return instance_->local_data_loader()->WaitIdle(timeout);
+    auto time_start = boost::posix_time::microsec_clock::local_time();
+
+    bool retval = instance_->local_data_loader()->WaitIdle(timeout);
+    if (!retval) return false;
+
+    auto time_end = boost::posix_time::microsec_clock::local_time();
+    if (timeout != -1)
+      timeout -= (time_end - time_start).total_milliseconds();
+
+    return instance_->merger()->WaitIdle(timeout);
   }
 
   if (isInNetworkModusOperandi()) {
@@ -214,7 +223,7 @@ bool MasterComponent::WaitIdle(int timeout) {
         return false;
       }
     } else {
-      instance_->merger()->WaitIdle(timeout);
+      instance_->merger()->WaitIdle(-1);
     }
 
     return true;

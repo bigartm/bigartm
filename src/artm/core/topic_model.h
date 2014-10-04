@@ -114,7 +114,7 @@ class TopicModel : public Regularizable {
   explicit TopicModel(const ::artm::core::ModelIncrement& model_increment);
 
   void Clear(ModelName model_name, int topics_count);
-  ~TopicModel();
+  virtual ~TopicModel();
 
   void RetrieveExternalTopicModel(::artm::TopicModel* topic_model) const;
   void CopyFromExternalTopicModel(const ::artm::TopicModel& topic_model);
@@ -124,6 +124,9 @@ class TopicModel : public Regularizable {
   // Applies model increment to this TopicModel.
   void ApplyDiff(const ::artm::core::ModelIncrement& diff);
   void ApplyDiff(const ::artm::core::TopicModel& diff);
+
+  void RemoveToken(ClassId class_id, std::string keyword);
+  void RemoveToken(const Token& token);
 
   int  AddToken(const Token& token, bool random_init = true);
   int  AddToken(ClassId class_id, std::string keyword, bool random_init);
