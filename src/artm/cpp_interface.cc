@@ -1,17 +1,12 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+#ifdef INCLUDE_STDAFX_H
+#include "stdafx.h"  // NOLINT
+#endif
+
 #include <iostream>  // NOLINT
 
 #include "artm/cpp_interface.h"
-
-#include "boost/lexical_cast.hpp"
-#include "boost/uuid/uuid.hpp"
-#include "boost/uuid/uuid_generators.hpp"
-#include "boost/uuid/uuid_io.hpp"
-
-#include "glog/logging.h"
-
-#include "artm/core/protobuf_helpers.h"
 
 namespace artm {
 
@@ -170,9 +165,8 @@ NodeController::~NodeController() {
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)
     : master_id_(master_component.id()),
       config_(config) {
-  if (!config_.has_name()) {
-    config_.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-  }
+  if (!config_.has_name())
+    throw ArgumentOutOfRangeException("model_config.has_name()==false");
 
   std::string model_config_blob;
   config_.SerializeToString(&model_config_blob);
