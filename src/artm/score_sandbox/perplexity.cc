@@ -32,7 +32,7 @@ void Perplexity::AppendScore(
 
   int n_d_integer = 0;
   for (int token_index = 0; token_index < field->token_count_size(); ++token_index)
-    if (topic_model.token(token_index).class_id == artm::core::DefaultClass) {
+    if (token_dict[field->token_id(token_index)].class_id == artm::core::DefaultClass) {
       n_d_integer += field->token_count(token_index);
   }
   float n_d = static_cast<float>(n_d_integer);
