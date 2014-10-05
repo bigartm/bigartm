@@ -231,6 +231,9 @@ void Processor::ItemProcessor::InferTheta(const ModelConfig& model,
           FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(
             token_id[token_index]);
 
+          if (hat_n_wt_cur->value_size() != topic_size)
+            BOOST_THROW_EXCEPTION(InternalError("hat_n_wt_cur->value_size() != topic_size"));
+
           topic_iter.Reset();
           while (topic_iter.NextNonZeroTopic() < topic_size) {
             float val = current_class_weight *
@@ -467,14 +470,15 @@ void Processor::ThreadFunction() {
           model_increment->add_token(token_keyword);
           model_increment->add_class_id(token_class_id);
           FloatArray* counters = model_increment->add_token_increment();
-          for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-            counters->add_value(0.0f);
+          if (topic_model->has_token(token)) {
+            model_increment->add_operation_type(ModelIncrement_OperationType_IncrementValue);
+            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+              counters->add_value(0.0f);
+            }
+          } else {
+            model_increment->add_operation_type(ModelIncrement_OperationType_CreateIfNotExist);
           }
 
-          if (!topic_model->has_token(token)) {
-            model_increment->add_discovered_token(token_keyword);
-            model_increment->add_discovered_token_class_id(token_class_id);
-          }
           token_dict.push_back(token);
         }
 

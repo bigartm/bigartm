@@ -217,6 +217,14 @@ void MasterProxy::SynchronizeModel(const SynchronizeModelArgs& args) {
   }, "SynchronizeModel");
 }
 
+void MasterProxy::InitializeModel(const InitializeModelArgs& args) {
+  make_rpcz_call([&]() {
+    Void response;
+    node_controller_service_proxy_->InitializeModel(
+      args, &response, communication_timeout_);
+  }, "SynchronizeModel");
+}
+
 }  // namespace core
 }  // namespace artm
 

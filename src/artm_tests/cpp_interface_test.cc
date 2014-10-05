@@ -100,6 +100,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   model_config.add_regularizer_tau(1);
   model_config.add_regularizer_name(reg_multilang_name);
   model_config.add_regularizer_tau(1);
+  model_config.set_name("model_config1");
   artm::Model model(*master_component, model_config);
 
   // Load doc-token matrix
@@ -207,10 +208,12 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     }
   }
 
+  model_config.set_name("model2_name");
+  artm::Model model2(*master_component, model_config);
   if (!is_network_mode) {
     // Test overwrite topic model
     artm::TopicModel new_topic_model;
-    new_topic_model.set_name(model.name());
+    new_topic_model.set_name(model2.name());
     new_topic_model.set_topics_count(nTopics);
     new_topic_model.add_token("my overwritten token");
     new_topic_model.add_token("my overwritten token2");
@@ -221,8 +224,11 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
       weights2->add_value(static_cast<float>(nTopics - i));
     }
 
-    model.Overwrite(new_topic_model);
-    auto new_topic_model2 = master_component->GetTopicModel(model);
+    model2.Overwrite(new_topic_model);
+    master_component->WaitIdle();
+    model2.Synchronize(0.0, false);
+
+    auto new_topic_model2 = master_component->GetTopicModel(model2);
     ASSERT_EQ(new_topic_model2->token_size(), 2);
     EXPECT_EQ(new_topic_model2->token(0), "my overwritten token");
     EXPECT_EQ(new_topic_model2->token(1), "my overwritten token2");
@@ -236,6 +242,25 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
         1.0f - static_cast<float>(i) / static_cast<float>(nTopics));
     }
   }
+
+  // Test dictionaries and InitializeModel
+  ::artm::DictionaryConfig dict_config;
+  dict_config.set_name("My dictionary");
+  ::artm::DictionaryEntry* de1 = dict_config.add_entry();
+  ::artm::DictionaryEntry* de2 = dict_config.add_entry();
+  ::artm::DictionaryEntry* de3 = dict_config.add_entry();
+  de1->set_key_token("my_tok_1");
+  de2->set_key_token("my_tok_2");
+  de3->set_key_token("my_tok_3");
+  ::artm::Dictionary dict(*master_component, dict_config);
+  model_config.set_name("model3_name");
+  artm::Model model3(*master_component, model_config);
+  model3.Initialize(dict);
+  auto new_topic_model3 = master_component->GetTopicModel(model3);
+  ASSERT_EQ(new_topic_model3->token_size(), 3);
+  ASSERT_EQ(new_topic_model3->token(0), "my_tok_1");
+  ASSERT_EQ(new_topic_model3->token(1), "my_tok_2");
+  ASSERT_EQ(new_topic_model3->token(2), "my_tok_3");
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode
@@ -267,6 +292,7 @@ TEST(CppInterface, ModelExceptions) {
   // Create model
   artm::ModelConfig model_config;
   model_config.set_topics_count(10);
+  model_config.set_name("model_config1");
   artm::Model model(master_component, model_config);
 
   model.mutable_config()->set_topics_count(20);

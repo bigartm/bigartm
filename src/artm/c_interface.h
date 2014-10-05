@@ -43,6 +43,7 @@ extern "C" {
   DLL_PUBLIC int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args);
 
   DLL_PUBLIC int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model);
+  DLL_PUBLIC int ArtmInitializeModel(int master_id, int length, const char* init_model_args);
 
   DLL_PUBLIC int ArtmRequestThetaMatrix(int master_id, const char* model_name);
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, const char* model_name);

@@ -101,6 +101,7 @@ void TopicModel::RetrieveModelIncrement(::artm::core::ModelIncrement* diff) cons
     auto current_token = token(token_index);
     diff->add_token(current_token.keyword);
     diff->add_class_id(current_token.class_id);
+    diff->add_operation_type(ModelIncrement_OperationType_IncrementValue);
 
     ::artm::FloatArray* token_increment = diff->add_token_increment();
     for (int topic_index = 0; topic_index < topic_size(); ++topic_index) {
@@ -114,33 +115,54 @@ void TopicModel::RetrieveModelIncrement(::artm::core::ModelIncrement* diff) cons
 }
 
 void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff) {
-  // Add new tokens discovered by processor
-  for (int token_index = 0;
-       token_index < diff.discovered_token_size();
-       ++token_index) {
-    std::string new_token = diff.discovered_token(token_index);
-    ClassId new_class_id = diff.discovered_token_class_id(token_index);
-    auto token = Token(new_class_id, new_token);
-    if (!this->has_token(token)) {
-      this->AddToken(token);
-    }
+  int diff_token_size = diff.token_size();
+  if ((diff.class_id_size() != diff_token_size) ||
+      (diff.operation_type_size() != diff_token_size) ||
+      (diff.token_increment_size() != diff_token_size)) {
+    LOG(ERROR) << "Inconsistent fields size in ModelIncrement: "
+               << diff.token_size() << " vs " << diff.class_id_size()
+               << " vs " << diff.operation_type_size() << " vs " << diff.token_increment_size();
+    return;
   }
 
   int topics_count = this->topic_size();
 
-  for (int token_index = 0;
-       token_index < diff.token_increment_size();
-       ++token_index) {
+  for (int token_index = 0; token_index < diff_token_size; ++token_index) {
+    const std::string& token_keyword = diff.token(token_index);
+    const ClassId& class_id = diff.class_id(token_index);
+    Token token(class_id, token_keyword);
     const FloatArray& counters = diff.token_increment(token_index);
-
-    auto token = Token(diff.class_id(token_index), diff.token(token_index));
+    ModelIncrement_OperationType operation_type = diff.operation_type(token_index);
     int current_token_id = token_id(token);
-    if (current_token_id == -1) {
-      current_token_id = this->AddToken(token, false);
-    }
 
-    for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
-      this->IncreaseTokenWeight(current_token_id, topic_index, counters.value(topic_index));
+    switch (operation_type) {
+      case ModelIncrement_OperationType_CreateIfNotExist:
+        // Add new tokens discovered by processor
+        if (current_token_id == -1)
+          this->AddToken(token, true);
+        break;
+
+      case ModelIncrement_OperationType_IncrementValue:
+        if (current_token_id == -1)
+          current_token_id = this->AddToken(token, false);
+        for (int topic_index = 0; topic_index < topics_count; ++topic_index)
+          this->IncreaseTokenWeight(current_token_id, topic_index, counters.value(topic_index));
+        break;
+
+      case ModelIncrement_OperationType_OverwriteValue:
+        if (current_token_id == -1)
+          current_token_id = this->AddToken(token, false);
+        for (int topic_index = 0; topic_index < topics_count; ++topic_index)
+          this->SetTokenWeight(current_token_id, topic_index, counters.value(topic_index));
+        break;
+
+      case ModelIncrement_OperationType_DeleteToken:
+        this->RemoveToken(token);
+        break;
+
+      default:
+        BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
+          "ModelIncrement.operation_type", operation_type));
     }
   }
 
@@ -250,7 +272,7 @@ void TopicModel::CopyFromExternalTopicModel(const ::artm::TopicModel& external_t
 }
 
 int TopicModel::AddToken(ClassId class_id, std::string keyword, bool random_init) {
-  return TopicModel::AddToken(Token(keyword, class_id), random_init);
+  return TopicModel::AddToken(Token(class_id, keyword), random_init);
 }
 
 int TopicModel::AddToken(const Token& token, bool random_init) {
@@ -297,6 +319,33 @@ int TopicModel::AddToken(const Token& token, bool random_init) {
   r_wt_.push_back(regularizer_values);
 
   return token_id;
+}
+
+void TopicModel::RemoveToken(ClassId class_id, std::string keyword) {
+  TopicModel::RemoveToken(Token(keyword, class_id));
+}
+
+void TopicModel::RemoveToken(const Token& token) {
+  auto iter = token_to_token_id_.find(token);
+  if (iter == token_to_token_id_.end())
+    return;
+
+  int token_id = iter->second;
+
+  // Set n_wt_ and r_wt_ to zero to make sure n_t_ is still correct after token removal.
+  for (int topic_id = 0; topic_id < topic_size(); ++topic_id) {
+    SetTokenWeight(token_id, topic_id, 0.0f);
+    SetRegularizerWeight(token_id, topic_id, 0.0f);
+  }
+
+  delete[] n_wt_[token_id];
+  delete[] r_wt_[token_id];
+
+  n_wt_.erase(n_wt_.begin() + token_id);
+  r_wt_.erase(r_wt_.begin() + token_id);
+
+  token_id_to_token_.erase(token_id_to_token_.begin() + token_id);
+  token_to_token_id_.erase(iter);
 }
 
 void TopicModel::IncreaseTokenWeight(const Token& token, int topic_id, float value) {

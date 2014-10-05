@@ -46,6 +46,7 @@ class MasterProxy : boost::noncopyable, public MasterInterface {
   virtual void InvokeIteration(int iterations_count);
   virtual bool WaitIdle(int timeout = -1);
   virtual void SynchronizeModel(const SynchronizeModelArgs& args);
+  virtual void InitializeModel(const InitializeModelArgs& args);
 
  private:
   friend class TemplateManager<MasterInterface>;

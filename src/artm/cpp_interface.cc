@@ -1,17 +1,12 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+#ifdef INCLUDE_STDAFX_H
+#include "stdafx.h"  // NOLINT
+#endif
+
 #include <iostream>  // NOLINT
 
 #include "artm/cpp_interface.h"
-
-#include "boost/lexical_cast.hpp"
-#include "boost/uuid/uuid.hpp"
-#include "boost/uuid/uuid_generators.hpp"
-#include "boost/uuid/uuid_io.hpp"
-
-#include "glog/logging.h"
-
-#include "artm/core/protobuf_helpers.h"
 
 namespace artm {
 
@@ -170,9 +165,8 @@ NodeController::~NodeController() {
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)
     : master_id_(master_component.id()),
       config_(config) {
-  if (!config_.has_name()) {
-    config_.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-  }
+  if (!config_.has_name())
+    throw ArgumentOutOfRangeException("model_config.has_name()==false");
 
   std::string model_config_blob;
   config_.SerializeToString(&model_config_blob);
@@ -210,10 +204,24 @@ void Model::Disable() {
   Reconfigure(config_copy_);
 }
 
+void Model::Initialize(const Dictionary& dictionary) {
+  InitializeModelArgs args;
+  args.set_model_name(this->name());
+  args.set_dictionary_name(dictionary.name());
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmInitializeModel(master_id(), blob.size(), blob.c_str()));
+}
+
 void Model::Synchronize(double decay) {
+  Synchronize(decay, true);
+}
+
+void Model::Synchronize(double decay, bool invoke_regularizers) {
   SynchronizeModelArgs args;
   args.set_model_name(this->name());
   args.set_decay_weight(static_cast<float>(decay));
+  args.set_invoke_regularizers(invoke_regularizers);
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmSynchronizeModel(master_id(), blob.size(), blob.c_str()));

@@ -366,6 +366,13 @@ message CollectionParserConfig {
 
 // Represents an argument of 'synchronize model' operation
 message SynchronizeModelArgs {
-  optional string model_name = 2;
-  optional float decay_weight = 3 [default = 1.0];
+  optional string model_name = 1;
+  optional float decay_weight = 2 [default = 1.0];
+  optional bool invoke_regularizers = 3 [default = true];
+}
+
+// Represents an argument of 'synchronize model' operation
+message InitializeModelArgs {
+  optional string model_name = 1;
+  optional string dictionary_name = 2;
 }

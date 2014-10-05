@@ -161,6 +161,8 @@ class NodeControllerService : public rpcz::service {
                        ::rpcz::reply< ::artm::core::Int> response);
   virtual void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
+  virtual void InitializeModel(const ::artm::InitializeModelArgs& request,
+                       ::rpcz::reply< ::artm::core::Void> response);
 
   // implements Service ----------------------------------------------
 
@@ -313,6 +315,12 @@ class NodeControllerService_Stub {
                        ::artm::core::Void* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
   void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
+                       ::artm::core::Void* response,
+                       long deadline_ms = -1);
+  void InitializeModel(const ::artm::InitializeModelArgs& request,
+                       ::artm::core::Void* response,
+                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
+  void InitializeModel(const ::artm::InitializeModelArgs& request,
                        ::artm::core::Void* response,
                        long deadline_ms = -1);
  private:

@@ -1,17 +1,8 @@
 # Copyright 2014, Additive Regularization of Topic Models.
 
-import os
-import sys
-
-if sys.platform.count('linux') == 1:
-  interface_address = os.path.abspath(os.path.join(os.curdir, os.pardir, 'python_interface'))
-  sys.path.append(interface_address)
-else:
-  sys.path.append('../python_interface/')
-
-import messages_pb2
-import python_interface
-from python_interface import *
+import artm.messages_pb2
+import artm.library
+from artm.library import *
 
 #################################################################################
 # ALL CODE BELOW DEFINES PROTOBUF MESSAGES NEED TO TEST THE INTERFACE FUNCTIONS
@@ -86,21 +77,10 @@ entry_2.value = 0.6
 #################################################################################
 # TEST SECTION
 
-import sys
-
-#if sys.platform.count('linux') == 1:
-#  interface_address
-
-address = os.path.abspath(os.path.join(os.curdir, os.pardir))
-if sys.platform.count('linux') == 1:
-  library = ArtmLibrary(address + '/../build/src/artm/libartm.so')
-else:
-  os.environ['PATH'] = ';'.join([address + '..\\..\\build\\bin\\Debug', os.environ['PATH']])
-  library = ArtmLibrary(address + '..\\..\\build\\bin\\Debug\\artm.dll')
-
-with library.CreateMasterComponent() as master_component:
+artm_library = Library()
+with MasterComponent() as master_component:
   master_component.Reconfigure(master_config)
-  master_component.CreateScore('perplexity_score', ScoreConfig_Type_Perplexity, perplexity_config)
+  perplexity_score = master_component.CreateScore('perplexity_score', ScoreConfig_Type_Perplexity, perplexity_config)
   master_component.CreateStream(stream)
   master_component.RemoveStream(stream)
   model = master_component.CreateModel(model_config)
@@ -122,7 +102,7 @@ with library.CreateMasterComponent() as master_component:
   model.Disable()
   topic_model = master_component.GetTopicModel(model)
   theta_matrix = master_component.GetThetaMatrix(model)
-  perplexity_score = master_component.GetScore(model, 'perplexity_score')
+  perplexity_score = perplexity_score.GetValue(model)
 
   model.Overwrite(topic_model);
 
@@ -135,8 +115,8 @@ with library.CreateMasterComponent() as master_component:
   master_component.Reconfigure(master_config_new)
   master_component.RemoveDictionary(dictionary)
 
-with library.CreateNodeController("tcp://*:5555") as node_controller:
-  with library.CreateMasterComponent(master_proxy_config) as master_component:
+with NodeController("tcp://*:5555") as node_controller:
+  with MasterComponent(master_proxy_config) as master_component:
     master_component.Reconfigure(master_config)
 
 print 'All tests have been successfully passed!'

@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "python_interface", "vsprojects\python_interface.pyproj", "{2ADC9DC7-A191-4800-867B-A25EE6CB8838}"
-EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "python_tests", "vsprojects\python_tests.pyproj", "{B69C8560-AC5D-4D49-97F7-44FA0E68239C}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "python_client", "vsprojects\python_client.pyproj", "{8CBE34F8-5D46-4832-B615-DB183812F81F}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "python_library", "vsprojects\python_library.pyproj", "{2ADC9DC7-A191-4800-867B-A25EE6CB8838}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "python_examples", "vsprojects\python_examples.pyproj", "{8CBE34F8-5D46-4832-B615-DB183812F81F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +19,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|Win32.ActiveCfg = Release|Any CPU
-		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|x64.ActiveCfg = Release|Any CPU
 		{B69C8560-AC5D-4D49-97F7-44FA0E68239C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B69C8560-AC5D-4D49-97F7-44FA0E68239C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B69C8560-AC5D-4D49-97F7-44FA0E68239C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -39,6 +31,18 @@ Global
 		{B69C8560-AC5D-4D49-97F7-44FA0E68239C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B69C8560-AC5D-4D49-97F7-44FA0E68239C}.Release|Win32.ActiveCfg = Release|Any CPU
 		{B69C8560-AC5D-4D49-97F7-44FA0E68239C}.Release|x64.ActiveCfg = Release|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|Win32.ActiveCfg = Release|Any CPU
+		{2ADC9DC7-A191-4800-867B-A25EE6CB8838}.Release|x64.ActiveCfg = Release|Any CPU
 		{8CBE34F8-5D46-4832-B615-DB183812F81F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8CBE34F8-5D46-4832-B615-DB183812F81F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CBE34F8-5D46-4832-B615-DB183812F81F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
