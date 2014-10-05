@@ -39,12 +39,16 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::TopicModel&
   }
 
   for (int token_index = 0; token_index < tokens_size; token_index++) {
-    ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token_index);
-    while (topic_iter.NextTopic() < topics_size) {
-      if ((fabs(topic_iter.Weight()) < config_.eps() ||
-          fabs(topic_iter.NotNormalizedWeight()) < config_.eps()) &&
-          topics_to_score.value(topic_iter.TopicIndex())) {
-        ++zero_tokens_count;
+    if (topic_model.token(token_index).class_id == artm::core::DefaultClass) {
+      ::artm::core::TopicWeightIterator topic_iter =
+          topic_model.GetTopicWeightIterator(token_index);
+
+      while (topic_iter.NextTopic() < topics_size) {
+        if ((fabs(topic_iter.Weight()) < config_.eps() ||
+            fabs(topic_iter.NotNormalizedWeight()) < config_.eps()) &&
+            topics_to_score.value(topic_iter.TopicIndex())) {
+          ++zero_tokens_count;
+        }
       }
     }
   }

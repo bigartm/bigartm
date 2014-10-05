@@ -32,7 +32,9 @@ void Perplexity::AppendScore(
 
   int n_d_integer = 0;
   for (int token_index = 0; token_index < field->token_count_size(); ++token_index)
-    n_d_integer += field->token_count(token_index);
+    if (token_dict[field->token_id(token_index)].class_id == artm::core::DefaultClass) {
+      n_d_integer += field->token_count(token_index);
+  }
   float n_d = static_cast<float>(n_d_integer);
 
   int zero_words = 0;
@@ -65,35 +67,37 @@ void Perplexity::AppendScore(
   for (int token_index = 0; token_index < field->token_count_size(); ++token_index) {
     double sum = 0.0;
     const artm::core::Token& token = token_dict[field->token_id(token_index)];
-    int token_count_int = field->token_count(token_index);
-    if (token_count_int == 0) continue;
-    double token_count = static_cast<double>(token_count_int);
+    if (token.class_id == artm::core::DefaultClass) {
+      int token_count_int = field->token_count(token_index);
+      if (token_count_int == 0) continue;
+      double token_count = static_cast<double>(token_count_int);
 
-    if (topic_model.has_token(token)) {
-      ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-      while (topic_iter.NextNonZeroTopic() < topics_size) {
-        sum += theta[topic_iter.TopicIndex()] * topic_iter.Weight();
-      }
-    }
-
-    if (sum == 0.0) {
-      if (use_document_unigram_model) {
-        sum = token_count / n_d;
-      } else {
-        if (dictionary_ptr->find(token) != dictionary_ptr->end()) {
-          float n_w = dictionary_ptr->find(token)->second.value();
-          sum = n_w / dictionary_ptr->size();
-        } else {
-          LOG(INFO) << "No token " << token.keyword << " from class " << token.class_id <<
-              "in dictionary, document unigram model will be used.";
-          sum = token_count / n_d;
+      if (topic_model.has_token(token)) {
+        ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
+        while (topic_iter.NextNonZeroTopic() < topics_size) {
+          sum += theta[topic_iter.TopicIndex()] * topic_iter.Weight();
         }
       }
-      zero_words++;
-    }
 
-    normalizer += token_count;
-    raw        += token_count * log(sum);
+      if (sum == 0.0) {
+        if (use_document_unigram_model) {
+          sum = token_count / n_d;
+        } else {
+          if (dictionary_ptr->find(token) != dictionary_ptr->end()) {
+            float n_w = dictionary_ptr->find(token)->second.value();
+            sum = n_w / dictionary_ptr->size();
+          } else {
+            LOG(INFO) << "No token " << token.keyword << " from class " << token.class_id <<
+                "in dictionary, document unigram model will be used.";
+            sum = token_count / n_d;
+          }
+        }
+        zero_words++;
+      }
+
+      normalizer += token_count;
+      raw        += token_count * log(sum);
+    }
   }
 
   PerplexityScore perplexity_score;
