@@ -121,11 +121,16 @@ TEST(Instance, Basic) {
   instance->merger()->ForceSynchronizeModel(sync_model_args);
 
   config.set_enabled(false);
+  for (int i = 0; i < 3; ++i) {
+    config.add_topics_name("topic" + std::to_string(i));
+  }
+  config.set_topics_count(0);
   instance->CreateOrReconfigureModel(config);
 
   artm::TopicModel topic_model;
   instance->merger()->RetrieveExternalTopicModel(model_name, &topic_model);
   EXPECT_EQ(topic_model.token_size(), 3);
+  EXPECT_EQ(topic_model.topics_count(), 3);
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "first token")));
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "second")));
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "last")));
