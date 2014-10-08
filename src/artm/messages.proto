@@ -330,16 +330,17 @@ message TopicKernelScore {
 message TopicModel {
   optional string name = 1 [default = "@model"];
   optional int32 topics_count = 2;
-  repeated string token = 3;
-  repeated FloatArray token_weights = 4;
-  repeated string class_id = 5;
+  repeated string topics_name = 3;
+  repeated string token = 4;
+  repeated FloatArray token_weights = 5;
+  repeated string class_id = 6;
 
   message TopicModelInternals {
     repeated FloatArray n_wt = 1;
     repeated FloatArray r_wt = 2;
   }
 
-  optional bytes internals = 6;
+  optional bytes internals = 7;
 }
 
 // Represents a theta matrix.

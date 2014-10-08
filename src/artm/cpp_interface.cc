@@ -129,8 +129,10 @@ std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(
   return regularizer_state;
 }
 
-std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const Model& model) {
-  int length = HandleErrorCode(ArtmRequestThetaMatrix(id(), model.name().c_str()));
+std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int length = HandleErrorCode(ArtmRequestThetaMatrix(id(), args_blob.size(), args_blob.c_str()));
   std::string blob;
   blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));

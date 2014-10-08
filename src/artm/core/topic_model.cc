@@ -21,17 +21,22 @@
 namespace artm {
 namespace core {
 
-TopicModel::TopicModel(ModelName model_name, int topics_count)
+TopicModel::TopicModel(ModelName model_name, int topics_count,
+    google::protobuf::RepeatedPtrField<std::string> topics_name)
     : model_name_(model_name),
       token_to_token_id_(),
       token_id_to_token_(),
       topics_count_(topics_count),
+      topics_name_(),
       n_wt_(),
       r_wt_(),
       n_t_(),
       n_t_default_class_(nullptr),
       batch_uuid_() {
   assert(topics_count_ > 0);
+  for (auto iter = topics_name.begin(); iter != topics_name.end(); ++iter) {
+    topics_name_.push_back(*iter);
+  }
   CreateNormalizerVector(DefaultClass, topics_count_);
 }
 
@@ -40,6 +45,7 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay)
       token_to_token_id_(),
       token_id_to_token_(),
       topics_count_(rhs.topics_count_),
+      topics_name_(rhs.topics_name_),
       n_wt_(),  // must be deep-copied
       r_wt_(),  // must be deep-copied
       n_t_(),
@@ -63,7 +69,12 @@ TopicModel::TopicModel(const ::artm::TopicModel& external_topic_model) {
 TopicModel::TopicModel(const ::artm::core::ModelIncrement& model_increment) {
   model_name_ = model_increment.model_name();
   topics_count_ = model_increment.topics_count();
-
+  
+  topics_name_.clear();
+  auto topics_name = model_increment.topics_name();
+  for (auto iter = topics_name.begin(); iter != topics_name.end(); ++iter) {
+    topics_name_.push_back(*iter);
+  }
   ApplyDiff(model_increment);
 }
 
@@ -96,6 +107,11 @@ void TopicModel::Clear(ModelName model_name, int topics_count) {
 void TopicModel::RetrieveModelIncrement(::artm::core::ModelIncrement* diff) const {
   diff->set_model_name(model_name_);
   diff->set_topics_count(topic_size());
+
+  for (auto elem : topics_name_) {
+    std::string* name = diff->add_topics_name();
+    *name = elem;
+  }
 
   for (int token_index = 0; token_index < token_size(); ++token_index) {
     auto current_token = token(token_index);
@@ -199,6 +215,10 @@ void TopicModel::RetrieveExternalTopicModel(::artm::TopicModel* topic_model) con
   // 1. Fill in non-internal part of ::artm::TopicModel
   topic_model->set_name(model_name_);
   topic_model->set_topics_count(topic_size());
+  for (auto elem : topics_name_) {
+    std::string* name = topic_model->add_topics_name();
+    *name = elem;
+  }
 
   for (int token_index = 0; token_index < token_size(); ++token_index) {
     auto current_token = token_id_to_token_[token_index];
@@ -493,6 +513,15 @@ int TopicModel::token_size() const {
 
 int TopicModel::topic_size() const {
   return topics_count_;
+}
+
+google::protobuf::RepeatedPtrField<std::string> TopicModel::topics_name() {
+  google::protobuf::RepeatedPtrField<std::string> topics_name;
+  for (auto elem : topics_name_) {
+    std::string* name = topics_name.Add();
+    *name = elem;
+  }
+  return topics_name;
 }
 
 ModelName TopicModel::model_name() const {

@@ -70,7 +70,7 @@ class MasterComponent {
   std::shared_ptr<TopicModel> GetTopicModel(const Model& model);
   std::shared_ptr<RegularizerInternalState> GetRegularizerState(
     const std::string& regularizer_name);
-  std::shared_ptr<ThetaMatrix> GetThetaMatrix(const Model& model);
+  std::shared_ptr<ThetaMatrix> GetThetaMatrix(const GetThetaMatrixArgs& args);
   std::shared_ptr<ScoreData> GetScore(const Model& model,
                                       const std::string& score_name);
 

@@ -149,7 +149,7 @@ class NodeControllerService : public rpcz::service {
                        ::rpcz::reply< ::artm::TopicModel> response);
   virtual void RequestRegularizerState(const ::artm::core::String& request,
                        ::rpcz::reply< ::artm::RegularizerInternalState> response);
-  virtual void RequestThetaMatrix(const ::artm::core::String& request,
+  virtual void RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& request,
                        ::rpcz::reply< ::artm::ThetaMatrix> response);
   virtual void RequestScore(const ::artm::core::RequestScoreArgs& request,
                        ::rpcz::reply< ::artm::ScoreData> response);
@@ -281,10 +281,10 @@ class NodeControllerService_Stub {
   void RequestRegularizerState(const ::artm::core::String& request,
                        ::artm::RegularizerInternalState* response,
                        long deadline_ms = -1);
-  void RequestThetaMatrix(const ::artm::core::String& request,
+  void RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& request,
                        ::artm::ThetaMatrix* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void RequestThetaMatrix(const ::artm::core::String& request,
+  void RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& request,
                        ::artm::ThetaMatrix* response,
                        long deadline_ms = -1);
   void RequestScore(const ::artm::core::RequestScoreArgs& request,

@@ -264,14 +264,14 @@ void NodeControllerServiceImpl::RequestRegularizerState(
 }
 
 void NodeControllerServiceImpl::RequestThetaMatrix(
-    const ::artm::core::String& request,
+    const ::artm::GetThetaMatrixArgs& request,
     ::rpcz::reply< ::artm::ThetaMatrix> response) {
   try {
     boost::lock_guard<boost::mutex> guard(lock_);
     artm::ThetaMatrix theta_matrix;
     bool ok = false;
     if (master_ != nullptr) {
-      ok = master_->RequestThetaMatrix(request.value(), &theta_matrix);
+      ok = master_->RequestThetaMatrix(request, &theta_matrix);
     } else {
       LOG(ERROR) << "No master component exist in node controller";
     }

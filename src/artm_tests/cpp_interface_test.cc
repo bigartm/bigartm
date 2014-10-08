@@ -192,7 +192,9 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   EXPECT_EQ(first_token_topics.value_size(), nTopics);
 
   if (!is_network_mode) {
-    std::shared_ptr<::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(model);
+    artm::GetThetaMatrixArgs args;
+    args.set_model_name(model.name().c_str());
+    std::shared_ptr<::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
     EXPECT_TRUE(theta_matrix->item_id_size() == nDocs);
     for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
       const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);

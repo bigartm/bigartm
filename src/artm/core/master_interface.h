@@ -33,7 +33,8 @@ class MasterInterface {
   virtual bool RequestTopicModel(ModelName model_name, ::artm::TopicModel* topic_model) = 0;
   virtual void RequestRegularizerState(RegularizerName regularizer_name,
                                        ::artm::RegularizerInternalState* regularizer_state) = 0;
-  virtual bool RequestThetaMatrix(ModelName model_name, ::artm::ThetaMatrix* theta_matrix) = 0;
+  virtual bool RequestThetaMatrix(::artm::GetThetaMatrixArgs get_theta_args,
+      ::artm::ThetaMatrix* theta_matrix) = 0;
   virtual bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
                             ScoreData* score_data) = 0;
 

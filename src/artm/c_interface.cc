@@ -191,10 +191,12 @@ int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestThetaMatrix(int master_id, const char* model_name) {
+int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args) {
   try {
     artm::ThetaMatrix theta_matrix;
-    master_component(master_id)->RequestThetaMatrix(model_name, &theta_matrix);
+    artm::GetThetaMatrixArgs args;
+    ParseFromArray(get_theta_args, length, &args);
+    master_component(master_id)->RequestThetaMatrix(args, &theta_matrix);
     theta_matrix.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

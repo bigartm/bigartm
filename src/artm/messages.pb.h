@@ -79,6 +79,8 @@ class ThetaMatrix;
 class CollectionParserConfig;
 class SynchronizeModelArgs;
 class InitializeModelArgs;
+class GetTopicModelArgs;
+class GetThetaMatrixArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -4920,10 +4922,26 @@ class TopicModel : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 topics_count() const;
   inline void set_topics_count(::google::protobuf::int32 value);
 
-  // repeated string token = 3;
+  // repeated string topics_name = 3;
+  inline int topics_name_size() const;
+  inline void clear_topics_name();
+  static const int kTopicsNameFieldNumber = 3;
+  inline const ::std::string& topics_name(int index) const;
+  inline ::std::string* mutable_topics_name(int index);
+  inline void set_topics_name(int index, const ::std::string& value);
+  inline void set_topics_name(int index, const char* value);
+  inline void set_topics_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topics_name();
+  inline void add_topics_name(const ::std::string& value);
+  inline void add_topics_name(const char* value);
+  inline void add_topics_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topics_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topics_name();
+
+  // repeated string token = 4;
   inline int token_size() const;
   inline void clear_token();
-  static const int kTokenFieldNumber = 3;
+  static const int kTokenFieldNumber = 4;
   inline const ::std::string& token(int index) const;
   inline ::std::string* mutable_token(int index);
   inline void set_token(int index, const ::std::string& value);
@@ -4936,10 +4954,10 @@ class TopicModel : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& token() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_token();
 
-  // repeated .artm.FloatArray token_weights = 4;
+  // repeated .artm.FloatArray token_weights = 5;
   inline int token_weights_size() const;
   inline void clear_token_weights();
-  static const int kTokenWeightsFieldNumber = 4;
+  static const int kTokenWeightsFieldNumber = 5;
   inline const ::artm::FloatArray& token_weights(int index) const;
   inline ::artm::FloatArray* mutable_token_weights(int index);
   inline ::artm::FloatArray* add_token_weights();
@@ -4948,10 +4966,10 @@ class TopicModel : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
       mutable_token_weights();
 
-  // repeated string class_id = 5;
+  // repeated string class_id = 6;
   inline int class_id_size() const;
   inline void clear_class_id();
-  static const int kClassIdFieldNumber = 5;
+  static const int kClassIdFieldNumber = 6;
   inline const ::std::string& class_id(int index) const;
   inline ::std::string* mutable_class_id(int index);
   inline void set_class_id(int index, const ::std::string& value);
@@ -4964,10 +4982,10 @@ class TopicModel : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
 
-  // optional bytes internals = 6;
+  // optional bytes internals = 7;
   inline bool has_internals() const;
   inline void clear_internals();
-  static const int kInternalsFieldNumber = 6;
+  static const int kInternalsFieldNumber = 7;
   inline const ::std::string& internals() const;
   inline void set_internals(const ::std::string& value);
   inline void set_internals(const char* value);
@@ -4989,6 +5007,7 @@ class TopicModel : public ::google::protobuf::Message {
 
   ::std::string* name_;
   static ::std::string* _default_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topics_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> token_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > token_weights_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
@@ -4996,7 +5015,7 @@ class TopicModel : public ::google::protobuf::Message {
   ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5534,6 +5553,231 @@ class InitializeModelArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static InitializeModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class GetTopicModelArgs : public ::google::protobuf::Message {
+ public:
+  GetTopicModelArgs();
+  virtual ~GetTopicModelArgs();
+
+  GetTopicModelArgs(const GetTopicModelArgs& from);
+
+  inline GetTopicModelArgs& operator=(const GetTopicModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GetTopicModelArgs& default_instance();
+
+  void Swap(GetTopicModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  GetTopicModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const GetTopicModelArgs& from);
+  void MergeFrom(const GetTopicModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string model_name = 1;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 1;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // repeated string topics_name = 2;
+  inline int topics_name_size() const;
+  inline void clear_topics_name();
+  static const int kTopicsNameFieldNumber = 2;
+  inline const ::std::string& topics_name(int index) const;
+  inline ::std::string* mutable_topics_name(int index);
+  inline void set_topics_name(int index, const ::std::string& value);
+  inline void set_topics_name(int index, const char* value);
+  inline void set_topics_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topics_name();
+  inline void add_topics_name(const ::std::string& value);
+  inline void add_topics_name(const char* value);
+  inline void add_topics_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topics_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topics_name();
+
+  // repeated string token = 3;
+  inline int token_size() const;
+  inline void clear_token();
+  static const int kTokenFieldNumber = 3;
+  inline const ::std::string& token(int index) const;
+  inline ::std::string* mutable_token(int index);
+  inline void set_token(int index, const ::std::string& value);
+  inline void set_token(int index, const char* value);
+  inline void set_token(int index, const char* value, size_t size);
+  inline ::std::string* add_token();
+  inline void add_token(const ::std::string& value);
+  inline void add_token(const char* value);
+  inline void add_token(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& token() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_token();
+
+  // repeated string class_id = 4;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 4;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
+  // @@protoc_insertion_point(class_scope:artm.GetTopicModelArgs)
+ private:
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* model_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topics_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> token_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static GetTopicModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class GetThetaMatrixArgs : public ::google::protobuf::Message {
+ public:
+  GetThetaMatrixArgs();
+  virtual ~GetThetaMatrixArgs();
+
+  GetThetaMatrixArgs(const GetThetaMatrixArgs& from);
+
+  inline GetThetaMatrixArgs& operator=(const GetThetaMatrixArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GetThetaMatrixArgs& default_instance();
+
+  void Swap(GetThetaMatrixArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  GetThetaMatrixArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const GetThetaMatrixArgs& from);
+  void MergeFrom(const GetThetaMatrixArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string model_name = 1;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 1;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // @@protoc_insertion_point(class_scope:artm.GetThetaMatrixArgs)
+ private:
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* model_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static GetThetaMatrixArgs* default_instance_;
 };
 // ===================================================================
 
@@ -10452,7 +10696,51 @@ inline void TopicModel::set_topics_count(::google::protobuf::int32 value) {
   topics_count_ = value;
 }
 
-// repeated string token = 3;
+// repeated string topics_name = 3;
+inline int TopicModel::topics_name_size() const {
+  return topics_name_.size();
+}
+inline void TopicModel::clear_topics_name() {
+  topics_name_.Clear();
+}
+inline const ::std::string& TopicModel::topics_name(int index) const {
+  return topics_name_.Get(index);
+}
+inline ::std::string* TopicModel::mutable_topics_name(int index) {
+  return topics_name_.Mutable(index);
+}
+inline void TopicModel::set_topics_name(int index, const ::std::string& value) {
+  topics_name_.Mutable(index)->assign(value);
+}
+inline void TopicModel::set_topics_name(int index, const char* value) {
+  topics_name_.Mutable(index)->assign(value);
+}
+inline void TopicModel::set_topics_name(int index, const char* value, size_t size) {
+  topics_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicModel::add_topics_name() {
+  return topics_name_.Add();
+}
+inline void TopicModel::add_topics_name(const ::std::string& value) {
+  topics_name_.Add()->assign(value);
+}
+inline void TopicModel::add_topics_name(const char* value) {
+  topics_name_.Add()->assign(value);
+}
+inline void TopicModel::add_topics_name(const char* value, size_t size) {
+  topics_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopicModel::topics_name() const {
+  return topics_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopicModel::mutable_topics_name() {
+  return &topics_name_;
+}
+
+// repeated string token = 4;
 inline int TopicModel::token_size() const {
   return token_.size();
 }
@@ -10496,7 +10784,7 @@ TopicModel::mutable_token() {
   return &token_;
 }
 
-// repeated .artm.FloatArray token_weights = 4;
+// repeated .artm.FloatArray token_weights = 5;
 inline int TopicModel::token_weights_size() const {
   return token_weights_.size();
 }
@@ -10521,7 +10809,7 @@ TopicModel::mutable_token_weights() {
   return &token_weights_;
 }
 
-// repeated string class_id = 5;
+// repeated string class_id = 6;
 inline int TopicModel::class_id_size() const {
   return class_id_.size();
 }
@@ -10565,15 +10853,15 @@ TopicModel::mutable_class_id() {
   return &class_id_;
 }
 
-// optional bytes internals = 6;
+// optional bytes internals = 7;
 inline bool TopicModel::has_internals() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void TopicModel::set_has_internals() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void TopicModel::clear_has_internals() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void TopicModel::clear_internals() {
   if (internals_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -11461,6 +11749,286 @@ inline void InitializeModelArgs::set_allocated_dictionary_name(::std::string* di
   } else {
     clear_has_dictionary_name();
     dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// GetTopicModelArgs
+
+// optional string model_name = 1;
+inline bool GetTopicModelArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void GetTopicModelArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void GetTopicModelArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void GetTopicModelArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& GetTopicModelArgs::model_name() const {
+  return *model_name_;
+}
+inline void GetTopicModelArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void GetTopicModelArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void GetTopicModelArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetTopicModelArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* GetTopicModelArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void GetTopicModelArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// repeated string topics_name = 2;
+inline int GetTopicModelArgs::topics_name_size() const {
+  return topics_name_.size();
+}
+inline void GetTopicModelArgs::clear_topics_name() {
+  topics_name_.Clear();
+}
+inline const ::std::string& GetTopicModelArgs::topics_name(int index) const {
+  return topics_name_.Get(index);
+}
+inline ::std::string* GetTopicModelArgs::mutable_topics_name(int index) {
+  return topics_name_.Mutable(index);
+}
+inline void GetTopicModelArgs::set_topics_name(int index, const ::std::string& value) {
+  topics_name_.Mutable(index)->assign(value);
+}
+inline void GetTopicModelArgs::set_topics_name(int index, const char* value) {
+  topics_name_.Mutable(index)->assign(value);
+}
+inline void GetTopicModelArgs::set_topics_name(int index, const char* value, size_t size) {
+  topics_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetTopicModelArgs::add_topics_name() {
+  return topics_name_.Add();
+}
+inline void GetTopicModelArgs::add_topics_name(const ::std::string& value) {
+  topics_name_.Add()->assign(value);
+}
+inline void GetTopicModelArgs::add_topics_name(const char* value) {
+  topics_name_.Add()->assign(value);
+}
+inline void GetTopicModelArgs::add_topics_name(const char* value, size_t size) {
+  topics_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+GetTopicModelArgs::topics_name() const {
+  return topics_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+GetTopicModelArgs::mutable_topics_name() {
+  return &topics_name_;
+}
+
+// repeated string token = 3;
+inline int GetTopicModelArgs::token_size() const {
+  return token_.size();
+}
+inline void GetTopicModelArgs::clear_token() {
+  token_.Clear();
+}
+inline const ::std::string& GetTopicModelArgs::token(int index) const {
+  return token_.Get(index);
+}
+inline ::std::string* GetTopicModelArgs::mutable_token(int index) {
+  return token_.Mutable(index);
+}
+inline void GetTopicModelArgs::set_token(int index, const ::std::string& value) {
+  token_.Mutable(index)->assign(value);
+}
+inline void GetTopicModelArgs::set_token(int index, const char* value) {
+  token_.Mutable(index)->assign(value);
+}
+inline void GetTopicModelArgs::set_token(int index, const char* value, size_t size) {
+  token_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetTopicModelArgs::add_token() {
+  return token_.Add();
+}
+inline void GetTopicModelArgs::add_token(const ::std::string& value) {
+  token_.Add()->assign(value);
+}
+inline void GetTopicModelArgs::add_token(const char* value) {
+  token_.Add()->assign(value);
+}
+inline void GetTopicModelArgs::add_token(const char* value, size_t size) {
+  token_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+GetTopicModelArgs::token() const {
+  return token_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+GetTopicModelArgs::mutable_token() {
+  return &token_;
+}
+
+// repeated string class_id = 4;
+inline int GetTopicModelArgs::class_id_size() const {
+  return class_id_.size();
+}
+inline void GetTopicModelArgs::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& GetTopicModelArgs::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* GetTopicModelArgs::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void GetTopicModelArgs::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void GetTopicModelArgs::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void GetTopicModelArgs::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetTopicModelArgs::add_class_id() {
+  return class_id_.Add();
+}
+inline void GetTopicModelArgs::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void GetTopicModelArgs::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void GetTopicModelArgs::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+GetTopicModelArgs::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+GetTopicModelArgs::mutable_class_id() {
+  return &class_id_;
+}
+
+// -------------------------------------------------------------------
+
+// GetThetaMatrixArgs
+
+// optional string model_name = 1;
+inline bool GetThetaMatrixArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void GetThetaMatrixArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void GetThetaMatrixArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void GetThetaMatrixArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& GetThetaMatrixArgs::model_name() const {
+  return *model_name_;
+}
+inline void GetThetaMatrixArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void GetThetaMatrixArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void GetThetaMatrixArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetThetaMatrixArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* GetThetaMatrixArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void GetThetaMatrixArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
