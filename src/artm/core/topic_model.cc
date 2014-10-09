@@ -621,14 +621,14 @@ TopicWeightIterator TopicModel::GetTopicWeightIterator(
   auto iter = token_to_token_id_.find(token);
   assert(iter != token_to_token_id_.end());
   return std::move(TopicWeightIterator(n_wt_[iter->second], r_wt_[iter->second],
-    &((*GetNormalizerVector(token.class_id))[0]), topics_name_));
+    &((*GetNormalizerVector(token.class_id))[0]), &topics_name_));
 }
 
 TopicWeightIterator TopicModel::GetTopicWeightIterator(int token_id) const {
   assert(token_id >= 0);
   assert(token_id < token_size());
   return std::move(TopicWeightIterator(n_wt_[token_id], r_wt_[token_id],
-    &((*GetNormalizerVector(token(token_id).class_id))[0]), topics_name_));
+    &((*GetNormalizerVector(token(token_id).class_id))[0]), &topics_name_));
 }
 
 }  // namespace core

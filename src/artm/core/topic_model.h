@@ -69,7 +69,7 @@ class TopicWeightIterator {
   inline const float* GetNormalizer() { return n_t_; }
   inline const float* GetRegularizer() { return r_w_; }
   inline const float* GetData() { return n_w_; }
-  inline const std::string GetTopicName() { return topics_name_[current_topic_]; }
+  inline const std::string GetTopicName() { return (*topics_name_)[current_topic_]; }
 
   // Resets the iterator to the initial state.
   inline void Reset() { current_topic_ = -1; }
@@ -78,19 +78,19 @@ class TopicWeightIterator {
   const float* n_w_;
   const float* r_w_;
   const float* n_t_;
-  const std::vector<std::string> topics_name_;
+  const std::vector<std::string>* topics_name_;
   int topics_count_;
   mutable int current_topic_;
 
   TopicWeightIterator(const float* n_w,
                       const float* r_w,
                       const float* n_t,
-                      const std::vector<std::string> topics_name)
+                      const std::vector<std::string>* topics_name)
       : n_w_(n_w),
         r_w_(r_w),
         n_t_(n_t),
         topics_name_(topics_name),
-        topics_count_(topics_name.size()),
+        topics_count_(topics_name->size()),
         current_topic_(-1) {
     assert(n_w != nullptr);
     assert(r_w != nullptr);
