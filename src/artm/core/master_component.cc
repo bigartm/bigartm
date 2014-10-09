@@ -176,7 +176,7 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model)
   }
 }
 
-bool MasterComponent::RequestThetaMatrix(GetThetaMatrixArgs get_theta_args, 
+bool MasterComponent::RequestThetaMatrix(GetThetaMatrixArgs get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
   if (isInLocalModusOperandi()) {
     return instance_->local_data_loader()->RequestThetaMatrix(get_theta_args, theta_matrix);

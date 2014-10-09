@@ -77,7 +77,7 @@ TopicModel::TopicModel(const ::artm::TopicModel& external_topic_model) {
 TopicModel::TopicModel(const ::artm::core::ModelIncrement& model_increment) {
   model_name_ = model_increment.model_name();
   topics_count_ = model_increment.topics_count();
-  
+
   topics_name_.clear();
   auto topics_name = model_increment.topics_name();
   for (auto iter = topics_name.begin(); iter != topics_name.end(); ++iter) {
@@ -252,8 +252,8 @@ void TopicModel::RetrieveExternalTopicModel(
 
   for (int token_index = 0; token_index < token_size(); ++token_index) {
     auto current_token = token_id_to_token_[token_index];
-    if (use_all_tokens || std::find(tokens_to_use.begin(), 
-                                    tokens_to_use.end(), 
+    if (use_all_tokens || std::find(tokens_to_use.begin(),
+                                    tokens_to_use.end(),
                                     current_token) != tokens_to_use.end()) {
       topic_model->add_token(current_token.keyword);
       topic_model->add_class_id(current_token.class_id);
@@ -261,8 +261,8 @@ void TopicModel::RetrieveExternalTopicModel(
       ::artm::FloatArray* weights = topic_model->add_token_weights();
       TopicWeightIterator iter = GetTopicWeightIterator(token_index);
       while (iter.NextTopic() < topic_size()) {
-        if (use_all_topics || std::find(topics_to_use.begin(), 
-                                    topics_to_use.end(), 
+        if (use_all_topics || std::find(topics_to_use.begin(),
+                                    topics_to_use.end(),
                                     iter.GetTopicName()) != topics_to_use.end()) {
           weights->add_value(iter.Weight());
         }
@@ -274,14 +274,14 @@ void TopicModel::RetrieveExternalTopicModel(
   ::artm::TopicModel_TopicModelInternals topic_model_internals;
   for (int token_index = 0; token_index < token_size(); ++token_index) {
     auto current_token = token_id_to_token_[token_index];
-    if (use_all_tokens || std::find(tokens_to_use.begin(), 
-                                    tokens_to_use.end(), 
+    if (use_all_tokens || std::find(tokens_to_use.begin(),
+                                    tokens_to_use.end(),
                                     current_token) != tokens_to_use.end()) {
       ::artm::FloatArray* n_wt = topic_model_internals.add_n_wt();
       ::artm::FloatArray* r_wt = topic_model_internals.add_r_wt();
       for (int topic_index = 0; topic_index < topic_size(); ++topic_index) {
-        if (use_all_topics || std::find(topics_to_use.begin(), 
-                                    topics_to_use.end(), 
+        if (use_all_topics || std::find(topics_to_use.begin(),
+                                    topics_to_use.end(),
                                     topics_name_[topic_index]) != topics_to_use.end()) {
             n_wt->add_value(n_wt_[token_index][topic_index]);
             r_wt->add_value(r_wt_[token_index][topic_index]);

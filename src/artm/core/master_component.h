@@ -53,11 +53,11 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
 
   // Retrieves topic model.
   // Returns true if succeeded, and false if model_name hasn't been found.
-  virtual bool RequestTopicModel(::artm::GetTopicModelArgs get_model_args, 
+  virtual bool RequestTopicModel(::artm::GetTopicModelArgs get_model_args,
       ::artm::TopicModel* topic_model);
   virtual void RequestRegularizerState(RegularizerName regularizer_name,
                                        ::artm::RegularizerInternalState* regularizer_state);
-  virtual bool RequestThetaMatrix(GetThetaMatrixArgs get_theta_args, 
+  virtual bool RequestThetaMatrix(GetThetaMatrixArgs get_theta_args,
       ::artm::ThetaMatrix* theta_matrix);
   virtual bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
                             ScoreData* score_data);

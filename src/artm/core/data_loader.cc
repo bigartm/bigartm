@@ -170,7 +170,7 @@ void LocalDataLoader::DisposeModel(ModelName model_name) {
   }
 }
 
-bool LocalDataLoader::RequestThetaMatrix(GetThetaMatrixArgs get_theta_args, 
+bool LocalDataLoader::RequestThetaMatrix(GetThetaMatrixArgs get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
   std::shared_ptr<Generation> generation = generation_.get();
   std::vector<boost::uuids::uuid> batch_uuids = generation->batch_uuids();

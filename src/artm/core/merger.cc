@@ -252,7 +252,7 @@ void Merger::ThreadFunction() {
         if (iter == topic_model_inc_.end()) {
           topic_model_inc_.insert(std::make_pair(
             model_name, std::make_shared<::artm::core::TopicModel>(cur_ttm->model_name(),
-                                                                   cur_ttm->topic_size(), 
+                                                                   cur_ttm->topic_size(),
                                                                    cur_ttm->topics_name())));
           iter = topic_model_inc_.find(model_name);
         }
