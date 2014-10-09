@@ -120,7 +120,7 @@ class TopicModel : public Regularizable {
   void Clear(ModelName model_name, int topics_count);
   virtual ~TopicModel();
 
-  void TopicModel::RetrieveExternalTopicModel(
+  void RetrieveExternalTopicModel(
     const ::artm::GetTopicModelArgs& get_model_args,
     ::artm::TopicModel* topic_model) const;
   void CopyFromExternalTopicModel(const ::artm::TopicModel& topic_model);
