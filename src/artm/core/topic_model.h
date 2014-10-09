@@ -78,14 +78,14 @@ class TopicWeightIterator {
   const float* n_w_;
   const float* r_w_;
   const float* n_t_;
-  const std::vector<std::string>& topics_name_;
+  std::vector<std::string>& topics_name_;
   int topics_count_;
   mutable int current_topic_;
 
   TopicWeightIterator(const float* n_w,
                       const float* r_w,
                       const float* n_t,
-                      const std::vector<std::string>& topics_name)
+                      std::vector<std::string>& topics_name)
       : n_w_(n_w),
         r_w_(r_w),
         n_t_(n_t),
