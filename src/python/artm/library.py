@@ -347,7 +347,7 @@ class MasterComponent:
 
   def GetTopicModel(self, args):
     args_blob = args.SerializeToString()
-    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args))
+    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob))
 
     topic_model_blob = ctypes.create_string_buffer(length)
     HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, topic_model_blob))
