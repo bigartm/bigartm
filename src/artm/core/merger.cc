@@ -288,8 +288,8 @@ void Merger::PullTopicModel() {
       if (old_ttm.get() == nullptr)
         return;  // model had been disposed during ongoing processing;
 
-      ::artm::core::String request;
-      request.set_value(model_name);
+      ::artm::GetTopicModelArgs request;
+      request.set_model_name(model_name);
       ::artm::TopicModel reply;
       master_component_service_->RetrieveModel(request, &reply);
       std::shared_ptr<::artm::core::TopicModel> new_global_ttm(
@@ -339,11 +339,11 @@ void Merger::ResetScores(ModelName model_name) {
   scores_merger_.ResetScores(model_name);
 }
 
-bool Merger::RetrieveExternalTopicModel(ModelName model_name,
+bool Merger::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                         ::artm::TopicModel* topic_model) const {
-  auto ttm = this->GetLatestTopicModel(model_name);
+  auto ttm = this->GetLatestTopicModel(get_model_args.model_name());
   if (ttm == nullptr) return false;
-  ttm->RetrieveExternalTopicModel(topic_model);
+  ttm->RetrieveExternalTopicModel(get_model_args, topic_model);
   return true;
 }
 

@@ -93,7 +93,7 @@ message BatchIds {
 
 service MasterComponentService {
   rpc UpdateModel(ModelIncrement) returns (Void);
-  rpc RetrieveModel(String) returns (TopicModel);
+  rpc RetrieveModel(GetTopicModelArgs) returns (TopicModel);
 
   rpc RequestBatches(Int) returns (BatchIds);
   rpc ReportBatches(BatchIds) returns (Void);
@@ -152,7 +152,7 @@ service NodeControllerService {
   rpc ForcePushTopicModelIncrement(Void) returns (Void);
 
   rpc OverwriteTopicModel(TopicModel) returns (Void);
-  rpc RequestTopicModel(String) returns (TopicModel);
+  rpc RequestTopicModel(GetTopicModelArgs) returns (TopicModel);
   rpc RequestRegularizerState(String) returns (RegularizerInternalState);
   rpc RequestThetaMatrix(GetThetaMatrixArgs) returns (ThetaMatrix);
   rpc RequestScore(RequestScoreArgs) returns (ScoreData);

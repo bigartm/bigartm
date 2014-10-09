@@ -122,13 +122,19 @@ TEST(Instance, Basic) {
 
   config.set_enabled(false);
   for (int i = 0; i < 3; ++i) {
-    config.add_topics_name("topic" + std::to_string(i));
+    config.add_topics_name("@topic_" + std::to_string(i));
   }
   config.set_topics_count(0);
   instance->CreateOrReconfigureModel(config);
 
   artm::TopicModel topic_model;
-  instance->merger()->RetrieveExternalTopicModel(model_name, &topic_model);
+  artm::GetTopicModelArgs args;
+  args.set_model_name(model_name);
+  for (int i = 0; i < 3; ++i) {
+    args.add_topics_name("@topic_" + std::to_string(i));
+  }
+
+  instance->merger()->RetrieveExternalTopicModel(args, &topic_model);
   EXPECT_EQ(topic_model.token_size(), 3);
   EXPECT_EQ(topic_model.topics_count(), 3);
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "first token")));
@@ -195,10 +201,13 @@ TEST(Instance, MultipleStreamsAndModels) {
   }
 
   artm::TopicModel m1t;
-  test.instance()->merger()->RetrieveExternalTopicModel(m1.name(), &m1t);
+  artm::GetTopicModelArgs args;
+  args.set_model_name(m1.name());
+  test.instance()->merger()->RetrieveExternalTopicModel(args, &m1t);
 
   artm::TopicModel m2t;
-  test.instance()->merger()->RetrieveExternalTopicModel(m2.name(), &m2t);
+  args.set_model_name(m2.name());
+  test.instance()->merger()->RetrieveExternalTopicModel(args, &m2t);
 
   artm::ScoreData m1score_data;
   test.instance()->merger()->RequestScore(m1.name(), "perplexity", &m1score_data);

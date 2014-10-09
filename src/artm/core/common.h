@@ -39,6 +39,11 @@ struct Token {
     return keyword < token.keyword;
   }
 
+  bool operator==(const Token& token) const {
+    if (class_id == token.class_id && keyword == token.keyword) return true;
+    return false;
+  }
+
   ClassId class_id;
   std::string keyword;
 };

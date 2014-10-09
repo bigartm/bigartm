@@ -401,7 +401,7 @@ void Instance::PopulateTopicsName(ModelConfig* model_config) {
   if (topics_name_size == 0) {
     // topic names will be auto-generated
     for (int i = 0; i < topics_count; ++i) {
-      model_config->add_topics_name("topic_" + std::to_string(i));
+      model_config->add_topics_name("@topic_" + std::to_string(i));
     }
   } else {
     model_config->set_topics_count(topics_name_size);

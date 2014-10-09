@@ -138,7 +138,18 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     master_component->InvokeIteration(1);
     master_component->WaitIdle();
     model.Synchronize(0.0);
-    topic_model = master_component->GetTopicModel(model);
+
+    artm::GetTopicModelArgs args;
+    args.set_model_name(model.name());
+    for (int i = 0; i < nTopics; ++i) {
+      args.add_topics_name("@topic_" + std::to_string(i));
+    }
+    for (int i = 0; i < nTokens; i++) {
+      args.add_token("token" + std::to_string(i));
+      args.add_class_id("@default_class");
+    }
+
+    topic_model = master_component->GetTopicModel(args);
     std::shared_ptr<::artm::PerplexityScore> perplexity =
       master_component->GetScoreAs<::artm::PerplexityScore>(model, "PerplexityScore");
 
@@ -230,7 +241,17 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     master_component->WaitIdle();
     model2.Synchronize(0.0, false);
 
-    auto new_topic_model2 = master_component->GetTopicModel(model2);
+    artm::GetTopicModelArgs args;
+    args.set_model_name(model2.name());
+    for (int i = 0; i < nTopics; ++i) {
+      args.add_topics_name("@topic_" + std::to_string(i));
+    }
+    args.add_token("my overwritten token");
+    args.add_class_id("@default_class");
+    args.add_token("my overwritten token2");
+    args.add_class_id("@default_class");
+
+    auto new_topic_model2 = master_component->GetTopicModel(args);
     ASSERT_EQ(new_topic_model2->token_size(), 2);
     EXPECT_EQ(new_topic_model2->token(0), "my overwritten token");
     EXPECT_EQ(new_topic_model2->token(1), "my overwritten token2");
@@ -258,7 +279,18 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   model_config.set_name("model3_name");
   artm::Model model3(*master_component, model_config);
   model3.Initialize(dict);
-  auto new_topic_model3 = master_component->GetTopicModel(model3);
+
+  artm::GetTopicModelArgs args;
+  args.set_model_name(model3.name());
+  for (int i = 0; i < nTopics; ++i) {
+    args.add_topics_name("@topic_" + std::to_string(i));
+  }
+  for (int i = 0; i < nTokens; i++) {
+    args.add_token("my_tok_" + std::to_string(i));
+    args.add_class_id("@default_class");
+  }
+
+  auto new_topic_model3 = master_component->GetTopicModel(args);
   ASSERT_EQ(new_topic_model3->token_size(), 3);
   ASSERT_EQ(new_topic_model3->token(0), "my_tok_1");
   ASSERT_EQ(new_topic_model3->token(1), "my_tok_2");

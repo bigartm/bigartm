@@ -34,10 +34,10 @@ void MasterComponentServiceImpl::UpdateModel(const ::artm::core::ModelIncrement&
   }
 }
 
-void MasterComponentServiceImpl::RetrieveModel(const ::artm::core::String& request,
+void MasterComponentServiceImpl::RetrieveModel(const ::artm::GetTopicModelArgs& request,
                                          ::rpcz::reply< ::artm::TopicModel> response) {
   ::artm::TopicModel topic_model;
-  bool succeeded = instance_->merger()->RetrieveExternalTopicModel(request.value(), &topic_model);
+  bool succeeded = instance_->merger()->RetrieveExternalTopicModel(request, &topic_model);
   try {
     if (succeeded) {
       response.send(topic_model);

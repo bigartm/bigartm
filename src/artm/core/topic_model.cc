@@ -18,6 +18,14 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 
+#define ADD_TOPICS_INFO_INTO_MODEL(Size, Names) {                     \
+  topic_model->set_topics_count(Size);                                \
+  for (auto name : Names) {                                           \
+    std::string* blob = topic_model->add_topics_name();               \
+    *blob = name;                                                     \
+  }                                                                   \
+}                                                                     \
+
 namespace artm {
 namespace core {
 
@@ -211,35 +219,74 @@ void TopicModel::ApplyDiff(const ::artm::core::TopicModel& diff) {
   }
 }
 
-void TopicModel::RetrieveExternalTopicModel(::artm::TopicModel* topic_model) const {
+void TopicModel::RetrieveExternalTopicModel(
+    const ::artm::GetTopicModelArgs& get_model_args,
+    ::artm::TopicModel* topic_model) const {
+  bool use_all_topics = false;
+  bool use_all_tokens = false;
+  std::vector<std::string> topics_to_use;
+  std::vector<Token> tokens_to_use;
+  if (get_model_args.topics_name_size() == 0) {
+    use_all_topics = true;
+  } else {
+    for (auto name : get_model_args.topics_name()) {
+      topics_to_use.push_back(name);
+    }
+  }
+  if (get_model_args.token_size() == 0 || get_model_args.class_id_size() == 0 ||
+      get_model_args.token_size() != get_model_args.class_id_size()) {
+    use_all_tokens = true;
+  } else {
+    for (int i = 0; i < get_model_args.token_size(); ++i) {
+      tokens_to_use.push_back(Token(get_model_args.class_id(i), get_model_args.token(i)));
+    }
+  }
+
   // 1. Fill in non-internal part of ::artm::TopicModel
   topic_model->set_name(model_name_);
-  topic_model->set_topics_count(topic_size());
-  for (auto elem : topics_name_) {
-    std::string* name = topic_model->add_topics_name();
-    *name = elem;
+  if (use_all_topics) {
+    ADD_TOPICS_INFO_INTO_MODEL(topic_size(), topics_name_);
+  } else {
+    ADD_TOPICS_INFO_INTO_MODEL(get_model_args.topics_name_size(), get_model_args.topics_name());
   }
 
   for (int token_index = 0; token_index < token_size(); ++token_index) {
     auto current_token = token_id_to_token_[token_index];
-    topic_model->add_token(current_token.keyword);
-    topic_model->add_class_id(current_token.class_id);
+    if (use_all_tokens || std::find(tokens_to_use.begin(), 
+                                    tokens_to_use.end(), 
+                                    current_token) != tokens_to_use.end()) {
+      topic_model->add_token(current_token.keyword);
+      topic_model->add_class_id(current_token.class_id);
 
-    ::artm::FloatArray* weights = topic_model->add_token_weights();
-    TopicWeightIterator iter = GetTopicWeightIterator(token_index);
-    while (iter.NextTopic() < topic_size()) {
-      weights->add_value(iter.Weight());
+      ::artm::FloatArray* weights = topic_model->add_token_weights();
+      TopicWeightIterator iter = GetTopicWeightIterator(token_index);
+      while (iter.NextTopic() < topic_size()) {
+        if (use_all_topics || std::find(topics_to_use.begin(), 
+                                    topics_to_use.end(), 
+                                    iter.GetTopicName()) != topics_to_use.end()) {
+          weights->add_value(iter.Weight());
+        }
+      }
     }
   }
 
   // 2. Fill in internal part of ::artm::TopicModel
   ::artm::TopicModel_TopicModelInternals topic_model_internals;
   for (int token_index = 0; token_index < token_size(); ++token_index) {
-    ::artm::FloatArray* n_wt = topic_model_internals.add_n_wt();
-    ::artm::FloatArray* r_wt = topic_model_internals.add_r_wt();
-    for (int topic_index = 0; topic_index < topic_size(); ++topic_index) {
-      n_wt->add_value(n_wt_[token_index][topic_index]);
-      r_wt->add_value(r_wt_[token_index][topic_index]);
+    auto current_token = token_id_to_token_[token_index];
+    if (use_all_tokens || std::find(tokens_to_use.begin(), 
+                                    tokens_to_use.end(), 
+                                    current_token) != tokens_to_use.end()) {
+      ::artm::FloatArray* n_wt = topic_model_internals.add_n_wt();
+      ::artm::FloatArray* r_wt = topic_model_internals.add_r_wt();
+      for (int topic_index = 0; topic_index < topic_size(); ++topic_index) {
+        if (use_all_topics || std::find(topics_to_use.begin(), 
+                                    topics_to_use.end(), 
+                                    topics_name_[topic_index]) != topics_to_use.end()) {
+            n_wt->add_value(n_wt_[token_index][topic_index]);
+            r_wt->add_value(r_wt_[token_index][topic_index]);
+        }
+      }
     }
   }
 
@@ -574,14 +621,14 @@ TopicWeightIterator TopicModel::GetTopicWeightIterator(
   auto iter = token_to_token_id_.find(token);
   assert(iter != token_to_token_id_.end());
   return std::move(TopicWeightIterator(n_wt_[iter->second], r_wt_[iter->second],
-    &((*GetNormalizerVector(token.class_id))[0]), topics_count_));
+    &((*GetNormalizerVector(token.class_id))[0]), topics_name_));
 }
 
 TopicWeightIterator TopicModel::GetTopicWeightIterator(int token_id) const {
   assert(token_id >= 0);
   assert(token_id < token_size());
   return std::move(TopicWeightIterator(n_wt_[token_id], r_wt_[token_id],
-    &((*GetNormalizerVector(token(token_id).class_id))[0]), topics_count_));
+    &((*GetNormalizerVector(token(token_id).class_id))[0]), topics_name_));
 }
 
 }  // namespace core

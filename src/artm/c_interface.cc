@@ -202,10 +202,12 @@ int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestTopicModel(int master_id, const char* model_name) {
+int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args) {
   try {
     artm::TopicModel topic_model;
-    master_component(master_id)->RequestTopicModel(model_name, &topic_model);
+    artm::GetTopicModelArgs args;
+    ParseFromArray(get_model_args, length, &args);
+    master_component(master_id)->RequestTopicModel(args, &topic_model);
     topic_model.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

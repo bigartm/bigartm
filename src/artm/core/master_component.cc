@@ -152,8 +152,9 @@ void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
   network_client_interface_->Reconfigure(config);
 }
 
-bool MasterComponent::RequestTopicModel(ModelName model_name, ::artm::TopicModel* topic_model) {
-  return instance_->merger()->RetrieveExternalTopicModel(model_name, topic_model);
+bool MasterComponent::RequestTopicModel(::artm::GetTopicModelArgs get_model_args,
+                                        ::artm::TopicModel* topic_model) {
+  return instance_->merger()->RetrieveExternalTopicModel(get_model_args, topic_model);
 }
 
 void MasterComponent::RequestRegularizerState(RegularizerName regularizer_name,

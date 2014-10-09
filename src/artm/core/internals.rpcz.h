@@ -41,7 +41,7 @@ class MasterComponentService : public rpcz::service {
 
   virtual void UpdateModel(const ::artm::core::ModelIncrement& request,
                        ::rpcz::reply< ::artm::core::Void> response);
-  virtual void RetrieveModel(const ::artm::core::String& request,
+  virtual void RetrieveModel(const ::artm::GetTopicModelArgs& request,
                        ::rpcz::reply< ::artm::TopicModel> response);
   virtual void RequestBatches(const ::artm::core::Int& request,
                        ::rpcz::reply< ::artm::core::BatchIds> response);
@@ -81,10 +81,10 @@ class MasterComponentService_Stub {
   void UpdateModel(const ::artm::core::ModelIncrement& request,
                        ::artm::core::Void* response,
                        long deadline_ms = -1);
-  void RetrieveModel(const ::artm::core::String& request,
+  void RetrieveModel(const ::artm::GetTopicModelArgs& request,
                        ::artm::TopicModel* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void RetrieveModel(const ::artm::core::String& request,
+  void RetrieveModel(const ::artm::GetTopicModelArgs& request,
                        ::artm::TopicModel* response,
                        long deadline_ms = -1);
   void RequestBatches(const ::artm::core::Int& request,
@@ -145,7 +145,7 @@ class NodeControllerService : public rpcz::service {
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void OverwriteTopicModel(const ::artm::TopicModel& request,
                        ::rpcz::reply< ::artm::core::Void> response);
-  virtual void RequestTopicModel(const ::artm::core::String& request,
+  virtual void RequestTopicModel(const ::artm::GetTopicModelArgs& request,
                        ::rpcz::reply< ::artm::TopicModel> response);
   virtual void RequestRegularizerState(const ::artm::core::String& request,
                        ::rpcz::reply< ::artm::RegularizerInternalState> response);
@@ -269,10 +269,10 @@ class NodeControllerService_Stub {
   void OverwriteTopicModel(const ::artm::TopicModel& request,
                        ::artm::core::Void* response,
                        long deadline_ms = -1);
-  void RequestTopicModel(const ::artm::core::String& request,
+  void RequestTopicModel(const ::artm::GetTopicModelArgs& request,
                        ::artm::TopicModel* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void RequestTopicModel(const ::artm::core::String& request,
+  void RequestTopicModel(const ::artm::GetTopicModelArgs& request,
                        ::artm::TopicModel* response,
                        long deadline_ms = -1);
   void RequestRegularizerState(const ::artm::core::String& request,
