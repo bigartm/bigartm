@@ -100,7 +100,9 @@ with MasterComponent() as master_component:
   master_component.WaitIdle()
   model.Synchronize(0.0)
   model.Disable()
-  topic_model = master_component.GetTopicModel(model)
+  args = messages_pb2.GetTopicModelArgs()
+  args.model_name = model.name()
+  topic_model = master_component.GetTopicModel(args)
   theta_matrix = master_component.GetThetaMatrix(model)
   perplexity_score = perplexity_score.GetValue(model)
 

@@ -345,8 +345,9 @@ class MasterComponent:
         s.CopyFrom(self.config_.stream[stream_index])
     self.Reconfigure(new_config_)
 
-  def GetTopicModel(self, model):
-    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, model.name()))
+  def GetTopicModel(self, args):
+    args_blob = args.SerializeToString()
+    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args))
 
     topic_model_blob = ctypes.create_string_buffer(length)
     HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, topic_model_blob))
