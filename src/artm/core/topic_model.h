@@ -113,7 +113,8 @@ class TopicModel : public Regularizable {
  public:
   explicit TopicModel(ModelName model_name, int topics_count,
       google::protobuf::RepeatedPtrField<std::string> topics_name);
-  explicit TopicModel(const TopicModel& rhs, float decay);
+  explicit TopicModel(const TopicModel& rhs, float decay,
+      std::shared_ptr<artm::ModelConfig> target_model_config);
   explicit TopicModel(const ::artm::TopicModel& external_topic_model);
   explicit TopicModel(const ::artm::core::ModelIncrement& model_increment);
 

@@ -295,6 +295,19 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   ASSERT_EQ(new_topic_model3->token(0), "my_tok_1");
   ASSERT_EQ(new_topic_model3->token(1), "my_tok_2");
   ASSERT_EQ(new_topic_model3->token(2), "my_tok_3");
+
+  //model_config.add_topics_name("@topic_2");
+  //model_config.add_topics_name("@topic_3");
+  //model_config.add_topics_name("@topic_4");
+  //model_config.add_topics_name("@topic_5");
+  //model_config.set_name("model5_name");
+  //model3.Reconfigure(model_config);
+
+  //model3.Synchronize(0.0);
+  //args.Clear();
+  //args.set_model_name("model5_name");
+  //auto new_topic_model4 = master_component->GetTopicModel(args);
+  //ASSERT_EQ(new_topic_model4->topics_count(), 4);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode

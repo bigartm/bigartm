@@ -31,6 +31,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_q
     : topic_model_(),
       topic_model_inc_(),
       schema_(schema),
+      target_model_config_(),
       master_component_service_(master_component_service),
       scores_merger_(schema, &topic_model_),
       is_idle_(true),
@@ -59,15 +60,11 @@ void Merger::DisposeModel(ModelName model_name) {
 
 void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
   if (!topic_model_.has_key(model.name())) {
-    // Handle more type of reconfigs - for example, changing the number of topics;
     auto ttm = std::make_shared<TopicModel>(model.name(), model.topics_count(), model.topics_name());
     topic_model_.set(model.name(), ttm);
-  }
-
-  auto ttm = topic_model_.get(model.name());
-  if (ttm->topic_size() != model.topics_count()) {
-    std::string message("Unable to change the number of topics in topic model");
-    BOOST_THROW_EXCEPTION(InvalidOperation(message));
+    target_model_config_.set(model.name(), nullptr);
+  } else {
+    target_model_config_.set(model.name(), std::make_shared<artm::ModelConfig>(model));
   }
 }
 
@@ -482,8 +479,10 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       LOG(WARNING) << "SynchronizeModel() did not found any increments to topic model " << name;
 
     // Accumulate counters in topic model with decay coefficient.
-    auto new_ttm = std::make_shared<::artm::core::TopicModel>(*old_ttm, decay_weight);
-
+    auto new_ttm = std::make_shared<::artm::core::TopicModel>(*old_ttm,
+                                                              decay_weight,
+                                                              target_model_config_.get(name));
+    target_model_config_.set(name, nullptr);
     // Apply increment
     if (inc_ttm != topic_model_inc_.end())
       new_ttm->ApplyDiff(*inc_ttm->second);
