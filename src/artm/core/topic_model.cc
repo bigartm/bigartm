@@ -346,6 +346,11 @@ void TopicModel::RetrieveExternalTopicModel(
 void TopicModel::CopyFromExternalTopicModel(const ::artm::TopicModel& external_topic_model) {
   Clear(external_topic_model.name(), external_topic_model.topics_count());
 
+  topics_name_.clear();
+  for (auto& name : external_topic_model.topics_name()) {
+    topics_name_.push_back(name);
+  }
+
   if (!external_topic_model.has_internals()) {
     // Creating a model based on weights
     for (int token_index = 0; token_index < external_topic_model.token_size(); ++token_index) {

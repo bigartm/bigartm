@@ -378,3 +378,14 @@ message InitializeModelArgs {
   optional string model_name = 1;
   optional string dictionary_name = 2;
 }
+
+message GetTopicModelArgs {
+  optional string model_name = 1;
+  repeated string topics_name = 2;
+  repeated string token = 3;
+  repeated string class_id = 4;
+}
+
+message GetThetaMatrixArgs {
+  optional string model_name = 1;
+}
