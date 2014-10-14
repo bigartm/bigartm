@@ -60,64 +60,56 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay,
       n_t_(),
       n_t_default_class_(nullptr),
       batch_uuid_(rhs.batch_uuid_) {
-  //bool use_target_model = false;
-  //std::vector<bool> old_topics_mask;
-  //if (target_model_config != nullptr) {
-  //  use_target_model = true;
-  //  for (int i = 0; i < topics_count_; ++i) {
-  //    old_topics_mask.push_back(false);
-  //  }
-  //  topics_count_ = target_model_config->topics_name_size();
-  //  
-  //  topics_name_.clear();
-  //  for (auto& name : target_model_config->topics_name()) {
-  //    topics_name_.push_back(name);
-  //    for (int i = 0; i < rhs.topics_count_; ++i) {
-  //      if (name == rhs.topics_name_[i]) {
-  //        old_topics_mask[i] = true;
-  //        break;
-  //      }
-  //    }
-  //  }
-  //}
-  //CreateNormalizerVector(DefaultClass, topics_count_);
-  //for (size_t token_id = 0; token_id < rhs.n_wt_.size(); token_id++) {
-  //  AddToken(rhs.token(token_id), false);
-  //  auto iter = rhs.GetTopicWeightIterator(token_id);
-  //  int topic_index = 0;
-  //  while (iter.NextTopic() < rhs.topic_size()) {
-  //    if (use_target_model) {
-  //      if (old_topics_mask[topic_index]) {
-  //        SetTokenWeight(token_id, topic_index, decay * iter.NotNormalizedWeight());
-  //        topic_index++;
-  //      }
-  //    } else {
-  //      SetTokenWeight(token_id, topic_index, decay * iter.NotNormalizedWeight());
-  //      topic_index++;
-  //    }
-  //  }
+  bool use_target_model = false;
+  std::vector<bool> old_topics_mask;
+  if (target_model_config != nullptr) {
+    use_target_model = true;
+    for (int i = 0; i < topics_count_; ++i) {
+      old_topics_mask.push_back(false);
+    }
+    topics_count_ = target_model_config->topics_name_size();
+
+    topics_name_.clear();
+    for (auto& name : target_model_config->topics_name()) {
+      topics_name_.push_back(name);
+      for (int i = 0; i < rhs.topics_count_; ++i) {
+        if (name == rhs.topics_name_[i]) {
+          old_topics_mask[i] = true;
+          break;
+        }
+      }
+    }
+  }
   CreateNormalizerVector(DefaultClass, topics_count_);
   for (size_t token_id = 0; token_id < rhs.n_wt_.size(); token_id++) {
     AddToken(rhs.token(token_id), false);
     auto iter = rhs.GetTopicWeightIterator(token_id);
-    while (iter.NextTopic() < topic_size()) {
-      SetTokenWeight(token_id, iter.TopicIndex(), decay * iter.NotNormalizedWeight());
+    int topic_index = 0;
+    while (iter.NextTopic() < rhs.topic_size()) {
+      if (use_target_model) {
+        if (old_topics_mask[topic_index]) {
+          SetTokenWeight(token_id, topic_index, decay * iter.NotNormalizedWeight());
+          topic_index++;
+        }
+      } else {
+        SetTokenWeight(token_id, topic_index, decay * iter.NotNormalizedWeight());
+        topic_index++;
+      }
+    }
+    if (topic_index != topic_size()) {
+      // here new topics will be added into model
+      float sum = 0.0f;
+      std::vector<float> values;
+      for (int i = topic_index; i < topic_size(); ++i) {
+        float val = ThreadSafeRandom::singleton().GenerateFloat();
+        values.push_back(val);
+        sum += val;
+      }
+      for (int i = 0; i < values.size(); ++i) {
+        SetTokenWeight(token_id, topic_index + i, values[i] / sum);
+      }
     }
   }
-  //  if (topic_index != topic_size()) {
-  //    // here new topics will be added into model
-  //    float sum = 0.0f;
-  //    std::vector<float> values;
-  //    for (int i = topic_index; i < topic_size(); ++i) {
-  //      float val = ThreadSafeRandom::singleton().GenerateFloat();
-  //      values.push_back(val);
-  //      sum += val;
-  //    }
-  //    for (int i = 0; i < values.size(); ++i) {
-  //      SetTokenWeight(token_id, topic_index + i, values[i] / sum);
-  //    }
-  //  }
-  //}
 }
 
 TopicModel::TopicModel(const ::artm::TopicModel& external_topic_model) {
