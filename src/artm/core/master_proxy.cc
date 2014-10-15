@@ -129,7 +129,7 @@ void MasterProxy::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
   }, "CreateOrReconfigureDictionary");
 }
 
-bool MasterProxy::RequestTopicModel(::artm::GetTopicModelArgs get_model_args,
+bool MasterProxy::RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                     ::artm::TopicModel* topic_model) {
   make_rpcz_call([&]() {
     node_controller_service_proxy_->RequestTopicModel(
@@ -149,7 +149,7 @@ void MasterProxy::RequestRegularizerState(RegularizerName regularizer_name,
   }, "RequestRegularizerState");
 }
 
-bool MasterProxy::RequestThetaMatrix(GetThetaMatrixArgs get_theta_args,
+bool MasterProxy::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                      ::artm::ThetaMatrix* theta_matrix) {
   make_rpcz_call([&]() {
     node_controller_service_proxy_->RequestThetaMatrix(

@@ -18,34 +18,24 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 
-#define ADD_TOPICS_INFO_INTO_MODEL(Size, Names) {                     \
-  topic_model->set_topics_count(Size);                                \
-  for (auto name : Names) {                                           \
-    std::string* blob = topic_model->add_topics_name();               \
-    *blob = name;                                                     \
-  }                                                                   \
-}                                                                     \
-
 namespace artm {
 namespace core {
 
-TopicModel::TopicModel(ModelName model_name, int topics_count,
-    google::protobuf::RepeatedPtrField<std::string> topics_name)
+TopicModel::TopicModel(ModelName model_name,
+    const google::protobuf::RepeatedPtrField<std::string>& topics_name)
     : model_name_(model_name),
       token_to_token_id_(),
       token_id_to_token_(),
-      topics_count_(topics_count),
       topics_name_(),
       n_wt_(),
       r_wt_(),
       n_t_(),
       n_t_default_class_(nullptr),
       batch_uuid_() {
-  assert(topics_count_ > 0);
   for (auto iter = topics_name.begin(); iter != topics_name.end(); ++iter) {
     topics_name_.push_back(*iter);
   }
-  CreateNormalizerVector(DefaultClass, topics_count_);
+  CreateNormalizerVector(DefaultClass, topic_size());
 }
 
 TopicModel::TopicModel(const TopicModel& rhs, float decay,
@@ -53,7 +43,6 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay,
     : model_name_(rhs.model_name_),
       token_to_token_id_(),
       token_id_to_token_(),
-      topics_count_(rhs.topics_count_),
       topics_name_(rhs.topics_name_),
       n_wt_(),  // must be deep-copied
       r_wt_(),  // must be deep-copied
@@ -64,15 +53,14 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay,
   std::vector<bool> old_topics_mask;
   if (target_model_config != nullptr) {
     use_target_model = true;
-    for (int i = 0; i < topics_count_; ++i) {
+    for (int i = 0; i < topic_size(); ++i) {
       old_topics_mask.push_back(false);
     }
-    topics_count_ = target_model_config->topics_name_size();
 
     topics_name_.clear();
     for (auto& name : target_model_config->topics_name()) {
       topics_name_.push_back(name);
-      for (int i = 0; i < rhs.topics_count_; ++i) {
+      for (int i = 0; i < rhs.topic_size(); ++i) {
         if (name == rhs.topics_name_[i]) {
           old_topics_mask[i] = true;
           break;
@@ -80,7 +68,7 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay,
       }
     }
   }
-  CreateNormalizerVector(DefaultClass, topics_count_);
+  CreateNormalizerVector(DefaultClass, topic_size());
   for (size_t token_id = 0; token_id < rhs.n_wt_.size(); token_id++) {
     AddToken(rhs.token(token_id), false);
     auto iter = rhs.GetTopicWeightIterator(token_id);
@@ -118,7 +106,6 @@ TopicModel::TopicModel(const ::artm::TopicModel& external_topic_model) {
 
 TopicModel::TopicModel(const ::artm::core::ModelIncrement& model_increment) {
   model_name_ = model_increment.model_name();
-  topics_count_ = model_increment.topics_count();
 
   topics_name_.clear();
   auto topics_name = model_increment.topics_name();
@@ -142,14 +129,13 @@ void TopicModel::Clear(ModelName model_name, int topics_count) {
   });
 
   model_name_ = model_name;
-  topics_count_ = topics_count;
 
   token_to_token_id_.clear();
   token_id_to_token_.clear();
   n_wt_.clear();
   r_wt_.clear();
   n_t_.clear();
-  CreateNormalizerVector(DefaultClass, topics_count_);
+  CreateNormalizerVector(DefaultClass, topics_count);
 
   batch_uuid_.clear();
 }
@@ -287,9 +273,10 @@ void TopicModel::RetrieveExternalTopicModel(
   // 1. Fill in non-internal part of ::artm::TopicModel
   topic_model->set_name(model_name_);
   if (use_all_topics) {
-    ADD_TOPICS_INFO_INTO_MODEL(topic_size(), topics_name_);
+    AddTopicsInfoInModel<std::vector<std::string> >(topic_model, topic_size(), topics_name_);
   } else {
-    ADD_TOPICS_INFO_INTO_MODEL(get_model_args.topics_name_size(), get_model_args.topics_name());
+    AddTopicsInfoInModel<google::protobuf::RepeatedPtrField<std::string> >(
+        topic_model, get_model_args.topics_name_size(), get_model_args.topics_name());
   }
 
   for (int token_index = 0; token_index < token_size(); ++token_index) {
@@ -305,7 +292,7 @@ void TopicModel::RetrieveExternalTopicModel(
       while (iter.NextTopic() < topic_size()) {
         if (use_all_topics || std::find(topics_to_use.begin(),
                                     topics_to_use.end(),
-                                    iter.GetTopicName()) != topics_to_use.end()) {
+                                    topics_name_[iter.TopicIndex()]) != topics_to_use.end()) {
           weights->add_value(iter.Weight());
         }
       }
@@ -336,7 +323,7 @@ void TopicModel::RetrieveExternalTopicModel(
 }
 
 void TopicModel::CopyFromExternalTopicModel(const ::artm::TopicModel& external_topic_model) {
-  Clear(external_topic_model.name(), external_topic_model.topics_count());
+  Clear(external_topic_model.name(), external_topic_model.topics_name_size());
 
   topics_name_.clear();
   for (auto& name : external_topic_model.topics_name()) {
@@ -355,7 +342,7 @@ void TopicModel::CopyFromExternalTopicModel(const ::artm::TopicModel& external_t
       }
       int token_id = AddToken(Token(class_id, token), false);
       const ::artm::FloatArray& weights = external_topic_model.token_weights(token_index);
-      for (int topic_index = 0; topic_index < topics_count_; ++topic_index) {
+      for (int topic_index = 0; topic_index < topic_size(); ++topic_index) {
         SetTokenWeight(token_id, topic_index, weights.value(topic_index));
         SetRegularizerWeight(token_id, topic_index, 0);
       }
@@ -377,7 +364,7 @@ void TopicModel::CopyFromExternalTopicModel(const ::artm::TopicModel& external_t
       auto r_wt = topic_model_internals.r_wt(token_index);
 
       int token_id = AddToken(Token(class_id, token), false);
-      for (int topic_index = 0; topic_index < topics_count_; ++topic_index) {
+      for (int topic_index = 0; topic_index < topic_size(); ++topic_index) {
         SetTokenWeight(token_id, topic_index, n_wt.value(topic_index));
         SetRegularizerWeight(token_id, topic_index, r_wt.value(topic_index));
       }
@@ -606,7 +593,7 @@ int TopicModel::token_size() const {
 }
 
 int TopicModel::topic_size() const {
-  return topics_count_;
+  return topics_name_.size();
 }
 
 google::protobuf::RepeatedPtrField<std::string> TopicModel::topics_name() {
@@ -663,19 +650,29 @@ artm::core::Token TopicModel::token(int index) const {
   return token_id_to_token_[index];
 }
 
+template<typename T>
+void TopicModel::AddTopicsInfoInModel(
+    artm::TopicModel* topic_model, int size, const T& names) const {
+  topic_model->set_topics_count(size);
+  for (auto name : names) {
+    std::string* blob = topic_model->add_topics_name();
+    *blob = name;
+  }
+}
+
 TopicWeightIterator TopicModel::GetTopicWeightIterator(
     const Token& token) const {
   auto iter = token_to_token_id_.find(token);
   assert(iter != token_to_token_id_.end());
   return std::move(TopicWeightIterator(n_wt_[iter->second], r_wt_[iter->second],
-    &((*GetNormalizerVector(token.class_id))[0]), &topics_name_));
+    &((*GetNormalizerVector(token.class_id))[0]), topic_size()));
 }
 
 TopicWeightIterator TopicModel::GetTopicWeightIterator(int token_id) const {
   assert(token_id >= 0);
   assert(token_id < token_size());
   return std::move(TopicWeightIterator(n_wt_[token_id], r_wt_[token_id],
-    &((*GetNormalizerVector(token(token_id).class_id))[0]), &topics_name_));
+    &((*GetNormalizerVector(token(token_id).class_id))[0]), topic_size()));
 }
 
 }  // namespace core

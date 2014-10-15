@@ -60,7 +60,7 @@ void Merger::DisposeModel(ModelName model_name) {
 
 void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
   if (!topic_model_.has_key(model.name())) {
-    auto ttm = std::make_shared<TopicModel>(model.name(), model.topics_count(), model.topics_name());
+    auto ttm = std::make_shared<TopicModel>(model.name(), model.topics_name());
     topic_model_.set(model.name(), ttm);
     target_model_config_.set(model.name(), nullptr);
   } else {
@@ -249,7 +249,6 @@ void Merger::ThreadFunction() {
         if (iter == topic_model_inc_.end()) {
           topic_model_inc_.insert(std::make_pair(
             model_name, std::make_shared<::artm::core::TopicModel>(cur_ttm->model_name(),
-                                                                   cur_ttm->topic_size(),
                                                                    cur_ttm->topics_name())));
           iter = topic_model_inc_.find(model_name);
         }
@@ -504,7 +503,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   auto schema = schema_->get();
   const ModelConfig& model = schema->model_config(args.model_name());
   auto new_ttm = std::make_shared<::artm::core::TopicModel>(
-      model.name(), model.topics_count(), model.topics_name());
+      model.name(), model.topics_name());
   std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
   if (dict == nullptr) {
     std::stringstream ss;

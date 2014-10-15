@@ -152,7 +152,7 @@ void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
   network_client_interface_->Reconfigure(config);
 }
 
-bool MasterComponent::RequestTopicModel(::artm::GetTopicModelArgs get_model_args,
+bool MasterComponent::RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                         ::artm::TopicModel* topic_model) {
   return instance_->merger()->RetrieveExternalTopicModel(get_model_args, topic_model);
 }
@@ -176,7 +176,7 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model)
   }
 }
 
-bool MasterComponent::RequestThetaMatrix(GetThetaMatrixArgs get_theta_args,
+bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
   if (isInLocalModusOperandi()) {
     return instance_->local_data_loader()->RequestThetaMatrix(get_theta_args, theta_matrix);
