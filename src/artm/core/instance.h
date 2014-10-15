@@ -105,6 +105,7 @@ class Instance : boost::noncopyable {
 
  private:
   void PopulateClassId(ModelConfig* model_config);
+  void PopulateTopicsName(ModelConfig* model_config);
 
   bool is_configured_;
   InstanceType instance_type_;

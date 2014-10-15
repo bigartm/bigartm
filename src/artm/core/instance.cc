@@ -125,6 +125,7 @@ Merger* Instance::merger() {
 void Instance::CreateOrReconfigureModel(const ModelConfig& config) {
   auto corrected_config = std::make_shared<artm::ModelConfig>(config);
   PopulateClassId(corrected_config.get());
+  PopulateTopicsName(corrected_config.get());
   if (merger_ != nullptr) {
     merger_->CreateOrReconfigureModel(*corrected_config);
   }
@@ -391,6 +392,19 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
           *merger_,
           schema_)));
     }
+  }
+}
+
+void Instance::PopulateTopicsName(ModelConfig* model_config) {
+  int topics_count = model_config->topics_count();
+  int topics_name_size = model_config->topics_name_size();
+  if (topics_name_size == 0) {
+    // topic names will be auto-generated
+    for (int i = 0; i < topics_count; ++i) {
+      model_config->add_topics_name("@topic_" + std::to_string(i));
+    }
+  } else {
+    model_config->set_topics_count(topics_name_size);
   }
 }
 

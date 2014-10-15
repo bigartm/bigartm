@@ -83,7 +83,7 @@ class TopicWeightIterator {
   TopicWeightIterator(const float* n_w,
                       const float* r_w,
                       const float* n_t,
-                      int topics_count)
+                      const int topics_count)
       : n_w_(n_w),
         r_w_(r_w),
         n_t_(n_t),
@@ -108,15 +108,19 @@ class TopicWeightIterator {
 //   processor to Merger, and from Merger to MemcachedService.
 class TopicModel : public Regularizable {
  public:
-  explicit TopicModel(ModelName model_name, int topics_count);
-  explicit TopicModel(const TopicModel& rhs, float decay);
+  explicit TopicModel(ModelName model_name,
+      const google::protobuf::RepeatedPtrField<std::string>& topics_name);
+  explicit TopicModel(const TopicModel& rhs, float decay,
+      std::shared_ptr<artm::ModelConfig> target_model_config);
   explicit TopicModel(const ::artm::TopicModel& external_topic_model);
   explicit TopicModel(const ::artm::core::ModelIncrement& model_increment);
 
   void Clear(ModelName model_name, int topics_count);
   virtual ~TopicModel();
 
-  void RetrieveExternalTopicModel(::artm::TopicModel* topic_model) const;
+  void RetrieveExternalTopicModel(
+    const ::artm::GetTopicModelArgs& get_model_args,
+    ::artm::TopicModel* topic_model) const;
   void CopyFromExternalTopicModel(const ::artm::TopicModel& topic_model);
 
   void RetrieveModelIncrement(::artm::core::ModelIncrement* diff) const;
@@ -147,17 +151,21 @@ class TopicModel : public Regularizable {
 
   int token_size() const;
   int topic_size() const;
+  google::protobuf::RepeatedPtrField<std::string> topics_name();
 
   bool has_token(const Token& token) const;
   int token_id(const Token& token) const;
   Token token(int index) const;
+
+  template<typename T>
+  void AddTopicsInfoInModel(artm::TopicModel* topicModel, int size, const T& names) const;
 
  private:
   ModelName model_name_;
 
   std::map<Token, int> token_to_token_id_;
   std::vector<Token> token_id_to_token_;
-  int topics_count_;
+  std::vector<std::string> topics_name_;
 
   std::vector<float*> n_wt_;  // vector of length tokens_count
   std::vector<float*> r_wt_;  // regularizer's additions

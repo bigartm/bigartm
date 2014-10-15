@@ -267,7 +267,9 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
       model.Synchronize(0.0);
     }
 
-    topic_model = master_component.GetTopicModel(model);
+    artm::GetTopicModelArgs args;
+    args.set_model_name(model.name());
+    topic_model = master_component.GetTopicModel(args);
     test_perplexity = master_component.GetScoreAs<::artm::PerplexityScore>(model, "test_perplexity");
     train_perplexity = master_component.GetScoreAs<::artm::PerplexityScore>(model, "train_perplexity");
     test_sparsity_theta = master_component.GetScoreAs<::artm::SparsityThetaScore>(model, "test_sparsity_theta");
