@@ -111,6 +111,7 @@ class Merger : boost::noncopyable {
   ThreadSafeCollectionHolder<ModelName, TopicModel> topic_model_;
   std::map<ModelName, std::shared_ptr<TopicModel>> topic_model_inc_;
   ThreadSafeHolder<InstanceSchema>* schema_;
+  ThreadSafeCollectionHolder<ModelName, artm::ModelConfig> target_model_config_;
   artm::core::MasterComponentService_Stub* master_component_service_;
   ScoresMerger scores_merger_;
 

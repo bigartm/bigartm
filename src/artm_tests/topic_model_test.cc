@@ -18,7 +18,7 @@ TEST(TopicModelTest, Basic) {
     std::string str_name = "topic" + std::to_string(i);
     name = &str_name;
   }
-  artm::core::TopicModel topic_model(::artm::core::ModelName(), no_topics, topics_name);
+  artm::core::TopicModel topic_model(::artm::core::ModelName(), topics_name);
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_1"));
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_2"));
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_3"));
@@ -131,7 +131,7 @@ TEST(TopicModelTest, Basic) {
   name = &str_name;
 
   for (int i = 1; i < 10; ++i) {
-    artm::core::TopicModel topic_model_1(::artm::core::ModelName(), no_topics, topics_name);
+    artm::core::TopicModel topic_model_1(::artm::core::ModelName(), topics_name);
     topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_1"));
     topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_2"));
     topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_3"));

@@ -30,12 +30,12 @@ class MasterInterface {
   virtual void DisposeDictionary(const std::string& name) = 0;
 
   virtual void OverwriteTopicModel(const ::artm::TopicModel& topic_model) = 0;
-  virtual bool RequestTopicModel(::artm::GetTopicModelArgs get_model_args, 
-      ::artm::TopicModel* topic_model) = 0;
+  virtual bool RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
+                                 ::artm::TopicModel* topic_model) = 0;
   virtual void RequestRegularizerState(RegularizerName regularizer_name,
                                        ::artm::RegularizerInternalState* regularizer_state) = 0;
-  virtual bool RequestThetaMatrix(::artm::GetThetaMatrixArgs get_theta_args,
-      ::artm::ThetaMatrix* theta_matrix) = 0;
+  virtual bool RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& get_theta_args,
+                                  ::artm::ThetaMatrix* theta_matrix) = 0;
   virtual bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
                             ScoreData* score_data) = 0;
 
