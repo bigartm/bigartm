@@ -94,16 +94,17 @@ message MasterProxyConfig {
 message ModelConfig {
   optional string name = 1 [default = "@model"];
   optional int32 topics_count = 2 [default = 32];
-  optional bool enabled = 3 [default = true];
-  optional int32 inner_iterations_count = 4 [default = 10];
-  optional string field_name = 5 [default = "@body"];
-  optional string stream_name = 6 [default = "@global"];
-  repeated string score_name = 7;
-  optional bool reuse_theta = 8 [default = false];
-  repeated string regularizer_name = 9;
-  repeated double regularizer_tau = 10;
-  repeated string class_id = 11;
-  repeated float class_weight = 12;  
+  repeated string topics_name = 3;
+  optional bool enabled = 4 [default = true];
+  optional int32 inner_iterations_count = 5 [default = 10];
+  optional string field_name = 6 [default = "@body"];
+  optional string stream_name = 7 [default = "@global"];
+  repeated string score_name = 8;
+  optional bool reuse_theta = 9 [default = false];
+  repeated string regularizer_name = 10;
+  repeated double regularizer_tau = 11;
+  repeated string class_id = 12;
+  repeated float class_weight = 13;  
 }
 
 // Represents a configuration of a general regularizer
@@ -329,16 +330,17 @@ message TopicKernelScore {
 message TopicModel {
   optional string name = 1 [default = "@model"];
   optional int32 topics_count = 2;
-  repeated string token = 3;
-  repeated FloatArray token_weights = 4;
-  repeated string class_id = 5;
+  repeated string topics_name = 3;
+  repeated string token = 4;
+  repeated FloatArray token_weights = 5;
+  repeated string class_id = 6;
 
   message TopicModelInternals {
     repeated FloatArray n_wt = 1;
     repeated FloatArray r_wt = 2;
   }
 
-  optional bytes internals = 6;
+  optional bytes internals = 7;
 }
 
 // Represents a theta matrix.
@@ -375,4 +377,15 @@ message SynchronizeModelArgs {
 message InitializeModelArgs {
   optional string model_name = 1;
   optional string dictionary_name = 2;
+}
+
+message GetTopicModelArgs {
+  optional string model_name = 1;
+  repeated string topics_name = 2;
+  repeated string token = 3;
+  repeated string class_id = 4;
+}
+
+message GetThetaMatrixArgs {
+  optional string model_name = 1;
 }

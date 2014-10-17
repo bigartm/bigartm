@@ -138,7 +138,18 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     master_component->InvokeIteration(1);
     master_component->WaitIdle();
     model.Synchronize(0.0);
-    topic_model = master_component->GetTopicModel(model);
+
+    artm::GetTopicModelArgs args;
+    args.set_model_name(model.name());
+    for (int i = 0; i < nTopics; ++i) {
+      args.add_topics_name("@topic_" + std::to_string(i));
+    }
+    for (int i = 0; i < nTokens; i++) {
+      args.add_token("token" + std::to_string(i));
+      args.add_class_id("@default_class");
+    }
+
+    topic_model = master_component->GetTopicModel(args);
     std::shared_ptr<::artm::PerplexityScore> perplexity =
       master_component->GetScoreAs<::artm::PerplexityScore>(model, "PerplexityScore");
 
@@ -192,7 +203,9 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   EXPECT_EQ(first_token_topics.value_size(), nTopics);
 
   if (!is_network_mode) {
-    std::shared_ptr<::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(model);
+    artm::GetThetaMatrixArgs args;
+    args.set_model_name(model.name().c_str());
+    std::shared_ptr<::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
     EXPECT_TRUE(theta_matrix->item_id_size() == nDocs);
     for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
       const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
@@ -228,7 +241,17 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     master_component->WaitIdle();
     model2.Synchronize(0.0, false);
 
-    auto new_topic_model2 = master_component->GetTopicModel(model2);
+    artm::GetTopicModelArgs args;
+    args.set_model_name(model2.name());
+    for (int i = 0; i < nTopics; ++i) {
+      args.add_topics_name("@topic_" + std::to_string(i));
+    }
+    args.add_token("my overwritten token");
+    args.add_class_id("@default_class");
+    args.add_token("my overwritten token2");
+    args.add_class_id("@default_class");
+
+    auto new_topic_model2 = master_component->GetTopicModel(args);
     ASSERT_EQ(new_topic_model2->token_size(), 2);
     EXPECT_EQ(new_topic_model2->token(0), "my overwritten token");
     EXPECT_EQ(new_topic_model2->token(1), "my overwritten token2");
@@ -256,11 +279,35 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   model_config.set_name("model3_name");
   artm::Model model3(*master_component, model_config);
   model3.Initialize(dict);
-  auto new_topic_model3 = master_component->GetTopicModel(model3);
+
+  artm::GetTopicModelArgs args;
+  args.set_model_name(model3.name());
+  for (int i = 0; i < nTopics; ++i) {
+    args.add_topics_name("@topic_" + std::to_string(i));
+  }
+  for (int i = 0; i < nTokens; i++) {
+    args.add_token("my_tok_" + std::to_string(i));
+    args.add_class_id("@default_class");
+  }
+
+  auto new_topic_model3 = master_component->GetTopicModel(args);
   ASSERT_EQ(new_topic_model3->token_size(), 3);
   ASSERT_EQ(new_topic_model3->token(0), "my_tok_1");
   ASSERT_EQ(new_topic_model3->token(1), "my_tok_2");
   ASSERT_EQ(new_topic_model3->token(2), "my_tok_3");
+
+  model_config.add_topics_name("@topic_2");
+  model_config.add_topics_name("@topic_3");
+  model_config.add_topics_name("@topic_4");
+  model_config.add_topics_name("@topic_5");
+  model_config.set_name("model5_name");
+  model3.Reconfigure(model_config);
+
+  model3.Synchronize(0.0);
+  args.Clear();
+  args.set_model_name("model5_name");
+  auto new_topic_model4 = master_component->GetTopicModel(args);
+  ASSERT_EQ(new_topic_model4->topics_count(), 4);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode
@@ -294,9 +341,6 @@ TEST(CppInterface, ModelExceptions) {
   model_config.set_topics_count(10);
   model_config.set_name("model_config1");
   artm::Model model(master_component, model_config);
-
-  model.mutable_config()->set_topics_count(20);
-  ASSERT_THROW(model.Reconfigure(model.config()), artm::InvalidOperationException);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.ProxyExceptions

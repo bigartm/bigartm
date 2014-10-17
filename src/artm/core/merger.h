@@ -54,7 +54,8 @@ class Merger : boost::noncopyable {
   void InitializeModel(const InitializeModelArgs& args);
 
   std::shared_ptr<const ::artm::core::TopicModel> GetLatestTopicModel(ModelName model_name) const;
-  bool RetrieveExternalTopicModel(ModelName model_name, ::artm::TopicModel* topic_model) const;
+  bool RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
+                                  ::artm::TopicModel* topic_model) const;
   void RequestRegularizerState(RegularizerName regularizer_name,
                                ::artm::RegularizerInternalState* regularizer_state) const;
   bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
@@ -110,6 +111,7 @@ class Merger : boost::noncopyable {
   ThreadSafeCollectionHolder<ModelName, TopicModel> topic_model_;
   std::map<ModelName, std::shared_ptr<TopicModel>> topic_model_inc_;
   ThreadSafeHolder<InstanceSchema>* schema_;
+  ThreadSafeCollectionHolder<ModelName, artm::ModelConfig> target_model_config_;
   artm::core::MasterComponentService_Stub* master_component_service_;
   ScoresMerger scores_merger_;
 

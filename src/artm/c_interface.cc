@@ -191,19 +191,23 @@ int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestThetaMatrix(int master_id, const char* model_name) {
+int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args) {
   try {
     artm::ThetaMatrix theta_matrix;
-    master_component(master_id)->RequestThetaMatrix(model_name, &theta_matrix);
+    artm::GetThetaMatrixArgs args;
+    ParseFromArray(get_theta_args, length, &args);
+    master_component(master_id)->RequestThetaMatrix(args, &theta_matrix);
     theta_matrix.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestTopicModel(int master_id, const char* model_name) {
+int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args) {
   try {
     artm::TopicModel topic_model;
-    master_component(master_id)->RequestTopicModel(model_name, &topic_model);
+    artm::GetTopicModelArgs args;
+    ParseFromArray(get_model_args, length, &args);
+    master_component(master_id)->RequestTopicModel(args, &topic_model);
     topic_model.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

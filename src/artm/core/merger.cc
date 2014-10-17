@@ -31,6 +31,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_q
     : topic_model_(),
       topic_model_inc_(),
       schema_(schema),
+      target_model_config_(),
       master_component_service_(master_component_service),
       scores_merger_(schema, &topic_model_),
       is_idle_(true),
@@ -59,15 +60,11 @@ void Merger::DisposeModel(ModelName model_name) {
 
 void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
   if (!topic_model_.has_key(model.name())) {
-    // Handle more type of reconfigs - for example, changing the number of topics;
-    auto ttm = std::make_shared<TopicModel>(model.name(), model.topics_count());
+    auto ttm = std::make_shared<TopicModel>(model.name(), model.topics_name());
     topic_model_.set(model.name(), ttm);
-  }
-
-  auto ttm = topic_model_.get(model.name());
-  if (ttm->topic_size() != model.topics_count()) {
-    std::string message("Unable to change the number of topics in topic model");
-    BOOST_THROW_EXCEPTION(InvalidOperation(message));
+    target_model_config_.set(model.name(), nullptr);
+  } else {
+    target_model_config_.set(model.name(), std::make_shared<artm::ModelConfig>(model));
   }
 }
 
@@ -252,7 +249,7 @@ void Merger::ThreadFunction() {
         if (iter == topic_model_inc_.end()) {
           topic_model_inc_.insert(std::make_pair(
             model_name, std::make_shared<::artm::core::TopicModel>(cur_ttm->model_name(),
-                                                                   cur_ttm->topic_size())));
+                                                                   cur_ttm->topics_name())));
           iter = topic_model_inc_.find(model_name);
         }
 
@@ -287,8 +284,8 @@ void Merger::PullTopicModel() {
       if (old_ttm.get() == nullptr)
         return;  // model had been disposed during ongoing processing;
 
-      ::artm::core::String request;
-      request.set_value(model_name);
+      ::artm::GetTopicModelArgs request;
+      request.set_model_name(model_name);
       ::artm::TopicModel reply;
       master_component_service_->RetrieveModel(request, &reply);
       std::shared_ptr<::artm::core::TopicModel> new_global_ttm(
@@ -338,11 +335,11 @@ void Merger::ResetScores(ModelName model_name) {
   scores_merger_.ResetScores(model_name);
 }
 
-bool Merger::RetrieveExternalTopicModel(ModelName model_name,
+bool Merger::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                         ::artm::TopicModel* topic_model) const {
-  auto ttm = this->GetLatestTopicModel(model_name);
+  auto ttm = this->GetLatestTopicModel(get_model_args.model_name());
   if (ttm == nullptr) return false;
-  ttm->RetrieveExternalTopicModel(topic_model);
+  ttm->RetrieveExternalTopicModel(get_model_args, topic_model);
   return true;
 }
 
@@ -481,8 +478,10 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       LOG(WARNING) << "SynchronizeModel() did not found any increments to topic model " << name;
 
     // Accumulate counters in topic model with decay coefficient.
-    auto new_ttm = std::make_shared<::artm::core::TopicModel>(*old_ttm, decay_weight);
-
+    auto new_ttm = std::make_shared<::artm::core::TopicModel>(*old_ttm,
+                                                              decay_weight,
+                                                              target_model_config_.get(name));
+    target_model_config_.set(name, nullptr);
     // Apply increment
     if (inc_ttm != topic_model_inc_.end())
       new_ttm->ApplyDiff(*inc_ttm->second);
@@ -503,7 +502,8 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
 
   auto schema = schema_->get();
   const ModelConfig& model = schema->model_config(args.model_name());
-  auto new_ttm = std::make_shared<::artm::core::TopicModel>(model.name(), model.topics_count());
+  auto new_ttm = std::make_shared<::artm::core::TopicModel>(
+      model.name(), model.topics_name());
   std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
   if (dict == nullptr) {
     std::stringstream ss;

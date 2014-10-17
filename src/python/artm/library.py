@@ -345,8 +345,12 @@ class MasterComponent:
         s.CopyFrom(self.config_.stream[stream_index])
     self.Reconfigure(new_config_)
 
-  def GetTopicModel(self, model):
-    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, model.name()))
+  def GetTopicModel(self, model = None, args = messages_pb2.GetTopicModelArgs()):
+    if (model is not None):
+      args.model_name = model.name()
+    
+    args_blob = args.SerializeToString()
+    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob))
 
     topic_model_blob = ctypes.create_string_buffer(length)
     HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, topic_model_blob))
@@ -365,8 +369,11 @@ class MasterComponent:
     regularizer_state.ParseFromString(state_blob)
     return regularizer_state
 
-  def GetThetaMatrix(self, model):
-    length = HandleErrorCode(self.lib_,  self.lib_.ArtmRequestThetaMatrix(self.id_, model.name()))
+  def GetThetaMatrix(self, model = None, args = messages_pb2.GetThetaMatrixArgs()):
+    if (model is not None):
+      args.model_name = model.name()
+    args_blob = args.SerializeToString()
+    length = HandleErrorCode(self.lib_,  self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
     blob = ctypes.create_string_buffer(length)
     HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
