@@ -105,9 +105,11 @@ void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
   config_.CopyFrom(config);
 }
 
-std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const Model& model) {
+std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args) {
   // Request model topics
-  int length = HandleErrorCode(ArtmRequestTopicModel(id(), model.name().c_str()));
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int length = HandleErrorCode(ArtmRequestTopicModel(id(), args_blob.size(), args_blob.c_str()));
   std::string topic_model_blob;
   topic_model_blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&topic_model_blob)));
@@ -129,8 +131,10 @@ std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(
   return regularizer_state;
 }
 
-std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const Model& model) {
-  int length = HandleErrorCode(ArtmRequestThetaMatrix(id(), model.name().c_str()));
+std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int length = HandleErrorCode(ArtmRequestThetaMatrix(id(), args_blob.size(), args_blob.c_str()));
   std::string blob;
   blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));

@@ -192,9 +192,10 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ProcessorInput));
   ModelIncrement_descriptor_ = file->message_type(7);
-  static const int ModelIncrement_offsets_[11] = {
+  static const int ModelIncrement_offsets_[12] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, topics_count_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, topics_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, token_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, operation_type_),
@@ -442,65 +443,66 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "Batch\022\022\n\nbatch_uuid\030\002 \002(\t\022$\n\013stream_mask"
     "\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stream_name\030\005"
     " \003(\t\0225\n\014cached_theta\030\006 \003(\0132\037.artm.core.D"
-    "ataLoaderCacheEntry\"\220\003\n\016ModelIncrement\022\022"
+    "ataLoaderCacheEntry\"\245\003\n\016ModelIncrement\022\022"
     "\n\nmodel_name\030\001 \002(\t\022\024\n\014topics_count\030\002 \002(\005"
-    "\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\022\?\n\016ope"
-    "ration_type\030\005 \003(\0162\'.artm.core.ModelIncre"
-    "ment.OperationType\022)\n\017token_increment\030\006 "
-    "\003(\0132\020.artm.FloatArray\022\022\n\nscore_name\030\007 \003("
-    "\t\022\r\n\005score\030\010 \003(\014\022\017\n\007item_id\030\t \003(\005\022\037\n\005the"
-    "ta\030\n \003(\0132\020.artm.FloatArray\022\022\n\nbatch_uuid"
-    "\030\013 \003(\t\"^\n\rOperationType\022\024\n\020CreateIfNotEx"
-    "ist\020\000\022\022\n\016IncrementValue\020\001\022\022\n\016OverwriteVa"
-    "lue\020\002\022\017\n\013DeleteToken\020\003\"\034\n\010BatchIds\022\020\n\010ba"
-    "tch_id\030\001 \003(\t\"U\n\034CreateOrReconfigureModel"
-    "Args\022\022\n\nmodel_name\030\002 \001(\t\022!\n\006config\030\003 \001(\013"
-    "2\021.artm.ModelConfig\"&\n\020DisposeModelArgs\022"
-    "\022\n\nmodel_name\030\002 \001(\t\"g\n\"CreateOrReconfigu"
-    "reRegularizerArgs\022\030\n\020regularizer_name\030\002 "
-    "\001(\t\022\'\n\006config\030\003 \001(\0132\027.artm.RegularizerCo"
-    "nfig\"2\n\026DisposeRegularizerArgs\022\030\n\020regula"
-    "rizer_name\030\002 \001(\t\"O\n!CreateOrReconfigureD"
-    "ictionaryArgs\022*\n\ndictionary\030\002 \001(\0132\026.artm"
-    ".DictionaryConfig\"0\n\025DisposeDictionaryAr"
-    "gs\022\027\n\017dictionary_name\030\002 \001(\t\":\n\020RequestSc"
-    "oreArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_nam"
-    "e\030\002 \001(\t2\367\001\n\026MasterComponentService\0229\n\013Up"
-    "dateModel\022\031.artm.core.ModelIncrement\032\017.a"
-    "rtm.core.Void\0224\n\rRetrieveModel\022\021.artm.co"
-    "re.String\032\020.artm.TopicModel\0225\n\016RequestBa"
-    "tches\022\016.artm.core.Int\032\023.artm.core.BatchI"
-    "ds\0225\n\rReportBatches\022\023.artm.core.BatchIds"
-    "\032\017.artm.core.Void2\324\013\n\025NodeControllerServ"
-    "ice\022K\n\033CreateOrReconfigureInstance\022\033.art"
-    "m.MasterComponentConfig\032\017.artm.core.Void"
-    "\0223\n\017DisposeInstance\022\017.artm.core.Void\032\017.a"
-    "rtm.core.Void\022R\n\"CreateOrReconfigureMast"
-    "erComponent\022\033.artm.MasterComponentConfig"
-    "\032\017.artm.core.Void\022:\n\026DisposeMasterCompon"
-    "ent\022\017.artm.core.Void\032\017.artm.core.Void\022T\n"
-    "\030CreateOrReconfigureModel\022\'.artm.core.Cr"
-    "eateOrReconfigureModelArgs\032\017.artm.core.V"
-    "oid\022<\n\014DisposeModel\022\033.artm.core.DisposeM"
-    "odelArgs\032\017.artm.core.Void\022`\n\036CreateOrRec"
-    "onfigureRegularizer\022-.artm.core.CreateOr"
-    "ReconfigureRegularizerArgs\032\017.artm.core.V"
-    "oid\022H\n\022DisposeRegularizer\022!.artm.core.Di"
-    "sposeRegularizerArgs\032\017.artm.core.Void\022^\n"
-    "\035CreateOrReconfigureDictionary\022,.artm.co"
-    "re.CreateOrReconfigureDictionaryArgs\032\017.a"
-    "rtm.core.Void\022F\n\021DisposeDictionary\022 .art"
-    "m.core.DisposeDictionaryArgs\032\017.artm.core"
-    ".Void\0227\n\023ForcePullTopicModel\022\017.artm.core"
-    ".Void\032\017.artm.core.Void\022@\n\034ForcePushTopic"
-    "ModelIncrement\022\017.artm.core.Void\032\017.artm.c"
-    "ore.Void\0228\n\023OverwriteTopicModel\022\020.artm.T"
-    "opicModel\032\017.artm.core.Void\0228\n\021RequestTop"
-    "icModel\022\021.artm.core.String\032\020.artm.TopicM"
-    "odel\022L\n\027RequestRegularizerState\022\021.artm.c"
-    "ore.String\032\036.artm.RegularizerInternalSta"
-    "te\022:\n\022RequestThetaMatrix\022\021.artm.core.Str"
-    "ing\032\021.artm.ThetaMatrix\022<\n\014RequestScore\022\033"
+    "\022\023\n\013topics_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\020\n\010"
+    "class_id\030\005 \003(\t\022\?\n\016operation_type\030\006 \003(\0162\'"
+    ".artm.core.ModelIncrement.OperationType\022"
+    ")\n\017token_increment\030\007 \003(\0132\020.artm.FloatArr"
+    "ay\022\022\n\nscore_name\030\010 \003(\t\022\r\n\005score\030\t \003(\014\022\017\n"
+    "\007item_id\030\n \003(\005\022\037\n\005theta\030\013 \003(\0132\020.artm.Flo"
+    "atArray\022\022\n\nbatch_uuid\030\014 \003(\t\"^\n\rOperation"
+    "Type\022\024\n\020CreateIfNotExist\020\000\022\022\n\016IncrementV"
+    "alue\020\001\022\022\n\016OverwriteValue\020\002\022\017\n\013DeleteToke"
+    "n\020\003\"\034\n\010BatchIds\022\020\n\010batch_id\030\001 \003(\t\"U\n\034Cre"
+    "ateOrReconfigureModelArgs\022\022\n\nmodel_name\030"
+    "\002 \001(\t\022!\n\006config\030\003 \001(\0132\021.artm.ModelConfig"
+    "\"&\n\020DisposeModelArgs\022\022\n\nmodel_name\030\002 \001(\t"
+    "\"g\n\"CreateOrReconfigureRegularizerArgs\022\030"
+    "\n\020regularizer_name\030\002 \001(\t\022\'\n\006config\030\003 \001(\013"
+    "2\027.artm.RegularizerConfig\"2\n\026DisposeRegu"
+    "larizerArgs\022\030\n\020regularizer_name\030\002 \001(\t\"O\n"
+    "!CreateOrReconfigureDictionaryArgs\022*\n\ndi"
+    "ctionary\030\002 \001(\0132\026.artm.DictionaryConfig\"0"
+    "\n\025DisposeDictionaryArgs\022\027\n\017dictionary_na"
+    "me\030\002 \001(\t\":\n\020RequestScoreArgs\022\022\n\nmodel_na"
+    "me\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t2\375\001\n\026MasterC"
+    "omponentService\0229\n\013UpdateModel\022\031.artm.co"
+    "re.ModelIncrement\032\017.artm.core.Void\022:\n\rRe"
+    "trieveModel\022\027.artm.GetTopicModelArgs\032\020.a"
+    "rtm.TopicModel\0225\n\016RequestBatches\022\016.artm."
+    "core.Int\032\023.artm.core.BatchIds\0225\n\rReportB"
+    "atches\022\023.artm.core.BatchIds\032\017.artm.core."
+    "Void2\341\013\n\025NodeControllerService\022K\n\033Create"
+    "OrReconfigureInstance\022\033.artm.MasterCompo"
+    "nentConfig\032\017.artm.core.Void\0223\n\017DisposeIn"
+    "stance\022\017.artm.core.Void\032\017.artm.core.Void"
+    "\022R\n\"CreateOrReconfigureMasterComponent\022\033"
+    ".artm.MasterComponentConfig\032\017.artm.core."
+    "Void\022:\n\026DisposeMasterComponent\022\017.artm.co"
+    "re.Void\032\017.artm.core.Void\022T\n\030CreateOrReco"
+    "nfigureModel\022\'.artm.core.CreateOrReconfi"
+    "gureModelArgs\032\017.artm.core.Void\022<\n\014Dispos"
+    "eModel\022\033.artm.core.DisposeModelArgs\032\017.ar"
+    "tm.core.Void\022`\n\036CreateOrReconfigureRegul"
+    "arizer\022-.artm.core.CreateOrReconfigureRe"
+    "gularizerArgs\032\017.artm.core.Void\022H\n\022Dispos"
+    "eRegularizer\022!.artm.core.DisposeRegulari"
+    "zerArgs\032\017.artm.core.Void\022^\n\035CreateOrReco"
+    "nfigureDictionary\022,.artm.core.CreateOrRe"
+    "configureDictionaryArgs\032\017.artm.core.Void"
+    "\022F\n\021DisposeDictionary\022 .artm.core.Dispos"
+    "eDictionaryArgs\032\017.artm.core.Void\0227\n\023Forc"
+    "ePullTopicModel\022\017.artm.core.Void\032\017.artm."
+    "core.Void\022@\n\034ForcePushTopicModelIncremen"
+    "t\022\017.artm.core.Void\032\017.artm.core.Void\0228\n\023O"
+    "verwriteTopicModel\022\020.artm.TopicModel\032\017.a"
+    "rtm.core.Void\022>\n\021RequestTopicModel\022\027.art"
+    "m.GetTopicModelArgs\032\020.artm.TopicModel\022L\n"
+    "\027RequestRegularizerState\022\021.artm.core.Str"
+    "ing\032\036.artm.RegularizerInternalState\022A\n\022R"
+    "equestThetaMatrix\022\030.artm.GetThetaMatrixA"
+    "rgs\032\021.artm.ThetaMatrix\022<\n\014RequestScore\022\033"
     ".artm.core.RequestScoreArgs\032\017.artm.Score"
     "Data\022(\n\010AddBatch\022\013.artm.Batch\032\017.artm.cor"
     "e.Void\0223\n\017InvokeIteration\022\017.artm.core.Vo"
@@ -508,7 +510,7 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "ore.Void\032\016.artm.core.Int\022\?\n\020SynchronizeM"
     "odel\022\032.artm.SynchronizeModelArgs\032\017.artm."
     "core.Void\022=\n\017InitializeModel\022\031.artm.Init"
-    "ializeModelArgs\032\017.artm.core.Void", 3112);
+    "ializeModelArgs\032\017.artm.core.Void", 3152);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
@@ -2372,6 +2374,7 @@ const int ModelIncrement::OperationType_ARRAYSIZE;
 #ifndef _MSC_VER
 const int ModelIncrement::kModelNameFieldNumber;
 const int ModelIncrement::kTopicsCountFieldNumber;
+const int ModelIncrement::kTopicsNameFieldNumber;
 const int ModelIncrement::kTokenFieldNumber;
 const int ModelIncrement::kClassIdFieldNumber;
 const int ModelIncrement::kOperationTypeFieldNumber;
@@ -2446,6 +2449,7 @@ void ModelIncrement::Clear() {
     }
     topics_count_ = 0;
   }
+  topics_name_.Clear();
   token_.Clear();
   class_id_.Clear();
   operation_type_.Clear();
@@ -2493,12 +2497,31 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_token;
+        if (input->ExpectTag(26)) goto parse_topics_name;
         break;
       }
 
-      // repeated string token = 3;
+      // repeated string topics_name = 3;
       case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_topics_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_topics_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->topics_name(this->topics_name_size() - 1).data(),
+            this->topics_name(this->topics_name_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_topics_name;
+        if (input->ExpectTag(34)) goto parse_token;
+        break;
+      }
+
+      // repeated string token = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_token:
@@ -2511,13 +2534,13 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_token;
-        if (input->ExpectTag(34)) goto parse_class_id;
+        if (input->ExpectTag(34)) goto parse_token;
+        if (input->ExpectTag(42)) goto parse_class_id;
         break;
       }
 
-      // repeated string class_id = 4;
-      case 4: {
+      // repeated string class_id = 5;
+      case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_class_id:
@@ -2530,13 +2553,13 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_class_id;
-        if (input->ExpectTag(40)) goto parse_operation_type;
+        if (input->ExpectTag(42)) goto parse_class_id;
+        if (input->ExpectTag(48)) goto parse_operation_type;
         break;
       }
 
-      // repeated .artm.core.ModelIncrement.OperationType operation_type = 5;
-      case 5: {
+      // repeated .artm.core.ModelIncrement.OperationType operation_type = 6;
+      case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_operation_type:
@@ -2547,7 +2570,7 @@ bool ModelIncrement::MergePartialFromCodedStream(
           if (::artm::core::ModelIncrement_OperationType_IsValid(value)) {
             add_operation_type(static_cast< ::artm::core::ModelIncrement_OperationType >(value));
           } else {
-            mutable_unknown_fields()->AddVarint(5, value);
+            mutable_unknown_fields()->AddVarint(6, value);
           }
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
@@ -2559,13 +2582,13 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(40)) goto parse_operation_type;
-        if (input->ExpectTag(50)) goto parse_token_increment;
+        if (input->ExpectTag(48)) goto parse_operation_type;
+        if (input->ExpectTag(58)) goto parse_token_increment;
         break;
       }
 
-      // repeated .artm.FloatArray token_increment = 6;
-      case 6: {
+      // repeated .artm.FloatArray token_increment = 7;
+      case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_token_increment:
@@ -2574,13 +2597,13 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_token_increment;
-        if (input->ExpectTag(58)) goto parse_score_name;
+        if (input->ExpectTag(58)) goto parse_token_increment;
+        if (input->ExpectTag(66)) goto parse_score_name;
         break;
       }
 
-      // repeated string score_name = 7;
-      case 7: {
+      // repeated string score_name = 8;
+      case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_score_name:
@@ -2593,13 +2616,13 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(58)) goto parse_score_name;
-        if (input->ExpectTag(66)) goto parse_score;
+        if (input->ExpectTag(66)) goto parse_score_name;
+        if (input->ExpectTag(74)) goto parse_score;
         break;
       }
 
-      // repeated bytes score = 8;
-      case 8: {
+      // repeated bytes score = 9;
+      case 9: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_score:
@@ -2608,19 +2631,19 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(66)) goto parse_score;
-        if (input->ExpectTag(72)) goto parse_item_id;
+        if (input->ExpectTag(74)) goto parse_score;
+        if (input->ExpectTag(80)) goto parse_item_id;
         break;
       }
 
-      // repeated int32 item_id = 9;
-      case 9: {
+      // repeated int32 item_id = 10;
+      case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_item_id:
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 72, input, this->mutable_item_id())));
+                 1, 80, input, this->mutable_item_id())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
                       WIRETYPE_LENGTH_DELIMITED) {
@@ -2630,13 +2653,13 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(72)) goto parse_item_id;
-        if (input->ExpectTag(82)) goto parse_theta;
+        if (input->ExpectTag(80)) goto parse_item_id;
+        if (input->ExpectTag(90)) goto parse_theta;
         break;
       }
 
-      // repeated .artm.FloatArray theta = 10;
-      case 10: {
+      // repeated .artm.FloatArray theta = 11;
+      case 11: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_theta:
@@ -2645,13 +2668,13 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(82)) goto parse_theta;
-        if (input->ExpectTag(90)) goto parse_batch_uuid;
+        if (input->ExpectTag(90)) goto parse_theta;
+        if (input->ExpectTag(98)) goto parse_batch_uuid;
         break;
       }
 
-      // repeated string batch_uuid = 11;
-      case 11: {
+      // repeated string batch_uuid = 12;
+      case 12: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_batch_uuid:
@@ -2664,7 +2687,7 @@ bool ModelIncrement::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(90)) goto parse_batch_uuid;
+        if (input->ExpectTag(98)) goto parse_batch_uuid;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -2701,70 +2724,79 @@ void ModelIncrement::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->topics_count(), output);
   }
 
-  // repeated string token = 3;
+  // repeated string topics_name = 3;
+  for (int i = 0; i < this->topics_name_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+    this->topics_name(i).data(), this->topics_name(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      3, this->topics_name(i), output);
+  }
+
+  // repeated string token = 4;
   for (int i = 0; i < this->token_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
     this->token(i).data(), this->token(i).length(),
     ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      3, this->token(i), output);
+      4, this->token(i), output);
   }
 
-  // repeated string class_id = 4;
+  // repeated string class_id = 5;
   for (int i = 0; i < this->class_id_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
     this->class_id(i).data(), this->class_id(i).length(),
     ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      4, this->class_id(i), output);
+      5, this->class_id(i), output);
   }
 
-  // repeated .artm.core.ModelIncrement.OperationType operation_type = 5;
+  // repeated .artm.core.ModelIncrement.OperationType operation_type = 6;
   for (int i = 0; i < this->operation_type_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      5, this->operation_type(i), output);
+      6, this->operation_type(i), output);
   }
 
-  // repeated .artm.FloatArray token_increment = 6;
+  // repeated .artm.FloatArray token_increment = 7;
   for (int i = 0; i < this->token_increment_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      6, this->token_increment(i), output);
+      7, this->token_increment(i), output);
   }
 
-  // repeated string score_name = 7;
+  // repeated string score_name = 8;
   for (int i = 0; i < this->score_name_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
     this->score_name(i).data(), this->score_name(i).length(),
     ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      7, this->score_name(i), output);
+      8, this->score_name(i), output);
   }
 
-  // repeated bytes score = 8;
+  // repeated bytes score = 9;
   for (int i = 0; i < this->score_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      8, this->score(i), output);
+      9, this->score(i), output);
   }
 
-  // repeated int32 item_id = 9;
+  // repeated int32 item_id = 10;
   for (int i = 0; i < this->item_id_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      9, this->item_id(i), output);
+      10, this->item_id(i), output);
   }
 
-  // repeated .artm.FloatArray theta = 10;
+  // repeated .artm.FloatArray theta = 11;
   for (int i = 0; i < this->theta_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      10, this->theta(i), output);
+      11, this->theta(i), output);
   }
 
-  // repeated string batch_uuid = 11;
+  // repeated string batch_uuid = 12;
   for (int i = 0; i < this->batch_uuid_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
     this->batch_uuid(i).data(), this->batch_uuid(i).length(),
     ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      11, this->batch_uuid(i), output);
+      12, this->batch_uuid(i), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -2790,72 +2822,81 @@ void ModelIncrement::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->topics_count(), target);
   }
 
-  // repeated string token = 3;
+  // repeated string topics_name = 3;
+  for (int i = 0; i < this->topics_name_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->topics_name(i).data(), this->topics_name(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(3, this->topics_name(i), target);
+  }
+
+  // repeated string token = 4;
   for (int i = 0; i < this->token_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->token(i).data(), this->token(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(3, this->token(i), target);
+      WriteStringToArray(4, this->token(i), target);
   }
 
-  // repeated string class_id = 4;
+  // repeated string class_id = 5;
   for (int i = 0; i < this->class_id_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->class_id(i).data(), this->class_id(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(4, this->class_id(i), target);
+      WriteStringToArray(5, this->class_id(i), target);
   }
 
-  // repeated .artm.core.ModelIncrement.OperationType operation_type = 5;
+  // repeated .artm.core.ModelIncrement.OperationType operation_type = 6;
   for (int i = 0; i < this->operation_type_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      5, this->operation_type(i), target);
+      6, this->operation_type(i), target);
   }
 
-  // repeated .artm.FloatArray token_increment = 6;
+  // repeated .artm.FloatArray token_increment = 7;
   for (int i = 0; i < this->token_increment_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        6, this->token_increment(i), target);
+        7, this->token_increment(i), target);
   }
 
-  // repeated string score_name = 7;
+  // repeated string score_name = 8;
   for (int i = 0; i < this->score_name_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->score_name(i).data(), this->score_name(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(7, this->score_name(i), target);
+      WriteStringToArray(8, this->score_name(i), target);
   }
 
-  // repeated bytes score = 8;
+  // repeated bytes score = 9;
   for (int i = 0; i < this->score_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteBytesToArray(8, this->score(i), target);
+      WriteBytesToArray(9, this->score(i), target);
   }
 
-  // repeated int32 item_id = 9;
+  // repeated int32 item_id = 10;
   for (int i = 0; i < this->item_id_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(9, this->item_id(i), target);
+      WriteInt32ToArray(10, this->item_id(i), target);
   }
 
-  // repeated .artm.FloatArray theta = 10;
+  // repeated .artm.FloatArray theta = 11;
   for (int i = 0; i < this->theta_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        10, this->theta(i), target);
+        11, this->theta(i), target);
   }
 
-  // repeated string batch_uuid = 11;
+  // repeated string batch_uuid = 12;
   for (int i = 0; i < this->batch_uuid_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->batch_uuid(i).data(), this->batch_uuid(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(11, this->batch_uuid(i), target);
+      WriteStringToArray(12, this->batch_uuid(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -2884,21 +2925,28 @@ int ModelIncrement::ByteSize() const {
     }
 
   }
-  // repeated string token = 3;
+  // repeated string topics_name = 3;
+  total_size += 1 * this->topics_name_size();
+  for (int i = 0; i < this->topics_name_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->topics_name(i));
+  }
+
+  // repeated string token = 4;
   total_size += 1 * this->token_size();
   for (int i = 0; i < this->token_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->token(i));
   }
 
-  // repeated string class_id = 4;
+  // repeated string class_id = 5;
   total_size += 1 * this->class_id_size();
   for (int i = 0; i < this->class_id_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->class_id(i));
   }
 
-  // repeated .artm.core.ModelIncrement.OperationType operation_type = 5;
+  // repeated .artm.core.ModelIncrement.OperationType operation_type = 6;
   {
     int data_size = 0;
     for (int i = 0; i < this->operation_type_size(); i++) {
@@ -2908,7 +2956,7 @@ int ModelIncrement::ByteSize() const {
     total_size += 1 * this->operation_type_size() + data_size;
   }
 
-  // repeated .artm.FloatArray token_increment = 6;
+  // repeated .artm.FloatArray token_increment = 7;
   total_size += 1 * this->token_increment_size();
   for (int i = 0; i < this->token_increment_size(); i++) {
     total_size +=
@@ -2916,21 +2964,21 @@ int ModelIncrement::ByteSize() const {
         this->token_increment(i));
   }
 
-  // repeated string score_name = 7;
+  // repeated string score_name = 8;
   total_size += 1 * this->score_name_size();
   for (int i = 0; i < this->score_name_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->score_name(i));
   }
 
-  // repeated bytes score = 8;
+  // repeated bytes score = 9;
   total_size += 1 * this->score_size();
   for (int i = 0; i < this->score_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
       this->score(i));
   }
 
-  // repeated int32 item_id = 9;
+  // repeated int32 item_id = 10;
   {
     int data_size = 0;
     for (int i = 0; i < this->item_id_size(); i++) {
@@ -2940,7 +2988,7 @@ int ModelIncrement::ByteSize() const {
     total_size += 1 * this->item_id_size() + data_size;
   }
 
-  // repeated .artm.FloatArray theta = 10;
+  // repeated .artm.FloatArray theta = 11;
   total_size += 1 * this->theta_size();
   for (int i = 0; i < this->theta_size(); i++) {
     total_size +=
@@ -2948,7 +2996,7 @@ int ModelIncrement::ByteSize() const {
         this->theta(i));
   }
 
-  // repeated string batch_uuid = 11;
+  // repeated string batch_uuid = 12;
   total_size += 1 * this->batch_uuid_size();
   for (int i = 0; i < this->batch_uuid_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -2980,6 +3028,7 @@ void ModelIncrement::MergeFrom(const ::google::protobuf::Message& from) {
 
 void ModelIncrement::MergeFrom(const ModelIncrement& from) {
   GOOGLE_CHECK_NE(&from, this);
+  topics_name_.MergeFrom(from.topics_name_);
   token_.MergeFrom(from.token_);
   class_id_.MergeFrom(from.class_id_);
   operation_type_.MergeFrom(from.operation_type_);
@@ -3022,6 +3071,7 @@ void ModelIncrement::Swap(ModelIncrement* other) {
   if (other != this) {
     std::swap(model_name_, other->model_name_);
     std::swap(topics_count_, other->topics_count_);
+    topics_name_.Swap(&other->topics_name_);
     token_.Swap(&other->token_);
     class_id_.Swap(&other->class_id_);
     operation_type_.Swap(&other->operation_type_);

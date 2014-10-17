@@ -35,10 +35,12 @@ class MasterProxy : boost::noncopyable, public MasterInterface {
   virtual void DisposeDictionary(const std::string& name);
 
   virtual void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
-  virtual bool RequestTopicModel(ModelName model_name, ::artm::TopicModel* topic_model);
+  virtual bool RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
+                                 ::artm::TopicModel* topic_model);
   virtual void RequestRegularizerState(RegularizerName regularizer_name,
                                        ::artm::RegularizerInternalState* regularizer_state);
-  virtual bool RequestThetaMatrix(ModelName model_name, ::artm::ThetaMatrix* theta_matrix);
+  virtual bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
+                                  ::artm::ThetaMatrix* theta_matrix);
   virtual bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
                             ScoreData* score_data);
 

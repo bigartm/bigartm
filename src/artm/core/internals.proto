@@ -62,26 +62,27 @@ message ModelIncrement {
 
   required string model_name = 1;
   required int32 topics_count = 2;
+  repeated string topics_name = 3;
 
-  repeated string token = 3;
-  repeated string class_id = 4;
-  repeated OperationType operation_type = 5;
+  repeated string token = 4;
+  repeated string class_id = 5;
+  repeated OperationType operation_type = 6;
 
   // Length of this repeated field is equal to the lengh of "repeated string token" field.
   // Values corresponding to CreateIfNotExist and DeleteToken are empty.
   // Values corresponding to IncrementValue and OverwriteValue carry n_wt values for this batch.
   // In this cases the length of the FloatArray equals to the topics_count.
-  repeated FloatArray token_increment = 6;
+  repeated FloatArray token_increment = 7;
 
-  repeated string score_name = 7;
-  repeated bytes score = 8;
+  repeated string score_name = 8;
+  repeated bytes score = 9;
 
   // Cached thetas from previous iteration
-  repeated int32 item_id = 9;
-  repeated FloatArray theta = 10;
+  repeated int32 item_id = 10;
+  repeated FloatArray theta = 11;
 
   // Identificators of all batches, contributing to this model increment.
-  repeated string batch_uuid = 11;
+  repeated string batch_uuid = 12;
 }
 
 // ======== MasterComponentService ========
@@ -92,7 +93,7 @@ message BatchIds {
 
 service MasterComponentService {
   rpc UpdateModel(ModelIncrement) returns (Void);
-  rpc RetrieveModel(String) returns (TopicModel);
+  rpc RetrieveModel(GetTopicModelArgs) returns (TopicModel);
 
   rpc RequestBatches(Int) returns (BatchIds);
   rpc ReportBatches(BatchIds) returns (Void);
@@ -151,9 +152,9 @@ service NodeControllerService {
   rpc ForcePushTopicModelIncrement(Void) returns (Void);
 
   rpc OverwriteTopicModel(TopicModel) returns (Void);
-  rpc RequestTopicModel(String) returns (TopicModel);
+  rpc RequestTopicModel(GetTopicModelArgs) returns (TopicModel);
   rpc RequestRegularizerState(String) returns (RegularizerInternalState);
-  rpc RequestThetaMatrix(String) returns (ThetaMatrix);
+  rpc RequestThetaMatrix(GetThetaMatrixArgs) returns (ThetaMatrix);
   rpc RequestScore(RequestScoreArgs) returns (ScoreData);
 
   rpc AddBatch(Batch) returns (Void);
