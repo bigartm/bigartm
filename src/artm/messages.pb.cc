@@ -309,7 +309,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(Stream));
   Stream_Type_descriptor_ = Stream_descriptor_->enum_type(0);
   MasterComponentConfig_descriptor_ = file->message_type(8);
-  static const int MasterComponentConfig_offsets_[12] = {
+  static const int MasterComponentConfig_offsets_[13] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, modus_operandi_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, disk_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, stream_),
@@ -322,6 +322,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, create_endpoint_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, connect_endpoint_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, node_connect_endpoint_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, online_batch_processing_),
   };
   MasterComponentConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1236,7 +1237,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\030\001 \001(\0162\021.artm.Stream.Type:\006Global\022\025\n\004nam"
     "e\030\002 \001(\t:\007@global\022\017\n\007modulus\030\003 \001(\005\022\021\n\tres"
     "iduals\030\004 \003(\005\"%\n\004Type\022\n\n\006Global\020\000\022\021\n\rItem"
-    "IdModulus\020\001\"\327\003\n\025MasterComponentConfig\022H\n"
+    "IdModulus\020\001\"\377\003\n\025MasterComponentConfig\022H\n"
     "\016modus_operandi\030\001 \001(\0162).artm.MasterCompo"
     "nentConfig.ModusOperandi:\005Local\022\021\n\tdisk_"
     "path\030\002 \001(\t\022\034\n\006stream\030\003 \003(\0132\014.artm.Stream"
@@ -1247,7 +1248,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "0\022\'\n\014score_config\030\t \003(\0132\021.artm.ScoreConf"
     "ig\022\027\n\017create_endpoint\030\n \001(\t\022\030\n\020connect_e"
     "ndpoint\030\013 \001(\t\022\035\n\025node_connect_endpoint\030\014"
-    " \003(\t\"\'\n\rModusOperandi\022\t\n\005Local\020\000\022\013\n\007Netw"
+    " \003(\t\022&\n\027online_batch_processing\030\r \001(\010:\005f"
+    "alse\"\'\n\rModusOperandi\022\t\n\005Local\020\000\022\013\n\007Netw"
     "ork\020\001\"/\n\024NodeControllerConfig\022\027\n\017create_"
     "endpoint\030\001 \001(\t\"\243\001\n\021MasterProxyConfig\022\035\n\025"
     "node_connect_endpoint\030\001 \001(\t\022+\n\006config\030\002 "
@@ -1366,7 +1368,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "me\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 "
     "\003(\t\022\020\n\010class_id\030\004 \003(\t\"D\n\022GetThetaMatrixA"
     "rgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013"
-    ".artm.Batch", 5691);
+    ".artm.Batch", 5731);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -3675,6 +3677,7 @@ const int MasterComponentConfig::kScoreConfigFieldNumber;
 const int MasterComponentConfig::kCreateEndpointFieldNumber;
 const int MasterComponentConfig::kConnectEndpointFieldNumber;
 const int MasterComponentConfig::kNodeConnectEndpointFieldNumber;
+const int MasterComponentConfig::kOnlineBatchProcessingFieldNumber;
 #endif  // !_MSC_VER
 
 MasterComponentConfig::MasterComponentConfig()
@@ -3702,6 +3705,7 @@ void MasterComponentConfig::SharedCtor() {
   merger_queue_max_size_ = 10;
   create_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   connect_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  online_batch_processing_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -3769,6 +3773,7 @@ void MasterComponentConfig::Clear() {
         connect_endpoint_->clear();
       }
     }
+    online_batch_processing_ = false;
   }
   stream_.Clear();
   score_config_.Clear();
@@ -3979,6 +3984,22 @@ bool MasterComponentConfig::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(98)) goto parse_node_connect_endpoint;
+        if (input->ExpectTag(104)) goto parse_online_batch_processing;
+        break;
+      }
+
+      // optional bool online_batch_processing = 13 [default = false];
+      case 13: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_online_batch_processing:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &online_batch_processing_)));
+          set_has_online_batch_processing();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -4080,6 +4101,11 @@ void MasterComponentConfig::SerializeWithCachedSizes(
       12, this->node_connect_endpoint(i), output);
   }
 
+  // optional bool online_batch_processing = 13 [default = false];
+  if (has_online_batch_processing()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(13, this->online_batch_processing(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -4172,6 +4198,11 @@ void MasterComponentConfig::SerializeWithCachedSizes(
       WriteStringToArray(12, this->node_connect_endpoint(i), target);
   }
 
+  // optional bool online_batch_processing = 13 [default = false];
+  if (has_online_batch_processing()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(13, this->online_batch_processing(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -4241,6 +4272,11 @@ int MasterComponentConfig::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->connect_endpoint());
+    }
+
+    // optional bool online_batch_processing = 13 [default = false];
+    if (has_online_batch_processing()) {
+      total_size += 1 + 1;
     }
 
   }
@@ -4325,6 +4361,9 @@ void MasterComponentConfig::MergeFrom(const MasterComponentConfig& from) {
     if (from.has_connect_endpoint()) {
       set_connect_endpoint(from.connect_endpoint());
     }
+    if (from.has_online_batch_processing()) {
+      set_online_batch_processing(from.online_batch_processing());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -4360,6 +4399,7 @@ void MasterComponentConfig::Swap(MasterComponentConfig* other) {
     std::swap(create_endpoint_, other->create_endpoint_);
     std::swap(connect_endpoint_, other->connect_endpoint_);
     node_connect_endpoint_.Swap(&other->node_connect_endpoint_);
+    std::swap(online_batch_processing_, other->online_batch_processing_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

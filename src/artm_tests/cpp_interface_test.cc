@@ -14,7 +14,7 @@
 TEST(CppInterface, Canary) {
 }
 
-void BasicTest(bool is_network_mode, bool is_proxy_mode) {
+void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing) {
   const int nTopics = 5;
 
   // Endpoints:
@@ -49,7 +49,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     master_config.set_modus_operandi(::artm::MasterComponentConfig_ModusOperandi_Network);
   } else {
     master_config.set_modus_operandi(::artm::MasterComponentConfig_ModusOperandi_Local);
-    master_config.set_cache_theta(true);
+    master_config.set_cache_theta(online_processing ? false : true);
   }
 
   ::artm::ScoreConfig score_config;
@@ -57,6 +57,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
   score_config.set_name("PerplexityScore");
   master_config.add_score_config()->CopyFrom(score_config);
+  master_config.set_online_batch_processing(online_processing);
 
   // Create master component
   std::unique_ptr<artm::MasterComponent> master_component;
@@ -130,12 +131,14 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   }
 
   // Index doc-token matrix
-  master_component->AddBatch(batch);
+  if (!online_processing) master_component->AddBatch(batch);
 
   std::shared_ptr<artm::TopicModel> topic_model;
   double expected_normalizer = 0;
   for (int iter = 0; iter < 5; ++iter) {
-    master_component->InvokeIteration(1);
+    if (!online_processing) master_component->InvokeIteration(1);
+    else                    master_component->AddBatch(batch);
+
     master_component->WaitIdle();
     model.Synchronize(0.0);
 
@@ -153,7 +156,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     std::shared_ptr<::artm::PerplexityScore> perplexity =
       master_component->GetScoreAs<::artm::PerplexityScore>(model, "PerplexityScore");
 
-    if (iter == 1) {
+    if (iter == 0) {
       expected_normalizer = perplexity->normalizer();
       EXPECT_GT(expected_normalizer, 0);
 
@@ -165,16 +168,21 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
         EXPECT_TRUE(true);
       }
 
-    } else if (iter >= 2) {
-      if (!is_network_mode) {
+    } else if (iter >= 1) {
+      if (!is_network_mode && !online_processing) {
         // Verify that normalizer does not grow starting from second iteration.
         // This confirms that the Instance::ForceResetScores() function works as expected.
         EXPECT_EQ(perplexity->normalizer(), expected_normalizer);
       }
+
+      if (online_processing)
+        EXPECT_EQ(perplexity->normalizer(), expected_normalizer * (iter + 1));
     }
   }
 
-  master_component->InvokeIteration(1);
+  if (!online_processing) master_component->InvokeIteration(1);
+  else                    master_component->AddBatch(batch);
+
   EXPECT_TRUE(master_component->WaitIdle());
 
   auto old_state_wrapper = master_component->GetRegularizerState(reg_multilang_name);
@@ -202,34 +210,43 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   auto first_token_topics = topic_model->token_weights(0);
   EXPECT_EQ(first_token_topics.value_size(), nTopics);
 
-  if (!is_network_mode) {
+  {
     artm::GetThetaMatrixArgs args;
     args.set_model_name(model.name().c_str());
-    std::shared_ptr<::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
+    if (!is_network_mode && !online_processing) {
+      std::shared_ptr<::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
+
+      EXPECT_EQ(theta_matrix->item_id_size(), nDocs);
+      for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
+        const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
+        EXPECT_EQ(weights.value_size(), nTopics);
+        float sum = 0;
+        for (int topic_index = 0; topic_index < weights.value_size(); ++topic_index) {
+          float weight = weights.value(topic_index);
+          EXPECT_GT(weight, 0);
+          sum += weight;
+        }
+
+        EXPECT_LE(abs(sum - 1), 0.001);
+      }
+    }
 
     args.mutable_batch()->CopyFrom(batch);
-    std::shared_ptr<::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
+    if (!is_network_mode) {
+      std::shared_ptr<::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
+      EXPECT_EQ(theta_matrix2->item_id_size(), nDocs);
+      for (int item_index = 0; item_index < theta_matrix2->item_id_size(); ++item_index) {
+        const ::artm::FloatArray& weights2 = theta_matrix2->item_weights(item_index);
+        EXPECT_EQ(weights2.value_size(), nTopics);
+        float sum2 = 0;
+        for (int topic_index = 0; topic_index < weights2.value_size(); ++topic_index) {
+          float weight2 = weights2.value(topic_index);
+          EXPECT_GT(weight2, 0);
+          sum2 += weight2;
+        }
 
-    EXPECT_TRUE(theta_matrix->item_id_size() == nDocs);
-    EXPECT_TRUE(theta_matrix2->item_id_size() == nDocs);
-    for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
-      const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
-      const ::artm::FloatArray& weights2 = theta_matrix2->item_weights(item_index);
-      EXPECT_EQ(weights.value_size(), nTopics);
-      EXPECT_EQ(weights2.value_size(), nTopics);
-      float sum = 0, sum2 = 0;
-      for (int topic_index = 0; topic_index < weights.value_size(); ++topic_index) {
-        float weight = weights.value(topic_index);
-        EXPECT_GT(weight, 0);
-        sum += weight;
-
-        float weight2 = weights2.value(topic_index);
-        EXPECT_GT(weight2, 0);
-        sum2 += weight2;
+        EXPECT_LE(abs(sum2 - 1), 0.001);
       }
-
-      EXPECT_LE(abs(sum - 1), 0.001);
-      EXPECT_LE(abs(sum2 - 1), 0.001);
     }
   }
 
@@ -324,23 +341,29 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode
 TEST(CppInterface, BasicTest_StandaloneMode) {
-  BasicTest(false, false);
+  BasicTest(false, false, false);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneProxyMode
 TEST(CppInterface, BasicTest_StandaloneProxyMode) {
-  BasicTest(false, true);
+  BasicTest(false, true, false);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_NetworkMode
 TEST(CppInterface, BasicTest_NetworkMode) {
-  BasicTest(true, false);
+  BasicTest(true, false, false);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_NetworkProxyMode
 TEST(CppInterface, BasicTest_NetworkProxyMode) {
-  BasicTest(true, true);
+  BasicTest(true, true, false);
 }
+
+// artm_tests.exe --gtest_filter=CppInterface.BasicTest_OnlineProcessingMode
+TEST(CppInterface, BasicTest_OnlineProcessingMode) {
+  BasicTest(false, false, true);
+}
+
 
 // artm_tests.exe --gtest_filter=CppInterface.ModelExceptions
 TEST(CppInterface, ModelExceptions) {

@@ -50,7 +50,7 @@ class LocalDataLoader : public DataLoader {
   virtual ~LocalDataLoader();
 
   int GetTotalItemsCount() const;
-  void AddBatch(const Batch& batch);
+  void AddBatch(const Batch& batch, bool invoke);
   virtual void Callback(std::shared_ptr<const ModelIncrement> model_increment);
 
   void InvokeIteration(int iterations_count);
@@ -62,7 +62,7 @@ class LocalDataLoader : public DataLoader {
                           ::artm::ThetaMatrix* theta_matrix);
 
  private:
-  ThreadSafeHolder<Generation> generation_;
+  std::unique_ptr<Generation> generation_;
 
   typedef std::pair<boost::uuids::uuid, ModelName> CacheKey;
   ThreadSafeCollectionHolder<CacheKey, DataLoaderCacheEntry> cache_;

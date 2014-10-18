@@ -67,6 +67,7 @@ class InstanceTest : boost::noncopyable {
 
 // artm_tests.exe --gtest_filter=Instance.*
 TEST(Instance, Basic) {
+  bool online_batch_processing = false;
   auto instance = std::make_shared<::artm::core::Instance>(
     ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal);
 
@@ -80,17 +81,17 @@ TEST(Instance, Basic) {
     field->add_token_count(i+1);
   }
 
-  instance->local_data_loader()->AddBatch(batch1);  // +2
+  instance->local_data_loader()->AddBatch(batch1, online_batch_processing);  // +2
 
   for (int iBatch = 0; iBatch < 2; ++iBatch) {
     artm::Batch batch;
     for (int i = 0; i < (3 + iBatch); ++i) batch.add_item();  // +3, +4
-    instance->local_data_loader()->AddBatch(batch);
+    instance->local_data_loader()->AddBatch(batch, online_batch_processing);
   }
 
   EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 9);
 
-  instance->local_data_loader()->AddBatch(batch1);  // +2
+  instance->local_data_loader()->AddBatch(batch1, online_batch_processing);  // +2
   EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 11);
 
   artm::Batch batch4;
@@ -103,7 +104,7 @@ TEST(Instance, Basic) {
     field->add_token_count(iToken + 2);
   }
 
-  instance->local_data_loader()->AddBatch(batch4);
+  instance->local_data_loader()->AddBatch(batch4, online_batch_processing);
 
   artm::ModelConfig config;
   config.set_enabled(true);
@@ -145,13 +146,14 @@ TEST(Instance, Basic) {
 
 // artm_tests.exe --gtest_filter=Instance.MultipleStreamsAndModels
 TEST(Instance, MultipleStreamsAndModels) {
+  bool online_batch_processing = false;
   InstanceTest test;
 
   // This setting will ensure that
   // - first model have  Token0, Token2, Token4,
   // - second model have Token1, Token3, Token6,
   auto batch = test.GenerateBatch(6, 6, 0, 1, 1);
-  test.instance()->local_data_loader()->AddBatch(*batch);
+  test.instance()->local_data_loader()->AddBatch(*batch, online_batch_processing);
 
   ::artm::MasterComponentConfig config;
   artm::Stream* s1 = config.add_stream();

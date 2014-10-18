@@ -75,9 +75,9 @@ LocalDataLoader::LocalDataLoader(Instance* instance)
       thread_() {
   std::string disk_path = instance->schema()->config().disk_path();
   if (disk_path.empty()) {
-    generation_.set(std::shared_ptr<Generation>(new MemoryGeneration()));
+    generation_.reset(new MemoryGeneration());
   } else {
-    generation_.set(std::shared_ptr<Generation>(new DiskGeneration(disk_path)));
+    generation_.reset(new DiskGeneration(disk_path));
   }
 
   // Keep this at the last action in constructor.
@@ -93,25 +93,27 @@ LocalDataLoader::~LocalDataLoader() {
   }
 }
 
-void LocalDataLoader::AddBatch(const Batch& batch) {
+void LocalDataLoader::AddBatch(const Batch& batch, bool invoke) {
   MasterComponentConfig config = instance()->schema()->config();
-  std::shared_ptr<Generation> next_gen = generation_.get()->Clone();
+  std::shared_ptr<Batch> modified_batch;
   if (config.compact_batches()) {
-    auto compacted_batch = std::make_shared<Batch>();
-    BatchHelpers::CompactBatch(batch, compacted_batch.get());
-    BatchHelpers::PopulateClassId(compacted_batch.get());
-    next_gen->AddBatch(compacted_batch);
-  } else {
-    auto modified_batch = std::make_shared<Batch>(batch);
+    modified_batch = std::make_shared<Batch>();  // constructor
+    BatchHelpers::CompactBatch(batch, modified_batch.get());
     BatchHelpers::PopulateClassId(modified_batch.get());
-    next_gen->AddBatch(modified_batch);
+  } else {
+    modified_batch = std::make_shared<Batch>(batch);  // copy constructor
+    BatchHelpers::PopulateClassId(modified_batch.get());
   }
 
-  generation_.set(next_gen);
+  boost::uuids::uuid uuid = generation_->AddBatch(modified_batch);
+
+  if (invoke)
+    instance_->batch_manager()->Add(uuid);
 }
 
+
 int LocalDataLoader::GetTotalItemsCount() const {
-  return generation_.get()->GetTotalItemsCount();
+  return generation_->GetTotalItemsCount();
 }
 
 void LocalDataLoader::InvokeIteration(int iterations_count) {
@@ -125,7 +127,7 @@ void LocalDataLoader::InvokeIteration(int iterations_count) {
   instance()->merger()->ForceResetScores(ModelName());
 
   auto latest_generation = generation_.get();
-  if (latest_generation->empty()) {
+  if (generation_->empty()) {
     LOG(WARNING) << "DataLoader::InvokeIteration() - current generation is empty, "
                  << "please populate DataLoader data with some data";
     return;
@@ -172,8 +174,7 @@ void LocalDataLoader::DisposeModel(ModelName model_name) {
 
 bool LocalDataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
-  std::shared_ptr<Generation> generation = generation_.get();
-  std::vector<boost::uuids::uuid> batch_uuids = generation->batch_uuids();
+  std::vector<boost::uuids::uuid> batch_uuids = generation_->batch_uuids();
   std::string model_name = get_theta_args.model_name();
 
   theta_matrix->set_model_name(model_name);
@@ -240,11 +241,14 @@ void LocalDataLoader::ThreadFunction() {
         continue;
       }
 
-      auto latest_generation = generation_.get();
-      std::shared_ptr<const Batch> batch = latest_generation->batch(next_batch_uuid);
+      std::shared_ptr<const Batch> batch = generation_->batch(next_batch_uuid);
       if (batch == nullptr) {
         instance_->batch_manager()->Done(next_batch_uuid, ModelName());
         continue;
+      }
+
+      if (instance()->schema()->config().online_batch_processing()) {
+        generation_->RemoveBatch(next_batch_uuid);
       }
 
       auto pi = std::make_shared<ProcessorInput>();
