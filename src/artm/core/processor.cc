@@ -300,22 +300,6 @@ Processor::StreamIterator::StreamIterator(const ProcessorInput& processor_input)
       processor_input_(processor_input) {
 }
 
-Processor::StreamIterator::StreamIterator(const ProcessorInput& processor_input,
-                                          const std::string& stream_name)
-    : items_count_(processor_input.batch().item_size()),
-      item_index_(-1),  // // handy trick for iterators
-      stream_flags_(nullptr),
-      processor_input_(processor_input) {
-  int index_of_stream = repeated_field_index_of(processor_input.stream_name(), stream_name);
-
-  if (index_of_stream == -1) {
-    // log a warning and process all documents from the stream
-    LOG(WARNING) << "Stream " << stream_name << " does not exist in the batch.";
-  } else {
-    stream_flags_ = &processor_input.stream_mask(index_of_stream);
-  }
-}
-
 const Item* Processor::StreamIterator::Next() {
   for (;;) {
     item_index_++;  // handy trick pays you back!
@@ -363,6 +347,55 @@ bool Processor::StreamIterator::InStream(int stream_index) {
     return false;
 
   return processor_input_.stream_mask(stream_index).value(item_index_);
+}
+
+static void PrepareTokenDictionary(const ModelConfig& model,
+                                   const Batch& batch,
+                                   std::vector<Token>* token_dict,
+                                   std::map<ClassId, float>* class_id_to_weight) {
+  // move data into map to increase lookup efficiency
+  if (model.class_id_size() != 0) {
+    for (int i = 0; i < model.class_id_size(); ++i) {
+      class_id_to_weight->insert(std::make_pair(model.class_id(i), model.class_weight(i)));
+    }
+  }
+
+  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
+    token_dict->push_back(Token(batch.class_id(token_index), batch.token(token_index)));
+  }
+}
+
+void Processor::FindThetaMatrix(const Batch& batch, const ModelName& model_name,
+                                ThetaMatrix* theta_matrix) {
+  std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
+  if (topic_model == nullptr)
+    BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find topic model", model_name));
+
+  std::shared_ptr<InstanceSchema> schema = schema_.get();
+  const ModelConfig& model = schema_.get()->model_config(model_name);
+
+  int topic_size = topic_model->topic_size();
+
+  std::vector<Token> token_dict;
+  std::map<ClassId, float> class_id_to_weight;
+  PrepareTokenDictionary(model, batch, &token_dict, &class_id_to_weight);
+
+  ItemProcessor item_processor(*topic_model, token_dict, class_id_to_weight, schema_.get());
+  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+    const Item& item = batch.item(item_index);
+
+    // Initialize theta
+    std::vector<float> theta(topic_size);
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+      theta[topic_index] = ThreadSafeRandom::singleton().GenerateFloat();
+
+    item_processor.InferTheta(model, item, nullptr, false, &theta[0]);
+
+    theta_matrix->add_item_id(item.id());
+    FloatArray* item_weights = theta_matrix->add_item_weights();
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+      item_weights->add_value(theta[topic_index]);
+  }
 }
 
 void Processor::ThreadFunction() {
@@ -454,13 +487,7 @@ void Processor::ThreadFunction() {
 
         std::vector<Token> token_dict;
         std::map<ClassId, float> class_id_to_weight;
-
-        if (model.class_id_size() != 0) {
-          // move data into map to increase lookup efficiency
-          for (int i = 0; i < model.class_id_size(); ++i) {
-            class_id_to_weight.insert(std::make_pair(model.class_id(i), model.class_weight(i)));
-          }
-        }
+        PrepareTokenDictionary(model, part->batch(), &token_dict, &class_id_to_weight);
 
         for (int token_index = 0; token_index < part->batch().token_size(); ++token_index) {
           std::string token_keyword = part->batch().token(token_index);
@@ -478,8 +505,6 @@ void Processor::ThreadFunction() {
           } else {
             model_increment->add_operation_type(ModelIncrement_OperationType_CreateIfNotExist);
           }
-
-          token_dict.push_back(token);
         }
 
         ItemProcessor item_processor(*topic_model, token_dict, class_id_to_weight, schema_.get());

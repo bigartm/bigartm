@@ -93,6 +93,9 @@ class Instance : boost::noncopyable {
   Merger* merger();
   bool has_merger() { return merger_ != nullptr; }
 
+  int processor_size() { return processors_.size(); }
+  Processor* processor(int processor_index) { return processors_[processor_index].get(); }
+
   void Reconfigure(const MasterComponentConfig& master_config);
   void CreateOrReconfigureModel(const ModelConfig& config);
   void DisposeModel(ModelName model_name);

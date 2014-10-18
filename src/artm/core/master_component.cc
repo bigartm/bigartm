@@ -17,6 +17,7 @@
 #include "artm/core/data_loader.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/instance.h"
+#include "artm/core/processor.h"
 #include "artm/core/topic_model.h"
 #include "artm/core/merger.h"
 
@@ -179,7 +180,16 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model)
 bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
   if (isInLocalModusOperandi()) {
-    return instance_->local_data_loader()->RequestThetaMatrix(get_theta_args, theta_matrix);
+    if (!get_theta_args.has_batch()) {
+      return instance_->local_data_loader()->RequestThetaMatrix(get_theta_args, theta_matrix);
+    } else {
+      if (instance_->processor_size() == 0)
+        BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
+      Batch batch(get_theta_args.batch());
+      BatchHelpers::PopulateClassId(&batch);
+      instance_->processor(0)->FindThetaMatrix(batch, get_theta_args.model_name(), theta_matrix);
+      return true;
+    }
   }
 
   if (isInNetworkModusOperandi()) {

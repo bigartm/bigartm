@@ -388,4 +388,5 @@ message GetTopicModelArgs {
 
 message GetThetaMatrixArgs {
   optional string model_name = 1;
+  optional Batch batch = 2;
 }

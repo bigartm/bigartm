@@ -37,6 +37,8 @@ class Processor : boost::noncopyable {
 
   ~Processor();
 
+  void FindThetaMatrix(const Batch& batch, const ModelName& model_name, ThetaMatrix* theta_matrix);
+
  private:
   ThreadSafeQueue<std::shared_ptr<const ProcessorInput> >* processor_queue_;
   ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue_;
@@ -53,9 +55,6 @@ class Processor : boost::noncopyable {
    public:
     // Iterates on a global stream (all items in the batch)
     explicit StreamIterator(const ProcessorInput& processor_input);
-
-    // Iterates on items from a specific stream
-    explicit StreamIterator(const ProcessorInput& processor_input, const std::string& stream_name);
 
     const Item* Next();
     const Item* Current() const;

@@ -980,8 +980,9 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetTopicModelArgs));
   GetThetaMatrixArgs_descriptor_ = file->message_type(45);
-  static const int GetThetaMatrixArgs_offsets_[1] = {
+  static const int GetThetaMatrixArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, model_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, batch_),
   };
   GetThetaMatrixArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1363,8 +1364,9 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "gs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dictionary_nam"
     "e\030\002 \001(\t\"\\\n\021GetTopicModelArgs\022\022\n\nmodel_na"
     "me\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 "
-    "\003(\t\022\020\n\010class_id\030\004 \003(\t\"(\n\022GetThetaMatrixA"
-    "rgs\022\022\n\nmodel_name\030\001 \001(\t", 5663);
+    "\003(\t\022\020\n\010class_id\030\004 \003(\t\"D\n\022GetThetaMatrixA"
+    "rgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013"
+    ".artm.Batch", 5691);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -16384,6 +16386,7 @@ void GetTopicModelArgs::Swap(GetTopicModelArgs* other) {
 
 #ifndef _MSC_VER
 const int GetThetaMatrixArgs::kModelNameFieldNumber;
+const int GetThetaMatrixArgs::kBatchFieldNumber;
 #endif  // !_MSC_VER
 
 GetThetaMatrixArgs::GetThetaMatrixArgs()
@@ -16392,6 +16395,7 @@ GetThetaMatrixArgs::GetThetaMatrixArgs()
 }
 
 void GetThetaMatrixArgs::InitAsDefaultInstance() {
+  batch_ = const_cast< ::artm::Batch*>(&::artm::Batch::default_instance());
 }
 
 GetThetaMatrixArgs::GetThetaMatrixArgs(const GetThetaMatrixArgs& from)
@@ -16403,6 +16407,7 @@ GetThetaMatrixArgs::GetThetaMatrixArgs(const GetThetaMatrixArgs& from)
 void GetThetaMatrixArgs::SharedCtor() {
   _cached_size_ = 0;
   model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  batch_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -16415,6 +16420,7 @@ void GetThetaMatrixArgs::SharedDtor() {
     delete model_name_;
   }
   if (this != default_instance_) {
+    delete batch_;
   }
 }
 
@@ -16446,6 +16452,9 @@ void GetThetaMatrixArgs::Clear() {
         model_name_->clear();
       }
     }
+    if (has_batch()) {
+      if (batch_ != NULL) batch_->::artm::Batch::Clear();
+    }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -16466,6 +16475,20 @@ bool GetThetaMatrixArgs::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
             this->model_name().data(), this->model_name().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_batch;
+        break;
+      }
+
+      // optional .artm.Batch batch = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_batch:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_batch()));
         } else {
           goto handle_uninterpreted;
         }
@@ -16500,6 +16523,12 @@ void GetThetaMatrixArgs::SerializeWithCachedSizes(
       1, this->model_name(), output);
   }
 
+  // optional .artm.Batch batch = 2;
+  if (has_batch()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      2, this->batch(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -16518,6 +16547,13 @@ void GetThetaMatrixArgs::SerializeWithCachedSizes(
         1, this->model_name(), target);
   }
 
+  // optional .artm.Batch batch = 2;
+  if (has_batch()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        2, this->batch(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -16534,6 +16570,13 @@ int GetThetaMatrixArgs::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->model_name());
+    }
+
+    // optional .artm.Batch batch = 2;
+    if (has_batch()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->batch());
     }
 
   }
@@ -16566,6 +16609,9 @@ void GetThetaMatrixArgs::MergeFrom(const GetThetaMatrixArgs& from) {
     if (from.has_model_name()) {
       set_model_name(from.model_name());
     }
+    if (from.has_batch()) {
+      mutable_batch()->::artm::Batch::MergeFrom(from.batch());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -16590,6 +16636,7 @@ bool GetThetaMatrixArgs::IsInitialized() const {
 void GetThetaMatrixArgs::Swap(GetThetaMatrixArgs* other) {
   if (other != this) {
     std::swap(model_name_, other->model_name_);
+    std::swap(batch_, other->batch_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

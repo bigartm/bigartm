@@ -1583,8 +1583,13 @@ Represents an argument of get theta matrix operation.
 
   message GetThetaMatrixArgs {
     optional string model_name = 1;
+    optional Batch batch = 2;
   }
 
 .. attribute:: GetThetaMatrixArgs.model_name
 
   The name of the model to retrieved theta matrix for.
+
+.. attribute:: GetThetaMatrixArgs.batch
+
+  The :ref:`Batch` to classify with the model.
