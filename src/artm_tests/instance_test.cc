@@ -122,7 +122,7 @@ TEST(Instance, Basic) {
 
   config.set_enabled(false);
   for (int i = 0; i < 3; ++i) {
-    config.add_topics_name("@topic_" + std::to_string(i));
+    config.add_topic_name("@topic_" + std::to_string(i));
   }
   config.set_topics_count(0);
   instance->CreateOrReconfigureModel(config);
@@ -131,7 +131,7 @@ TEST(Instance, Basic) {
   artm::GetTopicModelArgs args;
   args.set_model_name(model_name);
   for (int i = 0; i < 3; ++i) {
-    args.add_topics_name("@topic_" + std::to_string(i));
+    args.add_topic_name("@topic_" + std::to_string(i));
   }
 
   instance->merger()->RetrieveExternalTopicModel(args, &topic_model);

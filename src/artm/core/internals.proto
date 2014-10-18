@@ -62,7 +62,7 @@ message ModelIncrement {
 
   required string model_name = 1;
   required int32 topics_count = 2;
-  repeated string topics_name = 3;
+  repeated string topic_name = 3;
 
   repeated string token = 4;
   repeated string class_id = 5;

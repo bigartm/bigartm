@@ -213,18 +213,21 @@ MasterComponent
 
       Removes a stream with the specific name from the master component.
 
-   .. py:method:: GetTopicModel(model)
+   .. py:method:: GetTopicModel(model = None, args = messages_pb2.GetTopicModelArgs())
 
       Retrieves and returns an instance of :ref:`TopicModel` class, carrying all the data of the topic model (including the Phi matrix).
       Parameter *model* should be an instance of :py:class:`Model` class.
+      For more settings use *args* parameter (see :ref:`GetTopicModelArgs` for all available options).
 
    .. py:method:: GetRegularizerState(regularizer_name)
 
       Retrieves and returns the internal state of a regularizer with the specific name.
 
-   .. py:method:: GetThetaMatrix(model)
+   .. py:method:: GetThetaMatrix(model = None, args = messages_pb2.GetThetaMatrixArgs())
 
       Retrieves an instance of :ref:`ThetaMatrix` class, carrying the theta matrix gathered during the last iteration.
+      Parameter *model* should be an instance of :py:class:`Model` class.
+      For more settings use *args* parameter (see :ref:`GetThetaMatrixArgs` for all available options).
       This operation require :attr:`MasterComponentConfig.cache_theta` to be set to *True* before starting the last iteration.
       This operation is not supported when :attr:`MasterComponentConfig.modus_operandi` is *Network*.
       This operation require all ThetaMatrix to fit into the CPU memory, and for this reason it is turned off by default.
@@ -259,8 +262,14 @@ Model
    .. py:method:: Reconfigure(config = None)
 
       Updates the configuration of the topic model with new :ref:`ModelConfig` value, provided by *config* parameter.
-      Remember that some changes of the configuration are not allowed (for example, the :attr:`ModelConfig.topics_count` must not change).
-      Such configuration parameters must be provided in the :py:meth:`MasterComponent.CreateModel` method.
+      When *config* is not specified the configuration is updated with :py:meth:`config` value.
+      Remember that some changes of the configuration are applied immediately after this call.
+      For example, changes to :attr:`ModelConfig.topics_count` or :attr:`ModelConfig.topic_name` 
+      will be applied only during the next :attr:`Synchronize` call.
+
+      Note that changes :attr:`ModelConfig.topics_count` or :attr:`ModelConfig.topic_name`
+      are only supported on an idle master component (e.g. in between iterations).
+      Changing these values during an ongoing iteration may cause unexpected results.
 
    .. py:method:: topics_count()
 

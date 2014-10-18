@@ -397,14 +397,14 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
 
 void Instance::PopulateTopicsName(ModelConfig* model_config) {
   int topics_count = model_config->topics_count();
-  int topics_name_size = model_config->topics_name_size();
-  if (topics_name_size == 0) {
+  int topic_name_size = model_config->topic_name_size();
+  if (topic_name_size == 0) {
     // topic names will be auto-generated
     for (int i = 0; i < topics_count; ++i) {
-      model_config->add_topics_name("@topic_" + std::to_string(i));
+      model_config->add_topic_name("@topic_" + std::to_string(i));
     }
   } else {
-    model_config->set_topics_count(topics_name_size);
+    model_config->set_topics_count(topic_name_size);
   }
 }
 

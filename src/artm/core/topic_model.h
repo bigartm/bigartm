@@ -109,7 +109,7 @@ class TopicWeightIterator {
 class TopicModel : public Regularizable {
  public:
   explicit TopicModel(ModelName model_name,
-      const google::protobuf::RepeatedPtrField<std::string>& topics_name);
+      const google::protobuf::RepeatedPtrField<std::string>& topic_name);
   explicit TopicModel(const TopicModel& rhs, float decay,
       std::shared_ptr<artm::ModelConfig> target_model_config);
   explicit TopicModel(const ::artm::TopicModel& external_topic_model);
@@ -151,7 +151,7 @@ class TopicModel : public Regularizable {
 
   int token_size() const;
   int topic_size() const;
-  google::protobuf::RepeatedPtrField<std::string> topics_name();
+  google::protobuf::RepeatedPtrField<std::string> topic_name();
 
   bool has_token(const Token& token) const;
   int token_id(const Token& token) const;
@@ -165,7 +165,7 @@ class TopicModel : public Regularizable {
 
   std::map<Token, int> token_to_token_id_;
   std::vector<Token> token_id_to_token_;
-  std::vector<std::string> topics_name_;
+  std::vector<std::string> topic_name_;
 
   std::vector<float*> n_wt_;  // vector of length tokens_count
   std::vector<float*> r_wt_;  // regularizer's additions
