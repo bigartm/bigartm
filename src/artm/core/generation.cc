@@ -19,7 +19,7 @@ DiskGeneration::DiskGeneration(const std::string& disk_path)
   generation_.swap(batch_uuids);
 }
 
-void DiskGeneration::AddBatch(const std::shared_ptr<const Batch>& batch) {
+boost::uuids::uuid DiskGeneration::AddBatch(const std::shared_ptr<Batch>& batch) {
   std::string message = "ArtmAddBatch() is not allowed with current configuration. ";
   message += "Please, set the configuration parameter MasterComponentConfig.disk_path ";
   message += "to an empty string in order to enable ArtmAddBatch() operation. ";
@@ -27,53 +27,45 @@ void DiskGeneration::AddBatch(const std::shared_ptr<const Batch>& batch) {
   BOOST_THROW_EXCEPTION(InvalidOperation(message));
 }
 
+void DiskGeneration::RemoveBatch(const boost::uuids::uuid& uuid) {
+  LOG(ERROR) << "Remove batch is not supported in disk generation.";
+}
+
 std::vector<boost::uuids::uuid> DiskGeneration::batch_uuids() const {
   return generation_;
 }
 
-std::shared_ptr<const Batch> DiskGeneration::batch(const boost::uuids::uuid& uuid) const {
+std::shared_ptr<Batch> DiskGeneration::batch(const boost::uuids::uuid& uuid) const {
   return BatchHelpers::LoadBatch(uuid, disk_path_);
 }
 
-std::shared_ptr<Generation> DiskGeneration::Clone() const {
-  return std::shared_ptr<Generation>(new DiskGeneration(*this));
-}
-
-std::shared_ptr<const Batch> MemoryGeneration::batch(const boost::uuids::uuid& uuid) const {
-  auto retval = generation_.find(uuid);
-  if (retval != generation_.end()) {
-    return retval->second;
-  }
-
-  return nullptr;
+std::shared_ptr<Batch> MemoryGeneration::batch(const boost::uuids::uuid& uuid) const {
+  return generation_.get(uuid);
 }
 
 std::vector<boost::uuids::uuid> MemoryGeneration::batch_uuids() const {
-  std::vector<boost::uuids::uuid> retval;
-  for (auto iter = generation_.begin(); iter != generation_.end(); ++iter) {
-    retval.push_back(iter->first);
-  }
-
-  return std::move(retval);
+  return generation_.keys();
 }
 
-void MemoryGeneration::AddBatch(const std::shared_ptr<const Batch>& batch) {
-  generation_.insert(std::make_pair(boost::uuids::random_generator()(), batch));
-}
-
-int MemoryGeneration::GetTotalItemsCount() const {
-  int retval = 0;
-  for (auto iter = generation_.begin(); iter != generation_.end(); ++iter) {
-    if ((*iter).second != nullptr) {
-      retval += (*iter).second->item_size();
-    }
-  }
-
+boost::uuids::uuid MemoryGeneration::AddBatch(const std::shared_ptr<Batch>& batch) {
+  boost::uuids::uuid retval = boost::uuids::random_generator()();
+  generation_.set(retval, batch);
   return retval;
 }
 
-std::shared_ptr<Generation> MemoryGeneration::Clone() const {
-  return std::shared_ptr<Generation>(new MemoryGeneration(*this));
+void MemoryGeneration::RemoveBatch(const boost::uuids::uuid& uuid) {
+  generation_.erase(uuid);
+}
+
+int MemoryGeneration::GetTotalItemsCount() const {
+  auto keys = generation_.keys();
+  int retval = 0;
+  for (auto& key : keys) {
+    auto value = generation_.get(key);
+    if (value != nullptr) retval += value->item_size();
+  }
+
+  return retval;
 }
 
 }  // namespace core

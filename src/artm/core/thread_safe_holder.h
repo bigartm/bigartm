@@ -117,6 +117,11 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
     return object_.size();
   }
 
+  int empty() const {
+    boost::lock_guard<boost::mutex> guard(lock_);
+    return object_.empty();
+  }
+
  private:
   mutable boost::mutex lock_;
   std::map<K, std::shared_ptr<T> > object_;

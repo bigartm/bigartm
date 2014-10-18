@@ -254,6 +254,13 @@ bool MasterComponent::WaitIdle(int timeout) {
 }
 
 void MasterComponent::InvokeIteration(int iterations_count) {
+  if (config_.get()->online_batch_processing()) {
+    std::stringstream str;
+    str << "InvokeIteration() must not be used together with ";
+    str << "MasterComponentConfig.online_batch_processing().";
+    BOOST_THROW_EXCEPTION(InvalidOperation(str.str()));
+  }
+
   if (isInLocalModusOperandi()) {
     instance_->local_data_loader()->InvokeIteration(iterations_count);
     return;
@@ -276,7 +283,8 @@ void MasterComponent::InvokeIteration(int iterations_count) {
 
 void MasterComponent::AddBatch(const Batch& batch) {
   if (isInLocalModusOperandi()) {
-    return instance_->local_data_loader()->AddBatch(batch);
+    return instance_->local_data_loader()->AddBatch(batch,
+                                                    config_.get()->online_batch_processing());
   }
 
   if (isInNetworkModusOperandi()) {
@@ -359,6 +367,13 @@ void MasterComponent::ValidateConfig(const MasterComponentConfig& config) {
       std::string message = "Changing disk_path is not supported.";
       BOOST_THROW_EXCEPTION(InvalidOperation(message));
     }
+  }
+
+  if (config.cache_theta() && config.online_batch_processing()) {
+    std::stringstream str;
+    str << "MasterComponentConfig.cache_theta() is incompatible with "
+        << "MasterComponentConfig.online_batch_processing()";
+    BOOST_THROW_EXCEPTION(InvalidOperation(str.str()));
   }
 }
 

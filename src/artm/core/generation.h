@@ -11,18 +11,20 @@
 #include "boost/uuid/uuid.hpp"
 
 #include "artm/messages.pb.h"
+#include "artm/core/thread_safe_holder.h"
 
 namespace artm {
 namespace core {
 
+// Must be thread-safe (used concurrently in DataLoader).
 class Generation {
  public:
   virtual std::vector<boost::uuids::uuid> batch_uuids() const = 0;
-  virtual std::shared_ptr<const Batch> batch(const boost::uuids::uuid& uuid) const = 0;
+  virtual std::shared_ptr<Batch> batch(const boost::uuids::uuid& uuid) const = 0;
   virtual bool empty() const = 0;
   virtual int GetTotalItemsCount() const = 0;
-  virtual std::shared_ptr<Generation> Clone() const = 0;
-  virtual void AddBatch(const std::shared_ptr<const Batch>& batch) = 0;
+  virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch) = 0;
+  virtual void RemoveBatch(const boost::uuids::uuid& uuid) = 0;
 };
 
 class DiskGeneration : public Generation {
@@ -30,31 +32,31 @@ class DiskGeneration : public Generation {
   explicit DiskGeneration(const std::string& disk_path);
 
   virtual std::vector<boost::uuids::uuid> batch_uuids() const;
-  virtual std::shared_ptr<const Batch> batch(const boost::uuids::uuid& uuid) const;
+  virtual std::shared_ptr<Batch> batch(const boost::uuids::uuid& uuid) const;
 
-  virtual std::shared_ptr<Generation> Clone() const;
-  virtual void AddBatch(const std::shared_ptr<const Batch>& batch);
+  virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch);
+  virtual void RemoveBatch(const boost::uuids::uuid& uuid);
   virtual int GetTotalItemsCount() const { return 0; }
   virtual bool empty() const { return generation_.empty(); }
 
  private:
   std::string disk_path_;
-  std::vector<boost::uuids::uuid> generation_;
+  std::vector<boost::uuids::uuid> generation_;  // created one in constructor and then does not change.
 };
 
 class MemoryGeneration : public Generation {
  public:
   virtual std::vector<boost::uuids::uuid> batch_uuids() const;
-  virtual std::shared_ptr<const Batch> batch(const boost::uuids::uuid& uuid) const;
+  virtual std::shared_ptr<Batch> batch(const boost::uuids::uuid& uuid) const;
 
-  virtual std::shared_ptr<Generation> Clone() const;
-  virtual void AddBatch(const std::shared_ptr<const Batch>& batch);
+  virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch);
+  virtual void RemoveBatch(const boost::uuids::uuid& uuid);
 
   virtual bool empty() const { return generation_.empty(); }
   virtual int GetTotalItemsCount() const;
 
  private:
-  std::map<boost::uuids::uuid, std::shared_ptr<const Batch> > generation_;
+  ThreadSafeCollectionHolder<boost::uuids::uuid, Batch> generation_;
 };
 
 }  // namespace core

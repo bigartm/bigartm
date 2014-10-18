@@ -1264,6 +1264,13 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& node_connect_endpoint() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_node_connect_endpoint();
 
+  // optional bool online_batch_processing = 13 [default = false];
+  inline bool has_online_batch_processing() const;
+  inline void clear_online_batch_processing();
+  static const int kOnlineBatchProcessingFieldNumber = 13;
+  inline bool online_batch_processing() const;
+  inline void set_online_batch_processing(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.MasterComponentConfig)
  private:
   inline void set_has_modus_operandi();
@@ -1284,16 +1291,19 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline void clear_has_create_endpoint();
   inline void set_has_connect_endpoint();
   inline void clear_has_connect_endpoint();
+  inline void set_has_online_batch_processing();
+  inline void clear_has_online_batch_processing();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* disk_path_;
   ::google::protobuf::RepeatedPtrField< ::artm::Stream > stream_;
   int modus_operandi_;
-  bool compact_batches_;
-  bool cache_theta_;
   ::google::protobuf::int32 processors_count_;
   ::google::protobuf::int32 processor_queue_max_size_;
+  bool compact_batches_;
+  bool cache_theta_;
+  bool online_batch_processing_;
   ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
   ::std::string* create_endpoint_;
   ::std::string* connect_endpoint_;
@@ -1301,7 +1311,7 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 merger_queue_max_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(12 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6804,6 +6814,28 @@ MasterComponentConfig::node_connect_endpoint() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 MasterComponentConfig::mutable_node_connect_endpoint() {
   return &node_connect_endpoint_;
+}
+
+// optional bool online_batch_processing = 13 [default = false];
+inline bool MasterComponentConfig::has_online_batch_processing() const {
+  return (_has_bits_[0] & 0x00001000u) != 0;
+}
+inline void MasterComponentConfig::set_has_online_batch_processing() {
+  _has_bits_[0] |= 0x00001000u;
+}
+inline void MasterComponentConfig::clear_has_online_batch_processing() {
+  _has_bits_[0] &= ~0x00001000u;
+}
+inline void MasterComponentConfig::clear_online_batch_processing() {
+  online_batch_processing_ = false;
+  clear_has_online_batch_processing();
+}
+inline bool MasterComponentConfig::online_batch_processing() const {
+  return online_batch_processing_;
+}
+inline void MasterComponentConfig::set_online_batch_processing(bool value) {
+  set_has_online_batch_processing();
+  online_batch_processing_ = value;
 }
 
 // -------------------------------------------------------------------
