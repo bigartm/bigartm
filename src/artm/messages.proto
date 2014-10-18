@@ -94,7 +94,7 @@ message MasterProxyConfig {
 message ModelConfig {
   optional string name = 1 [default = "@model"];
   optional int32 topics_count = 2 [default = 32];
-  repeated string topics_name = 3;
+  repeated string topic_name = 3;
   optional bool enabled = 4 [default = true];
   optional int32 inner_iterations_count = 5 [default = 10];
   optional string field_name = 6 [default = "@body"];
@@ -330,7 +330,7 @@ message TopicKernelScore {
 message TopicModel {
   optional string name = 1 [default = "@model"];
   optional int32 topics_count = 2;
-  repeated string topics_name = 3;
+  repeated string topic_name = 3;
   repeated string token = 4;
   repeated FloatArray token_weights = 5;
   repeated string class_id = 6;
@@ -381,7 +381,7 @@ message InitializeModelArgs {
 
 message GetTopicModelArgs {
   optional string model_name = 1;
-  repeated string topics_name = 2;
+  repeated string topic_name = 2;
   repeated string token = 3;
   repeated string class_id = 4;
 }

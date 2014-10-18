@@ -12,13 +12,13 @@ TEST(TopicModelTest, Basic) {
   int no_topics = 3;
   int no_tokens = 5;
 
-  google::protobuf::RepeatedPtrField<std::string> topics_name;
+  google::protobuf::RepeatedPtrField<std::string> topic_name;
   for (int i = 0; i < 3; ++i) {
-    std::string* name = topics_name.Add();
+    std::string* name = topic_name.Add();
     std::string str_name = "topic" + std::to_string(i);
     name = &str_name;
   }
-  artm::core::TopicModel topic_model(::artm::core::ModelName(), topics_name);
+  artm::core::TopicModel topic_model(::artm::core::ModelName(), topic_name);
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_1"));
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_2"));
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_3"));
@@ -125,13 +125,13 @@ TEST(TopicModelTest, Basic) {
 
   //  test 8
   no_topics = 1;
-  topics_name.Clear();
-  std::string* name = topics_name.Add();
+  topic_name.Clear();
+  std::string* name = topic_name.Add();
   std::string str_name = "topic1";
   name = &str_name;
 
   for (int i = 1; i < 10; ++i) {
-    artm::core::TopicModel topic_model_1(::artm::core::ModelName(), topics_name);
+    artm::core::TopicModel topic_model_1(::artm::core::ModelName(), topic_name);
     topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_1"));
     topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_2"));
     topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_3"));

@@ -410,12 +410,18 @@ ArtmOverwriteTopicModel
 ArtmRequestThetaMatrix
 ----------------------
 
-.. c:function::  int ArtmRequestThetaMatrix(int master_id, const char* model_name)
+.. c:function::  int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args)
 
    Requests theta matrix. Use :cpp:func:`ArtmCopyRequestResult` to copy the resulting message.
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* get_theta_args:
+      Serialized :ref:`GetThetaArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the *get_theta_args* message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
             and then passed to :c:func:`ArtmCopyRequestResult` method.
@@ -425,10 +431,16 @@ ArtmRequestThetaMatrix
 ArtmRequestTopicModel
 ---------------------
 
-.. c:function::  int ArtmRequestTopicModel(int master_id, const char* model_name)
+.. c:function::  int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args)
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* get_model_args:
+      Serialized :ref:`GetModelArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the *get_model_args* message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
             and then passed to :c:func:`ArtmCopyRequestResult` method.

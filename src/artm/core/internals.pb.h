@@ -854,21 +854,21 @@ class ModelIncrement : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 topics_count() const;
   inline void set_topics_count(::google::protobuf::int32 value);
 
-  // repeated string topics_name = 3;
-  inline int topics_name_size() const;
-  inline void clear_topics_name();
-  static const int kTopicsNameFieldNumber = 3;
-  inline const ::std::string& topics_name(int index) const;
-  inline ::std::string* mutable_topics_name(int index);
-  inline void set_topics_name(int index, const ::std::string& value);
-  inline void set_topics_name(int index, const char* value);
-  inline void set_topics_name(int index, const char* value, size_t size);
-  inline ::std::string* add_topics_name();
-  inline void add_topics_name(const ::std::string& value);
-  inline void add_topics_name(const char* value);
-  inline void add_topics_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topics_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topics_name();
+  // repeated string topic_name = 3;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 3;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
   // repeated string token = 4;
   inline int token_size() const;
@@ -1006,7 +1006,7 @@ class ModelIncrement : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> topics_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> token_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::google::protobuf::RepeatedField<int> operation_type_;
@@ -2420,48 +2420,48 @@ inline void ModelIncrement::set_topics_count(::google::protobuf::int32 value) {
   topics_count_ = value;
 }
 
-// repeated string topics_name = 3;
-inline int ModelIncrement::topics_name_size() const {
-  return topics_name_.size();
+// repeated string topic_name = 3;
+inline int ModelIncrement::topic_name_size() const {
+  return topic_name_.size();
 }
-inline void ModelIncrement::clear_topics_name() {
-  topics_name_.Clear();
+inline void ModelIncrement::clear_topic_name() {
+  topic_name_.Clear();
 }
-inline const ::std::string& ModelIncrement::topics_name(int index) const {
-  return topics_name_.Get(index);
+inline const ::std::string& ModelIncrement::topic_name(int index) const {
+  return topic_name_.Get(index);
 }
-inline ::std::string* ModelIncrement::mutable_topics_name(int index) {
-  return topics_name_.Mutable(index);
+inline ::std::string* ModelIncrement::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
 }
-inline void ModelIncrement::set_topics_name(int index, const ::std::string& value) {
-  topics_name_.Mutable(index)->assign(value);
+inline void ModelIncrement::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-inline void ModelIncrement::set_topics_name(int index, const char* value) {
-  topics_name_.Mutable(index)->assign(value);
+inline void ModelIncrement::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-inline void ModelIncrement::set_topics_name(int index, const char* value, size_t size) {
-  topics_name_.Mutable(index)->assign(
+inline void ModelIncrement::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ModelIncrement::add_topics_name() {
-  return topics_name_.Add();
+inline ::std::string* ModelIncrement::add_topic_name() {
+  return topic_name_.Add();
 }
-inline void ModelIncrement::add_topics_name(const ::std::string& value) {
-  topics_name_.Add()->assign(value);
+inline void ModelIncrement::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
 }
-inline void ModelIncrement::add_topics_name(const char* value) {
-  topics_name_.Add()->assign(value);
+inline void ModelIncrement::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
 }
-inline void ModelIncrement::add_topics_name(const char* value, size_t size) {
-  topics_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+inline void ModelIncrement::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelIncrement::topics_name() const {
-  return topics_name_;
+ModelIncrement::topic_name() const {
+  return topic_name_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelIncrement::mutable_topics_name() {
-  return &topics_name_;
+ModelIncrement::mutable_topic_name() {
+  return &topic_name_;
 }
 
 // repeated string token = 4;

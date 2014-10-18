@@ -142,7 +142,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     artm::GetTopicModelArgs args;
     args.set_model_name(model.name());
     for (int i = 0; i < nTopics; ++i) {
-      args.add_topics_name("@topic_" + std::to_string(i));
+      args.add_topic_name("@topic_" + std::to_string(i));
     }
     for (int i = 0; i < nTokens; i++) {
       args.add_token("token" + std::to_string(i));
@@ -244,7 +244,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     artm::GetTopicModelArgs args;
     args.set_model_name(model2.name());
     for (int i = 0; i < nTopics; ++i) {
-      args.add_topics_name("@topic_" + std::to_string(i));
+      args.add_topic_name("@topic_" + std::to_string(i));
     }
     args.add_token("my overwritten token");
     args.add_class_id("@default_class");
@@ -283,7 +283,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   artm::GetTopicModelArgs args;
   args.set_model_name(model3.name());
   for (int i = 0; i < nTopics; ++i) {
-    args.add_topics_name("@topic_" + std::to_string(i));
+    args.add_topic_name("@topic_" + std::to_string(i));
   }
   for (int i = 0; i < nTokens; i++) {
     args.add_token("my_tok_" + std::to_string(i));
@@ -296,10 +296,10 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   ASSERT_EQ(new_topic_model3->token(1), "my_tok_2");
   ASSERT_EQ(new_topic_model3->token(2), "my_tok_3");
 
-  model_config.add_topics_name("@topic_2");
-  model_config.add_topics_name("@topic_3");
-  model_config.add_topics_name("@topic_4");
-  model_config.add_topics_name("@topic_5");
+  model_config.add_topic_name("@topic_2");
+  model_config.add_topic_name("@topic_3");
+  model_config.add_topic_name("@topic_4");
+  model_config.add_topic_name("@topic_5");
   model_config.set_name("model5_name");
   model3.Reconfigure(model_config);
 
