@@ -206,18 +206,30 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     artm::GetThetaMatrixArgs args;
     args.set_model_name(model.name().c_str());
     std::shared_ptr<::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
+
+    args.mutable_batch()->CopyFrom(batch);
+    std::shared_ptr<::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
+
     EXPECT_TRUE(theta_matrix->item_id_size() == nDocs);
+    EXPECT_TRUE(theta_matrix2->item_id_size() == nDocs);
     for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
       const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
+      const ::artm::FloatArray& weights2 = theta_matrix2->item_weights(item_index);
       EXPECT_EQ(weights.value_size(), nTopics);
-      float sum = 0;
+      EXPECT_EQ(weights2.value_size(), nTopics);
+      float sum = 0, sum2 = 0;
       for (int topic_index = 0; topic_index < weights.value_size(); ++topic_index) {
         float weight = weights.value(topic_index);
         EXPECT_GT(weight, 0);
         sum += weight;
+
+        float weight2 = weights2.value(topic_index);
+        EXPECT_GT(weight2, 0);
+        sum2 += weight2;
       }
 
       EXPECT_LE(abs(sum - 1), 0.001);
+      EXPECT_LE(abs(sum2 - 1), 0.001);
     }
   }
 

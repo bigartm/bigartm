@@ -5760,17 +5760,29 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline ::std::string* release_model_name();
   inline void set_allocated_model_name(::std::string* model_name);
 
+  // optional .artm.Batch batch = 2;
+  inline bool has_batch() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 2;
+  inline const ::artm::Batch& batch() const;
+  inline ::artm::Batch* mutable_batch();
+  inline ::artm::Batch* release_batch();
+  inline void set_allocated_batch(::artm::Batch* batch);
+
   // @@protoc_insertion_point(class_scope:artm.GetThetaMatrixArgs)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
+  inline void set_has_batch();
+  inline void clear_has_batch();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
+  ::artm::Batch* batch_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12029,6 +12041,44 @@ inline void GetThetaMatrixArgs::set_allocated_model_name(::std::string* model_na
   } else {
     clear_has_model_name();
     model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional .artm.Batch batch = 2;
+inline bool GetThetaMatrixArgs::has_batch() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void GetThetaMatrixArgs::set_has_batch() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void GetThetaMatrixArgs::clear_has_batch() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void GetThetaMatrixArgs::clear_batch() {
+  if (batch_ != NULL) batch_->::artm::Batch::Clear();
+  clear_has_batch();
+}
+inline const ::artm::Batch& GetThetaMatrixArgs::batch() const {
+  return batch_ != NULL ? *batch_ : *default_instance_->batch_;
+}
+inline ::artm::Batch* GetThetaMatrixArgs::mutable_batch() {
+  set_has_batch();
+  if (batch_ == NULL) batch_ = new ::artm::Batch;
+  return batch_;
+}
+inline ::artm::Batch* GetThetaMatrixArgs::release_batch() {
+  clear_has_batch();
+  ::artm::Batch* temp = batch_;
+  batch_ = NULL;
+  return temp;
+}
+inline void GetThetaMatrixArgs::set_allocated_batch(::artm::Batch* batch) {
+  delete batch_;
+  batch_ = batch;
+  if (batch) {
+    set_has_batch();
+  } else {
+    clear_has_batch();
   }
 }
 

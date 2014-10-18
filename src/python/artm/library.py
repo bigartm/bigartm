@@ -369,9 +369,11 @@ class MasterComponent:
     regularizer_state.ParseFromString(state_blob)
     return regularizer_state
 
-  def GetThetaMatrix(self, model = None, args = messages_pb2.GetThetaMatrixArgs()):
+  def GetThetaMatrix(self, model = None, batch = None, args = messages_pb2.GetThetaMatrixArgs()):
     if (model is not None):
       args.model_name = model.name()
+    if (batch is not None):
+      args.batch.CopyFrom(batch)
     args_blob = args.SerializeToString()
     length = HandleErrorCode(self.lib_,  self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
     blob = ctypes.create_string_buffer(length)

@@ -223,14 +223,20 @@ MasterComponent
 
       Retrieves and returns the internal state of a regularizer with the specific name.
 
-   .. py:method:: GetThetaMatrix(model = None, args = messages_pb2.GetThetaMatrixArgs())
+   .. py:method:: GetThetaMatrix(model = None, batch = None, args = messages_pb2.GetThetaMatrixArgs())
 
-      Retrieves an instance of :ref:`ThetaMatrix` class, carrying the theta matrix gathered during the last iteration.
+      Retrieves an instance of :ref:`ThetaMatrix` class.
+      The content depends on *batch* parameter.
+      When *batch* is provided, the resulting :ref:`ThetaMatrix` will contain theta values estimated for all documents in the batch.
+      When *batch* is not provided, the resulting :ref:`ThetaMatrix` will contain theta values gathered during the last iteration.
+
       Parameter *model* should be an instance of :py:class:`Model` class.
       For more settings use *args* parameter (see :ref:`GetThetaMatrixArgs` for all available options).
-      This operation require :attr:`MasterComponentConfig.cache_theta` to be set to *True* before starting the last iteration.
-      This operation is not supported when :attr:`MasterComponentConfig.modus_operandi` is *Network*.
-      This operation require all ThetaMatrix to fit into the CPU memory, and for this reason it is turned off by default.
+
+      When used without *batch*, this operation require :attr:`MasterComponentConfig.cache_theta` to be set to *True* before starting the last iteration.
+      In this case the entire ThetaMatrix must fit into CPU memory, and for this reason :attr:`MasterComponentConfig.cache_theta` is turned off by default.
+
+      This operation is not supported when :attr:`MasterComponentConfig.modus_operandi` is set to *Network*.
 
 NodeController
 ==============
