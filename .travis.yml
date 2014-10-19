@@ -12,15 +12,8 @@ before_install:
   - cp datasets/* src/python/examples/
 
 install:
-  - wget -O boost_1_55_0.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz/download
-  - tar xzf boost_1_55_0.tar.gz
-  - cd boost_1_55_0/
   - sudo apt-get update
   - sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev build-essential libbz2-dev
-  - ./bootstrap.sh --prefix=/usr/local --with-libraries=thread,program_options,date_time,system,chrono,filesystem,timer,iostreams
-  - sudo ./b2 -j4 install -d0
-  - sudo ldconfig
-  - cd ..
 
 before_script:
   - mkdir build && cd build && cmake .. && cd ..
