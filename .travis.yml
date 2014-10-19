@@ -1,7 +1,7 @@
 language: cpp
 
 compiler:
-  - clang
+  - gcc
 
 before_install:
   - cd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && cd ..
