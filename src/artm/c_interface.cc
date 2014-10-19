@@ -3,6 +3,7 @@
 #include "artm/c_interface.h"
 
 #include <string>
+#include <iostream>  // NOLINT
 
 #include "boost/thread/tss.hpp"
 
