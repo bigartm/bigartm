@@ -13,7 +13,7 @@ before_install:
 
 install:
   - sudo apt-get update
-  - sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev build-essential libbz2-dev
+  - sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev build-essential libbz2-dev libboost-all-dev
 
 before_script:
   - mkdir build && cd build && cmake .. && cd ..
