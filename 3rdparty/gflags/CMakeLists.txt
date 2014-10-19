@@ -102,6 +102,11 @@ else ()
   endif ()
 endif ()
 
+set (GFLAGS_INTTYPES_FORMAT_C99 0)
+set (GFLAGS_INTTYPES_FORMAT_BSD 0)
+set (GFLAGS_INTTYPES_FORMAT_VC7 0)
+set ("GFLAGS_INTTYPES_FORMAT_${GFLAGS_INTTYPES_FORMAT}" 1)
+
 if (MSVC)
   set (HAVE_strtoll 0)
   set (HAVE_strtoq  0)

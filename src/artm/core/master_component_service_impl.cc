@@ -26,7 +26,7 @@ MasterComponentServiceImpl::MasterComponentServiceImpl(Instance* instance) : ins
 
 void MasterComponentServiceImpl::UpdateModel(const ::artm::core::ModelIncrement& request,
                                        ::rpcz::reply< ::artm::core::Void> response) {
-    instance_->merger_queue()->push(std::make_shared<::artm::core::ModelIncrement>(request));
+    instance_->merger_queue()->push(std::make_shared< ::artm::core::ModelIncrement>(request));
   try {
     response.send(::artm::core::Void());
   } catch(...) {

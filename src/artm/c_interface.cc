@@ -56,7 +56,7 @@ static void EnableLogging() {
   }
 }
 
-static std::shared_ptr<::artm::core::MasterInterface> master_component(int master_id) {
+static std::shared_ptr< ::artm::core::MasterInterface> master_component(int master_id) {
   auto master_component = artm::core::MasterComponentManager::singleton().Get(master_id);
   if (master_component == nullptr) {
     BOOST_THROW_EXCEPTION(::artm::core::InvalidMasterIdException(boost::lexical_cast<std::string>(master_id)));
@@ -150,7 +150,7 @@ int ArtmCreateMasterProxy(int length, const char* master_proxy_config) {
     artm::MasterProxyConfig config;
     ParseFromArray(master_proxy_config, length, &config);
     auto& mcm = artm::core::MasterComponentManager::singleton();
-    int retval = mcm.Create<::artm::core::MasterProxy, ::artm::MasterProxyConfig>(config);
+    int retval = mcm.Create< ::artm::core::MasterProxy, ::artm::MasterProxyConfig>(config);
     assert(retval > 0);
     return retval;
   } CATCH_EXCEPTIONS;
@@ -163,7 +163,7 @@ int ArtmCreateMasterComponent(int length, const char* master_component_config) {
     artm::MasterComponentConfig config;
     ParseFromArray(master_component_config, length, &config);
     auto& mcm = artm::core::MasterComponentManager::singleton();
-    int retval = mcm.Create<::artm::core::MasterComponent, ::artm::MasterComponentConfig>(config);
+    int retval = mcm.Create< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(config);
     assert(retval > 0);
     return retval;
   } CATCH_EXCEPTIONS;
@@ -263,7 +263,7 @@ int ArtmCreateNodeController(int length, const char* node_controller_config) {
     artm::NodeControllerConfig config;
     ParseFromArray(node_controller_config, length, &config);
     auto& ncm = artm::core::NodeControllerManager::singleton();
-    int retval = ncm.Create<::artm::core::NodeController, ::artm::NodeControllerConfig>(config);
+    int retval = ncm.Create< ::artm::core::NodeController, ::artm::NodeControllerConfig>(config);
     assert(retval > 0);
     return retval;
   } CATCH_EXCEPTIONS;
@@ -338,7 +338,7 @@ int ArtmRequestParseCollection(int length, const char* collection_parser_config)
     artm::CollectionParserConfig config;
     ParseFromArray(collection_parser_config, length, &config);
     ::artm::core::CollectionParser collection_parser(config);
-    std::shared_ptr<::artm::DictionaryConfig> dictionary = collection_parser.Parse();
+    std::shared_ptr< ::artm::DictionaryConfig> dictionary = collection_parser.Parse();
     dictionary->SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
@@ -347,7 +347,7 @@ int ArtmRequestParseCollection(int length, const char* collection_parser_config)
 int ArtmRequestLoadDictionary(const char* filename) {
   try {
     EnableLogging();
-    auto dictionary = std::make_shared<::artm::DictionaryConfig>();
+    auto dictionary = std::make_shared< ::artm::DictionaryConfig>();
     ::artm::core::BatchHelpers::LoadMessage(filename, dictionary.get());
     dictionary->SerializeToString(last_message());
     return last_message()->size();

@@ -51,7 +51,7 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
   bool online = false;
 
   MasterComponentConfig master_config;
-  std::vector<std::shared_ptr<::artm::NodeController>> node_controller;
+  std::vector<std::shared_ptr< ::artm::NodeController>> node_controller;
   if (is_network_mode) {
     for (int port = 5556; port < 5556 + instance_size; ++port) {
       ::artm::NodeControllerConfig node_config;
@@ -59,7 +59,7 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
       std::stringstream port_str;
       port_str << port;
       node_config.set_create_endpoint(std::string("tcp://*:") + port_str.str());
-      node_controller.push_back(std::make_shared<::artm::NodeController>(node_config));
+      node_controller.push_back(std::make_shared< ::artm::NodeController>(node_config));
       master_config.add_node_connect_endpoint(std::string("tcp://localhost:") + port_str.str());
     }
 
@@ -270,14 +270,14 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
     artm::GetTopicModelArgs args;
     args.set_model_name(model.name());
     topic_model = master_component.GetTopicModel(args);
-    test_perplexity = master_component.GetScoreAs<::artm::PerplexityScore>(model, "test_perplexity");
-    train_perplexity = master_component.GetScoreAs<::artm::PerplexityScore>(model, "train_perplexity");
-    test_sparsity_theta = master_component.GetScoreAs<::artm::SparsityThetaScore>(model, "test_sparsity_theta");
-    train_sparsity_theta = master_component.GetScoreAs<::artm::SparsityThetaScore>(model, "train_sparsity_theta");
-    sparsity_phi = master_component.GetScoreAs<::artm::SparsityPhiScore>(model, "sparsity_phi");
-    test_items_processed = master_component.GetScoreAs<::artm::ItemsProcessedScore>(model, "test_items_processed");
-    train_items_processed = master_component.GetScoreAs<::artm::ItemsProcessedScore>(model, "train_items_processed");
-    topic_kernel = master_component.GetScoreAs<::artm::TopicKernelScore>(model, "topic_kernel");
+    test_perplexity = master_component.GetScoreAs< ::artm::PerplexityScore>(model, "test_perplexity");
+    train_perplexity = master_component.GetScoreAs< ::artm::PerplexityScore>(model, "train_perplexity");
+    test_sparsity_theta = master_component.GetScoreAs< ::artm::SparsityThetaScore>(model, "test_sparsity_theta");
+    train_sparsity_theta = master_component.GetScoreAs< ::artm::SparsityThetaScore>(model, "train_sparsity_theta");
+    sparsity_phi = master_component.GetScoreAs< ::artm::SparsityPhiScore>(model, "sparsity_phi");
+    test_items_processed = master_component.GetScoreAs< ::artm::ItemsProcessedScore>(model, "test_items_processed");
+    train_items_processed = master_component.GetScoreAs< ::artm::ItemsProcessedScore>(model, "train_items_processed");
+    topic_kernel = master_component.GetScoreAs< ::artm::TopicKernelScore>(model, "topic_kernel");
 
     std::cout << "Iter #" << (iter + 1) << ": "
               << "\n\t#Tokens = "  << topic_model->token_size() << ", "
@@ -297,7 +297,7 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
 
   boost::timer::cpu_times elapsed = timer.elapsed();
 
-  top_tokens = master_component.GetScoreAs<::artm::TopTokensScore>(model, "top_tokens");
+  top_tokens = master_component.GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
   for (int topic_index = 0; topic_index < top_tokens.get()->values_size(); topic_index++) {
     std::cout << "#" << (topic_index+1) << ": ";
     auto top_tokens_for_topic = top_tokens.get()->values(topic_index);
@@ -307,7 +307,7 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
     std::cout << endl;
   }
 
-  train_theta_snippet = master_component.GetScoreAs<::artm::ThetaSnippetScore>(model, "train_theta_snippet");
+  train_theta_snippet = master_component.GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
   int docs_to_show = train_theta_snippet.get()->values_size();
   std::cout << "\nThetaMatrix (first " << docs_to_show << " documents):\n";
   for (int topic_index = 0; topic_index < nTopics; topic_index++){

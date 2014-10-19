@@ -40,19 +40,29 @@ set(rpcz_build_shared ON)
 # set compiler flags
 if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
    ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -fPIC -std=c++11")
+  message("FLAGS: ${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -fPIC")
+  message("FLAGS: ${CMAKE_CXX_FLAGS}")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Werror")
-  set(GFLAGS_INTTYPES_FORMAT_C99 1)
+  set(GFLAGS_INTTYPES_FORMAT "C99")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set(Boost_USE_MULTITHREADED ON)
   set(Boost_USE_STATIC_LIBS ON)
-  set(GFLAGS_INTTYPES_FORMAT_VC7 1)
+  set(GFLAGS_INTTYPES_FORMAT "VC7")
   include(InstallRequiredSystemLibraries)
 else()
   message("-- Warning: BigARTM has not been tested with '${CMAKE_CXX_COMPILER_ID}' compiler.")
 endif()
 
-add_subdirectory(3rdparty)
+add_subdirectory(3rdparty)  # gflags must be compiled without -std=c++11
+
+if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
+   ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
+  message("${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  message("${CMAKE_CXX_FLAGS}")
+endif()
+
 add_subdirectory(src)
 
 install(FILES LICENSE DESTINATION .)

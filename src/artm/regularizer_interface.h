@@ -49,7 +49,7 @@ class RegularizerInterface {
       "This regularizer has no internal state that can be retrieved."));
   }
 
-  std::shared_ptr<::artm::core::DictionaryMap> dictionary(const std::string& dictionary_name);
+  std::shared_ptr< ::artm::core::DictionaryMap> dictionary(const std::string& dictionary_name);
   void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
  private:
