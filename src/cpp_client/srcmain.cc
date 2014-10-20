@@ -9,8 +9,6 @@ using namespace std;
 #include "boost/filesystem.hpp"
 using namespace boost::filesystem;
 
-#include "boost/timer/timer.hpp"
-
 #include "artm/cpp_interface.h"
 #include "artm/messages.pb.h"
 #include "glog/logging.h"
@@ -243,8 +241,6 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
 
   model.Overwrite(initial_topic_model);
 
-  boost::timer::cpu_timer timer;
-
   std::shared_ptr<TopicModel> topic_model;
   std::shared_ptr<PerplexityScore> test_perplexity, train_perplexity;
   std::shared_ptr<SparsityThetaScore> test_sparsity_theta, train_sparsity_theta;
@@ -295,8 +291,6 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
 
   std::cout << endl;
 
-  boost::timer::cpu_times elapsed = timer.elapsed();
-
   top_tokens = master_component.GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
   for (int topic_index = 0; topic_index < top_tokens.get()->values_size(); topic_index++) {
     std::cout << "#" << (topic_index+1) << ": ";
@@ -318,10 +312,6 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
     }
     std::cout << endl;
   }
-
-  std::cout << "\nCPU TIME: " << (elapsed.user + elapsed.system) / 1e9 << " seconds"
-            << "\nWALLCLOCK TIME: " << elapsed.wall / 1e9 << " seconds"
-            << std::endl << std::endl;
 }
 
 int main(int argc, char * argv[]) {
