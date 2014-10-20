@@ -1,14 +1,5 @@
 project(artm)
 
-# find Boost
-find_package(Boost COMPONENTS thread system filesystem timer iostreams REQUIRED)
-if(NOT Boost_FOUND)
-  message(SEND_ERROR "Failed to find required boost libraries.")
-  return()
-else()
-  include_directories(${Boost_INCLUDE_DIRS})
-endif()
-
 # find Protobuf
 find_package(ProtobufPlugin REQUIRED)
 if(NOT PROTOBUF_FOUND)
