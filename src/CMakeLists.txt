@@ -2,7 +2,7 @@ project(artm)
 
 # find Boost
 
-find_package(Boost REQUIRED COMPONENTS thread program_options date_time system filesystem iostreams timer )
+find_package(Boost COMPONENTS thread program_options date_time system filesystem iostreams timer)
 if(NOT Boost_FOUND)
   message(SEND_ERROR "Failed to find required boost libraries.")
   return()
