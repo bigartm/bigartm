@@ -28,9 +28,7 @@ add_definitions("-Dartm_EXPORTS")
 add_executable(artm_tests ${SRC_LIST})
 target_link_libraries(artm_tests artm-static
                                  rpcz_static
-                                 ${Boost_FILESYSTEM_LIBRARIES}
-                                 ${Boost_SYSTEM_LIBRARIES}
-                                 ${Boost_IOSTREAMS_LIBRARIES}
+                                 ${Boost_LIBRARIES}
                                  ${PROTOBUF_LIBRARIES}
                                  ${GLOG_LIBRARIES}
                                  ${ZeroMQ_LIBRARIES})

@@ -30,7 +30,7 @@ TEST(NodesConnectivityTest, Basic) {
   master_config.set_disk_path(".");
 
   auto& mcm = artm::core::MasterComponentManager::singleton();
-  int master_id = mcm.Create<::artm::core::MasterComponent,
+  int master_id = mcm.Create< ::artm::core::MasterComponent,
                              ::artm::MasterComponentConfig>(master_config);
   auto master = mcm.Get(master_id);
   EXPECT_FALSE(node->impl()->instance() == nullptr);

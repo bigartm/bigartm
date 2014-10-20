@@ -85,4 +85,4 @@ src/Win32/*
 
 docs/_build/*
 
-build/*
+build*

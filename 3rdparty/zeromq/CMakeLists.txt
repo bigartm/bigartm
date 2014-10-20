@@ -525,6 +525,11 @@ else()
 endif()
 
 target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+if(UNIX)
+  # Fix Undefined reference to 'clock_gettime'
+  # https://github.com/andrewrk/libgroove/issues/67
+  target_link_libraries(libzmq LINK_PRIVATE rt)
+endif(UNIX)
 if(HAVE_WS2_32)
   target_link_libraries(libzmq ws2_32)
 elseif(HAVE_WS2)
