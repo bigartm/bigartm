@@ -46,7 +46,7 @@ class ScoreCalculatorInterface {
       const std::vector<float>& theta,
       Score* score) { }
 
-  std::shared_ptr<::artm::core::DictionaryMap> dictionary(const std::string& dictionary_name);
+  std::shared_ptr< ::artm::core::DictionaryMap> dictionary(const std::string& dictionary_name);
   void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
  private:

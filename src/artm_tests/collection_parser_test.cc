@@ -36,10 +36,10 @@ TEST(CollectionParser, Basic) {
   config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
 
-  std::shared_ptr<::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
+  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
   ASSERT_EQ(dictionary_parsed->entry_size(), 3);
 
-  std::shared_ptr<::artm::DictionaryConfig> dictionary_loaded = ::artm::LoadDictionary(
+  std::shared_ptr< ::artm::DictionaryConfig> dictionary_loaded = ::artm::LoadDictionary(
     "collection_parser_test/test_parser.dictionary");
   ASSERT_EQ(dictionary_parsed->entry_size(), dictionary_loaded->entry_size());
 
@@ -57,7 +57,7 @@ TEST(CollectionParser, Basic) {
   ASSERT_EQ(dictionary_loaded->entry(2).items_count(), 2);
   ASSERT_EQ(dictionary_loaded->entry(2).token_count(), 9);
 
-  std::shared_ptr<::artm::DictionaryConfig> cooc_dictionary_loaded = ::artm::LoadDictionary(
+  std::shared_ptr< ::artm::DictionaryConfig> cooc_dictionary_loaded = ::artm::LoadDictionary(
     "collection_parser_test/test_parser.cooc.dictionary");
   ASSERT_EQ(cooc_dictionary_loaded->entry_size(), 3);
   ASSERT_EQ(cooc_dictionary_loaded->entry(0).key_token(), "token1~token2");

@@ -18,6 +18,7 @@
 #define RPCZ_SYNC_EVENT_H
 
 #include <boost/thread/thread.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include "rpcz/macros.hpp"
 
 namespace rpcz {
