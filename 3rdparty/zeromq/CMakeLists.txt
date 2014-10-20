@@ -3,8 +3,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(ZeroMQ)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 
 if(APPLE)
@@ -527,6 +525,9 @@ else()
 endif()
 
 target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+if(UNIX)
+  target_link_libraries(libzmq LINK_PRIVATE rt)
+endif(UNIX)
 if(HAVE_WS2_32)
   target_link_libraries(libzmq ws2_32)
 elseif(HAVE_WS2)
