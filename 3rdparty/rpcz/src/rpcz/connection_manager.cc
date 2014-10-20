@@ -22,6 +22,7 @@
 #include <boost/thread/tss.hpp>
 #include <map>
 #include <ostream>
+#include <iostream>  // for std::cerr
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <pthread.h>
 #endif

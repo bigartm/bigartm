@@ -18,15 +18,12 @@ set(RPCZ_SOURCES
     ${PROTO_SOURCES})
 set(RPCZ_LIB_DEPS ${ZeroMQ_LIBRARIES}
                   ${PROTOBUF_LIBRARY}
-                  ${Boost_THREAD_LIBRARIES}
-		  ${Boost_DATE_TIME_LIBRARIES}
-		  ${Boost_SYSTEM_LIBRARIES}
-		  ${Boost_CHRONO_LIBRARIES}
+                  ${Boost_LIBRARIES}
 		  )
 
 if (rpcz_build_shared)
     add_library(rpcz SHARED ${RPCZ_SOURCES})
-    target_link_libraries(rpcz ${RPCZ_LIB_DEPS})
+    target_link_libraries(rpcz ${RPCZ_LIB_DEPS} )
     set(RPCZ_TARGET_LIBS rpcz)
 endif(rpcz_build_shared)
 
@@ -39,5 +36,5 @@ endif(rpcz_build_static)
 
 if (rpcz_build_zsendrp)
     add_executable(zsendrpc zsendrpc.cc)
-    target_link_libraries(zsendrpc rpcz ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+    target_link_libraries(zsendrpc rpcz ${Boost_LIBRARIES})
 endif(rpcz_build_zsendrp)

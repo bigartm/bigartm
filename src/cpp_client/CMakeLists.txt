@@ -9,4 +9,4 @@ set(SRC_LIST
 )
 
 add_executable(cpp_client ${SRC_LIST})
-target_link_libraries(cpp_client artm ${Boost_TIMER_LIBRARIES})
+target_link_libraries(cpp_client artm ${Boost_LIBRARIES})

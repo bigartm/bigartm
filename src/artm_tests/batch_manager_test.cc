@@ -16,15 +16,15 @@
 // To run this particular test:
 // artm_tests.exe --gtest_filter=BatchManager.*
 TEST(BatchManager, Basic) {
-  ::artm::core::ThreadSafeHolder<::artm::core::InstanceSchema> schema_holder;
+  ::artm::core::ThreadSafeHolder< ::artm::core::InstanceSchema> schema_holder;
   ::artm::core::BatchManager batch_manager(&schema_holder);
   boost::uuids::random_generator new_uuid;
 
-  auto schema = std::make_shared<::artm::core::InstanceSchema>();
+  auto schema = std::make_shared< ::artm::core::InstanceSchema>();
   std::string m1("model1"), m2("model2"), m3("model3");
-  schema->set_model_config(m1, std::make_shared<::artm::ModelConfig>());
-  schema->set_model_config(m2, std::make_shared<::artm::ModelConfig>());
-  schema->set_model_config(m3, std::make_shared<::artm::ModelConfig>());
+  schema->set_model_config(m1, std::make_shared< ::artm::ModelConfig>());
+  schema->set_model_config(m2, std::make_shared< ::artm::ModelConfig>());
+  schema->set_model_config(m3, std::make_shared< ::artm::ModelConfig>());
   schema_holder.set(schema);
 
   boost::uuids::uuid u1(new_uuid()), u2(new_uuid()), u3(new_uuid());

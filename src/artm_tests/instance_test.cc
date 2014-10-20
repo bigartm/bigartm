@@ -68,7 +68,7 @@ class InstanceTest : boost::noncopyable {
 // artm_tests.exe --gtest_filter=Instance.*
 TEST(Instance, Basic) {
   bool online_batch_processing = false;
-  auto instance = std::make_shared<::artm::core::Instance>(
+  auto instance = std::make_shared< ::artm::core::Instance>(
     ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal);
 
   artm::Batch batch1;
