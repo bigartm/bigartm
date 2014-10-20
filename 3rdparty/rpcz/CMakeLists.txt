@@ -6,14 +6,6 @@ option(rpcz_build_static "Build static library." OFF)
 option(rpcz_build_examples "Build rpcz's examples." OFF)
 
 find_package(Protobuf REQUIRED)
-find_package(Boost REQUIRED)  # Do not list boost components here.
-                              # The reason is because some boost components depends on another,
-                              # and this dependencies are different in different boost versions.
-                              # For example, BigARTM compiles just fine against 1.46.1 which does not have 'timer' and 'chrono' libraries.
-                              # However, when compiling against 1.56.0 BigARTM requires 'timer' and 'chrono',
-                              # because at this version some other boost libraries took these additional dependencies.
-                              # Listing such libraries as 'optional' also didn't help.
-                              # So the most flexible solution is to just 'find_package(Boost REQUIRED)'. Cmake will do the rest for you.
 find_package(ZeroMQ REQUIRED)
 
 include_directories(${ZEROMQ_INCLUDE_DIRS})
