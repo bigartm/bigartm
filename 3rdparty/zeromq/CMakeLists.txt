@@ -3,6 +3,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(ZeroMQ)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 
 if(APPLE)
