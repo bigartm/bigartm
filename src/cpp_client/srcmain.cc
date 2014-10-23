@@ -19,7 +19,7 @@ int countFilesInDirectory(std::string root, std::string ext) {
   if (boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
     boost::filesystem::recursive_directory_iterator it(root);
     boost::filesystem::recursive_directory_iterator endit;
-    while(it != endit) {
+    while (it != endit) {
       if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ext) {
         retval++;
       }
@@ -29,13 +29,9 @@ int countFilesInDirectory(std::string root, std::string ext) {
   return retval;
 }
 
-void proc(int argc, char * argv[], int processors_count, int instance_size) {
-  std::string batches_disk_path = "batches";
-  std::string docword_file = "../../../datasets/docword.kos.txt";
-  std::string vocab_file = "../../../datasets/vocab.kos.txt";
-  std::string dictionary_file = "kos.dictionary";
-  int topics_count = 16;
-
+void proc(const char* docword_file, const char* vocab_file, int topics_size,
+          const char* batches_folder, const char* dictionary_file,
+          int processors_count, int instance_size) {
   // Recommended values for decorrelator_tau are as follows:
   // kos - 700000, nips - 200000.
   float decorrelator_tau = 200000;
@@ -67,9 +63,9 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
   }
 
   master_config.set_processors_count(processors_count);
-  batches_disk_path = (current_path() / path(batches_disk_path)).string();
+  std::string batches_full_path = (current_path() / path(batches_folder)).string();
 
-  int batch_files_count = countFilesInDirectory(batches_disk_path, ".batch");
+  int batch_files_count = countFilesInDirectory(batches_full_path, ".batch");
   std::shared_ptr<DictionaryConfig> unique_tokens;
   if (batch_files_count == 0) {
     ::artm::CollectionParserConfig collection_parser_config;
@@ -77,18 +73,18 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
     collection_parser_config.set_docword_file_path(docword_file);
     collection_parser_config.set_vocab_file_path(vocab_file);
     collection_parser_config.set_dictionary_file_name(dictionary_file);
-    collection_parser_config.set_target_folder(batches_disk_path);
+    collection_parser_config.set_target_folder(batches_full_path);
     unique_tokens = ::artm::ParseCollection(collection_parser_config);
 
     std::cout << "OK.\n";
   } else {
     std::cout << "Found " << batch_files_count << " batches in folder '"
-              << batches_disk_path << "', will use them.\n";
+              << batches_full_path << "', will use them.\n";
 
-    unique_tokens = ::artm::LoadDictionary((path(batches_disk_path) / dictionary_file).string());
+    unique_tokens = ::artm::LoadDictionary((path(batches_full_path) / dictionary_file).string());
   }
-  
-  master_config.set_disk_path(batches_disk_path);
+
+  master_config.set_disk_path(batches_full_path);
   if (is_network_mode) {
     master_config.set_modus_operandi(MasterComponentConfig_ModusOperandi_Network);
     master_config.set_create_endpoint("tcp://*:5555");
@@ -202,9 +198,8 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
   Regularizer dirichlet_phi_regularizer(master_component, regularizer_config);
 
   // Create model
-  int nTopics = (topics_count == 0) ? atoi(argv[3]) : topics_count;
   ModelConfig model_config;
-  model_config.set_topics_count(nTopics);
+  model_config.set_topics_count(topics_size);
   model_config.set_inner_iterations_count(10);
   model_config.set_stream_name("train_stream");
   model_config.set_reuse_theta(true);
@@ -229,13 +224,13 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
   // Overwrite topic model with well-known "initial topic model"
   TopicModel initial_topic_model;
   initial_topic_model.set_name(model_config.name());
-  initial_topic_model.set_topics_count(nTopics);
+  initial_topic_model.set_topics_count(topics_size);
   for (int token_index = 0; token_index < unique_tokens->entry_size(); ++token_index) {
     std::string token = unique_tokens->entry(token_index).key_token();
     initial_topic_model.add_token(token);
     artm::FloatArray* weights = initial_topic_model.add_token_weights();
-    for (int topic_index = 0; topic_index < nTopics; ++topic_index) {
-      weights->add_value((float) rand() / (float)RAND_MAX);
+    for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
+      weights->add_value((float)rand() / (float)RAND_MAX);
     }
   }
 
@@ -293,7 +288,7 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
 
   top_tokens = master_component.GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
   for (int topic_index = 0; topic_index < top_tokens.get()->values_size(); topic_index++) {
-    std::cout << "#" << (topic_index+1) << ": ";
+    std::cout << "#" << (topic_index + 1) << ": ";
     auto top_tokens_for_topic = top_tokens.get()->values(topic_index);
     for (int token_index = 0; token_index < top_tokens_for_topic.value_size(); token_index++) {
       std::cout << top_tokens_for_topic.value(token_index) << " ";
@@ -304,26 +299,35 @@ void proc(int argc, char * argv[], int processors_count, int instance_size) {
   train_theta_snippet = master_component.GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
   int docs_to_show = train_theta_snippet.get()->values_size();
   std::cout << "\nThetaMatrix (first " << docs_to_show << " documents):\n";
-  for (int topic_index = 0; topic_index < nTopics; topic_index++){
+  for (int topic_index = 0; topic_index < topics_size; topic_index++){
     std::cout << "Topic" << topic_index << ": ";
     for (int item_index = 0; item_index < docs_to_show; item_index++) {
       float weight = train_theta_snippet.get()->values(item_index).value(topic_index);
-      std::cout << std::fixed << std::setw( 4 ) << std::setprecision( 5) << weight << " ";
+      std::cout << std::fixed << std::setw(4) << std::setprecision(5) << weight << " ";
     }
     std::cout << endl;
   }
 }
 
 int main(int argc, char * argv[]) {
-  if (argc != 4) {
-    cout << "Usage: cpp_client <docword> <vocab> nTopics" << endl;
+  if (argc < 3) {
+    cout << "Usage: cpp_client <docword> <vocab> [num_topics] [batches_path]" << endl;
+    cout << "\tdocword      - file name of the docword file (required)" << endl;
+    cout << "\tvocab        - file name of the vocab file (required)" << endl;
+    cout << "\tnum_topics   - number of topics (optional, default=16)" << endl;
+    cout << "\tbatches_path - folder to output batches (optional, default='batches')" << endl;
     return 0;
   }
 
   int instance_size = 1;
   int processors_size = 2;
   try {
-    proc(argc, argv, processors_size, instance_size);
+    const char* docword_file = argv[1];
+    const char* vocab_file = argv[2];
+    int topics_size = (argc >= 4) ? atoi(argv[3]) : 16;
+    const char* batches_folder = (argc >= 5) ? argv[4] : "batches";
+    const char* dictionary_file = "dictionary.ptb";  // this file will be created in batches_full_path folder
+    proc(docword_file, vocab_file, topics_size, batches_folder, dictionary_file, processors_size, instance_size);
   } catch (std::runtime_error& error) {
     cout << "Exception occured: " << error.what() << "\n";
   } catch (...) {
