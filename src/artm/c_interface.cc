@@ -49,6 +49,7 @@ static void EnableLogging() {
     FLAGS_logbufsecs = 0;
     try {
       ::google::InitGoogleLogging(".");
+      ::google::SetStderrLogging(google::GLOG_WARNING);
       logging_enabled = true;
     }
     catch (...) {

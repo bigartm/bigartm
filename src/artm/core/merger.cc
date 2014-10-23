@@ -477,10 +477,11 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     if (inc_ttm == topic_model_inc_.end())
       LOG(WARNING) << "SynchronizeModel() did not found any increments to topic model " << name;
 
+    std::shared_ptr<ModelConfig> model_config = target_model_config_.get(name);
     // Accumulate counters in topic model with decay coefficient.
     auto new_ttm = std::make_shared< ::artm::core::TopicModel>(*old_ttm,
                                                                decay_weight,
-                                                               target_model_config_.get(name));
+                                                               model_config);
     target_model_config_.set(name, nullptr);
     // Apply increment
     if (inc_ttm != topic_model_inc_.end())
@@ -492,6 +493,18 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     topic_model_.set(name, new_ttm);
 
     topic_model_inc_.erase(name);
+
+    // Verify if model became overregularized
+    std::vector<ClassId> class_ids = new_ttm->class_id();
+    for (ClassId class_id : class_ids) {
+      int degenerated_topics_count = new_ttm->FindDegeneratedTopicsCount(class_id);
+      if (degenerated_topics_count) {
+        LOG(WARNING) << degenerated_topics_count << " of " << new_ttm->topic_size()
+                     << " topics have zero probability mass."
+                     << " Consider reducing values of ModelConfig.regularizer_tau"
+                     << " for model '" << model_name << "', class_id=" << class_id;
+      }
+    }
   }
 }
 
