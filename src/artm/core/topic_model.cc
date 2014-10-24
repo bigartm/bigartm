@@ -596,13 +596,20 @@ int TopicModel::topic_size() const {
   return topic_name_.size();
 }
 
-google::protobuf::RepeatedPtrField<std::string> TopicModel::topic_name() {
+google::protobuf::RepeatedPtrField<std::string> TopicModel::topic_name() const {
   google::protobuf::RepeatedPtrField<std::string> topic_name;
   for (auto elem : topic_name_) {
     std::string* name = topic_name.Add();
     *name = elem;
   }
   return topic_name;
+}
+
+std::vector<ClassId> TopicModel::class_id() const {
+  std::vector<ClassId> retval;
+  for (auto elem : n_t_)
+    retval.push_back(elem.first);
+  return retval;
 }
 
 ModelName TopicModel::model_name() const {
@@ -648,6 +655,21 @@ artm::core::Token TopicModel::token(int index) const {
   assert(index >= 0);
   assert(index < token_size());
   return token_id_to_token_[index];
+}
+
+int TopicModel::FindDegeneratedTopicsCount(const ClassId& class_id) const {
+  const std::vector<float>* n_t = GetNormalizerVector(class_id);
+  if (n_t == nullptr)
+    return 0;
+
+  int degenerated_topics_count = 0;
+  for (int topic_index = 0; topic_index < n_t->size(); ++topic_index) {
+    if ((*n_t)[topic_index] < 1e-20) {
+      degenerated_topics_count++;
+    }
+  }
+
+  return degenerated_topics_count;
 }
 
 template<typename T>
