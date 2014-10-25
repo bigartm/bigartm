@@ -54,6 +54,11 @@ class TopicWeightIterator {
     assert(current_topic_ < topics_count_);
     return std::max<float>(n_w_[current_topic_] + r_w_[current_topic_], 0.0f) / n_t_[current_topic_];
   }
+  
+  float operator[] (int index) {
+    assert(index < topics_count_);
+    return std::max<float>(n_w_[index] + r_w_[index], 0.0f) / n_t_[index];
+  }
 
   // Not normalized weight.
   inline float NotNormalizedWeight() {

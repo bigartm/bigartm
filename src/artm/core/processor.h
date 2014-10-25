@@ -4,11 +4,14 @@
 #define SRC_ARTM_CORE_PROCESSOR_H_
 
 #include <atomic>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
 #include "boost/thread.hpp"
 #include "boost/thread/mutex.hpp"
 #include "boost/bind.hpp"
@@ -19,6 +22,9 @@
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
+
+namespace blas = boost::numeric::ublas;
+typedef blas::matrix<float> Matrix;
 
 namespace artm {
 namespace core {
@@ -137,6 +143,11 @@ class Processor : boost::noncopyable {
     int count_;
   };
 };
+
+Matrix Repmat(Matrix& source_matrix, int down, int right);
+void SetInfAtMaskZeros(Matrix& source_matrix, Matrix& mask_matrix);
+Matrix SumByColumns(Matrix& source_matrix);
+Matrix ApplyMask(Matrix& source_matrix, Mask mask);
 
 }  // namespace core
 }  // namespace artm
