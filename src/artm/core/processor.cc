@@ -143,24 +143,6 @@ TopicWeightIterator Processor::TokenIterator::GetTopicWeightIterator() const {
   return std::move(topic_model_.GetTopicWeightIterator(id_in_model()));
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Processor::ItemProcessor::ItemProcessor(
     const TopicModel& topic_model,
     const std::vector<Token>& token_dict,
@@ -313,14 +295,6 @@ void Processor::ItemProcessor::InferTheta(const ModelConfig& model,
   }
 }
 
-
-
-
-
-
-
-
-
 Processor::StreamIterator::StreamIterator(const ProcessorInput& processor_input)
     : items_count_(processor_input.batch().item_size()),
       item_index_(-1),  // // handy trick for iterators
@@ -461,14 +435,7 @@ void Processor::ThreadFunction() {
       std::shared_ptr<InstanceSchema> schema = schema_.get();
       std::vector<ModelName> model_names = schema->GetModelNames();
 
-
-
-
-
-
-
-
-      ///////////////////////////////////////////////
+      // create and fill n_dw matrix for matrix calculations during batch processing
       Matrix n_dw(part->batch().token_size(), part->batch().item_size());
       for (int item_index = 0; item_index < n_dw.size2(); ++item_index) {
         for (int token_index = 0; token_index < n_dw.size1(); ++token_index) {
@@ -486,7 +453,6 @@ void Processor::ThreadFunction() {
           }
         }
       }
-      ///////////////////////////////////////////////
 
       std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
         const ModelConfig& model = schema->model_config(model_name);
@@ -537,7 +503,7 @@ void Processor::ThreadFunction() {
         int topic_size = topic_model->topic_size();
         assert(topic_size > 0);
 
-        ///////////////////////////////////////////////
+        // create and fill Theta matrix for matrix calculations during batch processing
         Matrix Theta(topic_size, part->batch().item_size());
         for (int item_index = 0; item_index < part->batch().item_size(); ++item_index) {
           int index_of_item = -1;
@@ -553,23 +519,17 @@ void Processor::ThreadFunction() {
             }
           } else {
             for (int iTopic = 0; iTopic < topic_size; ++iTopic) {
-              Theta(iTopic, item_index) = 0.1;//ThreadSafeRandom::singleton().GenerateFloat();
+              Theta(iTopic, item_index) = ThreadSafeRandom::singleton().GenerateFloat();
             }
           }
         }
-        ///////////////////////////////////////////////
-
-
-
 
         // process part and store result in merger queue
         model_increment->set_model_name(model_name);
         model_increment->set_topics_count(topic_size);
 
-        ///////////////////////////////////////////////
         bool phi_is_empty = true;
         Matrix Phi(part->batch().token_size(), topic_size);
-        ///////////////////////////////////////////////
 
         std::vector<Token> token_dict;
         std::map<ClassId, float> class_id_to_weight;
@@ -583,22 +543,19 @@ void Processor::ThreadFunction() {
           model_increment->add_token(token_keyword);
           model_increment->add_class_id(token_class_id);
           FloatArray* counters = model_increment->add_token_increment();
+
           if (topic_model->has_token(token)) {
             model_increment->add_operation_type(ModelIncrement_OperationType_IncrementValue);
-            ///////////////////////////////////////////////
             phi_is_empty = false;
             auto topic_iter = topic_model->GetTopicWeightIterator(token);
-            ///////////////////////////////////////////////
             for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
               
-              ///////////////////////////////////////////////
               float class_weight = 1.0;
               auto class_id_iter = class_id_to_weight.find(token.class_id);
               if (class_id_iter != class_id_to_weight.end()) {
                 class_weight = class_id_iter->second;
               }
               Phi(token_index, topic_index) = topic_iter[topic_index] * class_weight;
-              ///////////////////////////////////////////////
               counters->add_value(0.0f);
             }
           } else {
@@ -606,7 +563,6 @@ void Processor::ThreadFunction() {
           }
         }
 
-        ///////////////////////////////////////////////
         if (phi_is_empty) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
               "wouldn't bo proceed on this iteration";
@@ -616,18 +572,13 @@ void Processor::ThreadFunction() {
           //for (auto e : t) {
           //  auto i = e.field(0);
           //}
-
-
-
           Matrix Z;
           for (int inner_iter = 0; inner_iter < model.inner_iterations_count(); ++inner_iter) {
             Z = Matrix(blas::prod(Phi, Theta));
             SetInfAtMaskZeros(Z, n_dw);
-
-            // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
             auto n_d = SumByColumns(n_dw);
             Z = blas::element_div(n_dw, Z);
-//((((((((((((((((((((((((((((((NORMALIZE THETA???))))))))))))))))))))))))))))))
+            // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
             Theta = blas::element_div(blas::element_prod(Theta, blas::prod(blas::trans(Phi), Z)),
                                       Repmat(n_d, topic_size, 1));
           }
@@ -638,9 +589,8 @@ void Processor::ThreadFunction() {
           //    std::cout << Theta(i, j) << " | ";
           //  }
           //}
-          // n_wt = Z * Theta_new' .* Phi;
-          
 
+          // n_wt = Z * Theta_new' .* Phi;
           //use model_stream_name to get mask and remove all not need items from Z and Theta
           Mask stream_mask;
           Matrix n_wt;
@@ -652,6 +602,21 @@ void Processor::ThreadFunction() {
             n_wt = Matrix(blas::element_prod(Matrix(blas::prod(Z, blas::trans(Theta))), Phi));
           }
 
+          for (int token_index = 0; token_index < n_wt.size1(); ++token_index) {
+
+            FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
+
+            if (hat_n_wt_cur->value_size() != topic_size)
+              BOOST_THROW_EXCEPTION(InternalError("hat_n_wt_cur->value_size() != topic_size"));
+
+            if (model_increment->operation_type(token_index) ==
+                ModelIncrement_OperationType_IncrementValue) {
+              for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+                hat_n_wt_cur->set_value(topic_index, n_wt(token_index, topic_index));
+              }
+            }
+          }
+
           //std::cout << "\n n_wt:\n";
           //for (int i = 0; i < n_wt.size1(); ++i) {
           //  std::cout << std::endl;
@@ -661,91 +626,19 @@ void Processor::ThreadFunction() {
           //}
         }
 
-        int PRINT = 0;
-        ///////////////////////////////////////////////
+        for (int item_index = 0; item_index < part->batch().item_size(); ++item_index) {
+          // Update theta cache
+          model_increment->add_item_id(part->batch().item(item_index).id());
+          FloatArray* cached_theta = model_increment->add_theta();
+          for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+            cached_theta->add_value(Theta(topic_index, item_index));
+          }
+        }
 
-
-
-
-
-
-
-        ItemProcessor item_processor(*topic_model, token_dict, class_id_to_weight, schema_.get());
         StreamIterator iter(*part);
 
         while (iter.Next() != nullptr) {
           const Item* item = iter.Current();
-
-          PRINT++;
-
-          // Initialize theta (either assign random values or reuse values from previous iteration)
-          std::vector<float> theta(topic_size);
-          int index_of_item = -1;
-          if ((cache != nullptr) && model.reuse_theta()) {
-            index_of_item = repeated_field_index_of(cache->item_id(), item->id());
-          }
-
-          if ((index_of_item != -1) && model.reuse_theta()) {
-            const FloatArray& old_thetas = cache->theta(index_of_item);
-            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-              theta[topic_index] = old_thetas.value(topic_index);
-            }
-          } else {
-            for (int iTopic = 0; iTopic < topic_size; ++iTopic) {
-              theta[iTopic] = 0.1;//ThreadSafeRandom::singleton().GenerateFloat();
-            }
-          }
-
-
-
-
-
-
-
-
-
-
-          bool update_model = iter.InStream(model_stream_index);
-          item_processor.InferTheta(model, *item, model_increment.get(), update_model, &theta[0]);
-
-
-
-
-
-
-
-
-
-
-
-
-          
-          // Update theta cache
-          model_increment->add_item_id(item->id());
-          
-          //if (PRINT == 6) {
-          //  std::cout << "\n n_wt_old\n";
-          //  for (auto& arr : model_increment->token_increment()) {
-          //    std::cout << std::endl;
-          //    for (int i = 0; i < arr.value_size(); ++i) {
-          //      std::cout << arr.value(i) << " | ";
-          //    }
-          //  }
-          //}
-          FloatArray* cached_theta = model_increment->add_theta();
-          for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-            cached_theta->add_value(theta[topic_index]);
-          }
-
-          //if (PRINT == 6) {
-          //  std::cout << "\n Theta_old:\n";
-          //  for (auto& arr : model_increment->theta()) {
-          //    std::cout << "\n ================== \n";
-          //    for (int i = 0; i < arr.value_size(); ++i) {
-          //      std::cout << arr.value(i) << " | ";
-          //    }
-          //  }
-          //}
 
           // Calculate all requested scores (such as perplexity)
           for (auto score_iter = score_container.begin();
@@ -756,7 +649,12 @@ void Processor::ThreadFunction() {
             auto score_calc = schema->score_calculator(score_name);
 
             if (!iter.InStream(score_calc->stream_name())) continue;
-
+            
+            int item_index = iter.item_index();
+            std::vector<float> theta;
+            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+              theta.push_back(Theta(topic_index, item_index));
+            }
             score_calc->AppendScore(*item, token_dict, *topic_model, theta, score.get());
           }
         }
@@ -768,20 +666,6 @@ void Processor::ThreadFunction() {
           model_increment->add_score(score_iter->second->SerializeAsString());
         }
       });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       // Wait until merger queue has space for a new element
       int merger_queue_max_size = schema_.get()->config().merger_queue_max_size();

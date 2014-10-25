@@ -69,6 +69,8 @@ class Processor : boost::noncopyable {
     bool InStream(const std::string& stream_name);
     bool InStream(int stream_index);
 
+    inline int item_index() const { return item_index_; }
+
    private:
     int items_count_;
     int item_index_;
