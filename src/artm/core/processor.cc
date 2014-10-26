@@ -567,37 +567,26 @@ void Processor::ThreadFunction() {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
               "wouldn't bo proceed on this iteration";
         } else {
-          //std::cout << n_dw << "\n ---- \n";
-          //auto t = part->batch().item();
-          //for (auto e : t) {
-          //  auto i = e.field(0);
-          //}
           Matrix Z;
           for (int inner_iter = 0; inner_iter < model.inner_iterations_count(); ++inner_iter) {
             Z = Matrix(blas::prod(Phi, Theta));
-            SetInfAtMaskZeros(Z, n_dw);
+            SetInfAtMaskZeros(Z, Z, 1e-30);
             auto n_d = SumByColumns(n_dw);
+
             Z = blas::element_div(n_dw, Z);
+              
             // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
             Theta = blas::element_div(blas::element_prod(Theta, blas::prod(blas::trans(Phi), Z)),
                                       Repmat(n_d, topic_size, 1));
           }
-          //std::cout << "\n Theta:\n";
-          //for (int j = 0; j < Theta.size2(); ++j) {
-          //  std::cout << "\n ------------------ \n";
-          //  for (int i = 0; i < Theta.size1(); ++i) {
-          //    std::cout << Theta(i, j) << " | ";
-          //  }
-          //}
 
-          // n_wt = Z * Theta_new' .* Phi;
-          //use model_stream_name to get mask and remove all not need items from Z and Theta
           Mask stream_mask;
           Matrix n_wt;
           if (model_stream_index != -1) {
             stream_mask = part->stream_mask(model_stream_index);
             n_wt = Matrix(blas::element_prod(Matrix(blas::prod(ApplyMask(Z, stream_mask),
                 blas::trans(ApplyMask(Theta, stream_mask)))), Phi));
+
           } else {
             n_wt = Matrix(blas::element_prod(Matrix(blas::prod(Z, blas::trans(Theta))), Phi));
           }
@@ -612,18 +601,11 @@ void Processor::ThreadFunction() {
             if (model_increment->operation_type(token_index) ==
                 ModelIncrement_OperationType_IncrementValue) {
               for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-                hat_n_wt_cur->set_value(topic_index, n_wt(token_index, topic_index));
+                float value = n_wt(token_index, topic_index);
+                hat_n_wt_cur->set_value(topic_index, value);
               }
             }
           }
-
-          //std::cout << "\n n_wt:\n";
-          //for (int i = 0; i < n_wt.size1(); ++i) {
-          //  std::cout << std::endl;
-          //  for (int j = 0; j < n_wt.size2(); ++j) {
-          //    std::cout << n_wt(i, j) << " | ";
-          //  }
-          //}
         }
 
         for (int item_index = 0; item_index < part->batch().item_size(); ++item_index) {
@@ -717,7 +699,7 @@ Matrix Repmat(Matrix& source_matrix, int down, int right) {
 
   return result_matrix;
 }
-void SetInfAtMaskZeros(Matrix& source_matrix, Matrix& mask_matrix) {
+void SetInfAtMaskZeros(Matrix& source_matrix, Matrix& mask_matrix, double precision) {
   int height = source_matrix.size1();
   int width = source_matrix.size2();
 
@@ -726,7 +708,7 @@ void SetInfAtMaskZeros(Matrix& source_matrix, Matrix& mask_matrix) {
 
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
-      if (std::fabs(mask_matrix(i,j)) < 1e-5) {
+      if (std::fabs(mask_matrix(i,j)) < precision) {
         source_matrix(i,j) = std::numeric_limits<double>::infinity();
       }
     }

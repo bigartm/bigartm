@@ -147,7 +147,7 @@ class Processor : boost::noncopyable {
 };
 
 Matrix Repmat(Matrix& source_matrix, int down, int right);
-void SetInfAtMaskZeros(Matrix& source_matrix, Matrix& mask_matrix);
+void SetInfAtMaskZeros(Matrix& source_matrix, Matrix& mask_matrix, double precision);
 Matrix SumByColumns(Matrix& source_matrix);
 Matrix ApplyMask(Matrix& source_matrix, Mask mask);
 
