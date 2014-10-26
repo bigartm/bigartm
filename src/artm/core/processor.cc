@@ -426,11 +426,13 @@ void Processor::ThreadFunction() {
         continue;
       }
 
-      LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
+      LOG_IF(INFO, pop_retries >= pop_retries_max) <<
+          "Processing queue has data, processing started";
       pop_retries = 0;
 
       if (part->batch().class_id_size() != part->batch().token_size())
-        BOOST_THROW_EXCEPTION(InternalError("part->batch().class_id_size() != part->batch().token_size()"));
+        BOOST_THROW_EXCEPTION(InternalError(
+            "part->batch().class_id_size() != part->batch().token_size()"));
 
       std::shared_ptr<InstanceSchema> schema = schema_.get();
       std::vector<ModelName> model_names = schema->GetModelNames();
@@ -446,9 +448,11 @@ void Processor::ThreadFunction() {
         auto current_item = part->batch().item(item_index);
         for (auto& field : current_item.field()) {
           for (int token_index = 0; token_index < part->batch().token_size(); ++token_index) {
-            auto find_iter = std::find(field.token_id().begin(), field.token_id().end(), token_index);
+            auto find_iter =
+                std::find(field.token_id().begin(), field.token_id().end(), token_index);
             if (find_iter != field.token_id().end()) {
-              n_dw(token_index, item_index) += field.token_count(find_iter - field.token_id().begin());
+              n_dw(token_index, item_index) +=
+                  field.token_count(find_iter - field.token_id().begin());
             }
           }
         }
@@ -461,7 +465,8 @@ void Processor::ThreadFunction() {
         if (!model.enabled()) return;  // return from lambda; goes to next step of std::for_each
 
         if (model.class_id_size() != model.class_weight_size())
-          BOOST_THROW_EXCEPTION(InternalError("model.class_id_size() != model.class_weight_size()"));
+          BOOST_THROW_EXCEPTION(InternalError(
+              "model.class_id_size() != model.class_weight_size()"));
 
         // Find and save to the variable the index of model stream in the part->stream_name() list.
         int model_stream_index = repeated_field_index_of(part->stream_name(), model.stream_name());
@@ -549,7 +554,6 @@ void Processor::ThreadFunction() {
             phi_is_empty = false;
             auto topic_iter = topic_model->GetTopicWeightIterator(token);
             for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-              
               float class_weight = 1.0;
               auto class_id_iter = class_id_to_weight.find(token.class_id);
               if (class_id_iter != class_id_to_weight.end()) {
@@ -570,16 +574,68 @@ void Processor::ThreadFunction() {
           Matrix Z;
           for (int inner_iter = 0; inner_iter < model.inner_iterations_count(); ++inner_iter) {
             Z = Matrix(blas::prod(Phi, Theta));
-            SetInfAtMaskZeros(Z, Z, 1e-30);
+            SetInfAtMaskZeros(&Z, Z, 1e-30);
             auto n_d = SumByColumns(n_dw);
-
             Z = blas::element_div(n_dw, Z);
-              
             // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
             Theta = blas::element_div(blas::element_prod(Theta, blas::prod(blas::trans(Phi), Z)),
                                       Repmat(n_d, topic_size, 1));
+
+            // next section proceed Theta regularization
+            int item_index = -1;
+            std::vector<float> theta_next;
+            for (auto& item : part->batch().item()) {
+              item_index++;
+              // this loop put data from blas::matrix to std::vector. It's not efficient
+              // and would be avoid after final choice of data structures and corrsponding
+              // adaptation of regularization interface
+              theta_next.clear();
+              for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+                theta_next.push_back(Theta(topic_index, item_index));
+              }
+
+              auto reg_names = model.regularizer_name();
+              auto reg_tau = model.regularizer_tau();
+              for (auto reg_name_iterator = reg_names.begin();
+                  reg_name_iterator != reg_names.end();
+                  reg_name_iterator++) {
+                auto regularizer = schema_.get()->regularizer(reg_name_iterator->c_str());
+                if (regularizer != nullptr) {
+                  auto tau_index = reg_name_iterator - reg_names.begin();
+                  double tau = reg_tau.Get(tau_index);
+
+                  bool retval = regularizer->RegularizeTheta(
+                      item, &theta_next, topic_size, inner_iter, tau);
+                  if (!retval) {
+                    LOG(ERROR) << "Problems with type or number of parameters in Theta" <<
+                      "regularizer <" << reg_name_iterator->c_str() <<
+                      ">. On this iteration this regularizer was turned off.\n";
+                  }
+                } else {
+                  LOG(ERROR) << "Theta Regularizer with name <" << reg_name_iterator->c_str() <<
+                    "> does not exist.";
+                }
+              }
+
+              // Normalize Theta for current item
+              for (int i = 0; i < static_cast<int>(theta_next.size()); ++i) {
+                if (theta_next[i] < 0) {
+                  theta_next[i] = 0;
+                }
+              }
+
+              float sum = 0.0f;
+              for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+                sum += theta_next[topic_index];
+
+              for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+                Theta(topic_index, item_index) = (sum > 0) ? (theta_next[topic_index] / sum) : 0.0f;
+              }
+            }
           }
 
+          // n_wt should be count for items, that have corresponding true-value in stream mask
+          // from batch. Or for all items, if such mask doesn't exist
           Mask stream_mask;
           Matrix n_wt;
           if (model_stream_index != -1) {
@@ -592,7 +648,6 @@ void Processor::ThreadFunction() {
           }
 
           for (int token_index = 0; token_index < n_wt.size1(); ++token_index) {
-
             FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
 
             if (hat_n_wt_cur->value_size() != topic_size)
@@ -631,7 +686,7 @@ void Processor::ThreadFunction() {
             auto score_calc = schema->score_calculator(score_name);
 
             if (!iter.InStream(score_calc->stream_name())) continue;
-            
+
             int item_index = iter.item_index();
             std::vector<float> theta;
             for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
@@ -678,7 +733,7 @@ void Processor::ThreadFunction() {
   }
 }
 
-Matrix Repmat(Matrix& source_matrix, int down, int right) {
+Matrix Repmat(const Matrix& source_matrix, int down, int right) {
   int height = down * source_matrix.size1();
   int width = right * source_matrix.size2();
 
@@ -689,7 +744,7 @@ Matrix Repmat(Matrix& source_matrix, int down, int right) {
     if (src_i == source_matrix.size2())
       src_i = 0;
     for (int res_j = 0; res_j < height; ++res_j) {
-      if (src_j == source_matrix.size1()) 
+      if (src_j == source_matrix.size1())
         src_j = 0;
       result_matrix(res_j, res_i) = source_matrix(src_j, src_i);
       src_j++;
@@ -699,23 +754,23 @@ Matrix Repmat(Matrix& source_matrix, int down, int right) {
 
   return result_matrix;
 }
-void SetInfAtMaskZeros(Matrix& source_matrix, Matrix& mask_matrix, double precision) {
-  int height = source_matrix.size1();
-  int width = source_matrix.size2();
+void SetInfAtMaskZeros(Matrix* source_matrix, const Matrix& mask_matrix, double precision) {
+  int height = source_matrix->size1();
+  int width = source_matrix->size2();
 
   assert(height == mask_matrix.size1());
   assert(width == mask_matrix.size2());
 
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
-      if (std::fabs(mask_matrix(i,j)) < precision) {
-        source_matrix(i,j) = std::numeric_limits<double>::infinity();
+      if (std::fabs(mask_matrix(i, j)) < precision) {
+        (*source_matrix)(i, j) = std::numeric_limits<double>::infinity();
       }
     }
   }
 }
 
-Matrix SumByColumns(Matrix& source_matrix) {
+Matrix SumByColumns(const Matrix& source_matrix) {
   Matrix result_vector(1, source_matrix.size2());
   for (int i = 0; i < source_matrix.size2(); ++i) {
     result_vector(0, i) = 0;
@@ -727,7 +782,7 @@ Matrix SumByColumns(Matrix& source_matrix) {
   return result_vector;
 }
 
-Matrix ApplyMask(Matrix& source_matrix, Mask mask) {
+Matrix ApplyMask(const Matrix& source_matrix, const Mask mask) {
   // delete columns according to bool mask
   int true_value_count = 0;
   for (int i = 0; i < mask.value_size(); ++i) {
