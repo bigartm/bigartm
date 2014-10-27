@@ -1371,7 +1371,8 @@ Represents a configuration of a collection parser.
 
   message CollectionParserConfig {
     enum Format {
-      BagOfWordsUci = 1;
+      BagOfWordsUci = 0;
+      MatrixMarket = 1;
     }
 
     optional Format format = 1 [default = BagOfWordsUci];
@@ -1411,7 +1412,15 @@ Represents a configuration of a collection parser.
                           Values of wordID must be unity-based (not zero-based).
                           The format of the vocab.*.txt file is line
                           contains wordID=n.
+
+   ``MatrixMarket``       See the description at http://math.nist.gov/MatrixMarket/formats.html
+                          In this mode parameter :attr:`docword_file_path` must refer to a file
+                          in Matrix Market format. Parameter :attr:`vocab_file_path`
+                          is also required and must refer to a dictionary file exported in
+                          `gensim`_ format (dictionary.save_as_text()).
    ====================== =======================================================================
+
+.. _gensim: http://radimrehurek.com/gensim/corpora/dictionary.html#gensim.corpora.dictionary.Dictionary.save_as_text
 
 .. attribute:: CollectionParserConfig.docword_file_path
 

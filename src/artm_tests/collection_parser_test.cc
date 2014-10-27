@@ -9,7 +9,7 @@
 
 // To run this particular test:
 // artm_tests.exe --gtest_filter=CollectionParser.*
-TEST(CollectionParser, Basic) {
+TEST(CollectionParser, UciBagOfWords) {
   // Clean all .batches files
   if (boost::filesystem::exists("collection_parser_test")) {
     boost::filesystem::recursive_directory_iterator it("collection_parser_test");
@@ -91,4 +91,31 @@ TEST(CollectionParser, ErrorHandling) {
   ASSERT_THROW(::artm::ParseCollection(config), artm::DiskReadException);
 
   ASSERT_THROW(::artm::LoadDictionary("no_such_file"), artm::DiskReadException);
+}
+
+TEST(CollectionParser, MatrixMarket) {
+  // Clean all .batches files
+  if (boost::filesystem::exists("collection_parser_test")) {
+    boost::filesystem::recursive_directory_iterator it("collection_parser_test");
+    boost::filesystem::recursive_directory_iterator endit;
+    while (it != endit) {
+      if (boost::filesystem::is_regular_file(*it)) {
+        if (it->path().extension() == ".batch" || it->path().extension() == ".dictionary")
+          boost::filesystem::remove(*it);
+      }
+
+      ++it;
+    }
+  }
+
+  ::artm::CollectionParserConfig config;
+  config.set_format(::artm::CollectionParserConfig_Format_MatrixMarket);
+  config.set_target_folder("collection_parser_test/");
+  config.set_num_items_per_batch(10000);
+  config.set_vocab_file_path("../../../test_data/deerwestere.txt");
+  config.set_docword_file_path("../../../test_data/deerwestere.mm");
+  config.set_dictionary_file_name("test_parser.dictionary");
+
+  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
+  ASSERT_EQ(dictionary_parsed->entry_size(), 12);
 }

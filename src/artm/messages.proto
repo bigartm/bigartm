@@ -356,6 +356,7 @@ message ThetaMatrix {
 message CollectionParserConfig {
   enum Format {
     BagOfWordsUci = 0;
+    MatrixMarket = 1;
   }
 
   optional Format format = 1 [default = BagOfWordsUci];
