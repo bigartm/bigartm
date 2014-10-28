@@ -17,6 +17,9 @@ if (WIN32)
   add_definitions("-DWIN32")
 endif()
 
+add_definitions("-DNDEBUG")
+add_definitions(" -DBOOST_UBLAS_NDEBUG")
+
 if (MSVC)
   add_definitions("-D_VARIADIC_MAX=10")
   add_definitions("/wd4251")

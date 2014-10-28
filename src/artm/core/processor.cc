@@ -447,13 +447,10 @@ void Processor::ThreadFunction() {
       for (int item_index = 0; item_index < n_dw.size2(); ++item_index) {
         auto current_item = part->batch().item(item_index);
         for (auto& field : current_item.field()) {
-          for (int token_index = 0; token_index < part->batch().token_size(); ++token_index) {
-            auto find_iter =
-                std::find(field.token_id().begin(), field.token_id().end(), token_index);
-            if (find_iter != field.token_id().end()) {
-              n_dw(token_index, item_index) +=
-                  field.token_count(find_iter - field.token_id().begin());
-            }
+          for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
+            int token_id = field.token_id(token_index);
+            int token_count = field.token_count(token_index);
+              n_dw(token_id, item_index) += token_count;
           }
         }
       }
@@ -577,9 +574,11 @@ void Processor::ThreadFunction() {
             SetInfAtMaskZeros(&Z, Z, 1e-30);
             auto n_d = SumByColumns(n_dw);
             Z = blas::element_div(n_dw, Z);
+
             // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
-            Theta = blas::element_div(blas::element_prod(Theta, blas::prod(blas::trans(Phi), Z)),
-                                      Repmat(n_d, topic_size, 1));
+            Matrix Z_trans = blas::trans(Z);
+            Matrix temp = blas::trans(blas::prod(Z_trans, Phi));
+            Theta = blas::element_div(blas::element_prod(Theta, temp), Repmat(n_d, topic_size, 1));
 
             // next section proceed Theta regularization
             int item_index = -1;
