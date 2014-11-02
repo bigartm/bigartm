@@ -78,6 +78,10 @@ set(SRC_LIST
 	score_sandbox/top_tokens.h
 	score_sandbox/topic_kernel.cc
 	score_sandbox/topic_kernel.h
+	utility/ice.cc
+	utility/ice.h
+	utility/blas.cc
+	utility/blas.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_OTHER
@@ -94,12 +98,14 @@ FILE(GLOB_RECURSE SRC_LIST_REGULARIZER         regularizer/*.cc         regulari
 FILE(GLOB_RECURSE SRC_LIST_REGULARIZER_SANDBOX regularizer_sandbox/*.cc regularizer_sandbox/*.h )
 FILE(GLOB_RECURSE SRC_LIST_SCORE               score/*.cc               score/*.h               )
 FILE(GLOB_RECURSE SRC_LIST_SCORE_SANDBOX       score_sandbox/*.cc       score_sandbox/*.h       )
+FILE(GLOB_RECURSE SRC_LIST_UTILITY             utility/*.cc             utility/*.h             )
 
 source_group("core"                FILES ${SRC_LIST_CORE}                )
 source_group("regularizer"         FILES ${SRC_LIST_REGULARIZER}         )
 source_group("regularizer_sandbox" FILES ${SRC_LIST_REGULARIZER_SANDBOX} )
 source_group("score"               FILES ${SRC_LIST_SCORE}               )
 source_group("score_sandbox"       FILES ${SRC_LIST_SCORE_SANDBOX}       )
+source_group("utility"             FILES ${SRC_LIST_UTILITY}             )
 source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
 add_definitions("-Dartm_EXPORTS")
@@ -113,6 +119,7 @@ source_group("" FILES c_interface.cc c_interface.h)
 set(ARTM_LIB_DEPS  artm-static
 		   gflags-static
                    rpcz_static
+                   ${LINK_DL}
                    ${Boost_LIBRARIES}
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES}

@@ -29,7 +29,10 @@
 ../src/artm/score_sandbox/top_tokens.cc
 ../src/artm/score_sandbox/theta_snippet.cc
 ../src/artm/score_sandbox/topic_kernel.cc
+../src/artm/utility/ice.cc
+../src/artm/utility/blas.cc
 ../src/artm_tests/boost_thread_test.cc
+../src/artm_tests/blas_test.cc
 ../src/artm_tests/collection_parser_test.cc
 ../src/artm_tests/cpp_interface_test.cc
 ../src/artm_tests/template_manager_test.cc
@@ -81,3 +84,5 @@
 ../src/artm/score_sandbox/top_tokens.h
 ../src/artm/score_sandbox/theta_snippet.h
 ../src/artm/score_sandbox/topic_kernel.h
+../src/artm/utility/ice.h
+../src/artm/utility/blas.h
