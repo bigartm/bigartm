@@ -5,6 +5,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 
 set(SRC_LIST
 	batch_manager_test.cc
+	blas_test.cc
 	boost_thread_test.cc
 	collection_parser_test.cc
 	cpp_interface_test.cc
@@ -28,6 +29,7 @@ add_definitions("-Dartm_EXPORTS")
 add_executable(artm_tests ${SRC_LIST})
 target_link_libraries(artm_tests artm-static
                                  rpcz_static
+                                 ${LINK_DL}
                                  ${Boost_LIBRARIES}
                                  ${PROTOBUF_LIBRARIES}
                                  ${GLOG_LIBRARIES}

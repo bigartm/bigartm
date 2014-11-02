@@ -108,6 +108,25 @@ To get a live usage example of BigARTM you may check BigARTM's
 script and the latest `continuous integration build
 <https://travis-ci.org/bigartm/bigartm>`_.
 
+Intel Math Kernel Library
+-------------------------
+
+BigARTM can utilize Intel Math Kernel Library to achieve better performance.
+
+To enable MKL usage on Windows add the path to MKL library to your ``PATH`` system variable
+
+.. code-block:: bash
+
+   set PATH=%PATH%;"C:\Program Files (x86)\Intel\Composer XE 2013 SP1\redist\intel64\mkl"
+
+To enable MKL usage on Linux create a new system variable ``MKL_PATH`` and set it as follows
+
+.. code-block:: bash
+
+   export MKL_PATH="/opt/intel/mkl/lib/intel64/"
+
+
+
 First steps
 -----------
 
