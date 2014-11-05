@@ -16,3 +16,41 @@ on ``artm.dll`` (Windows) or ``artm.so`` (Linux).
    :alt: Connecting to BigARTM from different languages
 
 To write your API please refer to :doc:`/ref/c_interface`.
+
+
+How to retrieve Theta matrix from BigARTM
+-----------------------------------------
+
+Theta matrix is a matrix that contains the distribution of several items (columns of the matrix)
+into topics (rows of the matrix).
+There are three ways to retrieve such information from BigARTM, and the correct way depends on your scenario.
+
+1. **You want to get Theta matrix for the same collection as you have used to infer the topic model.**
+
+   Set :attr:`MasterComponentConfig.cache_theta` to *true* prior to the last iteration,
+   and after the iteration use :cpp:func:`MasterComponent::GetThetaMatrix` (in C++) or
+   :py:meth:`MasterComponent.GetThetaMatrix <artm.library.MasterComponent.GetThetaMatrix>` (in Python) to retrieve Theta matrix.
+   Note that *cach_theta* flag does not work together with network modus operandi.
+   Current workaround for the network modus operandi is to use the option no. 3 (described below).
+
+2. **You want to repeatedly monitor a small portion of the Theta matrix during ongoing iterations.**
+
+   In this case you should create Theta Snippet score, defined via :ref:`ThetaSnippetScoreConfig`,
+   and then use :cpp:func:`MasterComponent::GetScoreAs\<T>` to retrieve the resulting :ref:`ThetaSnippetScore` message.
+
+   This configuration of Theta Snippet score require you to provide :attr:`ThetaSnippetScoreConfig.item_id`
+   listing all IDs of the items that should have Theta's collected.
+   If you created the batches manually you should have specified such IDs in :attr:`Item.id` field.
+   If you used other methods to parse the collection from disk then you shouldt try using sequential IDs, starting with 1.
+
+   Remember that Theta snippet score is designed to handle only a small number of items.
+   Attemp to retrieve 100+ items will have a negative effect on performance.
+
+3. **You want to classify a new set of items with an existing model.**
+
+   In this case you need to create a :ref:`Batch`, containing your new items.
+   Then copy this batch to :attr:`GetThetaMatrixArgs.batch` message,
+   specify :attr:`GetThetaMatrixArgs.model_name`, and use
+   :cpp:func:`MasterComponent::GetThetaMatrix` (in C++) or
+   :py:meth:`MasterComponent.GetThetaMatrix <artm.library.MasterComponent.GetThetaMatrix>` (in Python) to retrieve Theta matrix.
+   In this case there is no need set :attr:`MasterComponentConfig.cache_theta` to *true*.

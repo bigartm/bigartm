@@ -57,7 +57,7 @@ DEFINE_EXCEPTION_TYPE(NetworkException, std::runtime_error);
 #undef DEFINE_EXCEPTION_TYPE
 
 void SaveBatch(const Batch& batch, const std::string& disk_path);
-std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& disk_path);
+std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& filename);
 std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& config);
 
 class MasterComponent {
@@ -67,9 +67,11 @@ class MasterComponent {
   ~MasterComponent();
 
   int id() const { return id_; }
+  std::shared_ptr<TopicModel> GetTopicModel(const std::string& model_name);
   std::shared_ptr<TopicModel> GetTopicModel(const GetTopicModelArgs& args);
   std::shared_ptr<RegularizerInternalState> GetRegularizerState(
     const std::string& regularizer_name);
+  std::shared_ptr<ThetaMatrix> GetThetaMatrix(const std::string& model_name);
   std::shared_ptr<ThetaMatrix> GetThetaMatrix(const GetThetaMatrixArgs& args);
   std::shared_ptr<ScoreData> GetScore(const Model& model,
                                       const std::string& score_name);
@@ -124,6 +126,7 @@ class Model {
   void Disable();
   void Synchronize(double decay);
   void Synchronize(double decay, bool invoke_regularizers);
+  void Synchronize(const SynchronizeModelArgs& args);
 
   int master_id() const { return master_id_; }
   const std::string& name() const { return config_.name(); }
