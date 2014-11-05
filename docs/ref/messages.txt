@@ -52,6 +52,13 @@ A typical example of an item is a document that belongs to some text collection.
     repeated Field field = 2;
   }
 
+.. attribute:: Item.id
+
+   An integer identifier of the item.
+
+.. attribute:: Item.field
+
+   A set of all fields withing the item.
 
 .. _Field:
 
