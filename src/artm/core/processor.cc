@@ -3,6 +3,8 @@
 #include "artm/core/processor.h"
 
 #include <stdlib.h>
+#include <chrono>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -400,6 +402,8 @@ void Processor::FindThetaMatrix(const Batch& batch, const ModelName& model_name,
 
 void Processor::ThreadFunction() {
   try {
+    int total_processed_batches = 0;  // counter
+
     Helpers::SetThreadName(-1, "Processor thread");
     LOG(INFO) << "Processor thread started";
     int pop_retries = 0;
@@ -407,6 +411,7 @@ void Processor::ThreadFunction() {
     for (;;) {
       if (is_stopping) {
         LOG(INFO) << "Processor thread stopped";
+        LOG(INFO) << "Total number of processed batches: " << total_processed_batches;
         break;
       }
 
@@ -425,6 +430,15 @@ void Processor::ThreadFunction() {
       }
 
       LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
+
+      auto batch_started_timestamp = std::chrono::high_resolution_clock::now();
+      call_on_destruction c([&]() {
+        auto delta = (std::chrono::high_resolution_clock::now() - batch_started_timestamp);
+        auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+        LOG(INFO) << "Batch processed in " <<  delta_ms.count() << " milliseconds.";
+      });
+
+      total_processed_batches++;
       pop_retries = 0;
 
       if (part->batch().class_id_size() != part->batch().token_size())
