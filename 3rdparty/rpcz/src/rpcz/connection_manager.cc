@@ -320,7 +320,14 @@ class connection_manager_thread {
     zmq::socket_t* socket = new zmq::socket_t(*context_, ZMQ_ROUTER);
     int linger_ms = 0;
     socket->setsockopt(ZMQ_LINGER, &linger_ms, sizeof(linger_ms));
-    socket->bind(endpoint.c_str());
+    try {
+      socket->bind(endpoint.c_str());
+    }
+    catch (...) {
+      std::cerr << "Unable bind socket to " << endpoint << ". Verify that (1) endpoint is correctly formated and "
+                << "(2) no other service is running on the same endpoint.\n";
+      throw;
+    }
     uint64 socket_id = server_sockets_.size();
     server_sockets_.push_back(socket);
     reactor_.add_socket(socket, new_permanent_callback(
