@@ -96,8 +96,16 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   }
 }
 
-void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
-  ValidateConfig(config);
+void MasterComponent::Reconfigure(const MasterComponentConfig& user_config) {
+  ValidateConfig(user_config);
+
+  MasterComponentConfig config(user_config);  // make a copy
+  if (!config.has_processor_queue_max_size()) {
+    // The default setting for processor queue max size is to use the number of processors.
+    // This will ensure reasonably good load balancing in network modus operandi.
+    config.set_processor_queue_max_size(config.processors_count());
+  }
+
   config_.set(std::make_shared<MasterComponentConfig>(config));
 
   if (!is_configured_) {
