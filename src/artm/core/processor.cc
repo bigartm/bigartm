@@ -3,7 +3,6 @@
 #include "artm/core/processor.h"
 
 #include <stdlib.h>
-#include <chrono>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -431,13 +430,7 @@ void Processor::ThreadFunction() {
 
       LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
 
-      auto batch_started_timestamp = std::chrono::high_resolution_clock::now();
-      call_on_destruction c([&]() {
-        auto delta = (std::chrono::high_resolution_clock::now() - batch_started_timestamp);
-        auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-        LOG(INFO) << "Batch processed in " <<  delta_ms.count() << " milliseconds.";
-      });
-
+      CuckooWatch cuckoo("Batch processed in ");  // log time from now to destruction
       total_processed_batches++;
       pop_retries = 0;
 

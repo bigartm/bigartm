@@ -3,6 +3,7 @@
 #ifndef SRC_ARTM_CORE_COMMON_H_
 #define SRC_ARTM_CORE_COMMON_H_
 
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <string>
@@ -102,6 +103,20 @@ inline bool make_rpcz_call(std::function<void()> f, const std::string& log_messa
 inline bool make_rpcz_call_no_throw(std::function<void()> f, const std::string& log_message = "") {
   return make_rpcz_call(f, log_message, /*no_throw = */ true);
 }
+
+class CuckooWatch {
+ public:
+  CuckooWatch(std::string message) : message_(message), start_(std::chrono::high_resolution_clock::now()) {}
+  ~CuckooWatch() {
+    auto delta = (std::chrono::high_resolution_clock::now() - start_);
+    auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+    LOG(INFO) << message_ << " " << delta_ms.count() << " milliseconds.";
+  }
+
+ private:
+  std::string message_;
+  std::chrono::time_point<std::chrono::system_clock> start_;
+};
 
 }  // namespace core
 }  // namespace artm
