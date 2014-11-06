@@ -125,7 +125,9 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
 
 class NetworkClientCollection {
  public:
-  NetworkClientCollection() : lock_(), application_(nullptr), clients_() {}
+  explicit NetworkClientCollection(int timeout)
+      : communication_timeout_(timeout), lock_(), application_(nullptr), clients_() {}
+
   ~NetworkClientCollection();
 
   void CreateOrReconfigureModel(const ModelConfig& config);
@@ -149,7 +151,11 @@ class NetworkClientCollection {
   void for_each_client(std::function<void(artm::core::NodeControllerService_Stub&)> f);
   void for_each_endpoint(std::function<void(std::string)> f);
 
+  int communication_timeout() const { return communication_timeout_; }
+  void set_communication_timeout(int timeout) { communication_timeout_ = timeout; }
+
  private:
+  int communication_timeout_;
   mutable boost::mutex lock_;
   std::unique_ptr<rpcz::application> application_;
   ThreadSafeCollectionHolder<std::string, artm::core::NodeControllerService_Stub> clients_;

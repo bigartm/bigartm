@@ -304,12 +304,11 @@ void RemoteDataLoader::Callback(std::shared_ptr<const ModelIncrement> model_incr
     processed_batches.add_batch_id(model_increment->batch_uuid(batch_index));
   }
 
-  Void response;
-  try {
-    instance()->master_component_service_proxy()->ReportBatches(processed_batches, &response);
-  } catch(...) {
-    LOG(ERROR) << "Unable to report processed batches to master.";
-  }
+  int timeout = instance()->schema()->config().communication_timeout();
+  make_rpcz_call_no_throw([&]() {
+    Void response;
+    instance()->master_component_service_proxy()->ReportBatches(processed_batches, &response, timeout);
+  }, "RemoteDataLoader::Callback");
 }
 
 void RemoteDataLoader::ThreadFunction() {
@@ -334,14 +333,12 @@ void RemoteDataLoader::ThreadFunction() {
       Int request;  // desired number of batches
       BatchIds response;
       request.set_value(max_queue_size - processor_queue_size);
-      try {
-        instance()->master_component_service_proxy()->RequestBatches(request, &response);
-      } catch(const std::runtime_error& exception) {
-        LOG(ERROR) << exception.what();
-      } catch(...) {
-        LOG(ERROR) << "Unable to request batches from master.";
-        return;
-      }
+      int timeout = config.communication_timeout();
+      bool ok = make_rpcz_call_no_throw([&]() {
+        instance()->master_component_service_proxy()->RequestBatches(request, &response, timeout);
+      }, "RemoteDataLoader::ThreadFunction");
+
+      if (!ok) continue;
 
       if (response.batch_id_size() == 0) {
         boost::this_thread::sleep(boost::posix_time::milliseconds(kNetworkPollingFrequency));
@@ -371,12 +368,10 @@ void RemoteDataLoader::ThreadFunction() {
       }
 
       if (failed_batches.batch_id_size() > 0) {
-        Void response;
-        try {
-          instance()->master_component_service_proxy()->ReportBatches(failed_batches, &response);
-        } catch(...) {
-          LOG(ERROR) << "Unable to report failed batches to master.";
-        }
+        make_rpcz_call_no_throw([&]() {
+          Void response;
+          instance()->master_component_service_proxy()->ReportBatches(failed_batches, &response, timeout);
+        }, "RemoteDataLoader::ThreadFunction");
       }
     }
   }

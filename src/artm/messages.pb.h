@@ -1271,6 +1271,13 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline bool online_batch_processing() const;
   inline void set_online_batch_processing(bool value);
 
+  // optional int32 communication_timeout = 14 [default = 1000];
+  inline bool has_communication_timeout() const;
+  inline void clear_communication_timeout();
+  static const int kCommunicationTimeoutFieldNumber = 14;
+  inline ::google::protobuf::int32 communication_timeout() const;
+  inline void set_communication_timeout(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.MasterComponentConfig)
  private:
   inline void set_has_modus_operandi();
@@ -1293,6 +1300,8 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline void clear_has_connect_endpoint();
   inline void set_has_online_batch_processing();
   inline void clear_has_online_batch_processing();
+  inline void set_has_communication_timeout();
+  inline void clear_has_communication_timeout();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -1307,11 +1316,12 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
   ::std::string* create_endpoint_;
   ::std::string* connect_endpoint_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> node_connect_endpoint_;
   ::google::protobuf::int32 merger_queue_max_size_;
+  ::google::protobuf::int32 communication_timeout_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> node_connect_endpoint_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6836,6 +6846,28 @@ inline bool MasterComponentConfig::online_batch_processing() const {
 inline void MasterComponentConfig::set_online_batch_processing(bool value) {
   set_has_online_batch_processing();
   online_batch_processing_ = value;
+}
+
+// optional int32 communication_timeout = 14 [default = 1000];
+inline bool MasterComponentConfig::has_communication_timeout() const {
+  return (_has_bits_[0] & 0x00002000u) != 0;
+}
+inline void MasterComponentConfig::set_has_communication_timeout() {
+  _has_bits_[0] |= 0x00002000u;
+}
+inline void MasterComponentConfig::clear_has_communication_timeout() {
+  _has_bits_[0] &= ~0x00002000u;
+}
+inline void MasterComponentConfig::clear_communication_timeout() {
+  communication_timeout_ = 1000;
+  clear_has_communication_timeout();
+}
+inline ::google::protobuf::int32 MasterComponentConfig::communication_timeout() const {
+  return communication_timeout_;
+}
+inline void MasterComponentConfig::set_communication_timeout(::google::protobuf::int32 value) {
+  set_has_communication_timeout();
+  communication_timeout_ = value;
 }
 
 // -------------------------------------------------------------------
