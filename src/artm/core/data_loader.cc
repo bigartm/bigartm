@@ -123,9 +123,6 @@ void LocalDataLoader::InvokeIteration(int iterations_count) {
     return;
   }
 
-  // Reset scores
-  instance()->merger()->ForceResetScores(ModelName());
-
   auto latest_generation = generation_.get();
   if (generation_->empty()) {
     LOG(WARNING) << "DataLoader::InvokeIteration() - current generation is empty, "

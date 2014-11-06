@@ -262,6 +262,9 @@ void MasterComponent::InvokeIteration(int iterations_count) {
     BOOST_THROW_EXCEPTION(InvalidOperation(str.str()));
   }
 
+  // Reset scores
+  instance_->merger()->ForceResetScores(ModelName());
+
   if (isInLocalModusOperandi()) {
     instance_->local_data_loader()->InvokeIteration(iterations_count);
     return;
