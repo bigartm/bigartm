@@ -100,7 +100,7 @@ inline bool make_rpcz_call(std::function<void()> f, const std::string& log_messa
 }
 
 inline bool make_rpcz_call_no_throw(std::function<void()> f, const std::string& log_message = "") {
-  return make_rpcz_call(f, log_message);
+  return make_rpcz_call(f, log_message, /*no_throw = */ true);
 }
 
 }  // namespace core
