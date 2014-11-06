@@ -156,7 +156,8 @@ class TopicModel : public Regularizable {
 
   int token_size() const;
   int topic_size() const;
-  google::protobuf::RepeatedPtrField<std::string> topic_name();
+  google::protobuf::RepeatedPtrField<std::string> topic_name() const;
+  std::vector<ClassId> class_id() const;
 
   bool has_token(const Token& token) const;
   int token_id(const Token& token) const;
@@ -164,6 +165,8 @@ class TopicModel : public Regularizable {
 
   template<typename T>
   void AddTopicsInfoInModel(artm::TopicModel* topicModel, int size, const T& names) const;
+
+  int FindDegeneratedTopicsCount(const ClassId& class_id) const;
 
  private:
   ModelName model_name_;

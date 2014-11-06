@@ -248,8 +248,8 @@ void Merger::ThreadFunction() {
         auto iter = topic_model_inc_.find(model_name);
         if (iter == topic_model_inc_.end()) {
           topic_model_inc_.insert(std::make_pair(
-            model_name, std::make_shared<::artm::core::TopicModel>(cur_ttm->model_name(),
-                                                                   cur_ttm->topic_name())));
+            model_name, std::make_shared< ::artm::core::TopicModel>(cur_ttm->model_name(),
+                                                                    cur_ttm->topic_name())));
           iter = topic_model_inc_.find(model_name);
         }
 
@@ -288,7 +288,7 @@ void Merger::PullTopicModel() {
       request.set_model_name(model_name);
       ::artm::TopicModel reply;
       master_component_service_->RetrieveModel(request, &reply);
-      std::shared_ptr<::artm::core::TopicModel> new_global_ttm(
+      std::shared_ptr< ::artm::core::TopicModel> new_global_ttm(
         new ::artm::core::TopicModel(reply));
 
       topic_model_.set(model_name, new_global_ttm);
@@ -439,7 +439,7 @@ bool Merger::ScoresMerger::RequestScore(const ModelName& model_name, const Score
       score_data->set_data(score->SerializeAsString());
     }
   } else {
-    std::shared_ptr<::artm::core::TopicModel> model = topic_model_->get(model_name);
+    std::shared_ptr< ::artm::core::TopicModel> model = topic_model_->get(model_name);
     std::shared_ptr<Score> score = score_calculator->CalculateScore(*model);
     score_data->set_data(score->SerializeAsString());
   }
@@ -477,10 +477,11 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     if (inc_ttm == topic_model_inc_.end())
       LOG(WARNING) << "SynchronizeModel() did not found any increments to topic model " << name;
 
+    std::shared_ptr<ModelConfig> model_config = target_model_config_.get(name);
     // Accumulate counters in topic model with decay coefficient.
-    auto new_ttm = std::make_shared<::artm::core::TopicModel>(*old_ttm,
-                                                              decay_weight,
-                                                              target_model_config_.get(name));
+    auto new_ttm = std::make_shared< ::artm::core::TopicModel>(*old_ttm,
+                                                               decay_weight,
+                                                               model_config);
     target_model_config_.set(name, nullptr);
     // Apply increment
     if (inc_ttm != topic_model_inc_.end())
@@ -492,6 +493,18 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     topic_model_.set(name, new_ttm);
 
     topic_model_inc_.erase(name);
+
+    // Verify if model became overregularized
+    std::vector<ClassId> class_ids = new_ttm->class_id();
+    for (ClassId class_id : class_ids) {
+      int degenerated_topics_count = new_ttm->FindDegeneratedTopicsCount(class_id);
+      if (degenerated_topics_count) {
+        LOG(WARNING) << degenerated_topics_count << " of " << new_ttm->topic_size()
+                     << " topics have zero probability mass."
+                     << " Consider reducing values of ModelConfig.regularizer_tau"
+                     << " for model '" << model_name << "', class_id=" << class_id;
+      }
+    }
   }
 }
 
@@ -502,7 +515,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
 
   auto schema = schema_->get();
   const ModelConfig& model = schema->model_config(args.model_name());
-  auto new_ttm = std::make_shared<::artm::core::TopicModel>(
+  auto new_ttm = std::make_shared< ::artm::core::TopicModel>(
       model.name(), model.topic_name());
   std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
   if (dict == nullptr) {

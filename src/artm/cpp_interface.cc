@@ -53,8 +53,8 @@ void SaveBatch(const Batch& batch, const std::string& disk_path) {
     StringAsArray(&config_blob)));
 }
 
-std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& disk_path) {
-  int length = HandleErrorCode(ArtmRequestLoadDictionary(disk_path.c_str()));
+std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& filename) {
+  int length = HandleErrorCode(ArtmRequestLoadDictionary(filename.c_str()));
 
   std::string dictionary_blob;
   dictionary_blob.resize(length);
@@ -105,6 +105,12 @@ void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
   config_.CopyFrom(config);
 }
 
+std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const std::string& model_name) {
+  ::artm::GetTopicModelArgs args;
+  args.set_model_name(model_name);
+  return GetTopicModel(args);
+}
+
 std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args) {
   // Request model topics
   std::string args_blob;
@@ -129,6 +135,12 @@ std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(
   std::shared_ptr<RegularizerInternalState> regularizer_state(new RegularizerInternalState());
   regularizer_state->ParseFromString(state_blob);
   return regularizer_state;
+}
+
+std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& model_name) {
+  ::artm::GetThetaMatrixArgs args;
+  args.set_model_name(model_name);
+  return GetThetaMatrix(args);
 }
 
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args) {
@@ -226,6 +238,12 @@ void Model::Synchronize(double decay, bool invoke_regularizers) {
   args.set_model_name(this->name());
   args.set_decay_weight(static_cast<float>(decay));
   args.set_invoke_regularizers(invoke_regularizers);
+  Synchronize(args);
+}
+
+void Model::Synchronize(const SynchronizeModelArgs& sync_args) {
+  SynchronizeModelArgs args(sync_args);  // create a copy to set the name.
+  args.set_model_name(this->name());
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmSynchronizeModel(master_id(), blob.size(), blob.c_str()));

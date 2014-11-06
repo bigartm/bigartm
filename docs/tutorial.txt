@@ -60,21 +60,21 @@ The BigARTM package will contain the following files:
 
   ``python/examples/`` Python examples of how to use BigARTM:
 
-                       * example01_synthetic_collection.py
+                       * `example01_synthetic_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example01_synthetic_collection.py>`_
 
-                       * example02_parse_collection.py
+                       * `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example02_parse_collection.py>`_
 
-                       * example03_concurrency.py
+                       * `example03_concurrency.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example03_concurrency.py>`_
 
-                       * example04_online_algorithm.py
+                       * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example04_online_algorithm.py>`_
 
-                       * example05_train_and_test_stream.py
+                       * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example05_train_and_test_stream.py>`_
 
-                       * example06_use_dictionaries.py
+                       * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
 
-                       * example07_master_component_proxy.py
+                       * `example07_master_component_proxy.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example07_master_component_proxy.py>`_
 
-                       * example08_network_modus_operandi.py
+                       * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
 
                        Files ``docword.kos.txt`` and ``vocab.kos.txt`` represent a simple
                        collection of text files in Bag-Of-Words format.
@@ -107,6 +107,25 @@ To get a live usage example of BigARTM you may check BigARTM's
 `.travis.yml <https://raw.githubusercontent.com/bigartm/bigartm/master/.travis.yml>`_
 script and the latest `continuous integration build
 <https://travis-ci.org/bigartm/bigartm>`_.
+
+Intel Math Kernel Library
+-------------------------
+
+BigARTM can utilize Intel Math Kernel Library to achieve better performance.
+
+To enable MKL usage on Windows add the path to MKL library to your ``PATH`` system variable
+
+.. code-block:: bash
+
+   set PATH=%PATH%;"C:\Program Files (x86)\Intel\Composer XE 2013 SP1\redist\intel64\mkl"
+
+To enable MKL usage on Linux create a new system variable ``MKL_PATH`` and set it as follows
+
+.. code-block:: bash
+
+   export MKL_PATH="/opt/intel/mkl/lib/intel64/"
+
+
 
 First steps
 -----------

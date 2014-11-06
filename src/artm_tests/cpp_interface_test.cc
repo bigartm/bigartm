@@ -22,8 +22,8 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   // 5556 - node controller for workers (network_mode)
   // 5557 - node controller for master (proxy_mode)
 
-  std::shared_ptr<::artm::NodeController> node_controller;
-  std::shared_ptr<::artm::NodeController> node_controller_master;
+  std::shared_ptr< ::artm::NodeController> node_controller;
+  std::shared_ptr< ::artm::NodeController> node_controller_master;
   ::artm::MasterComponentConfig master_config;
   if (is_network_mode) {
     ::artm::NodeControllerConfig node_config;
@@ -153,8 +153,8 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     }
 
     topic_model = master_component->GetTopicModel(args);
-    std::shared_ptr<::artm::PerplexityScore> perplexity =
-      master_component->GetScoreAs<::artm::PerplexityScore>(model, "PerplexityScore");
+    std::shared_ptr< ::artm::PerplexityScore> perplexity =
+      master_component->GetScoreAs< ::artm::PerplexityScore>(model, "PerplexityScore");
 
     if (iter == 0) {
       expected_normalizer = perplexity->normalizer();
@@ -214,7 +214,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     artm::GetThetaMatrixArgs args;
     args.set_model_name(model.name().c_str());
     if (!is_network_mode && !online_processing) {
-      std::shared_ptr<::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
+      std::shared_ptr< ::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
 
       EXPECT_EQ(theta_matrix->item_id_size(), nDocs);
       for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
@@ -233,7 +233,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
 
     args.mutable_batch()->CopyFrom(batch);
     if (!is_network_mode) {
-      std::shared_ptr<::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
+      std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
       EXPECT_EQ(theta_matrix2->item_id_size(), nDocs);
       for (int item_index = 0; item_index < theta_matrix2->item_id_size(); ++item_index) {
         const ::artm::FloatArray& weights2 = theta_matrix2->item_weights(item_index);

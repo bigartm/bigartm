@@ -15,3 +15,4 @@ BigARTM Reference
    messages
    python_interface
    c_interface
+   cpp_interface
