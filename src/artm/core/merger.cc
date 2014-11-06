@@ -457,6 +457,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     return;  // no-op in network modus operandi
   }
 
+  CuckooWatch cuckoo("Merger::SynchronizeModel");
   auto model_names = topic_model_.keys();
   if (!model_name.empty()) {
     model_names.clear();

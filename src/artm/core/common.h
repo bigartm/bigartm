@@ -106,7 +106,8 @@ inline bool make_rpcz_call_no_throw(std::function<void()> f, const std::string& 
 
 class CuckooWatch {
  public:
-  CuckooWatch(std::string message) : message_(message), start_(std::chrono::high_resolution_clock::now()) {}
+  explicit CuckooWatch(std::string message)
+      : message_(message), start_(std::chrono::high_resolution_clock::now()) {}
   ~CuckooWatch() {
     auto delta = (std::chrono::high_resolution_clock::now() - start_);
     auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);

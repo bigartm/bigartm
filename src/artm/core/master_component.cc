@@ -238,21 +238,27 @@ bool MasterComponent::WaitIdle(int timeout) {
       }
     }
 
-    // Ask all nodes to push their increments to master
-    network_client_interface_->ForcePushTopicModelIncrement();
+    {
+      CuckooWatch cuckoo("ForcePushTopicModelIncrement");
+      // Ask all nodes to push their increments to master
+      network_client_interface_->ForcePushTopicModelIncrement();
+    }
 
-    // Wait merger on master to process all model increments and set them as active topic model
-    auto time_end = boost::posix_time::microsec_clock::local_time();
-    auto local_timeout = timeout - (time_end - time_start).total_milliseconds();
-    if (timeout >= 0) {
-      if (local_timeout >= 0) {
-        bool result = instance_->merger()->WaitIdle(static_cast<int>(local_timeout));
-        if (!result) return false;
+    {
+      CuckooWatch cuckoo("Merge all increments");
+      // Wait merger on master to process all model increments and set them as active topic model
+      auto time_end = boost::posix_time::microsec_clock::local_time();
+      auto local_timeout = timeout - (time_end - time_start).total_milliseconds();
+      if (timeout >= 0) {
+        if (local_timeout >= 0) {
+          bool result = instance_->merger()->WaitIdle(static_cast<int>(local_timeout));
+          if (!result) return false;
+        } else {
+          return false;
+        }
       } else {
-        return false;
+        instance_->merger()->WaitIdle(-1);
       }
-    } else {
-      instance_->merger()->WaitIdle(-1);
     }
 
     return true;
