@@ -20,7 +20,9 @@
 #include "artm/core/merger.h"
 #include "artm/core/topic_model.h"
 
+#include "artm/utility/blas.h"
 
+namespace util = artm::utility;
 
 namespace artm {
 namespace core {
@@ -406,6 +408,14 @@ void Processor::ThreadFunction() {
     LOG(INFO) << "Processor thread started";
     int pop_retries = 0;
     const int pop_retries_max = 20;
+
+    util::Blas* blas = &util::Blas::singleton(util::Blas::MKL);
+    if (!blas->is_loaded()) {
+      LOG(WARNING) << "Intel Math Kernel Library is not detected, "
+          << "using built in implementation (can be slower than MKL)";
+      blas = &util::Blas::singleton(util::Blas::BUILTIN);
+    }
+
     for (;;) {
       if (is_stopping) {
         LOG(INFO) << "Processor thread stopped";
@@ -438,13 +448,13 @@ void Processor::ThreadFunction() {
       std::vector<ModelName> model_names = schema->GetModelNames();
 
       // create and fill n_dw matrix for matrix calculations during batch processing
-      Matrix n_dw(part->batch().token_size(), part->batch().item_size());
-      for (int item_index = 0; item_index < n_dw.size2(); ++item_index) {
-        for (int token_index = 0; token_index < n_dw.size1(); ++token_index) {
+      Matrix<float> n_dw(part->batch().token_size(), part->batch().item_size());
+      for (int item_index = 0; item_index < n_dw.no_columns(); ++item_index) {
+        for (int token_index = 0; token_index < n_dw.no_rows(); ++token_index) {
           n_dw(token_index, item_index) = 0.0;
         }
       }
-      for (int item_index = 0; item_index < n_dw.size2(); ++item_index) {
+      for (int item_index = 0; item_index < n_dw.no_columns(); ++item_index) {
         auto current_item = part->batch().item(item_index);
         for (auto& field : current_item.field()) {
           for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
@@ -506,7 +516,7 @@ void Processor::ThreadFunction() {
         assert(topic_size > 0);
 
         // create and fill Theta matrix for matrix calculations during batch processing
-        Matrix Theta(topic_size, part->batch().item_size());
+        Matrix<float> Theta(topic_size, part->batch().item_size());
         for (int item_index = 0; item_index < part->batch().item_size(); ++item_index) {
           int index_of_item = -1;
           if ((cache != nullptr) && model.reuse_theta()) {
@@ -531,7 +541,7 @@ void Processor::ThreadFunction() {
         model_increment->set_topics_count(topic_size);
 
         bool phi_is_empty = true;
-        Matrix Phi(part->batch().token_size(), topic_size);
+        Matrix<float> Phi(part->batch().token_size(), topic_size);
 
         std::vector<Token> token_dict;
         std::map<ClassId, float> class_id_to_weight;
@@ -568,17 +578,62 @@ void Processor::ThreadFunction() {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
               "wouldn't bo proceed on this iteration";
         } else {
-          Matrix Z;
+          Matrix<float> Z(Phi.no_rows(), Theta.no_columns());
           for (int inner_iter = 0; inner_iter < model.inner_iterations_count(); ++inner_iter) {
-            Z = Matrix(blas::prod(Phi, Theta));
-            SetInfAtMaskZeros(&Z, Z, 1e-30);
-            auto n_d = SumByColumns(n_dw);
-            Z = blas::element_div(n_dw, Z);
+            blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
+              Phi.no_rows(), Theta.no_columns(), Phi.no_columns(), 1, Phi.get_data(),
+              Phi.no_columns(), Theta.get_data(), Theta.no_columns(), 0, Z.get_data(), Theta.no_columns());
+
+            // set Inf to places, where Z == 0
+            double precision = 1e-30;
+            for (int i = 0; i < Z.no_rows(); ++i) {
+              for (int j = 0; j < Z.no_columns(); ++j) {
+                if (std::fabs(Z(i, j)) < precision) {
+                  Z(i, j) = std::numeric_limits<double>::infinity();
+                }
+              }
+            }
+
+            // n_d = sum(n_dw)
+            Matrix<float> n_d(1, n_dw.no_columns());
+            for (int i = 0; i < n_dw.no_columns(); ++i) {
+              n_d(0, i) = 0;
+              for (int j = 0; j < n_dw.no_rows(); ++j) {
+                n_d(0, i) += n_dw(j, i);
+              }
+            }
+            // Z = n_dw ./ Z
+            ApplyByElement(Z, n_dw, Z, 1);
 
             // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
-            Matrix Z_trans = blas::trans(Z);
-            Matrix temp = blas::trans(blas::prod(Z_trans, Phi));
-            Theta = blas::element_div(blas::element_prod(Theta, temp), Repmat(n_d, topic_size, 1));
+            Matrix<float> prod_trans_phi_Z(Phi.no_columns(), Z.no_columns());
+
+            blas->sgemm(util::Blas::RowMajor, util::Blas::Trans, util::Blas::NoTrans,
+              Phi.no_columns(), Z.no_columns(), Phi.no_rows(), 1, Phi.get_data(),
+              Phi.no_columns(), Z.get_data(), Z.no_columns(), 0,
+              prod_trans_phi_Z.get_data(), Z.no_columns());
+
+            int height = topic_size * n_d.no_rows();
+            int width = n_d.no_columns();
+            Matrix<float> repmat_n_d(height, width);
+
+            int src_i = 0;
+            int src_j = 0;
+            for (int res_i = 0; res_i < width; ++res_i) {
+              if (src_i == n_d.no_columns())
+                src_i = 0;
+              for (int res_j = 0; res_j < height; ++res_j) {
+                if (src_j == n_d.no_rows())
+                  src_j = 0;
+                repmat_n_d(res_j, res_i) = n_d(src_j, src_i);
+                src_j++;
+              }
+              src_i++;
+            }
+
+            Matrix<float> prod_theta_phi_Z(Theta.no_rows(), Theta.no_columns());
+            ApplyByElement(prod_theta_phi_Z, Theta, prod_trans_phi_Z, 0);
+            ApplyByElement(Theta, prod_theta_phi_Z, repmat_n_d, 1);
 
             // next section proceed Theta regularization
             int item_index = -1;
@@ -636,17 +691,52 @@ void Processor::ThreadFunction() {
           // n_wt should be count for items, that have corresponding true-value in stream mask
           // from batch. Or for all items, if such mask doesn't exist
           Mask stream_mask;
-          Matrix n_wt;
+          Matrix<float> n_wt;
           if (model_stream_index != -1) {
             stream_mask = part->stream_mask(model_stream_index);
-            n_wt = Matrix(blas::element_prod(Matrix(blas::prod(ApplyMask(Z, stream_mask),
-                blas::trans(ApplyMask(Theta, stream_mask)))), Phi));
+
+            // delete columns according to bool mask
+            int true_value_count = 0;
+            for (int i = 0; i < stream_mask.value_size(); ++i) {
+              if (stream_mask.value(i) == true) true_value_count++;
+            }
+
+            Matrix<float> masked_Z(Z.no_rows(), true_value_count);
+            Matrix<float> masked_Theta(Theta.no_rows(), true_value_count);
+            int real_index = 0;
+            for (int i = 0; i < stream_mask.value_size(); ++i) {
+              if (stream_mask.value(i) == true) {
+                for (int j = 0; j < Z.no_rows(); ++j) {
+                  masked_Z(j, real_index) = Z(j, i);
+                }
+                for (int j = 0; j < Theta.no_rows(); ++j) {
+                  masked_Theta(j, real_index) = Theta(j, i);
+                }
+                real_index++;
+              }
+            }
+            Matrix<float> prod_Z_Theta(masked_Z.no_rows(), masked_Theta.no_rows());
+
+            blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
+              masked_Z.no_rows(), masked_Theta.no_rows(), masked_Z.no_columns(), 1,
+              masked_Z.get_data(), masked_Z.no_columns(), masked_Theta.get_data(),
+              masked_Theta.no_columns(), 0, prod_Z_Theta.get_data(), masked_Theta.no_rows());
+
+            n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
+            ApplyByElement(n_wt, prod_Z_Theta, Phi, 0);
 
           } else {
-            n_wt = Matrix(blas::element_prod(Matrix(blas::prod(Z, blas::trans(Theta))), Phi));
+            Matrix<float> prod_Z_Theta(Z.no_rows(), Theta.no_rows());
+            blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
+              Z.no_rows(), Theta.no_rows(), Z.no_columns(), 1, Z.get_data(),
+              Z.no_columns(), Theta.get_data(), Theta.no_columns(), 0,
+              prod_Z_Theta.get_data(), Theta.no_rows());
+
+            n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
+            ApplyByElement(n_wt, prod_Z_Theta, Phi, 0);
           }
 
-          for (int token_index = 0; token_index < n_wt.size1(); ++token_index) {
+          for (int token_index = 0; token_index < n_wt.no_rows(); ++token_index) {
             FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
 
             if (hat_n_wt_cur->value_size() != topic_size)
@@ -732,73 +822,30 @@ void Processor::ThreadFunction() {
   }
 }
 
-Matrix Repmat(const Matrix& source_matrix, int down, int right) {
-  int height = down * source_matrix.size1();
-  int width = right * source_matrix.size2();
+void ApplyByElement(Matrix<float>& result_matrix,
+                    const Matrix<float>& first_matrix,
+                    const Matrix<float>& second_matrix,
+                    int operation) {
+  int height = first_matrix.no_rows();
+  int width = first_matrix.no_columns();
 
-  auto result_matrix = Matrix(height, width);
-  int src_i = 0;
-  int src_j = 0;
-  for (int res_i = 0; res_i < width; ++res_i) {
-    if (src_i == source_matrix.size2())
-      src_i = 0;
-    for (int res_j = 0; res_j < height; ++res_j) {
-      if (src_j == source_matrix.size1())
-        src_j = 0;
-      result_matrix(res_j, res_i) = source_matrix(src_j, src_i);
-      src_j++;
-    }
-    src_i++;
-  }
-
-  return result_matrix;
-}
-void SetInfAtMaskZeros(Matrix* source_matrix, const Matrix& mask_matrix, double precision) {
-  int height = source_matrix->size1();
-  int width = source_matrix->size2();
-
-  assert(height == mask_matrix.size1());
-  assert(width == mask_matrix.size2());
+  assert(height == second_matrix.no_rows());
+  assert(width == second_matrix.no_columns());
 
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
-      if (std::fabs(mask_matrix(i, j)) < precision) {
-        (*source_matrix)(i, j) = std::numeric_limits<double>::infinity();
+      if (operation == 0) {
+        result_matrix(i, j) = first_matrix(i, j) * second_matrix(i, j);
+        continue;
       }
-    }
-  }
-}
-
-Matrix SumByColumns(const Matrix& source_matrix) {
-  Matrix result_vector(1, source_matrix.size2());
-  for (int i = 0; i < source_matrix.size2(); ++i) {
-    result_vector(0, i) = 0;
-    for (int j = 0; j < source_matrix.size1(); ++j) {
-      result_vector(0, i) += source_matrix(j, i);
-    }
-  }
-
-  return result_vector;
-}
-
-Matrix ApplyMask(const Matrix& source_matrix, const Mask mask) {
-  // delete columns according to bool mask
-  int true_value_count = 0;
-  for (int i = 0; i < mask.value_size(); ++i) {
-    if (mask.value(i) == true) true_value_count++;
-  }
-
-  Matrix result_matrix(source_matrix.size1(), true_value_count);
-  int real_index = 0;
-  for (int i = 0; i < mask.value_size(); ++i) {
-    if (mask.value(i) == true) {
-      for (int j = 0; j < source_matrix.size1(); ++j) {
-        result_matrix(j, real_index) = source_matrix(j, i);
+      if (operation == 1) {
+        result_matrix(i, j) = first_matrix(i, j) / second_matrix(i, j);
+        continue;
       }
-      real_index++;
+      LOG(ERROR) << "In function ApplyByElement() in Processo::ThreadFunction() "
+          << "'operation' argument was set an unsupported value\n";
     }
   }
-  return result_matrix;
 }
 
 }  // namespace core

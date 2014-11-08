@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "boost/numeric/ublas/io.hpp"
-#include "boost/numeric/ublas/matrix.hpp"
 #include "boost/thread.hpp"
 #include "boost/thread/mutex.hpp"
 #include "boost/bind.hpp"
@@ -23,9 +21,6 @@
 #include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
 
-namespace blas = boost::numeric::ublas;
-typedef blas::matrix<float> Matrix;
-
 namespace artm {
 namespace core {
 
@@ -33,6 +28,9 @@ class InstanceSchema;
 class Merger;
 class TopicModel;
 class TopicWeightIterator;
+
+template<typename T>
+class Matrix;
 
 class Processor : boost::noncopyable {
  public:
@@ -146,10 +144,75 @@ class Processor : boost::noncopyable {
   };
 };
 
-Matrix Repmat(const Matrix& source_matrix, int down, int right);
-void SetInfAtMaskZeros(Matrix* source_matrix, const Matrix& mask_matrix, double precision);
-Matrix SumByColumns(const Matrix& source_matrix);
-Matrix ApplyMask(const Matrix& source_matrix, Mask mask);
+template<typename T>
+class Matrix {
+ public:
+  Matrix(int no_rows = 0, int no_columns = 0)
+    : no_rows_(no_rows),
+      no_columns_(no_columns),
+      data_(nullptr) {
+    if (no_rows > 0 && no_columns > 0) {
+      data_ = new T[no_rows_ * no_columns_];
+    }
+  }
+
+  Matrix(const Matrix<T>& new_matrix) {
+    no_rows_ = new_matrix.no_rows();
+    no_columns_ = new_matrix.no_columns();
+    data_ = new T[no_rows_ * no_columns_];
+    for (int i = 0; i < no_rows_ * no_columns_; ++i) {
+      data_[i] = new_matrix.get_data()[i];
+    }
+  }
+
+  ~Matrix() {
+    delete[] data_;
+  }
+  
+  T& operator() (int index_row, int index_col) {
+    return data_[index_row * no_columns_ + index_col];
+  }
+
+  const T& operator() (int index_row, int index_col) const {
+    return data_[index_row * no_columns_ + index_col];
+  }
+
+  Matrix<T>& operator= (const Matrix<T>& new_matrix) {
+    no_rows_ = new_matrix.no_rows();
+    no_columns_ = new_matrix.no_columns();
+    if (data_ != nullptr) {
+      delete[] data_;
+    }
+    data_ = new T[no_rows_ * no_columns_];
+    for (int i = 0; i < no_rows_ * no_columns_; ++i) {
+      data_[i] = new_matrix.get_data()[i];
+    }
+
+    return *this;
+  }
+
+  int no_rows() const { return no_rows_; }
+  int no_columns() const { return no_columns_; }
+
+  T* get_data() {
+    return data_;
+  }
+
+  const T* get_data() const {
+    return data_;
+  }
+
+ private:
+  int no_rows_;
+  int no_columns_;
+  bool store_by_rows_;
+  T* data_;
+};
+
+void ApplyByElement(Matrix<float>& result_matrix,
+                    const Matrix<float>& first_matrix,
+                    const Matrix<float>& second_matrix,
+                    int operation);
 
 }  // namespace core
 }  // namespace artm
