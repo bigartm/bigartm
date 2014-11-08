@@ -19,7 +19,7 @@ int main(int argc, char * argv[]) {
     return 0;
   }
 
-  std::vector<std::unique_ptr<::artm::NodeController>> node_controllers;
+  std::vector<std::unique_ptr< ::artm::NodeController>> node_controllers;
   for (int i = 1; i < argc; ++i) {
     // Logging to std::cerr is done intentionally.
     // A common scenario is to run node_controller with custom GLOG settings, for example:
@@ -33,7 +33,7 @@ int main(int argc, char * argv[]) {
     std::cerr << "Starting NodeController at " << argv[i] << "...\n";
     ::artm::NodeControllerConfig node_config;
     node_config.set_create_endpoint(argv[i]);
-    node_controllers.push_back(std::unique_ptr<::artm::NodeController>(new ::artm::NodeController(node_config)));
+    node_controllers.push_back(std::unique_ptr< ::artm::NodeController>(new ::artm::NodeController(node_config)));
   }
 
   std::cerr << "NodeController(s) are now running. Type Ctrl+Z or Ctrl+C to quit.\n";
