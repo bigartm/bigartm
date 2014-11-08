@@ -464,6 +464,14 @@ void Processor::ThreadFunction() {
           }
         }
       }
+      // n_d = sum(n_dw)
+      Matrix<float> n_d(1, n_dw.no_columns());
+      for (int i = 0; i < n_dw.no_columns(); ++i) {
+        n_d(0, i) = 0;
+        for (int j = 0; j < n_dw.no_rows(); ++j) {
+          n_d(0, i) += n_dw(j, i);
+        }
+      }
 
       std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
         const ModelConfig& model = schema->model_config(model_name);
@@ -585,26 +593,8 @@ void Processor::ThreadFunction() {
               Phi.no_columns(), Theta.get_data(), Theta.no_columns(), 0, Z.get_data(),
               Theta.no_columns());
 
-            // set Inf to places, where Z == 0
-            double precision = 1e-30;
-            for (int i = 0; i < Z.no_rows(); ++i) {
-              for (int j = 0; j < Z.no_columns(); ++j) {
-                if (std::fabs(Z(i, j)) < precision) {
-                  Z(i, j) = std::numeric_limits<double>::infinity();
-                }
-              }
-            }
-
-            // n_d = sum(n_dw)
-            Matrix<float> n_d(1, n_dw.no_columns());
-            for (int i = 0; i < n_dw.no_columns(); ++i) {
-              n_d(0, i) = 0;
-              for (int j = 0; j < n_dw.no_rows(); ++j) {
-                n_d(0, i) += n_dw(j, i);
-              }
-            }
             // Z = n_dw ./ Z
-            ApplyByElement(&Z, n_dw, Z, 1);
+            ApplyByElement<1>(&Z, n_dw, Z);
 
             // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
             Matrix<float> prod_trans_phi_Z(Phi.no_columns(), Z.no_columns());
@@ -633,8 +623,8 @@ void Processor::ThreadFunction() {
             }
 
             Matrix<float> prod_theta_phi_Z(Theta.no_rows(), Theta.no_columns());
-            ApplyByElement(&prod_theta_phi_Z, Theta, prod_trans_phi_Z, 0);
-            ApplyByElement(&Theta, prod_theta_phi_Z, repmat_n_d, 1);
+            ApplyByElement<0>(&prod_theta_phi_Z, Theta, prod_trans_phi_Z);
+            ApplyByElement<1>(&Theta, prod_theta_phi_Z, repmat_n_d);
 
             // next section proceed Theta regularization
             int item_index = -1;
@@ -724,7 +714,7 @@ void Processor::ThreadFunction() {
               masked_Theta.no_columns(), 0, prod_Z_Theta.get_data(), masked_Theta.no_rows());
 
             n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
-            ApplyByElement(&n_wt, prod_Z_Theta, Phi, 0);
+            ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
 
           } else {
             Matrix<float> prod_Z_Theta(Z.no_rows(), Theta.no_rows());
@@ -734,7 +724,7 @@ void Processor::ThreadFunction() {
               prod_Z_Theta.get_data(), Theta.no_rows());
 
             n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
-            ApplyByElement(&n_wt, prod_Z_Theta, Phi, 0);
+            ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
           }
 
           for (int token_index = 0; token_index < n_wt.no_rows(); ++token_index) {
@@ -823,29 +813,37 @@ void Processor::ThreadFunction() {
   }
 }
 
+template<int operation>
 void ApplyByElement(Matrix<float>* result_matrix,
                     const Matrix<float>& first_matrix,
-                    const Matrix<float>& second_matrix,
-                    int operation) {
+                    const Matrix<float>& second_matrix) {
   int height = first_matrix.no_rows();
   int width = first_matrix.no_columns();
 
   assert(height == second_matrix.no_rows());
   assert(width == second_matrix.no_columns());
 
-  for (int i = 0; i < height; ++i) {
-    for (int j = 0; j < width; ++j) {
-      if (operation == 0) {
+  if (operation == 0) {
+    for (int i = 0; i < height; ++i) {
+      for (int j = 0; j < width; ++j) {
         (*result_matrix)(i, j) = first_matrix(i, j) * second_matrix(i, j);
-        continue;
       }
-      if (operation == 1) {
-        (*result_matrix)(i, j) = first_matrix(i, j) / second_matrix(i, j);
-        continue;
-      }
-      LOG(ERROR) << "In function ApplyByElement() in Processo::ThreadFunction() "
-          << "'operation' argument was set an unsupported value\n";
     }
+  }
+  if (operation == 1) {
+    for (int i = 0; i < height; ++i) {
+      for (int j = 0; j < width; ++j) {
+        if ((second_matrix(i, j)) == 0) {
+          (*result_matrix)(i, j) = 0;
+        } else {
+          (*result_matrix)(i, j) = first_matrix(i, j) / second_matrix(i, j);
+        }
+      }
+    }
+  } 
+  if (operation != 0 && operation != 1) {
+    LOG(ERROR) << "In function ApplyByElement() in Processo::ThreadFunction() "
+        << "'operation' argument was set an unsupported value\n";
   }
 }
 

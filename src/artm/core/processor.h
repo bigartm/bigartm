@@ -4,7 +4,6 @@
 #define SRC_ARTM_CORE_PROCESSOR_H_
 
 #include <atomic>
-#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -147,21 +146,23 @@ class Processor : boost::noncopyable {
 template<typename T>
 class Matrix {
  public:
-  Matrix(int no_rows = 0, int no_columns = 0)
+  Matrix(int no_rows = 0, int no_columns = 0, bool store_by_rows = true)
     : no_rows_(no_rows),
       no_columns_(no_columns),
+      store_by_rows_(store_by_rows),
       data_(nullptr) {
     if (no_rows > 0 && no_columns > 0) {
       data_ = new T[no_rows_ * no_columns_];
     }
   }
 
-  Matrix(const Matrix<T>& new_matrix) {
-    no_rows_ = new_matrix.no_rows();
-    no_columns_ = new_matrix.no_columns();
+  Matrix(const Matrix<T>& src_matrix) {
+    no_rows_ = src_matrix.no_rows();
+    no_columns_ = src_matrix.no_columns();
+    store_by_rows_ = src_matrix.store_by_rows_;
     data_ = new T[no_rows_ * no_columns_];
     for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-      data_[i] = new_matrix.get_data()[i];
+      data_[i] = src_matrix.get_data()[i];
     }
   }
 
@@ -170,22 +171,29 @@ class Matrix {
   }
 
   T& operator() (int index_row, int index_col) {
-    return data_[index_row * no_columns_ + index_col];
+    if (store_by_rows_) {
+      return data_[index_row * no_columns_ + index_col];
+    }
+    return data_[index_col * no_rows_ + index_row];
   }
 
   const T& operator() (int index_row, int index_col) const {
-    return data_[index_row * no_columns_ + index_col];
+    if (store_by_rows_) {
+      return data_[index_row * no_columns_ + index_col];
+    }
+    return data_[index_col * no_rows_ + index_row];
   }
 
-  Matrix<T>& operator= (const Matrix<T>& new_matrix) {
-    no_rows_ = new_matrix.no_rows();
-    no_columns_ = new_matrix.no_columns();
+  Matrix<T>& operator= (const Matrix<T>& src_matrix) {
+    no_rows_ = src_matrix.no_rows();
+    no_columns_ = src_matrix.no_columns();
+    store_by_rows_ = src_matrix.store_by_rows_;
     if (data_ != nullptr) {
       delete[] data_;
     }
     data_ = new T[no_rows_ * no_columns_];
     for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-      data_[i] = new_matrix.get_data()[i];
+      data_[i] = src_matrix.get_data()[i];
     }
 
     return *this;
@@ -209,10 +217,10 @@ class Matrix {
   T* data_;
 };
 
+template<int operation>
 void ApplyByElement(Matrix<float>* result_matrix,
                     const Matrix<float>& first_matrix,
-                    const Matrix<float>& second_matrix,
-                    int operation);
+                    const Matrix<float>& second_matrix);
 
 }  // namespace core
 }  // namespace artm
