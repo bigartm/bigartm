@@ -567,7 +567,14 @@ void Processor::ThreadFunction() {
               if (class_id_iter != class_id_to_weight.end()) {
                 class_weight = class_id_iter->second;
               }
-              Phi(token_index, topic_index) = topic_iter[topic_index] * class_weight;
+              float value = topic_iter[topic_index] * class_weight;
+              if (value < 1e-16) {
+                // Reset small values to 0.0 to avoid performance hit.
+                // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
+                // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
+                value = 0.0f;
+              }
+              Phi(token_index, topic_index) = value;
               counters->add_value(0.0f);
             }
           } else {
@@ -832,7 +839,7 @@ void ApplyByElement(Matrix<float>* result_matrix,
       else
         result_data[i] = first_data[i] / second_data[i];
     }
-  } 
+  }
   if (operation != 0 && operation != 1) {
     LOG(ERROR) << "In function ApplyByElement() in Processo::ThreadFunction() "
         << "'operation' argument was set an unsupported value\n";
