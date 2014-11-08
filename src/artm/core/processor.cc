@@ -449,27 +449,20 @@ void Processor::ThreadFunction() {
 
       // create and fill n_dw matrix for matrix calculations during batch processing
       Matrix<float> n_dw(part->batch().token_size(), part->batch().item_size());
-      for (int item_index = 0; item_index < n_dw.no_columns(); ++item_index) {
-        for (int token_index = 0; token_index < n_dw.no_rows(); ++token_index) {
-          n_dw(token_index, item_index) = 0.0;
-        }
-      }
+      n_dw.InitializeZeros();
+
+      Matrix<float> n_d(1, n_dw.no_columns());
+      n_d.InitializeZeros();
+
       for (int item_index = 0; item_index < n_dw.no_columns(); ++item_index) {
         auto current_item = part->batch().item(item_index);
         for (auto& field : current_item.field()) {
           for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
             int token_id = field.token_id(token_index);
             int token_count = field.token_count(token_index);
-              n_dw(token_id, item_index) += token_count;
+            n_dw(token_id, item_index) += token_count;
+            n_d(0, item_index) += token_count;
           }
-        }
-      }
-      // n_d = sum(n_dw)
-      Matrix<float> n_d(1, n_dw.no_columns());
-      for (int i = 0; i < n_dw.no_columns(); ++i) {
-        n_d(0, i) = 0;
-        for (int j = 0; j < n_dw.no_rows(); ++j) {
-          n_d(0, i) += n_dw(j, i);
         }
       }
 
@@ -823,22 +816,21 @@ void ApplyByElement(Matrix<float>* result_matrix,
   assert(height == second_matrix.no_rows());
   assert(width == second_matrix.no_columns());
 
+  float* result_data = result_matrix->get_data();
+  const float* first_data = first_matrix.get_data();
+  const float* second_data = second_matrix.get_data();
+  int size = height * width;
+
   if (operation == 0) {
-    for (int i = 0; i < height; ++i) {
-      for (int j = 0; j < width; ++j) {
-        (*result_matrix)(i, j) = first_matrix(i, j) * second_matrix(i, j);
-      }
-    }
+    for (int i = 0; i < size; ++i)
+      result_data[i] = first_data[i] * second_data[i];
   }
   if (operation == 1) {
-    for (int i = 0; i < height; ++i) {
-      for (int j = 0; j < width; ++j) {
-        if ((second_matrix(i, j)) == 0) {
-          (*result_matrix)(i, j) = 0;
-        } else {
-          (*result_matrix)(i, j) = first_matrix(i, j) / second_matrix(i, j);
-        }
-      }
+    for (int i = 0; i < size; ++i) {
+      if (first_data[i] == 0 || second_data[i] == 0)
+        result_data[i] = 0;
+      else
+        result_data[i] = first_data[i] / second_data[i];
     }
   } 
   if (operation != 0 && operation != 1) {

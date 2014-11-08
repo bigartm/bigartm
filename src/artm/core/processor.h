@@ -170,6 +170,10 @@ class Matrix {
     delete[] data_;
   }
 
+  void InitializeZeros() {
+    memset(data_, 0, sizeof(T) * no_rows_ * no_columns_);
+  }
+
   T& operator() (int index_row, int index_col) {
     if (store_by_rows_) {
       return data_[index_row * no_columns_ + index_col];
