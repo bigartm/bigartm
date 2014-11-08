@@ -32,22 +32,14 @@ typedef void blas_scsr2csc_type(int m, int n, int nnz,
 namespace artm {
 namespace utility {
 
-class Blas_interface {
+class Blas {
  public:
-  virtual ~Blas_interface() {}
+  virtual ~Blas() {}
   virtual bool is_loaded() = 0;
   blas_sgemm_type* sgemm;
   blas_saxpy_type* saxpy;
   blas_sdot_type*  sdot;
   blas_scsr2csc_type* scsr2csc;
-};
-
-class Blas : boost::noncopyable, public Blas_interface {
- public:
-  enum LibraryType {
-    BUILTIN,
-    MKL
-  };
 
   static const int RowMajor = 101;
   static const int ColMajor = 102;
@@ -55,25 +47,11 @@ class Blas : boost::noncopyable, public Blas_interface {
   static const int Trans = 112;
   static const int ConfTrans = 113;
 
-  static Blas& singleton(LibraryType library_type) {
-    static Blas blas_builtin(BUILTIN);
-    static Blas blas_mkl(MKL);
+  static Blas& mkl();
+  static Blas& builtin();
 
-    switch (library_type) {
-      case BUILTIN:
-        return blas_builtin;
-      case MKL:
-        return blas_mkl;
-    }
-
-    throw std::runtime_error("Invalid library type");
-  }
-
-  virtual bool is_loaded() { return (impl_ != nullptr) && impl_->is_loaded(); }
-
- private:
-  explicit Blas(LibraryType library_type);  // Singleton (make constructor private)
-  std::unique_ptr<Blas_interface> impl_;
+ protected:
+  Blas() {};  // Singleton (make constructor private)
 };
 
 

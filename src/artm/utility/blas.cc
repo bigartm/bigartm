@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
+#include <mutex>
 #include <tuple>
 #include <vector>
 #include <utility>
@@ -110,7 +111,7 @@ void builtin_sgemm(int order, const int transa, const int transb,
   }
 }
 
-class MklBlas : public Blas_interface {
+class MklBlas : public Blas {
  public:
   MklBlas() {
 #if (defined(_WIN32) || defined(__WIN32__))
@@ -147,7 +148,7 @@ class MklBlas : public Blas_interface {
   std::shared_ptr<ice::Function<blas_saxpy_type>> saxpy_ptr_;
 };
 
-class BuiltinBlas : public Blas_interface {
+class BuiltinBlas : public Blas {
  public:
   BuiltinBlas() {
     sgemm = builtin_sgemm;
@@ -161,30 +162,19 @@ class BuiltinBlas : public Blas_interface {
 
 }  // namespace
 
-Blas::Blas(LibraryType library_type) {
-  try {
-    switch (library_type) {
-     case MKL:
-      impl_.reset(new MklBlas());
-      break;
-     case BUILTIN:
-      impl_.reset(new BuiltinBlas());
-      break;
-    }
+std::once_flag flag_mkl;
+std::once_flag flag_builtin;
 
-    if ((impl_ == nullptr) || !impl_->is_loaded()) {
-      impl_ = nullptr;
-      return;
-    }
+Blas& Blas::mkl() {
+  static MklBlas* impl;
+  std::call_once(flag_mkl, [](){ impl = new MklBlas(); });
+  return *impl;
+}
 
-    sdot = impl_->sdot;
-    sgemm = impl_->sgemm;
-    saxpy = impl_->saxpy;
-    scsr2csc = impl_->scsr2csc;
-  }
-  catch (...) {
-    impl_ = nullptr;
-  }
+Blas& Blas::builtin() {
+  static BuiltinBlas* impl;
+  std::call_once(flag_builtin, [](){ impl = new BuiltinBlas(); });
+  return *impl;
 }
 
 }  // namespace utility

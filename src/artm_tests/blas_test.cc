@@ -18,8 +18,8 @@ TEST(Blas, Basic) {
   float C[12] = { 29, 32, 35, 38, 65, 72, 79, 86, 101, 112, 123, 134 };
   float CT[12] = { 29, 65, 101, 32, 72, 112, 35, 79, 123, 38, 86, 134 };
 
-  Blas& blas_builtin = Blas::singleton(Blas::BUILTIN);
-  Blas& blas_mkl = Blas::singleton(Blas::MKL);
+  Blas& blas_builtin = Blas::builtin();
+  Blas& blas_mkl = Blas::mkl();
   ASSERT_TRUE(blas_builtin.is_loaded());
   if (!blas_mkl.is_loaded()) {
     LOG(WARNING) << "Intel Math Kernel Library not loaded";
@@ -49,7 +49,7 @@ TEST(Blas, scsr2csc) {
   float csc_val[8], csc_val_exp[8] = { 10, 16, 13, 11, 14, 12, 15, 17 };
   int csc_col_ptr[6], csc_col_ptr_exp[6] = { 0, 2, 3, 5, 5, 8 };
   int csc_row_ind[8], csc_row_ind_exp[8] = { 0, 3, 2, 0, 2, 0, 2, 3 };
-  Blas& blas = Blas::singleton(Blas::BUILTIN);
+  Blas& blas = Blas::builtin();
   ASSERT_TRUE(blas.is_loaded());
   blas.scsr2csc(m, n, nnz, csr_val, csr_row_ptr, csr_col_ind, csc_val, csc_row_ind, csc_col_ptr);
   for (int i = 0; i < nnz; ++i) EXPECT_EQ(csc_val[i], csc_val_exp[i]);
