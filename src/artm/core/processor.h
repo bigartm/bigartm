@@ -168,7 +168,7 @@ class Matrix {
   ~Matrix() {
     delete[] data_;
   }
-  
+
   T& operator() (int index_row, int index_col) {
     return data_[index_row * no_columns_ + index_col];
   }
@@ -209,7 +209,7 @@ class Matrix {
   T* data_;
 };
 
-void ApplyByElement(Matrix<float>& result_matrix,
+void ApplyByElement(Matrix<float>* result_matrix,
                     const Matrix<float>& first_matrix,
                     const Matrix<float>& second_matrix,
                     int operation);

@@ -582,7 +582,8 @@ void Processor::ThreadFunction() {
           for (int inner_iter = 0; inner_iter < model.inner_iterations_count(); ++inner_iter) {
             blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
               Phi.no_rows(), Theta.no_columns(), Phi.no_columns(), 1, Phi.get_data(),
-              Phi.no_columns(), Theta.get_data(), Theta.no_columns(), 0, Z.get_data(), Theta.no_columns());
+              Phi.no_columns(), Theta.get_data(), Theta.no_columns(), 0, Z.get_data(),
+              Theta.no_columns());
 
             // set Inf to places, where Z == 0
             double precision = 1e-30;
@@ -603,7 +604,7 @@ void Processor::ThreadFunction() {
               }
             }
             // Z = n_dw ./ Z
-            ApplyByElement(Z, n_dw, Z, 1);
+            ApplyByElement(&Z, n_dw, Z, 1);
 
             // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
             Matrix<float> prod_trans_phi_Z(Phi.no_columns(), Z.no_columns());
@@ -632,8 +633,8 @@ void Processor::ThreadFunction() {
             }
 
             Matrix<float> prod_theta_phi_Z(Theta.no_rows(), Theta.no_columns());
-            ApplyByElement(prod_theta_phi_Z, Theta, prod_trans_phi_Z, 0);
-            ApplyByElement(Theta, prod_theta_phi_Z, repmat_n_d, 1);
+            ApplyByElement(&prod_theta_phi_Z, Theta, prod_trans_phi_Z, 0);
+            ApplyByElement(&Theta, prod_theta_phi_Z, repmat_n_d, 1);
 
             // next section proceed Theta regularization
             int item_index = -1;
@@ -723,7 +724,7 @@ void Processor::ThreadFunction() {
               masked_Theta.no_columns(), 0, prod_Z_Theta.get_data(), masked_Theta.no_rows());
 
             n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
-            ApplyByElement(n_wt, prod_Z_Theta, Phi, 0);
+            ApplyByElement(&n_wt, prod_Z_Theta, Phi, 0);
 
           } else {
             Matrix<float> prod_Z_Theta(Z.no_rows(), Theta.no_rows());
@@ -733,7 +734,7 @@ void Processor::ThreadFunction() {
               prod_Z_Theta.get_data(), Theta.no_rows());
 
             n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
-            ApplyByElement(n_wt, prod_Z_Theta, Phi, 0);
+            ApplyByElement(&n_wt, prod_Z_Theta, Phi, 0);
           }
 
           for (int token_index = 0; token_index < n_wt.no_rows(); ++token_index) {
@@ -822,7 +823,7 @@ void Processor::ThreadFunction() {
   }
 }
 
-void ApplyByElement(Matrix<float>& result_matrix,
+void ApplyByElement(Matrix<float>* result_matrix,
                     const Matrix<float>& first_matrix,
                     const Matrix<float>& second_matrix,
                     int operation) {
@@ -835,11 +836,11 @@ void ApplyByElement(Matrix<float>& result_matrix,
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       if (operation == 0) {
-        result_matrix(i, j) = first_matrix(i, j) * second_matrix(i, j);
+        (*result_matrix)(i, j) = first_matrix(i, j) * second_matrix(i, j);
         continue;
       }
       if (operation == 1) {
-        result_matrix(i, j) = first_matrix(i, j) / second_matrix(i, j);
+        (*result_matrix)(i, j) = first_matrix(i, j) / second_matrix(i, j);
         continue;
       }
       LOG(ERROR) << "In function ApplyByElement() in Processo::ThreadFunction() "
