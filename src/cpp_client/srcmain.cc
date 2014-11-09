@@ -1,18 +1,39 @@
+#include <stdlib.h>
+#include <chrono>
 #include <ctime>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <set>
-using namespace std;
+
+#include "boost/lexical_cast.hpp"
 
 #include "boost/filesystem.hpp"
-using namespace boost::filesystem;
+namespace fs = boost::filesystem;
+
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
 
 #include "artm/cpp_interface.h"
 #include "artm/messages.pb.h"
 #include "glog/logging.h"
 using namespace artm;
+
+class CuckooWatch {
+public:
+  explicit CuckooWatch(std::string message)
+    : message_(message), start_(std::chrono::high_resolution_clock::now()) {}
+  ~CuckooWatch() {
+    auto delta = (std::chrono::high_resolution_clock::now() - start_);
+    auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+    std::cout << message_ << " " << delta_ms.count() << " milliseconds.\n";
+  }
+
+private:
+  std::string message_;
+  std::chrono::time_point<std::chrono::system_clock> start_;
+};
 
 int countFilesInDirectory(std::string root, std::string ext) {
   int retval = 0;
@@ -29,120 +50,106 @@ int countFilesInDirectory(std::string root, std::string ext) {
   return retval;
 }
 
-void proc(const char* docword_file, const char* vocab_file, int topics_size,
-          const char* batches_folder, const char* dictionary_file,
-          int processors_count, int instance_size) {
-  // Recommended values for decorrelator_tau are as follows:
-  // kos - 700000, nips - 200000.
-  float decorrelator_tau = 200000;
-  // float dirichlet_tau = -100;
+struct artm_options {
+  std::string docword;
+  std::string vocab;
+  std::string batch_folder;
+  std::string proxy;
+  std::string localhost;
+  int num_topics = 16;
+  int num_processors = 2;
+  int num_iters = 10;
+  int num_inner_iters = 10;
+  int items_per_batch = 500;
+  int communication_timeout = 1000;
+  int port = 5555;
+  int online_period = 0;
+  float tau_phi = 0.0f;
+  float tau_theta = 0.0f;
+  float tau_decor = 0.0f;
+  float online_decay = 0.75f;
+  bool b_reuse_batch;
+  bool b_paused;
+  bool b_no_scores;
+  bool b_reuse_theta;
+  std::vector<std::string> nodes;
+};
 
-  // instance_size = 0 stands for "connect to external node_controller process",
-  // instance_size = 1 stands for "local modus operandi",
-  // instance_size = 2 or higher defines the number of node controllers to create in this process,
-  //                   used in the same way as if they were on remote nodes.
-  bool is_network_mode = (instance_size != 1);
-  bool online = false;
-
-  MasterComponentConfig master_config;
-  std::vector<std::shared_ptr< ::artm::NodeController>> node_controller;
-  if (is_network_mode) {
-    for (int port = 5556; port < 5556 + instance_size; ++port) {
-      ::artm::NodeControllerConfig node_config;
-
-      std::stringstream port_str;
-      port_str << port;
-      node_config.set_create_endpoint(std::string("tcp://*:") + port_str.str());
-      node_controller.push_back(std::make_shared< ::artm::NodeController>(node_config));
-      master_config.add_node_connect_endpoint(std::string("tcp://localhost:") + port_str.str());
-    }
-
-    if (instance_size == 0) {
-      master_config.add_node_connect_endpoint("tcp://localhost:5556");
-    }
+void configureStreams(artm::MasterComponentConfig* master_config) {
+  // Configure train and test streams
+  Stream* train_stream = master_config->add_stream();
+  Stream* test_stream  = master_config->add_stream();
+  train_stream->set_name("train_stream");
+  train_stream->set_type(Stream_Type_ItemIdModulus);
+  train_stream->set_modulus(10);
+  for (int i = 0; i <= 8; ++i) {
+    train_stream->add_residuals(i);
   }
 
-  master_config.set_processors_count(processors_count);
-  std::string batches_full_path = (current_path() / path(batches_folder)).string();
+  test_stream->set_name("test_stream");
+  test_stream->set_type(Stream_Type_ItemIdModulus);
+  test_stream->set_modulus(10);
+  test_stream->add_residuals(9);
+}
 
-  int batch_files_count = countFilesInDirectory(batches_full_path, ".batch");
-  std::shared_ptr<DictionaryConfig> unique_tokens;
-  if (batch_files_count == 0) {
-    ::artm::CollectionParserConfig collection_parser_config;
-    collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
-    collection_parser_config.set_docword_file_path(docword_file);
-    collection_parser_config.set_vocab_file_path(vocab_file);
-    collection_parser_config.set_dictionary_file_name(dictionary_file);
-    collection_parser_config.set_target_folder(batches_full_path);
-    unique_tokens = ::artm::ParseCollection(collection_parser_config);
-
-    std::cout << "OK.\n";
-  } else {
-    std::cout << "Found " << batch_files_count << " batches in folder '"
-              << batches_full_path << "', will use them.\n";
-
-    unique_tokens = ::artm::LoadDictionary((path(batches_full_path) / dictionary_file).string());
-  }
-
-  master_config.set_disk_path(batches_full_path);
-  if (is_network_mode) {
-    master_config.set_modus_operandi(MasterComponentConfig_ModusOperandi_Network);
-    master_config.set_create_endpoint("tcp://*:5555");
-    master_config.set_connect_endpoint("tcp://localhost:5555");
-  } else {
-    master_config.set_modus_operandi(MasterComponentConfig_ModusOperandi_Local);
-    master_config.set_cache_theta(true);
-  }
-
+void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* model_config) {
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
   perplexity_config.set_stream_name("test_stream");
   score_config.set_config(perplexity_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
   score_config.set_name("test_perplexity");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   perplexity_config.set_stream_name("train_stream");
   score_config.set_config(perplexity_config.SerializeAsString());
   score_config.set_name("train_perplexity");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   ::artm::SparsityThetaScoreConfig sparsity_theta_config;
   sparsity_theta_config.set_stream_name("test_stream");
   score_config.set_config(sparsity_theta_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_SparsityTheta);
   score_config.set_name("test_sparsity_theta");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   sparsity_theta_config.set_stream_name("train_stream");
   score_config.set_config(sparsity_theta_config.SerializeAsString());
   score_config.set_name("train_sparsity_theta");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   ::artm::SparsityPhiScoreConfig sparsity_phi_config;
   score_config.set_config(sparsity_phi_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_SparsityPhi);
   score_config.set_name("sparsity_phi");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   ::artm::ItemsProcessedScoreConfig items_processed_config;
   items_processed_config.set_stream_name("test_stream");
   score_config.set_config(items_processed_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_ItemsProcessed);
   score_config.set_name("test_items_processed");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   items_processed_config.set_stream_name("train_stream");
   score_config.set_config(items_processed_config.SerializeAsString());
   score_config.set_name("train_items_processed");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   ::artm::TopTokensScoreConfig top_tokens_config;
   top_tokens_config.set_num_tokens(6);
   score_config.set_config(top_tokens_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
   score_config.set_name("top_tokens");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   ::artm::ThetaSnippetScoreConfig theta_snippet_config;
   theta_snippet_config.set_stream_name("train_stream");
@@ -150,188 +157,294 @@ void proc(const char* docword_file, const char* vocab_file, int topics_size,
   score_config.set_config(theta_snippet_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
   score_config.set_name("train_theta_snippet");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
 
   ::artm::TopicKernelScoreConfig topic_kernel_config;
   std::string tr = topic_kernel_config.SerializeAsString();
   score_config.set_config(topic_kernel_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_TopicKernel);
   score_config.set_name("topic_kernel");
-  master_config.add_score_config()->CopyFrom(score_config);
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
+}
 
-  // MasterProxyConfig master_proxy_config;
-  // master_proxy_config.set_node_connect_endpoint("tcp://localhost:5555");
-  // master_proxy_config.mutable_config()->CopyFrom(master_config);
-  // master_proxy_config.set_communication_timeout(50000);
-  // MasterComponent master_component(master_proxy_config);
-
-  MasterComponent master_component(master_config);
-
-  // Configure train and test streams
-  Stream train_stream, test_stream;
-  train_stream.set_name("train_stream");
-  train_stream.set_type(Stream_Type_ItemIdModulus);
-  train_stream.set_modulus(10);
-  for (int i = 0; i <= 8; ++i) {
-    train_stream.add_residuals(i);
-  }
-
-  test_stream.set_name("test_stream");
-  test_stream.set_type(Stream_Type_ItemIdModulus);
-  test_stream.set_modulus(10);
-  test_stream.add_residuals(9);
-
-  master_component.AddStream(train_stream);
-  master_component.AddStream(test_stream);
-
+artm::RegularizerConfig configurePhiRegularizer(float tau, ModelConfig* model_config) {
   RegularizerConfig regularizer_config;
-  std::string regularizer_decor_phi_name = "regularizer_decor_phi";
-  regularizer_config.set_name(regularizer_decor_phi_name);
-  regularizer_config.set_type(::artm::RegularizerConfig_Type_DecorrelatorPhi);
-  regularizer_config.set_config(::artm::DecorrelatorPhiConfig().SerializeAsString());
-  Regularizer decorrelator_phi_regularizer(master_component, regularizer_config);
-
-  std::string regularizer_dirichlet_phi_name = "regularizer_dirichlet_phi";
-  regularizer_config.set_name(regularizer_dirichlet_phi_name);
+  std::string name = "regularizer_dirichlet_phi";
+  regularizer_config.set_name(name);
   regularizer_config.set_type(::artm::RegularizerConfig_Type_DirichletPhi);
   regularizer_config.set_config(::artm::DirichletPhiConfig().SerializeAsString());
-  Regularizer dirichlet_phi_regularizer(master_component, regularizer_config);
 
-  // Create model
+  model_config->add_regularizer_name(name);
+  model_config->add_regularizer_tau(tau);
+  return regularizer_config;
+}
+
+artm::RegularizerConfig configureThetaRegularizer(float tau, ModelConfig* model_config) {
+  RegularizerConfig regularizer_config;
+  std::string name = "regularizer_dirichlet_phi";
+  regularizer_config.set_name(name);
+  regularizer_config.set_type(::artm::RegularizerConfig_Type_DirichletTheta);
+  regularizer_config.set_config(::artm::DirichletPhiConfig().SerializeAsString());
+  model_config->add_regularizer_name(name);
+  model_config->add_regularizer_tau(tau);
+  return regularizer_config;
+}
+
+artm::RegularizerConfig configureDecorRegularizer(float tau, ModelConfig* model_config) {
+  RegularizerConfig regularizer_config;
+  std::string name = "regularizer_decor_phi";
+  regularizer_config.set_name(name);
+  regularizer_config.set_type(::artm::RegularizerConfig_Type_DecorrelatorPhi);
+  regularizer_config.set_config(::artm::DecorrelatorPhiConfig().SerializeAsString());
+  model_config->add_regularizer_name(name);
+  model_config->add_regularizer_tau(tau);
+  return regularizer_config;
+}
+
+int execute(const artm_options& options) {
+  std::string dictionary_file = "dictionary.ptb";  // this file will be created in batches_full_path folder
+  std::string batches_full_path = (fs::current_path() / fs::path(options.batch_folder)).string();
+
+  bool is_network_mode = (options.nodes.size() > 0);
+  bool is_proxy = (!options.proxy.empty());
+  bool online = (options.online_period > 0);
+
+  if (options.b_paused) {
+    std::cout << "Press any key to continue. ";
+    getchar();
+  }
+
+  // Step 1. Configuration
+  MasterComponentConfig master_config;
+  master_config.set_disk_path(batches_full_path);
+  master_config.set_processors_count(options.num_processors);
+  if (options.b_reuse_theta) master_config.set_cache_theta(true);
+
   ModelConfig model_config;
-  model_config.set_topics_count(topics_size);
-  model_config.set_inner_iterations_count(10);
+  model_config.set_topics_count(options.num_topics);
+  model_config.set_inner_iterations_count(options.num_inner_iters);
   model_config.set_stream_name("train_stream");
-  model_config.set_reuse_theta(true);
-  model_config.set_name("15081980-90a7-4767-ab85-7cb551c39339");
-  model_config.add_regularizer_name(regularizer_decor_phi_name);
-  model_config.add_regularizer_tau(decorrelator_tau);
-  //model_config.add_regularizer_name(regularizer_dirichlet_phi_name);
-  //model_config.add_regularizer_tau(dirichlet_tau);
-  model_config.add_score_name("test_perplexity");
-  model_config.add_score_name("train_perplexity");
-  model_config.add_score_name("test_sparsity_theta");
-  model_config.add_score_name("train_sparsity_theta");
-  model_config.add_score_name("sparsity_phi");
-  model_config.add_score_name("test_items_processed");
-  model_config.add_score_name("train_items_processed");
-  model_config.add_score_name("top_tokens");
-  model_config.add_score_name("train_theta_snippet");
-  model_config.add_score_name("topic_kernel");
+  if (options.b_reuse_theta) model_config.set_reuse_theta(true);
+  model_config.set_name("15081980-90a7-4767-ab85-7cb551c39339");  // randomly generated GUID
 
-  Model model(master_component, model_config);
+  configureStreams(&master_config);
+  if (!options.b_no_scores)
+    configureScores(&master_config, &model_config);
 
-  // Overwrite topic model with well-known "initial topic model"
-  TopicModel initial_topic_model;
-  initial_topic_model.set_name(model_config.name());
-  initial_topic_model.set_topics_count(topics_size);
-  for (int token_index = 0; token_index < unique_tokens->entry_size(); ++token_index) {
-    std::string token = unique_tokens->entry(token_index).key_token();
-    initial_topic_model.add_token(token);
-    artm::FloatArray* weights = initial_topic_model.add_token_weights();
-    for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
-      weights->add_value((float)rand() / (float)RAND_MAX);
+  if (is_network_mode) {
+    master_config.set_modus_operandi(MasterComponentConfig_ModusOperandi_Network);
+    master_config.set_create_endpoint("tcp://*:" + boost::lexical_cast<std::string>(options.port));
+    master_config.set_connect_endpoint("tcp://" + options.localhost + ":" + boost::lexical_cast<std::string>(options.port));
+    master_config.set_communication_timeout(options.communication_timeout);
+    for (auto& node : options.nodes)
+      master_config.add_node_connect_endpoint(node);
+  } else {
+    master_config.set_modus_operandi(MasterComponentConfig_ModusOperandi_Local);
+  }
+
+  // Step 2. Collection parsing
+  if (!options.b_reuse_batch) {
+    for (fs::directory_iterator end_dir_it, it(batches_full_path); it != end_dir_it; ++it) {
+      remove_all(it->path());
     }
   }
 
-  model.Overwrite(initial_topic_model);
+  boost::system::error_code error;
+  fs::create_directories(batches_full_path, error);
+  if (error) {
+    std::cerr << "Unable to create batches folder: " << batches_full_path;
+    return 1;
+  }
 
-  std::shared_ptr<TopicModel> topic_model;
-  std::shared_ptr<PerplexityScore> test_perplexity, train_perplexity;
-  std::shared_ptr<SparsityThetaScore> test_sparsity_theta, train_sparsity_theta;
-  std::shared_ptr<SparsityPhiScore> sparsity_phi;
-  std::shared_ptr<ItemsProcessedScore> test_items_processed, train_items_processed;
-  std::shared_ptr<TopTokensScore> top_tokens;
-  std::shared_ptr<ThetaSnippetScore> train_theta_snippet;
-  std::shared_ptr<TopicKernelScore> topic_kernel;
+  int batch_files_count = countFilesInDirectory(batches_full_path, ".batch");
+  std::shared_ptr<DictionaryConfig> unique_tokens;
+  if (batch_files_count == 0) {
+    std::cout << "Parsing text collection... ";
+    ::artm::CollectionParserConfig collection_parser_config;
+    collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
+    collection_parser_config.set_docword_file_path(options.docword);
+    collection_parser_config.set_vocab_file_path(options.vocab);
+    collection_parser_config.set_dictionary_file_name(dictionary_file);
+    collection_parser_config.set_target_folder(batches_full_path);
+    collection_parser_config.set_num_items_per_batch(options.items_per_batch);
+    unique_tokens = ::artm::ParseCollection(collection_parser_config);
+    std::cout << "OK.\n";
+  } else {
+    std::cout << "Reuse " << batch_files_count << " batches in folder '" << batches_full_path << "\n";
+    std::cout << "Loading dictionary file... ";
+    unique_tokens = ::artm::LoadDictionary((fs::path(batches_full_path) / dictionary_file).string());
+    std::cout << "OK.\n";
+  }
 
-  for (int iter = 0; iter < 10; ++iter) {
-    master_component.InvokeIteration(1);
-    if (online) {
-      bool done = false;
-      while (!done) {
-        done = master_component.WaitIdle(100);
-        model.Synchronize(0.9);
+  // Step 3. Create master component.
+  std::shared_ptr<MasterComponent> master_component;
+  if (is_proxy) {
+     MasterProxyConfig master_proxy_config;
+     master_proxy_config.set_node_connect_endpoint(options.proxy);
+     master_proxy_config.mutable_config()->CopyFrom(master_config);
+     master_proxy_config.set_communication_timeout(options.communication_timeout);
+     master_component.reset(new MasterComponent(master_proxy_config));
+  } else {
+    master_component.reset(new MasterComponent(master_config));
+  }
+
+  Dictionary dictionary(*master_component, *unique_tokens);
+
+  // Step 4. Configure regularizers.
+  std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
+  if (options.tau_theta != 0)
+    regularizers.push_back(std::make_shared<artm::Regularizer>(
+      *master_component, configureThetaRegularizer(options.tau_theta, &model_config)));
+  if (options.tau_phi != 0)
+    regularizers.push_back(std::make_shared<artm::Regularizer>(
+      *master_component, configurePhiRegularizer(options.tau_phi, &model_config)));
+  if (options.tau_decor != 0)
+    regularizers.push_back(std::make_shared<artm::Regularizer>(
+      *master_component, configureDecorRegularizer(options.tau_decor, &model_config)));
+
+  // Step 5. Create and initialize model.
+  Model model(*master_component, model_config);
+  model.Initialize(dictionary);
+
+  for (int iter = 0; iter < options.num_iters; ++iter) {
+    {
+      CuckooWatch timer("Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
+
+      master_component->InvokeIteration(1);
+
+      if (!online) {
+        master_component->WaitIdle();
+        model.Synchronize(0.0);
       }
-    } else {
-      master_component.WaitIdle();
-      model.Synchronize(0.0);
+      else {
+        bool done = false;
+        while (!done) {
+          done = master_component->WaitIdle(options.online_period);
+          model.Synchronize(options.online_decay);
+          std::cout << ".";
+        }
+
+        std::cout << " ";
+      }
     }
 
-    artm::GetTopicModelArgs args;
-    args.set_model_name(model.name());
-    topic_model = master_component.GetTopicModel(args);
-    test_perplexity = master_component.GetScoreAs< ::artm::PerplexityScore>(model, "test_perplexity");
-    train_perplexity = master_component.GetScoreAs< ::artm::PerplexityScore>(model, "train_perplexity");
-    test_sparsity_theta = master_component.GetScoreAs< ::artm::SparsityThetaScore>(model, "test_sparsity_theta");
-    train_sparsity_theta = master_component.GetScoreAs< ::artm::SparsityThetaScore>(model, "train_sparsity_theta");
-    sparsity_phi = master_component.GetScoreAs< ::artm::SparsityPhiScore>(model, "sparsity_phi");
-    test_items_processed = master_component.GetScoreAs< ::artm::ItemsProcessedScore>(model, "test_items_processed");
-    train_items_processed = master_component.GetScoreAs< ::artm::ItemsProcessedScore>(model, "train_items_processed");
-    topic_kernel = master_component.GetScoreAs< ::artm::TopicKernelScore>(model, "topic_kernel");
+    if (!options.b_no_scores) {
+      auto test_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(model, "test_perplexity");
+      auto train_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(model, "train_perplexity");
+      auto test_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(model, "test_sparsity_theta");
+      auto train_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(model, "train_sparsity_theta");
+      auto sparsity_phi = master_component->GetScoreAs< ::artm::SparsityPhiScore>(model, "sparsity_phi");
+      auto test_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(model, "test_items_processed");
+      auto train_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(model, "train_items_processed");
+      auto topic_kernel = master_component->GetScoreAs< ::artm::TopicKernelScore>(model, "topic_kernel");
 
-    std::cout << "Iter #" << (iter + 1) << ": "
-              << "\n\t#Tokens = "  << topic_model->token_size() << ", "
-              << "\n\tTest perplexity = " << test_perplexity->value() << ", "
-              << "\n\tTrain perplexity = " << train_perplexity->value() << ", "
-              << "\n\tTest spatsity theta = " << test_sparsity_theta->value() << ", "
-              << "\n\tTrain sparsity theta = " << train_sparsity_theta->value() << ", "
-              << "\n\tSpatsity phi = " << sparsity_phi->value() << ", "
-              << "\n\tTest items processed = " << test_items_processed->value() << ", "
-              << "\n\tTrain items processed = " << train_items_processed->value() << ", "
-              << "\n\tKernel size = " << topic_kernel->average_kernel_size() << ", "
-              << "\n\tKernel purity = " << topic_kernel->average_kernel_purity() << ", "
-              << "\n\tKernel contrast = " << topic_kernel->average_kernel_contrast() << endl;
+      std::cout
+        <<   "\tTest perplexity = " << test_perplexity->value() << ", "
+        << "\n\tTrain perplexity = " << train_perplexity->value() << ", "
+        << "\n\tTest spatsity theta = " << test_sparsity_theta->value() << ", "
+        << "\n\tTrain sparsity theta = " << train_sparsity_theta->value() << ", "
+        << "\n\tSpatsity phi = " << sparsity_phi->value() << ", "
+        << "\n\tTest items processed = " << test_items_processed->value() << ", "
+        << "\n\tTrain items processed = " << train_items_processed->value() << ", "
+        << "\n\tKernel size = " << topic_kernel->average_kernel_size() << ", "
+        << "\n\tKernel purity = " << topic_kernel->average_kernel_purity() << ", "
+        << "\n\tKernel contrast = " << topic_kernel->average_kernel_contrast() << std::endl;
+    }
   }
 
-  std::cout << endl;
+  if (!options.b_no_scores) {
+    std::cout << std::endl;
 
-  top_tokens = master_component.GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
-  for (int topic_index = 0; topic_index < top_tokens.get()->values_size(); topic_index++) {
-    std::cout << "#" << (topic_index + 1) << ": ";
-    auto top_tokens_for_topic = top_tokens.get()->values(topic_index);
-    for (int token_index = 0; token_index < top_tokens_for_topic.value_size(); token_index++) {
-      std::cout << top_tokens_for_topic.value(token_index) << " ";
+    auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
+    for (int topic_index = 0; topic_index < top_tokens.get()->values_size(); topic_index++) {
+      std::cout << "#" << (topic_index + 1) << ": ";
+      auto top_tokens_for_topic = top_tokens.get()->values(topic_index);
+      for (int token_index = 0; token_index < top_tokens_for_topic.value_size(); token_index++) {
+        std::cout << top_tokens_for_topic.value(token_index) << " ";
+      }
+      std::cout << std::endl;
     }
-    std::cout << endl;
-  }
 
-  train_theta_snippet = master_component.GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
-  int docs_to_show = train_theta_snippet.get()->values_size();
-  std::cout << "\nThetaMatrix (first " << docs_to_show << " documents):\n";
-  for (int topic_index = 0; topic_index < topics_size; topic_index++){
-    std::cout << "Topic" << topic_index << ": ";
-    for (int item_index = 0; item_index < docs_to_show; item_index++) {
-      float weight = train_theta_snippet.get()->values(item_index).value(topic_index);
-      std::cout << std::fixed << std::setw(4) << std::setprecision(5) << weight << " ";
+    auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
+    int docs_to_show = train_theta_snippet.get()->values_size();
+    std::cout << "\nThetaMatrix (first " << docs_to_show << " documents):\n";
+    for (int topic_index = 0; topic_index < options.num_topics; topic_index++){
+      std::cout << "Topic" << topic_index << ": ";
+      for (int item_index = 0; item_index < docs_to_show; item_index++) {
+        float weight = train_theta_snippet.get()->values(item_index).value(topic_index);
+        std::cout << std::fixed << std::setw(4) << std::setprecision(5) << weight << " ";
+      }
+      std::cout << std::endl;
     }
-    std::cout << endl;
   }
 }
 
 int main(int argc, char * argv[]) {
-  if (argc < 3) {
-    cout << "Usage: cpp_client <docword> <vocab> [num_topics] [batches_path]" << endl;
-    cout << "\tdocword      - file name of the docword file (required)" << endl;
-    cout << "\tvocab        - file name of the vocab file (required)" << endl;
-    cout << "\tnum_topics   - number of topics (optional, default=16)" << endl;
-    cout << "\tbatches_path - folder to output batches (optional, default='batches')" << endl;
-    return 0;
-  }
-
-  int instance_size = 1;
-  int processors_size = 2;
   try {
-    const char* docword_file = argv[1];
-    const char* vocab_file = argv[2];
-    int topics_size = (argc >= 4) ? atoi(argv[3]) : 16;
-    const char* batches_folder = (argc >= 5) ? argv[4] : "batches";
-    const char* dictionary_file = "dictionary.ptb";  // this file will be created in batches_full_path folder
-    proc(docword_file, vocab_file, topics_size, batches_folder, dictionary_file, processors_size, instance_size);
-  } catch (std::runtime_error& error) {
-    cout << "Exception occured: " << error.what() << "\n";
-  } catch (...) {
-    cout << "Unknown exception occured.\n";
+    artm_options options;
+
+    po::options_description all_options("BigARTM - library for advanced topic modeling (http://bigartm.org)");
+
+    po::options_description basic_options("Basic options");
+    basic_options.add_options()
+      ("help,h", "display this help message")
+      ("docword,d", po::value(&options.docword), "docword file in UCI format")
+      ("vocab,v", po::value(&options.vocab), "vocab file in UCI format")
+      ("num_topic,t", po::value(&options.num_topics)->default_value(16), "number of topics")
+      ("num_processors,p", po::value(&options.num_processors)->default_value(2), "number of concurrent processors")
+      ("num_iters,i", po::value(&options.num_iters)->default_value(10), "number of outer iterations")
+      ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
+      ("reuse_theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
+      ("batch_folder", po::value(&options.batch_folder)->default_value("batches"), "temporary folder to store batches")
+      ("reuse_batches", po::bool_switch(&options.b_reuse_batch), "reuse batches found in batch_folder\n(default = false)")
+      ("items_per_batch", po::value(&options.items_per_batch)->default_value(500), "number of items per batch")
+      ("tau_phi", po::value(&options.tau_phi)->default_value(0.0f), "regularization coefficient for PHI matrix")
+      ("tau_theta", po::value(&options.tau_theta)->default_value(0.0f), "regularization coefficient for THETA matrix")
+      ("tau_decor", po::value(&options.tau_decor)->default_value(0.0f), "regularization coefficient for topics decorrelation (use with care, since this value heavily depends on the size of the dataset)")
+      ("paused", po::bool_switch(&options.b_paused)->default_value(false), "wait for keystroke (allows to attach a debugger)")
+      ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
+      ("online_period", po::value(&options.online_period)->default_value(0), "period in milliseconds between model synchronization on the online algorithm")
+      ("online_decay", po::value(&options.online_decay)->default_value(0.75f), "decay coefficient [0..1] for online algorithm")
+    ;
+    all_options.add(basic_options);
+
+    po::options_description networking_options("Networking options");
+    networking_options.add_options()
+      ("nodes", po::value< std::vector<std::string> >(&options.nodes)->multitoken(), "endpoints of the remote nodes (enables network modus operandi)")
+      ("localhost", po::value(&options.localhost)->default_value("localhost"), "DNS name or the IP address of the localhost")
+      ("port", po::value(&options.port)->default_value(5550), "port to use for master node")
+      ("proxy", po::value(&options.proxy)->default_value(""), "proxy endpoint")
+      ("timeout", po::value(&options.communication_timeout)->default_value(1000), "network communication timeout in milliseconds")
+    ;
+    all_options.add(networking_options);
+
+    po::variables_map vm;
+    store(po::command_line_parser(argc, argv).options(all_options).run(), vm);
+    notify(vm);
+
+    // Uncomment next two lines to override commandline settings by code. DON'T COMMIT such change to git.
+    // options.docword = "D:\\datasets\\docword.kos.txt";
+    // options.vocab   = "D:\\datasets\\vocab.kos.txt";
+
+    if (options.docword.empty() || options.vocab.empty() || vm.count("help")) {
+      std::cout << all_options;
+
+      std::cout << "\nExamples:\n";
+      std::cout << "\tcpp_client -d docword.kos.txt -v vocab.kos.txt\n";
+      std::cout << "\tset GLOG_logtostderr=1 & cpp_client -d docword.kos.txt -v vocab.kos.txt\n";
+      return 1;
+    }
+
+    return execute(options);
+  } catch (std::exception& e) {
+    std::cerr << "Exception  : " << e.what() << "\n";
+    return 1;
+  }
+  catch (...) {
+    std::cerr << "Unknown error occurred.";
+    return 1;
   }
 
   return 0;
