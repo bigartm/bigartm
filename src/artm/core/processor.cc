@@ -447,24 +447,53 @@ void Processor::ThreadFunction() {
       std::shared_ptr<InstanceSchema> schema = schema_.get();
       std::vector<ModelName> model_names = schema->GetModelNames();
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
       // create and fill n_dw matrix for matrix calculations during batch processing
-      Matrix<float> n_dw(part->batch().token_size(), part->batch().item_size());
-      n_dw.InitializeZeros();
+      bool sparse_n_dw = true;
+      Matrix<float> n_dw;
+      Matrix<float> n_d;
+            
+      std::vector<float> n_dw_val;
+      std::vector<int> n_dw_row_ptr;
+      std::vector<int> n_dw_col_ind;
+      std::vector<float> p_dw_values;
 
-      Matrix<float> n_d(1, n_dw.no_columns());
-      n_d.InitializeZeros();
+      if (sparse_n_dw) {
+        for (int item_index = 0; item_index < part->batch().item_size(); ++item_index) {
+          n_dw_row_ptr.push_back(n_dw_val.size());
+          auto current_item = part->batch().item(item_index);
+          for (auto& field : current_item.field()) {
+            for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
+              int token_id = field.token_id(token_index);
+              int token_count = field.token_count(token_index);
+              n_dw_val.push_back(token_count);
+              n_dw_col_ind.push_back(token_id);
+            }
+          }
+        }
+        n_dw_row_ptr.push_back(n_dw_val.size());
+      } else {
+        n_dw = Matrix<float>(part->batch().token_size(), part->batch().item_size());
+        n_dw.InitializeZeros();
 
-      for (int item_index = 0; item_index < n_dw.no_columns(); ++item_index) {
-        auto current_item = part->batch().item(item_index);
-        for (auto& field : current_item.field()) {
-          for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
-            int token_id = field.token_id(token_index);
-            int token_count = field.token_count(token_index);
-            n_dw(token_id, item_index) += token_count;
-            n_d(0, item_index) += token_count;
+        n_d = Matrix<float>(1, n_dw.no_columns());
+        n_d.InitializeZeros();
+
+        for (int item_index = 0; item_index < n_dw.no_columns(); ++item_index) {
+          auto current_item = part->batch().item(item_index);
+          for (auto& field : current_item.field()) {
+            for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
+              int token_id = field.token_id(token_index);
+              int token_count = field.token_count(token_index);
+              n_dw(token_id, item_index) += token_count;
+              n_d(0, item_index) += token_count;
+            }
           }
         }
       }
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
       std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
         const ModelConfig& model = schema->model_config(model_name);
@@ -516,8 +545,15 @@ void Processor::ThreadFunction() {
         int topic_size = topic_model->topic_size();
         assert(topic_size > 0);
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
         // create and fill Theta matrix for matrix calculations during batch processing
-        Matrix<float> Theta(topic_size, part->batch().item_size());
+        Matrix<float> Theta;
+        if (sparse_n_dw) {
+          Theta = Matrix<float>(topic_size, part->batch().item_size(), false);
+        } else {
+          Theta = Matrix<float>(topic_size, part->batch().item_size());
+        }
         for (int item_index = 0; item_index < part->batch().item_size(); ++item_index) {
           int index_of_item = -1;
           if ((cache != nullptr) && model.reuse_theta()) {
@@ -536,6 +572,7 @@ void Processor::ThreadFunction() {
             }
           }
         }
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
         // process part and store result in merger queue
         model_increment->set_model_name(model_name);
@@ -588,43 +625,79 @@ void Processor::ThreadFunction() {
         } else {
           Matrix<float> Z(Phi.no_rows(), Theta.no_columns());
           for (int inner_iter = 0; inner_iter < model.inner_iterations_count(); ++inner_iter) {
-            blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
-              Phi.no_rows(), Theta.no_columns(), Phi.no_columns(), 1, Phi.get_data(),
-              Phi.no_columns(), Theta.get_data(), Theta.no_columns(), 0, Z.get_data(),
-              Theta.no_columns());
 
-            // Z = n_dw ./ Z
-            ApplyByElement<1>(&Z, n_dw, Z);
+///////////////////////////////////////////////////////////////////////////////////////////////////
+            if (sparse_n_dw) {
+              Matrix<float> n_td(Theta.no_rows(), Theta.no_columns(), false);
+              n_td.InitializeZeros();
+              p_dw_values.clear();
 
-            // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
-            Matrix<float> prod_trans_phi_Z(Phi.no_columns(), Z.no_columns());
+              int W = Phi.no_rows();
+              int T = Phi.no_columns();
+              int D = Theta.no_columns();
 
-            blas->sgemm(util::Blas::RowMajor, util::Blas::Trans, util::Blas::NoTrans,
-              Phi.no_columns(), Z.no_columns(), Phi.no_rows(), 1, Phi.get_data(),
-              Phi.no_columns(), Z.get_data(), Z.no_columns(), 0,
-              prod_trans_phi_Z.get_data(), Z.no_columns());
+              for (int d = 0; d < D; ++d) {
+                int i_0 = n_dw_row_ptr[d];
+                int i_1 = n_dw_row_ptr[d + 1];
+                float p_dw_val;
 
-            int height = topic_size * n_d.no_rows();
-            int width = n_d.no_columns();
-            Matrix<float> repmat_n_d(height, width);
+                for (int i = i_0; i < i_1; ++i) {
+                  int w = n_dw_col_ind[i];
+                  p_dw_val = blas->sdot(T, &Phi(w, 0), 1, &Theta(0, d), 1);
+                  if (p_dw_val == 0) continue;
 
-            int src_i = 0;
-            int src_j = 0;
-            for (int res_i = 0; res_i < width; ++res_i) {
-              if (src_i == n_d.no_columns())
-                src_i = 0;
-              for (int res_j = 0; res_j < height; ++res_j) {
-                if (src_j == n_d.no_rows())
-                  src_j = 0;
-                repmat_n_d(res_j, res_i) = n_d(src_j, src_i);
-                src_j++;
+                  p_dw_values.push_back(p_dw_val);
+                  blas->saxpy(T, n_dw_val[i] / p_dw_val, &Phi(w, 0), 1, &n_td(0, d), 1);
+                }
               }
-              src_i++;
-            }
+              Theta = n_td;
+              for (int i = 0; i < 10; ++i) {
+                std::cout << "\n--------\n";
+                for (int j = 0; j < 5; ++j) {
+                  std::cout << Theta(i,j) << ' ';
+                }
+              }
+            } else {
+              blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
+                Phi.no_rows(), Theta.no_columns(), Phi.no_columns(), 1, Phi.get_data(),
+                Phi.no_columns(), Theta.get_data(), Theta.no_columns(), 0, Z.get_data(),
+                Theta.no_columns());
 
-            Matrix<float> prod_theta_phi_Z(Theta.no_rows(), Theta.no_columns());
-            ApplyByElement<0>(&prod_theta_phi_Z, Theta, prod_trans_phi_Z);
-            ApplyByElement<1>(&Theta, prod_theta_phi_Z, repmat_n_d);
+              // Z = n_dw ./ Z
+              ApplyByElement<1>(&Z, n_dw, Z);
+
+              // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
+              Matrix<float> prod_trans_phi_Z(Phi.no_columns(), Z.no_columns());
+
+              blas->sgemm(util::Blas::RowMajor, util::Blas::Trans, util::Blas::NoTrans,
+                Phi.no_columns(), Z.no_columns(), Phi.no_rows(), 1, Phi.get_data(),
+                Phi.no_columns(), Z.get_data(), Z.no_columns(), 0,
+                prod_trans_phi_Z.get_data(), Z.no_columns());
+
+              int height = topic_size * n_d.no_rows();
+              int width = n_d.no_columns();
+              Matrix<float> repmat_n_d(height, width);
+
+              int src_i = 0;
+              int src_j = 0;
+              for (int res_i = 0; res_i < width; ++res_i) {
+                if (src_i == n_d.no_columns())
+                  src_i = 0;
+                for (int res_j = 0; res_j < height; ++res_j) {
+                  if (src_j == n_d.no_rows())
+                    src_j = 0;
+                  repmat_n_d(res_j, res_i) = n_d(src_j, src_i);
+                  src_j++;
+                }
+                src_i++;
+              }
+
+              Matrix<float> prod_theta_phi_Z(Theta.no_rows(), Theta.no_columns());
+              ApplyByElement<0>(&prod_theta_phi_Z, Theta, prod_trans_phi_Z);
+              ApplyByElement<1>(&Theta, prod_theta_phi_Z, repmat_n_d);
+            }
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
             // next section proceed Theta regularization
             int item_index = -1;
@@ -679,53 +752,86 @@ void Processor::ThreadFunction() {
             }
           }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
           // n_wt should be count for items, that have corresponding true-value in stream mask
           // from batch. Or for all items, if such mask doesn't exist
           Mask stream_mask;
           Matrix<float> n_wt;
-          if (model_stream_index != -1) {
-            stream_mask = part->stream_mask(model_stream_index);
+          if (sparse_n_dw) {
+            if (model_stream_index != -1) {
+              // implement stream support for sparse case
+            } else {
+              n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns(), false);
+              n_wt.InitializeZeros();
 
-            // delete columns according to bool mask
-            int true_value_count = 0;
-            for (int i = 0; i < stream_mask.value_size(); ++i) {
-              if (stream_mask.value(i) == true) true_value_count++;
-            }
+              int W = Phi.no_rows();
+              int T = Phi.no_columns();
+              int D = Theta.no_columns();
 
-            Matrix<float> masked_Z(Z.no_rows(), true_value_count);
-            Matrix<float> masked_Theta(Theta.no_rows(), true_value_count);
-            int real_index = 0;
-            for (int i = 0; i < stream_mask.value_size(); ++i) {
-              if (stream_mask.value(i) == true) {
-                for (int j = 0; j < Z.no_rows(); ++j) {
-                  masked_Z(j, real_index) = Z(j, i);
+              std::vector<float> p_wd_val(n_dw_val);
+              std::vector<int> p_wd_row_ptr(n_dw_row_ptr);
+              std::vector<int> p_wd_col_ind(n_dw_col_ind);
+              blas->scsr2csc(D, W, p_dw_values.size(), &p_dw_values[0], &n_dw_row_ptr[0],
+                  &n_dw_col_ind[0], &p_wd_val[0], &p_wd_row_ptr[0], &p_wd_col_ind[0]);
+
+              for (int w = 0; w < W; ++w) {
+                int i_0 = p_wd_row_ptr[w];
+                int i_1 = p_wd_row_ptr[w + 1];
+
+                for (int i = i_0; i < i_1; ++i) {
+                  int d = p_wd_col_ind[i];
+                  blas->saxpy(T, n_dw_val[i] / p_wd_val[i], &Theta(0, d), 1, &n_wt(w, 0), 1);
                 }
-                for (int j = 0; j < Theta.no_rows(); ++j) {
-                  masked_Theta(j, real_index) = Theta(j, i);
-                }
-                real_index++;
               }
             }
-            Matrix<float> prod_Z_Theta(masked_Z.no_rows(), masked_Theta.no_rows());
-
-            blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
-              masked_Z.no_rows(), masked_Theta.no_rows(), masked_Z.no_columns(), 1,
-              masked_Z.get_data(), masked_Z.no_columns(), masked_Theta.get_data(),
-              masked_Theta.no_columns(), 0, prod_Z_Theta.get_data(), masked_Theta.no_rows());
-
-            n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
-            ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
-
           } else {
-            Matrix<float> prod_Z_Theta(Z.no_rows(), Theta.no_rows());
-            blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
-              Z.no_rows(), Theta.no_rows(), Z.no_columns(), 1, Z.get_data(),
-              Z.no_columns(), Theta.get_data(), Theta.no_columns(), 0,
-              prod_Z_Theta.get_data(), Theta.no_rows());
+            if (model_stream_index != -1) {
+              stream_mask = part->stream_mask(model_stream_index);
 
-            n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
-            ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
+              // delete columns according to bool mask
+              int true_value_count = 0;
+              for (int i = 0; i < stream_mask.value_size(); ++i) {
+                if (stream_mask.value(i) == true) true_value_count++;
+              }
+
+              Matrix<float> masked_Z(Z.no_rows(), true_value_count);
+              Matrix<float> masked_Theta(Theta.no_rows(), true_value_count);
+              int real_index = 0;
+              for (int i = 0; i < stream_mask.value_size(); ++i) {
+                if (stream_mask.value(i) == true) {
+                  for (int j = 0; j < Z.no_rows(); ++j) {
+                    masked_Z(j, real_index) = Z(j, i);
+                  }
+                  for (int j = 0; j < Theta.no_rows(); ++j) {
+                    masked_Theta(j, real_index) = Theta(j, i);
+                  }
+                  real_index++;
+                }
+              }
+              Matrix<float> prod_Z_Theta(masked_Z.no_rows(), masked_Theta.no_rows());
+
+              blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
+                masked_Z.no_rows(), masked_Theta.no_rows(), masked_Z.no_columns(), 1,
+                masked_Z.get_data(), masked_Z.no_columns(), masked_Theta.get_data(),
+                masked_Theta.no_columns(), 0, prod_Z_Theta.get_data(), masked_Theta.no_rows());
+
+              n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
+              ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
+
+            } else {
+              Matrix<float> prod_Z_Theta(Z.no_rows(), Theta.no_rows());
+              blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
+                Z.no_rows(), Theta.no_rows(), Z.no_columns(), 1, Z.get_data(),
+                Z.no_columns(), Theta.get_data(), Theta.no_columns(), 0,
+                prod_Z_Theta.get_data(), Theta.no_rows());
+
+              n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
+              ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
+            }
           }
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
           for (int token_index = 0; token_index < n_wt.no_rows(); ++token_index) {
             FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
