@@ -409,11 +409,11 @@ void Processor::ThreadFunction() {
     int pop_retries = 0;
     const int pop_retries_max = 20;
 
-    util::Blas* blas = &util::Blas::mkl();
-    if (!blas->is_loaded()) {
+    util::Blas* blas = util::Blas::mkl();
+    if ((blas == nullptr) || !blas->is_loaded()) {
       LOG(WARNING) << "Intel Math Kernel Library is not detected, "
           << "using built in implementation (can be slower than MKL)";
-      blas = &util::Blas::builtin();
+      blas = util::Blas::builtin();
     }
 
     for (;;) {

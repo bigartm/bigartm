@@ -26,8 +26,8 @@ typedef void blas_saxpy_type(const int size, const float alpha,
                              float *y, const int ystride);
 
 typedef void blas_scsr2csc_type(int m, int n, int nnz,
-                                const float *csr_val, const int* csr_row_ptr, const int *csr_col_ind,
-                                      float *csc_val,       int* csc_row_ind,       int* csc_col_ptr);
+                            const float *csr_val, const int* csr_row_ptr, const int *csr_col_ind,
+                                  float *csc_val,       int* csc_row_ind,       int* csc_col_ptr);
 
 namespace artm {
 namespace utility {
@@ -47,11 +47,11 @@ class Blas {
   static const int Trans = 112;
   static const int ConfTrans = 113;
 
-  static Blas& mkl();
-  static Blas& builtin();
+  static Blas* mkl();
+  static Blas* builtin();
 
  protected:
-  Blas() {};  // Singleton (make constructor private)
+  Blas() { }  // Singleton (make constructor private)
 };
 
 

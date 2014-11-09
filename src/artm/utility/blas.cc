@@ -165,16 +165,16 @@ class BuiltinBlas : public Blas {
 std::once_flag flag_mkl;
 std::once_flag flag_builtin;
 
-Blas& Blas::mkl() {
+Blas* Blas::mkl() {
   static MklBlas* impl;
-  std::call_once(flag_mkl, [](){ impl = new MklBlas(); });
-  return *impl;
+  std::call_once(flag_mkl, [](){ try { impl = new MklBlas(); } catch (...) { impl = nullptr; } });
+  return impl;
 }
 
-Blas& Blas::builtin() {
+Blas* Blas::builtin() {
   static BuiltinBlas* impl;
   std::call_once(flag_builtin, [](){ impl = new BuiltinBlas(); });
-  return *impl;
+  return impl;
 }
 
 }  // namespace utility
