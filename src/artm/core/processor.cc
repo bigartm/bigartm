@@ -447,7 +447,6 @@ void Processor::ThreadFunction() {
       std::shared_ptr<InstanceSchema> schema = schema_.get();
       std::vector<ModelName> model_names = schema->GetModelNames();
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
       // create and fill n_dw matrix for matrix calculations during batch processing
       bool sparse_n_dw = true;
       Matrix<float> n_dw;
@@ -456,7 +455,6 @@ void Processor::ThreadFunction() {
       std::vector<float> n_dw_val;
       std::vector<int> n_dw_row_ptr;
       std::vector<int> n_dw_col_ind;
-      std::vector<float> p_dw_values;
 
       if (sparse_n_dw) {
         for (int item_index = 0; item_index < part->batch().item_size(); ++item_index) {
@@ -491,8 +489,6 @@ void Processor::ThreadFunction() {
           }
         }
       }
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
       std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
         const ModelConfig& model = schema->model_config(model_name);
@@ -544,7 +540,6 @@ void Processor::ThreadFunction() {
         int topic_size = topic_model->topic_size();
         assert(topic_size > 0);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
         // create and fill Theta matrix for matrix calculations during batch processing
         Matrix<float> Theta;
         if (sparse_n_dw) {
@@ -572,7 +567,6 @@ void Processor::ThreadFunction() {
             }
           }
         }
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
         // process part and store result in merger queue
         model_increment->set_model_name(model_name);
@@ -625,29 +619,19 @@ void Processor::ThreadFunction() {
         } else {
           Matrix<float> Z(Phi.no_rows(), Theta.no_columns());
           for (int inner_iter = 0; inner_iter < model.inner_iterations_count(); ++inner_iter) {
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
             if (sparse_n_dw) {
               Matrix<float> n_td(Theta.no_rows(), Theta.no_columns(), false);
               n_td.InitializeZeros();
-              p_dw_values.clear();
 
-              int W = Phi.no_rows();
-              int T = Phi.no_columns();
-              int D = Theta.no_columns();
+              int topics_count = Phi.no_columns();
+              int docs_count = Theta.no_columns();
 
-              for (int d = 0; d < D; ++d) {
-                int i_0 = n_dw_row_ptr[d];
-                int i_1 = n_dw_row_ptr[d + 1];
-                float p_dw_val;
-
-                for (int i = i_0; i < i_1; ++i) {
+              for (int d = 0; d < docs_count; ++d) {
+                for (int i = n_dw_row_ptr[d]; i < n_dw_row_ptr[d + 1]; ++i) {
                   int w = n_dw_col_ind[i];
-                  p_dw_val = blas->sdot(T, &Phi(w, 0), 1, &Theta(0, d), 1);
+                  float p_dw_val = blas->sdot(topics_count, &Phi(w, 0), 1, &Theta(0, d), 1);
                   if (p_dw_val == 0) continue;
-
-                  p_dw_values.push_back(p_dw_val);
-                  blas->saxpy(T, n_dw_val[i] / p_dw_val, &Phi(w, 0), 1, &n_td(0, d), 1);
+                  blas->saxpy(topics_count, n_dw_val[i] / p_dw_val, &Phi(w, 0), 1, &n_td(0, d), 1);
                 }
               }
               ApplyByElement<0>(&Theta, Theta, n_td);
@@ -670,8 +654,6 @@ void Processor::ThreadFunction() {
 
               ApplyByElement<0>(&Theta, Theta, prod_trans_phi_Z);
             }
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
             // next section proceed Theta regularization
             int item_index = -1;
@@ -721,93 +703,103 @@ void Processor::ThreadFunction() {
                 sum += theta_next[topic_index];
 
               for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-                Theta(topic_index, item_index) = (sum > 0) ? (theta_next[topic_index] / sum) : 0.0f;
+                Theta(topic_index, item_index) = 
+                    (sum > 0) ? (theta_next[topic_index] / sum) : 0.0f;
               }
             }
           }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-          // n_wt should be count for items, that have corresponding true-value in stream mask
-          // from batch. Or for all items, if such mask doesn't exist
           Mask stream_mask;
           Matrix<float> n_wt;
+
+////////////////////////////////////////
+////////////////////////////////////////
           if (sparse_n_dw) {
+            n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
+            n_wt.InitializeZeros();
+
+            int tokens_count = Phi.no_rows();
+            int topics_count = Phi.no_columns();
+            int docs_count = Theta.no_columns();
+
+            std::vector<float> n_wd_val(n_dw_val);
+            std::vector<int> n_wd_row_ptr(n_dw_row_ptr);
+            std::vector<int> n_wd_col_ind(n_dw_col_ind);
+
+            blas->scsr2csc(docs_count, tokens_count, n_dw_val.size(),
+                           &n_dw_val[0], &n_dw_row_ptr[0], &n_dw_col_ind[0],
+                           &n_wd_val[0], &n_wd_col_ind[0], &n_wd_row_ptr[0]);
+
+            // n_wt should be count for items, that have corresponding true-value in stream mask
+            // from batch. Or for all items, if such mask doesn't exist
             if (model_stream_index != -1) {
-              n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
-              n_wt.InitializeZeros();
-
-              int W = Phi.no_rows();
-              int T = Phi.no_columns();
-              int D = Theta.no_columns();
-
-              std::vector<float> p_wd_val(n_dw_val);
-              std::vector<int> p_wd_row_ptr(n_dw_row_ptr);
-              std::vector<int> p_wd_col_ind(n_dw_col_ind);
-              blas->scsr2csc(D, W, p_dw_values.size(), &p_dw_values[0], &n_dw_row_ptr[0],
-                  &n_dw_col_ind[0], &p_wd_val[0], &p_wd_col_ind[0], &p_wd_row_ptr[0]);
-
-              std::vector<float> n_wd_val(n_dw_val);
-              blas->scsr2csc(D, W, n_dw_val.size(), &n_dw_val[0], &n_dw_row_ptr[0],
-                  &n_dw_col_ind[0], &n_wd_val[0], &p_wd_col_ind[0], &p_wd_row_ptr[0]);
-
               stream_mask = part->stream_mask(model_stream_index);
-              for (int w = 0; w < W; ++w) {
-                int i_0 = p_wd_row_ptr[w];
-                int i_1 = p_wd_row_ptr[w + 1];
-
-                for (int i = i_0; i < i_1; ++i) {
-                  int d = p_wd_col_ind[i];
+              for (int w = 0; w < tokens_count; ++w) {
+                for (int i = n_wd_row_ptr[w]; i < n_wd_row_ptr[w + 1]; ++i) {
+                  int d = n_wd_col_ind[i];
                   if (stream_mask.value(d) == false) continue;
-                  float p_wd = blas->sdot(T, &Phi(w, 0), 1, &Theta(0, d), 1);
-                  if (p_wd == 0) continue;
-                  blas->saxpy(T, n_wd_val[i] / p_wd, &Theta(0, d), 1, &n_wt(w, 0), 1);
+                  float p_wd_val = blas->sdot(topics_count, &Phi(w, 0), 1, &Theta(0, d), 1);
+                  if (p_wd_val == 0) continue;
+                  blas->saxpy(topics_count, n_wd_val[i] / p_wd_val,
+                      &Theta(0, d), 1, &n_wt(w, 0), 1);
                 }
               }
-              ApplyByElement<0>(&n_wt, n_wt, Phi);
-              for (int i = 0; i < 6; ++i) {
-                std::cout << "\n--------\n";
-                for (int j = 0; j < 10; ++j) {
-                  std::cout << n_wt(i,j) << ' ';
-                }
-              }
-              std::cout << "\n--------\n";
             } else {
-              n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
-              n_wt.InitializeZeros();
-
-              int W = Phi.no_rows();
-              int T = Phi.no_columns();
-              int D = Theta.no_columns();
-
-              std::vector<float> p_wd_val(n_dw_val);
-              std::vector<int> p_wd_row_ptr(n_dw_row_ptr);
-              std::vector<int> p_wd_col_ind(n_dw_col_ind);
-              blas->scsr2csc(D, W, p_dw_values.size(), &p_dw_values[0], &n_dw_row_ptr[0],
-                  &n_dw_col_ind[0], &p_wd_val[0], &p_wd_col_ind[0], &p_wd_row_ptr[0]);
-
-              std::vector<float> n_wd_val(n_dw_val);
-              blas->scsr2csc(D, W, n_dw_val.size(), &n_dw_val[0], &n_dw_row_ptr[0],
-                  &n_dw_col_ind[0], &n_wd_val[0], &p_wd_col_ind[0], &p_wd_row_ptr[0]);
-
-              for (int w = 0; w < W; ++w) {
-                int i_0 = p_wd_row_ptr[w];
-                int i_1 = p_wd_row_ptr[w + 1];
-
-                for (int i = i_0; i < i_1; ++i) {
-                  int d = p_wd_col_ind[i];
-                  blas->saxpy(T, n_wd_val[i] / p_wd_val[d], &Theta(0, d), 1, &n_wt(w, 0), 1);
+              for (int w = 0; w < tokens_count; ++w) {
+                for (int i = n_wd_row_ptr[w]; i < n_wd_row_ptr[w + 1]; ++i) {
+                  int d = n_wd_col_ind[i];
+                  float p_wd_val = blas->sdot(topics_count, &Phi(w, 0), 1, &Theta(0, d), 1);
+                  if (p_wd_val == 0) continue;
+                  blas->saxpy(topics_count, n_wd_val[i] / p_wd_val,
+                      &Theta(0, d), 1, &n_wt(w, 0), 1);
                 }
               }
-              ApplyByElement<0>(&n_wt, n_wt, Phi);
-              //for (int i = 0; i < 10; ++i) {
-              //  std::cout << "\n--------\n";
-              //  for (int j = 0; j < 5; ++j) {
-              //    std::cout << n_wt(i,j) << ' ';
-              //  }
-              //}
-              //std::cout << "\n--------\n";
+
+
+           //blas->scsr2csc(docs_count, tokens_count, n_dw_val.size(),
+           //                &n_dw_val[0], &n_dw_row_ptr[0], &n_dw_col_ind[0],
+           //                &n_wd_val[0], &n_wd_row_ind[0], &n_wd_col_ptr[0]);
+
+            //// n_wt should be count for items, that have corresponding true-value in stream mask
+            //// from batch. Or for all items, if such mask doesn't exist
+            //if (model_stream_index != -1) {
+            //  stream_mask = part->stream_mask(model_stream_index);
+            //  for (int d = 0; d < docs_count; ++d) {
+            //    for (int i = n_wd_col_ptr[d]; i < n_wd_col_ptr[d + 1]; ++i) {
+            //      int w = n_wd_row_ind[i];
+            //      if (stream_mask.value(d) == false) continue;
+            //      float p_wd_val = blas->sdot(topics_count, &Phi(w, 0), 1, &Theta(0, d), 1);
+            //      if (p_wd_val == 0) continue;
+            //      blas->saxpy(topics_count, n_wd_val[i] / p_wd_val,
+            //          &Theta(0, d), 1, &n_wt(w, 0), 1);
+            //    }
+            //  }
+            //} else {
+            //  for (int d = 0; d < docs_count; ++d) {
+            //    for (int i = n_wd_col_ptr[d]; i < n_wd_col_ptr[d + 1]; ++i) {
+            //      int w = n_wd_row_ind[i];
+            //      float p_wd_val = blas->sdot(topics_count, &Phi(w, 0), 1, &Theta(0, d), 1);
+            //      if (p_wd_val == 0) continue;
+            //      blas->saxpy(topics_count, n_wd_val[i] / p_wd_val,
+            //          &Theta(0, d), 1, &n_wt(w, 0), 1);
+            //    }
+            //  }
+            //}
+
+
             }
+            ApplyByElement<0>(&n_wt, n_wt, Phi);
+            for (int i = 0; i < 10; ++i) {
+              std::cout<< "======\n";
+              for (int j = 0; j < 5; ++j) {
+                std::cout <<  n_wt(i,j) << ' ';
+              }
+              std::cout << std::endl;
+            }
+////////////////////////////////////////
+////////////////////////////////////////
+
+
           } else {
             if (model_stream_index != -1) {
               stream_mask = part->stream_mask(model_stream_index);
@@ -841,13 +833,6 @@ void Processor::ThreadFunction() {
 
               n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
               ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
-              for (int i = 0; i < 6; ++i) {
-                std::cout << "\n--------\n";
-                for (int j = 0; j < 10; ++j) {
-                  std::cout << n_wt(i,j) << ' ';
-                }
-              }
-              std::cout << "\n--------\n";
             } else {
               Matrix<float> prod_Z_Theta(Z.no_rows(), Theta.no_rows());
               blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
@@ -857,17 +842,8 @@ void Processor::ThreadFunction() {
 
               n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
               ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
-              //for (int i = 0; i < 10; ++i) {
-              //  std::cout << "\n--------\n";
-              //  for (int j = 0; j < 5; ++j) {
-              //    std::cout << n_wt(i,j) << ' ';
-              //  }
-              //}
-              //std::cout << "\n--------\n";
             }
           }
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
           for (int token_index = 0; token_index < n_wt.no_rows(); ++token_index) {
             FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
