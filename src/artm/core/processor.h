@@ -160,9 +160,13 @@ class Matrix {
     no_rows_ = src_matrix.no_rows();
     no_columns_ = src_matrix.no_columns();
     store_by_rows_ = src_matrix.store_by_rows_;
-    data_ = new T[no_rows_ * no_columns_];
-    for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-      data_[i] = src_matrix.get_data()[i];
+    if (no_columns_ >0 && no_rows_ > 0) {
+      data_ = new T[no_rows_ * no_columns_];
+      for (int i = 0; i < no_rows_ * no_columns_; ++i) {
+        data_[i] = src_matrix.get_data()[i];
+      }
+    } else {
+      data_ = nullptr;
     }
   }
 
@@ -175,6 +179,8 @@ class Matrix {
   }
 
   T& operator() (int index_row, int index_col) {
+    assert(index_row < no_rows_);
+    assert(index_col < no_columns_);
     if (store_by_rows_) {
       return data_[index_row * no_columns_ + index_col];
     }
@@ -182,6 +188,8 @@ class Matrix {
   }
 
   const T& operator() (int index_row, int index_col) const {
+    assert(index_row < no_rows_);
+    assert(index_col < no_columns_);
     if (store_by_rows_) {
       return data_[index_row * no_columns_ + index_col];
     }
@@ -195,9 +203,13 @@ class Matrix {
     if (data_ != nullptr) {
       delete[] data_;
     }
-    data_ = new T[no_rows_ * no_columns_];
-    for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-      data_[i] = src_matrix.get_data()[i];
+    if (no_columns_ >0 && no_rows_ > 0) {
+      data_ = new T[no_rows_ * no_columns_];
+      for (int i = 0; i < no_rows_ * no_columns_; ++i) {
+        data_[i] = src_matrix.get_data()[i];
+      }
+    } else {
+      data_ = nullptr;
     }
 
     return *this;

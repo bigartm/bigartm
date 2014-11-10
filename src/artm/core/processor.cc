@@ -447,7 +447,6 @@ void Processor::ThreadFunction() {
       std::shared_ptr<InstanceSchema> schema = schema_.get();
       std::vector<ModelName> model_names = schema->GetModelNames();
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
       // create and fill n_dw matrix for matrix calculations during batch processing
       bool sparse_n_dw = true;
@@ -545,7 +544,6 @@ void Processor::ThreadFunction() {
         int topic_size = topic_model->topic_size();
         assert(topic_size > 0);
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
         // create and fill Theta matrix for matrix calculations during batch processing
         Matrix<float> Theta;
@@ -554,6 +552,8 @@ void Processor::ThreadFunction() {
         } else {
           Theta = Matrix<float>(topic_size, part->batch().item_size());
         }
+        Theta.InitializeZeros();
+
         for (int item_index = 0; item_index < part->batch().item_size(); ++item_index) {
           int index_of_item = -1;
           if ((cache != nullptr) && model.reuse_theta()) {
@@ -650,13 +650,7 @@ void Processor::ThreadFunction() {
                   blas->saxpy(T, n_dw_val[i] / p_dw_val, &Phi(w, 0), 1, &n_td(0, d), 1);
                 }
               }
-              Theta = n_td;
-              for (int i = 0; i < 10; ++i) {
-                std::cout << "\n--------\n";
-                for (int j = 0; j < 5; ++j) {
-                  std::cout << Theta(i,j) << ' ';
-                }
-              }
+              ApplyByElement<0>(&Theta, Theta, n_td);
             } else {
               blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
                 Phi.no_rows(), Theta.no_columns(), Phi.no_columns(), 1, Phi.get_data(),
@@ -674,27 +668,7 @@ void Processor::ThreadFunction() {
                 Phi.no_columns(), Z.get_data(), Z.no_columns(), 0,
                 prod_trans_phi_Z.get_data(), Z.no_columns());
 
-              int height = topic_size * n_d.no_rows();
-              int width = n_d.no_columns();
-              Matrix<float> repmat_n_d(height, width);
-
-              int src_i = 0;
-              int src_j = 0;
-              for (int res_i = 0; res_i < width; ++res_i) {
-                if (src_i == n_d.no_columns())
-                  src_i = 0;
-                for (int res_j = 0; res_j < height; ++res_j) {
-                  if (src_j == n_d.no_rows())
-                    src_j = 0;
-                  repmat_n_d(res_j, res_i) = n_d(src_j, src_i);
-                  src_j++;
-                }
-                src_i++;
-              }
-
-              Matrix<float> prod_theta_phi_Z(Theta.no_rows(), Theta.no_columns());
-              ApplyByElement<0>(&prod_theta_phi_Z, Theta, prod_trans_phi_Z);
-              ApplyByElement<1>(&Theta, prod_theta_phi_Z, repmat_n_d);
+              ApplyByElement<0>(&Theta, Theta, prod_trans_phi_Z);
             }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -760,9 +734,7 @@ void Processor::ThreadFunction() {
           Matrix<float> n_wt;
           if (sparse_n_dw) {
             if (model_stream_index != -1) {
-              // implement stream support for sparse case
-            } else {
-              n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns(), false);
+              n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
               n_wt.InitializeZeros();
 
               int W = Phi.no_rows();
@@ -773,7 +745,50 @@ void Processor::ThreadFunction() {
               std::vector<int> p_wd_row_ptr(n_dw_row_ptr);
               std::vector<int> p_wd_col_ind(n_dw_col_ind);
               blas->scsr2csc(D, W, p_dw_values.size(), &p_dw_values[0], &n_dw_row_ptr[0],
-                  &n_dw_col_ind[0], &p_wd_val[0], &p_wd_row_ptr[0], &p_wd_col_ind[0]);
+                  &n_dw_col_ind[0], &p_wd_val[0], &p_wd_col_ind[0], &p_wd_row_ptr[0]);
+
+              std::vector<float> n_wd_val(n_dw_val);
+              blas->scsr2csc(D, W, n_dw_val.size(), &n_dw_val[0], &n_dw_row_ptr[0],
+                  &n_dw_col_ind[0], &n_wd_val[0], &p_wd_col_ind[0], &p_wd_row_ptr[0]);
+
+              stream_mask = part->stream_mask(model_stream_index);
+              for (int w = 0; w < W; ++w) {
+                int i_0 = p_wd_row_ptr[w];
+                int i_1 = p_wd_row_ptr[w + 1];
+
+                for (int i = i_0; i < i_1; ++i) {
+                  int d = p_wd_col_ind[i];
+                  if (stream_mask.value(d) == false) continue;
+                  float p_wd = blas->sdot(T, &Phi(w, 0), 1, &Theta(0, d), 1);
+                  if (p_wd == 0) continue;
+                  blas->saxpy(T, n_wd_val[i] / p_wd, &Theta(0, d), 1, &n_wt(w, 0), 1);
+                }
+              }
+              ApplyByElement<0>(&n_wt, n_wt, Phi);
+              for (int i = 0; i < 6; ++i) {
+                std::cout << "\n--------\n";
+                for (int j = 0; j < 10; ++j) {
+                  std::cout << n_wt(i,j) << ' ';
+                }
+              }
+              std::cout << "\n--------\n";
+            } else {
+              n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
+              n_wt.InitializeZeros();
+
+              int W = Phi.no_rows();
+              int T = Phi.no_columns();
+              int D = Theta.no_columns();
+
+              std::vector<float> p_wd_val(n_dw_val);
+              std::vector<int> p_wd_row_ptr(n_dw_row_ptr);
+              std::vector<int> p_wd_col_ind(n_dw_col_ind);
+              blas->scsr2csc(D, W, p_dw_values.size(), &p_dw_values[0], &n_dw_row_ptr[0],
+                  &n_dw_col_ind[0], &p_wd_val[0], &p_wd_col_ind[0], &p_wd_row_ptr[0]);
+
+              std::vector<float> n_wd_val(n_dw_val);
+              blas->scsr2csc(D, W, n_dw_val.size(), &n_dw_val[0], &n_dw_row_ptr[0],
+                  &n_dw_col_ind[0], &n_wd_val[0], &p_wd_col_ind[0], &p_wd_row_ptr[0]);
 
               for (int w = 0; w < W; ++w) {
                 int i_0 = p_wd_row_ptr[w];
@@ -781,9 +796,17 @@ void Processor::ThreadFunction() {
 
                 for (int i = i_0; i < i_1; ++i) {
                   int d = p_wd_col_ind[i];
-                  blas->saxpy(T, n_dw_val[i] / p_wd_val[i], &Theta(0, d), 1, &n_wt(w, 0), 1);
+                  blas->saxpy(T, n_wd_val[i] / p_wd_val[d], &Theta(0, d), 1, &n_wt(w, 0), 1);
                 }
               }
+              ApplyByElement<0>(&n_wt, n_wt, Phi);
+              //for (int i = 0; i < 10; ++i) {
+              //  std::cout << "\n--------\n";
+              //  for (int j = 0; j < 5; ++j) {
+              //    std::cout << n_wt(i,j) << ' ';
+              //  }
+              //}
+              //std::cout << "\n--------\n";
             }
           } else {
             if (model_stream_index != -1) {
@@ -818,7 +841,13 @@ void Processor::ThreadFunction() {
 
               n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
               ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
-
+              for (int i = 0; i < 6; ++i) {
+                std::cout << "\n--------\n";
+                for (int j = 0; j < 10; ++j) {
+                  std::cout << n_wt(i,j) << ' ';
+                }
+              }
+              std::cout << "\n--------\n";
             } else {
               Matrix<float> prod_Z_Theta(Z.no_rows(), Theta.no_rows());
               blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
@@ -828,6 +857,13 @@ void Processor::ThreadFunction() {
 
               n_wt = Matrix<float>(Phi.no_rows(), Phi.no_columns());
               ApplyByElement<0>(&n_wt, prod_Z_Theta, Phi);
+              //for (int i = 0; i < 10; ++i) {
+              //  std::cout << "\n--------\n";
+              //  for (int j = 0; j < 5; ++j) {
+              //    std::cout << n_wt(i,j) << ' ';
+              //  }
+              //}
+              //std::cout << "\n--------\n";
             }
           }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
