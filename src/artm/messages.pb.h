@@ -1734,6 +1734,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_class_weight();
 
+  // optional bool sparse_ndw = 14 [default = true];
+  inline bool has_sparse_ndw() const;
+  inline void clear_sparse_ndw();
+  static const int kSparseNdwFieldNumber = 14;
+  inline bool sparse_ndw() const;
+  inline void set_sparse_ndw(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -1750,6 +1757,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_stream_name();
   inline void set_has_reuse_theta();
   inline void clear_has_reuse_theta();
+  inline void set_has_sparse_ndw();
+  inline void clear_has_sparse_ndw();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -1769,9 +1778,10 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
+  bool sparse_ndw_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7594,6 +7604,28 @@ ModelConfig::class_weight() const {
 inline ::google::protobuf::RepeatedField< float >*
 ModelConfig::mutable_class_weight() {
   return &class_weight_;
+}
+
+// optional bool sparse_ndw = 14 [default = true];
+inline bool ModelConfig::has_sparse_ndw() const {
+  return (_has_bits_[0] & 0x00002000u) != 0;
+}
+inline void ModelConfig::set_has_sparse_ndw() {
+  _has_bits_[0] |= 0x00002000u;
+}
+inline void ModelConfig::clear_has_sparse_ndw() {
+  _has_bits_[0] &= ~0x00002000u;
+}
+inline void ModelConfig::clear_sparse_ndw() {
+  sparse_ndw_ = true;
+  clear_has_sparse_ndw();
+}
+inline bool ModelConfig::sparse_ndw() const {
+  return sparse_ndw_;
+}
+inline void ModelConfig::set_sparse_ndw(bool value) {
+  set_has_sparse_ndw();
+  sparse_ndw_ = value;
 }
 
 // -------------------------------------------------------------------
