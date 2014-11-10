@@ -755,6 +755,13 @@ void Processor::ThreadFunction() {
             ApplyByElement<0>(&Theta, Theta, prod_trans_phi_Z);
             RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema_.get().get(), &Theta);
           }
+
+          blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
+            Phi.no_rows(), Theta.no_columns(), Phi.no_columns(), 1, Phi.get_data(),
+            Phi.no_columns(), Theta.get_data(), Theta.no_columns(), 0, Z.get_data(),
+            Theta.no_columns());
+          ApplyByElement<1>(&Z, n_dw, Z);
+
           //Show(Theta);
         }
 
