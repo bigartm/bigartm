@@ -33,7 +33,7 @@ class InstanceSchema {
   bool has_model_config(ModelName id) const;
   void clear_model_config(ModelName id);
 
-  std::shared_ptr<RegularizerInterface> regularizer(const std::string& name);
+  std::shared_ptr<RegularizerInterface> regularizer(const std::string& name) const;
   void set_regularizer(const std::string& name,
                        const std::shared_ptr<RegularizerInterface>& regularizer);
   bool has_regularizer(const std::string& name) const;

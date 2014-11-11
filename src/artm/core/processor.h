@@ -20,6 +20,8 @@
 #include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
 
+#include "artm/utility/blas.h"
+
 namespace artm {
 namespace core {
 
@@ -62,6 +64,8 @@ class Processor : boost::noncopyable {
     // Checks whether Current() item belongs to a specific stream
     bool InStream(const std::string& stream_name);
     bool InStream(int stream_index);
+
+    inline int item_index() const { return item_index_; }
 
    private:
     int items_count_;

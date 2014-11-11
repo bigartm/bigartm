@@ -87,7 +87,7 @@ void InstanceSchema::clear_regularizer(const std::string& name) {
   }
 }
 
-std::shared_ptr<RegularizerInterface> InstanceSchema::regularizer(const std::string& name) {
+std::shared_ptr<RegularizerInterface> InstanceSchema::regularizer(const std::string& name) const {
   auto iter = regularizers_.find(name);
   if (iter != regularizers_.end()) {
     return iter->second;
