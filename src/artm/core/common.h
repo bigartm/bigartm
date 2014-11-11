@@ -3,6 +3,7 @@
 #ifndef SRC_ARTM_CORE_COMMON_H_
 #define SRC_ARTM_CORE_COMMON_H_
 
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <string>
@@ -63,24 +64,60 @@ class Notifiable {
   virtual void Callback(std::shared_ptr<const ModelIncrement> model_increment) = 0;
 };
 
-inline void make_rpcz_call(std::function<void()> f, const std::string& f_name) {
+inline bool make_rpcz_call(std::function<void()> f, const std::string& log_message = "", bool no_throw = false) {
   try {
     f();
-  } catch(const rpcz::rpc_error&) {
-    LOG(ERROR) << "Problems with connection between Proxy and NodeController in " <<
-      f_name << "()";
-    throw artm::core::NetworkException("Network error in function " + f_name + "()");
+    return true;
+  } catch(const rpcz::rpc_error& error) {
+    std::stringstream ss;
+
+    if (error.get_status() == rpcz::status::DEADLINE_EXCEEDED) {
+      ss << "Network comminication timeout";
+      if (!log_message.empty()) ss << " in " << log_message;
+      LOG(ERROR) << ss.str();
+      if (!no_throw) throw artm::core::NetworkException(ss.str());
+      return false;
+    }
+
+    if (error.get_status() == rpcz::status::APPLICATION_ERROR) {
+      ss << "Remote RPCZ service application error";
+      if (!log_message.empty()) ss << " in " << log_message;
+      ss << ", code = " << error.get_application_error_code();
+      if (!error.get_error_message().empty()) ss << ", error_message = " << error.get_error_message();
+      LOG(ERROR) << ss.str();
+      if (!no_throw) throw artm::core::NetworkException(ss.str());
+      return false;
+    }
+
+    ss << "Network error";
+    if (!log_message.empty()) ss << " in " << log_message;
+    ss << ", rpcz_error_status = " << error.get_status();
+    LOG(ERROR) << ss.str();
+    if (!no_throw) throw artm::core::NetworkException(ss.str());
+    return false;
   }
+
+  return false;
 }
 
-inline void make_rpcz_call_no_throw(std::function<void()> f, const std::string& f_name) {
-  try {
-    f();
-  } catch(const rpcz::rpc_error&) {
-    LOG(ERROR) << "Problems with connection between Proxy and NodeController in " <<
-      f_name << "()";
-  }
+inline bool make_rpcz_call_no_throw(std::function<void()> f, const std::string& log_message = "") {
+  return make_rpcz_call(f, log_message, /*no_throw = */ true);
 }
+
+class CuckooWatch {
+ public:
+  explicit CuckooWatch(std::string message)
+      : message_(message), start_(std::chrono::high_resolution_clock::now()) {}
+  ~CuckooWatch() {
+    auto delta = (std::chrono::high_resolution_clock::now() - start_);
+    auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+    LOG(INFO) << message_ << " " << delta_ms.count() << " milliseconds.";
+  }
+
+ private:
+  std::string message_;
+  std::chrono::time_point<std::chrono::system_clock> start_;
+};
 
 }  // namespace core
 }  // namespace artm

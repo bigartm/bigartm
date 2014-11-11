@@ -277,26 +277,25 @@ void Merger::PullTopicModel() {
     return;  // no-op in local modus operandi
   }
 
+  int timeout = schema_->get()->config().communication_timeout();
+
   auto model_names = topic_model_.keys();
   for (auto &model_name : model_names) {
-    try {
-      auto old_ttm = topic_model_.get(model_name);
-      if (old_ttm.get() == nullptr)
-        return;  // model had been disposed during ongoing processing;
+    auto old_ttm = topic_model_.get(model_name);
+    if (old_ttm.get() == nullptr)
+      return;  // model had been disposed during ongoing processing;
 
-      ::artm::GetTopicModelArgs request;
-      request.set_model_name(model_name);
+    ::artm::GetTopicModelArgs request;
+    request.set_model_name(model_name);
+
+    make_rpcz_call_no_throw([&]() {
       ::artm::TopicModel reply;
-      master_component_service_->RetrieveModel(request, &reply);
+      master_component_service_->RetrieveModel(request, &reply, timeout);
       std::shared_ptr< ::artm::core::TopicModel> new_global_ttm(
         new ::artm::core::TopicModel(reply));
 
       topic_model_.set(model_name, new_global_ttm);
-      // topic_model_inc_.erase(model_name);  // Why is this line here? This looks like a bug!!!
-    } catch(const rpcz::rpc_error&) {
-      LOG(ERROR) << "Merger failed to pull topic model from the master component service.";
-      throw;
-    }
+    }, "Merger::PullTopicModel");
   }
 }
 
@@ -319,15 +318,13 @@ void Merger::PushTopicModelIncrement() {
     inc_ttm->second->RetrieveModelIncrement(&model_increment);
     scores_merger_.RetrieveModelIncrement(model_name, &model_increment);
 
-    try {
+    make_rpcz_call_no_throw([&]() {
       ::artm::core::Void reply;
-      master_component_service_->UpdateModel(model_increment, &reply);
+      int timeout = schema_->get()->config().communication_timeout();
+      master_component_service_->UpdateModel(model_increment, &reply, timeout);
       topic_model_inc_.erase(model_name);
       scores_merger_.ResetScores(model_name);
-    } catch(const rpcz::rpc_error&) {
-      LOG(ERROR) << "Merger failed to send updates to master component service.";
-      throw;
-    }
+    }, "Merger::PushTopicModelIncrement");
   }
 }
 
@@ -460,6 +457,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     return;  // no-op in network modus operandi
   }
 
+  CuckooWatch cuckoo("Merger::SynchronizeModel");
   auto model_names = topic_model_.keys();
   if (!model_name.empty()) {
     model_names.clear();

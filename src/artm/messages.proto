@@ -76,6 +76,7 @@ message MasterComponentConfig {
   optional string connect_endpoint = 11;
   repeated string node_connect_endpoint = 12;
   optional bool online_batch_processing = 13 [default = false];
+  optional int32 communication_timeout = 14 [default = 1000];
 }
 
 // Represents a configuration of a NodeController
@@ -356,6 +357,7 @@ message ThetaMatrix {
 message CollectionParserConfig {
   enum Format {
     BagOfWordsUci = 0;
+    MatrixMarket = 1;
   }
 
   optional Format format = 1 [default = BagOfWordsUci];

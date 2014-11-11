@@ -96,8 +96,16 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   }
 }
 
-void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
-  ValidateConfig(config);
+void MasterComponent::Reconfigure(const MasterComponentConfig& user_config) {
+  ValidateConfig(user_config);
+
+  MasterComponentConfig config(user_config);  // make a copy
+  if (!config.has_processor_queue_max_size()) {
+    // The default setting for processor queue max size is to use the number of processors.
+    // This will ensure reasonably good load balancing in network modus operandi.
+    config.set_processor_queue_max_size(config.processors_count());
+  }
+
   config_.set(std::make_shared<MasterComponentConfig>(config));
 
   if (!is_configured_) {
@@ -107,7 +115,7 @@ void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
     InstanceType type = (is_local) ? MasterInstanceLocal : MasterInstanceNetwork;
     instance_.reset(new Instance(config, type));
 
-    network_client_interface_.reset(new NetworkClientCollection());
+    network_client_interface_.reset(new NetworkClientCollection(config.communication_timeout()));
 
     if (is_network) {
       master_component_service_impl_.reset(
@@ -123,6 +131,7 @@ void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
   }
 
   if (isInNetworkModusOperandi()) {
+    network_client_interface_->set_communication_timeout(config.communication_timeout());
     std::vector<std::string> vec = network_client_interface_->endpoints();
     std::set<std::string> current_endpoints(vec.begin(), vec.end());
     std::set<std::string> to_be_deleted(vec.begin(), vec.end());
@@ -229,21 +238,27 @@ bool MasterComponent::WaitIdle(int timeout) {
       }
     }
 
-    // Ask all nodes to push their increments to master
-    network_client_interface_->ForcePushTopicModelIncrement();
+    {
+      CuckooWatch cuckoo("ForcePushTopicModelIncrement");
+      // Ask all nodes to push their increments to master
+      network_client_interface_->ForcePushTopicModelIncrement();
+    }
 
-    // Wait merger on master to process all model increments and set them as active topic model
-    auto time_end = boost::posix_time::microsec_clock::local_time();
-    auto local_timeout = timeout - (time_end - time_start).total_milliseconds();
-    if (timeout >= 0) {
-      if (local_timeout >= 0) {
-        bool result = instance_->merger()->WaitIdle(static_cast<int>(local_timeout));
-        if (!result) return false;
+    {
+      CuckooWatch cuckoo("Merge all increments");
+      // Wait merger on master to process all model increments and set them as active topic model
+      auto time_end = boost::posix_time::microsec_clock::local_time();
+      auto local_timeout = timeout - (time_end - time_start).total_milliseconds();
+      if (timeout >= 0) {
+        if (local_timeout >= 0) {
+          bool result = instance_->merger()->WaitIdle(static_cast<int>(local_timeout));
+          if (!result) return false;
+        } else {
+          return false;
+        }
       } else {
-        return false;
+        instance_->merger()->WaitIdle(-1);
       }
-    } else {
-      instance_->merger()->WaitIdle(-1);
     }
 
     return true;
@@ -260,6 +275,9 @@ void MasterComponent::InvokeIteration(int iterations_count) {
     str << "MasterComponentConfig.online_batch_processing().";
     BOOST_THROW_EXCEPTION(InvalidOperation(str.str()));
   }
+
+  // Reset scores
+  instance_->merger()->ForceResetScores(ModelName());
 
   if (isInLocalModusOperandi()) {
     instance_->local_data_loader()->InvokeIteration(iterations_count);
@@ -382,7 +400,9 @@ void NetworkClientCollection::CreateOrReconfigureModel(const ModelConfig& config
     CreateOrReconfigureModelArgs args;
     args.mutable_config()->CopyFrom(config);
     Void response;
-    client.CreateOrReconfigureModel(args, &response);
+    make_rpcz_call_no_throw([&]() {
+      client.CreateOrReconfigureModel(args, &response, communication_timeout());
+    }, "NetworkClientCollection::CreateOrReconfigureModel");
   });
 }
 
@@ -392,7 +412,9 @@ void NetworkClientCollection::DisposeModel(ModelName model_name) {
     DisposeModelArgs args;
     args.set_model_name(model_name);
     Void response;
-    client.DisposeModel(args, &response);
+    make_rpcz_call_no_throw([&]() {
+      client.DisposeModel(args, &response, communication_timeout());
+    }, "NetworkClientCollection::DisposeModel");
   });
 }
 
@@ -401,7 +423,9 @@ void NetworkClientCollection::CreateOrReconfigureRegularizer(const RegularizerCo
     CreateOrReconfigureRegularizerArgs args;
     args.mutable_config()->CopyFrom(config);
     Void response;
-    client.CreateOrReconfigureRegularizer(args, &response);
+    make_rpcz_call_no_throw([&]() {
+      client.CreateOrReconfigureRegularizer(args, &response, communication_timeout());
+    }, "NetworkClientCollection::CreateOrReconfigureRegularizer");
   });
 }
 
@@ -410,7 +434,9 @@ void NetworkClientCollection::DisposeRegularizer(const std::string& name) {
     DisposeRegularizerArgs args;
     args.set_regularizer_name(name);
     Void response;
-    client.DisposeRegularizer(args, &response);
+    make_rpcz_call_no_throw([&]() {
+      client.DisposeRegularizer(args, &response, communication_timeout());
+    }, "NetworkClientCollection::DisposeRegularizer");
   });
 }
 
@@ -419,7 +445,9 @@ void NetworkClientCollection::CreateOrReconfigureDictionary(const DictionaryConf
     CreateOrReconfigureDictionaryArgs args;
     args.mutable_dictionary()->CopyFrom(config);
     Void response;
-    client.CreateOrReconfigureDictionary(args, &response);
+    make_rpcz_call_no_throw([&]() {
+      client.CreateOrReconfigureDictionary(args, &response, communication_timeout());
+    }, "NetworkClientCollection::CreateOrReconfigureDictionary");
   });
 }
 
@@ -428,14 +456,18 @@ void NetworkClientCollection::DisposeDictionary(const std::string& name) {
     DisposeDictionaryArgs args;
     args.set_dictionary_name(name);
     Void response;
-    client.DisposeDictionary(args, &response);
+    make_rpcz_call_no_throw([&]() {
+      client.DisposeDictionary(args, &response, communication_timeout());
+    }, "NetworkClientCollection::DisposeDictionary");
   });
 }
 
 void NetworkClientCollection::Reconfigure(const MasterComponentConfig& config) {
   for_each_client([&](NodeControllerService_Stub& client) {
     Void response;
-    client.CreateOrReconfigureInstance(config, &response);
+    make_rpcz_call_no_throw([&]() {
+      client.CreateOrReconfigureInstance(config, &response, config.communication_timeout());
+    }, "NetworkClientCollection::Reconfigure");
   });
 }
 
@@ -471,8 +503,8 @@ bool NetworkClientCollection::ConnectClient(std::string endpoint) {
   try {
     // Reset the state of the remote node controller
     Void response;
-    client->DisposeInstance(Void(), &response);
-    client->DisposeMasterComponent(Void(), &response);
+    make_rpcz_call([&]() { client->DisposeInstance(Void(), &response, communication_timeout()); });
+    make_rpcz_call([&]() { client->DisposeMasterComponent(Void(), &response, communication_timeout()); });
   } catch(...) {
     LOG(ERROR) << "Unable to clear the state of the remote node controller.";
     return false;
@@ -486,7 +518,9 @@ bool NetworkClientCollection::DisconnectClient(std::string endpoint) {
   auto client = clients_.get(endpoint);
   if (client != nullptr) {
     Void response;
-    client->DisposeInstance(Void(), &response);
+    make_rpcz_call_no_throw([&]() {
+      client->DisposeInstance(Void(), &response, communication_timeout());
+    }, "NetworkClientCollection::DisconnectClient");
   } else {
     LOG(ERROR) << "Unable to disconnect client " << endpoint << ", client is not connected.";
     return false;
@@ -518,22 +552,18 @@ void NetworkClientCollection::for_each_endpoint(
 void NetworkClientCollection::ForcePullTopicModel() {
   for_each_client([&](NodeControllerService_Stub& client) {
     Void response;
-    try {
-      client.ForcePullTopicModel(Void(), &response);
-    } catch(...) {
-      LOG(ERROR) << "Unable to force pull topic model on one of clients";
-    }
+    make_rpcz_call_no_throw([&]() {
+      client.ForcePullTopicModel(Void(), &response, communication_timeout());
+    }, "NetworkClientCollection::ForcePullTopicModel");
   });
 }
 
 void NetworkClientCollection::ForcePushTopicModelIncrement() {
   for_each_client([&](NodeControllerService_Stub& client) {
     Void response;
-    try {
-      client.ForcePushTopicModelIncrement(Void(), &response);
-    } catch(...) {
-      LOG(ERROR) << "Unable to force push topic model increment on one of clients";
-    }
+    make_rpcz_call_no_throw([&]() {
+      client.ForcePushTopicModelIncrement(Void(), &response, communication_timeout());
+    }, "NetworkClientCollection::ForcePushTopicModelIncrement");
   });
 }
 

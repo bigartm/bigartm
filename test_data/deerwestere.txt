@@ -1,0 +1,12 @@
+0	computer	2
+8	eps	2
+10	graph	3
+1	human	2
+2	interface	2
+11	minors	2
+3	response	2
+4	survey	2
+5	system	3
+6	time	2
+9	trees	3
+7	user	3
