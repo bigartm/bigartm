@@ -945,6 +945,8 @@ CalculateNwtDense(const ModelConfig& model_config, const ProcessorInput& part, c
 
 void Processor::ThreadFunction() {
   try {
+    int total_processed_batches = 0;  // counter
+
     Helpers::SetThreadName(-1, "Processor thread");
     LOG(INFO) << "Processor thread started";
     int pop_retries = 0;
@@ -960,6 +962,7 @@ void Processor::ThreadFunction() {
     for (;;) {
       if (is_stopping) {
         LOG(INFO) << "Processor thread stopped";
+        LOG(INFO) << "Total number of processed batches: " << total_processed_batches;
         break;
       }
 
@@ -977,11 +980,13 @@ void Processor::ThreadFunction() {
         continue;
       }
 
-      const Batch& batch = part->batch();
-
-      LOG_IF(INFO, pop_retries >= pop_retries_max) <<
-          "Processing queue has data, processing started";
+      LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
       pop_retries = 0;
+
+      CuckooWatch cuckoo("Batch processed in ");  // log time from now to destruction
+      total_processed_batches++;
+
+      const Batch& batch = part->batch();
 
       if (batch.class_id_size() != batch.token_size())
         BOOST_THROW_EXCEPTION(InternalError(

@@ -27,14 +27,14 @@ MasterProxy::MasterProxy(int id, const MasterProxyConfig& config)
 
     // Reset the state of the remote node controller
     node_controller_service_proxy_->DisposeInstance(Void(), &response, communication_timeout_);
-  }, "(within CreateOrReconfigureMasterComponent) DisposeInstance");
+  }, "MasterProxy::MasterProxy - DisposeInstance");
 
   make_rpcz_call([&]() {
     Void response;
 
     // Reset the state of the remote node controller
     node_controller_service_proxy_->DisposeMasterComponent(Void(), &response, communication_timeout_);
-  }, "(within CreateOrReconfigureMasterComponent) DisposeMasterComponent");
+  }, "MasterProxy::MasterProxy - DisposeMasterComponent");
 
   make_rpcz_call([&]() {
     Void response;
@@ -42,14 +42,14 @@ MasterProxy::MasterProxy(int id, const MasterProxyConfig& config)
     // Create master component on the remote node controller
     node_controller_service_proxy_->CreateOrReconfigureMasterComponent(
       config.config(), &response, communication_timeout_);
-  }, "CreateOrReconfigureMasterComponent");
+  }, "MasterProxy::MasterProxy - CreateOrReconfigureMasterComponent");
 }
 MasterProxy::~MasterProxy() {
   make_rpcz_call_no_throw([&]() {
     Void response;
     node_controller_service_proxy_->DisposeMasterComponent(
       Void(), &response, communication_timeout_);
-  }, "DisposeMasterComponent");
+  }, "MasterProxy::~MasterProxy");
 }
 
 int MasterProxy::id() const { return id_; }
@@ -59,7 +59,7 @@ void MasterProxy::Reconfigure(const MasterComponentConfig& config) {
     Void response;
     node_controller_service_proxy_->CreateOrReconfigureMasterComponent(
       config, &response, communication_timeout_);
-  }, "CreateOrReconfigureMasterComponent");
+  }, "MasterProxy::Reconfigure");
 }
 
 void MasterProxy::CreateOrReconfigureModel(const ModelConfig& config) {
@@ -70,7 +70,7 @@ void MasterProxy::CreateOrReconfigureModel(const ModelConfig& config) {
     Void response;
     node_controller_service_proxy_->CreateOrReconfigureModel(
       request, &response, communication_timeout_);
-  }, "CreateOrReconfigureModel");
+  }, "MasterProxy::CreateOrReconfigureModel");
 }
 
 void MasterProxy::DisposeModel(ModelName model_name) {
@@ -79,7 +79,7 @@ void MasterProxy::DisposeModel(ModelName model_name) {
     args.set_model_name(model_name);
     Void response;
     node_controller_service_proxy_->DisposeModel(args, &response, communication_timeout_);
-  }, "DisposeModel");
+  }, "MasterProxy::DisposeModel");
 }
 
 void MasterProxy::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
@@ -90,7 +90,7 @@ void MasterProxy::CreateOrReconfigureRegularizer(const RegularizerConfig& config
     Void response;
     node_controller_service_proxy_->CreateOrReconfigureRegularizer(
       request, &response, communication_timeout_);
-  }, "CreateOrReconfigureRegularizer");
+  }, "MasterProxy::CreateOrReconfigureRegularizer");
 }
 
 void MasterProxy::DisposeRegularizer(const std::string& name) {
@@ -99,7 +99,7 @@ void MasterProxy::DisposeRegularizer(const std::string& name) {
     args.set_regularizer_name(name);
     Void response;
     node_controller_service_proxy_->DisposeRegularizer(args, &response, communication_timeout_);
-  }, "DisposeRegularizer");
+  }, "MasterProxy::DisposeRegularizer");
 }
 
 void MasterProxy::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
@@ -109,7 +109,7 @@ void MasterProxy::CreateOrReconfigureDictionary(const DictionaryConfig& config) 
     Void response;
     node_controller_service_proxy_->CreateOrReconfigureDictionary(
       request, &response, communication_timeout_);
-  }, "CreateOrReconfigureDictionary");
+  }, "MasterProxy::CreateOrReconfigureDictionary");
 }
 
 void MasterProxy::DisposeDictionary(const std::string& name) {
@@ -118,7 +118,7 @@ void MasterProxy::DisposeDictionary(const std::string& name) {
     args.set_dictionary_name(name);
     Void response;
     node_controller_service_proxy_->DisposeDictionary(args, &response, communication_timeout_);
-  }, "DisposeDictionary");
+  }, "MasterProxy::DisposeDictionary");
 }
 
 void MasterProxy::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
@@ -126,7 +126,7 @@ void MasterProxy::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
     Void response;
     node_controller_service_proxy_->OverwriteTopicModel(
       topic_model, &response, communication_timeout_);
-  }, "CreateOrReconfigureDictionary");
+  }, "MasterProxy::OverwriteTopicModel");
 }
 
 bool MasterProxy::RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
@@ -134,7 +134,7 @@ bool MasterProxy::RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_a
   make_rpcz_call([&]() {
     node_controller_service_proxy_->RequestTopicModel(
       get_model_args, topic_model, communication_timeout_);
-  }, "RequestTopicModel");
+  }, "MasterProxy::RequestTopicModel");
 
   return true;
 }
@@ -146,7 +146,7 @@ void MasterProxy::RequestRegularizerState(RegularizerName regularizer_name,
     request.set_value(regularizer_name);
     node_controller_service_proxy_->RequestRegularizerState(
       request, regularizer_state, communication_timeout_);
-  }, "RequestRegularizerState");
+  }, "MasterProxy::RequestRegularizerState");
 }
 
 bool MasterProxy::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
@@ -154,7 +154,7 @@ bool MasterProxy::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
   make_rpcz_call([&]() {
     node_controller_service_proxy_->RequestThetaMatrix(
       get_theta_args, theta_matrix, communication_timeout_);
-  }, "RequestThetaMatrix");
+  }, "MasterProxy::RequestThetaMatrix");
 
   return true;
 }
@@ -166,7 +166,7 @@ bool MasterProxy::RequestScore(const ModelName& model_name, const ScoreName& sco
     request.set_model_name(model_name);
     request.set_score_name(score_name);
     node_controller_service_proxy_->RequestScore(request, score_data, communication_timeout_);
-  }, "RequestScore");
+  }, "MasterProxy::RequestScore");
 
   return true;
 }
@@ -176,7 +176,7 @@ void MasterProxy::AddBatch(const Batch& batch) {
     Void response;
     node_controller_service_proxy_->AddBatch(
       batch, &response, communication_timeout_);
-  }, "AddBatch");
+  }, "MasterProxy::AddBatch");
 }
 
 void MasterProxy::InvokeIteration(int iterations_count) {
@@ -184,7 +184,7 @@ void MasterProxy::InvokeIteration(int iterations_count) {
     Void response;
     node_controller_service_proxy_->InvokeIteration(
       Void(), &response, communication_timeout_);
-  }, "InvokeIteration");
+  }, "MasterProxy::InvokeIteration");
 }
 
 bool MasterProxy::WaitIdle(int timeout) {
@@ -193,7 +193,7 @@ bool MasterProxy::WaitIdle(int timeout) {
   for (;;) {
     make_rpcz_call([&]() {
       node_controller_service_proxy_->WaitIdle(Void(), &response, communication_timeout_);
-    }, "WaitIdle");
+    }, "MasterProxy::WaitIdle");
     if (response.value() == ARTM_STILL_WORKING) {
       boost::this_thread::sleep(boost::posix_time::milliseconds(polling_frequency_));
       auto time_end = boost::posix_time::microsec_clock::local_time();
@@ -212,7 +212,7 @@ void MasterProxy::SynchronizeModel(const SynchronizeModelArgs& args) {
     Void response;
     node_controller_service_proxy_->SynchronizeModel(
       args, &response, communication_timeout_);
-  }, "SynchronizeModel");
+  }, "MasterProxy::SynchronizeModel");
 }
 
 void MasterProxy::InitializeModel(const InitializeModelArgs& args) {
@@ -220,7 +220,7 @@ void MasterProxy::InitializeModel(const InitializeModelArgs& args) {
     Void response;
     node_controller_service_proxy_->InitializeModel(
       args, &response, communication_timeout_);
-  }, "SynchronizeModel");
+  }, "MasterProxy::SynchronizeModel");
 }
 
 }  // namespace core
