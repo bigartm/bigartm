@@ -384,7 +384,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, regularizer_tau_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, class_weight_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, sparse_ndw_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelConfig, use_sparse_bow_),
   };
   ModelConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1256,7 +1256,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "node_connect_endpoint\030\001 \001(\t\022+\n\006config\030\002 "
     "\001(\0132\033.artm.MasterComponentConfig\022#\n\025comm"
     "unication_timeout\030\003 \001(\005:\0041000\022\035\n\021polling"
-    "_frequency\030\004 \001(\005:\00250\"\352\002\n\013ModelConfig\022\024\n\004"
+    "_frequency\030\004 \001(\005:\00250\"\356\002\n\013ModelConfig\022\024\n\004"
     "name\030\001 \001(\t:\006@model\022\030\n\014topics_count\030\002 \001(\005"
     ":\00232\022\022\n\ntopic_name\030\003 \003(\t\022\025\n\007enabled\030\004 \001("
     "\010:\004true\022\"\n\026inner_iterations_count\030\005 \001(\005:"
@@ -1265,111 +1265,112 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\022\032\n\013reuse_theta\030\t \001(\010:\005false\022\030\n\020regulari"
     "zer_name\030\n \003(\t\022\027\n\017regularizer_tau\030\013 \003(\001\022"
     "\020\n\010class_id\030\014 \003(\t\022\024\n\014class_weight\030\r \003(\002\022"
-    "\030\n\nsparse_ndw\030\016 \001(\010:\004true\"\343\001\n\021Regularize"
-    "rConfig\022\014\n\004name\030\001 \001(\t\022*\n\004type\030\002 \001(\0162\034.ar"
-    "tm.RegularizerConfig.Type\022\016\n\006config\030\003 \001("
-    "\014\"\203\001\n\004Type\022\022\n\016DirichletTheta\020\000\022\020\n\014Dirich"
-    "letPhi\020\001\022\025\n\021SmoothSparseTheta\020\002\022\023\n\017Smoot"
-    "hSparsePhi\020\003\022\023\n\017DecorrelatorPhi\020\004\022\024\n\020Mul"
-    "tiLanguagePhi\020\005\"8\n\024DirichletThetaConfig\022"
-    " \n\005alpha\030\001 \003(\0132\021.artm.DoubleArray\"-\n\022Dir"
-    "ichletPhiConfig\022\027\n\017dictionary_name\030\001 \001(\t"
-    "\"\207\001\n\027SmoothSparseThetaConfig\022\037\n\027backgrou"
-    "nd_topics_count\030\001 \001(\005\022%\n\013alpha_topic\030\002 \001"
-    "(\0132\020.artm.FloatArray\022$\n\nalpha_iter\030\003 \001(\013"
-    "2\020.artm.FloatArray\"\200\001\n\025SmoothSparsePhiCo"
-    "nfig\022\037\n\027background_topics_count\030\001 \001(\005\022-\n"
-    "\023topics_coefficients\030\002 \001(\0132\020.artm.FloatA"
-    "rray\022\027\n\017dictionary_name\030\003 \001(\t\"F\n\025Decorre"
-    "latorPhiConfig\022-\n\024topics_to_regularize\030\001"
-    " \001(\0132\017.artm.BoolArray\"\030\n\026MultiLanguagePh"
-    "iConfig\"\207\001\n\030RegularizerInternalState\022\014\n\004"
-    "name\030\001 \001(\t\0221\n\004type\030\002 \001(\0162#.artm.Regulari"
-    "zerInternalState.Type\022\014\n\004data\030\003 \001(\014\"\034\n\004T"
-    "ype\022\024\n\020MultiLanguagePhi\020\005\"C\n\035MultiLangua"
-    "gePhiInternalState\022\"\n\027no_regularization_"
-    "calls\030\001 \001(\005:\0010\"|\n\020DictionaryConfig\022\014\n\004na"
-    "me\030\001 \001(\t\022$\n\005entry\030\002 \003(\0132\025.artm.Dictionar"
-    "yEntry\022\031\n\021total_token_count\030\003 \001(\005\022\031\n\021tot"
-    "al_items_count\030\004 \001(\005\"\247\001\n\017DictionaryEntry"
-    "\022\021\n\tkey_token\030\001 \001(\t\022\020\n\010class_id\030\002 \001(\t\022\r\n"
-    "\005value\030\003 \001(\002\022\024\n\014value_tokens\030\004 \003(\t\022 \n\006va"
-    "lues\030\005 \001(\0132\020.artm.FloatArray\022\023\n\013token_co"
-    "unt\030\006 \001(\005\022\023\n\013items_count\030\007 \001(\005\"\324\001\n\013Score"
-    "Config\022\014\n\004name\030\001 \001(\t\022$\n\004type\030\002 \001(\0162\026.art"
-    "m.ScoreConfig.Type\022\016\n\006config\030\003 \001(\014\"\200\001\n\004T"
-    "ype\022\016\n\nPerplexity\020\000\022\021\n\rSparsityTheta\020\001\022\017"
-    "\n\013SparsityPhi\020\002\022\022\n\016ItemsProcessed\020\003\022\r\n\tT"
-    "opTokens\020\004\022\020\n\014ThetaSnippet\020\005\022\017\n\013TopicKer"
-    "nel\020\006\"\316\001\n\tScoreData\022\014\n\004name\030\001 \001(\t\022\"\n\004typ"
-    "e\030\002 \001(\0162\024.artm.ScoreData.Type\022\014\n\004data\030\003 "
-    "\001(\014\"\200\001\n\004Type\022\016\n\nPerplexity\020\000\022\021\n\rSparsity"
-    "Theta\020\001\022\017\n\013SparsityPhi\020\002\022\022\n\016ItemsProcess"
-    "ed\020\003\022\r\n\tTopTokens\020\004\022\020\n\014ThetaSnippet\020\005\022\017\n"
-    "\013TopicKernel\020\006\"\363\001\n\025PerplexityScoreConfig"
-    "\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013stream_na"
-    "me\030\002 \001(\t:\007@global\022J\n\nmodel_type\030\003 \001(\0162 ."
-    "artm.PerplexityScoreConfig.Type:\024Unigram"
-    "DocumentModel\022\027\n\017dictionary_name\030\004 \001(\t\"<"
-    "\n\004Type\022\030\n\024UnigramDocumentModel\020\000\022\032\n\026Unig"
-    "ramCollectionModel\020\001\"U\n\017PerplexityScore\022"
-    "\r\n\005value\030\001 \001(\001\022\013\n\003raw\030\002 \001(\001\022\022\n\nnormalize"
-    "r\030\003 \001(\001\022\022\n\nzero_words\030\004 \001(\005\"\222\001\n\030Sparsity"
-    "ThetaScoreConfig\022\031\n\nfield_name\030\001 \001(\t:\005@b"
-    "ody\022\034\n\013stream_name\030\002 \001(\t:\007@global\022\023\n\003eps"
-    "\030\003 \001(\002:\0061e-037\022(\n\017topics_to_score\030\004 \001(\0132"
-    "\017.artm.BoolArray\"N\n\022SparsityThetaScore\022\r"
-    "\n\005value\030\001 \001(\001\022\023\n\013zero_topics\030\002 \001(\005\022\024\n\014to"
-    "tal_topics\030\003 \001(\005\"W\n\026SparsityPhiScoreConf"
-    "ig\022\023\n\003eps\030\001 \001(\002:\0061e-037\022(\n\017topics_to_sco"
-    "re\030\002 \001(\0132\017.artm.BoolArray\"L\n\020SparsityPhi"
-    "Score\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_tokens\030\002 \001("
-    "\005\022\024\n\014total_tokens\030\003 \001(\005\"T\n\031ItemsProcesse"
-    "dScoreConfig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022"
-    "\034\n\013stream_name\030\002 \001(\t:\007@global\"$\n\023ItemsPr"
-    "ocessedScore\022\r\n\005value\030\001 \001(\005\"D\n\024TopTokens"
-    "ScoreConfig\022\026\n\nnum_tokens\030\001 \001(\005:\00210\022\024\n\010t"
-    "opic_id\030\002 \003(\005B\002\020\001\"3\n\016TopTokensScore\022!\n\006v"
-    "alues\030\001 \003(\0132\021.artm.StringArray\"g\n\027ThetaS"
-    "nippetScoreConfig\022\031\n\nfield_name\030\001 \001(\t:\005@"
-    "body\022\034\n\013stream_name\030\002 \001(\t:\007@global\022\023\n\007it"
-    "em_id\030\003 \003(\005B\002\020\001\"F\n\021ThetaSnippetScore\022\017\n\007"
-    "item_id\030\001 \003(\005\022 \n\006values\030\002 \003(\0132\020.artm.Flo"
-    "atArray\"\200\001\n\026TopicKernelScoreConfig\022\023\n\003ep"
-    "s\030\001 \001(\002:\0061e-037\022(\n\017topics_to_score\030\002 \001(\013"
-    "2\017.artm.BoolArray\022\'\n\032probability_mass_th"
-    "reshold\030\003 \001(\001:\0030.1\"\355\001\n\020TopicKernelScore\022"
-    "&\n\013kernel_size\030\001 \001(\0132\021.artm.DoubleArray\022"
-    "(\n\rkernel_purity\030\002 \001(\0132\021.artm.DoubleArra"
-    "y\022*\n\017kernel_contrast\030\003 \001(\0132\021.artm.Double"
-    "Array\022\033\n\023average_kernel_size\030\004 \001(\001\022\035\n\025av"
-    "erage_kernel_purity\030\005 \001(\001\022\037\n\027average_ker"
-    "nel_contrast\030\006 \001(\001\"\200\002\n\nTopicModel\022\024\n\004nam"
-    "e\030\001 \001(\t:\006@model\022\024\n\014topics_count\030\002 \001(\005\022\022\n"
-    "\ntopic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rtoke"
-    "n_weights\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010cla"
-    "ss_id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\032U\n\023TopicM"
-    "odelInternals\022\036\n\004n_wt\030\001 \003(\0132\020.artm.Float"
-    "Array\022\036\n\004r_wt\030\002 \003(\0132\020.artm.FloatArray\"b\n"
-    "\013ThetaMatrix\022\032\n\nmodel_name\030\001 \001(\t:\006@model"
-    "\022\017\n\007item_id\030\002 \003(\005\022&\n\014item_weights\030\003 \003(\0132"
-    "\020.artm.FloatArray\"\301\002\n\026CollectionParserCo"
-    "nfig\022B\n\006format\030\001 \001(\0162#.artm.CollectionPa"
-    "rserConfig.Format:\rBagOfWordsUci\022\031\n\021docw"
-    "ord_file_path\030\002 \001(\t\022\027\n\017vocab_file_path\030\003"
-    " \001(\t\022\025\n\rtarget_folder\030\004 \001(\t\022\034\n\024dictionar"
-    "y_file_name\030\005 \001(\t\022!\n\023num_items_per_batch"
-    "\030\006 \001(\005:\0041000\022\036\n\026cooccurrence_file_name\030\007"
-    " \001(\t\022\032\n\022cooccurrence_token\030\010 \003(\t\"\033\n\006Form"
-    "at\022\021\n\rBagOfWordsUci\020\000\"f\n\024SynchronizeMode"
-    "lArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014decay_weigh"
-    "t\030\002 \001(\002:\0011\022!\n\023invoke_regularizers\030\003 \001(\010:"
-    "\004true\"B\n\023InitializeModelArgs\022\022\n\nmodel_na"
-    "me\030\001 \001(\t\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n\021Get"
-    "TopicModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nto"
-    "pic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_i"
-    "d\030\004 \003(\t\"D\n\022GetThetaMatrixArgs\022\022\n\nmodel_n"
-    "ame\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch", 5757);
+    "\034\n\016use_sparse_bow\030\016 \001(\010:\004true\"\343\001\n\021Regula"
+    "rizerConfig\022\014\n\004name\030\001 \001(\t\022*\n\004type\030\002 \001(\0162"
+    "\034.artm.RegularizerConfig.Type\022\016\n\006config\030"
+    "\003 \001(\014\"\203\001\n\004Type\022\022\n\016DirichletTheta\020\000\022\020\n\014Di"
+    "richletPhi\020\001\022\025\n\021SmoothSparseTheta\020\002\022\023\n\017S"
+    "moothSparsePhi\020\003\022\023\n\017DecorrelatorPhi\020\004\022\024\n"
+    "\020MultiLanguagePhi\020\005\"8\n\024DirichletThetaCon"
+    "fig\022 \n\005alpha\030\001 \003(\0132\021.artm.DoubleArray\"-\n"
+    "\022DirichletPhiConfig\022\027\n\017dictionary_name\030\001"
+    " \001(\t\"\207\001\n\027SmoothSparseThetaConfig\022\037\n\027back"
+    "ground_topics_count\030\001 \001(\005\022%\n\013alpha_topic"
+    "\030\002 \001(\0132\020.artm.FloatArray\022$\n\nalpha_iter\030\003"
+    " \001(\0132\020.artm.FloatArray\"\200\001\n\025SmoothSparseP"
+    "hiConfig\022\037\n\027background_topics_count\030\001 \001("
+    "\005\022-\n\023topics_coefficients\030\002 \001(\0132\020.artm.Fl"
+    "oatArray\022\027\n\017dictionary_name\030\003 \001(\t\"F\n\025Dec"
+    "orrelatorPhiConfig\022-\n\024topics_to_regulari"
+    "ze\030\001 \001(\0132\017.artm.BoolArray\"\030\n\026MultiLangua"
+    "gePhiConfig\"\207\001\n\030RegularizerInternalState"
+    "\022\014\n\004name\030\001 \001(\t\0221\n\004type\030\002 \001(\0162#.artm.Regu"
+    "larizerInternalState.Type\022\014\n\004data\030\003 \001(\014\""
+    "\034\n\004Type\022\024\n\020MultiLanguagePhi\020\005\"C\n\035MultiLa"
+    "nguagePhiInternalState\022\"\n\027no_regularizat"
+    "ion_calls\030\001 \001(\005:\0010\"|\n\020DictionaryConfig\022\014"
+    "\n\004name\030\001 \001(\t\022$\n\005entry\030\002 \003(\0132\025.artm.Dicti"
+    "onaryEntry\022\031\n\021total_token_count\030\003 \001(\005\022\031\n"
+    "\021total_items_count\030\004 \001(\005\"\247\001\n\017DictionaryE"
+    "ntry\022\021\n\tkey_token\030\001 \001(\t\022\020\n\010class_id\030\002 \001("
+    "\t\022\r\n\005value\030\003 \001(\002\022\024\n\014value_tokens\030\004 \003(\t\022 "
+    "\n\006values\030\005 \001(\0132\020.artm.FloatArray\022\023\n\013toke"
+    "n_count\030\006 \001(\005\022\023\n\013items_count\030\007 \001(\005\"\324\001\n\013S"
+    "coreConfig\022\014\n\004name\030\001 \001(\t\022$\n\004type\030\002 \001(\0162\026"
+    ".artm.ScoreConfig.Type\022\016\n\006config\030\003 \001(\014\"\200"
+    "\001\n\004Type\022\016\n\nPerplexity\020\000\022\021\n\rSparsityTheta"
+    "\020\001\022\017\n\013SparsityPhi\020\002\022\022\n\016ItemsProcessed\020\003\022"
+    "\r\n\tTopTokens\020\004\022\020\n\014ThetaSnippet\020\005\022\017\n\013Topi"
+    "cKernel\020\006\"\316\001\n\tScoreData\022\014\n\004name\030\001 \001(\t\022\"\n"
+    "\004type\030\002 \001(\0162\024.artm.ScoreData.Type\022\014\n\004dat"
+    "a\030\003 \001(\014\"\200\001\n\004Type\022\016\n\nPerplexity\020\000\022\021\n\rSpar"
+    "sityTheta\020\001\022\017\n\013SparsityPhi\020\002\022\022\n\016ItemsPro"
+    "cessed\020\003\022\r\n\tTopTokens\020\004\022\020\n\014ThetaSnippet\020"
+    "\005\022\017\n\013TopicKernel\020\006\"\363\001\n\025PerplexityScoreCo"
+    "nfig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013strea"
+    "m_name\030\002 \001(\t:\007@global\022J\n\nmodel_type\030\003 \001("
+    "\0162 .artm.PerplexityScoreConfig.Type:\024Uni"
+    "gramDocumentModel\022\027\n\017dictionary_name\030\004 \001"
+    "(\t\"<\n\004Type\022\030\n\024UnigramDocumentModel\020\000\022\032\n\026"
+    "UnigramCollectionModel\020\001\"U\n\017PerplexitySc"
+    "ore\022\r\n\005value\030\001 \001(\001\022\013\n\003raw\030\002 \001(\001\022\022\n\nnorma"
+    "lizer\030\003 \001(\001\022\022\n\nzero_words\030\004 \001(\005\"\222\001\n\030Spar"
+    "sityThetaScoreConfig\022\031\n\nfield_name\030\001 \001(\t"
+    ":\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@global\022\023\n"
+    "\003eps\030\003 \001(\002:\0061e-037\022(\n\017topics_to_score\030\004 "
+    "\001(\0132\017.artm.BoolArray\"N\n\022SparsityThetaSco"
+    "re\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_topics\030\002 \001(\005\022\024"
+    "\n\014total_topics\030\003 \001(\005\"W\n\026SparsityPhiScore"
+    "Config\022\023\n\003eps\030\001 \001(\002:\0061e-037\022(\n\017topics_to"
+    "_score\030\002 \001(\0132\017.artm.BoolArray\"L\n\020Sparsit"
+    "yPhiScore\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_tokens\030"
+    "\002 \001(\005\022\024\n\014total_tokens\030\003 \001(\005\"T\n\031ItemsProc"
+    "essedScoreConfig\022\031\n\nfield_name\030\001 \001(\t:\005@b"
+    "ody\022\034\n\013stream_name\030\002 \001(\t:\007@global\"$\n\023Ite"
+    "msProcessedScore\022\r\n\005value\030\001 \001(\005\"D\n\024TopTo"
+    "kensScoreConfig\022\026\n\nnum_tokens\030\001 \001(\005:\00210\022"
+    "\024\n\010topic_id\030\002 \003(\005B\002\020\001\"3\n\016TopTokensScore\022"
+    "!\n\006values\030\001 \003(\0132\021.artm.StringArray\"g\n\027Th"
+    "etaSnippetScoreConfig\022\031\n\nfield_name\030\001 \001("
+    "\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@global\022\023"
+    "\n\007item_id\030\003 \003(\005B\002\020\001\"F\n\021ThetaSnippetScore"
+    "\022\017\n\007item_id\030\001 \003(\005\022 \n\006values\030\002 \003(\0132\020.artm"
+    ".FloatArray\"\200\001\n\026TopicKernelScoreConfig\022\023"
+    "\n\003eps\030\001 \001(\002:\0061e-037\022(\n\017topics_to_score\030\002"
+    " \001(\0132\017.artm.BoolArray\022\'\n\032probability_mas"
+    "s_threshold\030\003 \001(\001:\0030.1\"\355\001\n\020TopicKernelSc"
+    "ore\022&\n\013kernel_size\030\001 \001(\0132\021.artm.DoubleAr"
+    "ray\022(\n\rkernel_purity\030\002 \001(\0132\021.artm.Double"
+    "Array\022*\n\017kernel_contrast\030\003 \001(\0132\021.artm.Do"
+    "ubleArray\022\033\n\023average_kernel_size\030\004 \001(\001\022\035"
+    "\n\025average_kernel_purity\030\005 \001(\001\022\037\n\027average"
+    "_kernel_contrast\030\006 \001(\001\"\200\002\n\nTopicModel\022\024\n"
+    "\004name\030\001 \001(\t:\006@model\022\024\n\014topics_count\030\002 \001("
+    "\005\022\022\n\ntopic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\r"
+    "token_weights\030\005 \003(\0132\020.artm.FloatArray\022\020\n"
+    "\010class_id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\032U\n\023To"
+    "picModelInternals\022\036\n\004n_wt\030\001 \003(\0132\020.artm.F"
+    "loatArray\022\036\n\004r_wt\030\002 \003(\0132\020.artm.FloatArra"
+    "y\"b\n\013ThetaMatrix\022\032\n\nmodel_name\030\001 \001(\t:\006@m"
+    "odel\022\017\n\007item_id\030\002 \003(\005\022&\n\014item_weights\030\003 "
+    "\003(\0132\020.artm.FloatArray\"\301\002\n\026CollectionPars"
+    "erConfig\022B\n\006format\030\001 \001(\0162#.artm.Collecti"
+    "onParserConfig.Format:\rBagOfWordsUci\022\031\n\021"
+    "docword_file_path\030\002 \001(\t\022\027\n\017vocab_file_pa"
+    "th\030\003 \001(\t\022\025\n\rtarget_folder\030\004 \001(\t\022\034\n\024dicti"
+    "onary_file_name\030\005 \001(\t\022!\n\023num_items_per_b"
+    "atch\030\006 \001(\005:\0041000\022\036\n\026cooccurrence_file_na"
+    "me\030\007 \001(\t\022\032\n\022cooccurrence_token\030\010 \003(\t\"\033\n\006"
+    "Format\022\021\n\rBagOfWordsUci\020\000\"f\n\024Synchronize"
+    "ModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014decay_w"
+    "eight\030\002 \001(\002:\0011\022!\n\023invoke_regularizers\030\003 "
+    "\001(\010:\004true\"B\n\023InitializeModelArgs\022\022\n\nmode"
+    "l_name\030\001 \001(\t\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n"
+    "\021GetTopicModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022"
+    "\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010cla"
+    "ss_id\030\004 \003(\t\"D\n\022GetThetaMatrixArgs\022\022\n\nmod"
+    "el_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batc"
+    "h", 5761);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -5010,7 +5011,7 @@ const int ModelConfig::kRegularizerNameFieldNumber;
 const int ModelConfig::kRegularizerTauFieldNumber;
 const int ModelConfig::kClassIdFieldNumber;
 const int ModelConfig::kClassWeightFieldNumber;
-const int ModelConfig::kSparseNdwFieldNumber;
+const int ModelConfig::kUseSparseBowFieldNumber;
 #endif  // !_MSC_VER
 
 ModelConfig::ModelConfig()
@@ -5036,7 +5037,7 @@ void ModelConfig::SharedCtor() {
   field_name_ = const_cast< ::std::string*>(_default_field_name_);
   stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
   reuse_theta_ = false;
-  sparse_ndw_ = true;
+  use_sparse_bow_ = true;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -5102,7 +5103,7 @@ void ModelConfig::Clear() {
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     reuse_theta_ = false;
-    sparse_ndw_ = true;
+    use_sparse_bow_ = true;
   }
   topic_name_.Clear();
   score_name_.Clear();
@@ -5350,19 +5351,19 @@ bool ModelConfig::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(109)) goto parse_class_weight;
-        if (input->ExpectTag(112)) goto parse_sparse_ndw;
+        if (input->ExpectTag(112)) goto parse_use_sparse_bow;
         break;
       }
 
-      // optional bool sparse_ndw = 14 [default = true];
+      // optional bool use_sparse_bow = 14 [default = true];
       case 14: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_sparse_ndw:
+         parse_use_sparse_bow:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &sparse_ndw_)));
-          set_has_sparse_ndw();
+                 input, &use_sparse_bow_)));
+          set_has_use_sparse_bow();
         } else {
           goto handle_uninterpreted;
         }
@@ -5483,9 +5484,9 @@ void ModelConfig::SerializeWithCachedSizes(
       13, this->class_weight(i), output);
   }
 
-  // optional bool sparse_ndw = 14 [default = true];
-  if (has_sparse_ndw()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(14, this->sparse_ndw(), output);
+  // optional bool use_sparse_bow = 14 [default = true];
+  if (has_use_sparse_bow()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(14, this->use_sparse_bow(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -5594,9 +5595,9 @@ void ModelConfig::SerializeWithCachedSizes(
       WriteFloatToArray(13, this->class_weight(i), target);
   }
 
-  // optional bool sparse_ndw = 14 [default = true];
-  if (has_sparse_ndw()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(14, this->sparse_ndw(), target);
+  // optional bool use_sparse_bow = 14 [default = true];
+  if (has_use_sparse_bow()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(14, this->use_sparse_bow(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -5657,8 +5658,8 @@ int ModelConfig::ByteSize() const {
       total_size += 1 + 1;
     }
 
-    // optional bool sparse_ndw = 14 [default = true];
-    if (has_sparse_ndw()) {
+    // optional bool use_sparse_bow = 14 [default = true];
+    if (has_use_sparse_bow()) {
       total_size += 1 + 1;
     }
 
@@ -5760,8 +5761,8 @@ void ModelConfig::MergeFrom(const ModelConfig& from) {
     if (from.has_reuse_theta()) {
       set_reuse_theta(from.reuse_theta());
     }
-    if (from.has_sparse_ndw()) {
-      set_sparse_ndw(from.sparse_ndw());
+    if (from.has_use_sparse_bow()) {
+      set_use_sparse_bow(from.use_sparse_bow());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -5799,7 +5800,7 @@ void ModelConfig::Swap(ModelConfig* other) {
     regularizer_tau_.Swap(&other->regularizer_tau_);
     class_id_.Swap(&other->class_id_);
     class_weight_.Swap(&other->class_weight_);
-    std::swap(sparse_ndw_, other->sparse_ndw_);
+    std::swap(use_sparse_bow_, other->use_sparse_bow_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -156,7 +156,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     std::shared_ptr< ::artm::PerplexityScore> perplexity =
       master_component->GetScoreAs< ::artm::PerplexityScore>(model, "PerplexityScore");
 
-    if (iter == 0) {
+    if (iter == 1) {
       expected_normalizer = perplexity->normalizer();
       EXPECT_GT(expected_normalizer, 0);
 
@@ -168,7 +168,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
         EXPECT_TRUE(true);
       }
 
-    } else if (iter >= 1) {
+    } else if (iter >= 2) {
       if (!is_network_mode && !online_processing) {
         // Verify that normalizer does not grow starting from second iteration.
         // This confirms that the Instance::ForceResetScores() function works as expected.
@@ -176,7 +176,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
       }
 
       if (online_processing)
-        EXPECT_EQ(perplexity->normalizer(), expected_normalizer * (iter + 1));
+        EXPECT_EQ(perplexity->normalizer(), expected_normalizer * iter);
     }
   }
 

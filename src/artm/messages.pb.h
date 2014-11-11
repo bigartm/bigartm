@@ -1734,12 +1734,12 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_class_weight();
 
-  // optional bool sparse_ndw = 14 [default = true];
-  inline bool has_sparse_ndw() const;
-  inline void clear_sparse_ndw();
-  static const int kSparseNdwFieldNumber = 14;
-  inline bool sparse_ndw() const;
-  inline void set_sparse_ndw(bool value);
+  // optional bool use_sparse_bow = 14 [default = true];
+  inline bool has_use_sparse_bow() const;
+  inline void clear_use_sparse_bow();
+  static const int kUseSparseBowFieldNumber = 14;
+  inline bool use_sparse_bow() const;
+  inline void set_use_sparse_bow(bool value);
 
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
@@ -1757,8 +1757,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_stream_name();
   inline void set_has_reuse_theta();
   inline void clear_has_reuse_theta();
-  inline void set_has_sparse_ndw();
-  inline void clear_has_sparse_ndw();
+  inline void set_has_use_sparse_bow();
+  inline void clear_has_use_sparse_bow();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -1778,7 +1778,7 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
-  bool sparse_ndw_;
+  bool use_sparse_bow_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
@@ -7606,26 +7606,26 @@ ModelConfig::mutable_class_weight() {
   return &class_weight_;
 }
 
-// optional bool sparse_ndw = 14 [default = true];
-inline bool ModelConfig::has_sparse_ndw() const {
+// optional bool use_sparse_bow = 14 [default = true];
+inline bool ModelConfig::has_use_sparse_bow() const {
   return (_has_bits_[0] & 0x00002000u) != 0;
 }
-inline void ModelConfig::set_has_sparse_ndw() {
+inline void ModelConfig::set_has_use_sparse_bow() {
   _has_bits_[0] |= 0x00002000u;
 }
-inline void ModelConfig::clear_has_sparse_ndw() {
+inline void ModelConfig::clear_has_use_sparse_bow() {
   _has_bits_[0] &= ~0x00002000u;
 }
-inline void ModelConfig::clear_sparse_ndw() {
-  sparse_ndw_ = true;
-  clear_has_sparse_ndw();
+inline void ModelConfig::clear_use_sparse_bow() {
+  use_sparse_bow_ = true;
+  clear_has_use_sparse_bow();
 }
-inline bool ModelConfig::sparse_ndw() const {
-  return sparse_ndw_;
+inline bool ModelConfig::use_sparse_bow() const {
+  return use_sparse_bow_;
 }
-inline void ModelConfig::set_sparse_ndw(bool value) {
-  set_has_sparse_ndw();
-  sparse_ndw_ = value;
+inline void ModelConfig::set_use_sparse_bow(bool value) {
+  set_has_use_sparse_bow();
+  use_sparse_bow_ = value;
 }
 
 // -------------------------------------------------------------------

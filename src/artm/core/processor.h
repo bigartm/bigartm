@@ -20,6 +20,8 @@
 #include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
 
+#include "artm/utility/blas.h"
+
 namespace artm {
 namespace core {
 
@@ -27,9 +29,6 @@ class InstanceSchema;
 class Merger;
 class TopicModel;
 class TopicWeightIterator;
-
-template<typename T>
-class Matrix;
 
 class Processor : boost::noncopyable {
  public:
@@ -142,101 +141,6 @@ class Processor : boost::noncopyable {
     int count_;
   };
 };
-
-template<typename T>
-class Matrix {
- public:
-  Matrix(int no_rows = 0, int no_columns = 0, bool store_by_rows = true)
-    : no_rows_(no_rows),
-      no_columns_(no_columns),
-      store_by_rows_(store_by_rows),
-      data_(nullptr) {
-    if (no_rows > 0 && no_columns > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-    }
-  }
-
-  Matrix(const Matrix<T>& src_matrix) {
-    no_rows_ = src_matrix.no_rows();
-    no_columns_ = src_matrix.no_columns();
-    store_by_rows_ = src_matrix.store_by_rows_;
-    if (no_columns_ >0 && no_rows_ > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-      for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-        data_[i] = src_matrix.get_data()[i];
-      }
-    } else {
-      data_ = nullptr;
-    }
-  }
-
-  ~Matrix() {
-    delete[] data_;
-  }
-
-  void InitializeZeros() {
-    memset(data_, 0, sizeof(T) * no_rows_ * no_columns_);
-  }
-
-  T& operator() (int index_row, int index_col) {
-    assert(index_row < no_rows_);
-    assert(index_col < no_columns_);
-    if (store_by_rows_) {
-      return data_[index_row * no_columns_ + index_col];
-    }
-    return data_[index_col * no_rows_ + index_row];
-  }
-
-  const T& operator() (int index_row, int index_col) const {
-    assert(index_row < no_rows_);
-    assert(index_col < no_columns_);
-    if (store_by_rows_) {
-      return data_[index_row * no_columns_ + index_col];
-    }
-    return data_[index_col * no_rows_ + index_row];
-  }
-
-  Matrix<T>& operator= (const Matrix<T>& src_matrix) {
-    no_rows_ = src_matrix.no_rows();
-    no_columns_ = src_matrix.no_columns();
-    store_by_rows_ = src_matrix.store_by_rows_;
-    if (data_ != nullptr) {
-      delete[] data_;
-    }
-    if (no_columns_ >0 && no_rows_ > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-      for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-        data_[i] = src_matrix.get_data()[i];
-      }
-    } else {
-      data_ = nullptr;
-    }
-
-    return *this;
-  }
-
-  int no_rows() const { return no_rows_; }
-  int no_columns() const { return no_columns_; }
-
-  T* get_data() {
-    return data_;
-  }
-
-  const T* get_data() const {
-    return data_;
-  }
-
- private:
-  int no_rows_;
-  int no_columns_;
-  bool store_by_rows_;
-  T* data_;
-};
-
-template<int operation>
-void ApplyByElement(Matrix<float>* result_matrix,
-                    const Matrix<float>& first_matrix,
-                    const Matrix<float>& second_matrix);
 
 }  // namespace core
 }  // namespace artm
