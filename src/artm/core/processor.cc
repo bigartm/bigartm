@@ -120,9 +120,9 @@ template<typename T>
 class CsrMatrix {
  public:
   explicit CsrMatrix(int m, int n, int nnz) : m_(m), n_(n), nnz_(nnz) {
-    ASSERT(m > 0 && n > 0 && nnz > 0);
+    assert(m > 0 && n > 0 && nnz > 0);
     val_.resize(nnz);
-    col_int_.resize(nnz);
+    col_ind_.resize(nnz);
     row_ptr_.resize(m + 1);
   }
 
