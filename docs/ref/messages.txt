@@ -1350,6 +1350,7 @@ Represents a theta matrix.
     optional string model_name = 1 [default = "@model"];
     repeated int32 item_id = 2;
     repeated FloatArray item_weights = 3;
+    repeated string topic_name = 4;
   }
 
 .. attribute:: ThetaMatrix.model_name
@@ -1367,6 +1368,10 @@ Represents a theta matrix.
    The length of this repeated field will match the length of the repeated field 'item_id'.
    The length of each FloatArray will match the number of topics in the model.
 
+.. attribute:: ThetaMatrix.topic_name
+
+   A set of values that represent the names of the topics, included in this theta matrix.
+   The names correspond to :attr:`ModelConfig.topic_name`.
 
 .. _CollectionParserConfig:
 
@@ -1618,6 +1623,8 @@ Represents an argument of get theta matrix operation.
   message GetThetaMatrixArgs {
     optional string model_name = 1;
     optional Batch batch = 2;
+    repeated string topic_name = 3;
+    repeated int32 topic_index = 4;
   }
 
 .. attribute:: GetThetaMatrixArgs.model_name
@@ -1627,3 +1634,19 @@ Represents an argument of get theta matrix operation.
 .. attribute:: GetThetaMatrixArgs.batch
 
   The :ref:`Batch` to classify with the model.
+
+.. attribute:: GetThetaMatrixArgs.topic_name
+
+  The list of topic names, describing which topics to include in the Theta matrix.
+  The values of this field should correspond to values in :attr:`ModelConfig.topic_name`.
+  This field is optional, by default all topics will be included.
+
+.. attribute:: GetThetaMatrixArgs.topic_index
+
+  The list of topic indices, describing which topics to include in the Theta matrix.
+  The values of this field should be an integers between 0 and (:attr:`ModelConfig.topics_count` - 1).
+  This field is optional, by default all topics will be included.
+
+  Note that this field acts similar to :attr:`GetThetaMatrixArgs.topic_name`.
+  It is not allowed to specify both *topic_index* and *topic_name* at the same time.
+  The recommendation is to use *topic_name*.

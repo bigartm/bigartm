@@ -31,6 +31,7 @@ message DataLoaderCacheEntry {
   optional string batch_uuid = 2;
   repeated int32 item_id = 3;
   repeated FloatArray theta = 4;
+  repeated string topic_name = 5;
 }
 
 // A message containing all data to transfer from DataLoader to Processor

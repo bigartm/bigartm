@@ -5147,6 +5147,22 @@ class ThetaMatrix : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
       mutable_item_weights();
 
+  // repeated string topic_name = 4;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 4;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
   // @@protoc_insertion_point(class_scope:artm.ThetaMatrix)
  private:
   inline void set_has_model_name();
@@ -5158,9 +5174,10 @@ class ThetaMatrix : public ::google::protobuf::Message {
   static ::std::string* _default_model_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > item_weights_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5801,6 +5818,34 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline ::artm::Batch* release_batch();
   inline void set_allocated_batch(::artm::Batch* batch);
 
+  // repeated string topic_name = 3;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 3;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated int32 topic_index = 4;
+  inline int topic_index_size() const;
+  inline void clear_topic_index();
+  static const int kTopicIndexFieldNumber = 4;
+  inline ::google::protobuf::int32 topic_index(int index) const;
+  inline void set_topic_index(int index, ::google::protobuf::int32 value);
+  inline void add_topic_index(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      topic_index() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_topic_index();
+
   // @@protoc_insertion_point(class_scope:artm.GetThetaMatrixArgs)
  private:
   inline void set_has_model_name();
@@ -5812,9 +5857,11 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
 
   ::std::string* model_name_;
   ::artm::Batch* batch_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -11157,6 +11204,50 @@ ThetaMatrix::mutable_item_weights() {
   return &item_weights_;
 }
 
+// repeated string topic_name = 4;
+inline int ThetaMatrix::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void ThetaMatrix::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& ThetaMatrix::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* ThetaMatrix::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void ThetaMatrix::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void ThetaMatrix::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void ThetaMatrix::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ThetaMatrix::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void ThetaMatrix::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void ThetaMatrix::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void ThetaMatrix::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ThetaMatrix::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ThetaMatrix::mutable_topic_name() {
+  return &topic_name_;
+}
+
 // -------------------------------------------------------------------
 
 // CollectionParserConfig
@@ -12178,6 +12269,75 @@ inline void GetThetaMatrixArgs::set_allocated_batch(::artm::Batch* batch) {
   } else {
     clear_has_batch();
   }
+}
+
+// repeated string topic_name = 3;
+inline int GetThetaMatrixArgs::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void GetThetaMatrixArgs::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& GetThetaMatrixArgs::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* GetThetaMatrixArgs::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void GetThetaMatrixArgs::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void GetThetaMatrixArgs::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void GetThetaMatrixArgs::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetThetaMatrixArgs::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void GetThetaMatrixArgs::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void GetThetaMatrixArgs::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void GetThetaMatrixArgs::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+GetThetaMatrixArgs::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+GetThetaMatrixArgs::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated int32 topic_index = 4;
+inline int GetThetaMatrixArgs::topic_index_size() const {
+  return topic_index_.size();
+}
+inline void GetThetaMatrixArgs::clear_topic_index() {
+  topic_index_.Clear();
+}
+inline ::google::protobuf::int32 GetThetaMatrixArgs::topic_index(int index) const {
+  return topic_index_.Get(index);
+}
+inline void GetThetaMatrixArgs::set_topic_index(int index, ::google::protobuf::int32 value) {
+  topic_index_.Set(index, value);
+}
+inline void GetThetaMatrixArgs::add_topic_index(::google::protobuf::int32 value) {
+  topic_index_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+GetThetaMatrixArgs::topic_index() const {
+  return topic_index_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+GetThetaMatrixArgs::mutable_topic_index() {
+  return &topic_index_;
 }
 
 

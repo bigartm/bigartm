@@ -418,7 +418,7 @@ ArtmRequestThetaMatrix
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
    :param const_char* get_theta_args:
-      Serialized :ref:`GetThetaArgs` message,
+      Serialized :ref:`GetThetaMatrixArgs` message,
       describing the arguments of this operation.
 
    :param int length: The length in bytes of the *get_theta_args* message.
@@ -437,7 +437,7 @@ ArtmRequestTopicModel
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
    :param const_char* get_model_args:
-      Serialized :ref:`GetModelArgs` message,
+      Serialized :ref:`GetTopicModelArgs` message,
       describing the arguments of this operation.
 
    :param int length: The length in bytes of the *get_model_args* message.
