@@ -590,6 +590,7 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
   // process part and store result in merger queue
   model_increment->set_model_name(model_config.name());
   model_increment->set_topics_count(topic_size);
+  model_increment->mutable_topic_name()->CopyFrom(topic_model.topic_name());
   for (int token_index = 0; token_index < part.batch().token_size(); ++token_index) {
     Token token = Token(batch.class_id(token_index), batch.token(token_index));
     model_increment->add_token(token.keyword);

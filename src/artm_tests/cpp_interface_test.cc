@@ -96,6 +96,12 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   // Create model
   artm::ModelConfig model_config;
   model_config.set_topics_count(nTopics);
+  model_config.add_topic_name("first topic");
+  model_config.add_topic_name("second topic");
+  model_config.add_topic_name("third topic");
+  model_config.add_topic_name("4th topic");
+  model_config.add_topic_name("5th topic");
+  EXPECT_EQ(model_config.topic_name_size(), nTopics);
   model_config.add_score_name("PerplexityScore");
   model_config.add_regularizer_name(reg_decor_name);
   model_config.add_regularizer_tau(1);
@@ -145,7 +151,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     artm::GetTopicModelArgs args;
     args.set_model_name(model.name());
     for (int i = 0; i < nTopics; ++i) {
-      args.add_topic_name("@topic_" + std::to_string(i));
+      args.add_topic_name(model_config.topic_name(i));
     }
     for (int i = 0; i < nTokens; i++) {
       args.add_token("token" + std::to_string(i));
@@ -206,7 +212,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   model.Disable();
 
   int nUniqueTokens = nTokens;
-  EXPECT_EQ(nUniqueTokens, topic_model->token_size());
+  ASSERT_EQ(nUniqueTokens, topic_model->token_size());
   auto first_token_topics = topic_model->token_weights(0);
   EXPECT_EQ(first_token_topics.value_size(), nTopics);
 
@@ -219,7 +225,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
       EXPECT_EQ(theta_matrix->item_id_size(), nDocs);
       for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
         const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
-        EXPECT_EQ(weights.value_size(), nTopics);
+        ASSERT_EQ(weights.value_size(), nTopics);
         float sum = 0;
         for (int topic_index = 0; topic_index < weights.value_size(); ++topic_index) {
           float weight = weights.value(topic_index);
@@ -228,6 +234,33 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
         }
 
         EXPECT_LE(abs(sum - 1), 0.001);
+      }
+
+      args.add_topic_index(2); args.add_topic_index(3);  // retrieve 2nd and 3rd topic
+      std::shared_ptr< ::artm::ThetaMatrix> theta_matrix23 = master_component->GetThetaMatrix(args);
+      EXPECT_EQ(theta_matrix23->item_id_size(), nDocs);
+      for (int item_index = 0; item_index < theta_matrix23->item_id_size(); ++item_index) {
+        const ::artm::FloatArray& weights23 = theta_matrix23->item_weights(item_index);
+        const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
+        ASSERT_EQ(weights23.value_size(), 2);
+        EXPECT_EQ(weights23.value(0), weights.value(2));
+        EXPECT_EQ(weights23.value(1), weights.value(3));
+      }
+
+      args.clear_topic_index();
+      args.add_topic_name(topic_model->topic_name(2));  // retrieve 2nd and 3rd topic (but use topic_names)
+      args.add_topic_name(topic_model->topic_name(3));
+      theta_matrix23 = master_component->GetThetaMatrix(args);
+      EXPECT_EQ(theta_matrix23->topic_name_size(), 2);
+      EXPECT_EQ(theta_matrix23->topic_name(0), topic_model->topic_name(2));
+      EXPECT_EQ(theta_matrix23->topic_name(1), topic_model->topic_name(3));
+      EXPECT_EQ(theta_matrix23->item_id_size(), nDocs);
+      for (int item_index = 0; item_index < theta_matrix23->item_id_size(); ++item_index) {
+        const ::artm::FloatArray& weights23 = theta_matrix23->item_weights(item_index);
+        const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
+        ASSERT_EQ(weights23.value_size(), 2);
+        EXPECT_EQ(weights23.value(0), weights.value(2));
+        EXPECT_EQ(weights23.value(1), weights.value(3));
       }
     }
 
@@ -273,7 +306,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     artm::GetTopicModelArgs args;
     args.set_model_name(model2.name());
     for (int i = 0; i < nTopics; ++i) {
-      args.add_topic_name("@topic_" + std::to_string(i));
+      args.add_topic_name(model_config.topic_name(i));
     }
     args.add_token("my overwritten token");
     args.add_class_id("@default_class");
@@ -312,7 +345,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   artm::GetTopicModelArgs args;
   args.set_model_name(model3.name());
   for (int i = 0; i < nTopics; ++i) {
-    args.add_topic_name("@topic_" + std::to_string(i));
+    args.add_topic_name(model_config.topic_name(i));
   }
   for (int i = 0; i < nTokens; i++) {
     args.add_token("my_tok_" + std::to_string(i));
@@ -325,18 +358,25 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   ASSERT_EQ(new_topic_model3->token(1), "my_tok_2");
   ASSERT_EQ(new_topic_model3->token(2), "my_tok_3");
 
-  model_config.add_topic_name("@topic_2");
-  model_config.add_topic_name("@topic_3");
-  model_config.add_topic_name("@topic_4");
-  model_config.add_topic_name("@topic_5");
-  model_config.set_name("model5_name");
-  model3.Reconfigure(model_config);
+  artm::ModelConfig model_config2(model_config);
+  model_config2.clear_topic_name();
+  model_config2.add_topic_name(model_config.topic_name(1));
+  model_config2.add_topic_name(model_config.topic_name(2));
+  model_config2.add_topic_name(model_config.topic_name(3));
+  model_config2.add_topic_name(model_config.topic_name(4));
+  model_config2.set_name("model5_name");
+  model3.Reconfigure(model_config2);
 
   model3.Synchronize(0.0);
   args.Clear();
   args.set_model_name("model5_name");
   auto new_topic_model4 = master_component->GetTopicModel(args);
   ASSERT_EQ(new_topic_model4->topics_count(), 4);
+  ASSERT_EQ(new_topic_model4->topic_name_size(), 4);
+  EXPECT_EQ(new_topic_model4->topic_name(0), model_config.topic_name(1));
+  EXPECT_EQ(new_topic_model4->topic_name(1), model_config.topic_name(2));
+  EXPECT_EQ(new_topic_model4->topic_name(2), model_config.topic_name(3));
+  EXPECT_EQ(new_topic_model4->topic_name(3), model_config.topic_name(4));
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode

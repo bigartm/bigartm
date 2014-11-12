@@ -171,10 +171,32 @@ void LocalDataLoader::DisposeModel(ModelName model_name) {
 
 bool LocalDataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
+  if (get_theta_args.topic_index_size() != 0 && get_theta_args.topic_name_size() != 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "GetThetaMatrixArgs.topic_name and GetThetaMatrixArgs.topic_index must not be used together"));
+
   std::vector<boost::uuids::uuid> batch_uuids = generation_->batch_uuids();
   std::string model_name = get_theta_args.model_name();
 
+  auto& topic_name = get_theta_args.topic_name();
+  auto& topic_index = get_theta_args.topic_index();
+
   theta_matrix->set_model_name(model_name);
+
+  bool all_topics = (topic_name.size() == 0 && topic_index.size() == 0);
+  int max_topic_index = -1;
+  std::vector<int> topic_indices;
+  if (topic_index.size() > 0) {
+    for (int i = 0; i < topic_index.size(); ++i) {
+      topic_indices.push_back(topic_index.Get(i));
+      if (topic_index.Get(i) > max_topic_index)
+        max_topic_index = topic_index.Get(i);
+    }
+  }
+  if (topic_name.size() > 0) {
+    theta_matrix->mutable_topic_name()->CopyFrom(topic_name);
+  }
+
   for (auto &batch_uuid : batch_uuids) {
     auto cache = cache_.get(CacheKey(batch_uuid, model_name));
     if (cache == nullptr) {
@@ -182,9 +204,38 @@ bool LocalDataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
       continue;
     }
 
+    bool skip = false;
+    if (topic_name.size() > 0) {
+      topic_indices.clear();
+      for (int i = 0; i < topic_name.size(); ++i) {
+        int index = repeated_field_index_of(cache->topic_name(), topic_name.Get(i));
+        if (index == -1) {
+          skip = true;
+          LOG(WARNING) << "Topic " << topic_name.Get(i) << " has not been found in cache entry for batch "
+                       << batch_uuid << ". The resulting ThetaMatrix will be lacking some items.";
+        }
+
+        topic_indices.push_back(index);
+      }
+    }
+
+    if (skip) continue;  // go to next batch_uuid.
+
     for (int item_index = 0; item_index < cache->item_id_size(); ++item_index) {
+      const artm::FloatArray& item_theta = cache->theta(item_index);
+      if (all_topics) {
+        theta_matrix->add_item_weights()->CopyFrom(item_theta);
+      } else {
+        if (max_topic_index >= item_theta.value_size())
+          continue;  // skip the item to avoid crash.
+
+        ::artm::FloatArray* theta_vec = theta_matrix->add_item_weights();
+        for (int i = 0; i < topic_indices.size(); ++i) {
+          theta_vec->add_value(item_theta.value(topic_indices[i]));
+        }
+      }
+
       theta_matrix->add_item_id(cache->item_id(item_index));
-      theta_matrix->add_item_weights()->CopyFrom(cache->theta(item_index));
     }
   }
 
@@ -204,6 +255,7 @@ void LocalDataLoader::Callback(std::shared_ptr<const ModelIncrement> model_incre
       std::shared_ptr<DataLoaderCacheEntry> cache_entry(new DataLoaderCacheEntry());
       cache_entry->set_batch_uuid(uuid_str);
       cache_entry->set_model_name(model_name);
+      cache_entry->mutable_topic_name()->CopyFrom(model_increment->topic_name());
       for (int item_index = 0; item_index < model_increment->item_id_size(); ++item_index) {
         cache_entry->add_item_id(model_increment->item_id(item_index));
         cache_entry->add_theta()->CopyFrom(model_increment->theta(item_index));

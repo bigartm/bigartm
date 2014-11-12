@@ -155,11 +155,12 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Void));
   DataLoaderCacheEntry_descriptor_ = file->message_type(5);
-  static const int DataLoaderCacheEntry_offsets_[4] = {
+  static const int DataLoaderCacheEntry_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, batch_uuid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, item_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, theta_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, topic_name_),
   };
   DataLoaderCacheEntry_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -436,81 +437,82 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "artm/messages.proto\"\031\n\004Mask\022\021\n\005value\030\001 \003"
     "(\010B\002\020\001\"\025\n\004Bool\022\r\n\005value\030\001 \001(\010\"\024\n\003Int\022\r\n\005"
     "value\030\001 \001(\005\"\027\n\006String\022\r\n\005value\030\001 \001(\t\"\006\n\004"
-    "Void\"p\n\024DataLoaderCacheEntry\022\022\n\nmodel_na"
-    "me\030\001 \001(\t\022\022\n\nbatch_uuid\030\002 \001(\t\022\017\n\007item_id\030"
-    "\003 \003(\005\022\037\n\005theta\030\004 \003(\0132\020.artm.FloatArray\"\262"
-    "\001\n\016ProcessorInput\022\032\n\005batch\030\001 \002(\0132\013.artm."
-    "Batch\022\022\n\nbatch_uuid\030\002 \002(\t\022$\n\013stream_mask"
-    "\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stream_name\030\005"
-    " \003(\t\0225\n\014cached_theta\030\006 \003(\0132\037.artm.core.D"
-    "ataLoaderCacheEntry\"\244\003\n\016ModelIncrement\022\022"
-    "\n\nmodel_name\030\001 \002(\t\022\024\n\014topics_count\030\002 \002(\005"
-    "\022\022\n\ntopic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\020\n\010c"
-    "lass_id\030\005 \003(\t\022\?\n\016operation_type\030\006 \003(\0162\'."
-    "artm.core.ModelIncrement.OperationType\022)"
-    "\n\017token_increment\030\007 \003(\0132\020.artm.FloatArra"
-    "y\022\022\n\nscore_name\030\010 \003(\t\022\r\n\005score\030\t \003(\014\022\017\n\007"
-    "item_id\030\n \003(\005\022\037\n\005theta\030\013 \003(\0132\020.artm.Floa"
-    "tArray\022\022\n\nbatch_uuid\030\014 \003(\t\"^\n\rOperationT"
-    "ype\022\024\n\020CreateIfNotExist\020\000\022\022\n\016IncrementVa"
-    "lue\020\001\022\022\n\016OverwriteValue\020\002\022\017\n\013DeleteToken"
-    "\020\003\"\034\n\010BatchIds\022\020\n\010batch_id\030\001 \003(\t\"U\n\034Crea"
-    "teOrReconfigureModelArgs\022\022\n\nmodel_name\030\002"
-    " \001(\t\022!\n\006config\030\003 \001(\0132\021.artm.ModelConfig\""
-    "&\n\020DisposeModelArgs\022\022\n\nmodel_name\030\002 \001(\t\""
-    "g\n\"CreateOrReconfigureRegularizerArgs\022\030\n"
-    "\020regularizer_name\030\002 \001(\t\022\'\n\006config\030\003 \001(\0132"
-    "\027.artm.RegularizerConfig\"2\n\026DisposeRegul"
-    "arizerArgs\022\030\n\020regularizer_name\030\002 \001(\t\"O\n!"
-    "CreateOrReconfigureDictionaryArgs\022*\n\ndic"
-    "tionary\030\002 \001(\0132\026.artm.DictionaryConfig\"0\n"
-    "\025DisposeDictionaryArgs\022\027\n\017dictionary_nam"
-    "e\030\002 \001(\t\":\n\020RequestScoreArgs\022\022\n\nmodel_nam"
-    "e\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t2\375\001\n\026MasterCo"
-    "mponentService\0229\n\013UpdateModel\022\031.artm.cor"
-    "e.ModelIncrement\032\017.artm.core.Void\022:\n\rRet"
-    "rieveModel\022\027.artm.GetTopicModelArgs\032\020.ar"
-    "tm.TopicModel\0225\n\016RequestBatches\022\016.artm.c"
-    "ore.Int\032\023.artm.core.BatchIds\0225\n\rReportBa"
-    "tches\022\023.artm.core.BatchIds\032\017.artm.core.V"
-    "oid2\341\013\n\025NodeControllerService\022K\n\033CreateO"
-    "rReconfigureInstance\022\033.artm.MasterCompon"
-    "entConfig\032\017.artm.core.Void\0223\n\017DisposeIns"
-    "tance\022\017.artm.core.Void\032\017.artm.core.Void\022"
-    "R\n\"CreateOrReconfigureMasterComponent\022\033."
-    "artm.MasterComponentConfig\032\017.artm.core.V"
-    "oid\022:\n\026DisposeMasterComponent\022\017.artm.cor"
-    "e.Void\032\017.artm.core.Void\022T\n\030CreateOrRecon"
-    "figureModel\022\'.artm.core.CreateOrReconfig"
-    "ureModelArgs\032\017.artm.core.Void\022<\n\014Dispose"
-    "Model\022\033.artm.core.DisposeModelArgs\032\017.art"
-    "m.core.Void\022`\n\036CreateOrReconfigureRegula"
-    "rizer\022-.artm.core.CreateOrReconfigureReg"
-    "ularizerArgs\032\017.artm.core.Void\022H\n\022Dispose"
-    "Regularizer\022!.artm.core.DisposeRegulariz"
-    "erArgs\032\017.artm.core.Void\022^\n\035CreateOrRecon"
-    "figureDictionary\022,.artm.core.CreateOrRec"
-    "onfigureDictionaryArgs\032\017.artm.core.Void\022"
-    "F\n\021DisposeDictionary\022 .artm.core.Dispose"
-    "DictionaryArgs\032\017.artm.core.Void\0227\n\023Force"
-    "PullTopicModel\022\017.artm.core.Void\032\017.artm.c"
-    "ore.Void\022@\n\034ForcePushTopicModelIncrement"
-    "\022\017.artm.core.Void\032\017.artm.core.Void\0228\n\023Ov"
-    "erwriteTopicModel\022\020.artm.TopicModel\032\017.ar"
-    "tm.core.Void\022>\n\021RequestTopicModel\022\027.artm"
-    ".GetTopicModelArgs\032\020.artm.TopicModel\022L\n\027"
-    "RequestRegularizerState\022\021.artm.core.Stri"
-    "ng\032\036.artm.RegularizerInternalState\022A\n\022Re"
-    "questThetaMatrix\022\030.artm.GetThetaMatrixAr"
-    "gs\032\021.artm.ThetaMatrix\022<\n\014RequestScore\022\033."
-    "artm.core.RequestScoreArgs\032\017.artm.ScoreD"
-    "ata\022(\n\010AddBatch\022\013.artm.Batch\032\017.artm.core"
-    ".Void\0223\n\017InvokeIteration\022\017.artm.core.Voi"
-    "d\032\017.artm.core.Void\022+\n\010WaitIdle\022\017.artm.co"
-    "re.Void\032\016.artm.core.Int\022\?\n\020SynchronizeMo"
-    "del\022\032.artm.SynchronizeModelArgs\032\017.artm.c"
-    "ore.Void\022=\n\017InitializeModel\022\031.artm.Initi"
-    "alizeModelArgs\032\017.artm.core.Void", 3151);
+    "Void\"\204\001\n\024DataLoaderCacheEntry\022\022\n\nmodel_n"
+    "ame\030\001 \001(\t\022\022\n\nbatch_uuid\030\002 \001(\t\022\017\n\007item_id"
+    "\030\003 \003(\005\022\037\n\005theta\030\004 \003(\0132\020.artm.FloatArray\022"
+    "\022\n\ntopic_name\030\005 \003(\t\"\262\001\n\016ProcessorInput\022\032"
+    "\n\005batch\030\001 \002(\0132\013.artm.Batch\022\022\n\nbatch_uuid"
+    "\030\002 \002(\t\022$\n\013stream_mask\030\004 \003(\0132\017.artm.core."
+    "Mask\022\023\n\013stream_name\030\005 \003(\t\0225\n\014cached_thet"
+    "a\030\006 \003(\0132\037.artm.core.DataLoaderCacheEntry"
+    "\"\244\003\n\016ModelIncrement\022\022\n\nmodel_name\030\001 \002(\t\022"
+    "\024\n\014topics_count\030\002 \002(\005\022\022\n\ntopic_name\030\003 \003("
+    "\t\022\r\n\005token\030\004 \003(\t\022\020\n\010class_id\030\005 \003(\t\022\?\n\016op"
+    "eration_type\030\006 \003(\0162\'.artm.core.ModelIncr"
+    "ement.OperationType\022)\n\017token_increment\030\007"
+    " \003(\0132\020.artm.FloatArray\022\022\n\nscore_name\030\010 \003"
+    "(\t\022\r\n\005score\030\t \003(\014\022\017\n\007item_id\030\n \003(\005\022\037\n\005th"
+    "eta\030\013 \003(\0132\020.artm.FloatArray\022\022\n\nbatch_uui"
+    "d\030\014 \003(\t\"^\n\rOperationType\022\024\n\020CreateIfNotE"
+    "xist\020\000\022\022\n\016IncrementValue\020\001\022\022\n\016OverwriteV"
+    "alue\020\002\022\017\n\013DeleteToken\020\003\"\034\n\010BatchIds\022\020\n\010b"
+    "atch_id\030\001 \003(\t\"U\n\034CreateOrReconfigureMode"
+    "lArgs\022\022\n\nmodel_name\030\002 \001(\t\022!\n\006config\030\003 \001("
+    "\0132\021.artm.ModelConfig\"&\n\020DisposeModelArgs"
+    "\022\022\n\nmodel_name\030\002 \001(\t\"g\n\"CreateOrReconfig"
+    "ureRegularizerArgs\022\030\n\020regularizer_name\030\002"
+    " \001(\t\022\'\n\006config\030\003 \001(\0132\027.artm.RegularizerC"
+    "onfig\"2\n\026DisposeRegularizerArgs\022\030\n\020regul"
+    "arizer_name\030\002 \001(\t\"O\n!CreateOrReconfigure"
+    "DictionaryArgs\022*\n\ndictionary\030\002 \001(\0132\026.art"
+    "m.DictionaryConfig\"0\n\025DisposeDictionaryA"
+    "rgs\022\027\n\017dictionary_name\030\002 \001(\t\":\n\020RequestS"
+    "coreArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_na"
+    "me\030\002 \001(\t2\375\001\n\026MasterComponentService\0229\n\013U"
+    "pdateModel\022\031.artm.core.ModelIncrement\032\017."
+    "artm.core.Void\022:\n\rRetrieveModel\022\027.artm.G"
+    "etTopicModelArgs\032\020.artm.TopicModel\0225\n\016Re"
+    "questBatches\022\016.artm.core.Int\032\023.artm.core"
+    ".BatchIds\0225\n\rReportBatches\022\023.artm.core.B"
+    "atchIds\032\017.artm.core.Void2\341\013\n\025NodeControl"
+    "lerService\022K\n\033CreateOrReconfigureInstanc"
+    "e\022\033.artm.MasterComponentConfig\032\017.artm.co"
+    "re.Void\0223\n\017DisposeInstance\022\017.artm.core.V"
+    "oid\032\017.artm.core.Void\022R\n\"CreateOrReconfig"
+    "ureMasterComponent\022\033.artm.MasterComponen"
+    "tConfig\032\017.artm.core.Void\022:\n\026DisposeMaste"
+    "rComponent\022\017.artm.core.Void\032\017.artm.core."
+    "Void\022T\n\030CreateOrReconfigureModel\022\'.artm."
+    "core.CreateOrReconfigureModelArgs\032\017.artm"
+    ".core.Void\022<\n\014DisposeModel\022\033.artm.core.D"
+    "isposeModelArgs\032\017.artm.core.Void\022`\n\036Crea"
+    "teOrReconfigureRegularizer\022-.artm.core.C"
+    "reateOrReconfigureRegularizerArgs\032\017.artm"
+    ".core.Void\022H\n\022DisposeRegularizer\022!.artm."
+    "core.DisposeRegularizerArgs\032\017.artm.core."
+    "Void\022^\n\035CreateOrReconfigureDictionary\022,."
+    "artm.core.CreateOrReconfigureDictionaryA"
+    "rgs\032\017.artm.core.Void\022F\n\021DisposeDictionar"
+    "y\022 .artm.core.DisposeDictionaryArgs\032\017.ar"
+    "tm.core.Void\0227\n\023ForcePullTopicModel\022\017.ar"
+    "tm.core.Void\032\017.artm.core.Void\022@\n\034ForcePu"
+    "shTopicModelIncrement\022\017.artm.core.Void\032\017"
+    ".artm.core.Void\0228\n\023OverwriteTopicModel\022\020"
+    ".artm.TopicModel\032\017.artm.core.Void\022>\n\021Req"
+    "uestTopicModel\022\027.artm.GetTopicModelArgs\032"
+    "\020.artm.TopicModel\022L\n\027RequestRegularizerS"
+    "tate\022\021.artm.core.String\032\036.artm.Regulariz"
+    "erInternalState\022A\n\022RequestThetaMatrix\022\030."
+    "artm.GetThetaMatrixArgs\032\021.artm.ThetaMatr"
+    "ix\022<\n\014RequestScore\022\033.artm.core.RequestSc"
+    "oreArgs\032\017.artm.ScoreData\022(\n\010AddBatch\022\013.a"
+    "rtm.Batch\032\017.artm.core.Void\0223\n\017InvokeIter"
+    "ation\022\017.artm.core.Void\032\017.artm.core.Void\022"
+    "+\n\010WaitIdle\022\017.artm.core.Void\032\016.artm.core"
+    ".Int\022\?\n\020SynchronizeModel\022\032.artm.Synchron"
+    "izeModelArgs\032\017.artm.core.Void\022=\n\017Initial"
+    "izeModel\022\031.artm.InitializeModelArgs\032\017.ar"
+    "tm.core.Void", 3172);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
@@ -1582,6 +1584,7 @@ const int DataLoaderCacheEntry::kModelNameFieldNumber;
 const int DataLoaderCacheEntry::kBatchUuidFieldNumber;
 const int DataLoaderCacheEntry::kItemIdFieldNumber;
 const int DataLoaderCacheEntry::kThetaFieldNumber;
+const int DataLoaderCacheEntry::kTopicNameFieldNumber;
 #endif  // !_MSC_VER
 
 DataLoaderCacheEntry::DataLoaderCacheEntry()
@@ -1656,6 +1659,7 @@ void DataLoaderCacheEntry::Clear() {
   }
   item_id_.Clear();
   theta_.Clear();
+  topic_name_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -1732,6 +1736,25 @@ bool DataLoaderCacheEntry::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(34)) goto parse_theta;
+        if (input->ExpectTag(42)) goto parse_topic_name;
+        break;
+      }
+
+      // repeated string topic_name = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_topic_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_topic_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->topic_name(this->topic_name_size() - 1).data(),
+            this->topic_name(this->topic_name_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(42)) goto parse_topic_name;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1784,6 +1807,15 @@ void DataLoaderCacheEntry::SerializeWithCachedSizes(
       4, this->theta(i), output);
   }
 
+  // repeated string topic_name = 5;
+  for (int i = 0; i < this->topic_name_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+    this->topic_name(i).data(), this->topic_name(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      5, this->topic_name(i), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -1823,6 +1855,15 @@ void DataLoaderCacheEntry::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         4, this->theta(i), target);
+  }
+
+  // repeated string topic_name = 5;
+  for (int i = 0; i < this->topic_name_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->topic_name(i).data(), this->topic_name(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(5, this->topic_name(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -1869,6 +1910,13 @@ int DataLoaderCacheEntry::ByteSize() const {
         this->theta(i));
   }
 
+  // repeated string topic_name = 5;
+  total_size += 1 * this->topic_name_size();
+  for (int i = 0; i < this->topic_name_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->topic_name(i));
+  }
+
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -1896,6 +1944,7 @@ void DataLoaderCacheEntry::MergeFrom(const DataLoaderCacheEntry& from) {
   GOOGLE_CHECK_NE(&from, this);
   item_id_.MergeFrom(from.item_id_);
   theta_.MergeFrom(from.theta_);
+  topic_name_.MergeFrom(from.topic_name_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_model_name()) {
       set_model_name(from.model_name());
@@ -1930,6 +1979,7 @@ void DataLoaderCacheEntry::Swap(DataLoaderCacheEntry* other) {
     std::swap(batch_uuid_, other->batch_uuid_);
     item_id_.Swap(&other->item_id_);
     theta_.Swap(&other->theta_);
+    topic_name_.Swap(&other->topic_name_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

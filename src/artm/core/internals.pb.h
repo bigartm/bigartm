@@ -587,6 +587,22 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
       mutable_theta();
 
+  // repeated string topic_name = 5;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 5;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
   // @@protoc_insertion_point(class_scope:artm.core.DataLoaderCacheEntry)
  private:
   inline void set_has_model_name();
@@ -600,9 +616,10 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   ::std::string* batch_uuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > theta_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -2116,6 +2133,50 @@ DataLoaderCacheEntry::theta() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
 DataLoaderCacheEntry::mutable_theta() {
   return &theta_;
+}
+
+// repeated string topic_name = 5;
+inline int DataLoaderCacheEntry::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void DataLoaderCacheEntry::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& DataLoaderCacheEntry::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* DataLoaderCacheEntry::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void DataLoaderCacheEntry::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void DataLoaderCacheEntry::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void DataLoaderCacheEntry::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DataLoaderCacheEntry::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void DataLoaderCacheEntry::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void DataLoaderCacheEntry::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void DataLoaderCacheEntry::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DataLoaderCacheEntry::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DataLoaderCacheEntry::mutable_topic_name() {
+  return &topic_name_;
 }
 
 // -------------------------------------------------------------------
