@@ -4202,31 +4202,49 @@ class TopTokensScoreConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 num_tokens() const;
   inline void set_num_tokens(::google::protobuf::int32 value);
 
-  // repeated int32 topic_id = 2 [packed = true];
-  inline int topic_id_size() const;
-  inline void clear_topic_id();
-  static const int kTopicIdFieldNumber = 2;
-  inline ::google::protobuf::int32 topic_id(int index) const;
-  inline void set_topic_id(int index, ::google::protobuf::int32 value);
-  inline void add_topic_id(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      topic_id() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_topic_id();
+  // optional string class_id = 2;
+  inline bool has_class_id() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id() const;
+  inline void set_class_id(const ::std::string& value);
+  inline void set_class_id(const char* value);
+  inline void set_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_class_id();
+  inline ::std::string* release_class_id();
+  inline void set_allocated_class_id(::std::string* class_id);
+
+  // repeated string topic_name = 3;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 3;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
   // @@protoc_insertion_point(class_scope:artm.TopTokensScoreConfig)
  private:
   inline void set_has_num_tokens();
   inline void clear_has_num_tokens();
+  inline void set_has_class_id();
+  inline void clear_has_class_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_id_;
-  mutable int _topic_id_cached_byte_size_;
+  ::std::string* class_id_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::int32 num_tokens_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -4291,27 +4309,84 @@ class TopTokensScore : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // repeated .artm.StringArray values = 1;
-  inline int values_size() const;
-  inline void clear_values();
-  static const int kValuesFieldNumber = 1;
-  inline const ::artm::StringArray& values(int index) const;
-  inline ::artm::StringArray* mutable_values(int index);
-  inline ::artm::StringArray* add_values();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::StringArray >&
-      values() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
-      mutable_values();
+  // optional int32 num_entries = 1;
+  inline bool has_num_entries() const;
+  inline void clear_num_entries();
+  static const int kNumEntriesFieldNumber = 1;
+  inline ::google::protobuf::int32 num_entries() const;
+  inline void set_num_entries(::google::protobuf::int32 value);
+
+  // repeated string topic_name = 2;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 2;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated int32 topic_index = 3;
+  inline int topic_index_size() const;
+  inline void clear_topic_index();
+  static const int kTopicIndexFieldNumber = 3;
+  inline ::google::protobuf::int32 topic_index(int index) const;
+  inline void set_topic_index(int index, ::google::protobuf::int32 value);
+  inline void add_topic_index(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      topic_index() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_topic_index();
+
+  // repeated string token = 4;
+  inline int token_size() const;
+  inline void clear_token();
+  static const int kTokenFieldNumber = 4;
+  inline const ::std::string& token(int index) const;
+  inline ::std::string* mutable_token(int index);
+  inline void set_token(int index, const ::std::string& value);
+  inline void set_token(int index, const char* value);
+  inline void set_token(int index, const char* value, size_t size);
+  inline ::std::string* add_token();
+  inline void add_token(const ::std::string& value);
+  inline void add_token(const char* value);
+  inline void add_token(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& token() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_token();
+
+  // repeated float weight = 5;
+  inline int weight_size() const;
+  inline void clear_weight();
+  static const int kWeightFieldNumber = 5;
+  inline float weight(int index) const;
+  inline void set_weight(int index, float value);
+  inline void add_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_weight();
 
   // @@protoc_insertion_point(class_scope:artm.TopTokensScore)
  private:
+  inline void set_has_num_entries();
+  inline void clear_has_num_entries();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::google::protobuf::RepeatedPtrField< ::artm::StringArray > values_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> token_;
+  ::google::protobuf::RepeatedField< float > weight_;
+  ::google::protobuf::int32 num_entries_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -10156,58 +10231,282 @@ inline void TopTokensScoreConfig::set_num_tokens(::google::protobuf::int32 value
   num_tokens_ = value;
 }
 
-// repeated int32 topic_id = 2 [packed = true];
-inline int TopTokensScoreConfig::topic_id_size() const {
-  return topic_id_.size();
+// optional string class_id = 2;
+inline bool TopTokensScoreConfig::has_class_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void TopTokensScoreConfig::clear_topic_id() {
-  topic_id_.Clear();
+inline void TopTokensScoreConfig::set_has_class_id() {
+  _has_bits_[0] |= 0x00000002u;
 }
-inline ::google::protobuf::int32 TopTokensScoreConfig::topic_id(int index) const {
-  return topic_id_.Get(index);
+inline void TopTokensScoreConfig::clear_has_class_id() {
+  _has_bits_[0] &= ~0x00000002u;
 }
-inline void TopTokensScoreConfig::set_topic_id(int index, ::google::protobuf::int32 value) {
-  topic_id_.Set(index, value);
+inline void TopTokensScoreConfig::clear_class_id() {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    class_id_->clear();
+  }
+  clear_has_class_id();
 }
-inline void TopTokensScoreConfig::add_topic_id(::google::protobuf::int32 value) {
-  topic_id_.Add(value);
+inline const ::std::string& TopTokensScoreConfig::class_id() const {
+  return *class_id_;
 }
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-TopTokensScoreConfig::topic_id() const {
-  return topic_id_;
+inline void TopTokensScoreConfig::set_class_id(const ::std::string& value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
 }
-inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-TopTokensScoreConfig::mutable_topic_id() {
-  return &topic_id_;
+inline void TopTokensScoreConfig::set_class_id(const char* value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void TopTokensScoreConfig::set_class_id(const char* value, size_t size) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopTokensScoreConfig::mutable_class_id() {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  return class_id_;
+}
+inline ::std::string* TopTokensScoreConfig::release_class_id() {
+  clear_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = class_id_;
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void TopTokensScoreConfig::set_allocated_class_id(::std::string* class_id) {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete class_id_;
+  }
+  if (class_id) {
+    set_has_class_id();
+    class_id_ = class_id;
+  } else {
+    clear_has_class_id();
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// repeated string topic_name = 3;
+inline int TopTokensScoreConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void TopTokensScoreConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& TopTokensScoreConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* TopTokensScoreConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void TopTokensScoreConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopTokensScoreConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopTokensScoreConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopTokensScoreConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void TopTokensScoreConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopTokensScoreConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopTokensScoreConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopTokensScoreConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopTokensScoreConfig::mutable_topic_name() {
+  return &topic_name_;
 }
 
 // -------------------------------------------------------------------
 
 // TopTokensScore
 
-// repeated .artm.StringArray values = 1;
-inline int TopTokensScore::values_size() const {
-  return values_.size();
+// optional int32 num_entries = 1;
+inline bool TopTokensScore::has_num_entries() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void TopTokensScore::clear_values() {
-  values_.Clear();
+inline void TopTokensScore::set_has_num_entries() {
+  _has_bits_[0] |= 0x00000001u;
 }
-inline const ::artm::StringArray& TopTokensScore::values(int index) const {
-  return values_.Get(index);
+inline void TopTokensScore::clear_has_num_entries() {
+  _has_bits_[0] &= ~0x00000001u;
 }
-inline ::artm::StringArray* TopTokensScore::mutable_values(int index) {
-  return values_.Mutable(index);
+inline void TopTokensScore::clear_num_entries() {
+  num_entries_ = 0;
+  clear_has_num_entries();
 }
-inline ::artm::StringArray* TopTokensScore::add_values() {
-  return values_.Add();
+inline ::google::protobuf::int32 TopTokensScore::num_entries() const {
+  return num_entries_;
 }
-inline const ::google::protobuf::RepeatedPtrField< ::artm::StringArray >&
-TopTokensScore::values() const {
-  return values_;
+inline void TopTokensScore::set_num_entries(::google::protobuf::int32 value) {
+  set_has_num_entries();
+  num_entries_ = value;
 }
-inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
-TopTokensScore::mutable_values() {
-  return &values_;
+
+// repeated string topic_name = 2;
+inline int TopTokensScore::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void TopTokensScore::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& TopTokensScore::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* TopTokensScore::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void TopTokensScore::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopTokensScore::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopTokensScore::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopTokensScore::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void TopTokensScore::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopTokensScore::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopTokensScore::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopTokensScore::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopTokensScore::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated int32 topic_index = 3;
+inline int TopTokensScore::topic_index_size() const {
+  return topic_index_.size();
+}
+inline void TopTokensScore::clear_topic_index() {
+  topic_index_.Clear();
+}
+inline ::google::protobuf::int32 TopTokensScore::topic_index(int index) const {
+  return topic_index_.Get(index);
+}
+inline void TopTokensScore::set_topic_index(int index, ::google::protobuf::int32 value) {
+  topic_index_.Set(index, value);
+}
+inline void TopTokensScore::add_topic_index(::google::protobuf::int32 value) {
+  topic_index_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+TopTokensScore::topic_index() const {
+  return topic_index_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+TopTokensScore::mutable_topic_index() {
+  return &topic_index_;
+}
+
+// repeated string token = 4;
+inline int TopTokensScore::token_size() const {
+  return token_.size();
+}
+inline void TopTokensScore::clear_token() {
+  token_.Clear();
+}
+inline const ::std::string& TopTokensScore::token(int index) const {
+  return token_.Get(index);
+}
+inline ::std::string* TopTokensScore::mutable_token(int index) {
+  return token_.Mutable(index);
+}
+inline void TopTokensScore::set_token(int index, const ::std::string& value) {
+  token_.Mutable(index)->assign(value);
+}
+inline void TopTokensScore::set_token(int index, const char* value) {
+  token_.Mutable(index)->assign(value);
+}
+inline void TopTokensScore::set_token(int index, const char* value, size_t size) {
+  token_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopTokensScore::add_token() {
+  return token_.Add();
+}
+inline void TopTokensScore::add_token(const ::std::string& value) {
+  token_.Add()->assign(value);
+}
+inline void TopTokensScore::add_token(const char* value) {
+  token_.Add()->assign(value);
+}
+inline void TopTokensScore::add_token(const char* value, size_t size) {
+  token_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopTokensScore::token() const {
+  return token_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopTokensScore::mutable_token() {
+  return &token_;
+}
+
+// repeated float weight = 5;
+inline int TopTokensScore::weight_size() const {
+  return weight_.size();
+}
+inline void TopTokensScore::clear_weight() {
+  weight_.Clear();
+}
+inline float TopTokensScore::weight(int index) const {
+  return weight_.Get(index);
+}
+inline void TopTokensScore::set_weight(int index, float value) {
+  weight_.Set(index, value);
+}
+inline void TopTokensScore::add_weight(float value) {
+  weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+TopTokensScore::weight() const {
+  return weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+TopTokensScore::mutable_weight() {
+  return &weight_;
 }
 
 // -------------------------------------------------------------------

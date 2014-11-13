@@ -1083,18 +1083,28 @@ Represents a configuration of a top tokens score.
 
   message TopTokensScoreConfig {
     optional int32 num_tokens = 1 [default = 10];
-    repeated int32 topic_id = 2 [packed = true];
+    optional string class_id = 2;
+    repeated string topic_name = 3;
   }
 
 .. attribute:: TopTokensScoreConfig.num_tokens
 
-   A value that defines a number of top tokens which should be calculated for a token-topic distribution.
+   A value that defines how many top tokens should be retrieved for each topic.
 
-.. attribute:: TopTokensScoreConfig.topic_id
+.. attribute:: TopTokensScoreConfig.class_id
 
-   A set of values that define which topics should be used.
-   Topics are identified by the topic id.
-   If this repeated field is empty then top tokens are calculated for all topics.
+   A value that defines for which class of the model to collect top tokens.
+   This value corresponds to :attr:`ModelConfig.class_id` field.
+
+   This parameter is optional. By default tokens will be retrieved for
+   the default class ('@default_class').
+
+.. attribute:: TopTokensScoreConfig.topic_name
+
+   A set of values that represent the names of the topics to include in the result.
+   The names correspond to :attr:`ModelConfig.topic_name`.
+
+   This parameter is optional. By default top tokens will be calculated for all topics in the model.
 
 
 .. _TopTokensScore:
@@ -1109,17 +1119,57 @@ Represents a result of calculation of a top tokens score.
 .. code-block:: bash
 
   message TopTokensScore {
-    repeated StringArray values = 1;
+    optional int32 num_entries = 1;
+    repeated string topic_name = 2;
+    repeated int32 topic_index = 3;
+    repeated string token = 4;
+    repeated float weight = 5;
   }
 
-.. attribute:: TopTokensScore.values
+The data in this score is represented in a table-like format.
+sorted on topic_index.
+The following code block gives a typical usage example.
+The loop below is guarantied to process all top-N tokens for the first topic,
+then for the second topic, etc.
 
-   A set of top tokens.
-   The length of this repeated value will match the number of topic ids
-   specified in :attr:`TopTokensScoreConfig.topic_id`.
-   Each repeated field corresponds to the topic id in the same order and 
-   contains string array of the most probable tokens in this topic.
+.. code-block:: c
 
+  for (int i = 0; i < top_tokens_score.num_entries(); i++) {
+    // Gives a index from 0 to (model_config.topics_size() - 1)
+    int topic_index = top_tokens_score.topic_index(i);
+
+    // Gives one of the topN tokens for topic 'topic_index'
+    std::string token = top_tokens_score.token(i);
+
+    // Gives the weight of the token
+    float weight = top_tokens_score.weight(i);
+  }
+
+
+.. attribute:: TopTokensScore.num_entries
+
+   A value indicating the overall number of entries in the score.
+   All the remaining repeated fiels in this score will have this length.
+
+.. attribute:: TopTokensScore.token
+
+   A repeated field of :attr:`num_entries` elements,
+   containing tokens with high probability.
+
+.. attribute:: TopTokensScore.weight
+
+   A repeated field of :attr:`num_entries` elements,
+   containing the *p(t|w)* probabilities.
+
+.. attribute:: TopTokensScore.topic_index
+
+   A repeated field of :attr:`num_entries` elements,
+   containing integers between 0 and (:attr:`ModelConfig.topics_count` - 1).
+
+.. attribute:: TopTokensScore.topic_name
+
+   A repeated field of :attr:`num_entries` elements,
+   corresponding to the values of :attr:`ModelConfig.topic_name` field.
 
 .. _ThetaSnippetScoreConfig:
 
@@ -1292,7 +1342,7 @@ Represents a topic model.
   message TopicModel {
     optional string name = 1 [default = "@model"];
     optional int32 topics_count = 2;
-	repeated string topic_name = 3;
+    repeated string topic_name = 3;
     repeated string token = 4;
     repeated FloatArray token_weights = 5;
     repeated string class_id = 6;
