@@ -633,12 +633,13 @@ class Score:
 class Visualizers:
   @staticmethod
   def PrintTopTokensScore(top_tokens_score):
-    print '\nTop tokens per topic:'
-    for i in range(0, len(top_tokens_score.values)):
-      print "Topic#" + str(i+1) + ": ",
-      for value in top_tokens_score.values[i].value:
-        print value + " ",
-      print "\n",
+    print '\nTop tokens per topic:',
+    topic_index = -1
+    for i in range(0, top_tokens_score.num_entries):
+      if (top_tokens_score.topic_index[i] != topic_index):
+        topic_index = top_tokens_score.topic_index[i]
+        print "\nTopic#" + str(i+1) + ": ",
+      print top_tokens_score.token[i] + "(%.2f) " % top_tokens_score.weight[i],
 
   @staticmethod
   def PrintThetaSnippetScore(theta_snippet_score):

@@ -358,13 +358,14 @@ int execute(const artm_options& options) {
     std::cout << std::endl;
 
     auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
-    for (int topic_index = 0; topic_index < top_tokens.get()->values_size(); topic_index++) {
-      std::cout << "#" << (topic_index + 1) << ": ";
-      auto top_tokens_for_topic = top_tokens.get()->values(topic_index);
-      for (int token_index = 0; token_index < top_tokens_for_topic.value_size(); token_index++) {
-        std::cout << top_tokens_for_topic.value(token_index) << " ";
+    int topic_index = -1;
+    for (int i = 0; i < top_tokens->num_entries(); i++) {
+      if (top_tokens->topic_index(i) != topic_index) {
+        topic_index = top_tokens->topic_index(i);
+        std::cout << "\n#" << (topic_index + 1) << ": ";
       }
-      std::cout << std::endl;
+
+      std::cout << top_tokens->token(i) << "(" << std::setw(2) << std::setprecision(2) << top_tokens->weight(i) << ") ";
     }
 
     auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");

@@ -290,12 +290,17 @@ message ItemsProcessedScore {
 // Represents a configuration of a top tokens score
 message TopTokensScoreConfig {
   optional int32 num_tokens = 1 [default = 10];
-  repeated int32 topic_id = 2 [packed = true];
+  optional string class_id = 2;
+  repeated string topic_name = 3;
 }
 
 // Represents a result of calculation of a top tokens score
 message TopTokensScore {
-  repeated StringArray values = 1;
+  optional int32 num_entries = 1;
+  repeated string topic_name = 2;
+  repeated int32 topic_index = 3;
+  repeated string token = 4;
+  repeated float weight = 5;
 }
 
 // Represents a configuration of a theta snippet score
