@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "glog/logging.h"
 
@@ -26,28 +27,44 @@ typedef std::string TopicName;
 typedef std::string ClassId;
 
 struct Token {
-  Token(ClassId _class_id, std::string _keyword) : class_id(_class_id), keyword(_keyword) {}
-  Token() : class_id(), keyword() {}
+ public:
+   Token(ClassId _class_id, std::string _keyword)
+       : keyword(_keyword), class_id(_class_id),
+         hash_(std::hash<std::string>()(_keyword + _class_id)) {}
 
-  void clear() {
-    class_id.clear();
-    keyword.clear();
-  }
+   Token& operator=(const Token &rhs) {
+     if (this != &rhs) {
+       const_cast<std::string&>(keyword) = rhs.keyword;
+       const_cast<ClassId&>(class_id) = rhs.class_id;
+       const_cast<size_t&>(hash_) = rhs.hash_;
+     }
+
+     return *this;
+   }
 
   bool operator<(const Token& token) const {
-    if (class_id != token.class_id) {
-      return class_id < token.class_id;
-    }
-    return keyword < token.keyword;
+    if (keyword != token.keyword)
+      return keyword < token.keyword;
+    return class_id < token.class_id;
   }
 
   bool operator==(const Token& token) const {
-    if (class_id == token.class_id && keyword == token.keyword) return true;
+    if (keyword == token.keyword && class_id == token.class_id) return true;
     return false;
   }
 
-  ClassId class_id;
-  std::string keyword;
+  const std::string keyword;
+  const ClassId class_id;
+
+ private:
+  friend struct TokenHasher;
+  const size_t hash_;
+};
+
+struct TokenHasher {
+  size_t operator()(const Token& token) const {
+    return token.hash_;
+  }
 };
 
 const std::string DefaultClass = "@default_class";
