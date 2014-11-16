@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <set>
 #include <string>
@@ -161,7 +162,7 @@ class TopicModel : public Regularizable {
 
   bool has_token(const Token& token) const;
   int token_id(const Token& token) const;
-  Token token(int index) const;
+  const Token& token(int index) const;
 
   template<typename T>
   void AddTopicsInfoInModel(artm::TopicModel* topicModel, int size, const T& names) const;
@@ -171,7 +172,7 @@ class TopicModel : public Regularizable {
  private:
   ModelName model_name_;
 
-  std::map<Token, int> token_to_token_id_;
+  std::unordered_map<Token, int, TokenHasher> token_to_token_id_;
   std::vector<Token> token_id_to_token_;
   std::vector<std::string> topic_name_;
 

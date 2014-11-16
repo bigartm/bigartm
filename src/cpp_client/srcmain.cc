@@ -56,6 +56,7 @@ struct artm_options {
   std::string batch_folder;
   std::string proxy;
   std::string localhost;
+  std::string dictionary_file;
   int num_topics;
   int num_processors;
   int num_iters;
@@ -64,6 +65,7 @@ struct artm_options {
   int communication_timeout;
   int port;
   int online_period;
+  int parsing_format;
   float tau_phi;
   float tau_theta;
   float tau_decor;
@@ -204,9 +206,6 @@ artm::RegularizerConfig configureDecorRegularizer(float tau, ModelConfig* model_
 }
 
 int execute(const artm_options& options) {
-  std::string dictionary_file = "dictionary.ptb";  // this file will be created in batches_full_path folder
-  std::string batches_full_path = (fs::current_path() / fs::path(options.batch_folder)).string();
-
   bool is_network_mode = (options.nodes.size() > 0);
   bool is_proxy = (!options.proxy.empty());
   bool online = (options.online_period > 0);
@@ -218,7 +217,7 @@ int execute(const artm_options& options) {
 
   // Step 1. Configuration
   MasterComponentConfig master_config;
-  master_config.set_disk_path(batches_full_path);
+  master_config.set_disk_path(options.batch_folder);
   master_config.set_processors_count(options.num_processors);
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
 
@@ -246,35 +245,41 @@ int execute(const artm_options& options) {
 
   // Step 2. Collection parsing
   if (!options.b_reuse_batch) {
-    for (fs::directory_iterator end_dir_it, it(batches_full_path); it != end_dir_it; ++it) {
-      remove_all(it->path());
-    }
+    try {
+      for (fs::directory_iterator end_dir_it, it(options.batch_folder); it != end_dir_it; ++it) {
+        remove_all(it->path());
+      }
+    } catch (...) {}
   }
 
   boost::system::error_code error;
-  fs::create_directories(batches_full_path, error);
+  fs::create_directories(options.batch_folder, error);
   if (error) {
-    std::cerr << "Unable to create batches folder: " << batches_full_path;
+    std::cerr << "Unable to create batches folder: " << options.batch_folder;
     return 1;
   }
 
-  int batch_files_count = countFilesInDirectory(batches_full_path, ".batch");
+  int batch_files_count = countFilesInDirectory(options.batch_folder, ".batch");
   std::shared_ptr<DictionaryConfig> unique_tokens;
   if (batch_files_count == 0) {
     std::cout << "Parsing text collection... ";
     ::artm::CollectionParserConfig collection_parser_config;
-    collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
+    if (options.parsing_format == 0)
+      collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
+    else
+      collection_parser_config.set_format(CollectionParserConfig_Format_MatrixMarket);
+
     collection_parser_config.set_docword_file_path(options.docword);
     collection_parser_config.set_vocab_file_path(options.vocab);
-    collection_parser_config.set_dictionary_file_name(dictionary_file);
-    collection_parser_config.set_target_folder(batches_full_path);
+    collection_parser_config.set_dictionary_file_name(options.dictionary_file);
+    collection_parser_config.set_target_folder(options.batch_folder);
     collection_parser_config.set_num_items_per_batch(options.items_per_batch);
     unique_tokens = ::artm::ParseCollection(collection_parser_config);
     std::cout << "OK.\n";
   } else {
-    std::cout << "Reuse " << batch_files_count << " batches in folder '" << batches_full_path << "\n";
+    std::cout << "Reuse " << batch_files_count << " batches in folder '" << options.batch_folder << "\n";
     std::cout << "Loading dictionary file... ";
-    unique_tokens = ::artm::LoadDictionary((fs::path(batches_full_path) / dictionary_file).string());
+    unique_tokens = ::artm::LoadDictionary((fs::path(options.batch_folder) / options.dictionary_file).string());
     std::cout << "OK.\n";
   }
 
@@ -399,6 +404,7 @@ int main(int argc, char * argv[]) {
       ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
       ("reuse_theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
       ("batch_folder", po::value(&options.batch_folder)->default_value("batches"), "temporary folder to store batches")
+      ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary", "filename of dictionary file"))
       ("reuse_batches", po::bool_switch(&options.b_reuse_batch), "reuse batches found in batch_folder\n(default = false)")
       ("items_per_batch", po::value(&options.items_per_batch)->default_value(500), "number of items per batch")
       ("tau_phi", po::value(&options.tau_phi)->default_value(0.0f), "regularization coefficient for PHI matrix")
@@ -408,6 +414,7 @@ int main(int argc, char * argv[]) {
       ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
       ("online_period", po::value(&options.online_period)->default_value(0), "period in milliseconds between model synchronization on the online algorithm")
       ("online_decay", po::value(&options.online_decay)->default_value(0.75f), "decay coefficient [0..1] for online algorithm")
+      ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market)")
     ;
     all_options.add(basic_options);
 
@@ -429,7 +436,16 @@ int main(int argc, char * argv[]) {
     // options.docword = "D:\\datasets\\docword.kos.txt";
     // options.vocab   = "D:\\datasets\\vocab.kos.txt";
 
-    if (options.docword.empty() || options.vocab.empty() || vm.count("help")) {
+    bool show_help = vm.count("help");
+    if (options.docword.empty() || options.vocab.empty()) {
+      // Show help if user neither provided batch folder, nor docword/vocab files
+      if (!options.b_reuse_batch && !vm.count("batch_folder")) show_help = true;
+
+      // Automatically reuse batches is safe when user didn't provide docword/vocab
+      if (vm.count("batch_folder")) options.b_reuse_batch = true;
+    }
+
+    if (show_help) {
       std::cout << all_options;
 
       std::cout << "\nExamples:\n";

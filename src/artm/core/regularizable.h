@@ -23,7 +23,7 @@ class Regularizable {
 
   virtual int token_size() const = 0;
   virtual int topic_size() const = 0;
-  virtual Token token(int index) const = 0;
+  virtual const Token& token(int index) const = 0;
 
   virtual TopicWeightIterator GetTopicWeightIterator(const Token& token) const = 0;
   virtual TopicWeightIterator GetTopicWeightIterator(int token_id) const = 0;

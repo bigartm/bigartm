@@ -241,7 +241,7 @@ Processor::TokenIterator::TokenIterator(
       iterate_unknown_((mode & Mode_Unknown) != 0),   // NOLINT
       use_model_class_list_(true),
       token_index_(-1),  // handy trick for iterators
-      token_(),
+      token_(DefaultClass, std::string()),
       token_class_weight_(0),
       id_in_model_(-1),
       id_in_batch_(-1),
@@ -268,7 +268,7 @@ void Processor::TokenIterator::Reset() {
 
   // Reset all other data.
   // This makes it less confusing if somebody access this data after Reset() but before Next().
-  token_.clear();
+  token_ = Token(DefaultClass, std::string());
   id_in_model_ = -1;
   id_in_batch_ = -1;
   count_ = 0;

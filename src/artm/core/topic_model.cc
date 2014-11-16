@@ -617,7 +617,7 @@ ModelName TopicModel::model_name() const {
 }
 
 bool TopicModel::has_token(const Token& token) const {
-  return token_to_token_id_.find(token) != token_to_token_id_.end();
+  return token_to_token_id_.count(token);
 }
 
 int TopicModel::token_id(const Token& token) const {
@@ -651,7 +651,7 @@ std::vector<float>* TopicModel::GetNormalizerVector(const ClassId& class_id) {
   return &(iter->second);
 }
 
-artm::core::Token TopicModel::token(int index) const {
+const artm::core::Token& TopicModel::token(int index) const {
   assert(index >= 0);
   assert(index < token_size());
   return token_id_to_token_[index];
