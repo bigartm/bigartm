@@ -28,19 +28,19 @@ typedef std::string ClassId;
 
 struct Token {
  public:
-   Token(ClassId _class_id, std::string _keyword)
-       : keyword(_keyword), class_id(_class_id),
-         hash_(std::hash<std::string>()(_keyword + _class_id)) {}
+  Token(ClassId _class_id, std::string _keyword)
+      : keyword(_keyword), class_id(_class_id),
+        hash_(std::hash<std::string>()(_keyword + _class_id)) {}
 
-   Token& operator=(const Token &rhs) {
-     if (this != &rhs) {
-       const_cast<std::string&>(keyword) = rhs.keyword;
-       const_cast<ClassId&>(class_id) = rhs.class_id;
-       const_cast<size_t&>(hash_) = rhs.hash_;
-     }
+  Token& operator=(const Token &rhs) {
+    if (this != &rhs) {
+      const_cast<std::string&>(keyword) = rhs.keyword;
+      const_cast<ClassId&>(class_id) = rhs.class_id;
+      const_cast<size_t&>(hash_) = rhs.hash_;
+    }
 
-     return *this;
-   }
+    return *this;
+  }
 
   bool operator<(const Token& token) const {
     if (keyword != token.keyword)
