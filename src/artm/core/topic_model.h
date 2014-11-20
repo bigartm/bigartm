@@ -105,7 +105,7 @@ class TopicWeightIterator {
 };
 
 class TokenCollection {
-public:
+ public:
   void Clear();
   void RemoveToken(const Token& token);
   int  AddToken(const Token& token);
@@ -115,9 +115,32 @@ public:
   int token_id(const Token& token) const;
   const Token& token(int index) const;
 
-private:
+ private:
   std::unordered_map<Token, int, TokenHasher> token_to_token_id_;
   std::vector<Token> token_id_to_token_;
+};
+
+class TokenCollectionWeights {
+ public:
+  TokenCollectionWeights(int topic_size) : topic_size_(topic_size) {}
+  ~TokenCollectionWeights() { Clear(); }
+
+  float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
+  void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
+
+  const float* operator[](int token_id) const { return values_[token_id]; }
+  float* operator[](int token_id) { return values_[token_id]; }
+
+  const float* at(int token_id) const { return values_[token_id]; }
+  float* at(int token_id) { return values_[token_id]; }
+
+  void Clear();
+  int AddToken(bool random_init);
+  void RemoveToken(int token_id);
+
+ private:
+  int topic_size_;
+  std::vector<float*> values_;
 };
 
 // A class representing a topic model.
@@ -133,7 +156,7 @@ class TopicModel : public Regularizable {
   explicit TopicModel(ModelName model_name,
       const google::protobuf::RepeatedPtrField<std::string>& topic_name);
   explicit TopicModel(const TopicModel& rhs, float decay,
-      std::shared_ptr<artm::ModelConfig> target_model_config);
+                      const artm::ModelConfig& target_model_config);
   explicit TopicModel(const ::artm::TopicModel& external_topic_model);
   explicit TopicModel(const ::artm::core::ModelIncrement& model_increment);
 
@@ -164,6 +187,8 @@ class TopicModel : public Regularizable {
   void SetRegularizerWeight(const Token& token, int topic_id, float value);
   void SetRegularizerWeight(int token_id, int topic_id, float value);
 
+  void CalcNormalizers();
+
   TopicWeightIterator GetTopicWeightIterator(const Token& token) const;
   TopicWeightIterator GetTopicWeightIterator(int token_id) const;
 
@@ -189,8 +214,8 @@ class TopicModel : public Regularizable {
   TokenCollection token_collection_;
   std::vector<std::string> topic_name_;
 
-  std::vector<float*> n_wt_;  // vector of length tokens_count
-  std::vector<float*> r_wt_;  // regularizer's additions
+  TokenCollectionWeights n_wt_;  // vector of length tokens_count
+  TokenCollectionWeights r_wt_;  // regularizer's additions
   // normalization constant for each topic in each Phi
   std::map<ClassId, std::vector<float> > n_t_;
   // pointer to the vector of default_class
@@ -198,9 +223,9 @@ class TopicModel : public Regularizable {
 
   std::vector<boost::uuids::uuid> batch_uuid_;  // batches contributing to this model
 
-  void CreateNormalizerVector(ClassId class_id, int no_topics);
-  const std::vector<float>* GetNormalizerVector(const ClassId& class_id) const;
+  std::vector<float>* CreateNormalizerVector(ClassId class_id, int no_topics);
   std::vector<float>* GetNormalizerVector(const ClassId& class_id);
+  const std::vector<float>* GetNormalizerVector(const ClassId& class_id) const;
 };
 
 }  // namespace core
