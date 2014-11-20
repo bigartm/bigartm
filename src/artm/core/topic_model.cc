@@ -21,11 +21,54 @@
 namespace artm {
 namespace core {
 
+void TokenCollection::RemoveToken(const Token& token) {
+  auto iter = token_to_token_id_.find(token);
+  if (iter == token_to_token_id_.end())
+    return;
+
+  int token_id = iter->second;
+  token_id_to_token_.erase(token_id_to_token_.begin() + token_id);
+  token_to_token_id_.erase(iter);
+}
+
+int TokenCollection::AddToken(const Token& token) {
+  int token_id = this->token_id(token);
+  if (token_id != -1)
+    return token_id;
+
+  token_id = token_size();
+  token_to_token_id_.insert(
+    std::make_pair(token, token_id));
+  token_id_to_token_.push_back(token);
+  return token_id;
+}
+
+bool TokenCollection::has_token(const Token& token) const {
+  return token_to_token_id_.count(token);
+}
+
+int TokenCollection::token_id(const Token& token) const {
+  auto iter = token_to_token_id_.find(token);
+  return (iter != token_to_token_id_.end()) ? iter->second : -1;
+}
+
+const Token& TokenCollection::token(int index) const {
+  return token_id_to_token_[index];
+}
+
+void TokenCollection::Clear() {
+  token_to_token_id_.clear();
+  token_id_to_token_.clear();
+}
+
+int TokenCollection::token_size() const {
+  return token_to_token_id_.size();
+}
+
 TopicModel::TopicModel(ModelName model_name,
     const google::protobuf::RepeatedPtrField<std::string>& topic_name)
     : model_name_(model_name),
-      token_to_token_id_(),
-      token_id_to_token_(),
+      token_collection_(),
       topic_name_(),
       n_wt_(),
       r_wt_(),
@@ -41,8 +84,7 @@ TopicModel::TopicModel(ModelName model_name,
 TopicModel::TopicModel(const TopicModel& rhs, float decay,
     std::shared_ptr<artm::ModelConfig> target_model_config)
     : model_name_(rhs.model_name_),
-      token_to_token_id_(),
-      token_id_to_token_(),
+      token_collection_(),
       topic_name_(rhs.topic_name_),
       n_wt_(),  // must be deep-copied
       r_wt_(),  // must be deep-copied
@@ -130,8 +172,7 @@ void TopicModel::Clear(ModelName model_name, int topics_count) {
 
   model_name_ = model_name;
 
-  token_to_token_id_.clear();
-  token_id_to_token_.clear();
+  token_collection_.Clear();
   n_wt_.clear();
   r_wt_.clear();
   n_t_.clear();
@@ -280,7 +321,7 @@ void TopicModel::RetrieveExternalTopicModel(
   }
 
   for (int token_index = 0; token_index < token_size(); ++token_index) {
-    auto current_token = token_id_to_token_[token_index];
+    const Token& current_token = token_collection_.token(token_index);
     if (use_all_tokens || std::find(tokens_to_use.begin(),
                                     tokens_to_use.end(),
                                     current_token) != tokens_to_use.end()) {
@@ -302,7 +343,7 @@ void TopicModel::RetrieveExternalTopicModel(
   // 2. Fill in internal part of ::artm::TopicModel
   ::artm::TopicModel_TopicModelInternals topic_model_internals;
   for (int token_index = 0; token_index < token_size(); ++token_index) {
-    auto current_token = token_id_to_token_[token_index];
+    const Token& current_token = token_collection_.token(token_index);
     if (use_all_tokens || std::find(tokens_to_use.begin(),
                                     tokens_to_use.end(),
                                     current_token) != tokens_to_use.end()) {
@@ -372,20 +413,12 @@ void TopicModel::CopyFromExternalTopicModel(const ::artm::TopicModel& external_t
   }
 }
 
-int TopicModel::AddToken(ClassId class_id, std::string keyword, bool random_init) {
-  return TopicModel::AddToken(Token(class_id, keyword), random_init);
-}
-
 int TopicModel::AddToken(const Token& token, bool random_init) {
-  auto iter = token_to_token_id_.find(token);
-  if (iter != token_to_token_id_.end()) {
-    return iter->second;
-  }
+  int token_id = token_collection_.token_id(token);
+  if (token_id != -1)
+    return token_id;
 
-  int token_id = token_size();
-  token_to_token_id_.insert(
-      std::make_pair(token, token_id));
-  token_id_to_token_.push_back(token);
+  token_id = token_collection_.AddToken(token);
   float* values = new float[topic_size()];
   n_wt_.push_back(values);
 
@@ -422,16 +455,10 @@ int TopicModel::AddToken(const Token& token, bool random_init) {
   return token_id;
 }
 
-void TopicModel::RemoveToken(ClassId class_id, std::string keyword) {
-  TopicModel::RemoveToken(Token(keyword, class_id));
-}
-
 void TopicModel::RemoveToken(const Token& token) {
-  auto iter = token_to_token_id_.find(token);
-  if (iter == token_to_token_id_.end())
+  int token_id = token_collection_.token_id(token);
+  if (token_id == -1)
     return;
-
-  int token_id = iter->second;
 
   // Set n_wt_ and r_wt_ to zero to make sure n_t_ is still correct after token removal.
   for (int topic_id = 0; topic_id < topic_size(); ++topic_id) {
@@ -445,8 +472,7 @@ void TopicModel::RemoveToken(const Token& token) {
   n_wt_.erase(n_wt_.begin() + token_id);
   r_wt_.erase(r_wt_.begin() + token_id);
 
-  token_id_to_token_.erase(token_id_to_token_.begin() + token_id);
-  token_to_token_id_.erase(iter);
+  token_collection_.RemoveToken(token);
 }
 
 void TopicModel::IncreaseTokenWeight(const Token& token, int topic_id, float value) {
@@ -588,10 +614,6 @@ void TopicModel::IncreaseRegularizerWeight(int token_id, int topic_id, float val
   }
 }
 
-int TopicModel::token_size() const {
-  return n_wt_.size();
-}
-
 int TopicModel::topic_size() const {
   return topic_name_.size();
 }
@@ -614,15 +636,6 @@ std::vector<ClassId> TopicModel::class_id() const {
 
 ModelName TopicModel::model_name() const {
   return model_name_;
-}
-
-bool TopicModel::has_token(const Token& token) const {
-  return token_to_token_id_.count(token);
-}
-
-int TopicModel::token_id(const Token& token) const {
-  auto iter = token_to_token_id_.find(token);
-  return (iter != token_to_token_id_.end()) ? iter->second : -1;
 }
 
 void TopicModel::CreateNormalizerVector(ClassId class_id, int topics_count) {
@@ -649,12 +662,6 @@ std::vector<float>* TopicModel::GetNormalizerVector(const ClassId& class_id) {
     return nullptr;
   }
   return &(iter->second);
-}
-
-const artm::core::Token& TopicModel::token(int index) const {
-  assert(index >= 0);
-  assert(index < token_size());
-  return token_id_to_token_[index];
 }
 
 int TopicModel::FindDegeneratedTopicsCount(const ClassId& class_id) const {
@@ -684,9 +691,9 @@ void TopicModel::AddTopicsInfoInModel(
 
 TopicWeightIterator TopicModel::GetTopicWeightIterator(
     const Token& token) const {
-  auto iter = token_to_token_id_.find(token);
-  assert(iter != token_to_token_id_.end());
-  return std::move(TopicWeightIterator(n_wt_[iter->second], r_wt_[iter->second],
+  int token_id = token_collection_.token_id(token);
+  assert(token_id != -1);
+  return std::move(TopicWeightIterator(n_wt_[token_id], r_wt_[token_id],
     &((*GetNormalizerVector(token.class_id))[0]), topic_size()));
 }
 

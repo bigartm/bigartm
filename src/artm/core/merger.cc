@@ -524,7 +524,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
 
   for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
     ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
-    new_ttm->AddToken(class_id, iter->second.key_token(), true);
+    new_ttm->AddToken(Token(class_id, iter->second.key_token()), true);
   }
 
   topic_model_.set(args.model_name(), new_ttm);

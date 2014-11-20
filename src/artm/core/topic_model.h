@@ -104,6 +104,22 @@ class TopicWeightIterator {
   friend class ::artm::core::Regularizable;
 };
 
+class TokenCollection {
+public:
+  void Clear();
+  void RemoveToken(const Token& token);
+  int  AddToken(const Token& token);
+
+  int token_size() const;
+  bool has_token(const Token& token) const;
+  int token_id(const Token& token) const;
+  const Token& token(int index) const;
+
+private:
+  std::unordered_map<Token, int, TokenHasher> token_to_token_id_;
+  std::vector<Token> token_id_to_token_;
+};
+
 // A class representing a topic model.
 // - ::artm::core::TopicModel is an internal representation, used in Processor, Merger,
 //   and in Memcached service. It supports efficient lookup of words in the matrix.
@@ -135,11 +151,9 @@ class TopicModel : public Regularizable {
   void ApplyDiff(const ::artm::core::ModelIncrement& diff);
   void ApplyDiff(const ::artm::core::TopicModel& diff);
 
-  void RemoveToken(ClassId class_id, std::string keyword);
   void RemoveToken(const Token& token);
-
   int  AddToken(const Token& token, bool random_init = true);
-  int  AddToken(ClassId class_id, std::string keyword, bool random_init);
+
   void IncreaseTokenWeight(const Token& token, int topic_id, float value);
   void IncreaseTokenWeight(int token_id, int topic_id, float value);
   void SetTokenWeight(const Token& token, int topic_id, float value);
@@ -155,14 +169,14 @@ class TopicModel : public Regularizable {
 
   ModelName model_name() const;
 
-  int token_size() const;
+  int token_size() const { return token_collection_.token_size(); }
   int topic_size() const;
   google::protobuf::RepeatedPtrField<std::string> topic_name() const;
   std::vector<ClassId> class_id() const;
 
-  bool has_token(const Token& token) const;
-  int token_id(const Token& token) const;
-  const Token& token(int index) const;
+  bool has_token(const Token& token) const { return token_collection_.has_token(token); }
+  int token_id(const Token& token) const { return token_collection_.token_id(token); }
+  const Token& token(int index) const { return token_collection_.token(index); }
 
   template<typename T>
   void AddTopicsInfoInModel(artm::TopicModel* topicModel, int size, const T& names) const;
@@ -172,8 +186,7 @@ class TopicModel : public Regularizable {
  private:
   ModelName model_name_;
 
-  std::unordered_map<Token, int, TokenHasher> token_to_token_id_;
-  std::vector<Token> token_id_to_token_;
+  TokenCollection token_collection_;
   std::vector<std::string> topic_name_;
 
   std::vector<float*> n_wt_;  // vector of length tokens_count
