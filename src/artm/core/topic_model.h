@@ -187,7 +187,7 @@ class TopicModel : public Regularizable {
   void SetRegularizerWeight(const Token& token, int topic_id, float value);
   void SetRegularizerWeight(int token_id, int topic_id, float value);
 
-  void CalcNormalizers();
+  virtual void CalcNormalizers();
 
   TopicWeightIterator GetTopicWeightIterator(const Token& token) const;
   TopicWeightIterator GetTopicWeightIterator(int token_id) const;
@@ -197,7 +197,6 @@ class TopicModel : public Regularizable {
   int token_size() const { return token_collection_.token_size(); }
   int topic_size() const;
   google::protobuf::RepeatedPtrField<std::string> topic_name() const;
-  std::vector<ClassId> class_id() const;
 
   bool has_token(const Token& token) const { return token_collection_.has_token(token); }
   int token_id(const Token& token) const { return token_collection_.token_id(token); }
@@ -206,7 +205,7 @@ class TopicModel : public Regularizable {
   template<typename T>
   void AddTopicsInfoInModel(artm::TopicModel* topicModel, int size, const T& names) const;
 
-  int FindDegeneratedTopicsCount(const ClassId& class_id) const;
+  std::map<ClassId, int> FindDegeneratedTopicsCount() const;
 
  private:
   ModelName model_name_;

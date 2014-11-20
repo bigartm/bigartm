@@ -95,7 +95,6 @@ void TokenCollectionWeights::RemoveToken(int token_id) {
   values_.erase(values_.begin() + token_id);
 }
 
-
 TopicModel::TopicModel(ModelName model_name,
     const google::protobuf::RepeatedPtrField<std::string>& topic_name)
     : model_name_(model_name),
@@ -109,7 +108,6 @@ TopicModel::TopicModel(ModelName model_name,
   for (auto iter = topic_name.begin(); iter != topic_name.end(); ++iter) {
     topic_name_.push_back(*iter);
   }
-  CreateNormalizerVector(DefaultClass, topic_size());
 }
 
 TopicModel::TopicModel(const TopicModel& rhs, float decay,
@@ -138,7 +136,6 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay,
     }
   }
 
-  CreateNormalizerVector(DefaultClass, topic_size());
   for (size_t token_id = 0; token_id < token_size(); token_id++) {
     AddToken(rhs.token(token_id), false);
     auto iter = rhs.GetTopicWeightIterator(token_id);
@@ -191,14 +188,11 @@ TopicModel::~TopicModel() {
 void TopicModel::Clear(ModelName model_name, int topics_count) {
   n_wt_.Clear();
   r_wt_.Clear();
-
   model_name_ = model_name;
-
   token_collection_.Clear();
-
-  CreateNormalizerVector(DefaultClass, topics_count);
-
   batch_uuid_.clear();
+  n_t_.clear();
+  n_t_default_class_ = nullptr;
 }
 
 void TopicModel::RetrieveModelIncrement(::artm::core::ModelIncrement* diff) const {
@@ -444,12 +438,6 @@ int TopicModel::AddToken(const Token& token, bool random_init) {
   int token_id2 = n_wt_.AddToken(random_init);
   assert(token_id2 == token_id);
 
-  std::vector<float>* this_class_n_t = GetNormalizerVector(token.class_id);
-  if (this_class_n_t == nullptr) {
-    CreateNormalizerVector(token.class_id, topic_size());
-    this_class_n_t = GetNormalizerVector(token.class_id);
-  }
-
   int token_id3 = r_wt_.AddToken(false);
   assert(token_id3 == token_id);
 
@@ -461,15 +449,8 @@ void TopicModel::RemoveToken(const Token& token) {
   if (token_id == -1)
     return;
 
-  // Set n_wt_ and r_wt_ to zero to make sure n_t_ is still correct after token removal.
-  for (int topic_id = 0; topic_id < topic_size(); ++topic_id) {
-    SetTokenWeight(token_id, topic_id, 0.0f);
-    SetRegularizerWeight(token_id, topic_id, 0.0f);
-  }
-
   n_wt_.RemoveToken(token_id);
   r_wt_.RemoveToken(token_id);
-
   token_collection_.RemoveToken(token);
 }
 
@@ -487,27 +468,7 @@ void TopicModel::IncreaseTokenWeight(const Token& token, int topic_id, float val
 }
 
 void TopicModel::IncreaseTokenWeight(int token_id, int topic_id, float value) {
-  std::vector<float>* this_class_n_t = GetNormalizerVector(token(token_id).class_id);
-  if (this_class_n_t == nullptr) {
-    LOG(WARNING) << "Unknown class of token (" << token(token_id).class_id <<
-      ") was found in IncreaseTokenWeight() call.";
-    return;
-  }
-
-  float old_data_value = n_wt_[token_id][topic_id];
   n_wt_[token_id][topic_id] += value;
-
-  if (old_data_value + r_wt_[token_id][topic_id] < 0) {
-    if (n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id] > 0) {
-      (*this_class_n_t)[topic_id] += n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id];
-    }
-  } else {
-    if (n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id] > 0) {
-      (*this_class_n_t)[topic_id] += value;
-    } else {
-      (*this_class_n_t)[topic_id] -= (old_data_value + r_wt_[token_id][topic_id]);
-    }
-  }
 }
 
 void TopicModel::SetTokenWeight(const Token& token, int topic_id, float value) {
@@ -520,27 +481,7 @@ void TopicModel::SetTokenWeight(const Token& token, int topic_id, float value) {
 }
 
 void TopicModel::SetTokenWeight(int token_id, int topic_id, float value) {
-  std::vector<float>* this_class_n_t = GetNormalizerVector(token(token_id).class_id);
-  if (this_class_n_t == nullptr) {
-    LOG(WARNING) << "Unknown class of token (" << token(token_id).class_id <<
-      ") was found in SetTokenWeight() call.";
-    return;
-  }
-
-  float old_data_value = n_wt_[token_id][topic_id];
   n_wt_[token_id][topic_id] = value;
-
-  if (old_data_value + r_wt_[token_id][topic_id] < 0) {
-    if (n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id] > 0) {
-      (*this_class_n_t)[topic_id] += n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id];
-    }
-  } else {
-    if (n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id] > 0) {
-      (*this_class_n_t)[topic_id] += (n_wt_[token_id][topic_id] - old_data_value);
-    } else {
-      (*this_class_n_t)[topic_id] -= (old_data_value + r_wt_[token_id][topic_id]);
-    }
-  }
 }
 
 void TopicModel::SetRegularizerWeight(const Token& token, int topic_id, float value) {
@@ -553,27 +494,7 @@ void TopicModel::SetRegularizerWeight(const Token& token, int topic_id, float va
 }
 
 void TopicModel::SetRegularizerWeight(int token_id, int topic_id, float value) {
-  std::vector<float>* this_class_n_t = GetNormalizerVector(token(token_id).class_id);
-  if (this_class_n_t == nullptr) {
-    LOG(WARNING) << "Unknown class of token (" << token(token_id).class_id <<
-      ") was found in SetRegularizerWeight() call.";
-    return;
-  }
-
-  float old_regularizer_value = r_wt_[token_id][topic_id];
   r_wt_[token_id][topic_id] = value;
-
-  if (n_wt_[token_id][topic_id] + old_regularizer_value < 0) {
-    if (n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id] > 0) {
-      (*this_class_n_t)[topic_id] += n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id];
-    }
-  } else {
-    if (n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id] > 0) {
-      (*this_class_n_t)[topic_id] += (r_wt_[token_id][topic_id] - old_regularizer_value);
-    } else {
-      (*this_class_n_t)[topic_id] -= (n_wt_[token_id][topic_id] + old_regularizer_value);
-    }
-  }
 }
 
 void TopicModel::IncreaseRegularizerWeight(const Token& token, int topic_id, float value) {
@@ -589,27 +510,7 @@ void TopicModel::IncreaseRegularizerWeight(const Token& token, int topic_id, flo
 }
 
 void TopicModel::IncreaseRegularizerWeight(int token_id, int topic_id, float value) {
-  std::vector<float>* this_class_n_t = GetNormalizerVector(token(token_id).class_id);
-  if (this_class_n_t == nullptr) {
-    LOG(WARNING) << "Unknown class of token (" << token(token_id).class_id <<
-      ") was found in IncreaseRegularizerWeight() call.";
-    return;
-  }
-
-  float old_regularizer_value = r_wt_[token_id][topic_id];
   r_wt_[token_id][topic_id] += value;
-
-  if (n_wt_[token_id][topic_id] + old_regularizer_value < 0) {
-    if (n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id] > 0) {
-      (*this_class_n_t)[topic_id] += n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id];
-    }
-  } else {
-    if (n_wt_[token_id][topic_id] + r_wt_[token_id][topic_id] > 0) {
-      (*this_class_n_t)[topic_id] += value;
-    } else {
-      (*this_class_n_t)[topic_id] -= (n_wt_[token_id][topic_id] + old_regularizer_value);
-    }
-  }
 }
 
 int TopicModel::topic_size() const {
@@ -623,13 +524,6 @@ google::protobuf::RepeatedPtrField<std::string> TopicModel::topic_name() const {
     *name = elem;
   }
   return topic_name;
-}
-
-std::vector<ClassId> TopicModel::class_id() const {
-  std::vector<ClassId> retval;
-  for (auto elem : n_t_)
-    retval.push_back(elem.first);
-  return retval;
 }
 
 ModelName TopicModel::model_name() const {
@@ -683,19 +577,29 @@ std::vector<float>* TopicModel::GetNormalizerVector(const ClassId& class_id) {
   return &(iter->second);
 }
 
-int TopicModel::FindDegeneratedTopicsCount(const ClassId& class_id) const {
-  const std::vector<float>* n_t = GetNormalizerVector(class_id);
-  if (n_t == nullptr)
-    return 0;
+std::map<ClassId, int> TopicModel::FindDegeneratedTopicsCount() const {
+  std::map<ClassId, int> retval;
 
-  int degenerated_topics_count = 0;
-  for (int topic_index = 0; topic_index < n_t->size(); ++topic_index) {
-    if ((*n_t)[topic_index] < 1e-20) {
-      degenerated_topics_count++;
+  for (int token_id = 0; token_id < token_size(); ++token_id) {
+    ClassId class_id = token(token_id).class_id;
+    if (retval.find(class_id) != retval.end())
+      continue;
+
+    const std::vector<float>* n_t = GetNormalizerVector(class_id);
+    if (n_t == nullptr)
+      continue;
+
+    int degenerated_topics_count = 0;
+    for (int topic_index = 0; topic_index < n_t->size(); ++topic_index) {
+      if ((*n_t)[topic_index] < 1e-20) {
+        degenerated_topics_count++;
+      }
     }
+
+    retval.emplace(class_id, degenerated_topics_count);
   }
 
-  return degenerated_topics_count;
+  return retval;
 }
 
 template<typename T>

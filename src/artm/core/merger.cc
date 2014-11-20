@@ -500,14 +500,13 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     topic_model_inc_.erase(name);
 
     // Verify if model became overregularized
-    std::vector<ClassId> class_ids = new_ttm->class_id();
-    for (ClassId class_id : class_ids) {
-      int degenerated_topics_count = new_ttm->FindDegeneratedTopicsCount(class_id);
-      if (degenerated_topics_count) {
-        LOG(WARNING) << degenerated_topics_count << " of " << new_ttm->topic_size()
+    std::map<ClassId, int> degenerated_topics_count = new_ttm->FindDegeneratedTopicsCount();
+    for (auto iter : degenerated_topics_count) {
+      if (iter.second) {
+        LOG(WARNING) << iter.second << " of " << new_ttm->topic_size()
                      << " topics have zero probability mass."
                      << " Consider reducing values of ModelConfig.regularizer_tau"
-                     << " for model '" << model_name << "', class_id=" << class_id;
+                     << " for model '" << model_name << "', class_id=" << iter.first;
       }
     }
   }
