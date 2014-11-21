@@ -242,6 +242,7 @@ void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff) {
     ModelIncrement_OperationType operation_type = diff.operation_type(token_index);
     int current_token_id = token_id(token);
 
+    float* target;
     switch (operation_type) {
       case ModelIncrement_OperationType_CreateIfNotExist:
         // Add new tokens discovered by processor
@@ -252,8 +253,9 @@ void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff) {
       case ModelIncrement_OperationType_IncrementValue:
         if (current_token_id == -1)
           current_token_id = this->AddToken(token, false);
+        target = n_wt_[current_token_id];
         for (int topic_index = 0; topic_index < topics_count; ++topic_index)
-          this->IncreaseTokenWeight(current_token_id, topic_index, counters.value(topic_index));
+          target[topic_index] += counters.value(topic_index);
         break;
 
       case ModelIncrement_OperationType_OverwriteValue:
@@ -596,7 +598,7 @@ std::map<ClassId, int> TopicModel::FindDegeneratedTopicsCount() const {
       }
     }
 
-    retval.emplace(class_id, degenerated_topics_count);
+    retval.insert(std::make_pair(class_id, degenerated_topics_count));
   }
 
   return retval;

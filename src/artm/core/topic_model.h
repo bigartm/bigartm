@@ -122,7 +122,7 @@ class TokenCollection {
 
 class TokenCollectionWeights {
  public:
-  TokenCollectionWeights(int topic_size) : topic_size_(topic_size) {}
+  explicit TokenCollectionWeights(int topic_size) : topic_size_(topic_size) {}
   ~TokenCollectionWeights() { Clear(); }
 
   float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
