@@ -16,6 +16,8 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
 
+  topic_model->CalcNormalizers();
+
   ::artm::BoolArray topics_to_regularize;
   if (config_.has_topics_to_regularize()) {
     topics_to_regularize.CopyFrom(config_.topics_to_regularize());
