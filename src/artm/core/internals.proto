@@ -32,6 +32,10 @@ message DataLoaderCacheEntry {
   repeated int32 item_id = 3;
   repeated FloatArray theta = 4;
   repeated string topic_name = 5;
+
+  // If filename is set then this DataLoaderCacheEntry is incomplete
+  // ('theta' field is missing). Full message can be loaded from 'filename' file.
+  optional string filename = 6;
 }
 
 // A message containing all data to transfer from DataLoader to Processor
@@ -79,11 +83,10 @@ message ModelIncrement {
   repeated bytes score = 9;
 
   // Cached thetas from previous iteration
-  repeated int32 item_id = 10;
-  repeated FloatArray theta = 11;
+  repeated DataLoaderCacheEntry cache = 10;
 
   // Identificators of all batches, contributing to this model increment.
-  repeated string batch_uuid = 12;
+  repeated string batch_uuid = 11;
 }
 
 // ======== MasterComponentService ========

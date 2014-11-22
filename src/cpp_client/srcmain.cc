@@ -54,6 +54,7 @@ struct artm_options {
   std::string docword;
   std::string vocab;
   std::string batch_folder;
+  std::string disk_cache_folder;
   std::string proxy;
   std::string localhost;
   std::string dictionary_file;
@@ -220,6 +221,7 @@ int execute(const artm_options& options) {
   master_config.set_disk_path(options.batch_folder);
   master_config.set_processors_count(options.num_processors);
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
+  if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
 
   ModelConfig model_config;
   model_config.set_topics_count(options.num_topics);
@@ -415,6 +417,7 @@ int main(int argc, char * argv[]) {
       ("online_period", po::value(&options.online_period)->default_value(0), "period in milliseconds between model synchronization on the online algorithm")
       ("online_decay", po::value(&options.online_decay)->default_value(0.75f), "decay coefficient [0..1] for online algorithm")
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market)")
+      ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
     ;
     all_options.add(basic_options);
 

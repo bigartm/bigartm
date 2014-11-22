@@ -8,6 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "boost/lexical_cast.hpp"
+#include "boost/uuid/uuid_generators.hpp"
+#include "boost/uuid/uuid_io.hpp"
+
 #include "glog/logging.h"
 
 #include "artm/regularizer_interface.h"
@@ -23,6 +27,7 @@
 #include "artm/utility/blas.h"
 
 namespace util = artm::utility;
+namespace fs = boost::filesystem;
 
 namespace {
 
@@ -203,8 +208,8 @@ void ApplyByElement(DenseMatrix<float>* result_matrix,
 namespace artm {
 namespace core {
 
-Processor::Processor(ThreadSafeQueue<std::shared_ptr<const ProcessorInput> >*  processor_queue,
-                     ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
+Processor::Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >*  processor_queue,
+                     ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                      const Merger& merger,
                      const ThreadSafeHolder<InstanceSchema>& schema)
     : processor_queue_(processor_queue),
@@ -975,7 +980,7 @@ void Processor::ThreadFunction() {
         break;
       }
 
-      std::shared_ptr<const ProcessorInput> part;
+      std::shared_ptr<ProcessorInput> part;
       if (!processor_queue_->try_pop(&part)) {
         pop_retries++;
         LOG_IF(INFO, pop_retries == pop_retries_max) << "No data in processing queue, waiting...";
@@ -1073,13 +1078,35 @@ void Processor::ThreadFunction() {
           }
         }
 
-        for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+        if (schema->config().cache_theta()) {
           // Update theta cache
-          model_increment->add_item_id(batch.item(item_index).id());
-          FloatArray* cached_theta = model_increment->add_theta();
-          for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-            cached_theta->add_value((*theta_matrix)(topic_index, item_index));
+          DataLoaderCacheEntry new_cache_entry;
+          new_cache_entry.set_batch_uuid(part->batch_uuid());
+          new_cache_entry.set_model_name(model_name);
+          new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_name());
+          for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+            new_cache_entry.add_item_id(batch.item(item_index).id());
+            FloatArray* cached_theta = new_cache_entry.add_theta();
+            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+              cached_theta->add_value((*theta_matrix)(topic_index, item_index));
+            }
           }
+
+          if (schema->config().has_disk_cache_path()) {
+            std::string disk_cache_path = schema->config().disk_cache_path();
+            boost::uuids::uuid uuid = boost::uuids::random_generator()();
+            fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
+            try {
+              BatchHelpers::SaveMessage(file.string(), disk_cache_path, new_cache_entry);
+              new_cache_entry.set_filename((fs::path(disk_cache_path) / file).string());
+              new_cache_entry.clear_theta();
+              new_cache_entry.clear_item_id();
+            } catch (...) {
+              LOG(ERROR) << "Unable to save cache entry to " << schema->config().disk_cache_path();
+            }
+          }
+
+          model_increment->add_cache()->CopyFrom(new_cache_entry);
         }
 
         std::map<ScoreName, std::shared_ptr<Score>> score_container;

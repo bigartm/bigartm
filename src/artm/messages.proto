@@ -77,6 +77,7 @@ message MasterComponentConfig {
   repeated string node_connect_endpoint = 12;
   optional bool online_batch_processing = 13 [default = false];
   optional int32 communication_timeout = 14 [default = 1000];
+  optional string disk_cache_path = 15;
 }
 
 // Represents a configuration of a NodeController

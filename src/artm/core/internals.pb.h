@@ -603,12 +603,26 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
+  // optional string filename = 6;
+  inline bool has_filename() const;
+  inline void clear_filename();
+  static const int kFilenameFieldNumber = 6;
+  inline const ::std::string& filename() const;
+  inline void set_filename(const ::std::string& value);
+  inline void set_filename(const char* value);
+  inline void set_filename(const char* value, size_t size);
+  inline ::std::string* mutable_filename();
+  inline ::std::string* release_filename();
+  inline void set_allocated_filename(::std::string* filename);
+
   // @@protoc_insertion_point(class_scope:artm.core.DataLoaderCacheEntry)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
   inline void set_has_batch_uuid();
   inline void clear_has_batch_uuid();
+  inline void set_has_filename();
+  inline void clear_has_filename();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -617,9 +631,10 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > theta_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::std::string* filename_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -973,34 +988,22 @@ class ModelIncrement : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& score() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_score();
 
-  // repeated int32 item_id = 10;
-  inline int item_id_size() const;
-  inline void clear_item_id();
-  static const int kItemIdFieldNumber = 10;
-  inline ::google::protobuf::int32 item_id(int index) const;
-  inline void set_item_id(int index, ::google::protobuf::int32 value);
-  inline void add_item_id(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      item_id() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_item_id();
+  // repeated .artm.core.DataLoaderCacheEntry cache = 10;
+  inline int cache_size() const;
+  inline void clear_cache();
+  static const int kCacheFieldNumber = 10;
+  inline const ::artm::core::DataLoaderCacheEntry& cache(int index) const;
+  inline ::artm::core::DataLoaderCacheEntry* mutable_cache(int index);
+  inline ::artm::core::DataLoaderCacheEntry* add_cache();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >&
+      cache() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >*
+      mutable_cache();
 
-  // repeated .artm.FloatArray theta = 11;
-  inline int theta_size() const;
-  inline void clear_theta();
-  static const int kThetaFieldNumber = 11;
-  inline const ::artm::FloatArray& theta(int index) const;
-  inline ::artm::FloatArray* mutable_theta(int index);
-  inline ::artm::FloatArray* add_theta();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      theta() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_theta();
-
-  // repeated string batch_uuid = 12;
+  // repeated string batch_uuid = 11;
   inline int batch_uuid_size() const;
   inline void clear_batch_uuid();
-  static const int kBatchUuidFieldNumber = 12;
+  static const int kBatchUuidFieldNumber = 11;
   inline const ::std::string& batch_uuid(int index) const;
   inline ::std::string* mutable_batch_uuid(int index);
   inline void set_batch_uuid(int index, const ::std::string& value);
@@ -1030,13 +1033,12 @@ class ModelIncrement : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > token_increment_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
-  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > theta_;
+  ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry > cache_;
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_uuid_;
   ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(12 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -2179,6 +2181,76 @@ DataLoaderCacheEntry::mutable_topic_name() {
   return &topic_name_;
 }
 
+// optional string filename = 6;
+inline bool DataLoaderCacheEntry::has_filename() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void DataLoaderCacheEntry::set_has_filename() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void DataLoaderCacheEntry::clear_has_filename() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void DataLoaderCacheEntry::clear_filename() {
+  if (filename_ != &::google::protobuf::internal::GetEmptyString()) {
+    filename_->clear();
+  }
+  clear_has_filename();
+}
+inline const ::std::string& DataLoaderCacheEntry::filename() const {
+  return *filename_;
+}
+inline void DataLoaderCacheEntry::set_filename(const ::std::string& value) {
+  set_has_filename();
+  if (filename_ == &::google::protobuf::internal::GetEmptyString()) {
+    filename_ = new ::std::string;
+  }
+  filename_->assign(value);
+}
+inline void DataLoaderCacheEntry::set_filename(const char* value) {
+  set_has_filename();
+  if (filename_ == &::google::protobuf::internal::GetEmptyString()) {
+    filename_ = new ::std::string;
+  }
+  filename_->assign(value);
+}
+inline void DataLoaderCacheEntry::set_filename(const char* value, size_t size) {
+  set_has_filename();
+  if (filename_ == &::google::protobuf::internal::GetEmptyString()) {
+    filename_ = new ::std::string;
+  }
+  filename_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DataLoaderCacheEntry::mutable_filename() {
+  set_has_filename();
+  if (filename_ == &::google::protobuf::internal::GetEmptyString()) {
+    filename_ = new ::std::string;
+  }
+  return filename_;
+}
+inline ::std::string* DataLoaderCacheEntry::release_filename() {
+  clear_has_filename();
+  if (filename_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = filename_;
+    filename_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void DataLoaderCacheEntry::set_allocated_filename(::std::string* filename) {
+  if (filename_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete filename_;
+  }
+  if (filename) {
+    set_has_filename();
+    filename_ = filename;
+  } else {
+    clear_has_filename();
+    filename_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
 // -------------------------------------------------------------------
 
 // ProcessorInput
@@ -2753,57 +2825,32 @@ ModelIncrement::mutable_score() {
   return &score_;
 }
 
-// repeated int32 item_id = 10;
-inline int ModelIncrement::item_id_size() const {
-  return item_id_.size();
+// repeated .artm.core.DataLoaderCacheEntry cache = 10;
+inline int ModelIncrement::cache_size() const {
+  return cache_.size();
 }
-inline void ModelIncrement::clear_item_id() {
-  item_id_.Clear();
+inline void ModelIncrement::clear_cache() {
+  cache_.Clear();
 }
-inline ::google::protobuf::int32 ModelIncrement::item_id(int index) const {
-  return item_id_.Get(index);
+inline const ::artm::core::DataLoaderCacheEntry& ModelIncrement::cache(int index) const {
+  return cache_.Get(index);
 }
-inline void ModelIncrement::set_item_id(int index, ::google::protobuf::int32 value) {
-  item_id_.Set(index, value);
+inline ::artm::core::DataLoaderCacheEntry* ModelIncrement::mutable_cache(int index) {
+  return cache_.Mutable(index);
 }
-inline void ModelIncrement::add_item_id(::google::protobuf::int32 value) {
-  item_id_.Add(value);
+inline ::artm::core::DataLoaderCacheEntry* ModelIncrement::add_cache() {
+  return cache_.Add();
 }
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-ModelIncrement::item_id() const {
-  return item_id_;
+inline const ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >&
+ModelIncrement::cache() const {
+  return cache_;
 }
-inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-ModelIncrement::mutable_item_id() {
-  return &item_id_;
-}
-
-// repeated .artm.FloatArray theta = 11;
-inline int ModelIncrement::theta_size() const {
-  return theta_.size();
-}
-inline void ModelIncrement::clear_theta() {
-  theta_.Clear();
-}
-inline const ::artm::FloatArray& ModelIncrement::theta(int index) const {
-  return theta_.Get(index);
-}
-inline ::artm::FloatArray* ModelIncrement::mutable_theta(int index) {
-  return theta_.Mutable(index);
-}
-inline ::artm::FloatArray* ModelIncrement::add_theta() {
-  return theta_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-ModelIncrement::theta() const {
-  return theta_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-ModelIncrement::mutable_theta() {
-  return &theta_;
+inline ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >*
+ModelIncrement::mutable_cache() {
+  return &cache_;
 }
 
-// repeated string batch_uuid = 12;
+// repeated string batch_uuid = 11;
 inline int ModelIncrement::batch_uuid_size() const {
   return batch_uuid_.size();
 }

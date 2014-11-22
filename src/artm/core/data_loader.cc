@@ -25,6 +25,8 @@
 #include "artm/core/generation.h"
 #include "artm/core/merger.h"
 
+namespace fs = boost::filesystem;
+
 namespace artm {
 namespace core {
 
@@ -87,6 +89,13 @@ LocalDataLoader::LocalDataLoader(Instance* instance)
 }
 
 LocalDataLoader::~LocalDataLoader() {
+  auto keys = cache_.keys();
+  for (auto &key : keys) {
+    auto cache_entry = cache_.get(key);
+    if (cache_entry != nullptr && cache_entry->has_filename())
+      try { fs::remove(fs::path(cache_entry->filename())); } catch(...) {}
+  }
+
   is_stopping = true;
   if (thread_.joinable()) {
     thread_.join();
@@ -164,6 +173,8 @@ void LocalDataLoader::DisposeModel(ModelName model_name) {
     }
 
     if (cache_entry->model_name() == model_name) {
+      if (cache_entry->has_filename())
+        try { fs::remove(fs::path(cache_entry->filename())); } catch(...) {}
       cache_.erase(key);
     }
   }
@@ -175,38 +186,41 @@ bool LocalDataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
   std::vector<boost::uuids::uuid> batch_uuids = generation_->batch_uuids();
 
   for (auto &batch_uuid : batch_uuids) {
-    auto cache = cache_.get(CacheKey(batch_uuid, model_name));
+    std::shared_ptr<DataLoaderCacheEntry> cache = cache_.get(CacheKey(batch_uuid, model_name));
     if (cache == nullptr) {
       LOG(INFO) << "Unable to find cache entry for model: " << model_name << ", batch: " << batch_uuid;
       continue;
     }
 
-    BatchHelpers::PopulateThetaMatrixFromCacheEntry(*cache, get_theta_args, theta_matrix);
+    if (cache->has_filename()) {
+      DataLoaderCacheEntry cache_reloaded;
+      BatchHelpers::LoadMessage(cache->filename(), &cache_reloaded);
+      BatchHelpers::PopulateThetaMatrixFromCacheEntry(cache_reloaded, get_theta_args, theta_matrix);
+    } else {
+      BatchHelpers::PopulateThetaMatrixFromCacheEntry(*cache, get_theta_args, theta_matrix);
+    }
   }
 
   return true;
 }
 
-void LocalDataLoader::Callback(std::shared_ptr<const ModelIncrement> model_increment) {
+void LocalDataLoader::Callback(ModelIncrement* model_increment) {
   instance_->batch_manager()->Callback(model_increment);
 
-  bool is_single_batch = (model_increment->batch_uuid_size() == 1);
-  if (is_single_batch && instance()->schema()->config().cache_theta()) {
-    for (int batch_index = 0; batch_index < model_increment->batch_uuid_size(); ++batch_index) {
-      std::string uuid_str = model_increment->batch_uuid(batch_index);
+  if (instance()->schema()->config().cache_theta()) {
+    for (int cache_index = 0; cache_index < model_increment->cache_size(); ++cache_index) {
+      DataLoaderCacheEntry* cache = model_increment->mutable_cache(cache_index);
+      std::string uuid_str = cache->batch_uuid();
       boost::uuids::uuid uuid(boost::uuids::string_generator()(uuid_str.c_str()));
-      ModelName model_name = model_increment->model_name();
+      ModelName model_name = cache->model_name();
       CacheKey cache_key(uuid, model_name);
       std::shared_ptr<DataLoaderCacheEntry> cache_entry(new DataLoaderCacheEntry());
-      cache_entry->set_batch_uuid(uuid_str);
-      cache_entry->set_model_name(model_name);
-      cache_entry->mutable_topic_name()->CopyFrom(model_increment->topic_name());
-      for (int item_index = 0; item_index < model_increment->item_id_size(); ++item_index) {
-        cache_entry->add_item_id(model_increment->item_id(item_index));
-        cache_entry->add_theta()->CopyFrom(model_increment->theta(item_index));
-      }
+      cache_entry->Swap(cache);
 
+      std::shared_ptr<DataLoaderCacheEntry> old_entry = cache_.get(cache_key);
       cache_.set(cache_key, cache_entry);
+      if (old_entry != nullptr && old_entry->has_filename())
+        try { fs::remove(fs::path(old_entry->filename())); } catch(...) {}
     }
   }
 }
@@ -257,7 +271,17 @@ void LocalDataLoader::ThreadFunction() {
         }
 
         if (cache_entry->batch_uuid() == pi->batch_uuid()) {
-          pi->add_cached_theta()->CopyFrom(*cache_entry);
+          if (cache_entry->has_filename()) {
+            try {
+              DataLoaderCacheEntry new_entry;
+              BatchHelpers::LoadMessage(cache_entry->filename(), &new_entry);
+              pi->add_cached_theta()->CopyFrom(new_entry);
+            } catch (...) {
+              LOG(ERROR) << "Unable to reload cache for " << cache_entry->filename();
+            }
+          } else {
+            pi->add_cached_theta()->CopyFrom(*cache_entry);
+          }
         }
       }
 
@@ -269,7 +293,10 @@ void LocalDataLoader::ThreadFunction() {
     LOG(WARNING) << "thread_interrupted exception in LocalDataLoader::ThreadFunction() function";
     return;
   }
-  catch(...) {
+  catch (std::runtime_error& ex) {
+    LOG(ERROR) << ex.what();
+    throw;
+  } catch(...) {
     LOG(FATAL) << "Fatal exception in LocalDataLoader::ThreadFunction() function";
     throw;
   }
@@ -292,7 +319,7 @@ RemoteDataLoader::~RemoteDataLoader() {
   }
 }
 
-void RemoteDataLoader::Callback(std::shared_ptr<const ModelIncrement> model_increment) {
+void RemoteDataLoader::Callback(ModelIncrement* model_increment) {
   BatchIds processed_batches;
   for (int batch_index = 0; batch_index < model_increment->batch_uuid_size(); ++batch_index) {
     processed_batches.add_batch_id(model_increment->batch_uuid(batch_index));

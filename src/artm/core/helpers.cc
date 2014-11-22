@@ -182,6 +182,7 @@ void BatchHelpers::LoadMessage(const std::string& full_filename,
   if (!fin.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + full_filename));
 
+  message->Clear();
   if (!message->ParseFromIstream(&fin)) {
     BOOST_THROW_EXCEPTION(DiskReadException(
       "Unable to parse protobuf message from " + full_filename));

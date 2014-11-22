@@ -181,6 +181,8 @@ Represents a configuration of a master component.
     optional string connect_endpoint = 11;
     repeated string node_connect_endpoint = 12;
     optional bool online_batch_processing = 13 [default = false];
+    optional int32 communication_timeout = 14 [default = 1000];
+    optional string disk_cache_path = 15;
   }
 
 .. attribute:: MasterComponentConfig.modus_operandi
@@ -288,6 +290,19 @@ Represents a configuration of a master component.
   without explicit call to :c:func:`ArtmInvokeIteration`.
   The :c:func:`ArtmInvokeIteration` must not be used together with online batch processing mode.
   Note that online batch processing is currently not allowed together with :attr:`cache_theta`.
+
+.. attribute:: MasterComponentConfig.communication_timeout
+
+  An communication timeout in milliseconds.
+  Any remote network call that exceeds communication timeout
+  will result in :c:macro:`ARTM_NETWORK_ERROR` error.
+
+.. attribute:: MasterComponentConfig.disk_cache_path
+
+  A value that defines a writtable disk location where this master component can store some temporary files.
+  This can reduce memory usage, particularly when :attr:`cache_theta` option is enabled.
+  Note that on clean shutdown master component will will be cleaned this folder automatically,
+  but otherwise it is your responsibility to clean this folder to avoid running out of disk.
 
 .. _NodeControllerConfig:
 
