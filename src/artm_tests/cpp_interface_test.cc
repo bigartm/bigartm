@@ -264,6 +264,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
       }
     }
 
+    args.clear_topic_name();
     args.mutable_batch()->CopyFrom(batch);
     if (!is_network_mode) {
       std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);

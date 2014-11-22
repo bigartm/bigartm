@@ -71,8 +71,13 @@ TEST(CollectionParser, UciBagOfWords) {
   boost::filesystem::recursive_directory_iterator endit;
   int batches_count = 0;
   while (it != endit) {
-    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch")
+    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
+      std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
+      ASSERT_TRUE(batch->item_size() == 1 || batch->item_size() == 3);
+      int tokens_size = batch->item(0).field(0).token_count_size();
+      ASSERT_TRUE(tokens_size == 2 || tokens_size == 3);
+    }
     ++it;
   }
 

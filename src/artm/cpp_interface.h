@@ -57,6 +57,7 @@ DEFINE_EXCEPTION_TYPE(NetworkException, std::runtime_error);
 #undef DEFINE_EXCEPTION_TYPE
 
 void SaveBatch(const Batch& batch, const std::string& disk_path);
+std::shared_ptr<Batch> LoadBatch(const std::string& filename);
 std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& filename);
 std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& config);
 

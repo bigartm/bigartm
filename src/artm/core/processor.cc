@@ -545,8 +545,9 @@ static void PrepareTokenDictionary(const ModelConfig& model,
   }
 }
 
-void Processor::FindThetaMatrix(const Batch& batch, const ModelName& model_name,
+void Processor::FindThetaMatrix(const Batch& batch, const GetThetaMatrixArgs& args,
                                 ThetaMatrix* theta_matrix) {
+  std::string model_name = args.model_name();
   std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
   if (topic_model == nullptr)
     BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find topic model", model_name));
@@ -560,6 +561,10 @@ void Processor::FindThetaMatrix(const Batch& batch, const ModelName& model_name,
   std::map<ClassId, float> class_id_to_weight;
   PrepareTokenDictionary(model, batch, &token_dict, &class_id_to_weight);
 
+  DataLoaderCacheEntry cache_entry;
+  cache_entry.set_model_name(model_name);
+  cache_entry.mutable_topic_name()->CopyFrom(topic_model->topic_name());
+
   ItemProcessor item_processor(*topic_model, token_dict, class_id_to_weight, schema_.get());
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     const Item& item = batch.item(item_index);
@@ -571,11 +576,13 @@ void Processor::FindThetaMatrix(const Batch& batch, const ModelName& model_name,
 
     item_processor.InferTheta(model, item, nullptr, false, &theta[0]);
 
-    theta_matrix->add_item_id(item.id());
-    FloatArray* item_weights = theta_matrix->add_item_weights();
+    cache_entry.add_item_id(item.id());
+    FloatArray* item_weights = cache_entry.add_theta();
     for (int topic_index = 0; topic_index < topic_size; ++topic_index)
       item_weights->add_value(theta[topic_index]);
   }
+
+  BatchHelpers::PopulateThetaMatrixFromCacheEntry(cache_entry, args, theta_matrix);
 }
 
 static std::shared_ptr<ModelIncrement>

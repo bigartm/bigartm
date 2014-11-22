@@ -49,6 +49,12 @@ Library
 
       For more information refer to :c:func:`ArtmRequestLoadDictionary`.
 
+   .. py:method:: LoadBatch(full_filename)
+
+      Loads a :ref:`Batch` from the file, defined by *full_filename* argument.
+
+      For more information refer to :c:func:`ArtmRequestLoadBatch`.
+
    .. py:method:: ParseCollectionOrLoadDictionary(docword_file_path, vocab_file_path, target_folder)
 
       A simple helper method that runs :py:meth:`ParseCollection` when *target_folder* is empty,
