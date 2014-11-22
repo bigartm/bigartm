@@ -34,8 +34,8 @@ class Merger;
 class InstanceSchema;
 typedef std::map<Token, ::artm::DictionaryEntry> DictionaryMap;
 typedef ThreadSafeCollectionHolder<std::string, DictionaryMap> ThreadSafeDictionaryCollection;
-typedef ThreadSafeQueue<std::shared_ptr<const ProcessorInput>> ProcessorQueue;
-typedef ThreadSafeQueue<std::shared_ptr<const ModelIncrement>> MergerQueue;
+typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
+typedef ThreadSafeQueue<std::shared_ptr<ModelIncrement>> MergerQueue;
 
 // Instance type defines which components will be hosted in the instance.
 // =============================

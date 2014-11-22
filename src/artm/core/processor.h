@@ -32,18 +32,18 @@ class TopicWeightIterator;
 
 class Processor : boost::noncopyable {
  public:
-  Processor(ThreadSafeQueue<std::shared_ptr<const ProcessorInput> >*  processor_queue,
-            ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
+  Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >*  processor_queue,
+            ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
             const Merger& merger,
             const ThreadSafeHolder<InstanceSchema>& schema);
 
   ~Processor();
 
-  void FindThetaMatrix(const Batch& batch, const ModelName& model_name, ThetaMatrix* theta_matrix);
+  void FindThetaMatrix(const Batch& batch, const GetThetaMatrixArgs& args, ThetaMatrix* theta_matrix);
 
  private:
-  ThreadSafeQueue<std::shared_ptr<const ProcessorInput> >* processor_queue_;
-  ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue_;
+  ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue_;
+  ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
   const Merger& merger_;
   const ThreadSafeHolder<InstanceSchema>& schema_;
 

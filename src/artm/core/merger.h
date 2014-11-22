@@ -33,7 +33,7 @@ class InstanceSchema;
 
 class Merger : boost::noncopyable {
  public:
-  Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
+  Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
          ThreadSafeHolder<InstanceSchema>* schema,
          MasterComponentService_Stub* master_component_service,
          const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
@@ -116,7 +116,7 @@ class Merger : boost::noncopyable {
   ScoresMerger scores_merger_;
 
   mutable std::atomic<bool> is_idle_;
-  ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue_;
+  ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
   ThreadSafeQueue<MergerTask> internal_task_queue_;
 
   const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;

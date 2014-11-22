@@ -51,7 +51,7 @@ class BatchManager : boost::noncopyable, public Notifiable {
   // Checks if all added tasks were processed (and marked as "Done").
   bool IsEverythingProcessed() const;
 
-  virtual void Callback(std::shared_ptr<const ModelIncrement> model_increment);
+  virtual void Callback(ModelIncrement* model_increment);
 
  private:
   mutable boost::mutex lock_;

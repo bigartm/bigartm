@@ -53,6 +53,18 @@ void SaveBatch(const Batch& batch, const std::string& disk_path) {
     StringAsArray(&config_blob)));
 }
 
+std::shared_ptr<Batch> LoadBatch(const std::string& filename) {
+  int length = HandleErrorCode(ArtmRequestLoadBatch(filename.c_str()));
+
+  std::string message_blob;
+  message_blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&message_blob)));
+
+  std::shared_ptr<Batch> message(new Batch());
+  message->ParseFromString(message_blob);
+  return message;
+}
+
 std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& filename) {
   int length = HandleErrorCode(ArtmRequestLoadDictionary(filename.c_str()));
 

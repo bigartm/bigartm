@@ -51,6 +51,7 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestScore(int master_id, const char* model_name, const char* score_name);
   DLL_PUBLIC int ArtmRequestParseCollection(int length, const char* collection_parser_config);
   DLL_PUBLIC int ArtmRequestLoadDictionary(const char* filename);
+  DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int ArtmCopyRequestResult(int length, char* address);
 
   DLL_PUBLIC int ArtmSaveBatch(const char* disk_path, int length, const char* batch);

@@ -196,7 +196,7 @@ bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
         BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
       Batch batch(get_theta_args.batch());
       BatchHelpers::PopulateClassId(&batch);
-      instance_->processor(0)->FindThetaMatrix(batch, get_theta_args.model_name(), theta_matrix);
+      instance_->processor(0)->FindThetaMatrix(batch, get_theta_args, theta_matrix);
       return true;
     }
   }

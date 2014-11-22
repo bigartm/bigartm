@@ -58,6 +58,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   score_config.set_name("PerplexityScore");
   master_config.add_score_config()->CopyFrom(score_config);
   master_config.set_online_batch_processing(online_processing);
+  master_config.set_disk_cache_path(".");
 
   // Create master component
   std::unique_ptr<artm::MasterComponent> master_component;
@@ -264,6 +265,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
       }
     }
 
+    args.clear_topic_name();
     args.mutable_batch()->CopyFrom(batch);
     if (!is_network_mode) {
       std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);

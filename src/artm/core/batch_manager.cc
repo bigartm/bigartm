@@ -93,7 +93,7 @@ bool BatchManager::IsEverythingProcessed() const {
   return true;
 }
 
-void BatchManager::Callback(std::shared_ptr<const ModelIncrement> model_increment) {
+void BatchManager::Callback(ModelIncrement* model_increment) {
   for (int batch_index = 0; batch_index < model_increment->batch_uuid_size(); ++batch_index) {
     std::string uuid_str = model_increment->batch_uuid(batch_index);
     boost::uuids::uuid uuid(boost::uuids::string_generator()(uuid_str.c_str()));

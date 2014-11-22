@@ -79,7 +79,7 @@ const int kNetworkPollingFrequency = 50;  // 50 ms
 class Notifiable {
  public:
   virtual ~Notifiable() {}
-  virtual void Callback(std::shared_ptr<const ModelIncrement> model_increment) = 0;
+  virtual void Callback(ModelIncrement* model_increment) = 0;
 };
 
 inline bool make_rpcz_call(std::function<void()> f, const std::string& log_message = "", bool no_throw = false) {

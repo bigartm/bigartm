@@ -355,3 +355,13 @@ int ArtmRequestLoadDictionary(const char* filename) {
     return last_message()->size();
   } CATCH_EXCEPTIONS;
 }
+
+int ArtmRequestLoadBatch(const char* filename) {
+  try {
+    EnableLogging();
+    auto batch = std::make_shared< ::artm::Batch>();
+    ::artm::core::BatchHelpers::LoadMessage(filename, batch.get());
+    batch->SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
