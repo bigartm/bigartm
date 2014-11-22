@@ -667,6 +667,7 @@ InitializePhi(const ProcessorInput& part, const ModelConfig& model_config,
 
   int topic_size = topic_model.topic_size();
   auto phi_matrix = std::make_shared<DenseMatrix<float>>(batch.token_size(), topic_size);
+  phi_matrix->InitializeZeros();
   for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
     Token token = Token(batch.class_id(token_index), batch.token(token_index));
 
@@ -1050,6 +1051,9 @@ void Processor::ThreadFunction() {
         for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
           FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
 
+          if (hat_n_wt_cur->value_size() == 0)
+            continue;
+
           if (hat_n_wt_cur->value_size() != topic_size)
             BOOST_THROW_EXCEPTION(InternalError("hat_n_wt_cur->value_size() != topic_size"));
 
@@ -1141,9 +1145,13 @@ void Processor::ThreadFunction() {
       // Here call_in_destruction will enqueue processor output into the merger queue.
     }
   }
-  catch(boost::thread_interrupted&) {
+  catch (boost::thread_interrupted&) {
     LOG(WARNING) << "thread_interrupted exception in Processor::ThreadFunction() function";
     return;
+  }
+  catch (std::runtime_error& ex) {
+    LOG(ERROR) << ex.what();
+    throw;
   } catch(...) {
     LOG(FATAL) << "Fatal exception in Processor::ThreadFunction() function";
     throw;

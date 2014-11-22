@@ -32,6 +32,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetTokenWeight(i, j, 1);
     }
   }
+  topic_model.CalcNormalizers();
   auto n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -46,6 +47,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetRegularizerWeight(i, j, -0.5f);
     }
   }
+  topic_model.CalcNormalizers();
   n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -60,6 +62,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetRegularizerWeight(i, j, -1.5);
     }
   }
+  topic_model.CalcNormalizers();
   n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -74,6 +77,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.IncreaseTokenWeight(i, j, 0.4f);
     }
   }
+  topic_model.CalcNormalizers();
   n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -88,6 +92,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.IncreaseTokenWeight(i, j, 0.6f);
     }
   }
+  topic_model.CalcNormalizers();
   n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -102,6 +107,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetTokenWeight(i, j, 1);
     }
   }
+  topic_model.CalcNormalizers();
   n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -116,6 +122,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetRegularizerWeight(i, j, -0.5f);
     }
   }
+  topic_model.CalcNormalizers();
   n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -157,6 +164,7 @@ TEST(TopicModelTest, Basic) {
         break;
       }
 
+      topic_model_1.CalcNormalizers();
       float expected_norm = 0;
       float real_norm = 0;
       for (int token_id = 0; token_id < no_tokens; ++token_id) {
