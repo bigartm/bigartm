@@ -93,6 +93,7 @@ message ModelIncrement {
 
 message BatchIds {
   repeated string batch_id = 1;
+  repeated string batch_file_path = 2;
 }
 
 service MasterComponentService {

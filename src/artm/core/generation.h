@@ -19,8 +19,8 @@ namespace core {
 // Must be thread-safe (used concurrently in DataLoader).
 class Generation {
  public:
-  virtual std::vector<boost::uuids::uuid> batch_uuids() const = 0;
-  virtual std::shared_ptr<Batch> batch(const boost::uuids::uuid& uuid) const = 0;
+  virtual std::vector<BatchManagerTask> batch_uuids() const = 0;
+  virtual std::shared_ptr<Batch> batch(const BatchManagerTask& task) const = 0;
   virtual bool empty() const = 0;
   virtual int GetTotalItemsCount() const = 0;
   virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch) = 0;
@@ -31,8 +31,8 @@ class DiskGeneration : public Generation {
  public:
   explicit DiskGeneration(const std::string& disk_path);
 
-  virtual std::vector<boost::uuids::uuid> batch_uuids() const;
-  virtual std::shared_ptr<Batch> batch(const boost::uuids::uuid& uuid) const;
+  virtual std::vector<BatchManagerTask> batch_uuids() const;
+  virtual std::shared_ptr<Batch> batch(const BatchManagerTask& task) const;
 
   virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch);
   virtual void RemoveBatch(const boost::uuids::uuid& uuid);
@@ -41,13 +41,13 @@ class DiskGeneration : public Generation {
 
  private:
   std::string disk_path_;
-  std::vector<boost::uuids::uuid> generation_;  // created one in constructor and then does not change.
+  std::vector<BatchManagerTask> generation_;  // created one in constructor and then does not change.
 };
 
 class MemoryGeneration : public Generation {
  public:
-  virtual std::vector<boost::uuids::uuid> batch_uuids() const;
-  virtual std::shared_ptr<Batch> batch(const boost::uuids::uuid& uuid) const;
+  virtual std::vector<BatchManagerTask> batch_uuids() const;
+  virtual std::shared_ptr<Batch> batch(const BatchManagerTask& task) const;
 
   virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch);
   virtual void RemoveBatch(const boost::uuids::uuid& uuid);

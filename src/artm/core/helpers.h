@@ -47,9 +47,7 @@ class ThreadSafeRandom {
 class BatchHelpers {
  public:
   static void CompactBatch(const Batch& batch, Batch* compacted_batch);
-  static std::vector<boost::uuids::uuid> ListAllBatches(const boost::filesystem::path& root);
-  static std::shared_ptr<Batch> LoadBatch(const boost::uuids::uuid& uuid,
-                                          const std::string& disk_path);
+  static std::vector<BatchManagerTask> ListAllBatches(const boost::filesystem::path& root);
   static boost::uuids::uuid SaveBatch(const Batch& batch, const std::string& disk_path);
 
   static void LoadMessage(const std::string& full_filename,

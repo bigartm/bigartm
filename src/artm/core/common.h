@@ -9,6 +9,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "boost/uuid/uuid.hpp"
+
 #include "glog/logging.h"
 
 #include "rpcz/rpc.hpp"
@@ -65,6 +67,26 @@ struct TokenHasher {
   size_t operator()(const Token& token) const {
     return token.hash_;
   }
+};
+
+struct BatchManagerTask {
+  BatchManagerTask(boost::uuids::uuid _uuid, std::string _file_path)
+      : uuid(_uuid), file_path(_file_path) {}
+
+  bool operator==(const BatchManagerTask& rhs) const {
+    return uuid == rhs.uuid && file_path == rhs.file_path;
+  }
+
+  BatchManagerTask& operator=(const BatchManagerTask &rhs) {
+    if (this != &rhs) {
+      uuid = rhs.uuid;
+      file_path = rhs.file_path;
+    }
+    return *this;
+  }
+
+  boost::uuids::uuid uuid;
+  std::string file_path;
 };
 
 const std::string DefaultClass = "@default_class";

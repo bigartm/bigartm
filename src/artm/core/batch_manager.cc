@@ -13,9 +13,9 @@ namespace core {
 BatchManager::BatchManager(ThreadSafeHolder<InstanceSchema>* schema)
     : lock_(), tasks_(), in_progress_(), schema_(schema) {}
 
-void BatchManager::Add(const boost::uuids::uuid& id) {
+void BatchManager::Add(const BatchManagerTask& task) {
   boost::lock_guard<boost::mutex> guard(lock_);
-  tasks_.push_back(id);
+  tasks_.push_back(task);
 }
 
 void BatchManager::DisposeModel(const ModelName& model_name) {
@@ -23,7 +23,7 @@ void BatchManager::DisposeModel(const ModelName& model_name) {
   in_progress_.erase(model_name);
 }
 
-boost::uuids::uuid BatchManager::Next() {
+BatchManagerTask BatchManager::Next() {
   boost::lock_guard<boost::mutex> guard(lock_);
   for (auto iter = tasks_.begin(); iter != tasks_.end(); ++iter) {
     bool task_is_in_progress = false;
@@ -32,32 +32,32 @@ boost::uuids::uuid BatchManager::Next() {
     for (auto model_iter = in_progress_.begin();
          model_iter != in_progress_.end();
          ++model_iter) {
-      if (model_iter->second->find(*iter) != model_iter->second->end()) {
+      if (model_iter->second->find(iter->uuid) != model_iter->second->end()) {
         task_is_in_progress = true;
         break;
       }
     }
 
     if (!task_is_in_progress) {
-      boost::uuids::uuid retval = *iter;
+      BatchManagerTask retval = *iter;
       tasks_.erase(iter);
       std::vector<ModelName> models = schema_->get()->GetModelNames();
       for (auto &model_name : models) {
         auto model_iter = in_progress_.find(model_name);
         if (model_iter == in_progress_.end()) {
           in_progress_.insert(std::make_pair(
-            model_name, std::make_shared<std::set<boost::uuids::uuid>>()));
+            model_name, std::make_shared<std::map<boost::uuids::uuid, std::string>>()));
           model_iter = in_progress_.find(model_name);
         }
 
-        model_iter->second->insert(retval);
+        model_iter->second->insert(std::make_pair(retval.uuid, retval.file_path));
       }
 
       return retval;
     }
   }
 
-  return boost::uuids::uuid();
+  return BatchManagerTask(boost::uuids::uuid(), std::string());
 }
 
 void BatchManager::Done(const boost::uuids::uuid& id, const ModelName& model_name) {
