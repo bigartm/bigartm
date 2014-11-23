@@ -53,12 +53,13 @@ void MasterComponentServiceImpl::RequestBatches(const ::artm::core::Int& request
                       ::rpcz::reply< ::artm::core::BatchIds> response) {
   BatchIds reply;
   for (int i = 0; i < request.value(); ++i) {
-    boost::uuids::uuid uuid = instance_->batch_manager()->Next();
-    if (uuid.is_nil()) {
+    BatchManagerTask task = instance_->batch_manager()->Next();
+    if (task.uuid.is_nil()) {
       break;
     }
 
-    reply.add_batch_id(boost::lexical_cast<std::string>(uuid));
+    reply.add_batch_id(boost::lexical_cast<std::string>(task.uuid));
+    reply.add_batch_file_path(task.file_path);
   }
 
   try {

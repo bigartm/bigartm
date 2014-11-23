@@ -220,8 +220,9 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       sizeof(ModelIncrement));
   ModelIncrement_OperationType_descriptor_ = ModelIncrement_descriptor_->enum_type(0);
   BatchIds_descriptor_ = file->message_type(8);
-  static const int BatchIds_offsets_[1] = {
+  static const int BatchIds_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BatchIds, batch_id_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BatchIds, batch_file_path_),
   };
   BatchIds_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -456,63 +457,64 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "try\022\022\n\nbatch_uuid\030\013 \003(\t\"^\n\rOperationType"
     "\022\024\n\020CreateIfNotExist\020\000\022\022\n\016IncrementValue"
     "\020\001\022\022\n\016OverwriteValue\020\002\022\017\n\013DeleteToken\020\003\""
-    "\034\n\010BatchIds\022\020\n\010batch_id\030\001 \003(\t\"U\n\034CreateO"
-    "rReconfigureModelArgs\022\022\n\nmodel_name\030\002 \001("
-    "\t\022!\n\006config\030\003 \001(\0132\021.artm.ModelConfig\"&\n\020"
-    "DisposeModelArgs\022\022\n\nmodel_name\030\002 \001(\t\"g\n\""
-    "CreateOrReconfigureRegularizerArgs\022\030\n\020re"
-    "gularizer_name\030\002 \001(\t\022\'\n\006config\030\003 \001(\0132\027.a"
-    "rtm.RegularizerConfig\"2\n\026DisposeRegulari"
-    "zerArgs\022\030\n\020regularizer_name\030\002 \001(\t\"O\n!Cre"
-    "ateOrReconfigureDictionaryArgs\022*\n\ndictio"
-    "nary\030\002 \001(\0132\026.artm.DictionaryConfig\"0\n\025Di"
-    "sposeDictionaryArgs\022\027\n\017dictionary_name\030\002"
-    " \001(\t\":\n\020RequestScoreArgs\022\022\n\nmodel_name\030\001"
-    " \001(\t\022\022\n\nscore_name\030\002 \001(\t2\375\001\n\026MasterCompo"
-    "nentService\0229\n\013UpdateModel\022\031.artm.core.M"
-    "odelIncrement\032\017.artm.core.Void\022:\n\rRetrie"
-    "veModel\022\027.artm.GetTopicModelArgs\032\020.artm."
-    "TopicModel\0225\n\016RequestBatches\022\016.artm.core"
-    ".Int\032\023.artm.core.BatchIds\0225\n\rReportBatch"
-    "es\022\023.artm.core.BatchIds\032\017.artm.core.Void"
-    "2\341\013\n\025NodeControllerService\022K\n\033CreateOrRe"
-    "configureInstance\022\033.artm.MasterComponent"
-    "Config\032\017.artm.core.Void\0223\n\017DisposeInstan"
-    "ce\022\017.artm.core.Void\032\017.artm.core.Void\022R\n\""
-    "CreateOrReconfigureMasterComponent\022\033.art"
-    "m.MasterComponentConfig\032\017.artm.core.Void"
-    "\022:\n\026DisposeMasterComponent\022\017.artm.core.V"
-    "oid\032\017.artm.core.Void\022T\n\030CreateOrReconfig"
-    "ureModel\022\'.artm.core.CreateOrReconfigure"
-    "ModelArgs\032\017.artm.core.Void\022<\n\014DisposeMod"
-    "el\022\033.artm.core.DisposeModelArgs\032\017.artm.c"
-    "ore.Void\022`\n\036CreateOrReconfigureRegulariz"
-    "er\022-.artm.core.CreateOrReconfigureRegula"
-    "rizerArgs\032\017.artm.core.Void\022H\n\022DisposeReg"
-    "ularizer\022!.artm.core.DisposeRegularizerA"
-    "rgs\032\017.artm.core.Void\022^\n\035CreateOrReconfig"
-    "ureDictionary\022,.artm.core.CreateOrReconf"
-    "igureDictionaryArgs\032\017.artm.core.Void\022F\n\021"
-    "DisposeDictionary\022 .artm.core.DisposeDic"
-    "tionaryArgs\032\017.artm.core.Void\0227\n\023ForcePul"
-    "lTopicModel\022\017.artm.core.Void\032\017.artm.core"
-    ".Void\022@\n\034ForcePushTopicModelIncrement\022\017."
-    "artm.core.Void\032\017.artm.core.Void\0228\n\023Overw"
-    "riteTopicModel\022\020.artm.TopicModel\032\017.artm."
-    "core.Void\022>\n\021RequestTopicModel\022\027.artm.Ge"
-    "tTopicModelArgs\032\020.artm.TopicModel\022L\n\027Req"
-    "uestRegularizerState\022\021.artm.core.String\032"
-    "\036.artm.RegularizerInternalState\022A\n\022Reque"
-    "stThetaMatrix\022\030.artm.GetThetaMatrixArgs\032"
-    "\021.artm.ThetaMatrix\022<\n\014RequestScore\022\033.art"
-    "m.core.RequestScoreArgs\032\017.artm.ScoreData"
-    "\022(\n\010AddBatch\022\013.artm.Batch\032\017.artm.core.Vo"
-    "id\0223\n\017InvokeIteration\022\017.artm.core.Void\032\017"
-    ".artm.core.Void\022+\n\010WaitIdle\022\017.artm.core."
-    "Void\032\016.artm.core.Int\022\?\n\020SynchronizeModel"
-    "\022\032.artm.SynchronizeModelArgs\032\017.artm.core"
-    ".Void\022=\n\017InitializeModel\022\031.artm.Initiali"
-    "zeModelArgs\032\017.artm.core.Void", 3188);
+    "5\n\010BatchIds\022\020\n\010batch_id\030\001 \003(\t\022\027\n\017batch_f"
+    "ile_path\030\002 \003(\t\"U\n\034CreateOrReconfigureMod"
+    "elArgs\022\022\n\nmodel_name\030\002 \001(\t\022!\n\006config\030\003 \001"
+    "(\0132\021.artm.ModelConfig\"&\n\020DisposeModelArg"
+    "s\022\022\n\nmodel_name\030\002 \001(\t\"g\n\"CreateOrReconfi"
+    "gureRegularizerArgs\022\030\n\020regularizer_name\030"
+    "\002 \001(\t\022\'\n\006config\030\003 \001(\0132\027.artm.Regularizer"
+    "Config\"2\n\026DisposeRegularizerArgs\022\030\n\020regu"
+    "larizer_name\030\002 \001(\t\"O\n!CreateOrReconfigur"
+    "eDictionaryArgs\022*\n\ndictionary\030\002 \001(\0132\026.ar"
+    "tm.DictionaryConfig\"0\n\025DisposeDictionary"
+    "Args\022\027\n\017dictionary_name\030\002 \001(\t\":\n\020Request"
+    "ScoreArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_n"
+    "ame\030\002 \001(\t2\375\001\n\026MasterComponentService\0229\n\013"
+    "UpdateModel\022\031.artm.core.ModelIncrement\032\017"
+    ".artm.core.Void\022:\n\rRetrieveModel\022\027.artm."
+    "GetTopicModelArgs\032\020.artm.TopicModel\0225\n\016R"
+    "equestBatches\022\016.artm.core.Int\032\023.artm.cor"
+    "e.BatchIds\0225\n\rReportBatches\022\023.artm.core."
+    "BatchIds\032\017.artm.core.Void2\341\013\n\025NodeContro"
+    "llerService\022K\n\033CreateOrReconfigureInstan"
+    "ce\022\033.artm.MasterComponentConfig\032\017.artm.c"
+    "ore.Void\0223\n\017DisposeInstance\022\017.artm.core."
+    "Void\032\017.artm.core.Void\022R\n\"CreateOrReconfi"
+    "gureMasterComponent\022\033.artm.MasterCompone"
+    "ntConfig\032\017.artm.core.Void\022:\n\026DisposeMast"
+    "erComponent\022\017.artm.core.Void\032\017.artm.core"
+    ".Void\022T\n\030CreateOrReconfigureModel\022\'.artm"
+    ".core.CreateOrReconfigureModelArgs\032\017.art"
+    "m.core.Void\022<\n\014DisposeModel\022\033.artm.core."
+    "DisposeModelArgs\032\017.artm.core.Void\022`\n\036Cre"
+    "ateOrReconfigureRegularizer\022-.artm.core."
+    "CreateOrReconfigureRegularizerArgs\032\017.art"
+    "m.core.Void\022H\n\022DisposeRegularizer\022!.artm"
+    ".core.DisposeRegularizerArgs\032\017.artm.core"
+    ".Void\022^\n\035CreateOrReconfigureDictionary\022,"
+    ".artm.core.CreateOrReconfigureDictionary"
+    "Args\032\017.artm.core.Void\022F\n\021DisposeDictiona"
+    "ry\022 .artm.core.DisposeDictionaryArgs\032\017.a"
+    "rtm.core.Void\0227\n\023ForcePullTopicModel\022\017.a"
+    "rtm.core.Void\032\017.artm.core.Void\022@\n\034ForceP"
+    "ushTopicModelIncrement\022\017.artm.core.Void\032"
+    "\017.artm.core.Void\0228\n\023OverwriteTopicModel\022"
+    "\020.artm.TopicModel\032\017.artm.core.Void\022>\n\021Re"
+    "questTopicModel\022\027.artm.GetTopicModelArgs"
+    "\032\020.artm.TopicModel\022L\n\027RequestRegularizer"
+    "State\022\021.artm.core.String\032\036.artm.Regulari"
+    "zerInternalState\022A\n\022RequestThetaMatrix\022\030"
+    ".artm.GetThetaMatrixArgs\032\021.artm.ThetaMat"
+    "rix\022<\n\014RequestScore\022\033.artm.core.RequestS"
+    "coreArgs\032\017.artm.ScoreData\022(\n\010AddBatch\022\013."
+    "artm.Batch\032\017.artm.core.Void\0223\n\017InvokeIte"
+    "ration\022\017.artm.core.Void\032\017.artm.core.Void"
+    "\022+\n\010WaitIdle\022\017.artm.core.Void\032\016.artm.cor"
+    "e.Int\022\?\n\020SynchronizeModel\022\032.artm.Synchro"
+    "nizeModelArgs\032\017.artm.core.Void\022=\n\017Initia"
+    "lizeModel\022\031.artm.InitializeModelArgs\032\017.a"
+    "rtm.core.Void", 3213);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
@@ -3159,6 +3161,7 @@ void ModelIncrement::Swap(ModelIncrement* other) {
 
 #ifndef _MSC_VER
 const int BatchIds::kBatchIdFieldNumber;
+const int BatchIds::kBatchFilePathFieldNumber;
 #endif  // !_MSC_VER
 
 BatchIds::BatchIds()
@@ -3212,6 +3215,7 @@ BatchIds* BatchIds::New() const {
 
 void BatchIds::Clear() {
   batch_id_.Clear();
+  batch_file_path_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -3237,6 +3241,25 @@ bool BatchIds::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(10)) goto parse_batch_id;
+        if (input->ExpectTag(18)) goto parse_batch_file_path;
+        break;
+      }
+
+      // repeated string batch_file_path = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_batch_file_path:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_batch_file_path()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->batch_file_path(this->batch_file_path_size() - 1).data(),
+            this->batch_file_path(this->batch_file_path_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_batch_file_path;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -3268,6 +3291,15 @@ void BatchIds::SerializeWithCachedSizes(
       1, this->batch_id(i), output);
   }
 
+  // repeated string batch_file_path = 2;
+  for (int i = 0; i < this->batch_file_path_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+    this->batch_file_path(i).data(), this->batch_file_path(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->batch_file_path(i), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -3285,6 +3317,15 @@ void BatchIds::SerializeWithCachedSizes(
       WriteStringToArray(1, this->batch_id(i), target);
   }
 
+  // repeated string batch_file_path = 2;
+  for (int i = 0; i < this->batch_file_path_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->batch_file_path(i).data(), this->batch_file_path(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(2, this->batch_file_path(i), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -3300,6 +3341,13 @@ int BatchIds::ByteSize() const {
   for (int i = 0; i < this->batch_id_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->batch_id(i));
+  }
+
+  // repeated string batch_file_path = 2;
+  total_size += 1 * this->batch_file_path_size();
+  for (int i = 0; i < this->batch_file_path_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->batch_file_path(i));
   }
 
   if (!unknown_fields().empty()) {
@@ -3328,6 +3376,7 @@ void BatchIds::MergeFrom(const ::google::protobuf::Message& from) {
 void BatchIds::MergeFrom(const BatchIds& from) {
   GOOGLE_CHECK_NE(&from, this);
   batch_id_.MergeFrom(from.batch_id_);
+  batch_file_path_.MergeFrom(from.batch_file_path_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -3351,6 +3400,7 @@ bool BatchIds::IsInitialized() const {
 void BatchIds::Swap(BatchIds* other) {
   if (other != this) {
     batch_id_.Swap(&other->batch_id_);
+    batch_file_path_.Swap(&other->batch_file_path_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -1119,15 +1119,32 @@ class BatchIds : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_id() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_id();
 
+  // repeated string batch_file_path = 2;
+  inline int batch_file_path_size() const;
+  inline void clear_batch_file_path();
+  static const int kBatchFilePathFieldNumber = 2;
+  inline const ::std::string& batch_file_path(int index) const;
+  inline ::std::string* mutable_batch_file_path(int index);
+  inline void set_batch_file_path(int index, const ::std::string& value);
+  inline void set_batch_file_path(int index, const char* value);
+  inline void set_batch_file_path(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_file_path();
+  inline void add_batch_file_path(const ::std::string& value);
+  inline void add_batch_file_path(const char* value);
+  inline void add_batch_file_path(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_file_path() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_file_path();
+
   // @@protoc_insertion_point(class_scope:artm.core.BatchIds)
  private:
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_id_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_file_path_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -2940,6 +2957,50 @@ BatchIds::batch_id() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 BatchIds::mutable_batch_id() {
   return &batch_id_;
+}
+
+// repeated string batch_file_path = 2;
+inline int BatchIds::batch_file_path_size() const {
+  return batch_file_path_.size();
+}
+inline void BatchIds::clear_batch_file_path() {
+  batch_file_path_.Clear();
+}
+inline const ::std::string& BatchIds::batch_file_path(int index) const {
+  return batch_file_path_.Get(index);
+}
+inline ::std::string* BatchIds::mutable_batch_file_path(int index) {
+  return batch_file_path_.Mutable(index);
+}
+inline void BatchIds::set_batch_file_path(int index, const ::std::string& value) {
+  batch_file_path_.Mutable(index)->assign(value);
+}
+inline void BatchIds::set_batch_file_path(int index, const char* value) {
+  batch_file_path_.Mutable(index)->assign(value);
+}
+inline void BatchIds::set_batch_file_path(int index, const char* value, size_t size) {
+  batch_file_path_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* BatchIds::add_batch_file_path() {
+  return batch_file_path_.Add();
+}
+inline void BatchIds::add_batch_file_path(const ::std::string& value) {
+  batch_file_path_.Add()->assign(value);
+}
+inline void BatchIds::add_batch_file_path(const char* value) {
+  batch_file_path_.Add()->assign(value);
+}
+inline void BatchIds::add_batch_file_path(const char* value, size_t size) {
+  batch_file_path_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+BatchIds::batch_file_path() const {
+  return batch_file_path_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+BatchIds::mutable_batch_file_path() {
+  return &batch_file_path_;
 }
 
 // -------------------------------------------------------------------

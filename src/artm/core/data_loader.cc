@@ -117,7 +117,7 @@ void LocalDataLoader::AddBatch(const Batch& batch, bool invoke) {
   boost::uuids::uuid uuid = generation_->AddBatch(modified_batch);
 
   if (invoke)
-    instance_->batch_manager()->Add(uuid);
+    instance_->batch_manager()->Add(uuid, std::string());
 }
 
 
@@ -139,10 +139,10 @@ void LocalDataLoader::InvokeIteration(int iterations_count) {
     return;
   }
 
-  std::vector<boost::uuids::uuid> uuids = latest_generation->batch_uuids();
+  std::vector<BatchManagerTask> tasks = latest_generation->batch_uuids();
   for (int iter = 0; iter < iterations_count; ++iter) {
-    for (auto &uuid : uuids) {
-      instance_->batch_manager()->Add(uuid);
+    for (auto &task : tasks) {
+      instance_->batch_manager()->Add(task);
     }
   }
 }
@@ -183,12 +183,12 @@ void LocalDataLoader::DisposeModel(ModelName model_name) {
 bool LocalDataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
   std::string model_name = get_theta_args.model_name();
-  std::vector<boost::uuids::uuid> batch_uuids = generation_->batch_uuids();
+  std::vector<BatchManagerTask> batches = generation_->batch_uuids();
 
-  for (auto &batch_uuid : batch_uuids) {
-    std::shared_ptr<DataLoaderCacheEntry> cache = cache_.get(CacheKey(batch_uuid, model_name));
+  for (auto &batch : batches) {
+    std::shared_ptr<DataLoaderCacheEntry> cache = cache_.get(CacheKey(batch.uuid, model_name));
     if (cache == nullptr) {
-      LOG(INFO) << "Unable to find cache entry for model: " << model_name << ", batch: " << batch_uuid;
+      LOG(INFO) << "Unable to find cache entry for model: " << model_name << ", batch: " << batch.uuid;
       continue;
     }
 
@@ -243,25 +243,25 @@ void LocalDataLoader::ThreadFunction() {
         continue;
       }
 
-      boost::uuids::uuid next_batch_uuid = instance_->batch_manager()->Next();
-      if (next_batch_uuid.is_nil()) {
+      BatchManagerTask next_task = instance_->batch_manager()->Next();
+      if (next_task.uuid.is_nil()) {
         boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
         continue;
       }
 
-      std::shared_ptr<const Batch> batch = generation_->batch(next_batch_uuid);
+      std::shared_ptr<const Batch> batch = generation_->batch(next_task);
       if (batch == nullptr) {
-        instance_->batch_manager()->Done(next_batch_uuid, ModelName());
+        instance_->batch_manager()->Done(next_task.uuid, ModelName());
         continue;
       }
 
       if (instance()->schema()->config().online_batch_processing()) {
-        generation_->RemoveBatch(next_batch_uuid);
+        generation_->RemoveBatch(next_task.uuid);
       }
 
       auto pi = std::make_shared<ProcessorInput>();
       pi->mutable_batch()->CopyFrom(*batch);
-      pi->set_batch_uuid(boost::lexical_cast<std::string>(next_batch_uuid));
+      pi->set_batch_uuid(boost::lexical_cast<std::string>(next_task.uuid));
 
       auto keys = cache_.keys();
       for (auto &key : keys) {
@@ -369,9 +369,11 @@ void RemoteDataLoader::ThreadFunction() {
       BatchIds failed_batches;
       for (int batch_index = 0; batch_index < response.batch_id_size(); ++batch_index) {
         std::string batch_id = response.batch_id(batch_index);
-        boost::uuids::uuid next_batch_uuid(boost::uuids::string_generator()(batch_id.c_str()));
-        std::shared_ptr<Batch> batch =
-          BatchHelpers::LoadBatch(next_batch_uuid, config.disk_path());
+        std::string batch_file_path = response.batch_file_path(batch_index);
+
+        auto batch = std::make_shared< ::artm::Batch>();
+        ::artm::core::BatchHelpers::LoadMessage(batch_file_path, batch.get());
+        ::artm::core::BatchHelpers::PopulateClassId(batch.get());
 
         if (batch == nullptr) {
           LOG(ERROR) << "Unable to load batch '" << batch_id << "' from " << config.disk_path();
@@ -381,7 +383,7 @@ void RemoteDataLoader::ThreadFunction() {
 
         auto pi = std::make_shared<ProcessorInput>();
         pi->mutable_batch()->CopyFrom(*batch);
-        pi->set_batch_uuid(boost::lexical_cast<std::string>(next_batch_uuid));
+        pi->set_batch_uuid(batch_id);
 
         // ToDo(alfrey): implement Theta-caching in network modus operandi
         DataLoader::PopulateDataStreams(*batch, pi.get());

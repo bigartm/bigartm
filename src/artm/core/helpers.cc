@@ -98,8 +98,8 @@ float ThreadSafeRandom::GenerateFloat() {
 
 // Return the filenames of all files that have the specified extension
 // in the specified directory.
-std::vector<boost::uuids::uuid> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
-  std::vector<boost::uuids::uuid> uuids;
+std::vector<BatchManagerTask> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
+  std::vector<BatchManagerTask> uuids;
 
   if (boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
     boost::filesystem::recursive_directory_iterator it(root);
@@ -107,28 +107,19 @@ std::vector<boost::uuids::uuid> BatchHelpers::ListAllBatches(const boost::filesy
     while (it != endit) {
       if (boost::filesystem::is_regular_file(*it) && it->path().extension() == kBatchExtension) {
         std::string filename = it->path().filename().stem().string();
-        boost::uuids::uuid uuid = boost::uuids::string_generator()(filename);
+        boost::uuids::uuid uuid = boost::uuids::nil_uuid();
+        try { uuid = boost::lexical_cast<boost::uuids::uuid>(filename); } catch (...) {}
         if (uuid.is_nil()) {
-          LOG(WARNING) << "Unable to convert filename " << filename << " to uuid.";
-          continue;
+          uuid = boost::uuids::random_generator()();
+          LOG(INFO) << "Use " << uuid << " as uuid for batch " << it->path().string();
         }
 
-        uuids.push_back(uuid);
+        uuids.push_back(BatchManagerTask(uuid, it->path().string()));
       }
       ++it;
     }
   }
   return uuids;
-}
-
-std::shared_ptr<Batch> BatchHelpers::LoadBatch(const boost::uuids::uuid& uuid,
-                                                     const std::string& disk_path) {
-  Batch* batch = new Batch();
-  std::shared_ptr<Batch> batch_ptr(batch);
-  boost::filesystem::path file(boost::lexical_cast<std::string>(uuid) + kBatchExtension);
-  LoadMessage(file.string(), disk_path, batch);
-  PopulateClassId(batch_ptr.get());
-  return batch_ptr;
 }
 
 boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,

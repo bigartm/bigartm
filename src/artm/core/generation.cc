@@ -15,8 +15,10 @@ namespace core {
 
 DiskGeneration::DiskGeneration(const std::string& disk_path)
     : disk_path_(disk_path), generation_() {
-  std::vector<boost::uuids::uuid> batch_uuids = BatchHelpers::ListAllBatches(disk_path);
-  generation_.swap(batch_uuids);
+  std::vector<BatchManagerTask> batches = BatchHelpers::ListAllBatches(disk_path);
+  for (int i = 0; i < batches.size(); ++i) {
+    generation_.push_back(batches[i]);
+  }
 }
 
 boost::uuids::uuid DiskGeneration::AddBatch(const std::shared_ptr<Batch>& batch) {
@@ -31,20 +33,27 @@ void DiskGeneration::RemoveBatch(const boost::uuids::uuid& uuid) {
   LOG(ERROR) << "Remove batch is not supported in disk generation.";
 }
 
-std::vector<boost::uuids::uuid> DiskGeneration::batch_uuids() const {
+std::vector<BatchManagerTask> DiskGeneration::batch_uuids() const {
   return generation_;
 }
 
-std::shared_ptr<Batch> DiskGeneration::batch(const boost::uuids::uuid& uuid) const {
-  return BatchHelpers::LoadBatch(uuid, disk_path_);
+std::shared_ptr<Batch> DiskGeneration::batch(const BatchManagerTask& task) const {
+  auto batch = std::make_shared< ::artm::Batch>();
+  ::artm::core::BatchHelpers::LoadMessage(task.file_path, batch.get());
+  ::artm::core::BatchHelpers::PopulateClassId(batch.get());
+  return batch;
 }
 
-std::shared_ptr<Batch> MemoryGeneration::batch(const boost::uuids::uuid& uuid) const {
-  return generation_.get(uuid);
+std::shared_ptr<Batch> MemoryGeneration::batch(const BatchManagerTask& task) const {
+  return generation_.get(task.uuid);
 }
 
-std::vector<boost::uuids::uuid> MemoryGeneration::batch_uuids() const {
-  return generation_.keys();
+std::vector<BatchManagerTask> MemoryGeneration::batch_uuids() const {
+  std::vector<BatchManagerTask> retval;
+  auto keys = generation_.keys();
+  for (auto& key : keys)
+    retval.push_back(BatchManagerTask(key, std::string()));
+  return retval;
 }
 
 boost::uuids::uuid MemoryGeneration::AddBatch(const std::shared_ptr<Batch>& batch) {
