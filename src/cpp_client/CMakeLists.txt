@@ -10,3 +10,5 @@ set(SRC_LIST
 
 add_executable(cpp_client ${SRC_LIST})
 target_link_libraries(cpp_client artm ${Boost_LIBRARIES})
+
+install(TARGETS cpp_client DESTINATION bin)
