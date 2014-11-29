@@ -18,8 +18,8 @@ unique_tokens = artm.library.Library().ParseCollectionOrLoadDictionary(
   target_folder)
 
 with artm.library.MasterComponent(disk_path = target_folder) as master:
-  dirichlet_theta_reg  = master.CreateDirichletThetaRegularizer()
-  dirichlet_phi_reg    = master.CreateDirichletPhiRegularizer()
+  smsp_theta_reg  = master.CreateSmoothSparseThetaRegularizer()
+  smsp_phi_reg    = master.CreateSmoothSparsePhiRegularizer()
 
   # Create dictionary with tokens frequencies
   dictionary = master.CreateDictionary(unique_tokens)
@@ -37,8 +37,8 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   model = master.CreateModel(topics_count = 10, inner_iterations_count = 10)
   model.EnableScore(perplexity_document_score)
   model.EnableScore(perplexity_collection_score)
-  model.EnableRegularizer(dirichlet_theta_reg, -1.0)
-  model.EnableRegularizer(dirichlet_phi_reg, -1.0)
+  model.EnableRegularizer(smsp_theta_reg, -1.0)
+  model.EnableRegularizer(smsp_phi_reg, -1.0)
   model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
   for iter in range(0, 8):

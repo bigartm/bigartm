@@ -33,7 +33,7 @@ class RegularizerInterface {
 
   virtual bool RegularizeTheta(const Item& item,
                                std::vector<float>* n_dt,
-                               int topic_size,
+                               google::protobuf::RepeatedPtrField<std::string> topic_name,
                                int inner_iter,
                                double tau) { return true; }
 
