@@ -43,6 +43,14 @@ The BigARTM package will contain the following files:
                      * The ``bin/node_controller.exe`` is an executable that
                        hosts BigARTM nodes in a distributed setting.
 
+                     * The ``bin/cpp_client.exe`` is a command line
+                       utility allows to perform simple experiments with
+                       BigARTM. Remember that not all BigARTM features
+                       are available through cpp_client, but it can
+                       serve as a good starting point to learn basic
+                       functionality.
+                       For further details refer to :doc:`ref/cpp_client`.
+
                      This folder must be added to ``PATH`` system variable.
 
 ``protobuf/``        A minimalistic version of `Google Protocol Buffers
@@ -184,6 +192,8 @@ documents. Running the script produces the following output:
     Item#7: 0.573 0.023  0.341  0.041  0.000  0.000  0.012  0.000  0.010
     Item#8: 0.759 0.000  0.229  0.013  0.000  0.000  0.000  0.000  0.000
     Item#9: 0.258 0.000  0.070  0.453  0.000  0.000  0.218  0.000  0.000
+
+.. _TutorialParseCollection:
 
 Parse collection
 ----------------
