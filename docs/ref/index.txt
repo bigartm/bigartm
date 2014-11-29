@@ -16,3 +16,5 @@ BigARTM Reference
    python_interface
    c_interface
    cpp_interface
+   cpp_client
+

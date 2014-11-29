@@ -42,7 +42,7 @@ ArtmCreateMasterComponent
       Serialized :ref:`MasterComponentConfig` message,
       describing the configuration of the master component.
 
-   :param int length: The length in bytes of the ``master_component_config`` message.
+   :param int length: The length in bytes of the *master_component_config* message.
 
    :return: In case of success, a non-negative ID of the master component,
             otherwise one of the :ref:`error codes <error-codes>`.
@@ -64,14 +64,14 @@ ArtmCreateMasterProxy
       Serialized :ref:`MasterProxyConfig` message,
       describing the configuration of the master proxy.
 
-   :param int length: The length in bytes of the ``master_proxy_config`` message.
+   :param int length: The length in bytes of the *master_proxy_config* message.
 
    :return: In case of success, a non-negative ID of the proxy object,
             otherwise one of the :ref:`error codes <error-codes>`.
 
    Prior to calling this method you must ensure that the remote host is running an instance
    of Node Controller component. The endpoint of the remote Node Controller
-   should be specified in the ``master_proxy_config`` message.
+   should be specified in the *master_proxy_config* message.
 
    The effect of this method is as follows:
 
@@ -79,7 +79,7 @@ ArtmCreateMasterProxy
 
    * a proxy object to the remote Master Component is created withing current process.
 
-   The ID, returned by this operation, can be used in all methods that require ``master_id`` parameter.
+   The ID, returned by this operation, can be used in all methods that require *master_id* parameter.
    All API calls will be redirected to the remote Master Component.
 
 
@@ -97,7 +97,7 @@ ArtmReconfigureMasterComponent
       Serialized :ref:`MasterComponentConfig` message,
       describing the new configuration of the master component.
 
-   :param int length: The length in bytes of the ``master_component_config`` message.
+   :param int length: The length in bytes of the *master_component_config* message.
 
    :return: A zero value if operation succeeded, otherwise one of the :ref:`error codes <error-codes>`.
 
@@ -111,7 +111,7 @@ ArtmDisposeMasterComponent
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
-      If ``master_id`` represents a master proxy, then
+      If *master_id* represents a master proxy, then
       this operation will dispose both remote master component and local proxy object.
 
    :return: This operation always returns :c:macro:`ARTM_SUCCESS`.
@@ -120,10 +120,10 @@ ArtmDisposeMasterComponent
    If the master component had been launched in the network modus operandi,
    then this operation also releases resources on the remote nodes
    and closes all network connections.
-   If the ``master_id`` parameter represents a proxy-object to a remote master component,
+   If the *master_id* parameter represents a proxy-object to a remote master component,
    then both the remote master component and the local proxy are disposed.
 
-   After this operation the ``master_id`` value becames invalid and must not be used in other operations.
+   After this operation the *master_id* value becames invalid and must not be used in other operations.
 
 
 ArtmCreateNodeController
@@ -137,7 +137,7 @@ ArtmCreateNodeController
       Serialized :ref:`NodeControllerConfig` message,
       describing the configuration of the node controller.
 
-   :param int length: The length in bytes of the ``node_controller_config`` message.
+   :param int length: The length in bytes of the *node_controller_config* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -170,7 +170,7 @@ ArtmCreateModel
       Serialized :ref:`ModelConfig` message,
       describing the configuration of the topic model.
 
-   :param int length: The length in bytes of the ``model_config`` message.
+   :param int length: The length in bytes of the *model_config* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -180,7 +180,7 @@ ArtmCreateModel
    to process the collection of textual documents, and then :c:func:`ArtmRequestTopicModel`
    to retrieve the resulting topic model.
 
-   It is important to notice that ``model_config`` must have a unique value in the ``name`` field,
+   It is important to notice that *model_config* must have a unique value in the :attr:`ModelConfig.name` field,
    that can be further used to identify the model (for example in :c:func:`ArtmRequestTopicModel` call).
 
 
@@ -198,14 +198,10 @@ ArtmReconfigureModel
       Serialized :ref:`ModelConfig` message,
       describing the new configuration of the topic model.
 
-   :param int length: The length in bytes of the ``model_config`` message.
+   :param int length: The length in bytes of the *model_config* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
-
-   .. warning::
-
-      Currently BigARTM does not support reconfigurations that change the number of topics in the topic model.
 
 
 ArtmDisposeModel
@@ -213,7 +209,12 @@ ArtmDisposeModel
 
 .. c:function::  int ArtmDisposeModel(int master_id, const char* model_name)
 
-   Deletes the topic model and all cooresponding objects (scores, theta matrix, etc).
+   Explicitly delete a specific topic model.
+   All regularizers within specific master component are also deleted automatically by :c:func:`ArtmDisposeMasterComponent`.
+
+   After :c:func:`ArtmDisposeModel` the *model_name* became invalid and shell not be used in
+   :c:func:`ArtmRequestScore`, :c:func:`ArtmRequestTopicModel`, :c:func:`ArtmRequestThetaMatrix`
+   or any other method (or protobuf message) that require *model_name*.
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
@@ -237,7 +238,7 @@ ArtmCreateRegularizer
       Serialized :ref:`RegularizerConfig` message,
       describing the configuration of a new regularizer.
 
-   :param int length: The length in bytes of the ``regularizer_config`` message.
+   :param int length: The length in bytes of the *regularizer_config* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -252,8 +253,16 @@ ArtmReconfigureRegularizer
 
 .. c:function::  int ArtmReconfigureRegularizer(int master_id, int length, const char* regularizer_config)
 
+   Updates the configuration of the regularizer.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* regularizer_config:
+      Serialized :ref:`RegularizerConfig` message,
+      describing the configuration of a new regularizer.
+
+   :param int length: The length in bytes of the *regularizer_config* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -263,8 +272,13 @@ ArtmDisposeRegularizer
 
 .. c:function::  int ArtmDisposeRegularizer(int master_id, const char* regularizer_name)
 
+   Explicitly delete a specific regularizer.
+   All regularizers within specific master component are also deleted automatically by :c:func:`ArtmDisposeMasterComponent`.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   
+   :param const_char* regularizer_name:  A string identified of the regularizer that should be deleted.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -274,8 +288,16 @@ ArtmCreateDictionary
 
 .. c:function::  int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config)
 
+   Creates a new dictionary.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* dictionary_config:
+      Serialized :ref:`DictionaryConfig` message,
+      describing the configuration of a new dictionary.
+
+   :param int length: The length in bytes of the *dictionary_config* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -285,8 +307,16 @@ ArtmReconfigureDictionary
 
 .. c:function::  int ArtmReconfigureDictionary(int master_id, int length, const char* dictionary_config)
 
+   Updates the dictionary.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* dictionary_config:
+      Serialized :ref:`DictionaryConfig` message,
+      describing the new configuration of the dictionary.
+
+   :param int length: The length in bytes of the *dictionary_config* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -296,8 +326,13 @@ ArtmDisposeDictionary
 
 .. c:function::  int ArtmDisposeDictionary(int master_id, const char* dictionary_name)
 
+   Explicitly delete a specific dictionary.
+   All dictionaries within specific master component are also deleted automatically by :c:func:`ArtmDisposeMasterComponent`.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* dictionary_name:  A string identified of the dictionary that should be deleted.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -307,8 +342,15 @@ ArtmAddBatch
 
 .. c:function::  int ArtmAddBatch(int master_id, int length, const char* batch)
 
+   Adds an instance of :ref:`Batch` class to the master component.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* batch:
+      Serialized :ref:`Batch` message.
+
+   :param int length: The length in bytes of the *batch* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -318,8 +360,12 @@ ArtmInvokeIteration
 
 .. c:function::  int ArtmInvokeIteration(int master_id, int iterations_count)
 
+   Invokes several iterations over the collection. 
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param int iterations_count: The number of iterations to perform.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -339,7 +385,7 @@ ArtmSynchronizeModel
       Serialized :ref:`SynchronizeModelArgs` message,
       describing the arguments of this operation.
 
-   :param int length: The length in bytes of the ``sync_model_args`` message.
+   :param int length: The length in bytes of the *sync_model_args* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -363,7 +409,7 @@ ArtmInitializeModel
       Serialized :ref:`InitializeModelArgs` message,
       describing the arguments of this operation.
 
-   :param int length: The length in bytes of the ``init_model_args`` message.
+   :param int length: The length in bytes of the *init_model_args* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -374,8 +420,12 @@ ArtmWaitIdle
 
 .. c:function::  int ArtmWaitIdle(int master_id, int timeout_milliseconds)
 
+   Awaits for ongoing iterations. 
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param int timeout_milliseconds: Timeout in milliseconds. Pass *timeout = -1* to allow infinite timeout.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -433,6 +483,8 @@ ArtmRequestTopicModel
 
 .. c:function::  int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args)
 
+   Requests topic model.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
@@ -452,8 +504,12 @@ ArtmRequestRegularizerState
 
 .. c:function::  int ArtmRequestRegularizerState(int master_id, const char* regularizer_name)
 
+   Requests state of a specific regularizer.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* regularizer_name:  A string identified of the regularizer.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
             and then passed to :c:func:`ArtmCopyRequestResult` method.
@@ -465,8 +521,14 @@ ArtmRequestScore
 
 .. c:function::  int ArtmRequestScore(int master_id, const char* model_name, const char* score_name)
 
+   Request the result of score calculation.
+
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+
+   :param const_char* model_name:  A string identified of the model.
+
+   :param const_char* score_name:  A string identified of the score.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
             and then passed to :c:func:`ArtmCopyRequestResult` method.
@@ -479,24 +541,24 @@ ArtmRequestScore
 ArtmRequestParseCollection
 --------------------------
 
-Parses a text collection into a set of batches and stores them on disk.
-Returns a :ref:`DictionaryConfig` message that lists all tokens, occured in the collection.
-
 .. c:function::  int ArtmRequestParseCollection(int length, const char* collection_parser_config)
+
+   Parses a text collection into a set of batches and stores them on disk.
+   Returns a :ref:`DictionaryConfig` message that lists all tokens, occured in the collection.
+   
+   Check the description of :ref:`CollectionParserConfig` message for more details about this operation.
 
    :param const_char*: collection_parser_config:
       Serialized :ref:`CollectionParserConfig` message,
       describing the configuration the collection parser.
 
-   :param int length: The length in bytes of the ``collection_parser_config`` message.
+   :param int length: The length in bytes of the *collection_parser_config* message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
             and then passed to :c:func:`ArtmCopyRequestResult` method.
             The buffer will contain :ref:`DictionaryConfig` message,
             that lists all unique tokens from the collection being parsed.
             In case of a failure, returns one of the :ref:`error codes <error-codes>`.
-
-See the description of :ref:`CollectionParserConfig` message for more details about this operation.
 
 .. warning::
 
@@ -505,16 +567,16 @@ See the description of :ref:`CollectionParserConfig` message for more details ab
 
    ``InternalError :  failed mapping view: The parameter is incorrect``
 
-   Try to compile BigARTM as 64 bit to workaround this issue.
+   Try to use 64 bit BigARTM to workaround this issue.
 
 .. _ArtmRequestLoadDictionary:
 
 ArtmRequestLoadDictionary
 -------------------------
 
-Loads a :ref:`DictionaryConfig` message from disk.
-
 .. c:function::  int ArtmRequestLoadDictionary(const char* filename)
+
+   Loads a :ref:`DictionaryConfig` message from disk.
 
    :param const_char*: filename:
             A full file name of a file that contains a serialized DictionaryConfig message.
@@ -532,9 +594,9 @@ saved by :ref:`ArtmRequestParseCollection` method.
 ArtmRequestLoadBatch
 --------------------
 
-Loads a :ref:`Batch` message from disk.
-
 .. c:function::  int ArtmRequestLoadBatch(const char* filename)
+
+   Loads a :ref:`Batch` message from disk.
 
    :param const_char*: filename:
             A full file name of a file that contains a serialized Batch message.
@@ -553,16 +615,23 @@ ArtmCopyRequestResult
 
 .. c:function::  int ArtmCopyRequestResult(int length, char* address)
 
-   Copies the result of the last request.
+  Copies the result of the last request.
+
+  :param const_char*: address: Target memory location to copy the data.
+
+  :param int length: The length in bytes of the *address* buffer.
+
+  :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
+        otherwise returns one of the :ref:`error codes <error-codes>`.
 
 .. _ArtmSaveBatch:
 
 ArtmSaveBatch
 -------------
 
-Saves a :ref:`Batch` message to disk.
-
 .. c:function::  int ArtmSaveBatch(const char* disk_path, int length, const char* batch)
+
+   Saves a :ref:`Batch` message to disk.
 
    :param const_char*: disk_path:
             A floder where to save the batch.
@@ -624,7 +693,7 @@ Error codes
 
 .. c:macro:: ARTM_INVALID_MASTER_ID
 
-   An API call that require ``master_id`` parameter failed because
+   An API call that require *master_id* parameter failed because
    neither MasterComponent nor MasterProxy exist with given ID.
 
 .. c:macro:: ARTM_CORRUPTED_MESSAGE
