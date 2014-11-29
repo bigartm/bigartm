@@ -4,60 +4,46 @@
 
 #include "artm/regularizer_sandbox/smooth_sparse_theta.h"
 
-#include <string>
 #include <vector>
 
 namespace artm {
 namespace regularizer_sandbox {
 
 bool SmoothSparseTheta::RegularizeTheta(const Item& item,
-                                     std::vector<float>* n_dt,
-                                     int topic_size,
-                                     int inner_iter,
-                                     double tau) {
+                                        std::vector<float>* n_dt,
+                                        google::protobuf::RepeatedPtrField<std::string> topic_name,
+                                        int inner_iter,
+                                        double tau) {
   // read the parameters from config and control their correctness
-  int background_topics_count = 0;
-  if (config_.has_background_topics_count()) {
-    background_topics_count = config_.background_topics_count();
-  }
+  const int topic_size = topic_name.size();
+  std::vector<bool> topics_to_regularize;
 
-  if (background_topics_count < 0 || background_topics_count > topic_size) {
-    LOG(ERROR) << "Smooth/Sparse Theta: background_topics_count must be in [0, topics_size]";
-    return false;
-  }
-  const int objective_topic_size = topic_size - background_topics_count;
+  if (config_.topic_name_size() > 0) {
+    for (int i = 0; i < topic_size; ++i)
+      topics_to_regularize.push_back(false);
 
-  ::artm::FloatArray alpha_topic;
-  if (config_.has_alpha_topic()) {
-    alpha_topic.CopyFrom(config_.alpha_topic());
-
-    if (alpha_topic.value_size() != topic_size) {
-      LOG(ERROR) << "Smooth/Sparse Theta: len(alpha_topic) must be equal to len(topic_size)";
-      return false;
+    for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
+      for (int real_topic_id = 0; real_topic_id < topic_size; ++real_topic_id) {
+        if (topic_name.Get(real_topic_id) == config_.topic_name(topic_id)) {
+          topics_to_regularize[real_topic_id] = true;
+          break;
+        }
+      }
     }
   } else {
-    // make default values
-    for (int i = 0; i < objective_topic_size; ++i) {
-      alpha_topic.add_value(-1);
-    }
-
-    for (int i = objective_topic_size; i < topic_size; ++i) {
-      alpha_topic.add_value(+1);
-    }
+    for (int i = 0; i < topic_size; ++i)
+      topics_to_regularize.push_back(true);
   }
 
-  float cur_iter_coef = 1;
-  if (config_.has_alpha_iter()) {
-    auto alpha_iter = config_.alpha_iter();
-    // value_size() start from 1, inner_iter --- from 0
-    if (alpha_iter.value_size() >= inner_iter + 1) {
-      cur_iter_coef = alpha_iter.value().Get(inner_iter);
-    }
-  }
+  float cur_iter_alpha = 1;
+  // *_size() starts from 1, inner_iter --- from 0
+  if (config_.alpha_iter_size() >= inner_iter + 1)
+    cur_iter_alpha = config_.alpha_iter(inner_iter);
 
   // proceed the regularization
-  for (int i = 0; i < topic_size; ++i) {
-    (*n_dt)[i] = (*n_dt)[i] + static_cast<float>(tau * cur_iter_coef * alpha_topic.value().Get(i));
+  for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+    if (topics_to_regularize[topic_id])
+      (*n_dt)[topic_id] = (*n_dt)[topic_id] + static_cast<float>(tau * cur_iter_alpha);
   }
   return true;
 }
