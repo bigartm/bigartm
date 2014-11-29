@@ -527,6 +527,26 @@ Loads a :ref:`DictionaryConfig` message from disk.
 This method can be used to load  :attr:`CollectionParserConfig.dictionary_file_name` or :attr:`CollectionParserConfig.cooccurrence_file_name` dictionaries,
 saved by :ref:`ArtmRequestParseCollection` method.
 
+.. _ArtmRequestLoadBatch:
+
+ArtmRequestLoadBatch
+--------------------
+
+Loads a :ref:`Batch` message from disk.
+
+.. c:function::  int ArtmRequestLoadBatch(const char* filename)
+
+   :param const_char*: filename:
+            A full file name of a file that contains a serialized Batch message.
+
+   :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
+            and then passed to :c:func:`ArtmCopyRequestResult` method.
+            The buffer will contain the resulting :ref:`Batch` message.
+            In case of a failure, returns one of the :ref:`error codes <error-codes>`.
+
+This method can be used to load batches saved by :ref:`ArtmRequestParseCollection` method or :ref:`ArtmSaveBatch` method.
+
+.. _ArtmCopyRequestResult:
 
 ArtmCopyRequestResult
 ---------------------
@@ -535,11 +555,25 @@ ArtmCopyRequestResult
 
    Copies the result of the last request.
 
+.. _ArtmSaveBatch:
 
 ArtmSaveBatch
 -------------
 
+Saves a :ref:`Batch` message to disk.
+
 .. c:function::  int ArtmSaveBatch(const char* disk_path, int length, const char* batch)
+
+   :param const_char*: disk_path:
+            A floder where to save the batch.
+
+   :param const_char* batch:
+            Serialized :ref:`Batch` message to save.
+
+   :param int length: The length in bytes of the *batch* message.
+
+   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
+            otherwise returns one of the :ref:`error codes <error-codes>`.
 
 
 ArtmGetLastErrorMessage

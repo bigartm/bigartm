@@ -1279,6 +1279,18 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 communication_timeout() const;
   inline void set_communication_timeout(::google::protobuf::int32 value);
 
+  // optional string disk_cache_path = 15;
+  inline bool has_disk_cache_path() const;
+  inline void clear_disk_cache_path();
+  static const int kDiskCachePathFieldNumber = 15;
+  inline const ::std::string& disk_cache_path() const;
+  inline void set_disk_cache_path(const ::std::string& value);
+  inline void set_disk_cache_path(const char* value);
+  inline void set_disk_cache_path(const char* value, size_t size);
+  inline ::std::string* mutable_disk_cache_path();
+  inline ::std::string* release_disk_cache_path();
+  inline void set_allocated_disk_cache_path(::std::string* disk_cache_path);
+
   // @@protoc_insertion_point(class_scope:artm.MasterComponentConfig)
  private:
   inline void set_has_modus_operandi();
@@ -1303,6 +1315,8 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline void clear_has_online_batch_processing();
   inline void set_has_communication_timeout();
   inline void clear_has_communication_timeout();
+  inline void set_has_disk_cache_path();
+  inline void clear_has_disk_cache_path();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -1320,9 +1334,10 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 merger_queue_max_size_;
   ::google::protobuf::int32 communication_timeout_;
   ::google::protobuf::RepeatedPtrField< ::std::string> node_connect_endpoint_;
+  ::std::string* disk_cache_path_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7002,6 +7017,76 @@ inline ::google::protobuf::int32 MasterComponentConfig::communication_timeout() 
 inline void MasterComponentConfig::set_communication_timeout(::google::protobuf::int32 value) {
   set_has_communication_timeout();
   communication_timeout_ = value;
+}
+
+// optional string disk_cache_path = 15;
+inline bool MasterComponentConfig::has_disk_cache_path() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+inline void MasterComponentConfig::set_has_disk_cache_path() {
+  _has_bits_[0] |= 0x00004000u;
+}
+inline void MasterComponentConfig::clear_has_disk_cache_path() {
+  _has_bits_[0] &= ~0x00004000u;
+}
+inline void MasterComponentConfig::clear_disk_cache_path() {
+  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_->clear();
+  }
+  clear_has_disk_cache_path();
+}
+inline const ::std::string& MasterComponentConfig::disk_cache_path() const {
+  return *disk_cache_path_;
+}
+inline void MasterComponentConfig::set_disk_cache_path(const ::std::string& value) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(value);
+}
+inline void MasterComponentConfig::set_disk_cache_path(const char* value) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(value);
+}
+inline void MasterComponentConfig::set_disk_cache_path(const char* value, size_t size) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentConfig::mutable_disk_cache_path() {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  return disk_cache_path_;
+}
+inline ::std::string* MasterComponentConfig::release_disk_cache_path() {
+  clear_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = disk_cache_path_;
+    disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentConfig::set_allocated_disk_cache_path(::std::string* disk_cache_path) {
+  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete disk_cache_path_;
+  }
+  if (disk_cache_path) {
+    set_has_disk_cache_path();
+    disk_cache_path_ = disk_cache_path;
+  } else {
+    clear_has_disk_cache_path();
+    disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------

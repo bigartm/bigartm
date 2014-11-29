@@ -143,6 +143,17 @@ class Library:
     dictionary.ParseFromString(dictionary_blob)
     return dictionary
 
+  def LoadBatch(self, full_filename):
+    full_filename_p = ctypes.create_string_buffer(full_filename)
+    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestLoadBatch(full_filename_p))
+
+    message_blob = ctypes.create_string_buffer(length)
+    HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, message_blob))
+
+    batch = messages_pb2.Batch()
+    batch.ParseFromString(message_blob)
+    return batch
+
   def ParseCollectionOrLoadDictionary(self, docword_file_path, vocab_file_path, target_folder):
     batches_found = len(glob.glob(target_folder + "/*.batch"))
     if batches_found == 0:

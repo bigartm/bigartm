@@ -8,6 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "boost/lexical_cast.hpp"
+#include "boost/uuid/uuid_generators.hpp"
+#include "boost/uuid/uuid_io.hpp"
+
 #include "glog/logging.h"
 
 #include "artm/regularizer_interface.h"
@@ -23,6 +27,7 @@
 #include "artm/utility/blas.h"
 
 namespace util = artm::utility;
+namespace fs = boost::filesystem;
 
 namespace {
 
@@ -203,8 +208,8 @@ void ApplyByElement(DenseMatrix<float>* result_matrix,
 namespace artm {
 namespace core {
 
-Processor::Processor(ThreadSafeQueue<std::shared_ptr<const ProcessorInput> >*  processor_queue,
-                     ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
+Processor::Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >*  processor_queue,
+                     ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                      const Merger& merger,
                      const ThreadSafeHolder<InstanceSchema>& schema)
     : processor_queue_(processor_queue),
@@ -545,8 +550,9 @@ static void PrepareTokenDictionary(const ModelConfig& model,
   }
 }
 
-void Processor::FindThetaMatrix(const Batch& batch, const ModelName& model_name,
+void Processor::FindThetaMatrix(const Batch& batch, const GetThetaMatrixArgs& args,
                                 ThetaMatrix* theta_matrix) {
+  std::string model_name = args.model_name();
   std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
   if (topic_model == nullptr)
     BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find topic model", model_name));
@@ -560,6 +566,10 @@ void Processor::FindThetaMatrix(const Batch& batch, const ModelName& model_name,
   std::map<ClassId, float> class_id_to_weight;
   PrepareTokenDictionary(model, batch, &token_dict, &class_id_to_weight);
 
+  DataLoaderCacheEntry cache_entry;
+  cache_entry.set_model_name(model_name);
+  cache_entry.mutable_topic_name()->CopyFrom(topic_model->topic_name());
+
   ItemProcessor item_processor(*topic_model, token_dict, class_id_to_weight, schema_.get());
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     const Item& item = batch.item(item_index);
@@ -571,11 +581,13 @@ void Processor::FindThetaMatrix(const Batch& batch, const ModelName& model_name,
 
     item_processor.InferTheta(model, item, nullptr, false, &theta[0]);
 
-    theta_matrix->add_item_id(item.id());
-    FloatArray* item_weights = theta_matrix->add_item_weights();
+    cache_entry.add_item_id(item.id());
+    FloatArray* item_weights = cache_entry.add_theta();
     for (int topic_index = 0; topic_index < topic_size; ++topic_index)
       item_weights->add_value(theta[topic_index]);
   }
+
+  BatchHelpers::PopulateThetaMatrixFromCacheEntry(cache_entry, args, theta_matrix);
 }
 
 static std::shared_ptr<ModelIncrement>
@@ -667,6 +679,7 @@ InitializePhi(const ProcessorInput& part, const ModelConfig& model_config,
 
   int topic_size = topic_model.topic_size();
   auto phi_matrix = std::make_shared<DenseMatrix<float>>(batch.token_size(), topic_size);
+  phi_matrix->InitializeZeros();
   for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
     Token token = Token(batch.class_id(token_index), batch.token(token_index));
 
@@ -967,7 +980,7 @@ void Processor::ThreadFunction() {
         break;
       }
 
-      std::shared_ptr<const ProcessorInput> part;
+      std::shared_ptr<ProcessorInput> part;
       if (!processor_queue_->try_pop(&part)) {
         pop_retries++;
         LOG_IF(INFO, pop_retries == pop_retries_max) << "No data in processing queue, waiting...";
@@ -1050,6 +1063,9 @@ void Processor::ThreadFunction() {
         for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
           FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
 
+          if (hat_n_wt_cur->value_size() == 0)
+            continue;
+
           if (hat_n_wt_cur->value_size() != topic_size)
             BOOST_THROW_EXCEPTION(InternalError("hat_n_wt_cur->value_size() != topic_size"));
 
@@ -1062,13 +1078,35 @@ void Processor::ThreadFunction() {
           }
         }
 
-        for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+        if (schema->config().cache_theta()) {
           // Update theta cache
-          model_increment->add_item_id(batch.item(item_index).id());
-          FloatArray* cached_theta = model_increment->add_theta();
-          for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-            cached_theta->add_value((*theta_matrix)(topic_index, item_index));
+          DataLoaderCacheEntry new_cache_entry;
+          new_cache_entry.set_batch_uuid(part->batch_uuid());
+          new_cache_entry.set_model_name(model_name);
+          new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_name());
+          for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+            new_cache_entry.add_item_id(batch.item(item_index).id());
+            FloatArray* cached_theta = new_cache_entry.add_theta();
+            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+              cached_theta->add_value((*theta_matrix)(topic_index, item_index));
+            }
           }
+
+          if (schema->config().has_disk_cache_path()) {
+            std::string disk_cache_path = schema->config().disk_cache_path();
+            boost::uuids::uuid uuid = boost::uuids::random_generator()();
+            fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
+            try {
+              BatchHelpers::SaveMessage(file.string(), disk_cache_path, new_cache_entry);
+              new_cache_entry.set_filename((fs::path(disk_cache_path) / file).string());
+              new_cache_entry.clear_theta();
+              new_cache_entry.clear_item_id();
+            } catch (...) {
+              LOG(ERROR) << "Unable to save cache entry to " << schema->config().disk_cache_path();
+            }
+          }
+
+          model_increment->add_cache()->CopyFrom(new_cache_entry);
         }
 
         std::map<ScoreName, std::shared_ptr<Score>> score_container;
@@ -1141,9 +1179,13 @@ void Processor::ThreadFunction() {
       // Here call_in_destruction will enqueue processor output into the merger queue.
     }
   }
-  catch(boost::thread_interrupted&) {
+  catch (boost::thread_interrupted&) {
     LOG(WARNING) << "thread_interrupted exception in Processor::ThreadFunction() function";
     return;
+  }
+  catch (std::runtime_error& ex) {
+    LOG(ERROR) << ex.what();
+    throw;
   } catch(...) {
     LOG(FATAL) << "Fatal exception in Processor::ThreadFunction() function";
     throw;

@@ -9,6 +9,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "boost/uuid/uuid.hpp"
+
 #include "glog/logging.h"
 
 #include "rpcz/rpc.hpp"
@@ -67,6 +69,26 @@ struct TokenHasher {
   }
 };
 
+struct BatchManagerTask {
+  BatchManagerTask(boost::uuids::uuid _uuid, std::string _file_path)
+      : uuid(_uuid), file_path(_file_path) {}
+
+  bool operator==(const BatchManagerTask& rhs) const {
+    return uuid == rhs.uuid && file_path == rhs.file_path;
+  }
+
+  BatchManagerTask& operator=(const BatchManagerTask &rhs) {
+    if (this != &rhs) {
+      uuid = rhs.uuid;
+      file_path = rhs.file_path;
+    }
+    return *this;
+  }
+
+  boost::uuids::uuid uuid;
+  std::string file_path;
+};
+
 const std::string DefaultClass = "@default_class";
 
 const int UnknownId = -1;
@@ -79,7 +101,7 @@ const int kNetworkPollingFrequency = 50;  // 50 ms
 class Notifiable {
  public:
   virtual ~Notifiable() {}
-  virtual void Callback(std::shared_ptr<const ModelIncrement> model_increment) = 0;
+  virtual void Callback(ModelIncrement* model_increment) = 0;
 };
 
 inline bool make_rpcz_call(std::function<void()> f, const std::string& log_message = "", bool no_throw = false) {

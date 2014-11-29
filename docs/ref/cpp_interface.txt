@@ -190,6 +190,11 @@ Utility methods
    Loads the :ref:`DictionaryConfig` message from a specific file on disk.
    *filename* must represent full disk path to the dictionary file.
 
+.. cpp:function:: std::shared_ptr<Batch> LoadBatch(const std::string& filename)
+
+   Loads the :ref:`Batch` message from a specific file on disk.
+   *filename* must represent full disk path to the batch file, including *.batch* extention.
+
 .. cpp:function:: std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& config)
 
    Parses a text collection as defined by :ref:`CollectionParserConfig` message.

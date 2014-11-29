@@ -47,9 +47,7 @@ class ThreadSafeRandom {
 class BatchHelpers {
  public:
   static void CompactBatch(const Batch& batch, Batch* compacted_batch);
-  static std::vector<boost::uuids::uuid> ListAllBatches(const boost::filesystem::path& root);
-  static std::shared_ptr<Batch> LoadBatch(const boost::uuids::uuid& uuid,
-                                          const std::string& disk_path);
+  static std::vector<BatchManagerTask> ListAllBatches(const boost::filesystem::path& root);
   static boost::uuids::uuid SaveBatch(const Batch& batch, const std::string& disk_path);
 
   static void LoadMessage(const std::string& full_filename,
@@ -61,6 +59,9 @@ class BatchHelpers {
   static void SaveMessage(const std::string& filename, const std::string& disk_path,
                           const ::google::protobuf::Message& message);
   static void PopulateClassId(Batch* batch);
+  static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
+                                                const GetThetaMatrixArgs& get_theta_args,
+                                                ::artm::ThetaMatrix* theta_matrix);
 };
 
 }  // namespace core

@@ -23,7 +23,7 @@ using ::artm::core::MasterComponentService_Stub;
 namespace artm {
 namespace core {
 
-Merger::Merger(ThreadSafeQueue<std::shared_ptr<const ModelIncrement> >* merger_queue,
+Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
                artm::core::MasterComponentService_Stub* master_component_service,
                const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
@@ -227,14 +227,14 @@ void Merger::ThreadFunction() {
         }
 
         // Second, merge everything from the queue and update topic model.
-        std::shared_ptr<const ModelIncrement> model_increment;
+        std::shared_ptr<ModelIncrement> model_increment;
         if (!merger_queue_->try_pop(&model_increment)) {
           break;  // MAIN FOR LOOP
         }
 
         call_on_destruction c([&]() {
           if (notifiable_ != nullptr) {
-            notifiable_->Callback(model_increment);
+            notifiable_->Callback(model_increment.get());
           }
         });
 

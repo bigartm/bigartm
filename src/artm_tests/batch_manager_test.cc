@@ -29,9 +29,9 @@ TEST(BatchManager, Basic) {
 
   boost::uuids::uuid u1(new_uuid()), u2(new_uuid()), u3(new_uuid());
 
-  batch_manager.Add(u1);
+  batch_manager.Add(u1, "");
   auto v1 = batch_manager.Next();
-  ASSERT_EQ(v1, u1);
+  ASSERT_EQ(v1.uuid, u1);
   ASSERT_FALSE(batch_manager.IsEverythingProcessed());
 
   batch_manager.Done(u1, m1);
@@ -42,17 +42,17 @@ TEST(BatchManager, Basic) {
   schema_holder.set(schema);
   ASSERT_TRUE(batch_manager.IsEverythingProcessed());
 
-  batch_manager.Add(u2);
+  batch_manager.Add(u2, "");
   auto v2 = batch_manager.Next();
-  ASSERT_EQ(v2, u2);
+  ASSERT_EQ(v2.uuid, u2);
 
-  batch_manager.Add(u3);
-  batch_manager.Add(u2);  // once again
+  batch_manager.Add(u3, "");
+  batch_manager.Add(u2, "");  // once again
   auto v3 = batch_manager.Next();
-  ASSERT_EQ(v3, u3);
+  ASSERT_EQ(v3.uuid, u3);
 
   auto v_nill = batch_manager.Next();
-  ASSERT_TRUE(v_nill.is_nil());
+  ASSERT_TRUE(v_nill.uuid.is_nil());
 
   batch_manager.Done(u2, m1);
   batch_manager.DisposeModel(m2);
@@ -60,8 +60,8 @@ TEST(BatchManager, Basic) {
   schema_holder.set(schema);
 
   auto v2_2 = batch_manager.Next();
-  ASSERT_EQ(v2_2, u2);
-  batch_manager.Done(v3, m1);
-  batch_manager.Done(v2_2, m1);
+  ASSERT_EQ(v2_2.uuid, u2);
+  batch_manager.Done(v3.uuid, m1);
+  batch_manager.Done(v2_2.uuid, m1);
   ASSERT_TRUE(batch_manager.IsEverythingProcessed());
 }

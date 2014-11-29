@@ -34,7 +34,8 @@ class BatchManager : boost::noncopyable, public Notifiable {
 
   // Add batch to the task queue.
   // OK to add the same uuid multiple times.
-  void Add(const boost::uuids::uuid& id);
+  void Add(const BatchManagerTask& task);
+  void Add(boost::uuids::uuid uuid, std::string file_path) { Add(BatchManagerTask(uuid, file_path));  }
 
   // Remove all pending batches related to the model.
   void DisposeModel(const ModelName& model_name);
@@ -43,7 +44,7 @@ class BatchManager : boost::noncopyable, public Notifiable {
   // This operation skips all "in progress" batches.
   // The batch return by this operation will stay in "in progress" list
   // until it is marked as processed by Done().
-  boost::uuids::uuid Next();
+  BatchManagerTask Next();
 
   // Eliminates uuid from "in progress" set.
   void Done(const boost::uuids::uuid& id, const ModelName& model_name);
@@ -51,12 +52,13 @@ class BatchManager : boost::noncopyable, public Notifiable {
   // Checks if all added tasks were processed (and marked as "Done").
   bool IsEverythingProcessed() const;
 
-  virtual void Callback(std::shared_ptr<const ModelIncrement> model_increment);
+  virtual void Callback(ModelIncrement* model_increment);
 
  private:
   mutable boost::mutex lock_;
-  std::list<boost::uuids::uuid> tasks_;
-  std::map<ModelName, std::shared_ptr<std::set<boost::uuids::uuid>>> in_progress_;
+
+  std::list<BatchManagerTask> tasks_;
+  std::map<ModelName, std::shared_ptr<std::map<boost::uuids::uuid, std::string>>> in_progress_;
   ThreadSafeHolder<InstanceSchema>* schema_;
 };
 
