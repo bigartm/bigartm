@@ -444,7 +444,7 @@ void Processor::ItemProcessor::InferTheta(const ModelConfig& model,
       if (regularizer != nullptr) {
         auto tau_index = reg_name_iterator - reg_names.begin();
         double tau = reg_tau.Get(tau_index);
-        bool retval = regularizer->RegularizeTheta(item, &theta_next, topic_size, inner_iter, tau);
+        bool retval = regularizer->RegularizeTheta(item, &theta_next, topic_model_.topic_name(), inner_iter, tau);
         if (!retval) {
           LOG(ERROR) << "Problems with type or number of parameters in Theta regularizer <" <<
             reg_name_iterator->c_str() <<
@@ -725,7 +725,7 @@ static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, cons
         double tau = reg_tau.Get(tau_index);
 
         bool retval = regularizer->RegularizeTheta(
-          item, &theta_next, topic_size, inner_iter, tau);
+          item, &theta_next, model_config.topic_name(), inner_iter, tau);
         if (!retval) {
           LOG(ERROR) << "Problems with type or number of parameters in Theta" <<
             "regularizer <" << reg_name_iterator->c_str() <<

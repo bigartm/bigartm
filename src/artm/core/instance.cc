@@ -21,8 +21,6 @@
 
 #include "artm/regularizer_interface.h"
 #include "artm/regularizer_sandbox/decorrelator_phi.h"
-#include "artm/regularizer_sandbox/dirichlet_theta.h"
-#include "artm/regularizer_sandbox/dirichlet_phi.h"
 #include "artm/regularizer_sandbox/multilanguage_phi.h"
 #include "artm/regularizer_sandbox/smooth_sparse_theta.h"
 #include "artm/regularizer_sandbox/smooth_sparse_phi.h"
@@ -169,18 +167,6 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
 
   // add here new case if adding new regularizer
   switch (regularizer_type) {
-    case artm::RegularizerConfig_Type_DirichletTheta: {
-      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::DirichletThetaConfig,
-                                        ::artm::regularizer_sandbox::DirichletTheta);
-      break;
-    }
-
-    case artm::RegularizerConfig_Type_DirichletPhi: {
-      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::DirichletPhiConfig,
-                                        ::artm::regularizer_sandbox::DirichletPhi);
-      break;
-    }
-
     case artm::RegularizerConfig_Type_SmoothSparseTheta: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothSparseThetaConfig,
                                         ::artm::regularizer_sandbox::SmoothSparseTheta);

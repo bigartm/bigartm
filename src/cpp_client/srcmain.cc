@@ -21,7 +21,7 @@ namespace po = boost::program_options;
 using namespace artm;
 
 class CuckooWatch {
-public:
+ public:
   explicit CuckooWatch(std::string message)
     : message_(message), start_(std::chrono::high_resolution_clock::now()) {}
   ~CuckooWatch() {
@@ -30,7 +30,7 @@ public:
     std::cout << message_ << " " << delta_ms.count() << " milliseconds.\n";
   }
 
-private:
+ private:
   std::string message_;
   std::chrono::time_point<std::chrono::system_clock> start_;
 };
@@ -173,10 +173,10 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
 
 artm::RegularizerConfig configurePhiRegularizer(float tau, ModelConfig* model_config) {
   RegularizerConfig regularizer_config;
-  std::string name = "regularizer_dirichlet_phi";
+  std::string name = "regularizer_smsp_phi";
   regularizer_config.set_name(name);
-  regularizer_config.set_type(::artm::RegularizerConfig_Type_DirichletPhi);
-  regularizer_config.set_config(::artm::DirichletPhiConfig().SerializeAsString());
+  regularizer_config.set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+  regularizer_config.set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
 
   model_config->add_regularizer_name(name);
   model_config->add_regularizer_tau(tau);
@@ -185,10 +185,10 @@ artm::RegularizerConfig configurePhiRegularizer(float tau, ModelConfig* model_co
 
 artm::RegularizerConfig configureThetaRegularizer(float tau, ModelConfig* model_config) {
   RegularizerConfig regularizer_config;
-  std::string name = "regularizer_dirichlet_phi";
+  std::string name = "regularizer_smsp_theta";
   regularizer_config.set_name(name);
-  regularizer_config.set_type(::artm::RegularizerConfig_Type_DirichletTheta);
-  regularizer_config.set_config(::artm::DirichletPhiConfig().SerializeAsString());
+  regularizer_config.set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
+  regularizer_config.set_config(::artm::SmoothSparseThetaConfig().SerializeAsString());
   model_config->add_regularizer_name(name);
   model_config->add_regularizer_tau(tau);
   return regularizer_config;
@@ -322,8 +322,7 @@ int execute(const artm_options& options) {
       if (!online) {
         master_component->WaitIdle();
         model.Synchronize(0.0);
-      }
-      else {
+      } else {
         bool done = false;
         while (!done) {
           done = master_component->WaitIdle(options.online_period);
@@ -376,7 +375,7 @@ int execute(const artm_options& options) {
     auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
     int docs_to_show = train_theta_snippet.get()->values_size();
     std::cout << "\nThetaMatrix (first " << docs_to_show << " documents):\n";
-    for (int topic_index = 0; topic_index < options.num_topics; topic_index++){
+    for (int topic_index = 0; topic_index < options.num_topics; topic_index++) {
       std::cout << "Topic" << topic_index << ": ";
       for (int item_index = 0; item_index < docs_to_show; item_index++) {
         float weight = train_theta_snippet.get()->values(item_index).value(topic_index);

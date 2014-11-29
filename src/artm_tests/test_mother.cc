@@ -17,23 +17,13 @@ ModelConfig TestMother::GenerateModelConfig() const {
 }
 
 RegularizerConfig TestMother::GenerateRegularizerConfig() const {
-  ::artm::DirichletThetaConfig regularizer_1_config;
-  ::artm::DoubleArray alpha;
-  for (int i = 0; i < nTopics; ++i) {
-    alpha.add_value(0);
-  }
-
-  for (int i = 0; i < 12; ++i) {
-    for (int j = 0; j < nTopics; ++j) {
-      alpha.set_value(j, 0.05 + j * 0.01);
-    }
-    artm::DoubleArray* alpha_ptr = regularizer_1_config.add_alpha();
-    *alpha_ptr = alpha;
-  }
+  ::artm::SmoothSparseThetaConfig regularizer_1_config;
+  for (int i = 0; i < 12; ++i)
+    regularizer_1_config.add_alpha_iter(0.8);
 
   ::artm::RegularizerConfig general_regularizer_1_config;
   general_regularizer_1_config.set_name(regularizer_name);
-  general_regularizer_1_config.set_type(artm::RegularizerConfig_Type_DirichletTheta);
+  general_regularizer_1_config.set_type(artm::RegularizerConfig_Type_SmoothSparseTheta);
   general_regularizer_1_config.set_config(regularizer_1_config.SerializeAsString());
 
   return general_regularizer_1_config;
