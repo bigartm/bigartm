@@ -199,6 +199,8 @@ MasterComponent
       This method is only used for in-memory processing of the collection, and require an empty value of :attr:`MasterComponentConfig.disk_path` in current configuration.
       Master component creates a copy of the *batch*, so any further changes of the *batch* object will not be picked up.
 
+      The behavior of this method also depends on :attr:`MasterComponentConfig.online_batch_processing` flag.
+
    .. py:method:: InvokeIteration(iterations_count)
 
       Invokes several iterations over the collection. The recommended value for *iterations_count* is 1.

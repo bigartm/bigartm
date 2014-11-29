@@ -33,67 +33,79 @@ Installation on Windows
 
 The BigARTM package will contain the following files:
 
-  ==================== ==============================================================================================
-  ``bin/``             Precompiled binaries of BigARTM for Windows. Two files are particularly important:
+==================== ==========================================================
+``bin/``             Precompiled binaries of BigARTM for Windows. Two files
+                     are particularly important:
 
-                       * The ``bin/artm.dll`` contains the core functionality of the BigARTM library.
+                     * The ``bin/artm.dll`` contains the core functionality
+                       of the BigARTM library.
 
-                       * The ``bin/node_controller.exe`` is an executable that hosts BigARTM nodes
-                         in a distributed setting.
+                     * The ``bin/node_controller.exe`` is an executable that
+                       hosts BigARTM nodes in a distributed setting.
 
-                       This folder must be added to ``PATH`` system variable.
+                     This folder must be added to ``PATH`` system variable.
 
-  ``protobuf/``        A minimalistic version of `Google Protocol Buffers
-                       <https://code.google.com/p/protobuf/>`_
-                       library, required to run BigARTM from Python.
-                       To setup this package follow the instructions in ``protobuf/python/README`` file.
+``protobuf/``        A minimalistic version of `Google Protocol Buffers
+                     <https://code.google.com/p/protobuf/>`_
+                     library, required to run BigARTM from Python.
+                     To setup this package follow the instructions in
+                     ``protobuf/python/README`` file.
 
-  ``python/artm/``     Python programming interface to BigARTM library.
+``python/artm/``     Python programming interface to BigARTM library.
 
-                       * ``library.py`` implements all classes of BigARTM python interface.
+                     * ``library.py`` implements all classes of BigARTM
+                       python interface.
 
-                       * ``messages_pb2.py`` contains all protobuf messages that can be transfered in and out BigARTM
-                         core library. Most common features are exposed with their own API methods,
-                         so normally you do not use python protobuf messages to operate BigARTM.
+                     * ``messages_pb2.py`` contains all protobuf messages
+                       that can be transfered in and out BigARTM
+                       core library. Most common features are exposed 
+                       with their own API methods,
+                       so normally you do not use python protobuf messages
+                       to operate BigARTM.
 
-                       This folder must be added to ``PYTHONPATH`` system variable.
+                     This folder must be added to ``PYTHONPATH``
+                     system variable.
 
-  ``python/examples/`` Python examples of how to use BigARTM:
+``python/examples/`` Python examples of how to use BigARTM:
 
-                       * `example01_synthetic_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example01_synthetic_collection.py>`_
+                     * `example01_synthetic_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example01_synthetic_collection.py>`_
 
-                       * `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example02_parse_collection.py>`_
+                     * `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example02_parse_collection.py>`_
 
-                       * `example03_concurrency.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example03_concurrency.py>`_
+                     * `example03_concurrency.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example03_concurrency.py>`_
 
-                       * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example04_online_algorithm.py>`_
+                     * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example04_online_algorithm.py>`_
 
-                       * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example05_train_and_test_stream.py>`_
+                     * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example05_train_and_test_stream.py>`_
 
-                       * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
+                     * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
 
-                       * `example07_master_component_proxy.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example07_master_component_proxy.py>`_
+                     * `example07_master_component_proxy.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example07_master_component_proxy.py>`_
 
-                       * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
+                     * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
 
-                       Files ``docword.kos.txt`` and ``vocab.kos.txt`` represent a simple
-                       collection of text files in Bag-Of-Words format.
-                       The files are taken from `UCI Machine Learning Repository
-                       <https://archive.ics.uci.edu/ml/datasets/Bag+of+Words>`_.
+                     Files ``docword.kos.txt`` and ``vocab.kos.txt``
+                     represent a simple
+                     collection of text files in Bag-Of-Words format.
+                     The files are taken from `UCI Machine Learning Repository
+                     <https://archive.ics.uci.edu/ml/datasets/Bag+of+Words>`_.
 
-  ``src/``             Several programming interfaces to BigARTM library.
+``src/``             Several programming interfaces to BigARTM library.
 
-                       * ``c_interface.h`` -
-                         :doc:`low-level BigARTM interface </ref/c_interface>` in plain C.
+                     * ``c_interface.h`` -
+                       :doc:`low-level BigARTM interface </ref/c_interface>`
+                       in plain C.
 
-                       * ``cpp_interface.h``, ``cpp_interface.cc``, ``messages.pb.h`` and ``messages.pb.cc``
-                         provide C++ interface of BigARTM (not documented).
+                     * ``cpp_interface.h``, ``cpp_interface.cc``,
+                       ``messages.pb.h`` and ``messages.pb.cc``
+                       provide C++ interface of BigARTM (not documented).
 
-                       * ``messages.proto`` describe all protocol buffer messages
-                         that appear in the API of BigARTM (documented :doc:`here </ref/messages>`).
+                     * ``messages.proto`` describe all protocol
+                       buffer messages that appear in the API of BigARTM
+                       (documented :doc:`here </ref/messages>`).
 
-  ``LICENSE``          License file of BigARTM.
-  ==================== ==============================================================================================
+``LICENSE``          License file of BigARTM.
+==================== ==========================================================
 
 Installation on Linux
 ---------------------
@@ -152,26 +164,26 @@ documents. Running the script produces the following output:
     Iter#7 : Perplexity = 1624.210 , Phi sparsity = 0.478  , Theta sparsity = 0.341
 
     Top tokens per topic:
-    Topic#1:  democratic  campaign  dean  poll  general  edwards  party  voters  john  republicans
-    Topic#2:  iraq  administration  war  white  bushs  officials  time  people  attacks  news
-    Topic#3:  military  iraqi  abu  iraqis  fallujah  soldiers  truth  ghraib  army  forces
-    Topic#4:  state  republican  race  elections  district  percent  gop  election  candidate  house
-    Topic#5:  planned  soldier  cities  heart  stolen  city  husband  christopher  view  amp
-    Topic#6:  cheney  debate  union  politics  unions  local  endorsement  space  black  labor
-    Topic#7:  president  war  states  united  years  government  jobs  tax  people  health
-    Topic#8:  delay  law  court  texas  committee  ballot  donors  investigation  records  federal
-    Topic#9:  november  electoral  account  governor  polls  republicans  senate  vote  poll  contact
+    Topic#1: democratic campaign dean poll general edwards party voters john republicans
+    Topic#2: iraq administration war white bushs officials time people attacks news
+    Topic#3: military iraqi abu iraqis fallujah soldiers truth ghraib army forces
+    Topic#4: state republican race elections district percent gop election candidate house
+    Topic#5: planned soldier cities heart stolen city husband christopher view amp
+    Topic#6: cheney debate union politics unions local endorsement space black labor
+    Topic#7: president war states united years government jobs tax people health
+    Topic#8: delay law court texas committee ballot donors investigation records federal
+    Topic#9: november electoral account governor polls republicans senate vote poll contact
 
     Snippet of theta matrix:
-    Item#1:  0.054  0.108   0.017   0.282   0.000   0.000   0.528   0.000   0.011
-    Item#2:  0.174  0.060   0.686   0.000   0.000   0.000   0.000   0.081   0.000
-    Item#3:  0.000  0.000   0.000   0.000   0.117   0.000   0.000   0.000   0.883
-    Item#4:  0.225  0.128   0.058   0.078   0.012   0.455   0.010   0.027   0.008
-    Item#5:  0.455  0.145   0.083   0.124   0.009   0.031   0.136   0.017   0.000
-    Item#6:  0.455  0.000   0.000   0.518   0.027   0.000   0.000   0.000   0.000
-    Item#7:  0.573  0.023   0.341   0.041   0.000   0.000   0.012   0.000   0.010
-    Item#8:  0.759  0.000   0.229   0.013   0.000   0.000   0.000   0.000   0.000
-    Item#9:  0.258  0.000   0.070   0.453   0.000   0.000   0.218   0.000   0.000
+    Item#1: 0.054 0.108  0.017  0.282  0.000  0.000  0.528  0.000  0.011
+    Item#2: 0.174 0.060  0.686  0.000  0.000  0.000  0.000  0.081  0.000
+    Item#3: 0.000 0.000  0.000  0.000  0.117  0.000  0.000  0.000  0.883
+    Item#4: 0.225 0.128  0.058  0.078  0.012  0.455  0.010  0.027  0.008
+    Item#5: 0.455 0.145  0.083  0.124  0.009  0.031  0.136  0.017  0.000
+    Item#6: 0.455 0.000  0.000  0.518  0.027  0.000  0.000  0.000  0.000
+    Item#7: 0.573 0.023  0.341  0.041  0.000  0.000  0.012  0.000  0.010
+    Item#8: 0.759 0.000  0.229  0.013  0.000  0.000  0.000  0.000  0.000
+    Item#9: 0.258 0.000  0.070  0.453  0.000  0.000  0.218  0.000  0.000
 
 Parse collection
 ----------------
@@ -196,37 +208,54 @@ method.
     batches_found = len(glob.glob(target_folder + "/*.batch"))
     if batches_found == 0:
       print "No batches found, parsing them from textual collection...",
-      collection_parser_config = artm.messages_pb2.CollectionParserConfig();
-      collection_parser_config.format = artm.library.CollectionParserConfig_Format_BagOfWordsUci
+      parser_config = artm.messages_pb2.CollectionParserConfig();
+      parser_config.format = artm.library.CollectionParserConfig_Format_BagOfWordsUci
 
-      collection_parser_config.docword_file_path = data_folder + 'docword.'+ collection_name + '.txt'
-      collection_parser_config.vocab_file_path = data_folder + 'vocab.'+ collection_name + '.txt'
-      collection_parser_config.target_folder = target_folder
-      collection_parser_config.dictionary_file_name = 'dictionary'
-      unique_tokens = artm.library.Library().ParseCollection(collection_parser_config);
+      parser_config.docword_file_path = data_folder + 'docword.'+ collection_name + '.txt'
+      parser_config.vocab_file_path = data_folder + 'vocab.'+ collection_name + '.txt'
+      parser_config.target_folder = target_folder
+      parser_config.dictionary_file_name = 'dictionary'
+      unique_tokens = artm.library.Library().ParseCollection(parser_config);
       print " OK."
     else:
       print "Found " + str(batches_found) + " batches, using them."
       unique_tokens  = artm.library.Library().LoadDictionary(target_folder + '/dictionary');
 
-You may also download larger collections from the following links:
+You may also download larger collections from the following links.
+You can get the original collection (docword file and vocab file)
+or an already precompiled batches and dictionary.
 
-========= ========= ======= ======= ==================================================================================== ======================================================================================================= =======================================================================================================
-Task      Source    #Words  #Items  Precompiled batches and dictionary                                                   docword file                                                                                            vocab file
-========= ========= ======= ======= ==================================================================================== ======================================================================================================= =======================================================================================================
-kos       `UCI`_    6906    3430    `kos_1k (700 KB)     <https://s3-eu-west-1.amazonaws.com/artm/kos_1k.7z>`_           `docword.kos.txt.gz (1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz>`_               `vocab.kos.txt (54 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt>`_      
-                                    `kos_dictionary      <https://s3-eu-west-1.amazonaws.com/artm/kos_dictionary>`_
-nips      `UCI`_    12419   1500    `nips_200 (1.5 MB)   <https://s3-eu-west-1.amazonaws.com/artm/nips_200.7z>`_         `docword.nips.txt.gz (2.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nips.txt.gz>`_           `vocab.nips.txt (98 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nips.txt>`_
-                                    `nips_dictionary     <https://s3-eu-west-1.amazonaws.com/artm/nips_dictionary>`_
-enron     `UCI`_    28102   39861   `enron_1k (7.1 MB)   <https://s3-eu-west-1.amazonaws.com/artm/enron_1k.7z>`_         `docword.enron.txt.gz (11.7 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.enron.txt.gz>`_        `vocab.enron.txt (230 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.enron.txt>`_
-                                    `enron_dictionary    <https://s3-eu-west-1.amazonaws.com/artm/enron_dictionary>`_
-nytimes   `UCI`_    102660  300000  `nytimes_1k (131 MB) <https://s3-eu-west-1.amazonaws.com/artm/nytimes_1k.7z>`_       `docword.nytimes.txt.gz (223 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nytimes.txt.gz>`_     `vocab.nytimes.txt (1.2 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nytimes.txt>`_
-                                    `nytimes_dictionary  <https://s3-eu-west-1.amazonaws.com/artm/nytimes_dictionary>`_
-pubmed    `UCI`_    141043  8200000 `pubmed_10k (1 GB)   <https://s3-eu-west-1.amazonaws.com/artm/pubmed_10k.7z>`_       `docword.pubmed.txt.gz (1.7 GB) <https://s3-eu-west-1.amazonaws.com/artm/docword.pubmed.txt.gz>`_       `vocab.pubmed.txt (1.3 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.pubmed.txt>`_
-                                    `pubmed_dictionary   <https://s3-eu-west-1.amazonaws.com/artm/pubmed_dictionary>`_
-wiki      `Gensim`_ 100000  3665223 `wiki_10k (1.1 GB)   <https://s3-eu-west-1.amazonaws.com/artm/wiki_10k.7z>`_
-                                    `wiki_dictionary     <https://s3-eu-west-1.amazonaws.com/artm/wiki_dictionary>`_
-========= ========= ======= ======= ==================================================================================== ======================================================================================================= =======================================================================================================
+========= ========= ======= ======= ========================================================================================================
+Task      Source    #Words  #Items  Files
+========= ========= ======= ======= ========================================================================================================
+kos       `UCI`_    6906    3430    * `docword.kos.txt.gz (1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz>`_
+                                    * `vocab.kos.txt (54 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt>`_      
+                                    * `kos_1k (700 KB)     <https://s3-eu-west-1.amazonaws.com/artm/kos_1k.7z>`_           
+                                    * `kos_dictionary      <https://s3-eu-west-1.amazonaws.com/artm/kos_dictionary>`_
+
+nips      `UCI`_    12419   1500    * `docword.nips.txt.gz (2.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nips.txt.gz>`_
+                                    * `vocab.nips.txt (98 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nips.txt>`_
+                                    * `nips_200 (1.5 MB)   <https://s3-eu-west-1.amazonaws.com/artm/nips_200.7z>`_         
+                                    * `nips_dictionary     <https://s3-eu-west-1.amazonaws.com/artm/nips_dictionary>`_
+
+enron     `UCI`_    28102   39861   * `docword.enron.txt.gz (11.7 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.enron.txt.gz>`_
+                                    * `vocab.enron.txt (230 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.enron.txt>`_
+                                    * `enron_1k (7.1 MB)   <https://s3-eu-west-1.amazonaws.com/artm/enron_1k.7z>`_         
+                                    * `enron_dictionary    <https://s3-eu-west-1.amazonaws.com/artm/enron_dictionary>`_
+
+nytimes   `UCI`_    102660  300000  * `docword.nytimes.txt.gz (223 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nytimes.txt.gz>`_
+                                    * `vocab.nytimes.txt (1.2 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nytimes.txt>`_
+                                    * `nytimes_1k (131 MB) <https://s3-eu-west-1.amazonaws.com/artm/nytimes_1k.7z>`_
+                                    * `nytimes_dictionary  <https://s3-eu-west-1.amazonaws.com/artm/nytimes_dictionary>`_
+
+pubmed    `UCI`_    141043  8200000 * `docword.pubmed.txt.gz (1.7 GB) <https://s3-eu-west-1.amazonaws.com/artm/docword.pubmed.txt.gz>`_
+                                    * `vocab.pubmed.txt (1.3 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.pubmed.txt>`_
+                                    * `pubmed_10k (1 GB)   <https://s3-eu-west-1.amazonaws.com/artm/pubmed_10k.7z>`_
+                                    * `pubmed_dictionary   <https://s3-eu-west-1.amazonaws.com/artm/pubmed_dictionary>`_
+
+wiki      `Gensim`_ 100000  3665223 * `wiki_10k (1.1 GB)   <https://s3-eu-west-1.amazonaws.com/artm/wiki_10k.7z>`_
+                                    * `wiki_dictionary     <https://s3-eu-west-1.amazonaws.com/artm/wiki_dictionary>`_
+========= ========= ======= ======= ========================================================================================================
 
 .. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words
 

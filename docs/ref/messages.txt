@@ -455,22 +455,22 @@ Represents a configuration of a topic model.
 .. attribute:: ModelConfig.regularizer_name
 
    A set of names that define which regularizers should be enabled for the model.
-   This repeated field must have the same length as regularizer_tau.
+   This repeated field must have the same length as :attr:`regularizer_tau`.
 
 .. attribute:: ModelConfig.regularizer_tau
 
    A set of values that define the regularization coefficients of the corresponding regularizer.
-   This repeated field must have the same length as regularizer_name.
+   This repeated field must have the same length as :attr:`regularizer_name`.
 
 .. attribute:: ModelConfig.class_id
 
    A set of values that define for which classes (modalities) to build topic model.
-   This repeated field must have the same length as class_weight.
+   This repeated field must have the same length as :attr:`class_weight`.
 
 .. attribute:: ModelConfig.class_weight
 
    A set of values that define the weights of the corresponding classes (modalities).
-   This repeated field must have the same length as class_id.
+   This repeated field must have the same length as :attr:`class_id`.
 
 .. attribute:: ModelConfig.use_sparse_bow
 
