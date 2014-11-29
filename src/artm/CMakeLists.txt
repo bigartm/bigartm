@@ -54,10 +54,6 @@ set(SRC_LIST
 	core/zmq_context.h
 	regularizer_sandbox/decorrelator_phi.cc
 	regularizer_sandbox/decorrelator_phi.h
-	regularizer_sandbox/dirichlet_phi.cc
-	regularizer_sandbox/dirichlet_phi.h
-	regularizer_sandbox/dirichlet_theta.cc
-	regularizer_sandbox/dirichlet_theta.h
 	regularizer_sandbox/multilanguage_phi.cc
 	regularizer_sandbox/multilanguage_phi.h
 	regularizer_sandbox/smooth_sparse_phi.cc
