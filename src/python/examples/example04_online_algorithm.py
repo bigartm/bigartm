@@ -27,9 +27,9 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   items_processed_score = master.CreateItemsProcessedScore()
 
   # Configure basic regularizers
-  dirichlet_theta_reg  = master.CreateDirichletThetaRegularizer()
-  dirichlet_phi_reg    = master.CreateDirichletPhiRegularizer()
-  decorrelator_reg     = master.CreateDecorrelatorPhiRegularizer()
+  smsp_theta_reg   = master.CreateSmoothSparseThetaRegularizer()
+  smsp_phi_reg     = master.CreateSmoothSparsePhiRegularizer()
+  decorrelator_reg = master.CreateDecorrelatorPhiRegularizer()
 
   # Configure the model
   model = master.CreateModel(topics_count = 10, inner_iterations_count = 10)
@@ -39,8 +39,8 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   model.EnableScore(top_tokens_score)
   model.EnableScore(theta_snippet_score)
   model.EnableScore(items_processed_score)
-  model.EnableRegularizer(dirichlet_theta_reg, -0.1)
-  model.EnableRegularizer(dirichlet_phi_reg, -0.2)
+  model.EnableRegularizer(smsp_theta_reg, -0.1)
+  model.EnableRegularizer(smsp_phi_reg, -0.2)
   model.EnableRegularizer(decorrelator_reg, 1000000)
   model.Initialize(dictionary)    # Setup initial approximation for Phi matrix.
 

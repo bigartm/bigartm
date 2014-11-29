@@ -471,21 +471,15 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       return;
     }
 
-    std::shared_ptr<InstanceSchema> schema = schema_->get();
-    if (!schema->has_model_config(name))
-      return;
-
-    const ModelConfig& current_config = schema->model_config(name);
-
     auto inc_ttm = topic_model_inc_.find(name);
     if (inc_ttm == topic_model_inc_.end())
       LOG(WARNING) << "SynchronizeModel() did not found any increments to topic model " << name;
 
-    std::shared_ptr<ModelConfig> target_config = target_model_config_.get(name);
-
+    std::shared_ptr<ModelConfig> model_config = target_model_config_.get(name);
     // Accumulate counters in topic model with decay coefficient.
-    auto new_ttm = std::make_shared< ::artm::core::TopicModel>(
-      *old_ttm, decay_weight, target_config == nullptr ? current_config : *target_config);
+    auto new_ttm = std::make_shared< ::artm::core::TopicModel>(*old_ttm,
+                                                               decay_weight,
+                                                               model_config);
     target_model_config_.set(name, nullptr);
     // Apply increment
     if (inc_ttm != topic_model_inc_.end())
@@ -494,19 +488,19 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     if (invoke_regularizers)
       InvokePhiRegularizers(new_ttm.get());
 
-    new_ttm->CalcNormalizers();
     topic_model_.set(name, new_ttm);
 
     topic_model_inc_.erase(name);
 
     // Verify if model became overregularized
-    std::map<ClassId, int> degenerated_topics_count = new_ttm->FindDegeneratedTopicsCount();
-    for (auto iter : degenerated_topics_count) {
-      if (iter.second) {
-        LOG(WARNING) << iter.second << " of " << new_ttm->topic_size()
+    std::vector<ClassId> class_ids = new_ttm->class_id();
+    for (ClassId class_id : class_ids) {
+      int degenerated_topics_count = new_ttm->FindDegeneratedTopicsCount(class_id);
+      if (degenerated_topics_count) {
+        LOG(WARNING) << degenerated_topics_count << " of " << new_ttm->topic_size()
                      << " topics have zero probability mass."
                      << " Consider reducing values of ModelConfig.regularizer_tau"
-                     << " for model '" << model_name << "', class_id=" << iter.first;
+                     << " for model '" << model_name << "', class_id=" << class_id;
       }
     }
   }
@@ -530,10 +524,9 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
 
   for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
     ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
-    new_ttm->AddToken(Token(class_id, iter->second.key_token()), true);
+    new_ttm->AddToken(class_id, iter->second.key_token(), true);
   }
 
-  new_ttm->CalcNormalizers();
   topic_model_.set(args.model_name(), new_ttm);
 }
 

@@ -24,11 +24,9 @@ ARTM_NETWORK_ERROR = -9
 
 Stream_Type_Global = 0
 Stream_Type_ItemIdModulus = 1
-RegularizerConfig_Type_DirichletTheta = 0
-RegularizerConfig_Type_DirichletPhi = 1
-RegularizerConfig_Type_SmoothSparseTheta = 2
-RegularizerConfig_Type_SmoothSparsePhi = 3
-RegularizerConfig_Type_DecorrelatorPhi = 4
+RegularizerConfig_Type_SmoothSparseTheta = 0
+RegularizerConfig_Type_SmoothSparsePhi = 1
+RegularizerConfig_Type_DecorrelatorPhi = 2
 ScoreConfig_Type_Perplexity = 0
 ScoreData_Type_Perplexity = 0
 ScoreConfig_Type_SparsityTheta = 1
@@ -98,7 +96,6 @@ class Library:
       else:
         artm_shared_library = 'artm.dll'
 
-    
     try:
       self.lib_ = ctypes.CDLL(artm_shared_library)
       return
@@ -233,16 +230,6 @@ class MasterComponent:
 
   def RemoveRegularizer(self, regularizer):
     regularizer.__Dispose__()
-
-  def CreateDirichletThetaRegularizer(self, name = None, config = messages_pb2.DirichletThetaConfig()):
-    if (name is None):
-      name = "DirichletThetaRegularizer:" + uuid.uuid1().urn
-    return self.CreateRegularizer(name, RegularizerConfig_Type_DirichletTheta, config)
-
-  def CreateDirichletPhiRegularizer(self, name = None, config = messages_pb2.DirichletPhiConfig()):
-    if (name is None):
-      name = "DirichletPhiRegularizer:" + uuid.uuid1().urn
-    return self.CreateRegularizer(name, RegularizerConfig_Type_DirichletPhi, config)
 
   def CreateSmoothSparseThetaRegularizer(self, name = None, config = messages_pb2.SmoothSparseThetaConfig()):
     if (name is None):
