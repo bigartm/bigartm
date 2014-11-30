@@ -47,8 +47,6 @@ class NodeControllerConfig;
 class MasterProxyConfig;
 class ModelConfig;
 class RegularizerConfig;
-class DirichletThetaConfig;
-class DirichletPhiConfig;
 class SmoothSparseThetaConfig;
 class SmoothSparsePhiConfig;
 class DecorrelatorPhiConfig;
@@ -121,15 +119,13 @@ inline bool MasterComponentConfig_ModusOperandi_Parse(
     MasterComponentConfig_ModusOperandi_descriptor(), name, value);
 }
 enum RegularizerConfig_Type {
-  RegularizerConfig_Type_DirichletTheta = 0,
-  RegularizerConfig_Type_DirichletPhi = 1,
-  RegularizerConfig_Type_SmoothSparseTheta = 2,
-  RegularizerConfig_Type_SmoothSparsePhi = 3,
-  RegularizerConfig_Type_DecorrelatorPhi = 4,
-  RegularizerConfig_Type_MultiLanguagePhi = 5
+  RegularizerConfig_Type_SmoothSparseTheta = 0,
+  RegularizerConfig_Type_SmoothSparsePhi = 1,
+  RegularizerConfig_Type_DecorrelatorPhi = 2,
+  RegularizerConfig_Type_MultiLanguagePhi = 3
 };
 bool RegularizerConfig_Type_IsValid(int value);
-const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_DirichletTheta;
+const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_SmoothSparseTheta;
 const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_MultiLanguagePhi;
 const int RegularizerConfig_Type_Type_ARRAYSIZE = RegularizerConfig_Type_Type_MAX + 1;
 
@@ -144,7 +140,7 @@ inline bool RegularizerConfig_Type_Parse(
     RegularizerConfig_Type_descriptor(), name, value);
 }
 enum RegularizerInternalState_Type {
-  RegularizerInternalState_Type_MultiLanguagePhi = 5
+  RegularizerInternalState_Type_MultiLanguagePhi = 3
 };
 bool RegularizerInternalState_Type_IsValid(int value);
 const RegularizerInternalState_Type RegularizerInternalState_Type_Type_MIN = RegularizerInternalState_Type_MultiLanguagePhi;
@@ -1871,8 +1867,6 @@ class RegularizerConfig : public ::google::protobuf::Message {
   // nested types ----------------------------------------------------
 
   typedef RegularizerConfig_Type Type;
-  static const Type DirichletTheta = RegularizerConfig_Type_DirichletTheta;
-  static const Type DirichletPhi = RegularizerConfig_Type_DirichletPhi;
   static const Type SmoothSparseTheta = RegularizerConfig_Type_SmoothSparseTheta;
   static const Type SmoothSparsePhi = RegularizerConfig_Type_SmoothSparsePhi;
   static const Type DecorrelatorPhi = RegularizerConfig_Type_DecorrelatorPhi;
@@ -1958,178 +1952,6 @@ class RegularizerConfig : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class DirichletThetaConfig : public ::google::protobuf::Message {
- public:
-  DirichletThetaConfig();
-  virtual ~DirichletThetaConfig();
-
-  DirichletThetaConfig(const DirichletThetaConfig& from);
-
-  inline DirichletThetaConfig& operator=(const DirichletThetaConfig& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const DirichletThetaConfig& default_instance();
-
-  void Swap(DirichletThetaConfig* other);
-
-  // implements Message ----------------------------------------------
-
-  DirichletThetaConfig* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const DirichletThetaConfig& from);
-  void MergeFrom(const DirichletThetaConfig& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated .artm.DoubleArray alpha = 1;
-  inline int alpha_size() const;
-  inline void clear_alpha();
-  static const int kAlphaFieldNumber = 1;
-  inline const ::artm::DoubleArray& alpha(int index) const;
-  inline ::artm::DoubleArray* mutable_alpha(int index);
-  inline ::artm::DoubleArray* add_alpha();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::DoubleArray >&
-      alpha() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::DoubleArray >*
-      mutable_alpha();
-
-  // @@protoc_insertion_point(class_scope:artm.DirichletThetaConfig)
- private:
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::RepeatedPtrField< ::artm::DoubleArray > alpha_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static DirichletThetaConfig* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class DirichletPhiConfig : public ::google::protobuf::Message {
- public:
-  DirichletPhiConfig();
-  virtual ~DirichletPhiConfig();
-
-  DirichletPhiConfig(const DirichletPhiConfig& from);
-
-  inline DirichletPhiConfig& operator=(const DirichletPhiConfig& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const DirichletPhiConfig& default_instance();
-
-  void Swap(DirichletPhiConfig* other);
-
-  // implements Message ----------------------------------------------
-
-  DirichletPhiConfig* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const DirichletPhiConfig& from);
-  void MergeFrom(const DirichletPhiConfig& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string dictionary_name = 1;
-  inline bool has_dictionary_name() const;
-  inline void clear_dictionary_name();
-  static const int kDictionaryNameFieldNumber = 1;
-  inline const ::std::string& dictionary_name() const;
-  inline void set_dictionary_name(const ::std::string& value);
-  inline void set_dictionary_name(const char* value);
-  inline void set_dictionary_name(const char* value, size_t size);
-  inline ::std::string* mutable_dictionary_name();
-  inline ::std::string* release_dictionary_name();
-  inline void set_allocated_dictionary_name(::std::string* dictionary_name);
-
-  // @@protoc_insertion_point(class_scope:artm.DirichletPhiConfig)
- private:
-  inline void set_has_dictionary_name();
-  inline void clear_has_dictionary_name();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* dictionary_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static DirichletPhiConfig* default_instance_;
-};
-// -------------------------------------------------------------------
-
 class SmoothSparseThetaConfig : public ::google::protobuf::Message {
  public:
   SmoothSparseThetaConfig();
@@ -2184,48 +2006,44 @@ class SmoothSparseThetaConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional int32 background_topics_count = 1;
-  inline bool has_background_topics_count() const;
-  inline void clear_background_topics_count();
-  static const int kBackgroundTopicsCountFieldNumber = 1;
-  inline ::google::protobuf::int32 background_topics_count() const;
-  inline void set_background_topics_count(::google::protobuf::int32 value);
+  // repeated string topic_name = 1;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 1;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
-  // optional .artm.FloatArray alpha_topic = 2;
-  inline bool has_alpha_topic() const;
-  inline void clear_alpha_topic();
-  static const int kAlphaTopicFieldNumber = 2;
-  inline const ::artm::FloatArray& alpha_topic() const;
-  inline ::artm::FloatArray* mutable_alpha_topic();
-  inline ::artm::FloatArray* release_alpha_topic();
-  inline void set_allocated_alpha_topic(::artm::FloatArray* alpha_topic);
-
-  // optional .artm.FloatArray alpha_iter = 3;
-  inline bool has_alpha_iter() const;
+  // repeated float alpha_iter = 2;
+  inline int alpha_iter_size() const;
   inline void clear_alpha_iter();
-  static const int kAlphaIterFieldNumber = 3;
-  inline const ::artm::FloatArray& alpha_iter() const;
-  inline ::artm::FloatArray* mutable_alpha_iter();
-  inline ::artm::FloatArray* release_alpha_iter();
-  inline void set_allocated_alpha_iter(::artm::FloatArray* alpha_iter);
+  static const int kAlphaIterFieldNumber = 2;
+  inline float alpha_iter(int index) const;
+  inline void set_alpha_iter(int index, float value);
+  inline void add_alpha_iter(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      alpha_iter() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_alpha_iter();
 
   // @@protoc_insertion_point(class_scope:artm.SmoothSparseThetaConfig)
  private:
-  inline void set_has_background_topics_count();
-  inline void clear_has_background_topics_count();
-  inline void set_has_alpha_topic();
-  inline void clear_has_alpha_topic();
-  inline void set_has_alpha_iter();
-  inline void clear_has_alpha_iter();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::artm::FloatArray* alpha_topic_;
-  ::artm::FloatArray* alpha_iter_;
-  ::google::protobuf::int32 background_topics_count_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedField< float > alpha_iter_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -2290,21 +2108,37 @@ class SmoothSparsePhiConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional int32 background_topics_count = 1;
-  inline bool has_background_topics_count() const;
-  inline void clear_background_topics_count();
-  static const int kBackgroundTopicsCountFieldNumber = 1;
-  inline ::google::protobuf::int32 background_topics_count() const;
-  inline void set_background_topics_count(::google::protobuf::int32 value);
+  // repeated string topic_name = 1;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 1;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
-  // optional .artm.FloatArray topics_coefficients = 2;
-  inline bool has_topics_coefficients() const;
-  inline void clear_topics_coefficients();
-  static const int kTopicsCoefficientsFieldNumber = 2;
-  inline const ::artm::FloatArray& topics_coefficients() const;
-  inline ::artm::FloatArray* mutable_topics_coefficients();
-  inline ::artm::FloatArray* release_topics_coefficients();
-  inline void set_allocated_topics_coefficients(::artm::FloatArray* topics_coefficients);
+  // repeated string class_name = 2;
+  inline int class_name_size() const;
+  inline void clear_class_name();
+  static const int kClassNameFieldNumber = 2;
+  inline const ::std::string& class_name(int index) const;
+  inline ::std::string* mutable_class_name(int index);
+  inline void set_class_name(int index, const ::std::string& value);
+  inline void set_class_name(int index, const char* value);
+  inline void set_class_name(int index, const char* value, size_t size);
+  inline ::std::string* add_class_name();
+  inline void add_class_name(const ::std::string& value);
+  inline void add_class_name(const char* value);
+  inline void add_class_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_name();
 
   // optional string dictionary_name = 3;
   inline bool has_dictionary_name() const;
@@ -2320,18 +2154,14 @@ class SmoothSparsePhiConfig : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.SmoothSparsePhiConfig)
  private:
-  inline void set_has_background_topics_count();
-  inline void clear_has_background_topics_count();
-  inline void set_has_topics_coefficients();
-  inline void clear_has_topics_coefficients();
   inline void set_has_dictionary_name();
   inline void clear_has_dictionary_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::artm::FloatArray* topics_coefficients_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_name_;
   ::std::string* dictionary_name_;
-  ::google::protobuf::int32 background_topics_count_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -2399,26 +2229,48 @@ class DecorrelatorPhiConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional .artm.BoolArray topics_to_regularize = 1;
-  inline bool has_topics_to_regularize() const;
-  inline void clear_topics_to_regularize();
-  static const int kTopicsToRegularizeFieldNumber = 1;
-  inline const ::artm::BoolArray& topics_to_regularize() const;
-  inline ::artm::BoolArray* mutable_topics_to_regularize();
-  inline ::artm::BoolArray* release_topics_to_regularize();
-  inline void set_allocated_topics_to_regularize(::artm::BoolArray* topics_to_regularize);
+  // repeated string topic_name = 1;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 1;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated string class_name = 2;
+  inline int class_name_size() const;
+  inline void clear_class_name();
+  static const int kClassNameFieldNumber = 2;
+  inline const ::std::string& class_name(int index) const;
+  inline ::std::string* mutable_class_name(int index);
+  inline void set_class_name(int index, const ::std::string& value);
+  inline void set_class_name(int index, const char* value);
+  inline void set_class_name(int index, const char* value, size_t size);
+  inline ::std::string* add_class_name();
+  inline void add_class_name(const ::std::string& value);
+  inline void add_class_name(const char* value);
+  inline void add_class_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_name();
 
   // @@protoc_insertion_point(class_scope:artm.DecorrelatorPhiConfig)
  private:
-  inline void set_has_topics_to_regularize();
-  inline void clear_has_topics_to_regularize();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::artm::BoolArray* topics_to_regularize_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8038,271 +7890,167 @@ inline void RegularizerConfig::set_allocated_config(::std::string* config) {
 
 // -------------------------------------------------------------------
 
-// DirichletThetaConfig
-
-// repeated .artm.DoubleArray alpha = 1;
-inline int DirichletThetaConfig::alpha_size() const {
-  return alpha_.size();
-}
-inline void DirichletThetaConfig::clear_alpha() {
-  alpha_.Clear();
-}
-inline const ::artm::DoubleArray& DirichletThetaConfig::alpha(int index) const {
-  return alpha_.Get(index);
-}
-inline ::artm::DoubleArray* DirichletThetaConfig::mutable_alpha(int index) {
-  return alpha_.Mutable(index);
-}
-inline ::artm::DoubleArray* DirichletThetaConfig::add_alpha() {
-  return alpha_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::DoubleArray >&
-DirichletThetaConfig::alpha() const {
-  return alpha_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::DoubleArray >*
-DirichletThetaConfig::mutable_alpha() {
-  return &alpha_;
-}
-
-// -------------------------------------------------------------------
-
-// DirichletPhiConfig
-
-// optional string dictionary_name = 1;
-inline bool DirichletPhiConfig::has_dictionary_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void DirichletPhiConfig::set_has_dictionary_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void DirichletPhiConfig::clear_has_dictionary_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void DirichletPhiConfig::clear_dictionary_name() {
-  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_->clear();
-  }
-  clear_has_dictionary_name();
-}
-inline const ::std::string& DirichletPhiConfig::dictionary_name() const {
-  return *dictionary_name_;
-}
-inline void DirichletPhiConfig::set_dictionary_name(const ::std::string& value) {
-  set_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_ = new ::std::string;
-  }
-  dictionary_name_->assign(value);
-}
-inline void DirichletPhiConfig::set_dictionary_name(const char* value) {
-  set_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_ = new ::std::string;
-  }
-  dictionary_name_->assign(value);
-}
-inline void DirichletPhiConfig::set_dictionary_name(const char* value, size_t size) {
-  set_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_ = new ::std::string;
-  }
-  dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* DirichletPhiConfig::mutable_dictionary_name() {
-  set_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_ = new ::std::string;
-  }
-  return dictionary_name_;
-}
-inline ::std::string* DirichletPhiConfig::release_dictionary_name() {
-  clear_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = dictionary_name_;
-    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void DirichletPhiConfig::set_allocated_dictionary_name(::std::string* dictionary_name) {
-  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete dictionary_name_;
-  }
-  if (dictionary_name) {
-    set_has_dictionary_name();
-    dictionary_name_ = dictionary_name;
-  } else {
-    clear_has_dictionary_name();
-    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// -------------------------------------------------------------------
-
 // SmoothSparseThetaConfig
 
-// optional int32 background_topics_count = 1;
-inline bool SmoothSparseThetaConfig::has_background_topics_count() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+// repeated string topic_name = 1;
+inline int SmoothSparseThetaConfig::topic_name_size() const {
+  return topic_name_.size();
 }
-inline void SmoothSparseThetaConfig::set_has_background_topics_count() {
-  _has_bits_[0] |= 0x00000001u;
+inline void SmoothSparseThetaConfig::clear_topic_name() {
+  topic_name_.Clear();
 }
-inline void SmoothSparseThetaConfig::clear_has_background_topics_count() {
-  _has_bits_[0] &= ~0x00000001u;
+inline const ::std::string& SmoothSparseThetaConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
 }
-inline void SmoothSparseThetaConfig::clear_background_topics_count() {
-  background_topics_count_ = 0;
-  clear_has_background_topics_count();
+inline ::std::string* SmoothSparseThetaConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
 }
-inline ::google::protobuf::int32 SmoothSparseThetaConfig::background_topics_count() const {
-  return background_topics_count_;
+inline void SmoothSparseThetaConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-inline void SmoothSparseThetaConfig::set_background_topics_count(::google::protobuf::int32 value) {
-  set_has_background_topics_count();
-  background_topics_count_ = value;
+inline void SmoothSparseThetaConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-
-// optional .artm.FloatArray alpha_topic = 2;
-inline bool SmoothSparseThetaConfig::has_alpha_topic() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+inline void SmoothSparseThetaConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
 }
-inline void SmoothSparseThetaConfig::set_has_alpha_topic() {
-  _has_bits_[0] |= 0x00000002u;
+inline ::std::string* SmoothSparseThetaConfig::add_topic_name() {
+  return topic_name_.Add();
 }
-inline void SmoothSparseThetaConfig::clear_has_alpha_topic() {
-  _has_bits_[0] &= ~0x00000002u;
+inline void SmoothSparseThetaConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
 }
-inline void SmoothSparseThetaConfig::clear_alpha_topic() {
-  if (alpha_topic_ != NULL) alpha_topic_->::artm::FloatArray::Clear();
-  clear_has_alpha_topic();
+inline void SmoothSparseThetaConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
 }
-inline const ::artm::FloatArray& SmoothSparseThetaConfig::alpha_topic() const {
-  return alpha_topic_ != NULL ? *alpha_topic_ : *default_instance_->alpha_topic_;
+inline void SmoothSparseThetaConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::artm::FloatArray* SmoothSparseThetaConfig::mutable_alpha_topic() {
-  set_has_alpha_topic();
-  if (alpha_topic_ == NULL) alpha_topic_ = new ::artm::FloatArray;
-  return alpha_topic_;
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+SmoothSparseThetaConfig::topic_name() const {
+  return topic_name_;
 }
-inline ::artm::FloatArray* SmoothSparseThetaConfig::release_alpha_topic() {
-  clear_has_alpha_topic();
-  ::artm::FloatArray* temp = alpha_topic_;
-  alpha_topic_ = NULL;
-  return temp;
-}
-inline void SmoothSparseThetaConfig::set_allocated_alpha_topic(::artm::FloatArray* alpha_topic) {
-  delete alpha_topic_;
-  alpha_topic_ = alpha_topic;
-  if (alpha_topic) {
-    set_has_alpha_topic();
-  } else {
-    clear_has_alpha_topic();
-  }
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+SmoothSparseThetaConfig::mutable_topic_name() {
+  return &topic_name_;
 }
 
-// optional .artm.FloatArray alpha_iter = 3;
-inline bool SmoothSparseThetaConfig::has_alpha_iter() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void SmoothSparseThetaConfig::set_has_alpha_iter() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void SmoothSparseThetaConfig::clear_has_alpha_iter() {
-  _has_bits_[0] &= ~0x00000004u;
+// repeated float alpha_iter = 2;
+inline int SmoothSparseThetaConfig::alpha_iter_size() const {
+  return alpha_iter_.size();
 }
 inline void SmoothSparseThetaConfig::clear_alpha_iter() {
-  if (alpha_iter_ != NULL) alpha_iter_->::artm::FloatArray::Clear();
-  clear_has_alpha_iter();
+  alpha_iter_.Clear();
 }
-inline const ::artm::FloatArray& SmoothSparseThetaConfig::alpha_iter() const {
-  return alpha_iter_ != NULL ? *alpha_iter_ : *default_instance_->alpha_iter_;
+inline float SmoothSparseThetaConfig::alpha_iter(int index) const {
+  return alpha_iter_.Get(index);
 }
-inline ::artm::FloatArray* SmoothSparseThetaConfig::mutable_alpha_iter() {
-  set_has_alpha_iter();
-  if (alpha_iter_ == NULL) alpha_iter_ = new ::artm::FloatArray;
+inline void SmoothSparseThetaConfig::set_alpha_iter(int index, float value) {
+  alpha_iter_.Set(index, value);
+}
+inline void SmoothSparseThetaConfig::add_alpha_iter(float value) {
+  alpha_iter_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+SmoothSparseThetaConfig::alpha_iter() const {
   return alpha_iter_;
 }
-inline ::artm::FloatArray* SmoothSparseThetaConfig::release_alpha_iter() {
-  clear_has_alpha_iter();
-  ::artm::FloatArray* temp = alpha_iter_;
-  alpha_iter_ = NULL;
-  return temp;
-}
-inline void SmoothSparseThetaConfig::set_allocated_alpha_iter(::artm::FloatArray* alpha_iter) {
-  delete alpha_iter_;
-  alpha_iter_ = alpha_iter;
-  if (alpha_iter) {
-    set_has_alpha_iter();
-  } else {
-    clear_has_alpha_iter();
-  }
+inline ::google::protobuf::RepeatedField< float >*
+SmoothSparseThetaConfig::mutable_alpha_iter() {
+  return &alpha_iter_;
 }
 
 // -------------------------------------------------------------------
 
 // SmoothSparsePhiConfig
 
-// optional int32 background_topics_count = 1;
-inline bool SmoothSparsePhiConfig::has_background_topics_count() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+// repeated string topic_name = 1;
+inline int SmoothSparsePhiConfig::topic_name_size() const {
+  return topic_name_.size();
 }
-inline void SmoothSparsePhiConfig::set_has_background_topics_count() {
-  _has_bits_[0] |= 0x00000001u;
+inline void SmoothSparsePhiConfig::clear_topic_name() {
+  topic_name_.Clear();
 }
-inline void SmoothSparsePhiConfig::clear_has_background_topics_count() {
-  _has_bits_[0] &= ~0x00000001u;
+inline const ::std::string& SmoothSparsePhiConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
 }
-inline void SmoothSparsePhiConfig::clear_background_topics_count() {
-  background_topics_count_ = 0;
-  clear_has_background_topics_count();
+inline ::std::string* SmoothSparsePhiConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
 }
-inline ::google::protobuf::int32 SmoothSparsePhiConfig::background_topics_count() const {
-  return background_topics_count_;
+inline void SmoothSparsePhiConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-inline void SmoothSparsePhiConfig::set_background_topics_count(::google::protobuf::int32 value) {
-  set_has_background_topics_count();
-  background_topics_count_ = value;
+inline void SmoothSparsePhiConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void SmoothSparsePhiConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* SmoothSparsePhiConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void SmoothSparsePhiConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void SmoothSparsePhiConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void SmoothSparsePhiConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+SmoothSparsePhiConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+SmoothSparsePhiConfig::mutable_topic_name() {
+  return &topic_name_;
 }
 
-// optional .artm.FloatArray topics_coefficients = 2;
-inline bool SmoothSparsePhiConfig::has_topics_coefficients() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+// repeated string class_name = 2;
+inline int SmoothSparsePhiConfig::class_name_size() const {
+  return class_name_.size();
 }
-inline void SmoothSparsePhiConfig::set_has_topics_coefficients() {
-  _has_bits_[0] |= 0x00000002u;
+inline void SmoothSparsePhiConfig::clear_class_name() {
+  class_name_.Clear();
 }
-inline void SmoothSparsePhiConfig::clear_has_topics_coefficients() {
-  _has_bits_[0] &= ~0x00000002u;
+inline const ::std::string& SmoothSparsePhiConfig::class_name(int index) const {
+  return class_name_.Get(index);
 }
-inline void SmoothSparsePhiConfig::clear_topics_coefficients() {
-  if (topics_coefficients_ != NULL) topics_coefficients_->::artm::FloatArray::Clear();
-  clear_has_topics_coefficients();
+inline ::std::string* SmoothSparsePhiConfig::mutable_class_name(int index) {
+  return class_name_.Mutable(index);
 }
-inline const ::artm::FloatArray& SmoothSparsePhiConfig::topics_coefficients() const {
-  return topics_coefficients_ != NULL ? *topics_coefficients_ : *default_instance_->topics_coefficients_;
+inline void SmoothSparsePhiConfig::set_class_name(int index, const ::std::string& value) {
+  class_name_.Mutable(index)->assign(value);
 }
-inline ::artm::FloatArray* SmoothSparsePhiConfig::mutable_topics_coefficients() {
-  set_has_topics_coefficients();
-  if (topics_coefficients_ == NULL) topics_coefficients_ = new ::artm::FloatArray;
-  return topics_coefficients_;
+inline void SmoothSparsePhiConfig::set_class_name(int index, const char* value) {
+  class_name_.Mutable(index)->assign(value);
 }
-inline ::artm::FloatArray* SmoothSparsePhiConfig::release_topics_coefficients() {
-  clear_has_topics_coefficients();
-  ::artm::FloatArray* temp = topics_coefficients_;
-  topics_coefficients_ = NULL;
-  return temp;
+inline void SmoothSparsePhiConfig::set_class_name(int index, const char* value, size_t size) {
+  class_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
 }
-inline void SmoothSparsePhiConfig::set_allocated_topics_coefficients(::artm::FloatArray* topics_coefficients) {
-  delete topics_coefficients_;
-  topics_coefficients_ = topics_coefficients;
-  if (topics_coefficients) {
-    set_has_topics_coefficients();
-  } else {
-    clear_has_topics_coefficients();
-  }
+inline ::std::string* SmoothSparsePhiConfig::add_class_name() {
+  return class_name_.Add();
+}
+inline void SmoothSparsePhiConfig::add_class_name(const ::std::string& value) {
+  class_name_.Add()->assign(value);
+}
+inline void SmoothSparsePhiConfig::add_class_name(const char* value) {
+  class_name_.Add()->assign(value);
+}
+inline void SmoothSparsePhiConfig::add_class_name(const char* value, size_t size) {
+  class_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+SmoothSparsePhiConfig::class_name() const {
+  return class_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+SmoothSparsePhiConfig::mutable_class_name() {
+  return &class_name_;
 }
 
 // optional string dictionary_name = 3;
@@ -8379,42 +8127,92 @@ inline void SmoothSparsePhiConfig::set_allocated_dictionary_name(::std::string* 
 
 // DecorrelatorPhiConfig
 
-// optional .artm.BoolArray topics_to_regularize = 1;
-inline bool DecorrelatorPhiConfig::has_topics_to_regularize() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+// repeated string topic_name = 1;
+inline int DecorrelatorPhiConfig::topic_name_size() const {
+  return topic_name_.size();
 }
-inline void DecorrelatorPhiConfig::set_has_topics_to_regularize() {
-  _has_bits_[0] |= 0x00000001u;
+inline void DecorrelatorPhiConfig::clear_topic_name() {
+  topic_name_.Clear();
 }
-inline void DecorrelatorPhiConfig::clear_has_topics_to_regularize() {
-  _has_bits_[0] &= ~0x00000001u;
+inline const ::std::string& DecorrelatorPhiConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
 }
-inline void DecorrelatorPhiConfig::clear_topics_to_regularize() {
-  if (topics_to_regularize_ != NULL) topics_to_regularize_->::artm::BoolArray::Clear();
-  clear_has_topics_to_regularize();
+inline ::std::string* DecorrelatorPhiConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
 }
-inline const ::artm::BoolArray& DecorrelatorPhiConfig::topics_to_regularize() const {
-  return topics_to_regularize_ != NULL ? *topics_to_regularize_ : *default_instance_->topics_to_regularize_;
+inline void DecorrelatorPhiConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-inline ::artm::BoolArray* DecorrelatorPhiConfig::mutable_topics_to_regularize() {
-  set_has_topics_to_regularize();
-  if (topics_to_regularize_ == NULL) topics_to_regularize_ = new ::artm::BoolArray;
-  return topics_to_regularize_;
+inline void DecorrelatorPhiConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-inline ::artm::BoolArray* DecorrelatorPhiConfig::release_topics_to_regularize() {
-  clear_has_topics_to_regularize();
-  ::artm::BoolArray* temp = topics_to_regularize_;
-  topics_to_regularize_ = NULL;
-  return temp;
+inline void DecorrelatorPhiConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
 }
-inline void DecorrelatorPhiConfig::set_allocated_topics_to_regularize(::artm::BoolArray* topics_to_regularize) {
-  delete topics_to_regularize_;
-  topics_to_regularize_ = topics_to_regularize;
-  if (topics_to_regularize) {
-    set_has_topics_to_regularize();
-  } else {
-    clear_has_topics_to_regularize();
-  }
+inline ::std::string* DecorrelatorPhiConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void DecorrelatorPhiConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void DecorrelatorPhiConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void DecorrelatorPhiConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DecorrelatorPhiConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DecorrelatorPhiConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated string class_name = 2;
+inline int DecorrelatorPhiConfig::class_name_size() const {
+  return class_name_.size();
+}
+inline void DecorrelatorPhiConfig::clear_class_name() {
+  class_name_.Clear();
+}
+inline const ::std::string& DecorrelatorPhiConfig::class_name(int index) const {
+  return class_name_.Get(index);
+}
+inline ::std::string* DecorrelatorPhiConfig::mutable_class_name(int index) {
+  return class_name_.Mutable(index);
+}
+inline void DecorrelatorPhiConfig::set_class_name(int index, const ::std::string& value) {
+  class_name_.Mutable(index)->assign(value);
+}
+inline void DecorrelatorPhiConfig::set_class_name(int index, const char* value) {
+  class_name_.Mutable(index)->assign(value);
+}
+inline void DecorrelatorPhiConfig::set_class_name(int index, const char* value, size_t size) {
+  class_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DecorrelatorPhiConfig::add_class_name() {
+  return class_name_.Add();
+}
+inline void DecorrelatorPhiConfig::add_class_name(const ::std::string& value) {
+  class_name_.Add()->assign(value);
+}
+inline void DecorrelatorPhiConfig::add_class_name(const char* value) {
+  class_name_.Add()->assign(value);
+}
+inline void DecorrelatorPhiConfig::add_class_name(const char* value, size_t size) {
+  class_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DecorrelatorPhiConfig::class_name() const {
+  return class_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DecorrelatorPhiConfig::mutable_class_name() {
+  return &class_name_;
 }
 
 // -------------------------------------------------------------------
@@ -8506,7 +8304,7 @@ inline void RegularizerInternalState::clear_has_type() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void RegularizerInternalState::clear_type() {
-  type_ = 5;
+  type_ = 3;
   clear_has_type();
 }
 inline ::artm::RegularizerInternalState_Type RegularizerInternalState::type() const {

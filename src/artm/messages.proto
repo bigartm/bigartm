@@ -114,12 +114,10 @@ message ModelConfig {
 // Represents a configuration of a general regularizer
 message RegularizerConfig {
   enum Type {
-    DirichletTheta = 0;
-    DirichletPhi = 1;
-    SmoothSparseTheta = 2;
-    SmoothSparsePhi = 3;
-    DecorrelatorPhi = 4;
-    MultiLanguagePhi = 5;
+    SmoothSparseTheta = 0;
+    SmoothSparsePhi = 1;
+    DecorrelatorPhi = 2;
+    MultiLanguagePhi = 3;
   }
 
   optional string name = 1;
@@ -127,33 +125,23 @@ message RegularizerConfig {
   optional bytes config = 3;
 }
 
-// Represents a configuration of a Dirichlet Theta regularizer
-message DirichletThetaConfig {
-  repeated DoubleArray alpha = 1;
-}
-
-// Represents a configuration of a Dirichlet Phi regularizer
-message DirichletPhiConfig {
-  optional string dictionary_name = 1;
-}
-
 // Represents a configuration of a SmoothSparse Theta regularizer
 message SmoothSparseThetaConfig {
-  optional int32 background_topics_count = 1;
-  optional FloatArray alpha_topic = 2;
-  optional FloatArray alpha_iter = 3;
+  repeated string topic_name = 1;
+  repeated float alpha_iter = 2;
 }
 
 // Represents a configuration of a SmoothSparse Phi regularizer
 message SmoothSparsePhiConfig {
-  optional int32 background_topics_count = 1;
-  optional FloatArray topics_coefficients = 2;
+  repeated string topic_name = 1;
+  repeated string class_name = 2;
   optional string dictionary_name = 3;
 }
 
 // Represents a configuration of a Decorrelator Phi regularizer
 message DecorrelatorPhiConfig {
-  optional BoolArray topics_to_regularize = 1;
+  repeated string topic_name = 1;
+  repeated string class_name = 2;
 }
 
 // Represents a configuration of a MultiLanguage Phi regularizer
@@ -163,7 +151,7 @@ message MultiLanguagePhiConfig {
 // Represents an internal state of a general regularizer
 message RegularizerInternalState {
   enum Type {
-    MultiLanguagePhi = 5;
+    MultiLanguagePhi = 3;
   }
 
   optional string name = 1;

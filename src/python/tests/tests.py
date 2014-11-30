@@ -43,12 +43,10 @@ stream.modulus = 3
 stream.residuals.append(1)
 
 # Create regularizer_config
-dirichlet_theta_config = messages_pb2.DirichletThetaConfig()
-alpha = dirichlet_theta_config.alpha.add()
-alpha.value.append(0.1)
+smsp_theta_config = messages_pb2.SmoothSparseThetaConfig()
 
-dirichlet_phi_config = messages_pb2.DirichletPhiConfig()
-dirichlet_phi_config.dictionary_name = 'dictionary_1'
+smsp_phi_config = messages_pb2.SmoothSparsePhiConfig()
+smsp_phi_config.dictionary_name = 'dictionary_1'
 
 # Create model_config
 model_config = messages_pb2.ModelConfig()
@@ -88,11 +86,11 @@ with MasterComponent() as master_component:
   model = master_component.CreateModel(model_config)
 
   dictionary = master_component.CreateDictionary(dictionary_config)
-  regularizer = master_component.CreateRegularizer('regularizer_1', 0, dirichlet_theta_config)
+  regularizer = master_component.CreateRegularizer('regularizer_1', 0, smsp_theta_config)
   master_component.RemoveRegularizer(regularizer)
-  regularizer = master_component.CreateRegularizer('regularizer_1', 0, dirichlet_theta_config)
+  regularizer = master_component.CreateRegularizer('regularizer_1', 0, smsp_theta_config)
 
-  regularizer_phi = master_component.CreateRegularizer('regularizer_2', 1, dirichlet_phi_config)
+  regularizer_phi = master_component.CreateRegularizer('regularizer_2', 1, smsp_phi_config)
 
   master_component.AddBatch(batch)
   model.Enable()
@@ -111,7 +109,7 @@ with MasterComponent() as master_component:
   model.Overwrite(topic_model);
 
   # Test all 'reconfigure' methods
-  regularizer.Reconfigure(0, dirichlet_theta_config)
+  regularizer.Reconfigure(0, smsp_theta_config)
   model.Reconfigure(model_config_new)
   master_config_new = master_component.config();
   master_config_new.processors_count = 1

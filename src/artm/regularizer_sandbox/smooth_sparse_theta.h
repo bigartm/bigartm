@@ -5,6 +5,7 @@
 #ifndef SRC_ARTM_REGULARIZER_SANDBOX_SMOOTH_SPARSE_THETA_H_
 #define SRC_ARTM_REGULARIZER_SANDBOX_SMOOTH_SPARSE_THETA_H_
 
+#include <string>
 #include <vector>
 
 #include "artm/messages.pb.h"
@@ -20,7 +21,7 @@ class SmoothSparseTheta : public RegularizerInterface {
 
   virtual bool RegularizeTheta(const Item& item,
                                std::vector<float>* n_dt,
-                               int topic_size,
+                               google::protobuf::RepeatedPtrField<std::string> topic_name,
                                int inner_iter,
                                double tau);
   virtual bool Reconfigure(const RegularizerConfig& config);
