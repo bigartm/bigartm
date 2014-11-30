@@ -352,7 +352,7 @@ void TopicModel::RetrieveExternalTopicModel(
   }
 
   for (int token_index = 0; token_index < token_size(); ++token_index) {
-    auto current_token = token_id_to_token_[token_index];
+    const Token& current_token = token_collection_.token(token_index);
     if (use_all_tokens ||
         std::find(tokens_to_use.begin(),
                   tokens_to_use.end(),
@@ -378,7 +378,7 @@ void TopicModel::RetrieveExternalTopicModel(
   // 2. Fill in internal part of ::artm::TopicModel
   ::artm::TopicModel_TopicModelInternals topic_model_internals;
   for (int token_index = 0; token_index < token_size(); ++token_index) {
-    auto current_token = token_id_to_token_[token_index];
+    const Token& current_token = token_collection_.token(token_index);
     if (use_all_tokens ||
         std::find(tokens_to_use.begin(),
                   tokens_to_use.end(),
