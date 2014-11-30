@@ -137,12 +137,12 @@ the 'train' and 'test' streams).
    A value that defines the type of the stream.
 
    ================= ========================================================
-   ``Global``        Defines a stream containing all items in the collection.
+   ``Global``        | Defines a stream containing all items in the collection.
 
-   ``ItemIdModulus`` Defines a stream containing all items with ID that
-                     matches modulus and residuals. An item belongs to the
-                     stream iff the modulo reminder of item ID is contained
-                     in the residuals field.
+   ``ItemIdModulus`` | Defines a stream containing all items with ID that
+                     | matches modulus and residuals. An item belongs to the
+                     | stream iff the modulo reminder of item ID is contained
+                     | in the residuals field.
    ================= ========================================================
 
 .. attribute:: Stream.name
@@ -189,17 +189,17 @@ Represents a configuration of a master component.
 
   A value that defines the modus operandi of the master component.
 
-  ================= ==============================================================
-  ``Local``         Defines a master component that operates in the local mode.
-                    In this mode master component is self-contained, and
-                    does not require any external nodes to tune topic model.
+  ================= ================================================================
+  ``Local``         | Defines a master component that operates in the local mode.
+                    | In this mode master component is self-contained, and
+                    | does not require any external nodes to tune topic model.
 
-  ``Network``       Defines a master component that operates in the network mode.
-                    In this mode master component delegates all heavy processing
-                    to externals nodes. The master component is then responsible
-                    only for merging the results from external nodes into a single
-                    topic model.
-  ================= ==============================================================
+  ``Network``       | Defines a master component that operates in the network mode.
+                    | In this mode master component delegates all heavy processing
+                    | to externals nodes. The master component is then responsible
+                    | only for merging the results from external nodes into a single
+                    | topic model.
+  ================= ================================================================
 
 .. attribute:: MasterComponentConfig.disk_path
 
@@ -494,11 +494,9 @@ Represents a configuration of a general regularizer.
 
   message RegularizerConfig {
     enum Type {
-      DirichletTheta = 0;
-      DirichletPhi = 1;
-      SmoothSparseTheta = 2;
-      SmoothSparsePhi = 3;
-      DecorrelatorPhi = 4;
+      SmoothSparseTheta = 0;
+      SmoothSparsePhi = 1;
+      DecorrelatorPhi = 2;
     }
 
     optional string name = 1;
@@ -517,10 +515,6 @@ Represents a configuration of a general regularizer.
    A value that defines the type of the regularizer.
 
    ====================== =======================================================================
-   ``DirichletTheta``     Dirichlet regularizer for theta matrix
-
-   ``DirichletPhi``       Dirichlet regularizer for phi matrix
-
    ``SmoothSparseTheta``  Smooth-sparse regularizer for theta matrix
 
    ``SmoothSparsePhi``    Smooth-sparse regularizer for phi matrix
@@ -535,38 +529,6 @@ Represents a configuration of a general regularizer.
    the specific regularizer type.
 
 
-.. _DirichletThetaConfig:
-
-DirichletThetaConfig
-====================
-
-.. class:: messages_pb2.DirichletThetaConfig
-
-Represents a configuration of a Dirichlet Theta regularizer.
-
-.. code-block:: bash
-
-  message DirichletThetaConfig {
-    repeated DoubleArray alpha = 1;
-  }
-
-
-.. _DirichletPhiConfig:
-
-DirichletPhiConfig
-==================
-
-.. class:: messages_pb2.DirichletPhiConfig
-
-Represents a configuration of a Dirichlet Phi regularizer.
-
-.. code-block:: bash
-
-  message DirichletPhiConfig {
-    optional string dictionary_name = 1;
-  }
-
-
 .. _SmoothSparseThetaConfig:
 
 SmoothSparseThetaConfig
@@ -579,11 +541,25 @@ Represents a configuration of a SmoothSparse Theta regularizer.
 .. code-block:: bash
 
   message SmoothSparseThetaConfig {
-    optional int32 background_topics_count = 1;
-    optional FloatArray alpha_topic = 2;
-    optional FloatArray alpha_iter = 3;
+    repeated string topic_name = 1;
+    repeated float alpha_iter = 2;
   }
 
+.. attribute:: SmoothSparseThetaConfig.topic_name
+
+   A set of topic names that defines which topics in the model should be regularized.
+   This value is optional, use an empty list to regularize all topics.
+
+.. attribute:: SmoothSparseThetaConfig.alpha_iter
+
+   A field of the same length as :attr:`ModelConfig.inner_iterations_count`
+   that defines relative regularization weight for every iteration inner iterations.
+   The actual regularization value is calculated as product of ``alpha_iter[i]``
+   and :attr:`ModelConfig.regularizer_tau`.
+
+   To specify different regularization weight for different topics
+   create multiple regularizers with different :attr:`topic_name` set,
+   and use different values of :attr:`ModelConfig.regularizer_tau`.
 
 .. _SmoothSparsePhiConfig:
 
@@ -597,10 +573,31 @@ Represents a configuration of a SmoothSparse Phi regularizer.
 .. code-block:: bash
 
   message SmoothSparsePhiConfig {
-    optional int32 background_topics_count = 1;
-    optional FloatArray topics_coefficients = 2;
+    repeated string topic_name = 1;
+    repeated string class_name = 2;
     optional string dictionary_name = 3;
   }
+
+.. attribute:: SmoothSparsePhiConfig.topic_name
+
+   A set of topic names that defines which topics in the model should be regularized.
+   This value is optional, use an empty list to regularize all topics.
+
+.. attribute:: SmoothSparsePhiConfig.class_name
+
+   This set defines which classes in the model should be regularized.
+   This value is optional, use an empty list to regularize all classes.
+
+.. attribute:: SmoothSparsePhiConfig.dictionary_name
+
+   An optional value defining the name of the dictionary to use.
+   The entries of the dictionary are expected to have :attr:`DictionaryEntry.key_token`,
+   :attr:`DictionaryEntry.class_id` and :attr:`DictionaryEntry.value` fields.
+   The actual regularization value will be calculated as a product of 
+   :attr:`DictionaryEntry.value` and :attr:`ModelConfig.regularizer_tau`.
+
+   This value is optional, if no dictionary is specified than all tokens will be
+   regularized with the same weight.
 
 .. _DecorrelatorPhiConfig:
 
@@ -614,8 +611,19 @@ Represents a configuration of a Decorrelator Phi regularizer.
 .. code-block:: bash
 
   message DecorrelatorPhiConfig {
-    optional BoolArray topics_to_regularize = 1;
+    repeated string topic_name = 1;
+    repeated string class_name = 2;
   }
+
+.. attribute:: DecorrelatorPhiConfig.topic_name
+
+   A set of topic names that defines which topics in the model should be regularized.
+   This value is optional, use an empty list to regularize all topics.
+
+.. attribute:: DecorrelatorPhiConfig.class_name
+
+   This set defines which classes in the model should be regularized.
+   This value is optional, use an empty list to regularize all classes.
 
 
 .. _RegularizerInternalState:
@@ -1470,13 +1478,13 @@ Represents a configuration of a collection parser.
    A value that defines the format of a collection to be parsed.
 
    ====================== =======================================================================
-   ``BagOfWordsUci``      A bag-of-words collection, stored in UCI format.
-                          UCI format must have two files - `vocab.*.txt`
-                          and `docword.*.txt`, defined by
-                          :attr:`docword_file_path <CollectionParserConfig.docword_file_path>`
-                          and :attr:`vocab_file_path <CollectionParserConfig.vocab_file_path>`.
-                          The format of the docword.*.txt file is 3 header
-                          lines, followed by NNZ triples:
+   ``BagOfWordsUci``      | A bag-of-words collection, stored in UCI format.
+                          | UCI format must have two files - `vocab.*.txt`
+                          | and `docword.*.txt`, defined by
+                          | :attr:`docword_file_path <CollectionParserConfig.docword_file_path>`
+                          | and :attr:`vocab_file_path <CollectionParserConfig.vocab_file_path>`.
+                          | The format of the docword.*.txt file is 3 header
+                          | lines, followed by NNZ triples:
 
                           .. code-block:: bash
 
@@ -1488,16 +1496,16 @@ Represents a configuration of a collection parser.
                             ...
                             docID wordID count
 
-                          The file must be sorted on docID.
-                          Values of wordID must be unity-based (not zero-based).
-                          The format of the vocab.*.txt file is line
-                          contains wordID=n.
+                          | The file must be sorted on docID.
+                          | Values of wordID must be unity-based (not zero-based).
+                          | The format of the vocab.*.txt file is line
+                          | contains wordID=n.
 
-   ``MatrixMarket``       See the description at http://math.nist.gov/MatrixMarket/formats.html
-                          In this mode parameter :attr:`docword_file_path` must refer to a file
-                          in Matrix Market format. Parameter :attr:`vocab_file_path`
-                          is also required and must refer to a dictionary file exported in
-                          `gensim`_ format (dictionary.save_as_text()).
+   ``MatrixMarket``       | See the description at http://math.nist.gov/MatrixMarket/formats.html
+                          | In this mode parameter :attr:`docword_file_path` must refer to a file
+                          | in Matrix Market format. Parameter :attr:`vocab_file_path`
+                          | is also required and must refer to a dictionary file exported in
+                          | `gensim`_ format (dictionary.save_as_text()).
    ====================== =======================================================================
 
 .. _gensim: http://radimrehurek.com/gensim/corpora/dictionary.html#gensim.corpora.dictionary.Dictionary.save_as_text
