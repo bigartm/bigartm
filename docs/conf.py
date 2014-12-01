@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'BigARTM'
-copyright = u'2014, BigARTM Foundation'
+copyright = u'2014, Konstantin Vorontsov, Oleksandr Frei, Murat Apishev'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -199,7 +199,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'BigARTM.tex', u'BigARTM Documentation',
-   u'BigARTM Foundation', 'manual'),
+   u'Konstantin Vorontsov, Oleksandr Frei, Murat Apishev', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -229,7 +229,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'bigartm', u'BigARTM Documentation',
-     [u'BigARTM Foundation'], 1)
+     [u'Konstantin Vorontsov, Oleksandr Frei, Murat Apishev'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -243,7 +243,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'BigARTM', u'BigARTM Documentation',
-   u'BigARTM Foundation', 'BigARTM', 'One line description of project.',
+   u'Konstantin Vorontsov, Oleksandr Frei, Murat Apishev', 'BigARTM', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -264,9 +264,9 @@ texinfo_documents = [
 
 # Bibliographic Dublin Core info.
 epub_title = u'BigARTM'
-epub_author = u'BigARTM Foundation'
-epub_publisher = u'BigARTM Foundation'
-epub_copyright = u'2014, BigARTM Foundation'
+epub_author = u'Konstantin Vorontsov, Oleksandr Frei, Murat Apishev'
+epub_publisher = u'Konstantin Vorontsov, Oleksandr Frei, Murat Apishev'
+epub_copyright = u'2014, Konstantin Vorontsov, Oleksandr Frei, Murat Apishev'
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = u'BigARTM'

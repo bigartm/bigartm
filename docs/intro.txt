@@ -79,3 +79,22 @@ BigARTM depends on ZeroMQ. Please, make sure to review
 .. _Google Protocol Buffers: https://code.google.com/p/protobuf/
 .. _New BSD license: http://opensource.org/licenses/BSD-3-Clause
 .. _ZeroMQ license: http://zeromq.org/area:licensing
+
+=========================================
+
+**Acknowledgements**.
+BigARTM project is supported by Russian Foundation for Basic Research (grants 14-07-00847, 14-07-00908, 14-07-31176),
+Skolkovo Institute of Science and Technology (project 081-R), Moscow Institute of Physics and Technology.
+
+.. image:: _images/sponsors_RFBR.png
+   :alt: RFBR
+   :target: http://www.rfbr.ru/rffi/eng/about
+
+.. image:: _images/sponsors_skoltech.png
+   :alt: Skoltech
+   :target: http://www.skoltech.ru/en
+
+.. image:: _images/sponsors_MIPT.png
+   :alt: MIPT
+   :target: http://mipt.ru/en/
+
