@@ -3,12 +3,17 @@ Publications
 
 1.  Vorontsov K. V. Additive Regularization for Topic Models of Text Collections //
     Doklady Mathematics. 2014, Pleiades Publishing, Ltd. --- Vol. 89, No. 3, pp. 301--304.
+    `PDF in English <https://s3-eu-west-1.amazonaws.com/artm/voron14dan-eng.pdf>`__,
+    `PDF in Russian <https://s3-eu-west-1.amazonaws.com/artm/voron14dan.pdf>`__.
 
 2.  Vorontsov K. V., Potapenko A. A. Tutorial on Probabilistic Topic Modeling: Additive Regularization for Stochastic Matrix Factorization //
     AIST'2014, Analysis of Images, Social networks and Texts. Springer International Publishing Switzerland, 2014.
-    `Communications in Computer and Information Science (CCIS) <http://link.springer.com/bookseries/7899>`_.
+    Communications in Computer and Information Science (CCIS).
     Vol. 436. pp. 29--46.
+    `PDF in English <https://s3-eu-west-1.amazonaws.com/artm/voron14aist.pdf>`__.
 
 3.  Vorontsov K. V., Potapenko A. A. Additive Regularization of Topic Models //
-    Machine Learning Journal, Special Issue `"Data Analysis and Intelligent Optimization" <http://www.springer.com/cda/content/document/cda_downloaddocument/CfP+2013+-+ML+-+SI.pdf?SGWID=0-0-45-1418585-p35726603>`_,
+    Machine Learning Journal, Special Issue "Data Analysis and Intelligent Optimization",
     Springer, 2014. (to appear).
+    `PDF in English <https://s3-eu-west-1.amazonaws.com/artm/voron-potap14artm-eng.pdf>`__,
+    `PDF in Russian <https://s3-eu-west-1.amazonaws.com/artm/voron-potap14artm-rus.pdf>`__.
