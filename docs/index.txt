@@ -18,6 +18,7 @@ Welcome to BigARTM's documentation!
    glossary
    devguide
    ref/index
+   publications
 
 Indices and tables
 ==================

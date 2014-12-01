@@ -112,7 +112,7 @@ MasterComponent
       Creates and returns an instance of :py:class:`Regularizer` component.
       *name* can be any unique identifier, that you can further use to identify regularizer (for example, in :attr:`ModelConfig.regularizer_name`).
       *type* can be any regularizer type (for example, the :py:data:`RegularizerConfig_Type_DirichletTheta`).
-      *config* can be any regularizer config (for example, a :ref:`DirichletThetaConfig`).
+      *config* can be any regularizer config (for example, a :ref:`SmoothSparseThetaConfig`).
 
    .. py:method:: CreateDirichletThetaRegularizer(name = None, config = messages_pb2.DirichletThetaConfig())
 
@@ -354,7 +354,7 @@ Regularizer
    .. py:method:: Reconfigure(type, config)
 
       Updates the configuration of the regularizer with new regularizer configuration, provided by *config* parameter.
-      The *config* object can be, for example, of :ref:`DirichletThetaConfig` type (or similar).
+      The *config* object can be, for example, of :ref:`SmoothSparseThetaConfig` type (or similar).
       The type must match the current type of the regularizer.
 
 Score
