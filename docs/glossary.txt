@@ -6,4 +6,7 @@ Glossary
 
 .. glossary::
 
-
+Glossary is currently empty.
+We need you help to find the right set of terms to document.
+Please, report terms you would like to see in the Glossary via our issue tracker
+(https://github.com/bigartm/bigartm/issues/new).
