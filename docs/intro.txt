@@ -27,7 +27,7 @@ several quality measures at once almost without any loss of the perplexity.
   * Try the :doc:`FAQ <faq>` -- it's got answers to many common questions.
 
   * Looking for specific information? Try the :ref:`genindex`,
-    :ref:`search` or :ref:`glossary`.
+    or :ref:`search`.
 
   * Search for information in the archives of the `bigartm-users`_ mailing list, or
     `post a question`_.
