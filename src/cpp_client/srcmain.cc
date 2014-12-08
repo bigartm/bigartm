@@ -23,9 +23,9 @@ using namespace artm;
 class CuckooWatch {
  public:
   explicit CuckooWatch(std::string message)
-    : message_(message), start_(std::chrono::high_resolution_clock::now()) {}
+    : message_(message), start_(std::chrono::system_clock::now()) {}
   ~CuckooWatch() {
-    auto delta = (std::chrono::high_resolution_clock::now() - start_);
+    auto delta = (std::chrono::system_clock::now() - start_);
     auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
     std::cout << message_ << " " << delta_ms.count() << " milliseconds.\n";
   }
