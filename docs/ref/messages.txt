@@ -10,6 +10,8 @@ This document explains all protobuf messages that can be transfered between the 
 DoubleArray
 ===========
 
+.. class:: messages_pb2.DoubleArray
+
 Represents an array of double-precision floating point values.
 
 .. code-block:: bash
