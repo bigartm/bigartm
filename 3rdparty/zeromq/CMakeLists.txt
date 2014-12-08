@@ -525,7 +525,7 @@ else()
 endif()
 
 target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
-if(UNIX)
+if(UNIX AND NOT APPLE)
   # Fix Undefined reference to 'clock_gettime'
   # https://github.com/andrewrk/libgroove/issues/67
   target_link_libraries(libzmq LINK_PRIVATE rt)

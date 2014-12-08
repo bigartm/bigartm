@@ -113,7 +113,7 @@ else()
 
 	mz_add_definition(NO_THREADS)
 	set(GLOG_3LIBS pthread)
-        if( HAVE_LIB_UNWIND )
+        if( HAVE_LIB_UNWIND AND NOT APPLE)
             set(GLOG_3LIBS ${GLOG_3LIBS} unwind)
         endif()
 endif()
