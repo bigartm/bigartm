@@ -17,8 +17,6 @@
 ../src/artm/core/processor.cc
 ../src/artm/core/topic_model.cc
 ../src/artm/regularizer_sandbox/decorrelator_phi.cc
-../src/artm/regularizer_sandbox/dirichlet_phi.cc
-../src/artm/regularizer_sandbox/dirichlet_theta.cc
 ../src/artm/regularizer_sandbox/multilanguage_phi.cc
 ../src/artm/regularizer_sandbox/smooth_sparse_phi.cc
 ../src/artm/regularizer_sandbox/smooth_sparse_theta.cc
@@ -72,8 +70,6 @@
 ../src/artm/core/zmq_context.h
 ../src/artm_tests/test_mother.h
 ../src/artm/regularizer_sandbox/decorrelator_phi.h
-../src/artm/regularizer_sandbox/dirichlet_phi.h
-../src/artm/regularizer_sandbox/dirichlet_theta.h
 ../src/artm/regularizer_sandbox/multilanguage_phi.h
 ../src/artm/regularizer_sandbox/smooth_sparse_phi.h
 ../src/artm/regularizer_sandbox/smooth_sparse_theta.h
