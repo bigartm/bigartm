@@ -145,13 +145,13 @@ The following script had been tested in Ubuntu.
 
    sudo apt-get install git make cmake build-essential libboost-all-dev -q -y
    git clone https://github.com/bigartm/bigartm
-   cd ~/topicmod
+   cd ~/bigartm
    mkdir build
    cd build
    cmake ..
    make -j8
 
-   ~/topicmode/build/src/artm_tests/artm_tests
+   ~/bigartm/build/src/artm_tests/artm_tests
 
 It is also possible to use BigARTM from Python on Linux.
 Just make sure to setup protobuf library as described
