@@ -441,7 +441,7 @@ int main(int argc, char * argv[]) {
     bool show_help = vm.count("help");
     if (options.docword.empty() || options.vocab.empty()) {
       // Show help if user neither provided batch folder, nor docword/vocab files
-      if (!options.b_reuse_batch && !vm.count("batch_folder")) show_help = true;
+      if (!options.b_reuse_batch && (!vm.count("batch_folder") || vm["batch_folder"].defaulted())) show_help = true;
 
       // Automatically reuse batches is safe when user didn't provide docword/vocab
       if (vm.count("batch_folder")) options.b_reuse_batch = true;

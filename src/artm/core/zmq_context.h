@@ -19,7 +19,7 @@ class ZmqContext : boost::noncopyable {
   }
 
   ~ZmqContext() {
-    zmq_context_.release();  // workaround for https://github.com/sashafrey/topicmod/issues/54
+    zmq_context_.release();  // workaround for https://github.com/bigartm/bigartm/issues/85
     LOG(INFO) << "ZeroMQ context destroyed";
   }
 

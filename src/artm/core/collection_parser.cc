@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/iostreams/device/mapped_file.hpp"
@@ -267,10 +268,32 @@ CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
 
   boost::iostreams::stream<mapped_file_source> vocab(config_.vocab_file_path());
 
+  std::map<std::string, int> token_to_token_id;
+
   TokenMap token_info;
+  std::string str;
   int token_id = 0;
-  for (std::string token; vocab >> token;) {
-    token_info.insert(std::make_pair(token_id, CollectionParserTokenInfo(token)));
+  while (!vocab.eof()) {
+    std::getline(vocab, str);
+    if (vocab.eof())
+      break;
+
+    boost::algorithm::trim(str);
+    if (str.empty()) {
+      std::stringstream ss;
+      ss << "Empty token at line " << (token_id + 1) << ", file " << config_.vocab_file_path();
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
+
+    if (token_to_token_id.find(str) != token_to_token_id.end()) {
+      std::stringstream ss;
+      ss << "Token '" << str << "' found twice, lines " << (token_to_token_id.find(str)->second + 1)
+         << " and " << (token_id + 1) << ", file " << config_.vocab_file_path();
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
+
+    token_info.insert(std::make_pair(token_id, CollectionParserTokenInfo(str)));
+    token_to_token_id.insert(std::make_pair(str, token_id));
     token_id++;
   }
 

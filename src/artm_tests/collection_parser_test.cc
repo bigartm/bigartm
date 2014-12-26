@@ -87,6 +87,15 @@ TEST(CollectionParser, UciBagOfWords) {
 TEST(CollectionParser, ErrorHandling) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
+
+  config.set_vocab_file_path("../../../test_data/vocab.parser_test_non_unique.txt");
+  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  ASSERT_THROW(::artm::ParseCollection(config), artm::InvalidOperationException);
+
+  config.set_vocab_file_path("../../../test_data/vocab.parser_test_empty_line.txt");
+  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+  ASSERT_THROW(::artm::ParseCollection(config), artm::InvalidOperationException);
+
   config.set_vocab_file_path("no_such_file.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
   ASSERT_THROW(::artm::ParseCollection(config), artm::DiskReadException);
