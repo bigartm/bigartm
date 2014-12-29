@@ -134,14 +134,14 @@ message SmoothSparseThetaConfig {
 // Represents a configuration of a SmoothSparse Phi regularizer
 message SmoothSparsePhiConfig {
   repeated string topic_name = 1;
-  repeated string class_name = 2;
+  repeated string class_id = 2;
   optional string dictionary_name = 3;
 }
 
 // Represents a configuration of a Decorrelator Phi regularizer
 message DecorrelatorPhiConfig {
   repeated string topic_name = 1;
-  repeated string class_name = 2;
+  repeated string class_id = 2;
 }
 
 // Represents a configuration of a MultiLanguage Phi regularizer
@@ -242,7 +242,7 @@ message SparsityThetaScoreConfig {
   optional string field_name = 1 [default = "@body"];
   optional string stream_name = 2 [default = "@global"];
   optional float eps = 3 [default = 1e-37];
-  optional BoolArray topics_to_score = 4;
+  repeated string topic_name = 4;
 }
 
 // Represents a result of calculation of a theta sparsity score
@@ -255,7 +255,8 @@ message SparsityThetaScore {
 // Represents a configuration of a sparsity phi score
 message SparsityPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional BoolArray topics_to_score = 2;
+  optional string class_id = 2;
+  repeated string topic_name = 3;
 }
 
 // Represents a result of calculation of a phi sparsity score
@@ -309,8 +310,9 @@ message ThetaSnippetScore {
 // Represents a configuration of a topic kernel score
 message TopicKernelScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional BoolArray topics_to_score = 2;
-  optional double probability_mass_threshold = 3 [default = 0.1];
+  optional string class_id = 2;
+  repeated string topic_name = 3;
+  optional double probability_mass_threshold = 4 [default = 0.1];
 }
 
 // Represents a result of calculation of a topic kernel score

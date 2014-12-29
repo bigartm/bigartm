@@ -2,7 +2,7 @@
 
 #include "artm/score_sandbox/sparsity_theta.h"
 
-#include <math.h>
+#include <cmath>
 
 #include "artm/core/exceptions.h"
 #include "artm/core/topic_model.h"
@@ -16,36 +16,34 @@ void SparsityTheta::AppendScore(
     const artm::core::TopicModel& topic_model,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_size = topic_model.topic_size();
+  int topics_count = topic_model.topic_size();
+  auto topic_name = topic_model.topic_name();
+  std::vector<bool> topics_to_score;
   int topics_to_score_size = 0;
 
-  ::artm::BoolArray topics_to_score;
-  bool has_correct_vector = false;
-  if (config_.has_topics_to_score()) {
-    if (config_.topics_to_score().value_size() != topics_size) {
-      LOG(INFO) << "Score Sparsity Theta: len(topics_to_score) must be equal to" <<
-        "len(topics_size). All topics will be used in scoring!\n";
-    } else {
-      has_correct_vector = true;
-      topics_to_score.CopyFrom(config_.topics_to_score());
-      for (int i = 0; i < topics_size; ++i) {
-        if (topics_to_score.value(i)) topics_to_score_size++;
+  if (config_.topic_name_size() > 0) {
+    for (int i = 0; i < topics_count; ++i)
+      topics_to_score.push_back(false);
+
+    for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
+      for (int real_topic_id = 0; real_topic_id < topics_count; ++real_topic_id) {
+        if (topic_name.Get(real_topic_id) == config_.topic_name(topic_id)) {
+          topics_to_score[real_topic_id] = true;
+          topics_to_score_size++;
+          break;
+        }
       }
     }
+  } else {
+    topics_to_score_size = topics_count;
+    for (int i = 0; i < topics_count; ++i)
+      topics_to_score.push_back(true);
   }
-
-  if (!has_correct_vector) {
-    for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-      topics_to_score.add_value(true);
-    }
-    topics_to_score_size = topics_size;
-  }
-
 
   int zero_topics_count = 0;
-  for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
+  for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
     if ((fabs(theta[topic_index]) < config_.eps()) &&
-        topics_to_score.value(topic_index)) {
+        topics_to_score[topic_index]) {
       ++zero_topics_count;
     }
   }
