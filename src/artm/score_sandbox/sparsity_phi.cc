@@ -27,11 +27,13 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::TopicModel&
       for (int real_topic_id = 0; real_topic_id < topics_count; ++real_topic_id) {
         if (topic_name.Get(real_topic_id) == config_.topic_name(topic_id)) {
           topics_to_score[real_topic_id] = true;
+          topics_to_score_size++;
           break;
         }
       }
     }
   } else {
+    topics_to_score_size = topics_count;
     for (int i = 0; i < topics_count; ++i)
       topics_to_score.push_back(true);
   }
