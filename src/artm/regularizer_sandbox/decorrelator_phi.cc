@@ -40,8 +40,8 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
 
   bool use_all_classes = false;
   std::vector<artm::core::ClassId> classes_to_regularize;
-  if (config_.class_name_size() > 0) {
-    for (auto& class_id : config_.class_name())
+  if (config_.class_id_size() > 0) {
+    for (auto& class_id : config_.class_id())
       classes_to_regularize.push_back(class_id);
   } else {
     use_all_classes = true;

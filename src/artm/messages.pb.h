@@ -2124,21 +2124,21 @@ class SmoothSparsePhiConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
-  // repeated string class_name = 2;
-  inline int class_name_size() const;
-  inline void clear_class_name();
-  static const int kClassNameFieldNumber = 2;
-  inline const ::std::string& class_name(int index) const;
-  inline ::std::string* mutable_class_name(int index);
-  inline void set_class_name(int index, const ::std::string& value);
-  inline void set_class_name(int index, const char* value);
-  inline void set_class_name(int index, const char* value, size_t size);
-  inline ::std::string* add_class_name();
-  inline void add_class_name(const ::std::string& value);
-  inline void add_class_name(const char* value);
-  inline void add_class_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_name();
+  // repeated string class_id = 2;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
 
   // optional string dictionary_name = 3;
   inline bool has_dictionary_name() const;
@@ -2160,7 +2160,7 @@ class SmoothSparsePhiConfig : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::std::string* dictionary_name_;
 
   mutable int _cached_size_;
@@ -2245,21 +2245,21 @@ class DecorrelatorPhiConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
-  // repeated string class_name = 2;
-  inline int class_name_size() const;
-  inline void clear_class_name();
-  static const int kClassNameFieldNumber = 2;
-  inline const ::std::string& class_name(int index) const;
-  inline ::std::string* mutable_class_name(int index);
-  inline void set_class_name(int index, const ::std::string& value);
-  inline void set_class_name(int index, const char* value);
-  inline void set_class_name(int index, const char* value, size_t size);
-  inline ::std::string* add_class_name();
-  inline void add_class_name(const ::std::string& value);
-  inline void add_class_name(const char* value);
-  inline void add_class_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_name();
+  // repeated string class_id = 2;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
 
   // @@protoc_insertion_point(class_scope:artm.DecorrelatorPhiConfig)
  private:
@@ -2267,7 +2267,7 @@ class DecorrelatorPhiConfig : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -3483,14 +3483,21 @@ class SparsityThetaScoreConfig : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
-  // optional .artm.BoolArray topics_to_score = 4;
-  inline bool has_topics_to_score() const;
-  inline void clear_topics_to_score();
-  static const int kTopicsToScoreFieldNumber = 4;
-  inline const ::artm::BoolArray& topics_to_score() const;
-  inline ::artm::BoolArray* mutable_topics_to_score();
-  inline ::artm::BoolArray* release_topics_to_score();
-  inline void set_allocated_topics_to_score(::artm::BoolArray* topics_to_score);
+  // repeated string topic_name = 4;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 4;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
   // @@protoc_insertion_point(class_scope:artm.SparsityThetaScoreConfig)
  private:
@@ -3500,8 +3507,6 @@ class SparsityThetaScoreConfig : public ::google::protobuf::Message {
   inline void clear_has_stream_name();
   inline void set_has_eps();
   inline void clear_has_eps();
-  inline void set_has_topics_to_score();
-  inline void clear_has_topics_to_score();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -3509,7 +3514,7 @@ class SparsityThetaScoreConfig : public ::google::protobuf::Message {
   static ::std::string* _default_field_name_;
   ::std::string* stream_name_;
   static ::std::string* _default_stream_name_;
-  ::artm::BoolArray* topics_to_score_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   float eps_;
 
   mutable int _cached_size_;
@@ -3687,29 +3692,49 @@ class SparsityPhiScoreConfig : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
-  // optional .artm.BoolArray topics_to_score = 2;
-  inline bool has_topics_to_score() const;
-  inline void clear_topics_to_score();
-  static const int kTopicsToScoreFieldNumber = 2;
-  inline const ::artm::BoolArray& topics_to_score() const;
-  inline ::artm::BoolArray* mutable_topics_to_score();
-  inline ::artm::BoolArray* release_topics_to_score();
-  inline void set_allocated_topics_to_score(::artm::BoolArray* topics_to_score);
+  // optional string class_id = 2;
+  inline bool has_class_id() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id() const;
+  inline void set_class_id(const ::std::string& value);
+  inline void set_class_id(const char* value);
+  inline void set_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_class_id();
+  inline ::std::string* release_class_id();
+  inline void set_allocated_class_id(::std::string* class_id);
+
+  // repeated string topic_name = 3;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 3;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
   // @@protoc_insertion_point(class_scope:artm.SparsityPhiScoreConfig)
  private:
   inline void set_has_eps();
   inline void clear_has_eps();
-  inline void set_has_topics_to_score();
-  inline void clear_has_topics_to_score();
+  inline void set_has_class_id();
+  inline void clear_has_class_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::artm::BoolArray* topics_to_score_;
+  ::std::string* class_id_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   float eps_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -4541,19 +4566,38 @@ class TopicKernelScoreConfig : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
-  // optional .artm.BoolArray topics_to_score = 2;
-  inline bool has_topics_to_score() const;
-  inline void clear_topics_to_score();
-  static const int kTopicsToScoreFieldNumber = 2;
-  inline const ::artm::BoolArray& topics_to_score() const;
-  inline ::artm::BoolArray* mutable_topics_to_score();
-  inline ::artm::BoolArray* release_topics_to_score();
-  inline void set_allocated_topics_to_score(::artm::BoolArray* topics_to_score);
+  // optional string class_id = 2;
+  inline bool has_class_id() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id() const;
+  inline void set_class_id(const ::std::string& value);
+  inline void set_class_id(const char* value);
+  inline void set_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_class_id();
+  inline ::std::string* release_class_id();
+  inline void set_allocated_class_id(::std::string* class_id);
 
-  // optional double probability_mass_threshold = 3 [default = 0.1];
+  // repeated string topic_name = 3;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 3;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // optional double probability_mass_threshold = 4 [default = 0.1];
   inline bool has_probability_mass_threshold() const;
   inline void clear_probability_mass_threshold();
-  static const int kProbabilityMassThresholdFieldNumber = 3;
+  static const int kProbabilityMassThresholdFieldNumber = 4;
   inline double probability_mass_threshold() const;
   inline void set_probability_mass_threshold(double value);
 
@@ -4561,19 +4605,20 @@ class TopicKernelScoreConfig : public ::google::protobuf::Message {
  private:
   inline void set_has_eps();
   inline void clear_has_eps();
-  inline void set_has_topics_to_score();
-  inline void clear_has_topics_to_score();
+  inline void set_has_class_id();
+  inline void clear_has_class_id();
   inline void set_has_probability_mass_threshold();
   inline void clear_has_probability_mass_threshold();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::artm::BoolArray* topics_to_score_;
+  ::std::string* class_id_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   double probability_mass_threshold_;
   float eps_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8009,48 +8054,48 @@ SmoothSparsePhiConfig::mutable_topic_name() {
   return &topic_name_;
 }
 
-// repeated string class_name = 2;
-inline int SmoothSparsePhiConfig::class_name_size() const {
-  return class_name_.size();
+// repeated string class_id = 2;
+inline int SmoothSparsePhiConfig::class_id_size() const {
+  return class_id_.size();
 }
-inline void SmoothSparsePhiConfig::clear_class_name() {
-  class_name_.Clear();
+inline void SmoothSparsePhiConfig::clear_class_id() {
+  class_id_.Clear();
 }
-inline const ::std::string& SmoothSparsePhiConfig::class_name(int index) const {
-  return class_name_.Get(index);
+inline const ::std::string& SmoothSparsePhiConfig::class_id(int index) const {
+  return class_id_.Get(index);
 }
-inline ::std::string* SmoothSparsePhiConfig::mutable_class_name(int index) {
-  return class_name_.Mutable(index);
+inline ::std::string* SmoothSparsePhiConfig::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
 }
-inline void SmoothSparsePhiConfig::set_class_name(int index, const ::std::string& value) {
-  class_name_.Mutable(index)->assign(value);
+inline void SmoothSparsePhiConfig::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
 }
-inline void SmoothSparsePhiConfig::set_class_name(int index, const char* value) {
-  class_name_.Mutable(index)->assign(value);
+inline void SmoothSparsePhiConfig::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
 }
-inline void SmoothSparsePhiConfig::set_class_name(int index, const char* value, size_t size) {
-  class_name_.Mutable(index)->assign(
+inline void SmoothSparsePhiConfig::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* SmoothSparsePhiConfig::add_class_name() {
-  return class_name_.Add();
+inline ::std::string* SmoothSparsePhiConfig::add_class_id() {
+  return class_id_.Add();
 }
-inline void SmoothSparsePhiConfig::add_class_name(const ::std::string& value) {
-  class_name_.Add()->assign(value);
+inline void SmoothSparsePhiConfig::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
 }
-inline void SmoothSparsePhiConfig::add_class_name(const char* value) {
-  class_name_.Add()->assign(value);
+inline void SmoothSparsePhiConfig::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
 }
-inline void SmoothSparsePhiConfig::add_class_name(const char* value, size_t size) {
-  class_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+inline void SmoothSparsePhiConfig::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-SmoothSparsePhiConfig::class_name() const {
-  return class_name_;
+SmoothSparsePhiConfig::class_id() const {
+  return class_id_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-SmoothSparsePhiConfig::mutable_class_name() {
-  return &class_name_;
+SmoothSparsePhiConfig::mutable_class_id() {
+  return &class_id_;
 }
 
 // optional string dictionary_name = 3;
@@ -8171,48 +8216,48 @@ DecorrelatorPhiConfig::mutable_topic_name() {
   return &topic_name_;
 }
 
-// repeated string class_name = 2;
-inline int DecorrelatorPhiConfig::class_name_size() const {
-  return class_name_.size();
+// repeated string class_id = 2;
+inline int DecorrelatorPhiConfig::class_id_size() const {
+  return class_id_.size();
 }
-inline void DecorrelatorPhiConfig::clear_class_name() {
-  class_name_.Clear();
+inline void DecorrelatorPhiConfig::clear_class_id() {
+  class_id_.Clear();
 }
-inline const ::std::string& DecorrelatorPhiConfig::class_name(int index) const {
-  return class_name_.Get(index);
+inline const ::std::string& DecorrelatorPhiConfig::class_id(int index) const {
+  return class_id_.Get(index);
 }
-inline ::std::string* DecorrelatorPhiConfig::mutable_class_name(int index) {
-  return class_name_.Mutable(index);
+inline ::std::string* DecorrelatorPhiConfig::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
 }
-inline void DecorrelatorPhiConfig::set_class_name(int index, const ::std::string& value) {
-  class_name_.Mutable(index)->assign(value);
+inline void DecorrelatorPhiConfig::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
 }
-inline void DecorrelatorPhiConfig::set_class_name(int index, const char* value) {
-  class_name_.Mutable(index)->assign(value);
+inline void DecorrelatorPhiConfig::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
 }
-inline void DecorrelatorPhiConfig::set_class_name(int index, const char* value, size_t size) {
-  class_name_.Mutable(index)->assign(
+inline void DecorrelatorPhiConfig::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* DecorrelatorPhiConfig::add_class_name() {
-  return class_name_.Add();
+inline ::std::string* DecorrelatorPhiConfig::add_class_id() {
+  return class_id_.Add();
 }
-inline void DecorrelatorPhiConfig::add_class_name(const ::std::string& value) {
-  class_name_.Add()->assign(value);
+inline void DecorrelatorPhiConfig::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
 }
-inline void DecorrelatorPhiConfig::add_class_name(const char* value) {
-  class_name_.Add()->assign(value);
+inline void DecorrelatorPhiConfig::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
 }
-inline void DecorrelatorPhiConfig::add_class_name(const char* value, size_t size) {
-  class_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+inline void DecorrelatorPhiConfig::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-DecorrelatorPhiConfig::class_name() const {
-  return class_name_;
+DecorrelatorPhiConfig::class_id() const {
+  return class_id_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-DecorrelatorPhiConfig::mutable_class_name() {
-  return &class_name_;
+DecorrelatorPhiConfig::mutable_class_id() {
+  return &class_id_;
 }
 
 // -------------------------------------------------------------------
@@ -9676,42 +9721,48 @@ inline void SparsityThetaScoreConfig::set_eps(float value) {
   eps_ = value;
 }
 
-// optional .artm.BoolArray topics_to_score = 4;
-inline bool SparsityThetaScoreConfig::has_topics_to_score() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+// repeated string topic_name = 4;
+inline int SparsityThetaScoreConfig::topic_name_size() const {
+  return topic_name_.size();
 }
-inline void SparsityThetaScoreConfig::set_has_topics_to_score() {
-  _has_bits_[0] |= 0x00000008u;
+inline void SparsityThetaScoreConfig::clear_topic_name() {
+  topic_name_.Clear();
 }
-inline void SparsityThetaScoreConfig::clear_has_topics_to_score() {
-  _has_bits_[0] &= ~0x00000008u;
+inline const ::std::string& SparsityThetaScoreConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
 }
-inline void SparsityThetaScoreConfig::clear_topics_to_score() {
-  if (topics_to_score_ != NULL) topics_to_score_->::artm::BoolArray::Clear();
-  clear_has_topics_to_score();
+inline ::std::string* SparsityThetaScoreConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
 }
-inline const ::artm::BoolArray& SparsityThetaScoreConfig::topics_to_score() const {
-  return topics_to_score_ != NULL ? *topics_to_score_ : *default_instance_->topics_to_score_;
+inline void SparsityThetaScoreConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-inline ::artm::BoolArray* SparsityThetaScoreConfig::mutable_topics_to_score() {
-  set_has_topics_to_score();
-  if (topics_to_score_ == NULL) topics_to_score_ = new ::artm::BoolArray;
-  return topics_to_score_;
+inline void SparsityThetaScoreConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
 }
-inline ::artm::BoolArray* SparsityThetaScoreConfig::release_topics_to_score() {
-  clear_has_topics_to_score();
-  ::artm::BoolArray* temp = topics_to_score_;
-  topics_to_score_ = NULL;
-  return temp;
+inline void SparsityThetaScoreConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
 }
-inline void SparsityThetaScoreConfig::set_allocated_topics_to_score(::artm::BoolArray* topics_to_score) {
-  delete topics_to_score_;
-  topics_to_score_ = topics_to_score;
-  if (topics_to_score) {
-    set_has_topics_to_score();
-  } else {
-    clear_has_topics_to_score();
-  }
+inline ::std::string* SparsityThetaScoreConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void SparsityThetaScoreConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void SparsityThetaScoreConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void SparsityThetaScoreConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+SparsityThetaScoreConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+SparsityThetaScoreConfig::mutable_topic_name() {
+  return &topic_name_;
 }
 
 // -------------------------------------------------------------------
@@ -9810,42 +9861,118 @@ inline void SparsityPhiScoreConfig::set_eps(float value) {
   eps_ = value;
 }
 
-// optional .artm.BoolArray topics_to_score = 2;
-inline bool SparsityPhiScoreConfig::has_topics_to_score() const {
+// optional string class_id = 2;
+inline bool SparsityPhiScoreConfig::has_class_id() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void SparsityPhiScoreConfig::set_has_topics_to_score() {
+inline void SparsityPhiScoreConfig::set_has_class_id() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void SparsityPhiScoreConfig::clear_has_topics_to_score() {
+inline void SparsityPhiScoreConfig::clear_has_class_id() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void SparsityPhiScoreConfig::clear_topics_to_score() {
-  if (topics_to_score_ != NULL) topics_to_score_->::artm::BoolArray::Clear();
-  clear_has_topics_to_score();
-}
-inline const ::artm::BoolArray& SparsityPhiScoreConfig::topics_to_score() const {
-  return topics_to_score_ != NULL ? *topics_to_score_ : *default_instance_->topics_to_score_;
-}
-inline ::artm::BoolArray* SparsityPhiScoreConfig::mutable_topics_to_score() {
-  set_has_topics_to_score();
-  if (topics_to_score_ == NULL) topics_to_score_ = new ::artm::BoolArray;
-  return topics_to_score_;
-}
-inline ::artm::BoolArray* SparsityPhiScoreConfig::release_topics_to_score() {
-  clear_has_topics_to_score();
-  ::artm::BoolArray* temp = topics_to_score_;
-  topics_to_score_ = NULL;
-  return temp;
-}
-inline void SparsityPhiScoreConfig::set_allocated_topics_to_score(::artm::BoolArray* topics_to_score) {
-  delete topics_to_score_;
-  topics_to_score_ = topics_to_score;
-  if (topics_to_score) {
-    set_has_topics_to_score();
-  } else {
-    clear_has_topics_to_score();
+inline void SparsityPhiScoreConfig::clear_class_id() {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    class_id_->clear();
   }
+  clear_has_class_id();
+}
+inline const ::std::string& SparsityPhiScoreConfig::class_id() const {
+  return *class_id_;
+}
+inline void SparsityPhiScoreConfig::set_class_id(const ::std::string& value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void SparsityPhiScoreConfig::set_class_id(const char* value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void SparsityPhiScoreConfig::set_class_id(const char* value, size_t size) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* SparsityPhiScoreConfig::mutable_class_id() {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  return class_id_;
+}
+inline ::std::string* SparsityPhiScoreConfig::release_class_id() {
+  clear_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = class_id_;
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void SparsityPhiScoreConfig::set_allocated_class_id(::std::string* class_id) {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete class_id_;
+  }
+  if (class_id) {
+    set_has_class_id();
+    class_id_ = class_id;
+  } else {
+    clear_has_class_id();
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// repeated string topic_name = 3;
+inline int SparsityPhiScoreConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void SparsityPhiScoreConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& SparsityPhiScoreConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* SparsityPhiScoreConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void SparsityPhiScoreConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void SparsityPhiScoreConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void SparsityPhiScoreConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* SparsityPhiScoreConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void SparsityPhiScoreConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void SparsityPhiScoreConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void SparsityPhiScoreConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+SparsityPhiScoreConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+SparsityPhiScoreConfig::mutable_topic_name() {
+  return &topic_name_;
 }
 
 // -------------------------------------------------------------------
@@ -10641,53 +10768,129 @@ inline void TopicKernelScoreConfig::set_eps(float value) {
   eps_ = value;
 }
 
-// optional .artm.BoolArray topics_to_score = 2;
-inline bool TopicKernelScoreConfig::has_topics_to_score() const {
+// optional string class_id = 2;
+inline bool TopicKernelScoreConfig::has_class_id() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void TopicKernelScoreConfig::set_has_topics_to_score() {
+inline void TopicKernelScoreConfig::set_has_class_id() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void TopicKernelScoreConfig::clear_has_topics_to_score() {
+inline void TopicKernelScoreConfig::clear_has_class_id() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void TopicKernelScoreConfig::clear_topics_to_score() {
-  if (topics_to_score_ != NULL) topics_to_score_->::artm::BoolArray::Clear();
-  clear_has_topics_to_score();
+inline void TopicKernelScoreConfig::clear_class_id() {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    class_id_->clear();
+  }
+  clear_has_class_id();
 }
-inline const ::artm::BoolArray& TopicKernelScoreConfig::topics_to_score() const {
-  return topics_to_score_ != NULL ? *topics_to_score_ : *default_instance_->topics_to_score_;
+inline const ::std::string& TopicKernelScoreConfig::class_id() const {
+  return *class_id_;
 }
-inline ::artm::BoolArray* TopicKernelScoreConfig::mutable_topics_to_score() {
-  set_has_topics_to_score();
-  if (topics_to_score_ == NULL) topics_to_score_ = new ::artm::BoolArray;
-  return topics_to_score_;
+inline void TopicKernelScoreConfig::set_class_id(const ::std::string& value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
 }
-inline ::artm::BoolArray* TopicKernelScoreConfig::release_topics_to_score() {
-  clear_has_topics_to_score();
-  ::artm::BoolArray* temp = topics_to_score_;
-  topics_to_score_ = NULL;
-  return temp;
+inline void TopicKernelScoreConfig::set_class_id(const char* value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
 }
-inline void TopicKernelScoreConfig::set_allocated_topics_to_score(::artm::BoolArray* topics_to_score) {
-  delete topics_to_score_;
-  topics_to_score_ = topics_to_score;
-  if (topics_to_score) {
-    set_has_topics_to_score();
+inline void TopicKernelScoreConfig::set_class_id(const char* value, size_t size) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicKernelScoreConfig::mutable_class_id() {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  return class_id_;
+}
+inline ::std::string* TopicKernelScoreConfig::release_class_id() {
+  clear_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
   } else {
-    clear_has_topics_to_score();
+    ::std::string* temp = class_id_;
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void TopicKernelScoreConfig::set_allocated_class_id(::std::string* class_id) {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete class_id_;
+  }
+  if (class_id) {
+    set_has_class_id();
+    class_id_ = class_id;
+  } else {
+    clear_has_class_id();
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
-// optional double probability_mass_threshold = 3 [default = 0.1];
+// repeated string topic_name = 3;
+inline int TopicKernelScoreConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void TopicKernelScoreConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& TopicKernelScoreConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* TopicKernelScoreConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void TopicKernelScoreConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicKernelScoreConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicKernelScoreConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicKernelScoreConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void TopicKernelScoreConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicKernelScoreConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicKernelScoreConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopicKernelScoreConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopicKernelScoreConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// optional double probability_mass_threshold = 4 [default = 0.1];
 inline bool TopicKernelScoreConfig::has_probability_mass_threshold() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void TopicKernelScoreConfig::set_has_probability_mass_threshold() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void TopicKernelScoreConfig::clear_has_probability_mass_threshold() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void TopicKernelScoreConfig::clear_probability_mass_threshold() {
   probability_mass_threshold_ = 0.1;

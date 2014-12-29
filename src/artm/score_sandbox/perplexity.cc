@@ -2,7 +2,7 @@
 
 #include "artm/score_sandbox/perplexity.h"
 
-#include <math.h>
+#include <cmath>
 
 #include "artm/core/exceptions.h"
 #include "artm/core/topic_model.h"
