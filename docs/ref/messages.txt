@@ -408,6 +408,7 @@ Represents a configuration of a topic model.
     repeated string class_id = 12;
     repeated float class_weight = 13;
     optional bool use_sparse_bow = 14 [default = true];
+    optional bool use_random_theta = 15 [default = false];
   }
 
 .. attribute:: ModelConfig.name
@@ -481,6 +482,15 @@ Represents a configuration of a topic model.
    where every token is represented in a small fraction of all documents.
    Dense representation (*use_sparse_bow = false*) better fits for non-textual collections
    (for example for matrix factorization).
+
+.. attribute:: ModelConfig.use_random_theta
+
+   A flag indicating whether to initialize ``p(t|d)`` distribution with random uniform distribution.
+   The default setting (*use_random_theta = false*) sets ``p(t|d) = 1/T``,
+   where ``T`` stands for :attr:`topics_count`.
+   Note that :attr:`reuse_theta` flag takes priority over *use_random_theta* flag,
+   so that if *reuse_theta = true* and there is a cache entry from previous iteration the cache entry
+   will be used regardless of *use_random_theta* flag.
 
 
 .. _RegularizerConfig:

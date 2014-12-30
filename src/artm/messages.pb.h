@@ -1763,6 +1763,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool use_sparse_bow() const;
   inline void set_use_sparse_bow(bool value);
 
+  // optional bool use_random_theta = 15 [default = false];
+  inline bool has_use_random_theta() const;
+  inline void clear_use_random_theta();
+  static const int kUseRandomThetaFieldNumber = 15;
+  inline bool use_random_theta() const;
+  inline void set_use_random_theta(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -1781,6 +1788,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_reuse_theta();
   inline void set_has_use_sparse_bow();
   inline void clear_has_use_sparse_bow();
+  inline void set_has_use_random_theta();
+  inline void clear_has_use_random_theta();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -1801,9 +1810,10 @@ class ModelConfig : public ::google::protobuf::Message {
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
+  bool use_random_theta_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7764,6 +7774,28 @@ inline bool ModelConfig::use_sparse_bow() const {
 inline void ModelConfig::set_use_sparse_bow(bool value) {
   set_has_use_sparse_bow();
   use_sparse_bow_ = value;
+}
+
+// optional bool use_random_theta = 15 [default = false];
+inline bool ModelConfig::has_use_random_theta() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+inline void ModelConfig::set_has_use_random_theta() {
+  _has_bits_[0] |= 0x00004000u;
+}
+inline void ModelConfig::clear_has_use_random_theta() {
+  _has_bits_[0] &= ~0x00004000u;
+}
+inline void ModelConfig::clear_use_random_theta() {
+  use_random_theta_ = false;
+  clear_has_use_random_theta();
+}
+inline bool ModelConfig::use_random_theta() const {
+  return use_random_theta_;
+}
+inline void ModelConfig::set_use_random_theta(bool value) {
+  set_has_use_random_theta();
+  use_random_theta_ = value;
 }
 
 // -------------------------------------------------------------------

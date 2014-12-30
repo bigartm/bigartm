@@ -109,6 +109,7 @@ message ModelConfig {
   repeated string class_id = 12;
   repeated float class_weight = 13;
   optional bool use_sparse_bow = 14 [default = true];
+  optional bool use_random_theta = 15 [default = false];
 }
 
 // Represents a configuration of a general regularizer
