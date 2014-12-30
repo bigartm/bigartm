@@ -576,8 +576,13 @@ void Processor::FindThetaMatrix(const Batch& batch, const GetThetaMatrixArgs& ar
 
     // Initialize theta
     std::vector<float> theta(topic_size);
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index)
-      theta[topic_index] = ThreadSafeRandom::singleton().GenerateFloat();
+    const float default_theta = 1.0f / topic_size;
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+      float theta_value = default_theta;
+      if (model.use_random_theta())
+        theta_value = ThreadSafeRandom::singleton().GenerateFloat();
+      theta[topic_index] = theta_value;
+    }
 
     item_processor.InferTheta(model, item, nullptr, false, &theta[0]);
 
@@ -657,8 +662,12 @@ InitializeTheta(const ProcessorInput& part, const ModelConfig& model_config) {
         (*Theta)(topic_index, item_index) = old_thetas.value(topic_index);
       }
     } else {
+      const float default_theta = 1.0f / topic_size;
       for (int iTopic = 0; iTopic < topic_size; ++iTopic) {
-        (*Theta)(iTopic, item_index) = ThreadSafeRandom::singleton().GenerateFloat();
+        float theta_value = default_theta;
+        if (model_config.use_random_theta())
+          theta_value = ThreadSafeRandom::singleton().GenerateFloat();
+        (*Theta)(iTopic, item_index) = theta_value;
       }
     }
   }
