@@ -576,7 +576,7 @@ Represents a configuration of a SmoothSparse Phi regularizer.
 
   message SmoothSparsePhiConfig {
     repeated string topic_name = 1;
-    repeated string class_name = 2;
+    repeated string class_id = 2;
     optional string dictionary_name = 3;
   }
 
@@ -585,7 +585,7 @@ Represents a configuration of a SmoothSparse Phi regularizer.
    A set of topic names that defines which topics in the model should be regularized.
    This value is optional, use an empty list to regularize all topics.
 
-.. attribute:: SmoothSparsePhiConfig.class_name
+.. attribute:: SmoothSparsePhiConfig.class_id
 
    This set defines which classes in the model should be regularized.
    This value is optional, use an empty list to regularize all classes.
@@ -614,7 +614,7 @@ Represents a configuration of a Decorrelator Phi regularizer.
 
   message DecorrelatorPhiConfig {
     repeated string topic_name = 1;
-    repeated string class_name = 2;
+    repeated string class_id = 2;
   }
 
 .. attribute:: DecorrelatorPhiConfig.topic_name
@@ -622,7 +622,7 @@ Represents a configuration of a Decorrelator Phi regularizer.
    A set of topic names that defines which topics in the model should be regularized.
    This value is optional, use an empty list to regularize all topics.
 
-.. attribute:: DecorrelatorPhiConfig.class_name
+.. attribute:: DecorrelatorPhiConfig.class_id
 
    This set defines which classes in the model should be regularized.
    This value is optional, use an empty list to regularize all classes.
@@ -932,7 +932,7 @@ Represents a configuration of a theta sparsity score.
     optional string field_name = 1 [default = "@body"];
     optional string stream_name = 2 [default = "@global"];
     optional float eps = 3 [default = 1e-37];
-    optional BoolArray topics_to_score = 4;
+    repeated string topic_name = 4;
   }
 
 .. attribute:: SparsityThetaScoreConfig.field_name
@@ -948,12 +948,11 @@ Represents a configuration of a theta sparsity score.
    A small value that defines zero threshold for theta probabilities.
    Theta values below the threshold will be counted as zeros when calculating theta sparsity score.
 
-.. attribute:: SparsityThetaScoreConfig.topics_to_score
+.. attribute:: SparsityThetaScoreConfig.topic_name
 
-   A set of values that define which topics should be used in theta sparsity calculation.
-   The length of this array must match the number of topics.
-   Each boolean value means calculating theta sparsity for the topic with this id or not. 
-
+   A set of topic names that defines which topics should be used for score calculation.
+   The names correspond to :attr:`ModelConfig.topic_name`.
+   This value is optional, use an empty list to calculate the score for all topics.
 
 .. _SparsityThetaScore:
 
@@ -1000,7 +999,8 @@ Represents a configuration of a sparsity phi score.
 
   message SparsityPhiScoreConfig {
     optional float eps = 1 [default = 1e-37];
-    optional BoolArray topics_to_score = 2;
+    optional string class_id = 2;
+    repeated string topic_name = 3;
   }
 
 .. attribute:: SparsityPhiScoreConfig.eps
@@ -1008,11 +1008,17 @@ Represents a configuration of a sparsity phi score.
    A small value that defines zero threshold for phi probabilities.
    Phi values below the threshold will be counted as zeros when calculating phi sparsity score.
 
-.. attribute:: SparsityPhiScoreConfig.topics_to_score
+.. attribute:: SparsityPhiScoreConfig.class_id
 
-   A set of values that define which topics should be used in phi sparsity calculation.
-   The length of this array must match the number of topics.
-   Each boolean value means calculating phi sparsity for the topic with this id or not. 
+   A value that defines the class of tokens to use for score calculation.
+   This value corresponds to :attr:`ModelConfig.class_id` field.
+   This value is optional. By default the score will be calculated for
+   the default class ('@default_class').
+
+.. attribute:: SparsityPhiScoreConfig.topic_name
+
+   A set of topic names that defines which topics should be used for score calculation.
+   This value is optional, use an empty list to calculate the score for all topics.
 
 
 .. _SparsityPhiScore:
@@ -1270,8 +1276,9 @@ Represents a configuration of a topic kernel score.
 
   message TopicKernelScoreConfig {
     optional float eps = 1 [default = 1e-37];
-    optional BoolArray topics_to_score = 2;
-    optional double probability_mass_threshold = 3 [default = 0.1];
+    optional string class_id = 2;
+    repeated string topic_name = 3;
+    optional double probability_mass_threshold = 4 [default = 0.1];
   }
 
 * *Kernel* of a topic model is defined as the list of all tokens such that
@@ -1290,9 +1297,17 @@ Represents a configuration of a topic kernel score.
   Defines the minimum threshold on kernel size.
   In most cases this parameter should be kept at the default value.
 
-.. attribute:: TopicKernelScoreConfig.topics_to_score
+.. attribute:: TopicKernelScoreConfig.class_id
 
-  Defines the list of topics to calculate the kernel and its statistics.
+   A value that defines the class of tokens to use for score calculation.
+   This value corresponds to :attr:`ModelConfig.class_id` field.
+   This value is optional. By default the score will be calculated for
+   the default class ('@default_class').
+
+.. attribute:: TopicKernelScoreConfig.topic_name
+
+   A set of topic names that defines which topics should be used for score calculation.
+   This value is optional, use an empty list to calculate the score for all topics.
 
 .. attribute:: TopicKernelScoreConfig.probability_mass_threshold
 
