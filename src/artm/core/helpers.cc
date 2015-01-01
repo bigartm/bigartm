@@ -134,6 +134,7 @@ void BatchHelpers::CompactBatch(const Batch& batch, Batch* compacted_batch) {
   std::vector<int> orig_to_compacted_id_map(batch.token_size(), -1);
   int compacted_dictionary_size = 0;
 
+  bool has_class_id = (batch.class_id_size() > 0);
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     auto item = batch.item(item_index);
     auto compacted_item = compacted_batch->add_item();
@@ -147,10 +148,15 @@ void BatchHelpers::CompactBatch(const Batch& batch, Batch* compacted_batch) {
         int token_id = field.token_id(token_index);
         if (token_id < 0 || token_id >= batch.token_size())
           BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("field.token_id", token_id));
+        if (has_class_id && (token_id >= batch.class_id_size()))
+          BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
+            "field.token_id", token_id, "Too few entries in batch.class_id field"));
 
         if (orig_to_compacted_id_map[token_id] == -1) {
           orig_to_compacted_id_map[token_id] = compacted_dictionary_size++;
           compacted_batch->add_token(batch.token(token_id));
+          if (has_class_id)
+            compacted_batch->add_class_id(batch.class_id(token_id));
         }
 
         compacted_field->set_token_id(token_index, orig_to_compacted_id_map[token_id]);

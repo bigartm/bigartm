@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <set>
+#include <sstream>
 
 #include "glog/logging.h"
 #include "zmq.hpp"
@@ -51,6 +52,13 @@ bool MasterComponent::isInNetworkModusOperandi() const {
 }
 
 void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
+  if ((config.class_weight_size() != 0 || config.class_id_size() != 0) && !config.use_sparse_bow()) {
+    std::stringstream ss;
+    ss << "You have configured use_sparse_bow=false. "
+       << "Fields ModelConfig.class_id and ModelConfig.class_weight not supported in this mode.";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  }
+
   instance_->CreateOrReconfigureModel(config);
   network_client_interface_->CreateOrReconfigureModel(config);
 }

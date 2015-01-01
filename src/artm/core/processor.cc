@@ -287,22 +287,6 @@ bool Processor::StreamIterator::InStream(int stream_index) {
   return processor_input_.stream_mask(stream_index).value(item_index_);
 }
 
-static void PrepareTokenDictionary(const ModelConfig& model,
-                                   const Batch& batch,
-                                   std::vector<Token>* token_dict,
-                                   std::map<ClassId, float>* class_id_to_weight) {
-  // move data into map to increase lookup efficiency
-  if (model.class_id_size() != 0) {
-    for (int i = 0; i < model.class_id_size(); ++i) {
-      class_id_to_weight->insert(std::make_pair(model.class_id(i), model.class_weight(i)));
-    }
-  }
-
-  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
-    token_dict->push_back(Token(batch.class_id(token_index), batch.token(token_index)));
-  }
-}
-
 static std::shared_ptr<ModelIncrement>
 InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_config,
                          const ::artm::core::TopicModel& topic_model) {
@@ -378,10 +362,6 @@ static std::shared_ptr<DenseMatrix<float>>
 InitializePhi(const Batch& batch, const ModelConfig& model_config,
               const ::artm::core::TopicModel& topic_model) {
   bool phi_is_empty = true;
-  std::vector<Token> token_dict;
-  std::map<ClassId, float> class_id_to_weight;
-  PrepareTokenDictionary(model_config, batch, &token_dict, &class_id_to_weight);
-
   int topic_size = topic_model.topic_size();
   auto phi_matrix = std::make_shared<DenseMatrix<float>>(batch.token_size(), topic_size);
   phi_matrix->InitializeZeros();
@@ -392,12 +372,7 @@ InitializePhi(const Batch& batch, const ModelConfig& model_config,
       phi_is_empty = false;
       auto topic_iter = topic_model.GetTopicWeightIterator(token);
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        float class_weight = 1.0;
-        auto class_id_iter = class_id_to_weight.find(token.class_id);
-        if (class_id_iter != class_id_to_weight.end()) {
-          class_weight = class_id_iter->second;
-        }
-        float value = topic_iter[topic_index] * class_weight;
+        float value = topic_iter[topic_index];
         if (value < 1e-16) {
           // Reset small values to 0.0 to avoid performance hit.
           // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
@@ -475,10 +450,19 @@ static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, cons
 }
 
 static std::shared_ptr<CsrMatrix<float>>
-InitializeSparseNdw(const Batch& batch) {
+InitializeSparseNdw(const Batch& batch, const ModelConfig& model_config) {
   std::vector<float> n_dw_val;
   std::vector<int> n_dw_row_ptr;
   std::vector<int> n_dw_col_ind;
+
+  bool use_classes = false;
+  std::map<ClassId, float> class_id_to_weight;
+  if (model_config.class_id_size() != 0) {
+    use_classes = true;
+    for (int i = 0; i < model_config.class_id_size(); ++i) {
+      class_id_to_weight.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
+    }
+  }
 
   // For sparse case
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
@@ -487,8 +471,16 @@ InitializeSparseNdw(const Batch& batch) {
     for (auto& field : current_item.field()) {
       for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
         int token_id = field.token_id(token_index);
-        int token_count = field.token_count(token_index);
-        n_dw_val.push_back(token_count);
+
+        float class_weight = 1.0f;
+        if (use_classes) {
+          ClassId class_id = batch.class_id(token_id);
+          auto iter = class_id_to_weight.find(class_id);
+          class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
+        }
+
+        float token_count = static_cast<float>(field.token_count(token_index));
+        n_dw_val.push_back(class_weight * token_count);
         n_dw_col_ind.push_back(token_id);
       }
     }
@@ -692,7 +684,7 @@ void Processor::FindThetaMatrix(const Batch& batch, const GetThetaMatrixArgs& ar
 
 
   bool use_sparse_bow = model_config.use_sparse_bow();
-  std::shared_ptr<CsrMatrix<float>> sparse_ndw = use_sparse_bow ? InitializeSparseNdw(batch) : nullptr;
+  std::shared_ptr<CsrMatrix<float>> sparse_ndw = use_sparse_bow ? InitializeSparseNdw(batch, model_config) : nullptr;
   std::shared_ptr<DenseMatrix<float>> dense_ndw = !use_sparse_bow ? InitializeDenseNdw(batch) : nullptr;
 
   std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, nullptr);
@@ -800,11 +792,13 @@ void Processor::ThreadFunction() {
           BOOST_THROW_EXCEPTION(InternalError(
             "Topics count mismatch between model config and physical model representation"));
 
-        if (model_config.use_sparse_bow() && (sparse_ndw == nullptr))
-          sparse_ndw = InitializeSparseNdw(batch);
+        if (model_config.use_sparse_bow())
+          sparse_ndw = InitializeSparseNdw(batch, model_config);
 
-        if (!model_config.use_sparse_bow() && (dense_ndw == nullptr))
+        if (!model_config.use_sparse_bow() && (dense_ndw == nullptr)) {
+          // dense_ndw does not depend on model_config => used the same dense_ndw for all models with !use_sparse_bow
           dense_ndw = InitializeDenseNdw(batch);
+        }
 
         const DataLoaderCacheEntry* cache = FindCacheEntry(*part, model_config);
         std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache);
@@ -898,8 +892,10 @@ void Processor::ThreadFunction() {
         }
 
         std::vector<Token> token_dict;
-        std::map<ClassId, float> class_id_to_weight;
-        PrepareTokenDictionary(model_config, batch, &token_dict, &class_id_to_weight);
+        for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
+          token_dict.push_back(Token(batch.class_id(token_index), batch.token(token_index)));
+        }
+
         StreamIterator iter(*part);
         while (iter.Next() != nullptr) {
           const Item* item = iter.Current();

@@ -474,6 +474,7 @@ Represents a configuration of a topic model.
 
    A set of values that define the weights of the corresponding classes (modalities).
    This repeated field must have the same length as :attr:`class_id`.
+   This value is optional, use an empty list to set equal weights for all classes.
 
 .. attribute:: ModelConfig.use_sparse_bow
 
@@ -482,6 +483,8 @@ Represents a configuration of a topic model.
    where every token is represented in a small fraction of all documents.
    Dense representation (*use_sparse_bow = false*) better fits for non-textual collections
    (for example for matrix factorization).
+
+   Note that :attr:`class_weight` and :attr:`class_id` must not be used together with *use_sparse_bow=false*.
 
 .. attribute:: ModelConfig.use_random_theta
 
