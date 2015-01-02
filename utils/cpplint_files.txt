@@ -36,6 +36,7 @@
 ../src/artm_tests/template_manager_test.cc
 ../src/artm_tests/nodes_connectivity_test.cc
 ../src/artm_tests/instance_test.cc
+../src/artm_tests/multiple_classes_test.cc
 ../src/artm_tests/rpcz_canary_test.cc
 ../src/artm_tests/test_mother.cc
 ../src/artm_tests/thread_safe_holder_test.cc

@@ -108,6 +108,19 @@ items in one batch are always processed sequentially.
     repeated string class_id = 3;
   }
 
+.. attribute:: Batch.token
+
+   A set value that defines all tokens than may appear in the batch.
+
+.. attribute:: Batch.item
+
+   A set of items of the batch.
+
+.. attribute:: Batch.class_id
+
+   A set of values that define for classes (modalities) of tokens.
+   This repeated field must have the same length as :attr:`token`.
+   This value is optional, use an empty list indicate that all tokens belong to the default class.
 
 .. _Stream:
 
@@ -474,6 +487,7 @@ Represents a configuration of a topic model.
 
    A set of values that define the weights of the corresponding classes (modalities).
    This repeated field must have the same length as :attr:`class_id`.
+   This value is optional, use an empty list to set equal weights for all classes.
 
 .. attribute:: ModelConfig.use_sparse_bow
 
@@ -482,6 +496,8 @@ Represents a configuration of a topic model.
    where every token is represented in a small fraction of all documents.
    Dense representation (*use_sparse_bow = false*) better fits for non-textual collections
    (for example for matrix factorization).
+
+   Note that :attr:`class_weight` and :attr:`class_id` must not be used together with *use_sparse_bow=false*.
 
 .. attribute:: ModelConfig.use_random_theta
 
@@ -1525,8 +1541,21 @@ Represents a configuration of a collection parser.
 
                           | The file must be sorted on docID.
                           | Values of wordID must be unity-based (not zero-based).
-                          | The format of the vocab.*.txt file is line
-                          | contains wordID=n.
+                          | The format of the vocab.*.txt file is line containing wordID=n.
+                          | Note that words must not have spaces or tabs.
+                          | In vocab.*.txt file it is also possible to specify
+                          | :attr:`Batch.class_id` for tokens, as it is shown in this example:
+
+                          .. code-block:: bash
+
+                            token1 @default_class
+                            token2 custom_class
+                            token3 @default_class
+                            token4
+
+                          | Use space or tab to separate token from its class.
+                          | Token that are not followed by class label automatically
+                          | get ''@default_class'' as a lable (see ''token4'' in the example).
 
    ``MatrixMarket``       | See the description at http://math.nist.gov/MatrixMarket/formats.html
                           | In this mode parameter :attr:`docword_file_path` must refer to a file

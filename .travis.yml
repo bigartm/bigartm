@@ -1,4 +1,5 @@
-language: cpp
+language:
+  - objective-c
 
 compiler:
   - gcc
@@ -11,10 +12,6 @@ before_install:
   - cd ..
   - cp datasets/* src/python/examples/
 
-install:
-  - sudo apt-get update
-  - sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev build-essential libbz2-dev libboost-all-dev
-
 before_script:
   - mkdir build && cd build && cmake .. && cd ..
 
@@ -24,6 +21,6 @@ script:
   - cd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && cd ../../..
   - cd build/src/artm_tests && ./artm_tests && cd ../../..
   - export PYTHONPATH=`pwd`/src/python:$PYTHONPATH
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
+  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.dylib
   - cd src/python/tests && python tests.py && cd ../../..
   - cd src/python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && cd ../../..

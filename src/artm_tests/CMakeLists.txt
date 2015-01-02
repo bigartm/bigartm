@@ -10,6 +10,7 @@ set(SRC_LIST
 	collection_parser_test.cc
 	cpp_interface_test.cc
 	instance_test.cc
+	multiple_classes_test.cc
 	nodes_connectivity_test.cc
 	rpcz_canary_service.pb.cc
 	rpcz_canary_service.rpcz.cc

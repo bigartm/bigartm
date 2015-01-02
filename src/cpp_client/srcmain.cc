@@ -386,6 +386,8 @@ int execute(const artm_options& options) {
       std::cout << std::endl;
     }
   }
+
+  return 0;
 }
 
 int main(int argc, char * argv[]) {

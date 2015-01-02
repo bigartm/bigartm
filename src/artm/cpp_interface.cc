@@ -216,7 +216,9 @@ void Model::Reconfigure(const ModelConfig& config) {
 
 void Model::Overwrite(const TopicModel& topic_model) {
   std::string blob;
-  topic_model.SerializeToString(&blob);
+  TopicModel topic_model_copy(topic_model);
+  topic_model_copy.set_name(name());
+  topic_model_copy.SerializeToString(&blob);
   HandleErrorCode(ArtmOverwriteTopicModel(master_id(), blob.size(), StringAsArray(&blob)));
 }
 
