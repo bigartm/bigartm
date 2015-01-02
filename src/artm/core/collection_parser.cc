@@ -135,7 +135,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
   if (token_map->empty()) {
     // Autogenerate some tokens
-    for (int i = 0; i < num_tokens; ++i) {
+    for (int i = 0; i < num_unique_tokens; ++i) {
       std::string token_keyword = boost::lexical_cast<std::string>(i);
       token_map->insert(std::make_pair(i, CollectionParserTokenInfo(token_keyword, DefaultClass)));
     }
