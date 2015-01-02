@@ -171,8 +171,8 @@ class TopicModel : public Regularizable {
   void RetrieveModelIncrement(::artm::core::ModelIncrement* diff) const;
 
   // Applies model increment to this TopicModel.
-  void ApplyDiff(const ::artm::core::ModelIncrement& diff);
-  void ApplyDiff(const ::artm::core::TopicModel& diff);
+  void ApplyDiff(const ::artm::core::ModelIncrement& diff, float apply_weight);
+  void ApplyDiff(const ::artm::core::TopicModel& diff, float apply_weight);
 
   void RemoveToken(const Token& token);
   int  AddToken(const Token& token, bool random_init = true);

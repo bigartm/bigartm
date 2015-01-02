@@ -55,7 +55,7 @@ Merger::~Merger() {
 
 void Merger::DisposeModel(ModelName model_name) {
   topic_model_.erase(model_name);
-  internal_task_queue_.push(MergerTask(kDisposeModel, model_name, 0.0f, false, nullptr));
+  internal_task_queue_.push(MergerTask(kDisposeModel, model_name, 0.0f, 0.0f, false, nullptr));
 }
 
 void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
@@ -124,25 +124,26 @@ void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
 void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {
   rpcz::sync_event sync_event;
   internal_task_queue_.push(MergerTask(kForceSynchronizeTopicModel, args.model_name(),
-                            args.decay_weight(), args.invoke_regularizers(), &sync_event));
+                            args.decay_weight(), args.apply_weight(), args.invoke_regularizers(),
+                            &sync_event));
   sync_event.wait();
 }
 
 void Merger::ForceResetScores(ModelName model_name) {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForceResetScores, model_name, 0.0f, false, &sync_event));
+  internal_task_queue_.push(MergerTask(kForceResetScores, model_name, 0.0f, 0.0f, false, &sync_event));
   sync_event.wait();
 }
 
 void Merger::ForcePullTopicModel() {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForcePullTopicModel, ModelName(), 0.0f, false, &sync_event));
+  internal_task_queue_.push(MergerTask(kForcePullTopicModel, ModelName(), 0.0f, 0.0f, false, &sync_event));
   sync_event.wait();
 }
 
 void Merger::ForcePushTopicModelIncrement() {
   rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForcePushTopicModelIncrement, ModelName(), 0.0f, false, &sync_event));
+  internal_task_queue_.push(MergerTask(kForcePushTopicModelIncrement, ModelName(), 0.0f, 0.0f, false, &sync_event));
   sync_event.wait();
 }
 
@@ -213,7 +214,7 @@ void Merger::ThreadFunction() {
               break;
             case kForceSynchronizeTopicModel:
               SynchronizeModel(merger_task.model_name, merger_task.decay_weight,
-                               merger_task.invoke_regularizers);
+                               merger_task.apply_weight, merger_task.invoke_regularizers);
               break;
             case kForceResetScores:
               ResetScores(merger_task.model_name);
@@ -253,7 +254,7 @@ void Merger::ThreadFunction() {
           iter = topic_model_inc_.find(model_name);
         }
 
-        iter->second->ApplyDiff(*model_increment);
+        iter->second->ApplyDiff(*model_increment, 1.0f);
         for (int score_index = 0;
              score_index < model_increment->score_name_size();
              ++score_index) {
@@ -452,7 +453,7 @@ bool Merger::RequestScore(const ModelName& model_name, const ScoreName& score_na
 }
 
 void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
-                              bool invoke_regularizers) {
+                              float apply_weight, bool invoke_regularizers) {
   if (master_component_service_ != nullptr) {
     return;  // no-op in network modus operandi
   }
@@ -489,7 +490,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     target_model_config_.set(name, nullptr);
     // Apply increment
     if (inc_ttm != topic_model_inc_.end())
-      new_ttm->ApplyDiff(*inc_ttm->second);
+      new_ttm->ApplyDiff(*inc_ttm->second, apply_weight);
 
     if (invoke_regularizers)
       InvokePhiRegularizers(new_ttm.get());
