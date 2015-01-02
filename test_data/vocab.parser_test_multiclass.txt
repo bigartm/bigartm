@@ -1,0 +1,3 @@
+token1 class1
+token2
+token3 class1

@@ -137,7 +137,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
     // Autogenerate some tokens
     for (int i = 0; i < num_tokens; ++i) {
       std::string token_keyword = boost::lexical_cast<std::string>(i);
-      token_map->insert(std::make_pair(i, CollectionParserTokenInfo(token_keyword)));
+      token_map->insert(std::make_pair(i, CollectionParserTokenInfo(token_keyword, DefaultClass)));
     }
   }
 
@@ -208,6 +208,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
     if (iter == batch_dictionary.end()) {
       batch_dictionary.insert(std::make_pair(token_id, batch_dictionary.size()));
       batch.add_token((*token_map)[token_id].keyword);
+      batch.add_class_id((*token_map)[token_id].class_id);
       iter = batch_dictionary.find(token_id);
     }
 
@@ -234,7 +235,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
   for (auto& key_value : (*token_map)) {
     artm::DictionaryEntry* entry = retval->add_entry();
     entry->set_key_token(key_value.second.keyword);
-    entry->set_class_id(DefaultClass);
+    entry->set_class_id(key_value.second.class_id);
     entry->set_token_count(key_value.second.token_count);
     entry->set_items_count(key_value.second.items_count);
     entry->set_value(static_cast<double>(key_value.second.token_count) /
@@ -268,7 +269,7 @@ CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
 
   boost::iostreams::stream<mapped_file_source> vocab(config_.vocab_file_path());
 
-  std::map<std::string, int> token_to_token_id;
+  std::map<Token, int> token_to_token_id;
 
   TokenMap token_info;
   std::string str;
@@ -285,15 +286,28 @@ CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
 
-    if (token_to_token_id.find(str) != token_to_token_id.end()) {
+    std::vector<std::string> strs;
+    boost::split(strs, str, boost::is_any_of("\t "));
+    if ((strs.size() == 0) || (strs.size() > 2)) {
       std::stringstream ss;
-      ss << "Token '" << str << "' found twice, lines " << (token_to_token_id.find(str)->second + 1)
+      ss << "Error at line " << (token_id + 1) << ", file " << config_.vocab_file_path()
+         << ". Expected format: <token> [<class_id>]";
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
+
+    ClassId class_id = (strs.size() == 2) ? strs[1] : DefaultClass;
+    Token token(class_id, strs[0]);
+
+    if (token_to_token_id.find(token) != token_to_token_id.end()) {
+      std::stringstream ss;
+      ss << "Token (" << token.keyword << ", " << token.class_id << "' found twice, lines "
+         << (token_to_token_id.find(token)->second + 1)
          << " and " << (token_id + 1) << ", file " << config_.vocab_file_path();
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
 
-    token_info.insert(std::make_pair(token_id, CollectionParserTokenInfo(str)));
-    token_to_token_id.insert(std::make_pair(str, token_id));
+    token_info.insert(std::make_pair(token_id, CollectionParserTokenInfo(token.keyword, token.class_id)));
+    token_to_token_id.insert(std::make_pair(token, token_id));
     token_id++;
   }
 
@@ -313,7 +327,7 @@ CollectionParser::TokenMap CollectionParser::ParseVocabMatrixMarket() {
     int token_id, token_count;
     for (std::string token; vocab >> token_id >> token >> token_count;) {
       // token_count is ignored --- it will be re-calculated based on the docword file.
-      token_info.insert(std::make_pair(token_id, CollectionParserTokenInfo(token)));
+      token_info.insert(std::make_pair(token_id, CollectionParserTokenInfo(token, DefaultClass)));
     }
   }
 

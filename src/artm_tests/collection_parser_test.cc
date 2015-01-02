@@ -7,9 +7,7 @@
 #include "artm/messages.pb.h"
 #include "artm/cpp_interface.h"
 
-// To run this particular test:
-// artm_tests.exe --gtest_filter=CollectionParser.*
-TEST(CollectionParser, UciBagOfWords) {
+static void Cleanup() {
   // Clean all .batches files
   if (boost::filesystem::exists("collection_parser_test")) {
     boost::filesystem::recursive_directory_iterator it("collection_parser_test");
@@ -23,6 +21,12 @@ TEST(CollectionParser, UciBagOfWords) {
       ++it;
     }
   }
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=CollectionParser.*
+TEST(CollectionParser, UciBagOfWords) {
+  Cleanup();
 
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
@@ -47,13 +51,16 @@ TEST(CollectionParser, UciBagOfWords) {
   ASSERT_EQ(dictionary_loaded->total_token_count(), 18);
   ASSERT_EQ(dictionary_loaded->total_items_count(), 2);
   ASSERT_EQ(dictionary_loaded->entry(0).key_token(), "token1");
+  ASSERT_EQ(dictionary_loaded->entry(0).class_id(), "@default_class");
   ASSERT_EQ(dictionary_loaded->entry(0).items_count(), 1);
   ASSERT_EQ(dictionary_loaded->entry(0).token_count(), 5);
   ASSERT_GT(dictionary_loaded->entry(0).value(), 0);
   ASSERT_EQ(dictionary_loaded->entry(1).key_token(), "token2");
+  ASSERT_EQ(dictionary_loaded->entry(1).class_id(), "@default_class");
   ASSERT_EQ(dictionary_loaded->entry(1).items_count(), 2);
   ASSERT_EQ(dictionary_loaded->entry(1).token_count(), 4);
   ASSERT_EQ(dictionary_loaded->entry(2).key_token(), "token3");
+  ASSERT_EQ(dictionary_loaded->entry(2).class_id(), "@default_class");
   ASSERT_EQ(dictionary_loaded->entry(2).items_count(), 2);
   ASSERT_EQ(dictionary_loaded->entry(2).token_count(), 9);
 
@@ -108,19 +115,7 @@ TEST(CollectionParser, ErrorHandling) {
 }
 
 TEST(CollectionParser, MatrixMarket) {
-  // Clean all .batches files
-  if (boost::filesystem::exists("collection_parser_test")) {
-    boost::filesystem::recursive_directory_iterator it("collection_parser_test");
-    boost::filesystem::recursive_directory_iterator endit;
-    while (it != endit) {
-      if (boost::filesystem::is_regular_file(*it)) {
-        if (it->path().extension() == ".batch" || it->path().extension() == ".dictionary")
-          boost::filesystem::remove(*it);
-      }
-
-      ++it;
-    }
-  }
+  Cleanup();
 
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_Format_MatrixMarket);
@@ -132,4 +127,25 @@ TEST(CollectionParser, MatrixMarket) {
 
   std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
   ASSERT_EQ(dictionary_parsed->entry_size(), 12);
+}
+
+TEST(CollectionParser, Multiclass) {
+  Cleanup();
+
+  ::artm::CollectionParserConfig config;
+  config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
+  config.set_target_folder("collection_parser_test/");
+  config.set_dictionary_file_name("test_parser.dictionary");
+  config.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
+  config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
+
+  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
+  ASSERT_EQ(dictionary_parsed->entry_size(), 3);
+  ASSERT_EQ(dictionary_parsed->entry_size(), 3);
+  ASSERT_EQ(dictionary_parsed->entry(0).key_token(), "token1");
+  ASSERT_EQ(dictionary_parsed->entry(0).class_id(), "class1");
+  ASSERT_EQ(dictionary_parsed->entry(1).key_token(), "token2");
+  ASSERT_EQ(dictionary_parsed->entry(1).class_id(), "@default_class");
+  ASSERT_EQ(dictionary_parsed->entry(2).key_token(), "token3");
+  ASSERT_EQ(dictionary_parsed->entry(2).class_id(), "class1");
 }
