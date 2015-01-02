@@ -319,7 +319,7 @@ class MasterComponent:
     batch_blob_p = ctypes.create_string_buffer(batch_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmAddBatch(self.id_, len(batch_blob), batch_blob_p))
 
-  def InvokeIteration(self, iterations_count):
+  def InvokeIteration(self, iterations_count = 1):
     HandleErrorCode(self.lib_, self.lib_.ArtmInvokeIteration(self.id_, iterations_count))
 
   def WaitIdle(self, timeout = -1):
@@ -452,10 +452,11 @@ class Model:
                     len(model_config_blob), model_config_blob_p))
     self.config_.CopyFrom(config)
 
-  def Synchronize(self, decay_weight = 0.0, invoke_regularizers = True):
+  def Synchronize(self, decay_weight = 0.0, apply_weight = 1.0, invoke_regularizers = True):
     args = messages_pb2.SynchronizeModelArgs();
     args.model_name = self.name()
     args.decay_weight = decay_weight
+    args.apply_weight = apply_weight
     args.invoke_regularizers = invoke_regularizers
     args_blob = args.SerializeToString()
     args_blob_p = ctypes.create_string_buffer(args_blob)
@@ -473,7 +474,10 @@ class Model:
                     self.lib_.ArtmInitializeModel(self.master_id_, len(blob), blob_p))
 
   def Overwrite(self, topic_model):
-    blob = topic_model.SerializeToString()
+    copy_ = messages_pb2.TopicModel()
+    copy_.CopyFrom(topic_model)
+    copy_.name = self.name()
+    blob = copy_.SerializeToString()
     blob_p = ctypes.create_string_buffer(blob)
     HandleErrorCode(self.lib_, 
                     self.lib_.ArtmOverwriteTopicModel(self.master_id_, len(blob), blob_p))
