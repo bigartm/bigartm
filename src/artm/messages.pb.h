@@ -5473,6 +5473,13 @@ class SynchronizeModelArgs : public ::google::protobuf::Message {
   inline bool invoke_regularizers() const;
   inline void set_invoke_regularizers(bool value);
 
+  // optional float apply_weight = 4 [default = 1];
+  inline bool has_apply_weight() const;
+  inline void clear_apply_weight();
+  static const int kApplyWeightFieldNumber = 4;
+  inline float apply_weight() const;
+  inline void set_apply_weight(float value);
+
   // @@protoc_insertion_point(class_scope:artm.SynchronizeModelArgs)
  private:
   inline void set_has_model_name();
@@ -5481,15 +5488,18 @@ class SynchronizeModelArgs : public ::google::protobuf::Message {
   inline void clear_has_decay_weight();
   inline void set_has_invoke_regularizers();
   inline void clear_has_invoke_regularizers();
+  inline void set_has_apply_weight();
+  inline void clear_has_apply_weight();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
   float decay_weight_;
   bool invoke_regularizers_;
+  float apply_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12224,6 +12234,28 @@ inline bool SynchronizeModelArgs::invoke_regularizers() const {
 inline void SynchronizeModelArgs::set_invoke_regularizers(bool value) {
   set_has_invoke_regularizers();
   invoke_regularizers_ = value;
+}
+
+// optional float apply_weight = 4 [default = 1];
+inline bool SynchronizeModelArgs::has_apply_weight() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void SynchronizeModelArgs::set_has_apply_weight() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void SynchronizeModelArgs::clear_has_apply_weight() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void SynchronizeModelArgs::clear_apply_weight() {
+  apply_weight_ = 1;
+  clear_has_apply_weight();
+}
+inline float SynchronizeModelArgs::apply_weight() const {
+  return apply_weight_;
+}
+inline void SynchronizeModelArgs::set_apply_weight(float value) {
+  set_has_apply_weight();
+  apply_weight_ = value;
 }
 
 // -------------------------------------------------------------------

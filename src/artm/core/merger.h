@@ -97,13 +97,15 @@ class Merger : boost::noncopyable {
     MergerTask() {}
 
     MergerTask(MergerTaskType _task_type, ModelName _model_name, float _decay_weight,
-               bool _invoke_regularizers, rpcz::sync_event* _sync_event)
+               float _apply_weight, bool _invoke_regularizers, rpcz::sync_event* _sync_event)
         : task_type(_task_type), model_name(_model_name), decay_weight(_decay_weight),
-          invoke_regularizers(_invoke_regularizers), sync_event(_sync_event) {}
+          apply_weight(_apply_weight), invoke_regularizers(_invoke_regularizers),
+          sync_event(_sync_event) {}
 
     MergerTaskType task_type;
     ModelName model_name;
     float decay_weight;
+    float apply_weight;
     bool invoke_regularizers;
     rpcz::sync_event* sync_event;
   };
@@ -127,7 +129,8 @@ class Merger : boost::noncopyable {
   boost::thread thread_;
   void ThreadFunction();
 
-  void SynchronizeModel(const ModelName& model_name, float decay_weight, bool invoke_regularizers);
+  void SynchronizeModel(const ModelName& model_name, float decay_weight, float apply_weight,
+                        bool invoke_regularizers);
   void PullTopicModel();
   void PushTopicModelIncrement();
   void InvokePhiRegularizers(::artm::core::TopicModel* topic_model);

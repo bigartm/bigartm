@@ -1657,6 +1657,7 @@ Represents an argument of synchronize model operation.
     optional string model_name = 1;
     optional float decay_weight = 2 [default = 1.0];
     optional bool invoke_regularizers = 3 [default = true];
+    optional float apply_weight = 4 [default = 1.0];
   }
 
 .. attribute:: SynchronizeModelArgs.model_name
@@ -1666,18 +1667,39 @@ Represents an argument of synchronize model operation.
 
 .. attribute:: SynchronizeModelArgs.decay_weight
 
-  The decay weight to apply to current version of the topic model.
-  Expected values of this parameter are between 0.0 and 1.0.
+  The decay weight and :attr:`apply_weight` define how to combine existing topic model with all increments,
+  calculated since the last :c:func:`ArtmSynchronizeModel`.
+  This is best described by the following formula:
 
-  Decay weight 0.0 states that the previous Phi matrix of the topic model will be disregarded completely,
-  and the new Phi matrix will be formed based on new increments gathered since last model synchronize.
+  ``n_wt_new = n_wt_old * decay_weight + n_wt_inc * apply_weight``,
 
-  Decay weight 1.0 states that new increments will be appended to the current Phi matrix without any decay.
+  where
+  ``n_wt_old`` describe current topic model,
+  ``n_wt_inc`` describe increment calculated since last :c:func:`ArtmSynchronizeModel`,
+  ``n_wt_new`` define the resulting topic model.
+
+  Expected values of both parameters are between 0.0 and 1.0. Here are some examples:
+
+  * Combination of *decay_weight=0.0* and *apply_weight=1.0* states that the previous Phi matrix of the topic model will be disregarded completely,
+    and the new Phi matrix will be formed based on new increments gathered since last model synchronize.
+
+  * Combination of *decay_weight=1.0* and *apply_weight=1.0* states that new increments will be appended to the current Phi matrix without any decay.
+
+  * Combination of *decay_weight=1.0* and *apply_weight=0.0* states that new increments will be disregarded, and current Phi matrix will stay unchanged.
+
+  * To reproduce Online variational Bayes for LDA algorighm by Matthew D. Hoffman set
+    *decay_weight = 1 - rho* and *apply_weight = rho*, where parameter rho is defined as *rho = exp(tau + t, -kappa)*.
+    See `Online Learning for Latent Dirichlet Allocation`_ for further details.
+
+.. attribute:: SynchronizeModelArgs.apply_weight
+
+  See :attr:`decay_weight` for the description.
 
 .. attribute:: SynchronizeModelArgs.invoke_regularizers
 
   A flag indicating whether to invoke all phi-regularizers.
 
+.. _Online Learning for Latent Dirichlet Allocation: https://www.cs.princeton.edu/~blei/papers/HoffmanBleiBach2010b.pdf
 
 .. _InitializeModelArgs:
 

@@ -178,7 +178,7 @@ TopicModel::TopicModel(const ::artm::core::ModelIncrement& model_increment)
   for (auto iter = topic_name.begin(); iter != topic_name.end(); ++iter) {
     topic_name_.push_back(*iter);
   }
-  ApplyDiff(model_increment);
+  ApplyDiff(model_increment, 1.0f);
 }
 
 TopicModel::~TopicModel() {
@@ -221,7 +221,7 @@ void TopicModel::RetrieveModelIncrement(::artm::core::ModelIncrement* diff) cons
   }
 }
 
-void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff) {
+void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff, float apply_weight) {
   int diff_token_size = diff.token_size();
   if ((diff.class_id_size() != diff_token_size) ||
       (diff.operation_type_size() != diff_token_size) ||
@@ -255,7 +255,7 @@ void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff) {
           current_token_id = this->AddToken(token, false);
         target = n_wt_[current_token_id];
         for (int topic_index = 0; topic_index < topics_count; ++topic_index)
-          target[topic_index] += counters.value(topic_index);
+          target[topic_index] += apply_weight * counters.value(topic_index);
         break;
 
       case ModelIncrement_OperationType_OverwriteValue:
@@ -282,7 +282,7 @@ void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff) {
   }
 }
 
-void TopicModel::ApplyDiff(const ::artm::core::TopicModel& diff) {
+void TopicModel::ApplyDiff(const ::artm::core::TopicModel& diff, float apply_weight) {
   int topics_count = this->topic_size();
 
   for (int token_index = 0;
@@ -295,7 +295,7 @@ void TopicModel::ApplyDiff(const ::artm::core::TopicModel& diff) {
     }
 
     for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
-      this->IncreaseTokenWeight(current_token, topic_index, counters[topic_index]);
+      this->IncreaseTokenWeight(current_token, topic_index, apply_weight * counters[topic_index]);
     }
   }
 
