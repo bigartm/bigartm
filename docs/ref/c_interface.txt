@@ -355,6 +355,9 @@ ArtmAddBatch
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
 
+   This operation is only allowed when
+   :attr:`MasterComponentConfig.modus_operandi` is set to *Local*.
+
 ArtmInvokeIteration
 -------------------
 
