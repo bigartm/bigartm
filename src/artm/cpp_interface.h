@@ -122,11 +122,12 @@ class Model {
 
   void Reconfigure(const ModelConfig& config);
   void Overwrite(const TopicModel& topic_model);
+  void Overwrite(const TopicModel& topic_model, bool commit);
   void Initialize(const Dictionary& dictionary);
   void Enable();
   void Disable();
   void Synchronize(double decay);
-  void Synchronize(double decay, bool invoke_regularizers);
+  void Synchronize(double decay, double apply, bool invoke_regularizers);
   void Synchronize(const SynchronizeModelArgs& args);
 
   int master_id() const { return master_id_; }

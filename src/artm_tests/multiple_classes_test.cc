@@ -111,8 +111,6 @@ TEST(MultipleClasses, BasicTest) {
   artm::Model model2(master_component, model_config2);
   artm::Model model3(master_component, model_config3);
   model1.Overwrite(initial_model); model2.Overwrite(initial_model); model3.Overwrite(initial_model);
-  master_component.WaitIdle();
-  model1.Synchronize(0.0); model2.Synchronize(0.0); model3.Synchronize(0.0);
 
   for (int iDoc = 0; iDoc < nDocs; iDoc++) {
     artm::Item* item = batch.add_item();

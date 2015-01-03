@@ -307,10 +307,17 @@ Model
 
       *dictionary* must be an instance of :py:class:`Dictionary` class.
 
-   .. py:method:: Overwrite(topic_model)
+   .. py:method:: Overwrite(topic_model, commit = True)
 
-      Schedules an update of the current Phi matrix with new values, defined by *topic_model* (:ref:`TopicModel`).
-      To apply the update you must call :py:meth:`MasterComponent.WaitIdle` and then :py:meth:`Model.Synchronize`.
+      Updates the model with new Phi matrix, defined by *topic_model* (:ref:`TopicModel`).
+      This operation can be used to provide an explicit initial approximation of the topic model, or to adjust the model in between iterations.
+
+      Depending on the *commit* flag the change can be applied immediately (*commit = true*) or queued (*commit = false*).
+      The default setting is to use *commit = true*.
+      You may want to use *commit = false* if your model is too big to be updated in a single protobuf message.
+      In this case you should split your model into parts, each part containing subset of all tokens,
+      and then submit each part in separate Overwrite operation with *commit = false*.
+      After that remember to call :py:meth:`MasterComponent.WaitIdle` and :py:meth:`Model.Synchronize` to propagate your change.
 
    .. py:method:: Enable()
 
