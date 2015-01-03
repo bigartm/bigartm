@@ -302,8 +302,6 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     }
 
     model2.Overwrite(new_topic_model);
-    master_component->WaitIdle();
-    model2.Synchronize(0.0, false);
 
     artm::GetTopicModelArgs args;
     args.set_model_name(model2.name());

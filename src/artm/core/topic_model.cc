@@ -136,7 +136,7 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay,
     }
   }
 
-  for (size_t token_id = 0; token_id < token_size(); token_id++) {
+  for (size_t token_id = 0; token_id < rhs.token_size(); token_id++) {
     AddToken(rhs.token(token_id), false);
     auto iter = rhs.GetTopicWeightIterator(token_id);
     int topic_index = 0;

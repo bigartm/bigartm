@@ -215,11 +215,19 @@ void Model::Reconfigure(const ModelConfig& config) {
 }
 
 void Model::Overwrite(const TopicModel& topic_model) {
+  Overwrite(topic_model, true);
+}
+
+void Model::Overwrite(const TopicModel& topic_model, bool commit) {
   std::string blob;
   TopicModel topic_model_copy(topic_model);
   topic_model_copy.set_name(name());
   topic_model_copy.SerializeToString(&blob);
   HandleErrorCode(ArtmOverwriteTopicModel(master_id(), blob.size(), StringAsArray(&blob)));
+  if (commit) {
+    HandleErrorCode(ArtmWaitIdle(master_id(), -1));
+    Synchronize(0.0, 1.0, false);
+  }
 }
 
 void Model::Enable() {
@@ -244,13 +252,14 @@ void Model::Initialize(const Dictionary& dictionary) {
 }
 
 void Model::Synchronize(double decay) {
-  Synchronize(decay, true);
+  Synchronize(decay, 1.0, true);
 }
 
-void Model::Synchronize(double decay, bool invoke_regularizers) {
+void Model::Synchronize(double decay, double apply, bool invoke_regularizers) {
   SynchronizeModelArgs args;
   args.set_model_name(this->name());
   args.set_decay_weight(static_cast<float>(decay));
+  args.set_apply_weight(static_cast<float>(apply));
   args.set_invoke_regularizers(invoke_regularizers);
   Synchronize(args);
 }

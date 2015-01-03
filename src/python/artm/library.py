@@ -473,7 +473,7 @@ class Model:
     HandleErrorCode(self.lib_,
                     self.lib_.ArtmInitializeModel(self.master_id_, len(blob), blob_p))
 
-  def Overwrite(self, topic_model):
+  def Overwrite(self, topic_model, commit = True):
     copy_ = messages_pb2.TopicModel()
     copy_.CopyFrom(topic_model)
     copy_.name = self.name()
@@ -481,6 +481,11 @@ class Model:
     blob_p = ctypes.create_string_buffer(blob)
     HandleErrorCode(self.lib_, 
                     self.lib_.ArtmOverwriteTopicModel(self.master_id_, len(blob), blob_p))
+
+    if commit:
+      timeout = -1
+      HandleErrorCode(self.lib_, self.lib_.ArtmWaitIdle(self.master_id_, timeout))
+      self.Synchronize(decay_weight=0.0, apply_weight=1.0, invoke_regularizers=False)
 
   def Enable(self):
     config_copy_ = messages_pb2.ModelConfig()

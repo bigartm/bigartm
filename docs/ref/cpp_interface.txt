@@ -108,24 +108,30 @@ Model
      Returns mutable configuration of the model.
      Remember to call :cpp:func:`Reconfigure` to propagate your changes to the model.
 
-  .. cpp:function:: void Overwrite(const TopicModel& topic_model)
+  .. cpp:function:: void Overwrite(const TopicModel& topic_model, bool commit = true)
 
-     Updates the model with new Phi matrix.
-     This can be used to provide an explicit initial approximation, or to adjust
-     the model in between iterations.
-     Remember to call :cpp:func:`Synchronize` after overwrite to propagate your change.
+     Updates the model with new Phi matrix, defined by *topic_model*.
+     This operation can be used to provide an explicit initial approximation of the topic model, or to adjust the model in between iterations.
+
+     Depending on the *commit* flag the change can be applied immediately (*commit = true*) or queued (*commit = false*).
+     The default setting is to use *commit = true*.
+     You may want to use *commit = false* if your model is too big to be updated in a single protobuf message.
+     In this case you should split your model into parts, each part containing subset of all tokens,
+     and then submit each part in separate Overwrite operation with *commit = false*.
+     After that remember to call :cpp:func:`MasterComponent::WaitIdle` and :cpp:func:`Synchronize` to propagate your change.
 
   .. cpp:function:: void Initialize(const Dictionary& dictionary)
 
      Initialize topic model based on the :cpp:class:`Dictionary`.
      Each token from the dictionary will be included in the model with randomly generated weight.
 
-  .. cpp:function:: void Synchronize(double decay, bool invoke_regularizers)
+  .. cpp:function:: void Synchronize(double decay_weight, double apply_weight, bool invoke_regularizers)
 
      Synchronize the model.
 
      This operation updates the Phi matrix of the topic model with all model increments, collected since the last call to :cpp:func:`Synchronize` method.
-     The weights in the Phi matrix are decreased according to *decay_weight* (refer to :attr:`SynchronizeModelArgs.decay_weight` for more details).
+     The weights in the Phi matrix are set according to *decay_weight* and *apply_weight* values
+     (refer to :attr:`SynchronizeModelArgs.decay_weight` for more details).
      Depending on *invoke_regularizers* parameter this operation may also invoke all regularizers.
 
      Remember to call :cpp:func:`Model::Synchronize` operation every time after calling :cpp:func:`MasterComponent::WaitIdle`.

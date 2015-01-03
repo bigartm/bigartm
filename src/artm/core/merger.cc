@@ -458,7 +458,14 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     return;  // no-op in network modus operandi
   }
 
-  CuckooWatch cuckoo("Merger::SynchronizeModel");
+  std::stringstream ss;
+  ss << "Merger::SynchronizeModel (" << model_name
+     << ", decay_weight=" << decay_weight
+     << ", apply_weight=" << apply_weight
+     << ", invoke_regularizers=" << (invoke_regularizers ? "true" : "false")
+     << ")";
+
+  CuckooWatch cuckoo(ss.str());
   auto model_names = topic_model_.keys();
   if (!model_name.empty()) {
     model_names.clear();
