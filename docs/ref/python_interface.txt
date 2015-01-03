@@ -201,7 +201,7 @@ MasterComponent
 
       The behavior of this method also depends on :attr:`MasterComponentConfig.online_batch_processing` flag.
 
-   .. py:method:: InvokeIteration(iterations_count)
+   .. py:method:: InvokeIteration(iterations_count = 1)
 
       Invokes several iterations over the collection. The recommended value for *iterations_count* is 1.
       For more iterations use for loop around :py:meth:`InvokeIteration` method.
@@ -293,10 +293,10 @@ Model
 
       Returns current :ref:`ModelConfig` of the topic model.
 
-   .. py:method:: Synchronize(decay_weight = 0.0, invoke_regularizers = True)
+   .. py:method:: Synchronize(decay_weight = 0.0, apply_weight = 1.0, invoke_regularizers = True)
 
       This operation updates the Phi matrix of the topic model with all model increments, collected since the last call to :py:meth:`Synchronize` method.
-      The weights in the Phi matrix are decreased according to *decay_weight* (refer to :attr:`SynchronizeModelArgs.decay_weight` for more details).
+      The Phi matrix is calculated according to *decay_weight* and *apply_weight* (refer to :attr:`SynchronizeModelArgs.decay_weight` for more details).
       Depending on *invoke_regularizers* parameter this operation may also invoke all regularizers.
 
       Remember to call :py:meth:`Synchronize` operation every time after call :py:meth:`MasterComponent.WaitIdle`.
