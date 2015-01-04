@@ -314,8 +314,8 @@ void MasterComponent::AddBatch(const Batch& batch) {
   }
 
   if (isInNetworkModusOperandi()) {
-    BatchHelpers::SaveBatch(batch, config_.get()->disk_path());
-    return;
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "AddBatch() is not allowed together with MasterComponentConfig.modus_operandi=Network"));
   }
 
   BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(

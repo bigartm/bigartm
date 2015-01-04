@@ -138,7 +138,8 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   }
 
   // Index doc-token matrix
-  if (!online_processing) master_component->AddBatch(batch);
+  if (!online_processing && !is_network_mode) master_component->AddBatch(batch);
+  else if (is_network_mode) artm::SaveBatch(batch, "00b6d631-46a6-4edf-8ef6-016c7b27d9f0.batch");
 
   std::shared_ptr<artm::TopicModel> topic_model;
   double expected_normalizer = 0;
@@ -224,6 +225,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
       std::shared_ptr< ::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
 
       EXPECT_EQ(theta_matrix->item_id_size(), nDocs);
+      EXPECT_EQ(theta_matrix->topics_count(), nTopics);
       for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
         const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
         ASSERT_EQ(weights.value_size(), nTopics);
@@ -240,6 +242,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
       args.add_topic_index(2); args.add_topic_index(3);  // retrieve 2nd and 3rd topic
       std::shared_ptr< ::artm::ThetaMatrix> theta_matrix23 = master_component->GetThetaMatrix(args);
       EXPECT_EQ(theta_matrix23->item_id_size(), nDocs);
+      EXPECT_EQ(theta_matrix23->topics_count(), 2);
       for (int item_index = 0; item_index < theta_matrix23->item_id_size(); ++item_index) {
         const ::artm::FloatArray& weights23 = theta_matrix23->item_weights(item_index);
         const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
@@ -270,6 +273,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     if (!is_network_mode) {
       std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
       EXPECT_EQ(theta_matrix2->item_id_size(), nDocs);
+      EXPECT_EQ(theta_matrix2->topics_count(), nTopics);
       for (int item_index = 0; item_index < theta_matrix2->item_id_size(); ++item_index) {
         const ::artm::FloatArray& weights2 = theta_matrix2->item_weights(item_index);
         EXPECT_EQ(weights2.value_size(), nTopics);

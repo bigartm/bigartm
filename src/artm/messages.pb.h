@@ -5160,10 +5160,19 @@ class ThetaMatrix : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
+  // optional int32 topics_count = 5;
+  inline bool has_topics_count() const;
+  inline void clear_topics_count();
+  static const int kTopicsCountFieldNumber = 5;
+  inline ::google::protobuf::int32 topics_count() const;
+  inline void set_topics_count(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.ThetaMatrix)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
+  inline void set_has_topics_count();
+  inline void clear_has_topics_count();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5172,9 +5181,10 @@ class ThetaMatrix : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > item_weights_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -11673,6 +11683,28 @@ ThetaMatrix::topic_name() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 ThetaMatrix::mutable_topic_name() {
   return &topic_name_;
+}
+
+// optional int32 topics_count = 5;
+inline bool ThetaMatrix::has_topics_count() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ThetaMatrix::set_has_topics_count() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ThetaMatrix::clear_has_topics_count() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ThetaMatrix::clear_topics_count() {
+  topics_count_ = 0;
+  clear_has_topics_count();
+}
+inline ::google::protobuf::int32 ThetaMatrix::topics_count() const {
+  return topics_count_;
+}
+inline void ThetaMatrix::set_topics_count(::google::protobuf::int32 value) {
+  set_has_topics_count();
+  topics_count_ = value;
 }
 
 // -------------------------------------------------------------------
