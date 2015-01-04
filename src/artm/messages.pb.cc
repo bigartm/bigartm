@@ -865,11 +865,12 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopicModel_TopicModelInternals));
   ThetaMatrix_descriptor_ = file->message_type(38);
-  static const int ThetaMatrix_offsets_[4] = {
+  static const int ThetaMatrix_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaMatrix, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaMatrix, item_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaMatrix, item_weights_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaMatrix, topic_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaMatrix, topics_count_),
   };
   ThetaMatrix_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1317,29 +1318,29 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "hts\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010class_id\030"
     "\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\032U\n\023TopicModelIn"
     "ternals\022\036\n\004n_wt\030\001 \003(\0132\020.artm.FloatArray\022"
-    "\036\n\004r_wt\030\002 \003(\0132\020.artm.FloatArray\"v\n\013Theta"
-    "Matrix\022\032\n\nmodel_name\030\001 \001(\t:\006@model\022\017\n\007it"
-    "em_id\030\002 \003(\005\022&\n\014item_weights\030\003 \003(\0132\020.artm"
-    ".FloatArray\022\022\n\ntopic_name\030\004 \003(\t\"\323\002\n\026Coll"
-    "ectionParserConfig\022B\n\006format\030\001 \001(\0162#.art"
-    "m.CollectionParserConfig.Format:\rBagOfWo"
-    "rdsUci\022\031\n\021docword_file_path\030\002 \001(\t\022\027\n\017voc"
-    "ab_file_path\030\003 \001(\t\022\025\n\rtarget_folder\030\004 \001("
-    "\t\022\034\n\024dictionary_file_name\030\005 \001(\t\022!\n\023num_i"
-    "tems_per_batch\030\006 \001(\005:\0041000\022\036\n\026cooccurren"
-    "ce_file_name\030\007 \001(\t\022\032\n\022cooccurrence_token"
-    "\030\010 \003(\t\"-\n\006Format\022\021\n\rBagOfWordsUci\020\000\022\020\n\014M"
-    "atrixMarket\020\001\"\177\n\024SynchronizeModelArgs\022\022\n"
-    "\nmodel_name\030\001 \001(\t\022\027\n\014decay_weight\030\002 \001(\002:"
-    "\0011\022!\n\023invoke_regularizers\030\003 \001(\010:\004true\022\027\n"
-    "\014apply_weight\030\004 \001(\002:\0011\"B\n\023InitializeMode"
-    "lArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dictionary_"
-    "name\030\002 \001(\t\"\\\n\021GetTopicModelArgs\022\022\n\nmodel"
-    "_name\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token"
-    "\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\"m\n\022GetThetaMatr"
-    "ixArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001("
-    "\0132\013.artm.Batch\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013to"
-    "pic_index\030\004 \003(\005", 5735);
+    "\036\n\004r_wt\030\002 \003(\0132\020.artm.FloatArray\"\214\001\n\013Thet"
+    "aMatrix\022\032\n\nmodel_name\030\001 \001(\t:\006@model\022\017\n\007i"
+    "tem_id\030\002 \003(\005\022&\n\014item_weights\030\003 \003(\0132\020.art"
+    "m.FloatArray\022\022\n\ntopic_name\030\004 \003(\t\022\024\n\014topi"
+    "cs_count\030\005 \001(\005\"\323\002\n\026CollectionParserConfi"
+    "g\022B\n\006format\030\001 \001(\0162#.artm.CollectionParse"
+    "rConfig.Format:\rBagOfWordsUci\022\031\n\021docword"
+    "_file_path\030\002 \001(\t\022\027\n\017vocab_file_path\030\003 \001("
+    "\t\022\025\n\rtarget_folder\030\004 \001(\t\022\034\n\024dictionary_f"
+    "ile_name\030\005 \001(\t\022!\n\023num_items_per_batch\030\006 "
+    "\001(\005:\0041000\022\036\n\026cooccurrence_file_name\030\007 \001("
+    "\t\022\032\n\022cooccurrence_token\030\010 \003(\t\"-\n\006Format\022"
+    "\021\n\rBagOfWordsUci\020\000\022\020\n\014MatrixMarket\020\001\"\177\n\024"
+    "SynchronizeModelArgs\022\022\n\nmodel_name\030\001 \001(\t"
+    "\022\027\n\014decay_weight\030\002 \001(\002:\0011\022!\n\023invoke_regu"
+    "larizers\030\003 \001(\010:\004true\022\027\n\014apply_weight\030\004 \001"
+    "(\002:\0011\"B\n\023InitializeModelArgs\022\022\n\nmodel_na"
+    "me\030\001 \001(\t\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n\021Get"
+    "TopicModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nto"
+    "pic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_i"
+    "d\030\004 \003(\t\"m\n\022GetThetaMatrixArgs\022\022\n\nmodel_n"
+    "ame\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n"
+    "\ntopic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005", 5758);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -14638,6 +14639,7 @@ const int ThetaMatrix::kModelNameFieldNumber;
 const int ThetaMatrix::kItemIdFieldNumber;
 const int ThetaMatrix::kItemWeightsFieldNumber;
 const int ThetaMatrix::kTopicNameFieldNumber;
+const int ThetaMatrix::kTopicsCountFieldNumber;
 #endif  // !_MSC_VER
 
 ThetaMatrix::ThetaMatrix()
@@ -14657,6 +14659,7 @@ ThetaMatrix::ThetaMatrix(const ThetaMatrix& from)
 void ThetaMatrix::SharedCtor() {
   _cached_size_ = 0;
   model_name_ = const_cast< ::std::string*>(_default_model_name_);
+  topics_count_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -14700,6 +14703,7 @@ void ThetaMatrix::Clear() {
         model_name_->assign(*_default_model_name_);
       }
     }
+    topics_count_ = 0;
   }
   item_id_.Clear();
   item_weights_.Clear();
@@ -14782,6 +14786,22 @@ bool ThetaMatrix::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(34)) goto parse_topic_name;
+        if (input->ExpectTag(40)) goto parse_topics_count;
+        break;
+      }
+
+      // optional int32 topics_count = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_topics_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &topics_count_)));
+          set_has_topics_count();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -14834,6 +14854,11 @@ void ThetaMatrix::SerializeWithCachedSizes(
       4, this->topic_name(i), output);
   }
 
+  // optional int32 topics_count = 5;
+  if (has_topics_count()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->topics_count(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -14874,6 +14899,11 @@ void ThetaMatrix::SerializeWithCachedSizes(
       WriteStringToArray(4, this->topic_name(i), target);
   }
 
+  // optional int32 topics_count = 5;
+  if (has_topics_count()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->topics_count(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -14890,6 +14920,13 @@ int ThetaMatrix::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->model_name());
+    }
+
+    // optional int32 topics_count = 5;
+    if (has_topics_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->topics_count());
     }
 
   }
@@ -14950,6 +14987,9 @@ void ThetaMatrix::MergeFrom(const ThetaMatrix& from) {
     if (from.has_model_name()) {
       set_model_name(from.model_name());
     }
+    if (from.has_topics_count()) {
+      set_topics_count(from.topics_count());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -14977,6 +15017,7 @@ void ThetaMatrix::Swap(ThetaMatrix* other) {
     item_id_.Swap(&other->item_id_);
     item_weights_.Swap(&other->item_weights_);
     topic_name_.Swap(&other->topic_name_);
+    std::swap(topics_count_, other->topics_count_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

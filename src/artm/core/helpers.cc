@@ -273,10 +273,12 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     }
   }
 
+  theta_matrix->set_topics_count(topic_indices.size());
   for (int item_index = 0; item_index < cache.item_id_size(); ++item_index) {
     const artm::FloatArray& item_theta = cache.theta(item_index);
     if (all_topics) {
       theta_matrix->add_item_weights()->CopyFrom(item_theta);
+      theta_matrix->set_topics_count(item_theta.value_size());
     } else {
       if (max_topic_index >= item_theta.value_size())
         continue;  // skip the item to avoid crash.

@@ -1429,7 +1429,7 @@ Represents a topic model.
 .. attribute:: TopicModel.topics_count
 
    A value that describes the number of topics in the topic model.
-   This value will match the value, defined in the model config.
+   This value will match :attr:`ModelConfig.topics_count` value, defined in the model config.
 
 .. attribute:: TopicModel.token
 
@@ -1467,6 +1467,7 @@ Represents a theta matrix.
     repeated int32 item_id = 2;
     repeated FloatArray item_weights = 3;
     repeated string topic_name = 4;
+    optional int32 topics_count = 5;
   }
 
 .. attribute:: ThetaMatrix.model_name
@@ -1488,6 +1489,11 @@ Represents a theta matrix.
 
    A set of values that represent the names of the topics, included in this theta matrix.
    The names correspond to :attr:`ModelConfig.topic_name`.
+
+.. attribute:: TopicModel.topics_count
+
+   A value that describes the number of topics in the topic model.
+   This value will match :attr:`ModelConfig.topics_count` value, defined in the model config.
 
 .. _CollectionParserConfig:
 
