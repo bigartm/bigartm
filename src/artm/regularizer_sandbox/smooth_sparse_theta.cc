@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "glog/logging.h"
+#include "artm/core/protobuf_helpers.h"
 
 namespace artm {
 namespace regularizer_sandbox {
@@ -42,21 +43,19 @@ bool SmoothSparseTheta::RegularizeTheta(const Batch& batch,
     return true;
   }
 
-  std::vector<bool> topics_to_regularize(topic_size);
-  for (int i = 0; i < topic_size; ++i)
-    topics_to_regularize[i] = false;
-
+  if (topic_size != model_config.topic_name_size()) {
+    LOG(ERROR) << "model_config.topics_count() != model_config.topic_name_size()";
+    return false;
+  }
+  std::vector<int> topics_to_regularize(topic_size, false);
   for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
-    for (int real_topic_id = 0; real_topic_id < topic_size; ++real_topic_id) {
-      if (model_config.topic_name(real_topic_id) == config_.topic_name(topic_id)) {
-        topics_to_regularize[real_topic_id] = true;
-        break;
-      }
-    }
+    int topic_index = ::artm::core::repeated_field_index_of(
+      model_config.topic_name(), config_.topic_name(topic_id));
+    if (topic_index != -1) topics_to_regularize[topic_index] = true;
   }
 
   // proceed the regularization
-  for (int item_index = 0; item_size; ++item_index) {
+  for (int item_index = 0; item_index < item_size; ++item_index) {
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
         (*theta)(topic_id, item_index) += alpha;

@@ -77,6 +77,16 @@ TEST(MultipleClasses, BasicTest) {
   master_config.set_cache_theta(true);
   ::artm::MasterComponent master_component(master_config);
 
+  // Create theta-regularizer for some (not all) topics
+  ::artm::RegularizerConfig regularizer_config;
+  regularizer_config.set_name("regularizer_smsp_theta");
+  regularizer_config.set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
+  ::artm::SmoothSparseThetaConfig smooth_sparse_theta_config;
+  smooth_sparse_theta_config.add_topic_name("Topic3");
+  smooth_sparse_theta_config.add_topic_name("Topic7");
+  regularizer_config.set_config(smooth_sparse_theta_config.SerializeAsString());
+  ::artm::Regularizer regularizer_smsp_theta(master_component, regularizer_config);
+
   // Generate doc-token matrix
   int nTokens = 60;
   int nDocs = 100;
@@ -111,6 +121,19 @@ TEST(MultipleClasses, BasicTest) {
   artm::Model model2(master_component, model_config2);
   artm::Model model3(master_component, model_config3);
   model1.Overwrite(initial_model); model2.Overwrite(initial_model); model3.Overwrite(initial_model);
+
+  // Create a regularized model
+  artm::ModelConfig model_config_reg;
+  model_config_reg.set_name("model_config_reg");
+  model_config_reg.add_regularizer_name("regularizer_smsp_theta");
+  model_config_reg.add_regularizer_tau(-2.0);
+  for (int i = 0; i < nTopics; ++i) {
+    std::stringstream ss;
+    ss << "Topic" << i;
+    model_config_reg.add_topic_name(ss.str());
+  }
+  artm::Model model_reg(master_component, model_config_reg);
+  model_reg.Overwrite(initial_model);
 
   for (int iDoc = 0; iDoc < nDocs; iDoc++) {
     artm::Item* item = batch.add_item();
@@ -149,6 +172,7 @@ TEST(MultipleClasses, BasicTest) {
     model1.Synchronize(0.0);
     model2.Synchronize(0.0);
     model3.Synchronize(0.0);
+    model_reg.Synchronize(0.0);
   }
 
   std::shared_ptr< ::artm::TopicModel> topic_model1 = master_component.GetTopicModel(model1.name());
@@ -158,6 +182,7 @@ TEST(MultipleClasses, BasicTest) {
   std::shared_ptr< ::artm::ThetaMatrix> theta_matrix1 = master_component.GetThetaMatrix(model1.name());
   std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component.GetThetaMatrix(model2.name());
   std::shared_ptr< ::artm::ThetaMatrix> theta_matrix3 = master_component.GetThetaMatrix(model3.name());
+  std::shared_ptr< ::artm::ThetaMatrix> theta_matrix_reg = master_component.GetThetaMatrix(model_reg.name());
 
   ShowTopicModel(*topic_model1);
   ShowTopicModel(*topic_model2);
@@ -169,6 +194,7 @@ TEST(MultipleClasses, BasicTest) {
   // ShowThetaMatrix(*theta_matrix2_explicit);
   // ShowThetaMatrix(*theta_matrix3);
   // ShowThetaMatrix(*theta_matrix3_explicit);
+  // ShowThetaMatrix(*theta_matrix_reg);  // <- 3 and 7 topics should be sparse in this matrix.
 
   float max_diff;
   // Compare consistency between Theta calculation in Processor::ThreadFunction() and Processor::FindThetaMatrix()
