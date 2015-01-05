@@ -217,60 +217,40 @@ InitializePhi(const Batch& batch, const ModelConfig& model_config,
 }
 
 static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, const ModelConfig& model_config,
-                                        const InstanceSchema& schema, DenseMatrix<float>* Theta) {
+                                        const InstanceSchema& schema, DenseMatrix<float>* theta) {
   int topic_size = model_config.topics_count();
 
-  // next section proceed Theta regularization
-  int item_index = -1;
-  std::vector<float> theta_next;
-  for (const Item& item : batch.item()) {
-    item_index++;
-    // this loop put data from blas::matrix to std::vector. It's not efficient
-    // and would be avoid after final choice of data structures and corrsponding
-    // adaptation of regularization interface
-    theta_next.clear();
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      theta_next.push_back((*Theta)(topic_index, item_index));
+  if (model_config.regularizer_name_size() != model_config.regularizer_tau_size()) {
+    LOG(ERROR) << "model_config.regularizer_name_size() != model_config.regularizer_tau_size()";
+    return;
+  }
+
+  for (int reg_index = 0; reg_index < model_config.regularizer_name_size(); ++reg_index) {
+    std::string reg_name = model_config.regularizer_name(reg_index);
+    double tau = model_config.regularizer_tau(reg_index);
+    auto regularizer = schema.regularizer(reg_name);
+    if (regularizer == nullptr) {
+      LOG(ERROR) << "Theta Regularizer with name <" << reg_name << "> does not exist.";
+      continue;
     }
 
-    auto reg_names = model_config.regularizer_name();
-    auto reg_tau = model_config.regularizer_tau();
-    for (auto reg_name_iterator = reg_names.begin();
-      reg_name_iterator != reg_names.end();
-      reg_name_iterator++) {
-      auto regularizer = schema.regularizer(reg_name_iterator->c_str());
-      if (regularizer != nullptr) {
-        auto tau_index = reg_name_iterator - reg_names.begin();
-        double tau = reg_tau.Get(tau_index);
+    regularizer->RegularizeTheta(batch, model_config, inner_iter, tau, theta);
+  }
 
-        bool retval = regularizer->RegularizeTheta(
-          item, &theta_next, model_config.topic_name(), inner_iter, tau);
-        if (!retval) {
-          LOG(ERROR) << "Problems with type or number of parameters in Theta" <<
-            "regularizer <" << reg_name_iterator->c_str() <<
-            ">. On this iteration this regularizer was turned off.\n";
-        }
-      } else {
-        LOG(ERROR) << "Theta Regularizer with name <" << reg_name_iterator->c_str() <<
-          "> does not exist.";
-      }
-    }
-
-    // Normalize Theta for current item
-    for (int i = 0; i < static_cast<int>(theta_next.size()); ++i) {
-      if (theta_next[i] < 0) {
-        theta_next[i] = 0;
-      }
-    }
-
+  // Normalize theta for every item
+  const int items_size = theta->no_columns();
+  for (int item_index = 0; item_index < items_size; ++item_index) {
     float sum = 0.0f;
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index)
-      sum += theta_next[topic_index];
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+      float val = (*theta)(topic_index, item_index);
+      if (val > 0)
+        sum += val;
+    }
 
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      float val = (sum > 0) ? (theta_next[topic_index] / sum) : 0.0f;
+      float val = (sum > 0) ? ((*theta)(topic_index, item_index) / sum) : 0.0f;
       if (val < 1e-16f) val = 0.0f;
-      (*Theta)(topic_index, item_index) = val;
+      (*theta)(topic_index, item_index) = val;
     }
   }
 }

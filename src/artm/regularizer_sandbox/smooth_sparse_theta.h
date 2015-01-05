@@ -19,11 +19,11 @@ class SmoothSparseTheta : public RegularizerInterface {
   explicit SmoothSparseTheta(const SmoothSparseThetaConfig& config)
     : config_(config) {}
 
-  virtual bool RegularizeTheta(const Item& item,
-                               std::vector<float>* n_dt,
-                               google::protobuf::RepeatedPtrField<std::string> topic_name,
+  virtual bool RegularizeTheta(const Batch& batch,
+                               const ModelConfig& model_config,
                                int inner_iter,
-                               double tau);
+                               double tau,
+                               ::artm::utility::DenseMatrix<float>* theta);
   virtual bool Reconfigure(const RegularizerConfig& config);
 
  private:
