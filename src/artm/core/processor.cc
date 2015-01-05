@@ -28,182 +28,8 @@
 
 namespace util = artm::utility;
 namespace fs = boost::filesystem;
-
-namespace {
-
-template<typename T>
-class DenseMatrix {
- public:
-  DenseMatrix(int no_rows = 0, int no_columns = 0, bool store_by_rows = true)
-    : no_rows_(no_rows),
-    no_columns_(no_columns),
-    store_by_rows_(store_by_rows),
-    data_(nullptr) {
-    if (no_rows > 0 && no_columns > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-    }
-  }
-
-  DenseMatrix(const DenseMatrix<T>& src_matrix) {
-    no_rows_ = src_matrix.no_rows();
-    no_columns_ = src_matrix.no_columns();
-    store_by_rows_ = src_matrix.store_by_rows_;
-    if (no_columns_ >0 && no_rows_ > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-      for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-        data_[i] = src_matrix.get_data()[i];
-      }
-    } else {
-      data_ = nullptr;
-    }
-  }
-
-  ~DenseMatrix() {
-    delete[] data_;
-  }
-
-  void InitializeZeros() {
-    memset(data_, 0, sizeof(T)* no_rows_ * no_columns_);
-  }
-
-  T& operator() (int index_row, int index_col) {
-    assert(index_row < no_rows_);
-    assert(index_col < no_columns_);
-    if (store_by_rows_) {
-      return data_[index_row * no_columns_ + index_col];
-    }
-    return data_[index_col * no_rows_ + index_row];
-  }
-
-  const T& operator() (int index_row, int index_col) const {
-    assert(index_row < no_rows_);
-    assert(index_col < no_columns_);
-    if (store_by_rows_) {
-      return data_[index_row * no_columns_ + index_col];
-    }
-    return data_[index_col * no_rows_ + index_row];
-  }
-
-  DenseMatrix<T>& operator= (const DenseMatrix<T>& src_matrix) {
-    no_rows_ = src_matrix.no_rows();
-    no_columns_ = src_matrix.no_columns();
-    store_by_rows_ = src_matrix.store_by_rows_;
-    if (data_ != nullptr) {
-      delete[] data_;
-    }
-    if (no_columns_ >0 && no_rows_ > 0) {
-      data_ = new T[no_rows_ * no_columns_];
-      for (int i = 0; i < no_rows_ * no_columns_; ++i) {
-        data_[i] = src_matrix.get_data()[i];
-      }
-    } else {
-      data_ = nullptr;
-    }
-
-    return *this;
-  }
-
-  int no_rows() const { return no_rows_; }
-  int no_columns() const { return no_columns_; }
-
-  T* get_data() {
-    return data_;
-  }
-
-  const T* get_data() const {
-    return data_;
-  }
-
- private:
-  int no_rows_;
-  int no_columns_;
-  bool store_by_rows_;
-  T* data_;
-};
-
-template<typename T>
-class CsrMatrix {
- public:
-  explicit CsrMatrix(int m, int n, int nnz) : m_(m), n_(n), nnz_(nnz) {
-    assert(m > 0 && n > 0 && nnz > 0);
-    val_.resize(nnz);
-    col_ind_.resize(nnz);
-    row_ptr_.resize(m + 1);
-  }
-
-  explicit CsrMatrix(int n, std::vector<T>* val, std::vector<int>* row_ptr, std::vector<int>* col_ind) {
-    assert(val != nullptr && row_ptr != nullptr && col_ind != nullptr);
-    m_ = static_cast<int>(row_ptr->size()) - 1;
-    n_ = n;  // this parameter can't be deduced automatically
-    nnz_ = static_cast<int>(val->size());
-    val_.swap(*val);
-    row_ptr_.swap(*row_ptr);
-    col_ind_.swap(*col_ind);
-  }
-
-  void Transpose(artm::utility::Blas* blas) {
-    std::vector<int> row_ptr_new_(n_ + 1);
-    blas->scsr2csc(m_, n_, nnz_, val(), row_ptr(), col_ind(), val(), col_ind(), &row_ptr_new_[0]);
-    int tmp = m_; m_ = n_; n_ = tmp;  // swat(m, n)
-    row_ptr_.swap(row_ptr_new_);
-  }
-
-  T* val() { return &val_[0]; }
-  const T* val() const { return &val_[0]; }
-
-  int* row_ptr() { return &row_ptr_[0]; }
-  const int* row_ptr() const { return &row_ptr_[0]; }
-
-  int* col_ind() { return &col_ind_[0]; }
-  const int* col_ind() const { return &col_ind_[0]; }
-
-  int m() const { return m_; }
-  int n() const { return n_; }
-  int nnz() const { return nnz_; }
-
- private:
-  int m_;
-  int n_;
-  int nnz_;
-  std::vector<T> val_;
-  std::vector<int> row_ptr_;
-  std::vector<int> col_ind_;
-};
-
-template<int operation>
-void ApplyByElement(DenseMatrix<float>* result_matrix,
-  const DenseMatrix<float>& first_matrix,
-  const DenseMatrix<float>& second_matrix) {
-  int height = first_matrix.no_rows();
-  int width = first_matrix.no_columns();
-
-  assert(height == second_matrix.no_rows());
-  assert(width == second_matrix.no_columns());
-
-  float* result_data = result_matrix->get_data();
-  const float* first_data = first_matrix.get_data();
-  const float* second_data = second_matrix.get_data();
-  int size = height * width;
-
-  if (operation == 0) {
-    for (int i = 0; i < size; ++i)
-      result_data[i] = first_data[i] * second_data[i];
-  }
-  if (operation == 1) {
-    for (int i = 0; i < size; ++i) {
-      if (first_data[i] == 0 || second_data[i] == 0)
-        result_data[i] = 0;
-      else
-        result_data[i] = first_data[i] / second_data[i];
-    }
-  }
-  if (operation != 0 && operation != 1) {
-    LOG(ERROR) << "In function ApplyByElement() in Processo::ThreadFunction() "
-      << "'operation' argument was set an unsupported value\n";
-  }
-}
-
-}  // namespace
+using ::util::CsrMatrix;
+using ::util::DenseMatrix;
 
 namespace artm {
 namespace core {
@@ -391,60 +217,40 @@ InitializePhi(const Batch& batch, const ModelConfig& model_config,
 }
 
 static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, const ModelConfig& model_config,
-                                        const InstanceSchema& schema, DenseMatrix<float>* Theta) {
+                                        const InstanceSchema& schema, DenseMatrix<float>* theta) {
   int topic_size = model_config.topics_count();
 
-  // next section proceed Theta regularization
-  int item_index = -1;
-  std::vector<float> theta_next;
-  for (const Item& item : batch.item()) {
-    item_index++;
-    // this loop put data from blas::matrix to std::vector. It's not efficient
-    // and would be avoid after final choice of data structures and corrsponding
-    // adaptation of regularization interface
-    theta_next.clear();
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      theta_next.push_back((*Theta)(topic_index, item_index));
+  if (model_config.regularizer_name_size() != model_config.regularizer_tau_size()) {
+    LOG(ERROR) << "model_config.regularizer_name_size() != model_config.regularizer_tau_size()";
+    return;
+  }
+
+  for (int reg_index = 0; reg_index < model_config.regularizer_name_size(); ++reg_index) {
+    std::string reg_name = model_config.regularizer_name(reg_index);
+    double tau = model_config.regularizer_tau(reg_index);
+    auto regularizer = schema.regularizer(reg_name);
+    if (regularizer == nullptr) {
+      LOG(ERROR) << "Theta Regularizer with name <" << reg_name << "> does not exist.";
+      continue;
     }
 
-    auto reg_names = model_config.regularizer_name();
-    auto reg_tau = model_config.regularizer_tau();
-    for (auto reg_name_iterator = reg_names.begin();
-      reg_name_iterator != reg_names.end();
-      reg_name_iterator++) {
-      auto regularizer = schema.regularizer(reg_name_iterator->c_str());
-      if (regularizer != nullptr) {
-        auto tau_index = reg_name_iterator - reg_names.begin();
-        double tau = reg_tau.Get(tau_index);
+    regularizer->RegularizeTheta(batch, model_config, inner_iter, tau, theta);
+  }
 
-        bool retval = regularizer->RegularizeTheta(
-          item, &theta_next, model_config.topic_name(), inner_iter, tau);
-        if (!retval) {
-          LOG(ERROR) << "Problems with type or number of parameters in Theta" <<
-            "regularizer <" << reg_name_iterator->c_str() <<
-            ">. On this iteration this regularizer was turned off.\n";
-        }
-      } else {
-        LOG(ERROR) << "Theta Regularizer with name <" << reg_name_iterator->c_str() <<
-          "> does not exist.";
-      }
-    }
-
-    // Normalize Theta for current item
-    for (int i = 0; i < static_cast<int>(theta_next.size()); ++i) {
-      if (theta_next[i] < 0) {
-        theta_next[i] = 0;
-      }
-    }
-
+  // Normalize theta for every item
+  const int items_size = theta->no_columns();
+  for (int item_index = 0; item_index < items_size; ++item_index) {
     float sum = 0.0f;
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index)
-      sum += theta_next[topic_index];
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+      float val = (*theta)(topic_index, item_index);
+      if (val > 0)
+        sum += val;
+    }
 
     for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      float val = (sum > 0) ? (theta_next[topic_index] / sum) : 0.0f;
+      float val = (sum > 0) ? ((*theta)(topic_index, item_index) / sum) : 0.0f;
       if (val < 1e-16f) val = 0.0f;
-      (*Theta)(topic_index, item_index) = val;
+      (*theta)(topic_index, item_index) = val;
     }
   }
 }
@@ -531,7 +337,7 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
       }
     }
 
-    ApplyByElement<0>(theta_matrix, *theta_matrix, n_td);
+    AssignDenseMatrixByProduct(*theta_matrix, n_td, theta_matrix);
     RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix);
   }
 
@@ -567,7 +373,7 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
     }
   }
 
-  ApplyByElement<0>(n_wt.get(), *n_wt, phi_matrix);
+  AssignDenseMatrixByProduct(*n_wt, phi_matrix, n_wt.get());
   return n_wt;
 }
 
@@ -586,7 +392,7 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
       theta_matrix->no_columns());
 
     // Z = n_dw ./ Z
-    ApplyByElement<1>(&Z, dense_ndw, Z);
+    AssignDenseMatrixByDivision(dense_ndw, Z, &Z);
 
     // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
     DenseMatrix<float> prod_trans_phi_Z(phi_matrix.no_columns(), Z.no_columns());
@@ -596,7 +402,7 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
       phi_matrix.no_columns(), Z.get_data(), Z.no_columns(), 0,
       prod_trans_phi_Z.get_data(), Z.no_columns());
 
-    ApplyByElement<0>(theta_matrix, *theta_matrix, prod_trans_phi_Z);
+    AssignDenseMatrixByProduct(*theta_matrix, prod_trans_phi_Z, theta_matrix);
     RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix);
   }
 
@@ -605,7 +411,7 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
     phi_matrix.no_columns(), theta_matrix->get_data(), theta_matrix->no_columns(), 0, Z.get_data(),
     theta_matrix->no_columns());
 
-  ApplyByElement<1>(&Z, dense_ndw, Z);
+  AssignDenseMatrixByDivision(dense_ndw, Z, &Z);
 
   if (mask != nullptr) {
     // delete columns according to bool mask
@@ -635,7 +441,7 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
       masked_Z.get_data(), masked_Z.no_columns(), masked_Theta.get_data(),
       masked_Theta.no_columns(), 0, prod_Z_Theta.get_data(), masked_Theta.no_rows());
 
-    ApplyByElement<0>(n_wt.get(), prod_Z_Theta, phi_matrix);
+    AssignDenseMatrixByProduct(prod_Z_Theta, phi_matrix, n_wt.get());
   } else {
     DenseMatrix<float> prod_Z_Theta(Z.no_rows(), theta_matrix->no_rows());
     blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
@@ -643,7 +449,7 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
       Z.no_columns(), theta_matrix->get_data(), theta_matrix->no_columns(), 0,
       prod_Z_Theta.get_data(), theta_matrix->no_rows());
 
-    ApplyByElement<0>(n_wt.get(), prod_Z_Theta, phi_matrix);
+    AssignDenseMatrixByProduct(prod_Z_Theta, phi_matrix, n_wt.get());
   }
 
   return n_wt;

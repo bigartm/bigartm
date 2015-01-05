@@ -11,6 +11,7 @@
 #include <string>
 
 #include "artm/messages.pb.h"
+#include "artm/utility/blas.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 
@@ -31,11 +32,11 @@ class RegularizerInterface {
   RegularizerInterface() : dictionaries_(nullptr) {}
   virtual ~RegularizerInterface() { }
 
-  virtual bool RegularizeTheta(const Item& item,
-                               std::vector<float>* n_dt,
-                               google::protobuf::RepeatedPtrField<std::string> topic_name,
+  virtual bool RegularizeTheta(const Batch& batch,
+                               const ModelConfig& model_config,
                                int inner_iter,
-                               double tau) { return true; }
+                               double tau,
+                               ::artm::utility::DenseMatrix<float>* theta) { return true; }
 
   virtual bool RegularizePhi(::artm::core::Regularizable* topic_model, double tau) { return true; }
 

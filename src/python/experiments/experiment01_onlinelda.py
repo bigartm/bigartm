@@ -124,7 +124,6 @@ with artm.library.MasterComponent(master_config) as master:
     # Configure the model
     model = master.CreateModel(config=artm.messages_pb2.ModelConfig(),
                                topics_count=numTopics, inner_iterations_count=numInnerIters)
-    model.EnableScore(perplexity_score)
     model.EnableScore(items_processed_score)
     model.EnableRegularizer(smooth_sparse_phi, beta)
     model.EnableRegularizer(smooth_sparse_theta, alpha)
@@ -147,7 +146,6 @@ with artm.library.MasterComponent(master_config) as master:
             model.Synchronize(decay_weight=(0 if first_sync else (1-rho)), apply_weight=rho)  # synchronize model
             first_sync = False
             print "Items processed : %i " % current_items_processed,
-            print "Accumulated perplexity : %.3f " % perplexity_score.GetValue(model).value,
             print "Elapsed time : %.3f " % (time.time() - start_time)
 
     print "Saving topic model... ",
@@ -156,6 +154,7 @@ with artm.library.MasterComponent(master_config) as master:
     print "Done. "
 
     # Perform one iteration to calculate Perplexity on the entire train dataset
+    # model.EnableScore(perplexity_score)
     # master.InvokeIteration()
     # master.WaitIdle()
     # print "Train Perplexity calculated in BigARTM = %.3f" % perplexity_score.GetValue(model).value
