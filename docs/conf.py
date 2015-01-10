@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'BigARTM'
-copyright = u'2014, Konstantin Vorontsov'
+copyright = u'2015, Konstantin Vorontsov'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -266,7 +266,7 @@ texinfo_documents = [
 epub_title = u'BigARTM'
 epub_author = u'Konstantin Vorontsov'
 epub_publisher = u'Konstantin Vorontsov'
-epub_copyright = u'2014, Konstantin Vorontsov'
+epub_copyright = u'2015, Konstantin Vorontsov'
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = u'BigARTM'
