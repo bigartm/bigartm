@@ -665,18 +665,33 @@ class Item : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::Field >*
       mutable_field();
 
+  // optional string title = 3;
+  inline bool has_title() const;
+  inline void clear_title();
+  static const int kTitleFieldNumber = 3;
+  inline const ::std::string& title() const;
+  inline void set_title(const ::std::string& value);
+  inline void set_title(const char* value);
+  inline void set_title(const char* value, size_t size);
+  inline ::std::string* mutable_title();
+  inline ::std::string* release_title();
+  inline void set_allocated_title(::std::string* title);
+
   // @@protoc_insertion_point(class_scope:artm.Item)
  private:
   inline void set_has_id();
   inline void clear_has_id();
+  inline void set_has_title();
+  inline void clear_has_title();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::artm::Field > field_;
+  ::std::string* title_;
   ::google::protobuf::int32 id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6074,6 +6089,76 @@ Item::field() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::Field >*
 Item::mutable_field() {
   return &field_;
+}
+
+// optional string title = 3;
+inline bool Item::has_title() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void Item::set_has_title() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void Item::clear_has_title() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void Item::clear_title() {
+  if (title_ != &::google::protobuf::internal::GetEmptyString()) {
+    title_->clear();
+  }
+  clear_has_title();
+}
+inline const ::std::string& Item::title() const {
+  return *title_;
+}
+inline void Item::set_title(const ::std::string& value) {
+  set_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    title_ = new ::std::string;
+  }
+  title_->assign(value);
+}
+inline void Item::set_title(const char* value) {
+  set_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    title_ = new ::std::string;
+  }
+  title_->assign(value);
+}
+inline void Item::set_title(const char* value, size_t size) {
+  set_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    title_ = new ::std::string;
+  }
+  title_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Item::mutable_title() {
+  set_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    title_ = new ::std::string;
+  }
+  return title_;
+}
+inline ::std::string* Item::release_title() {
+  clear_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = title_;
+    title_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Item::set_allocated_title(::std::string* title) {
+  if (title_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete title_;
+  }
+  if (title) {
+    set_has_title();
+    title_ = title;
+  } else {
+    clear_has_title();
+    title_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------

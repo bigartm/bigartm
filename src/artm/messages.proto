@@ -26,6 +26,7 @@ message Item
 {
   optional int32 id = 1;
   repeated Field field = 2;
+  optional string title = 3;
 }
 
 // Represents a field withing an item.

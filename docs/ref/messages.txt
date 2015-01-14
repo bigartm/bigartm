@@ -52,6 +52,7 @@ A typical example of an item is a document that belongs to some text collection.
   message Item {
     optional int32 id = 1;
     repeated Field field = 2;
+    optional string title = 3;
   }
 
 .. attribute:: Item.id
@@ -61,6 +62,10 @@ A typical example of an item is a document that belongs to some text collection.
 .. attribute:: Item.field
 
    A set of all fields withing the item.
+
+.. attribute:: Item.title
+
+   An optional title of the item.
 
 .. _Field:
 
