@@ -657,8 +657,10 @@ void Processor::ThreadFunction() {
             std::shared_ptr<Score> score = score_iter->second;
             auto score_calc = schema->score_calculator(score_name);
 
+            // Non-existing stram == all items, => do not skip the item when "index_of_stream == -1"
             int index_of_stream = repeated_field_index_of(part->stream_name(), score_calc->stream_name());
-            bool in_stream = (index_of_stream >= 0) ? part->stream_mask(index_of_stream).value(item_index) : true;
+            if ((index_of_stream != -1) && !part->stream_mask(index_of_stream).value(item_index))
+              continue;
 
             std::vector<float> theta_vec;
             for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
