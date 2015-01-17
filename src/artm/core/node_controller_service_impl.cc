@@ -285,14 +285,14 @@ void NodeControllerServiceImpl::RequestThetaMatrix(
 }
 
 void NodeControllerServiceImpl::RequestScore(
-    const ::artm::core::RequestScoreArgs& request,
+    const ::artm::GetScoreValueArgs& request,
     ::rpcz::reply< ::artm::ScoreData> response) {
   try {
     boost::lock_guard<boost::mutex> guard(lock_);
     artm::ScoreData score_data;
     bool ok = false;
     if (master_ != nullptr) {
-      ok = master_->RequestScore(request.model_name(), request.score_name(), &score_data);
+      ok = master_->RequestScore(request, &score_data);
     } else {
       LOG(ERROR) << "No master component exist in node controller";
     }

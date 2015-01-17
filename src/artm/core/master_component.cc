@@ -180,10 +180,9 @@ void MasterComponent::RequestRegularizerState(RegularizerName regularizer_name,
   instance_->merger()->RequestRegularizerState(regularizer_name, regularizer_state);
 }
 
-bool MasterComponent::RequestScore(const ModelName& model_name,
-                                   const ScoreName& score_name,
+bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
                                    ScoreData* score_data) {
-  return instance_->merger()->RequestScore(model_name, score_name, score_data);
+  return instance_->merger()->RequestScore(get_score_args, score_data);
 }
 
 void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {

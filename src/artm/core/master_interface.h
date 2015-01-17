@@ -36,7 +36,7 @@ class MasterInterface {
                                        ::artm::RegularizerInternalState* regularizer_state) = 0;
   virtual bool RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& get_theta_args,
                                   ::artm::ThetaMatrix* theta_matrix) = 0;
-  virtual bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
+  virtual bool RequestScore(const ::artm::GetScoreValueArgs& get_score_args,
                             ScoreData* score_data) = 0;
 
   virtual void AddBatch(const Batch& batch) = 0;

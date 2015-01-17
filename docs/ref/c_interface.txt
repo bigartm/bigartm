@@ -522,16 +522,18 @@ ArtmRequestRegularizerState
 ArtmRequestScore
 ----------------
 
-.. c:function::  int ArtmRequestScore(int master_id, const char* model_name, const char* score_name)
+.. c:function::  int ArtmRequestScore(int master_id, int length, const char* get_score_args)
 
    Request the result of score calculation.
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
-   :param const_char* model_name:  A string identified of the model.
+   :param const_char*: get_score_args:
+      Serialized :ref:`GetScoreValueArgs` message,
+      describing the arguments of this operation.
 
-   :param const_char* score_name:  A string identified of the score.
+   :param int length: The length in bytes of the *get_score_args* message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
             and then passed to :c:func:`ArtmCopyRequestResult` method.

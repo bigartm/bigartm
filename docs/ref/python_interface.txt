@@ -377,9 +377,10 @@ Score
 
       Returns the string name of the score.
 
-   .. py:method:: GetValue(model)
+   .. py:method:: GetValue(model = None, args = messages_pb2.GetScoreValueArgs())
 
       Retrieves the score for a specific model.
+      For full functionality use :ref:`GetScoreValueArgs`.
 
 Dictionary
 ==========

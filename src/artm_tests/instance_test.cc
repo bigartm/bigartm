@@ -212,7 +212,10 @@ TEST(Instance, MultipleStreamsAndModels) {
   test.instance()->merger()->RetrieveExternalTopicModel(args, &m2t);
 
   artm::ScoreData m1score_data;
-  test.instance()->merger()->RequestScore(m1.name(), "perplexity", &m1score_data);
+  artm::GetScoreValueArgs get_score_args;
+  get_score_args.set_model_name(m1.name());
+  get_score_args.set_score_name("perplexity");
+  test.instance()->merger()->RequestScore(get_score_args, &m1score_data);
   artm::PerplexityScore perplexity_score;
   perplexity_score.ParseFromString(m1score_data.data());
 

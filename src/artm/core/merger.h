@@ -58,7 +58,7 @@ class Merger : boost::noncopyable {
                                   ::artm::TopicModel* topic_model) const;
   void RequestRegularizerState(RegularizerName regularizer_name,
                                ::artm::RegularizerInternalState* regularizer_state) const;
-  bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
+  bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData *score_data) const;
 
  private:
@@ -73,7 +73,7 @@ class Merger : boost::noncopyable {
 
     void ResetScores(const ModelName& model_name);
     void RetrieveModelIncrement(const ModelName& model_name, ModelIncrement* model_increment);
-    bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
+    bool RequestScore(const GetScoreValueArgs& get_score_args,
                       ScoreData *score_data) const;
 
    private:

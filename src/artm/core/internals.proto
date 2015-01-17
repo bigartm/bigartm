@@ -132,11 +132,6 @@ message DisposeDictionaryArgs {
   optional string dictionary_name = 2;
 }
 
-message RequestScoreArgs {
-  optional string model_name = 1;
-  optional string score_name = 2;
-}
-
 service NodeControllerService {
   rpc CreateOrReconfigureInstance(MasterComponentConfig) returns (Void);
   rpc DisposeInstance(Void) returns (Void);
@@ -160,7 +155,7 @@ service NodeControllerService {
   rpc RequestTopicModel(GetTopicModelArgs) returns (TopicModel);
   rpc RequestRegularizerState(String) returns (RegularizerInternalState);
   rpc RequestThetaMatrix(GetThetaMatrixArgs) returns (ThetaMatrix);
-  rpc RequestScore(RequestScoreArgs) returns (ScoreData);
+  rpc RequestScore(GetScoreValueArgs) returns (ScoreData);
 
   rpc AddBatch(Batch) returns (Void);
   rpc InvokeIteration(Void) returns (Void);
