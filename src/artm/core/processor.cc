@@ -57,62 +57,6 @@ Processor::~Processor() {
   }
 }
 
-Processor::StreamIterator::StreamIterator(const ProcessorInput& processor_input)
-    : items_count_(processor_input.batch().item_size()),
-      item_index_(-1),  // // handy trick for iterators
-      stream_flags_(nullptr),
-      processor_input_(processor_input) {
-}
-
-const Item* Processor::StreamIterator::Next() {
-  for (;;) {
-    item_index_++;  // handy trick pays you back!
-
-    if (item_index_ >= items_count_) {
-      // reached the end of the stream
-      break;
-    }
-
-    if (!stream_flags_ || stream_flags_->value(item_index_)) {
-      // found item that is included in the stream
-      break;
-    }
-  }
-
-  return Current();
-}
-
-const Item* Processor::StreamIterator::Current() const {
-  if (item_index_ >= items_count_)
-    return nullptr;
-
-  return &(processor_input_.batch().item(item_index_));
-}
-
-bool Processor::StreamIterator::InStream(const std::string& stream_name) {
-  if (item_index_ >= items_count_)
-    return false;
-
-  int index_of_stream = repeated_field_index_of(processor_input_.stream_name(), stream_name);
-  if (index_of_stream == -1) {
-    return true;
-  }
-
-  return processor_input_.stream_mask(index_of_stream).value(item_index_);
-}
-
-bool Processor::StreamIterator::InStream(int stream_index) {
-  if (stream_index == -1)
-    return true;
-
-  assert(stream_index >= 0 && stream_index < processor_input_.stream_name_size());
-
-  if (item_index_ >= items_count_)
-    return false;
-
-  return processor_input_.stream_mask(stream_index).value(item_index_);
-}
-
 static std::shared_ptr<ModelIncrement>
 InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_config,
                          const ::artm::core::TopicModel& topic_model) {
@@ -702,9 +646,8 @@ void Processor::ThreadFunction() {
           token_dict.push_back(Token(batch.class_id(token_index), batch.token(token_index)));
         }
 
-        StreamIterator iter(*part);
-        while (iter.Next() != nullptr) {
-          const Item* item = iter.Current();
+        for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+          const Item& item = batch.item(item_index);
 
           // Calculate all requested scores (such as perplexity)
           for (auto score_iter = score_container.begin();
@@ -714,14 +657,14 @@ void Processor::ThreadFunction() {
             std::shared_ptr<Score> score = score_iter->second;
             auto score_calc = schema->score_calculator(score_name);
 
-            if (!iter.InStream(score_calc->stream_name())) continue;
+            int index_of_stream = repeated_field_index_of(part->stream_name(), score_calc->stream_name());
+            bool in_stream = (index_of_stream >= 0) ? part->stream_mask(index_of_stream).value(item_index) : true;
 
-            int item_index = iter.item_index();
             std::vector<float> theta_vec;
             for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
               theta_vec.push_back((*theta_matrix)(topic_index, item_index));
             }
-            score_calc->AppendScore(*item, token_dict, *topic_model, theta_vec, score.get());
+            score_calc->AppendScore(item, token_dict, *topic_model, theta_vec, score.get());
           }
         }
 

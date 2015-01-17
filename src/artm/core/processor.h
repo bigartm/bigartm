@@ -51,28 +51,6 @@ class Processor : boost::noncopyable {
   boost::thread thread_;
 
   void ThreadFunction();
-
-  // Helper class to iterate on stream
-  class StreamIterator : boost::noncopyable {
-   public:
-    // Iterates on a global stream (all items in the batch)
-    explicit StreamIterator(const ProcessorInput& processor_input);
-
-    const Item* Next();
-    const Item* Current() const;
-
-    // Checks whether Current() item belongs to a specific stream
-    bool InStream(const std::string& stream_name);
-    bool InStream(int stream_index);
-
-    inline int item_index() const { return item_index_; }
-
-   private:
-    int items_count_;
-    int item_index_;
-    const Mask* stream_flags_;
-    const ProcessorInput& processor_input_;
-  };
 };
 
 }  // namespace core
