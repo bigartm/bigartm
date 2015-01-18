@@ -79,6 +79,7 @@ class SynchronizeModelArgs;
 class InitializeModelArgs;
 class GetTopicModelArgs;
 class GetThetaMatrixArgs;
+class GetScoreValueArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -5901,6 +5902,120 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static GetThetaMatrixArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class GetScoreValueArgs : public ::google::protobuf::Message {
+ public:
+  GetScoreValueArgs();
+  virtual ~GetScoreValueArgs();
+
+  GetScoreValueArgs(const GetScoreValueArgs& from);
+
+  inline GetScoreValueArgs& operator=(const GetScoreValueArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GetScoreValueArgs& default_instance();
+
+  void Swap(GetScoreValueArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  GetScoreValueArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const GetScoreValueArgs& from);
+  void MergeFrom(const GetScoreValueArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string model_name = 1;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 1;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // optional string score_name = 2;
+  inline bool has_score_name() const;
+  inline void clear_score_name();
+  static const int kScoreNameFieldNumber = 2;
+  inline const ::std::string& score_name() const;
+  inline void set_score_name(const ::std::string& value);
+  inline void set_score_name(const char* value);
+  inline void set_score_name(const char* value, size_t size);
+  inline ::std::string* mutable_score_name();
+  inline ::std::string* release_score_name();
+  inline void set_allocated_score_name(::std::string* score_name);
+
+  // optional .artm.Batch batch = 3;
+  inline bool has_batch() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 3;
+  inline const ::artm::Batch& batch() const;
+  inline ::artm::Batch* mutable_batch();
+  inline ::artm::Batch* release_batch();
+  inline void set_allocated_batch(::artm::Batch* batch);
+
+  // @@protoc_insertion_point(class_scope:artm.GetScoreValueArgs)
+ private:
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+  inline void set_has_score_name();
+  inline void clear_has_score_name();
+  inline void set_has_batch();
+  inline void clear_has_batch();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* model_name_;
+  ::std::string* score_name_;
+  ::artm::Batch* batch_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static GetScoreValueArgs* default_instance_;
 };
 // ===================================================================
 
@@ -12904,6 +13019,188 @@ GetThetaMatrixArgs::topic_index() const {
 inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
 GetThetaMatrixArgs::mutable_topic_index() {
   return &topic_index_;
+}
+
+// -------------------------------------------------------------------
+
+// GetScoreValueArgs
+
+// optional string model_name = 1;
+inline bool GetScoreValueArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void GetScoreValueArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void GetScoreValueArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void GetScoreValueArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& GetScoreValueArgs::model_name() const {
+  return *model_name_;
+}
+inline void GetScoreValueArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void GetScoreValueArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void GetScoreValueArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetScoreValueArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* GetScoreValueArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void GetScoreValueArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string score_name = 2;
+inline bool GetScoreValueArgs::has_score_name() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void GetScoreValueArgs::set_has_score_name() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void GetScoreValueArgs::clear_has_score_name() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void GetScoreValueArgs::clear_score_name() {
+  if (score_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    score_name_->clear();
+  }
+  clear_has_score_name();
+}
+inline const ::std::string& GetScoreValueArgs::score_name() const {
+  return *score_name_;
+}
+inline void GetScoreValueArgs::set_score_name(const ::std::string& value) {
+  set_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    score_name_ = new ::std::string;
+  }
+  score_name_->assign(value);
+}
+inline void GetScoreValueArgs::set_score_name(const char* value) {
+  set_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    score_name_ = new ::std::string;
+  }
+  score_name_->assign(value);
+}
+inline void GetScoreValueArgs::set_score_name(const char* value, size_t size) {
+  set_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    score_name_ = new ::std::string;
+  }
+  score_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetScoreValueArgs::mutable_score_name() {
+  set_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    score_name_ = new ::std::string;
+  }
+  return score_name_;
+}
+inline ::std::string* GetScoreValueArgs::release_score_name() {
+  clear_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = score_name_;
+    score_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void GetScoreValueArgs::set_allocated_score_name(::std::string* score_name) {
+  if (score_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete score_name_;
+  }
+  if (score_name) {
+    set_has_score_name();
+    score_name_ = score_name;
+  } else {
+    clear_has_score_name();
+    score_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional .artm.Batch batch = 3;
+inline bool GetScoreValueArgs::has_batch() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void GetScoreValueArgs::set_has_batch() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void GetScoreValueArgs::clear_has_batch() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void GetScoreValueArgs::clear_batch() {
+  if (batch_ != NULL) batch_->::artm::Batch::Clear();
+  clear_has_batch();
+}
+inline const ::artm::Batch& GetScoreValueArgs::batch() const {
+  return batch_ != NULL ? *batch_ : *default_instance_->batch_;
+}
+inline ::artm::Batch* GetScoreValueArgs::mutable_batch() {
+  set_has_batch();
+  if (batch_ == NULL) batch_ = new ::artm::Batch;
+  return batch_;
+}
+inline ::artm::Batch* GetScoreValueArgs::release_batch() {
+  clear_has_batch();
+  ::artm::Batch* temp = batch_;
+  batch_ = NULL;
+  return temp;
+}
+inline void GetScoreValueArgs::set_allocated_batch(::artm::Batch* batch) {
+  delete batch_;
+  batch_ = batch;
+  if (batch) {
+    set_has_batch();
+  } else {
+    clear_has_batch();
+  }
 }
 
 

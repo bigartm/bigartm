@@ -224,10 +224,12 @@ int ArtmRequestRegularizerState(int master_id, const char* regularizer_name) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestScore(int master_id, const char* model_name, const char* score_name) {
+int ArtmRequestScore(int master_id, int length, const char* get_score_args) {
   try {
     ::artm::ScoreData score_data;
-    master_component(master_id)->RequestScore(model_name, score_name, &score_data);
+    artm::GetScoreValueArgs args;
+    ParseFromArray(get_score_args, length, &args);
+    master_component(master_id)->RequestScore(args, &score_data);
     score_data.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

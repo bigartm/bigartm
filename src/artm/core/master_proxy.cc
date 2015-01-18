@@ -159,13 +159,10 @@ bool MasterProxy::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
   return true;
 }
 
-bool MasterProxy::RequestScore(const ModelName& model_name, const ScoreName& score_name,
+bool MasterProxy::RequestScore(const GetScoreValueArgs& get_score_args,
                                ::artm::ScoreData* score_data) {
   make_rpcz_call([&]() {
-    RequestScoreArgs request;
-    request.set_model_name(model_name);
-    request.set_score_name(score_name);
-    node_controller_service_proxy_->RequestScore(request, score_data, communication_timeout_);
+    node_controller_service_proxy_->RequestScore(get_score_args, score_data, communication_timeout_);
   }, "MasterProxy::RequestScore");
 
   return true;

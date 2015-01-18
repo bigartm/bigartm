@@ -1812,3 +1812,33 @@ Represents an argument of get theta matrix operation.
   Note that this field acts similar to :attr:`GetThetaMatrixArgs.topic_name`.
   It is not allowed to specify both *topic_index* and *topic_name* at the same time.
   The recommendation is to use *topic_name*.
+
+
+.. _GetScoreValueArgs:
+
+GetScoreValueArgs
+=================
+
+Represents an argument of get score operation.
+
+.. code-block:: bash
+
+  message GetScoreValueArgs {
+    optional string model_name = 1;
+    optional string score_name = 2;
+    optional Batch batch = 3;
+  }
+
+.. attribute:: GetScore ValueArgs.model_name
+
+  The name of the model to retrieved score for.
+
+.. attribute:: GetScoreValueArgs.score_name
+
+  The name of the score to retrieved.
+
+.. attribute:: GetScoreValueArgs.batch
+
+  The :ref:`Batch` to calculate the score.
+  This option is only applicable to cumulative scores.
+  When not provided the score will be reported for all batches processed since last :c:func:`ArtmInvokeIteration`.

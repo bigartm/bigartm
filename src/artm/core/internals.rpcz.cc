@@ -81,53 +81,51 @@ void rpcz_protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "larizer_name\030\002 \001(\t\"O\n!CreateOrReconfigur"
     "eDictionaryArgs\022*\n\ndictionary\030\002 \001(\0132\026.ar"
     "tm.DictionaryConfig\"0\n\025DisposeDictionary"
-    "Args\022\027\n\017dictionary_name\030\002 \001(\t\":\n\020Request"
-    "ScoreArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_n"
-    "ame\030\002 \001(\t2\375\001\n\026MasterComponentService\0229\n\013"
-    "UpdateModel\022\031.artm.core.ModelIncrement\032\017"
-    ".artm.core.Void\022:\n\rRetrieveModel\022\027.artm."
-    "GetTopicModelArgs\032\020.artm.TopicModel\0225\n\016R"
-    "equestBatches\022\016.artm.core.Int\032\023.artm.cor"
-    "e.BatchIds\0225\n\rReportBatches\022\023.artm.core."
-    "BatchIds\032\017.artm.core.Void2\341\013\n\025NodeContro"
-    "llerService\022K\n\033CreateOrReconfigureInstan"
-    "ce\022\033.artm.MasterComponentConfig\032\017.artm.c"
-    "ore.Void\0223\n\017DisposeInstance\022\017.artm.core."
-    "Void\032\017.artm.core.Void\022R\n\"CreateOrReconfi"
-    "gureMasterComponent\022\033.artm.MasterCompone"
-    "ntConfig\032\017.artm.core.Void\022:\n\026DisposeMast"
-    "erComponent\022\017.artm.core.Void\032\017.artm.core"
-    ".Void\022T\n\030CreateOrReconfigureModel\022\'.artm"
-    ".core.CreateOrReconfigureModelArgs\032\017.art"
-    "m.core.Void\022<\n\014DisposeModel\022\033.artm.core."
-    "DisposeModelArgs\032\017.artm.core.Void\022`\n\036Cre"
-    "ateOrReconfigureRegularizer\022-.artm.core."
-    "CreateOrReconfigureRegularizerArgs\032\017.art"
-    "m.core.Void\022H\n\022DisposeRegularizer\022!.artm"
-    ".core.DisposeRegularizerArgs\032\017.artm.core"
-    ".Void\022^\n\035CreateOrReconfigureDictionary\022,"
-    ".artm.core.CreateOrReconfigureDictionary"
-    "Args\032\017.artm.core.Void\022F\n\021DisposeDictiona"
-    "ry\022 .artm.core.DisposeDictionaryArgs\032\017.a"
-    "rtm.core.Void\0227\n\023ForcePullTopicModel\022\017.a"
-    "rtm.core.Void\032\017.artm.core.Void\022@\n\034ForceP"
-    "ushTopicModelIncrement\022\017.artm.core.Void\032"
-    "\017.artm.core.Void\0228\n\023OverwriteTopicModel\022"
-    "\020.artm.TopicModel\032\017.artm.core.Void\022>\n\021Re"
-    "questTopicModel\022\027.artm.GetTopicModelArgs"
-    "\032\020.artm.TopicModel\022L\n\027RequestRegularizer"
-    "State\022\021.artm.core.String\032\036.artm.Regulari"
-    "zerInternalState\022A\n\022RequestThetaMatrix\022\030"
-    ".artm.GetThetaMatrixArgs\032\021.artm.ThetaMat"
-    "rix\022<\n\014RequestScore\022\033.artm.core.RequestS"
-    "coreArgs\032\017.artm.ScoreData\022(\n\010AddBatch\022\013."
-    "artm.Batch\032\017.artm.core.Void\0223\n\017InvokeIte"
-    "ration\022\017.artm.core.Void\032\017.artm.core.Void"
-    "\022+\n\010WaitIdle\022\017.artm.core.Void\032\016.artm.cor"
-    "e.Int\022\?\n\020SynchronizeModel\022\032.artm.Synchro"
-    "nizeModelArgs\032\017.artm.core.Void\022=\n\017Initia"
-    "lizeModel\022\031.artm.InitializeModelArgs\032\017.a"
-    "rtm.core.Void", 3213);
+    "Args\022\027\n\017dictionary_name\030\002 \001(\t2\375\001\n\026Master"
+    "ComponentService\0229\n\013UpdateModel\022\031.artm.c"
+    "ore.ModelIncrement\032\017.artm.core.Void\022:\n\rR"
+    "etrieveModel\022\027.artm.GetTopicModelArgs\032\020."
+    "artm.TopicModel\0225\n\016RequestBatches\022\016.artm"
+    ".core.Int\032\023.artm.core.BatchIds\0225\n\rReport"
+    "Batches\022\023.artm.core.BatchIds\032\017.artm.core"
+    ".Void2\335\013\n\025NodeControllerService\022K\n\033Creat"
+    "eOrReconfigureInstance\022\033.artm.MasterComp"
+    "onentConfig\032\017.artm.core.Void\0223\n\017DisposeI"
+    "nstance\022\017.artm.core.Void\032\017.artm.core.Voi"
+    "d\022R\n\"CreateOrReconfigureMasterComponent\022"
+    "\033.artm.MasterComponentConfig\032\017.artm.core"
+    ".Void\022:\n\026DisposeMasterComponent\022\017.artm.c"
+    "ore.Void\032\017.artm.core.Void\022T\n\030CreateOrRec"
+    "onfigureModel\022\'.artm.core.CreateOrReconf"
+    "igureModelArgs\032\017.artm.core.Void\022<\n\014Dispo"
+    "seModel\022\033.artm.core.DisposeModelArgs\032\017.a"
+    "rtm.core.Void\022`\n\036CreateOrReconfigureRegu"
+    "larizer\022-.artm.core.CreateOrReconfigureR"
+    "egularizerArgs\032\017.artm.core.Void\022H\n\022Dispo"
+    "seRegularizer\022!.artm.core.DisposeRegular"
+    "izerArgs\032\017.artm.core.Void\022^\n\035CreateOrRec"
+    "onfigureDictionary\022,.artm.core.CreateOrR"
+    "econfigureDictionaryArgs\032\017.artm.core.Voi"
+    "d\022F\n\021DisposeDictionary\022 .artm.core.Dispo"
+    "seDictionaryArgs\032\017.artm.core.Void\0227\n\023For"
+    "cePullTopicModel\022\017.artm.core.Void\032\017.artm"
+    ".core.Void\022@\n\034ForcePushTopicModelIncreme"
+    "nt\022\017.artm.core.Void\032\017.artm.core.Void\0228\n\023"
+    "OverwriteTopicModel\022\020.artm.TopicModel\032\017."
+    "artm.core.Void\022>\n\021RequestTopicModel\022\027.ar"
+    "tm.GetTopicModelArgs\032\020.artm.TopicModel\022L"
+    "\n\027RequestRegularizerState\022\021.artm.core.St"
+    "ring\032\036.artm.RegularizerInternalState\022A\n\022"
+    "RequestThetaMatrix\022\030.artm.GetThetaMatrix"
+    "Args\032\021.artm.ThetaMatrix\0228\n\014RequestScore\022"
+    "\027.artm.GetScoreValueArgs\032\017.artm.ScoreDat"
+    "a\022(\n\010AddBatch\022\013.artm.Batch\032\017.artm.core.V"
+    "oid\0223\n\017InvokeIteration\022\017.artm.core.Void\032"
+    "\017.artm.core.Void\022+\n\010WaitIdle\022\017.artm.core"
+    ".Void\032\016.artm.core.Int\022\?\n\020SynchronizeMode"
+    "l\022\032.artm.SynchronizeModelArgs\032\017.artm.cor"
+    "e.Void\022=\n\017InitializeModel\022\031.artm.Initial"
+    "izeModelArgs\032\017.artm.core.Void", 3149);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&rpcz_protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto);
@@ -445,7 +443,7 @@ void NodeControllerService::RequestThetaMatrix(const ::artm::GetThetaMatrixArgs&
               "Method RequestThetaMatrix() not implemented.");
 }
 
-void NodeControllerService::RequestScore(const ::artm::core::RequestScoreArgs&,
+void NodeControllerService::RequestScore(const ::artm::GetScoreValueArgs&,
                          ::rpcz::reply< ::artm::ScoreData> reply) {
   reply.Error(::rpcz::application_error::METHOD_NOT_IMPLEMENTED,
               "Method RequestScore() not implemented.");
@@ -568,7 +566,7 @@ void NodeControllerService::call_method(const ::google::protobuf::MethodDescript
       break;
     case 16:
       RequestScore(
-          *::google::protobuf::down_cast<const ::artm::core::RequestScoreArgs*>(&request),
+          *::google::protobuf::down_cast<const ::artm::GetScoreValueArgs*>(&request),
           ::rpcz::reply< ::artm::ScoreData>(channel));
       break;
     case 17:
@@ -639,7 +637,7 @@ const ::google::protobuf::Message& NodeControllerService::GetRequestPrototype(
     case 15:
       return ::artm::GetThetaMatrixArgs::default_instance();
     case 16:
-      return ::artm::core::RequestScoreArgs::default_instance();
+      return ::artm::GetScoreValueArgs::default_instance();
     case 17:
       return ::artm::Batch::default_instance();
     case 18:
@@ -1059,7 +1057,7 @@ void NodeControllerService_Stub::RequestThetaMatrix(const ::artm::GetThetaMatrix
     throw ::rpcz::rpc_error(rpc);
   }
 }
-void NodeControllerService_Stub::RequestScore(const ::artm::core::RequestScoreArgs& request,
+void NodeControllerService_Stub::RequestScore(const ::artm::GetScoreValueArgs& request,
                               ::artm::ScoreData* response,
                               ::rpcz::rpc* rpc,
                               ::rpcz::closure* done) {
@@ -1067,7 +1065,7 @@ void NodeControllerService_Stub::RequestScore(const ::artm::core::RequestScoreAr
                         NodeControllerService::descriptor()->method(16),
                         request, response, rpc, done);
 }
-void NodeControllerService_Stub::RequestScore(const ::artm::core::RequestScoreArgs& request,
+void NodeControllerService_Stub::RequestScore(const ::artm::GetScoreValueArgs& request,
                               ::artm::ScoreData* response,
                               long deadline_ms) {
   ::rpcz::rpc rpc;

@@ -41,7 +41,7 @@ class MasterProxy : boost::noncopyable, public MasterInterface {
                                        ::artm::RegularizerInternalState* regularizer_state);
   virtual bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                   ::artm::ThetaMatrix* theta_matrix);
-  virtual bool RequestScore(const ModelName& model_name, const ScoreName& score_name,
+  virtual bool RequestScore(const GetScoreValueArgs& get_score_args,
                             ScoreData* score_data);
 
   virtual void AddBatch(const Batch& batch);

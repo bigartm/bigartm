@@ -143,6 +143,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
 
   std::shared_ptr<artm::TopicModel> topic_model;
   double expected_normalizer = 0;
+  double previous_perplexity = 0;
   for (int iter = 0; iter < 5; ++iter) {
     if (!online_processing) master_component->InvokeIteration(1);
     else                    master_component->AddBatch(batch);
@@ -163,6 +164,20 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     topic_model = master_component->GetTopicModel(args);
     std::shared_ptr< ::artm::PerplexityScore> perplexity =
       master_component->GetScoreAs< ::artm::PerplexityScore>(model, "PerplexityScore");
+
+    if (!online_processing && !is_network_mode) {
+      if (iter > 0)
+        EXPECT_EQ(perplexity->value(), previous_perplexity);
+
+      artm::GetScoreValueArgs score_args;
+      score_args.set_model_name(model.name());
+      score_args.set_score_name("PerplexityScore");
+      score_args.mutable_batch()->CopyFrom(batch);
+      auto perplexity_data = master_component->GetScore(score_args);
+      auto perplexity2 = std::make_shared< ::artm::PerplexityScore>();
+      perplexity2->ParseFromString(perplexity_data->data());
+      previous_perplexity = perplexity2->value();
+    }
 
     if (iter == 1) {
       expected_normalizer = perplexity->normalizer();

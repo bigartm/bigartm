@@ -47,7 +47,7 @@ class NodeControllerServiceImpl : public NodeControllerService {
                        ::rpcz::reply< ::artm::RegularizerInternalState> response);
   virtual void RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& request,
                        ::rpcz::reply< ::artm::ThetaMatrix> response);
-  virtual void RequestScore(const ::artm::core::RequestScoreArgs& request,
+  virtual void RequestScore(const ::artm::GetScoreValueArgs& request,
                        ::rpcz::reply< ::artm::ScoreData> response);
   virtual void AddBatch(const ::artm::Batch& request,
                        ::rpcz::reply< ::artm::core::Void> response);

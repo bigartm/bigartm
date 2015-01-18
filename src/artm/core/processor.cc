@@ -57,62 +57,6 @@ Processor::~Processor() {
   }
 }
 
-Processor::StreamIterator::StreamIterator(const ProcessorInput& processor_input)
-    : items_count_(processor_input.batch().item_size()),
-      item_index_(-1),  // // handy trick for iterators
-      stream_flags_(nullptr),
-      processor_input_(processor_input) {
-}
-
-const Item* Processor::StreamIterator::Next() {
-  for (;;) {
-    item_index_++;  // handy trick pays you back!
-
-    if (item_index_ >= items_count_) {
-      // reached the end of the stream
-      break;
-    }
-
-    if (!stream_flags_ || stream_flags_->value(item_index_)) {
-      // found item that is included in the stream
-      break;
-    }
-  }
-
-  return Current();
-}
-
-const Item* Processor::StreamIterator::Current() const {
-  if (item_index_ >= items_count_)
-    return nullptr;
-
-  return &(processor_input_.batch().item(item_index_));
-}
-
-bool Processor::StreamIterator::InStream(const std::string& stream_name) {
-  if (item_index_ >= items_count_)
-    return false;
-
-  int index_of_stream = repeated_field_index_of(processor_input_.stream_name(), stream_name);
-  if (index_of_stream == -1) {
-    return true;
-  }
-
-  return processor_input_.stream_mask(index_of_stream).value(item_index_);
-}
-
-bool Processor::StreamIterator::InStream(int stream_index) {
-  if (stream_index == -1)
-    return true;
-
-  assert(stream_index >= 0 && stream_index < processor_input_.stream_name_size());
-
-  if (item_index_ >= items_count_)
-    return false;
-
-  return processor_input_.stream_mask(stream_index).value(item_index_);
-}
-
 static std::shared_ptr<ModelIncrement>
 InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_config,
                          const ::artm::core::TopicModel& topic_model) {
@@ -465,13 +409,48 @@ static const DataLoaderCacheEntry* FindCacheEntry(const ProcessorInput& part, co
   return nullptr;
 }
 
-void Processor::FindThetaMatrix(const Batch& batch, const GetThetaMatrixArgs& args,
-                                ThetaMatrix* result) {
+static std::shared_ptr<Score>
+CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, const Batch& batch,
+           const TopicModel& topic_model, const DenseMatrix<float>& theta_matrix,
+           const ProcessorInput* part) {
+  if (!score_calc->is_cumulative())
+    return nullptr;
+
+  std::vector<Token> token_dict;
+  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
+    token_dict.push_back(Token(batch.class_id(token_index), batch.token(token_index)));
+  }
+
+  std::shared_ptr<Score> score = score_calc->CreateScore();
+  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+    const Item& item = batch.item(item_index);
+
+    if (part != nullptr) {
+      int index_of_stream = repeated_field_index_of(part->stream_name(), score_calc->stream_name());
+      if ((index_of_stream != -1) && !part->stream_mask(index_of_stream).value(item_index))
+        continue;
+    }
+
+    std::vector<float> theta_vec;
+    assert(theta_matrix.no_rows() == topic_model.topic_size());
+    for (int topic_index = 0; topic_index < theta_matrix.no_rows(); ++topic_index) {
+      theta_vec.push_back(theta_matrix(topic_index, item_index));
+    }
+
+    score_calc->AppendScore(item, token_dict, topic_model, theta_vec, score.get());
+  }
+
+  return score;
+}
+
+void Processor::FindThetaMatrix(const Batch& batch,
+                                const GetThetaMatrixArgs& args, ThetaMatrix* result,
+                                const GetScoreValueArgs& score_args, ScoreData* score_result) {
   util::Blas* blas = util::Blas::mkl();
   if ((blas == nullptr) || !blas->is_loaded())
     blas = util::Blas::builtin();
 
-  std::string model_name = args.model_name();
+  std::string model_name = args.has_model_name() ? args.model_name() : score_args.model_name();
   std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
   if (topic_model == nullptr)
     BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find topic model", model_name));
@@ -511,18 +490,31 @@ void Processor::FindThetaMatrix(const Batch& batch, const GetThetaMatrixArgs& ar
       theta_matrix.get(), blas);
   }
 
-  DataLoaderCacheEntry cache_entry;
-  cache_entry.set_model_name(model_name);
-  cache_entry.mutable_topic_name()->CopyFrom(topic_model->topic_name());
-  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    const Item& item = batch.item(item_index);
-    cache_entry.add_item_id(item.id());
-    FloatArray* item_weights = cache_entry.add_theta();
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index)
-      item_weights->add_value((*theta_matrix)(topic_index, item_index));
+  if (result != nullptr) {
+    DataLoaderCacheEntry cache_entry;
+    cache_entry.set_model_name(model_name);
+    cache_entry.mutable_topic_name()->CopyFrom(topic_model->topic_name());
+    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+      const Item& item = batch.item(item_index);
+      cache_entry.add_item_id(item.id());
+      FloatArray* item_weights = cache_entry.add_theta();
+      for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+        item_weights->add_value((*theta_matrix)(topic_index, item_index));
+    }
+
+    BatchHelpers::PopulateThetaMatrixFromCacheEntry(cache_entry, args, result);
   }
 
-  BatchHelpers::PopulateThetaMatrixFromCacheEntry(cache_entry, args, result);
+  if (score_result != nullptr) {
+    auto score_calc = schema->score_calculator(score_args.score_name());
+    if (score_calc == nullptr)
+      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find score calculator ", score_args.score_name()));
+
+    auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, *theta_matrix, nullptr);
+    score_result->set_data(score_value->SerializeAsString());
+    score_result->set_type(score_calc->score_type());
+    score_result->set_name(score_args.score_name());
+  }
 }
 
 void Processor::ThreadFunction() {
@@ -681,9 +673,9 @@ void Processor::ThreadFunction() {
           model_increment->add_cache()->CopyFrom(new_cache_entry);
         }
 
-        std::map<ScoreName, std::shared_ptr<Score>> score_container;
         for (int score_index = 0; score_index < model_config.score_name_size(); ++score_index) {
           const ScoreName& score_name = model_config.score_name(score_index);
+
           auto score_calc = schema->score_calculator(score_name);
           if (score_calc == nullptr) {
             LOG(ERROR) << "Unable to find score calculator '" << score_name << "', referenced by "
@@ -691,45 +683,11 @@ void Processor::ThreadFunction() {
             continue;
           }
 
-          if (!score_calc->is_cumulative())
-            continue;  // skip all non-cumulative scores
-
-          score_container.insert(std::make_pair(score_name, score_calc->CreateScore()));
-        }
-
-        std::vector<Token> token_dict;
-        for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
-          token_dict.push_back(Token(batch.class_id(token_index), batch.token(token_index)));
-        }
-
-        StreamIterator iter(*part);
-        while (iter.Next() != nullptr) {
-          const Item* item = iter.Current();
-
-          // Calculate all requested scores (such as perplexity)
-          for (auto score_iter = score_container.begin();
-               score_iter != score_container.end();
-               ++score_iter) {
-            const ScoreName& score_name = score_iter->first;
-            std::shared_ptr<Score> score = score_iter->second;
-            auto score_calc = schema->score_calculator(score_name);
-
-            if (!iter.InStream(score_calc->stream_name())) continue;
-
-            int item_index = iter.item_index();
-            std::vector<float> theta_vec;
-            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-              theta_vec.push_back((*theta_matrix)(topic_index, item_index));
-            }
-            score_calc->AppendScore(*item, token_dict, *topic_model, theta_vec, score.get());
-          }
-        }
-
-        for (auto score_iter = score_container.begin();
-             score_iter != score_container.end();
-             ++score_iter) {
-          model_increment->add_score_name(score_iter->first);
-          model_increment->add_score(score_iter->second->SerializeAsString());
+          auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, *theta_matrix, part.get());
+          if (score_value == nullptr)
+            continue;
+          model_increment->add_score_name(score_name);
+          model_increment->add_score(score_value->SerializeAsString());
         }
       });
 

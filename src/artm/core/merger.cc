@@ -422,34 +422,34 @@ void Merger::ScoresMerger::RetrieveModelIncrement(const ModelName& model_name,
   }
 }
 
-bool Merger::ScoresMerger::RequestScore(const ModelName& model_name, const ScoreName& score_name,
+bool Merger::ScoresMerger::RequestScore(const GetScoreValueArgs& get_score_args,
                                         ScoreData *score_data) const {
-  auto score_calculator = schema_->get()->score_calculator(score_name);
+  auto score_calculator = schema_->get()->score_calculator(get_score_args.score_name());
   if (score_calculator == nullptr) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Attempt to request non-existing score"));
   }
 
   if (score_calculator->is_cumulative()) {
-    auto score = score_map_.get(ScoreKey(model_name, score_name));
+    auto score = score_map_.get(ScoreKey(get_score_args.model_name(), get_score_args.score_name()));
     if (score == nullptr) {
       score_data->set_data(score_calculator->CreateScore()->SerializeAsString());
     } else {
       score_data->set_data(score->SerializeAsString());
     }
   } else {
-    std::shared_ptr< ::artm::core::TopicModel> model = topic_model_->get(model_name);
+    std::shared_ptr< ::artm::core::TopicModel> model = topic_model_->get(get_score_args.model_name());
     std::shared_ptr<Score> score = score_calculator->CalculateScore(*model);
     score_data->set_data(score->SerializeAsString());
   }
 
   score_data->set_type(score_calculator->score_type());
-  score_data->set_name(score_name);
+  score_data->set_name(get_score_args.score_name());
   return true;
 }
 
-bool Merger::RequestScore(const ModelName& model_name, const ScoreName& score_name,
+bool Merger::RequestScore(const GetScoreValueArgs& get_score_args,
                           ScoreData *score_data) const {
-  return scores_merger_.RequestScore(model_name, score_name, score_data);
+  return scores_merger_.RequestScore(get_score_args, score_data);
 }
 
 void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,

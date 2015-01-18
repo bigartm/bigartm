@@ -74,17 +74,10 @@ class MasterComponent {
     const std::string& regularizer_name);
   std::shared_ptr<ThetaMatrix> GetThetaMatrix(const std::string& model_name);
   std::shared_ptr<ThetaMatrix> GetThetaMatrix(const GetThetaMatrixArgs& args);
-  std::shared_ptr<ScoreData> GetScore(const Model& model,
-                                      const std::string& score_name);
+  std::shared_ptr<ScoreData> GetScore(const GetScoreValueArgs& args);
 
   template <typename T>
-  std::shared_ptr<T> GetScoreAs(const Model& model,
-                                const std::string& score_name) {
-    auto score_data = GetScore(model, score_name);
-    auto score = std::make_shared<T>();
-    score->ParseFromString(score_data->data());
-    return score;
-  }
+  std::shared_ptr<T> GetScoreAs(const Model& model, const std::string& score_name);
 
   void Reconfigure(const MasterComponentConfig& config);
   void AddBatch(const Batch& batch);
@@ -174,6 +167,18 @@ class Dictionary {
   DictionaryConfig config_;
   DISALLOW_COPY_AND_ASSIGN(Dictionary);
 };
+
+template <typename T>
+std::shared_ptr<T> MasterComponent::GetScoreAs(const Model& model,
+                                               const std::string& score_name) {
+  GetScoreValueArgs args;
+  args.set_model_name(model.name().c_str());
+  args.set_score_name(score_name.c_str());
+  auto score_data = GetScore(args);
+  auto score = std::make_shared<T>();
+  score->ParseFromString(score_data->data());
+  return score;
+}
 
 }  // namespace artm
 

@@ -377,9 +377,10 @@ Score
 
       Returns the string name of the score.
 
-   .. py:method:: GetValue(model)
+   .. py:method:: GetValue(model = None, batch = None)
 
       Retrieves the score for a specific model.
+      For cumulative scores such as Perplexity of ThetaSparsity score it is possible to use *batch* argument.
 
 Dictionary
 ==========
