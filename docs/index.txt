@@ -12,6 +12,7 @@ Welcome to BigARTM's documentation!
    :maxdepth: 2
 
    intro
+   download
    tutorial
    network
    faq
