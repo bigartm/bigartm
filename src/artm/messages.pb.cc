@@ -981,9 +981,10 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetThetaMatrixArgs));
   GetScoreValueArgs_descriptor_ = file->message_type(44);
-  static const int GetScoreValueArgs_offsets_[2] = {
+  static const int GetScoreValueArgs_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetScoreValueArgs, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetScoreValueArgs, score_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetScoreValueArgs, batch_),
   };
   GetScoreValueArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1365,8 +1366,9 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     " \003(\t\022\020\n\010class_id\030\004 \003(\t\"m\n\022GetThetaMatrix"
     "Args\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132"
     "\013.artm.Batch\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013topi"
-    "c_index\030\004 \003(\005\";\n\021GetScoreValueArgs\022\022\n\nmo"
-    "del_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t", 5834);
+    "c_index\030\004 \003(\005\"W\n\021GetScoreValueArgs\022\022\n\nmo"
+    "del_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005ba"
+    "tch\030\003 \001(\0132\013.artm.Batch", 5862);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -17087,6 +17089,7 @@ void GetThetaMatrixArgs::Swap(GetThetaMatrixArgs* other) {
 #ifndef _MSC_VER
 const int GetScoreValueArgs::kModelNameFieldNumber;
 const int GetScoreValueArgs::kScoreNameFieldNumber;
+const int GetScoreValueArgs::kBatchFieldNumber;
 #endif  // !_MSC_VER
 
 GetScoreValueArgs::GetScoreValueArgs()
@@ -17095,6 +17098,7 @@ GetScoreValueArgs::GetScoreValueArgs()
 }
 
 void GetScoreValueArgs::InitAsDefaultInstance() {
+  batch_ = const_cast< ::artm::Batch*>(&::artm::Batch::default_instance());
 }
 
 GetScoreValueArgs::GetScoreValueArgs(const GetScoreValueArgs& from)
@@ -17107,6 +17111,7 @@ void GetScoreValueArgs::SharedCtor() {
   _cached_size_ = 0;
   model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   score_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  batch_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -17122,6 +17127,7 @@ void GetScoreValueArgs::SharedDtor() {
     delete score_name_;
   }
   if (this != default_instance_) {
+    delete batch_;
   }
 }
 
@@ -17157,6 +17163,9 @@ void GetScoreValueArgs::Clear() {
       if (score_name_ != &::google::protobuf::internal::GetEmptyString()) {
         score_name_->clear();
       }
+    }
+    if (has_batch()) {
+      if (batch_ != NULL) batch_->::artm::Batch::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -17195,6 +17204,20 @@ bool GetScoreValueArgs::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
             this->score_name().data(), this->score_name().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_batch;
+        break;
+      }
+
+      // optional .artm.Batch batch = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_batch:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_batch()));
         } else {
           goto handle_uninterpreted;
         }
@@ -17238,6 +17261,12 @@ void GetScoreValueArgs::SerializeWithCachedSizes(
       2, this->score_name(), output);
   }
 
+  // optional .artm.Batch batch = 3;
+  if (has_batch()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->batch(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -17266,6 +17295,13 @@ void GetScoreValueArgs::SerializeWithCachedSizes(
         2, this->score_name(), target);
   }
 
+  // optional .artm.Batch batch = 3;
+  if (has_batch()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        3, this->batch(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -17289,6 +17325,13 @@ int GetScoreValueArgs::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->score_name());
+    }
+
+    // optional .artm.Batch batch = 3;
+    if (has_batch()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->batch());
     }
 
   }
@@ -17324,6 +17367,9 @@ void GetScoreValueArgs::MergeFrom(const GetScoreValueArgs& from) {
     if (from.has_score_name()) {
       set_score_name(from.score_name());
     }
+    if (from.has_batch()) {
+      mutable_batch()->::artm::Batch::MergeFrom(from.batch());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -17349,6 +17395,7 @@ void GetScoreValueArgs::Swap(GetScoreValueArgs* other) {
   if (other != this) {
     std::swap(model_name_, other->model_name_);
     std::swap(score_name_, other->score_name_);
+    std::swap(batch_, other->batch_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

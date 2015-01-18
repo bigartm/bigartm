@@ -182,7 +182,26 @@ void MasterComponent::RequestRegularizerState(RegularizerName regularizer_name,
 
 bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
                                    ScoreData* score_data) {
-  return instance_->merger()->RequestScore(get_score_args, score_data);
+  if (!get_score_args.has_batch()) {
+    return instance_->merger()->RequestScore(get_score_args, score_data);
+  }
+
+  if (isInLocalModusOperandi()) {
+    if (instance_->processor_size() == 0)
+      BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
+    Batch batch(get_score_args.batch());
+    BatchHelpers::PopulateClassId(&batch);
+    instance_->processor(0)->FindThetaMatrix(batch, GetThetaMatrixArgs(), nullptr, get_score_args, score_data);
+    return true;
+  }
+
+  if (isInNetworkModusOperandi()) {
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "RequestScore with custom batch is not supported in Network modus operandi"));
+  }
+
+  BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
+    "MasterComponentConfig.modus_operandi", config_.get()->modus_operandi()));
 }
 
 void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
@@ -203,7 +222,7 @@ bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
         BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
       Batch batch(get_theta_args.batch());
       BatchHelpers::PopulateClassId(&batch);
-      instance_->processor(0)->FindThetaMatrix(batch, get_theta_args, theta_matrix);
+      instance_->processor(0)->FindThetaMatrix(batch, get_theta_args, theta_matrix, GetScoreValueArgs(), nullptr);
       return true;
     }
   }

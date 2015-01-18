@@ -120,7 +120,7 @@ void InstanceSchema::clear_score_calculator(const ScoreName& name) {
 }
 
 std::shared_ptr<ScoreCalculatorInterface> InstanceSchema::score_calculator(
-    const ScoreName& name) {
+    const ScoreName& name) const {
   auto iter = score_calculators_.find(name);
   if (iter != score_calculators_.end()) {
     return iter->second;

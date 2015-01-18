@@ -377,10 +377,10 @@ Score
 
       Returns the string name of the score.
 
-   .. py:method:: GetValue(model = None, args = messages_pb2.GetScoreValueArgs())
+   .. py:method:: GetValue(model = None, batch = None)
 
       Retrieves the score for a specific model.
-      For full functionality use :ref:`GetScoreValueArgs`.
+      For cumulative scores such as Perplexity of ThetaSparsity score it is possible to use *batch* argument.
 
 Dictionary
 ==========

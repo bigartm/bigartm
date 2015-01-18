@@ -594,10 +594,13 @@ class Score:
   def name(self) :
     return self.score_name_
 
-  def GetValue(self, model = None, args = messages_pb2.GetScoreValueArgs()) :
+  def GetValue(self, model = None, batch = None) :
+    args = messages_pb2.GetScoreValueArgs()
     args.score_name = self.score_name_
     if (model is not None):
         args.model_name = model.name()
+    if (batch is not None):
+      args.batch.CopyFrom(batch)
     args_blob = args.SerializeToString()
     length = HandleErrorCode(self.lib_,
                              self.lib_.ArtmRequestScore(self.master_id_, len(args_blob), args_blob))

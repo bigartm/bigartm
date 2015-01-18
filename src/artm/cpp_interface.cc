@@ -168,12 +168,8 @@ std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatri
   return theta_matrix;
 }
 
-std::shared_ptr<ScoreData> MasterComponent::GetScore(const Model& model,
-                                                     const std::string& score_name) {
+std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& args) {
   std::string args_blob;
-  GetScoreValueArgs args;
-  args.set_model_name(model.name().c_str());
-  args.set_score_name(score_name.c_str());
   args.SerializeToString(&args_blob);
   int length = HandleErrorCode(ArtmRequestScore(id(), args_blob.size(), args_blob.c_str()));
   std::string blob;

@@ -39,7 +39,9 @@ class Processor : boost::noncopyable {
 
   ~Processor();
 
-  void FindThetaMatrix(const Batch& batch, const GetThetaMatrixArgs& args, ThetaMatrix* theta_matrix);
+  void FindThetaMatrix(const Batch& batch,
+                       const GetThetaMatrixArgs& args, ThetaMatrix* theta_matrix,
+                       const GetScoreValueArgs& score_args, ScoreData* score_result);
 
  private:
   ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue_;
