@@ -162,7 +162,7 @@ MasterComponent
 
       Creates an instance of ItemsProcessedScore.
 
-   .. py:method:: CreateTopTokensScore(self, name = None, config = messages_pb2.TopTokensScoreConfig(), num_tokens = None)
+   .. py:method:: CreateTopTokensScore(self, name = None, config = messages_pb2.TopTokensScoreConfig(), num_tokens = None, class_id = None)
 
       Creates an instance of TopTokensScore.
 
