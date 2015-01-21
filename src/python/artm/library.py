@@ -278,11 +278,14 @@ class MasterComponent:
       name = "ItemsProcessedScore:" + uuid.uuid1().urn
     return self.CreateScore(name, ScoreConfig_Type_ItemsProcessed, config)
 
-  def CreateTopTokensScore(self, name = None, config = messages_pb2.TopTokensScoreConfig(), num_tokens = None):
+  def CreateTopTokensScore(self, name = None, config = messages_pb2.TopTokensScoreConfig(), num_tokens = None,
+                           class_id = None):
     if (name is None):
       name = "TopTokensScore:" + uuid.uuid1().urn
     if (num_tokens is not None):
       config.num_tokens = num_tokens
+    if (class_id is not None):
+      config.class_id = class_id
     return self.CreateScore(name, ScoreConfig_Type_TopTokens, config)
 
   def CreateThetaSnippetScore(self, name = None, config = messages_pb2.ThetaSnippetScoreConfig()):
@@ -652,7 +655,7 @@ class Visualizers:
     for i in range(0, top_tokens_score.num_entries):
       if (top_tokens_score.topic_index[i] != topic_index):
         topic_index = top_tokens_score.topic_index[i]
-        print "\nTopic#" + str(i+1) + ": ",
+        print "\nTopic#" + str(topic_index+1) + ": ",
       print top_tokens_score.token[i] + "(%.2f) " % top_tokens_score.weight[i],
 
   @staticmethod

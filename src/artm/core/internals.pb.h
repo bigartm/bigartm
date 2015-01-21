@@ -56,11 +56,12 @@ enum ModelIncrement_OperationType {
   ModelIncrement_OperationType_CreateIfNotExist = 0,
   ModelIncrement_OperationType_IncrementValue = 1,
   ModelIncrement_OperationType_OverwriteValue = 2,
-  ModelIncrement_OperationType_DeleteToken = 3
+  ModelIncrement_OperationType_DeleteToken = 3,
+  ModelIncrement_OperationType_SkipToken = 4
 };
 bool ModelIncrement_OperationType_IsValid(int value);
 const ModelIncrement_OperationType ModelIncrement_OperationType_OperationType_MIN = ModelIncrement_OperationType_CreateIfNotExist;
-const ModelIncrement_OperationType ModelIncrement_OperationType_OperationType_MAX = ModelIncrement_OperationType_DeleteToken;
+const ModelIncrement_OperationType ModelIncrement_OperationType_OperationType_MAX = ModelIncrement_OperationType_SkipToken;
 const int ModelIncrement_OperationType_OperationType_ARRAYSIZE = ModelIncrement_OperationType_OperationType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ModelIncrement_OperationType_descriptor();
@@ -843,6 +844,7 @@ class ModelIncrement : public ::google::protobuf::Message {
   static const OperationType IncrementValue = ModelIncrement_OperationType_IncrementValue;
   static const OperationType OverwriteValue = ModelIncrement_OperationType_OverwriteValue;
   static const OperationType DeleteToken = ModelIncrement_OperationType_DeleteToken;
+  static const OperationType SkipToken = ModelIncrement_OperationType_SkipToken;
   static inline bool OperationType_IsValid(int value) {
     return ModelIncrement_OperationType_IsValid(value);
   }

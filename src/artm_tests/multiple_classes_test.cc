@@ -71,6 +71,31 @@ bool CompareThetaMatrices(const ::artm::ThetaMatrix& t1, const ::artm::ThetaMatr
   return true;
 }
 
+artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2) {
+  artm::Batch batch;
+  for (int i = 0; i < nTokens; i++) {
+    std::stringstream str;
+    str << "token" << i;
+    std::string class_id = (i % 2 == 0) ? class1 : class2;
+    batch.add_token(str.str());
+    batch.add_class_id(class_id);
+  }
+
+  for (int iDoc = 0; iDoc < nDocs; iDoc++) {
+    artm::Item* item = batch.add_item();
+    item->set_id(iDoc);
+    artm::Field* field = item->add_field();
+    for (int iToken = 0; iToken < nTokens; ++iToken) {
+      field->add_token_id(iToken);
+      int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
+      int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
+      field->add_token_count(background_count + topical_count);
+    }
+  }
+
+  return batch;
+}
+
 // artm_tests.exe --gtest_filter=MultipleClasses.BasicTest
 TEST(MultipleClasses, BasicTest) {
   ::artm::MasterComponentConfig master_config;
@@ -92,16 +117,11 @@ TEST(MultipleClasses, BasicTest) {
   int nDocs = 100;
   int nTopics = 10;
 
-  artm::Batch batch;
+  artm::Batch batch = GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
   artm::TopicModel initial_model;
-  for (int i = 0; i < nTokens; i++) {
-    std::stringstream str;
-    str << "token" << i;
-    std::string class_id = (i % 2 == 0) ? "@default_class" : "__custom_class";
-    batch.add_token(str.str());
-    batch.add_class_id(class_id);
-    initial_model.add_token(str.str());
-    initial_model.add_class_id(class_id);
+  for (int i = 0; i < batch.token_size(); i++) {
+    initial_model.add_token(batch.token(i));
+    initial_model.add_class_id(batch.class_id(i));
     initial_model.set_topics_count(nTopics);
     ::artm::FloatArray* token_weights = initial_model.add_token_weights();
     for (int topic_index = 0; topic_index < nTopics; ++topic_index) {
@@ -134,18 +154,6 @@ TEST(MultipleClasses, BasicTest) {
   }
   artm::Model model_reg(master_component, model_config_reg);
   model_reg.Overwrite(initial_model);
-
-  for (int iDoc = 0; iDoc < nDocs; iDoc++) {
-    artm::Item* item = batch.add_item();
-    item->set_id(iDoc);
-    artm::Field* field = item->add_field();
-    for (int iToken = 0; iToken < nTokens; ++iToken) {
-      field->add_token_id(iToken);
-      int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
-      int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
-      field->add_token_count(background_count + topical_count);
-    }
-  }
 
   // Index doc-token matrix
   master_component.AddBatch(batch);
@@ -217,4 +225,77 @@ TEST(MultipleClasses, BasicTest) {
 
   EXPECT_TRUE(CompareThetaMatrices(*theta_matrix3, *theta_matrix1, &max_diff));
   EXPECT_GT(max_diff, 0.001);  // "theta_matrix3 != theta_matrix1");
+}
+
+void configureScore(std::string score_name, std::string class_id, artm::MasterComponentConfig* master_config) {
+  ::artm::ScoreConfig score_config;
+  ::artm::TopTokensScoreConfig top_tokens_config;
+  top_tokens_config.set_num_tokens(4);
+  if (!class_id.empty()) top_tokens_config.set_class_id(class_id);
+  score_config.set_config(top_tokens_config.SerializeAsString());
+  score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
+  score_config.set_name(score_name);
+  master_config->add_score_config()->CopyFrom(score_config);
+}
+
+void PrintTopTokenScore(const ::artm::TopTokensScore& top_tokens) {
+  int topic_index = -1;
+  for (int i = 0; i < top_tokens.num_entries(); i++) {
+    if (top_tokens.topic_index(i) != topic_index) {
+      topic_index = top_tokens.topic_index(i);
+      std::cout << "\n#" << (topic_index + 1) << ": ";
+    }
+
+    std::cout << top_tokens.token(i) << "(" << std::setw(2) << std::setprecision(2) << top_tokens.weight(i) << ") ";
+  }
+}
+
+// artm_tests.exe --gtest_filter=MultipleClasses.WithoutDefaultClass
+TEST(MultipleClasses, WithoutDefaultClass) {
+  ::artm::MasterComponentConfig master_config;
+  configureScore("default_class", "", &master_config);
+  configureScore("tts_class_one", "class_one", &master_config);
+  configureScore("tts_class_two", "class_two", &master_config);
+  ::artm::MasterComponent master_component(master_config);
+
+  // Generate doc-token matrix
+  int nTokens = 60, nDocs = 100, nTopics = 10;
+  artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
+  master_component.AddBatch(batch);
+
+  artm::ModelConfig model_config1;
+  model_config1.set_name("model1"); model_config1.set_topics_count(nTopics);
+  model_config1.add_class_id("class_one"); model_config1.add_class_weight(2.0f);
+  // model_config1.add_score_name("default_class"); model_config1.add_score_name("tts_class_one");
+  // model_config1.add_score_name("tts_class_two");
+  artm::Model model1(master_component, model_config1);
+
+  artm::ModelConfig model_config2;
+  model_config2.set_name("model2"); model_config2.set_topics_count(nTopics);
+  model_config2.add_class_id("class_one"); model_config2.add_class_weight(2.0f);
+  model_config2.add_class_id("class_two"); model_config2.add_class_weight(0.5f);
+  // model_config2.add_score_name("default_class"); model_config2.add_score_name("tts_class_one");
+  // model_config2.add_score_name("tts_class_two");
+  artm::Model model2(master_component, model_config2);
+
+  for (int iter = 0; iter < 5; ++iter) {
+    master_component.InvokeIteration(1);
+    master_component.WaitIdle();
+    model1.Synchronize(0.0);
+    model2.Synchronize(0.0);
+  }
+
+  std::shared_ptr< ::artm::TopicModel> topic_model1 = master_component.GetTopicModel(model1.name());
+  std::shared_ptr< ::artm::TopicModel> topic_model2 = master_component.GetTopicModel(model2.name());
+  EXPECT_EQ(topic_model1->token_size(), 30);
+  EXPECT_EQ(topic_model2->token_size(), 60);
+  // ShowTopicModel(*topic_model1);
+  // ShowTopicModel(*topic_model2);
+
+  EXPECT_EQ(master_component.GetScoreAs< ::artm::TopTokensScore>(model1, "default_class")->num_entries(), 0);
+  EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model1, "tts_class_one")->num_entries() > 0);
+  EXPECT_EQ(master_component.GetScoreAs< ::artm::TopTokensScore>(model1, "tts_class_two")->num_entries(), 0);
+  EXPECT_EQ(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "default_class")->num_entries(), 0);
+  EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "tts_class_one")->num_entries() > 0);
+  EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "tts_class_two")->num_entries() > 0);
 }
