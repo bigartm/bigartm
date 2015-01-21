@@ -76,6 +76,12 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
     model_increment->add_class_id(token.class_id);
     FloatArray* counters = model_increment->add_token_increment();
 
+    if ((model_config.class_id_size() > 0) &&
+        (!repeated_field_contains(model_config.class_id(), token.class_id))) {
+      model_increment->add_operation_type(ModelIncrement_OperationType_SkipToken);
+      continue;
+    }
+
     if (topic_model.has_token(token)) {
       model_increment->add_operation_type(ModelIncrement_OperationType_IncrementValue);
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {

@@ -63,6 +63,7 @@ message ModelIncrement {
     IncrementValue = 1;    // Asks Merger to increment value of this token
     OverwriteValue = 2;    // Asks Merger to overwrite value of this token
     DeleteToken = 3;       // Asks Merger to remote this token
+    SkipToken = 4;         // Asks Merger to skip this token (used when class_id is not included in the model)
   }
 
   required string model_name = 1;
