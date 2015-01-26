@@ -351,6 +351,7 @@ message ThetaMatrix {
   repeated FloatArray item_weights = 3;
   repeated string topic_name = 4;
   optional int32 topics_count = 5;
+  repeated string item_title = 6;
 }
 
 // Represents a configuration of a collection parser.

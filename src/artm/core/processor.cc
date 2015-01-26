@@ -503,6 +503,7 @@ void Processor::FindThetaMatrix(const Batch& batch,
     for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
       const Item& item = batch.item(item_index);
       cache_entry.add_item_id(item.id());
+      cache_entry.add_item_title(item.has_title() ? item.title() : std::string());
       FloatArray* item_weights = cache_entry.add_theta();
       for (int topic_index = 0; topic_index < topic_size; ++topic_index)
         item_weights->add_value((*theta_matrix)(topic_index, item_index));
@@ -655,7 +656,9 @@ void Processor::ThreadFunction() {
           new_cache_entry.set_model_name(model_name);
           new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_name());
           for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-            new_cache_entry.add_item_id(batch.item(item_index).id());
+            const Item& item = batch.item(item_index);
+            new_cache_entry.add_item_id(item.id());
+            new_cache_entry.add_item_title(item.has_title() ? item.title() : std::string());
             FloatArray* cached_theta = new_cache_entry.add_theta();
             for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
               cached_theta->add_value((*theta_matrix)(topic_index, item_index));
