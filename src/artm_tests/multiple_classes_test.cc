@@ -227,13 +227,22 @@ TEST(MultipleClasses, BasicTest) {
   EXPECT_GT(max_diff, 0.001);  // "theta_matrix3 != theta_matrix1");
 }
 
-void configureScore(std::string score_name, std::string class_id, artm::MasterComponentConfig* master_config) {
+void configureTopTokensScore(std::string score_name, std::string class_id, artm::MasterComponentConfig* master_config) {
   ::artm::ScoreConfig score_config;
   ::artm::TopTokensScoreConfig top_tokens_config;
   top_tokens_config.set_num_tokens(4);
   if (!class_id.empty()) top_tokens_config.set_class_id(class_id);
   score_config.set_config(top_tokens_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
+  score_config.set_name(score_name);
+  master_config->add_score_config()->CopyFrom(score_config);
+}
+
+void configurePerplexityScore(std::string score_name, artm::MasterComponentConfig* master_config) {
+  ::artm::ScoreConfig score_config;
+  ::artm::PerplexityScoreConfig perplexity_config;
+  score_config.set_config(perplexity_config.SerializeAsString());
+  score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
   score_config.set_name(score_name);
   master_config->add_score_config()->CopyFrom(score_config);
 }
@@ -253,9 +262,10 @@ void PrintTopTokenScore(const ::artm::TopTokensScore& top_tokens) {
 // artm_tests.exe --gtest_filter=MultipleClasses.WithoutDefaultClass
 TEST(MultipleClasses, WithoutDefaultClass) {
   ::artm::MasterComponentConfig master_config;
-  configureScore("default_class", "", &master_config);
-  configureScore("tts_class_one", "class_one", &master_config);
-  configureScore("tts_class_two", "class_two", &master_config);
+  configureTopTokensScore("default_class", "", &master_config);
+  configureTopTokensScore("tts_class_one", "class_one", &master_config);
+  configureTopTokensScore("tts_class_two", "class_two", &master_config);
+  configurePerplexityScore("perplexity", &master_config);
   ::artm::MasterComponent master_component(master_config);
 
   // Generate doc-token matrix
@@ -268,6 +278,7 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   model_config1.add_class_id("class_one"); model_config1.add_class_weight(2.0f);
   // model_config1.add_score_name("default_class"); model_config1.add_score_name("tts_class_one");
   // model_config1.add_score_name("tts_class_two");
+  model_config1.add_score_name("perplexity");
   artm::Model model1(master_component, model_config1);
 
   artm::ModelConfig model_config2;
@@ -276,6 +287,7 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   model_config2.add_class_id("class_two"); model_config2.add_class_weight(0.5f);
   // model_config2.add_score_name("default_class"); model_config2.add_score_name("tts_class_one");
   // model_config2.add_score_name("tts_class_two");
+  model_config2.add_score_name("perplexity");
   artm::Model model2(master_component, model_config2);
 
   for (int iter = 0; iter < 5; ++iter) {
@@ -298,4 +310,8 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   EXPECT_EQ(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "default_class")->num_entries(), 0);
   EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "tts_class_one")->num_entries() > 0);
   EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "tts_class_two")->num_entries() > 0);
+
+  float p1 = master_component.GetScoreAs< ::artm::PerplexityScore>(model1, "perplexity")->value();
+  float p2 = master_component.GetScoreAs< ::artm::PerplexityScore>(model2, "perplexity")->value();
+  EXPECT_TRUE((p1 > 0) && (p2 > 0) && (p1 != p2));
 }

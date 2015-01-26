@@ -417,7 +417,7 @@ static const DataLoaderCacheEntry* FindCacheEntry(const ProcessorInput& part, co
 
 static std::shared_ptr<Score>
 CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, const Batch& batch,
-           const TopicModel& topic_model, const DenseMatrix<float>& theta_matrix,
+           const TopicModel& topic_model, const ModelConfig& model_config, const DenseMatrix<float>& theta_matrix,
            const ProcessorInput* part) {
   if (!score_calc->is_cumulative())
     return nullptr;
@@ -443,7 +443,7 @@ CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, c
       theta_vec.push_back(theta_matrix(topic_index, item_index));
     }
 
-    score_calc->AppendScore(item, token_dict, topic_model, theta_vec, score.get());
+    score_calc->AppendScore(item, token_dict, topic_model, model_config, theta_vec, score.get());
   }
 
   return score;
@@ -517,7 +517,7 @@ void Processor::FindThetaMatrix(const Batch& batch,
     if (score_calc == nullptr)
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find score calculator ", score_args.score_name()));
 
-    auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, *theta_matrix, nullptr);
+    auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, model_config, *theta_matrix, nullptr);
     score_result->set_data(score_value->SerializeAsString());
     score_result->set_type(score_calc->score_type());
     score_result->set_name(score_args.score_name());
@@ -692,7 +692,8 @@ void Processor::ThreadFunction() {
             continue;
           }
 
-          auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, *theta_matrix, part.get());
+          auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, model_config,
+                                        *theta_matrix, part.get());
           if (score_value == nullptr)
             continue;
           model_increment->add_score_name(score_name);
