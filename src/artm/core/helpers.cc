@@ -274,6 +274,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
   }
 
   theta_matrix->set_topics_count(topic_indices.size());
+  bool has_title = (cache.item_title_size() == cache.item_id_size());
   for (int item_index = 0; item_index < cache.item_id_size(); ++item_index) {
     const artm::FloatArray& item_theta = cache.theta(item_index);
     if (all_topics) {
@@ -290,6 +291,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     }
 
     theta_matrix->add_item_id(cache.item_id(item_index));
+    if (has_title) theta_matrix->add_item_title(cache.item_title(item_index));
   }
 
   return true;

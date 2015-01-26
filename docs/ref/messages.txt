@@ -1473,6 +1473,7 @@ Represents a theta matrix.
     repeated FloatArray item_weights = 3;
     repeated string topic_name = 4;
     optional int32 topics_count = 5;
+    repeated string item_title = 6;
   }
 
 .. attribute:: ThetaMatrix.model_name
@@ -1482,7 +1483,7 @@ Represents a theta matrix.
 
 .. attribute:: ThetaMatrix.item_id
 
-   A set of item IDs.
+   A set of item IDs corresponding to :attr:`Item.id` values.
 
 .. attribute:: ThetaMatrix.item_weights
 
@@ -1499,6 +1500,10 @@ Represents a theta matrix.
 
    A value that describes the number of topics in the topic model.
    This value will match :attr:`ModelConfig.topics_count` value, defined in the model config.
+
+.. attribute:: ThetaMatrix.item_id
+
+   A set of item titles, corresponding to :attr:`Item.title` values.
 
 .. _CollectionParserConfig:
 
