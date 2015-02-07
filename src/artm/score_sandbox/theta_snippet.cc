@@ -12,6 +12,7 @@ void ThetaSnippet::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
     const artm::core::TopicModel& topic_model,
+    const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
   int topics_size = topic_model.topic_size();

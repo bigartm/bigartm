@@ -247,6 +247,26 @@ void configurePerplexityScore(std::string score_name, artm::MasterComponentConfi
   master_config->add_score_config()->CopyFrom(score_config);
 }
 
+void configureThetaSnippetScore(std::string score_name, int num_items, artm::MasterComponentConfig* master_config) {
+  ::artm::ScoreConfig score_config;
+  ::artm::ThetaSnippetScoreConfig theta_snippet_config;
+  for (int i = 0; i < num_items; ++i)
+    theta_snippet_config.add_item_id(i);
+  score_config.set_config(theta_snippet_config.SerializeAsString());
+  score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
+  score_config.set_name(score_name);
+  master_config->add_score_config()->CopyFrom(score_config);
+}
+
+void configureItemsProcessedScore(std::string score_name, artm::MasterComponentConfig* master_config) {
+  ::artm::ScoreConfig score_config;
+  ::artm::ItemsProcessedScore items_processed_config;
+  score_config.set_config(items_processed_config.SerializeAsString());
+  score_config.set_type(::artm::ScoreConfig_Type_ItemsProcessed);
+  score_config.set_name(score_name);
+  master_config->add_score_config()->CopyFrom(score_config);
+}
+
 void PrintTopTokenScore(const ::artm::TopTokensScore& top_tokens) {
   int topic_index = -1;
   for (int i = 0; i < top_tokens.num_entries(); i++) {
@@ -265,7 +285,9 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   configureTopTokensScore("default_class", "", &master_config);
   configureTopTokensScore("tts_class_one", "class_one", &master_config);
   configureTopTokensScore("tts_class_two", "class_two", &master_config);
+  configureThetaSnippetScore("theta_snippet", /*num_items = */ 5, &master_config);
   configurePerplexityScore("perplexity", &master_config);
+  configureItemsProcessedScore("items_processed", &master_config);
   ::artm::MasterComponent master_component(master_config);
 
   // Generate doc-token matrix
@@ -279,6 +301,8 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   // model_config1.add_score_name("default_class"); model_config1.add_score_name("tts_class_one");
   // model_config1.add_score_name("tts_class_two");
   model_config1.add_score_name("perplexity");
+  model_config1.add_score_name("theta_snippet");
+  model_config1.add_score_name("items_processed");
   artm::Model model1(master_component, model_config1);
 
   artm::ModelConfig model_config2;
@@ -314,4 +338,8 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   float p1 = master_component.GetScoreAs< ::artm::PerplexityScore>(model1, "perplexity")->value();
   float p2 = master_component.GetScoreAs< ::artm::PerplexityScore>(model2, "perplexity")->value();
   EXPECT_TRUE((p1 > 0) && (p2 > 0) && (p1 != p2));
+
+  auto theta_snippet = master_component.GetScoreAs< ::artm::ThetaSnippetScore>(model1, "theta_snippet");
+  EXPECT_EQ(theta_snippet->item_id_size(), 5);
+  EXPECT_EQ(master_component.GetScoreAs< ::artm::ItemsProcessedScore>(model1, "items_processed")->value(), nDocs);
 }
