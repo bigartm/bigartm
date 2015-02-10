@@ -1,11 +1,13 @@
 Download
 ========
 
-* Windows (latest, experimental)
-    * https://s3-eu-west-1.amazonaws.com/artmdev/BigARTM_v0.5.5_x64_testing.7z
-    * https://s3-eu-west-1.amazonaws.com/artmdev/BigARTM_v0.5.5_x32_testing.7z
+* Windows - latest release
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.6/BigARTM_v0.5.6_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.6/BigARTM_v0.5.6_x64.7z
 
-* Windows (previous releases)
+* Windows - previous releases
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.5/BigARTM_v0.5.5_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.5/BigARTM_v0.5.5_x64.7z
 	* https://github.com/bigartm/bigartm/releases/download/v0.5.4/BigARTM_v0.5.4_win32.7z
 	* https://github.com/bigartm/bigartm/releases/download/v0.5.4/BigARTM_v0.5.4_x64.7z
 	* https://github.com/bigartm/bigartm/releases/download/v0.5.3/BigARTM_v0.5.3_win32.7z

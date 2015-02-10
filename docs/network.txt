@@ -63,7 +63,7 @@ in one of you target machines.
 Or, if you launched several nodes, you can utilize all of them
 by configuring your remote MasterComponent to work in Network modus operandi.
 
-.. code-block:: bash
+.. code-block:: python
 
    library = ArtmLibrary('artm.dll')
 
@@ -76,3 +76,63 @@ by configuring your remote MasterComponent to work in Network modus operandi.
 
    with library.CreateMasterComponent(master_proxy_config) as master_proxy:
      # Use master_proxy in the same way you usually use master component
+	 
+Combining network modus operandi with proxy
+-------------------------------------------
+
+
+This python script assumes that you have started local node_controller process as follows:
+
+.. code-block:: bash
+
+   set GLOG_logtostderr=1 & node_controller.exe tcp://*:5000 tcp://*:5556 tcp://*:5557
+
+This python script will use ports as follows:
+
+* 5000 - port of the MasterComponent to communicate between MasterComponent and Proxy
+  (this endpoint must be created by node_controller)
+* 5550 - port of the MasterComponent to communicate between MasterComponent and Nodes
+  (this endpoint will be automatically created by the master component)
+* 5556, 5557 - ports of the NodeControllerComponent to communicate between MasterComponent
+  and Nodes (this endpoint must be created by node_controller)
+
+.. code-block:: python
+
+	import artm.messages_pb2, artm.library, sys
+
+	# Network path of a shared folder with batches to process.
+	# The folder must be reachable from all remote node controllers.
+	target_folder = 'D:\\datasets\\nips'
+
+	# Dictionary file (must be located on developer's box that runs python script)
+	dictionary_file = 'D:\\datasets\\nips\\dictionary'
+
+	unique_tokens = artm.library.Library().LoadDictionary(dictionary_file)
+
+	# Create master component and infer topic model
+	proxy_config = artm.messages_pb2.MasterProxyConfig()
+	proxy_config.node_connect_endpoint = 'tcp://localhost:5000'
+	proxy_config.communication_timeout = 10000  # timeout (in ms) for communication between proxy and master component
+	proxy_config.polling_frequency  = 50  # polling frequency (in ms) for long-lasting operations, for example WaitIdle()
+	proxy_config.config.modus_operandi = artm.library.MasterComponentConfig_ModusOperandi_Network
+	proxy_config.config.communication_timeout = 2000  # timeout (in ms) for communication between master component and nodes
+	proxy_config.config.disk_path = target_folder
+	proxy_config.config.create_endpoint = 'tcp://*:5550'
+	proxy_config.config.connect_endpoint = 'tcp://localhost:5550'
+	proxy_config.config.node_connect_endpoint.append('tcp://localhost:5556')
+	proxy_config.config.node_connect_endpoint.append('tcp://localhost:5557')
+	proxy_config.config.processors_count = 1  # number of processors to create at every node
+
+	with artm.library.MasterComponent(config = proxy_config) as master:
+	  dictionary = master.CreateDictionary(unique_tokens)
+	  perplexity_score = master.CreatePerplexityScore()
+	  model = master.CreateModel(topics_count = 10, inner_iterations_count = 10)
+	  model.EnableScore(perplexity_score)
+	  model.Initialize(dictionary)
+
+	  for iter in range(0, 8):
+		master.InvokeIteration(1)        # Invoke one scan of the entire collection...
+		master.WaitIdle()                # and wait until it completes.
+		model.Synchronize()              # Synchronize topic model.
+		print "Iter#" + str(iter),
+		print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value

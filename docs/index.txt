@@ -15,6 +15,7 @@ Welcome to BigARTM's documentation!
    download
    tutorial
    network
+   stories/index
    faq
    devguide
    ref/index
