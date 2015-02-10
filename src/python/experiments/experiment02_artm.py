@@ -47,8 +47,11 @@ use_test_batch          = True
 # path with batches for final held-out estimation
 test_batches_folder     = home_folder + 'test'
 
+# number of documents be processed without regularization
+first_documents         = 70000
+
 # number of documents be re-processed after last iteration
-first_documents         = 80000
+last_documents         = 80000
 
 # tau coefficients for ARTM
 tau_decor               = 5.8e+5
@@ -167,7 +170,7 @@ with artm.library.MasterComponent(master_config) as master:
         first_sync = False
 
         # update tau_coefficients of regularizers in Model
-        if (need_to_update and (next_items_processed > first_documents or sync_count == 5) and (outer_iteration == 0)):
+        if (need_to_update and (next_items_processed >= first_documents) and (outer_iteration == 0)):
           config_copy = artm.messages_pb2.ModelConfig()
           config_copy.CopyFrom(model.config())
           config_copy.regularizer_tau[0] = tau_decor
@@ -184,7 +187,7 @@ with artm.library.MasterComponent(master_config) as master:
 
         perplexity_score_value = -1
         if (test_on_this_iter % test_every == 0) or\
-           (current_items_processed > first_documents and outer_iteration == outer_iterations_count - 1):
+           (current_items_processed > last_documents and outer_iteration == outer_iterations_count - 1):
           perplexity_score_value = perplexity_score.GetValue(model = model, batch = test_batch).value
         test_on_this_iter += 1
 
@@ -231,7 +234,7 @@ with artm.library.MasterComponent(master_config) as master:
           topic_kernel_contrast_file.write('(' + str(items_processed_score_value) +\
               ', ' + str(round(topic_kernel_score_value.average_kernel_contrast, 3)) + ')\n')
 
-        if ((current_items_processed > first_documents) and (outer_iteration == outer_iterations_count - 1)):
+        if ((current_items_processed > last_documents) and (outer_iteration == outer_iterations_count - 1)):
           print 'All elapsed time = ' + str(elapsed_time)
           if (save_and_test_model):
             print 'Saving topic model... ',

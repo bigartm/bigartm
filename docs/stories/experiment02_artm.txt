@@ -36,7 +36,7 @@ To proceed the experiment you need to execute the following steps:
     * ``batch_size`` (line 28) and assign it the chosen size of batch;
     * ``batches_disk_path`` (line 36) and replace the string 'wiki_10k' with the name of your directory with batches;
     * ``test_batch_name`` (line 43) and replace the string with direct batch’s name with the name of your test batch;
-    * ``tau_decor``, ``tau_phi`` and ``tau_theta`` (lines 54-56) and substitute the values you’d like to use.
+    * ``tau_decor``, ``tau_phi`` and ``tau_theta`` (lines 57-59) and substitute the values you'd like to use.
 
 3. If you want to estimate the final perplexity on another, larger test sample, put chosen batches into test folder (in ``$YOUR_HOME_DIRECTORY`` directory).
    Then find in the code of the script the declaration of variable ``save_and_test_model`` (line 30) and assign it ``True``.
