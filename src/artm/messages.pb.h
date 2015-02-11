@@ -3280,6 +3280,29 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
+  // optional float theta_sparsity_eps = 5 [default = 1e-037];
+  inline bool has_theta_sparsity_eps() const;
+  inline void clear_theta_sparsity_eps();
+  static const int kThetaSparsityEpsFieldNumber = 5;
+  inline float theta_sparsity_eps() const;
+  inline void set_theta_sparsity_eps(float value);
+
+  // repeated string theta_sparsity_topic_name = 6;
+  inline int theta_sparsity_topic_name_size() const;
+  inline void clear_theta_sparsity_topic_name();
+  static const int kThetaSparsityTopicNameFieldNumber = 6;
+  inline const ::std::string& theta_sparsity_topic_name(int index) const;
+  inline ::std::string* mutable_theta_sparsity_topic_name(int index);
+  inline void set_theta_sparsity_topic_name(int index, const ::std::string& value);
+  inline void set_theta_sparsity_topic_name(int index, const char* value);
+  inline void set_theta_sparsity_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_theta_sparsity_topic_name();
+  inline void add_theta_sparsity_topic_name(const ::std::string& value);
+  inline void add_theta_sparsity_topic_name(const char* value);
+  inline void add_theta_sparsity_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& theta_sparsity_topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_theta_sparsity_topic_name();
+
   // @@protoc_insertion_point(class_scope:artm.PerplexityScoreConfig)
  private:
   inline void set_has_field_name();
@@ -3290,6 +3313,8 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   inline void clear_has_model_type();
   inline void set_has_dictionary_name();
   inline void clear_has_dictionary_name();
+  inline void set_has_theta_sparsity_eps();
+  inline void clear_has_theta_sparsity_eps();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -3299,9 +3324,11 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   static ::std::string* _default_stream_name_;
   ::std::string* dictionary_name_;
   int model_type_;
+  float theta_sparsity_eps_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> theta_sparsity_topic_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3394,6 +3421,27 @@ class PerplexityScore : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 zero_words() const;
   inline void set_zero_words(::google::protobuf::int32 value);
 
+  // optional double theta_sparsity_value = 5;
+  inline bool has_theta_sparsity_value() const;
+  inline void clear_theta_sparsity_value();
+  static const int kThetaSparsityValueFieldNumber = 5;
+  inline double theta_sparsity_value() const;
+  inline void set_theta_sparsity_value(double value);
+
+  // optional int32 theta_sparsity_zero_topics = 6;
+  inline bool has_theta_sparsity_zero_topics() const;
+  inline void clear_theta_sparsity_zero_topics();
+  static const int kThetaSparsityZeroTopicsFieldNumber = 6;
+  inline ::google::protobuf::int32 theta_sparsity_zero_topics() const;
+  inline void set_theta_sparsity_zero_topics(::google::protobuf::int32 value);
+
+  // optional int32 theta_sparsity_total_topics = 7;
+  inline bool has_theta_sparsity_total_topics() const;
+  inline void clear_theta_sparsity_total_topics();
+  static const int kThetaSparsityTotalTopicsFieldNumber = 7;
+  inline ::google::protobuf::int32 theta_sparsity_total_topics() const;
+  inline void set_theta_sparsity_total_topics(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.PerplexityScore)
  private:
   inline void set_has_value();
@@ -3404,16 +3452,25 @@ class PerplexityScore : public ::google::protobuf::Message {
   inline void clear_has_normalizer();
   inline void set_has_zero_words();
   inline void clear_has_zero_words();
+  inline void set_has_theta_sparsity_value();
+  inline void clear_has_theta_sparsity_value();
+  inline void set_has_theta_sparsity_zero_topics();
+  inline void clear_has_theta_sparsity_zero_topics();
+  inline void set_has_theta_sparsity_total_topics();
+  inline void clear_has_theta_sparsity_total_topics();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   double value_;
   double raw_;
   double normalizer_;
+  double theta_sparsity_value_;
   ::google::protobuf::int32 zero_words_;
+  ::google::protobuf::int32 theta_sparsity_zero_topics_;
+  ::google::protobuf::int32 theta_sparsity_total_topics_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9715,6 +9772,72 @@ inline void PerplexityScoreConfig::set_allocated_dictionary_name(::std::string* 
   }
 }
 
+// optional float theta_sparsity_eps = 5 [default = 1e-037];
+inline bool PerplexityScoreConfig::has_theta_sparsity_eps() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void PerplexityScoreConfig::set_has_theta_sparsity_eps() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void PerplexityScoreConfig::clear_has_theta_sparsity_eps() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void PerplexityScoreConfig::clear_theta_sparsity_eps() {
+  theta_sparsity_eps_ = 1e-037f;
+  clear_has_theta_sparsity_eps();
+}
+inline float PerplexityScoreConfig::theta_sparsity_eps() const {
+  return theta_sparsity_eps_;
+}
+inline void PerplexityScoreConfig::set_theta_sparsity_eps(float value) {
+  set_has_theta_sparsity_eps();
+  theta_sparsity_eps_ = value;
+}
+
+// repeated string theta_sparsity_topic_name = 6;
+inline int PerplexityScoreConfig::theta_sparsity_topic_name_size() const {
+  return theta_sparsity_topic_name_.size();
+}
+inline void PerplexityScoreConfig::clear_theta_sparsity_topic_name() {
+  theta_sparsity_topic_name_.Clear();
+}
+inline const ::std::string& PerplexityScoreConfig::theta_sparsity_topic_name(int index) const {
+  return theta_sparsity_topic_name_.Get(index);
+}
+inline ::std::string* PerplexityScoreConfig::mutable_theta_sparsity_topic_name(int index) {
+  return theta_sparsity_topic_name_.Mutable(index);
+}
+inline void PerplexityScoreConfig::set_theta_sparsity_topic_name(int index, const ::std::string& value) {
+  theta_sparsity_topic_name_.Mutable(index)->assign(value);
+}
+inline void PerplexityScoreConfig::set_theta_sparsity_topic_name(int index, const char* value) {
+  theta_sparsity_topic_name_.Mutable(index)->assign(value);
+}
+inline void PerplexityScoreConfig::set_theta_sparsity_topic_name(int index, const char* value, size_t size) {
+  theta_sparsity_topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PerplexityScoreConfig::add_theta_sparsity_topic_name() {
+  return theta_sparsity_topic_name_.Add();
+}
+inline void PerplexityScoreConfig::add_theta_sparsity_topic_name(const ::std::string& value) {
+  theta_sparsity_topic_name_.Add()->assign(value);
+}
+inline void PerplexityScoreConfig::add_theta_sparsity_topic_name(const char* value) {
+  theta_sparsity_topic_name_.Add()->assign(value);
+}
+inline void PerplexityScoreConfig::add_theta_sparsity_topic_name(const char* value, size_t size) {
+  theta_sparsity_topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+PerplexityScoreConfig::theta_sparsity_topic_name() const {
+  return theta_sparsity_topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+PerplexityScoreConfig::mutable_theta_sparsity_topic_name() {
+  return &theta_sparsity_topic_name_;
+}
+
 // -------------------------------------------------------------------
 
 // PerplexityScore
@@ -9805,6 +9928,72 @@ inline ::google::protobuf::int32 PerplexityScore::zero_words() const {
 inline void PerplexityScore::set_zero_words(::google::protobuf::int32 value) {
   set_has_zero_words();
   zero_words_ = value;
+}
+
+// optional double theta_sparsity_value = 5;
+inline bool PerplexityScore::has_theta_sparsity_value() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void PerplexityScore::set_has_theta_sparsity_value() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void PerplexityScore::clear_has_theta_sparsity_value() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void PerplexityScore::clear_theta_sparsity_value() {
+  theta_sparsity_value_ = 0;
+  clear_has_theta_sparsity_value();
+}
+inline double PerplexityScore::theta_sparsity_value() const {
+  return theta_sparsity_value_;
+}
+inline void PerplexityScore::set_theta_sparsity_value(double value) {
+  set_has_theta_sparsity_value();
+  theta_sparsity_value_ = value;
+}
+
+// optional int32 theta_sparsity_zero_topics = 6;
+inline bool PerplexityScore::has_theta_sparsity_zero_topics() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void PerplexityScore::set_has_theta_sparsity_zero_topics() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void PerplexityScore::clear_has_theta_sparsity_zero_topics() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void PerplexityScore::clear_theta_sparsity_zero_topics() {
+  theta_sparsity_zero_topics_ = 0;
+  clear_has_theta_sparsity_zero_topics();
+}
+inline ::google::protobuf::int32 PerplexityScore::theta_sparsity_zero_topics() const {
+  return theta_sparsity_zero_topics_;
+}
+inline void PerplexityScore::set_theta_sparsity_zero_topics(::google::protobuf::int32 value) {
+  set_has_theta_sparsity_zero_topics();
+  theta_sparsity_zero_topics_ = value;
+}
+
+// optional int32 theta_sparsity_total_topics = 7;
+inline bool PerplexityScore::has_theta_sparsity_total_topics() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void PerplexityScore::set_has_theta_sparsity_total_topics() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void PerplexityScore::clear_has_theta_sparsity_total_topics() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void PerplexityScore::clear_theta_sparsity_total_topics() {
+  theta_sparsity_total_topics_ = 0;
+  clear_has_theta_sparsity_total_topics();
+}
+inline ::google::protobuf::int32 PerplexityScore::theta_sparsity_total_topics() const {
+  return theta_sparsity_total_topics_;
+}
+inline void PerplexityScore::set_theta_sparsity_total_topics(::google::protobuf::int32 value) {
+  set_has_theta_sparsity_total_topics();
+  theta_sparsity_total_topics_ = value;
 }
 
 // -------------------------------------------------------------------
