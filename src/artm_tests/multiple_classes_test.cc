@@ -186,6 +186,7 @@ TEST(MultipleClasses, BasicTest) {
   std::shared_ptr< ::artm::TopicModel> topic_model1 = master_component.GetTopicModel(model1.name());
   std::shared_ptr< ::artm::TopicModel> topic_model2 = master_component.GetTopicModel(model2.name());
   std::shared_ptr< ::artm::TopicModel> topic_model3 = master_component.GetTopicModel(model3.name());
+  std::shared_ptr< ::artm::TopicModel> topic_model_reg = master_component.GetTopicModel(model_reg.name());
 
   std::shared_ptr< ::artm::ThetaMatrix> theta_matrix1 = master_component.GetThetaMatrix(model1.name());
   std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component.GetThetaMatrix(model2.name());
@@ -195,6 +196,7 @@ TEST(MultipleClasses, BasicTest) {
   ShowTopicModel(*topic_model1);
   ShowTopicModel(*topic_model2);
   ShowTopicModel(*topic_model3);
+  ShowTopicModel(*topic_model_reg);
 
   // ShowThetaMatrix(*theta_matrix1);
   // ShowThetaMatrix(*theta_matrix1_explicit);

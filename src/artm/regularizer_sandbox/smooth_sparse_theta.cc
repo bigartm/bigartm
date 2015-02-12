@@ -12,58 +12,56 @@
 namespace artm {
 namespace regularizer_sandbox {
 
-bool SmoothSparseTheta::RegularizeTheta(const Batch& batch,
-                                        const ModelConfig& model_config,
-                                        int inner_iter,
-                                        double tau,
-                                        artm::utility::DenseMatrix<float>* theta) {
-  const int topic_size = theta->no_rows();
-  const int item_size = theta->no_columns();
+void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) {
+  assert(topics_size == topic_weight.size());
+  assert(inner_iter < alpha_weight.size());
+  if (topics_size != topic_weight.size()) return;
+  if (inner_iter >= alpha_weight.size()) return;
 
-  if (item_size != batch.item_size()) {
-    LOG(ERROR) << "theta->no_columns() != batch.item_size()";
-    return false;
+  for (int topic_id = 0; topic_id < topics_size; ++topic_id)
+    theta[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id];
+}
+
+std::shared_ptr<RegularizeThetaAgent>
+SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
+                                              const ModelConfig& model_config, double tau) {
+  SmoothSparseThetaAgent* agent = new SmoothSparseThetaAgent();
+  std::shared_ptr<SmoothSparseThetaAgent> retval(agent);
+
+  const int topic_size = model_config.topics_count();
+  const int item_size = batch.item_size();
+
+  if (config_.alpha_iter_size() != 0) {
+    if (model_config.inner_iterations_count() != config_.alpha_iter_size()) {
+      LOG(ERROR) << "ModelConfig.inner_iterations_count() != SmoothSparseThetaConfig.alpha_iter_size()";
+      return nullptr;
+    }
+
+    for (int i = 0; i < config_.alpha_iter_size(); ++i)
+      agent->alpha_weight.push_back(config_.alpha_iter(i));
+  } else {
+    for (int i = 0; i < model_config.inner_iterations_count(); ++i)
+      agent->alpha_weight.push_back(1.0f);
   }
 
-  if (topic_size != model_config.topics_count()) {
-    LOG(ERROR) << "theta->no_rows() != model_config.topics_count()";
-    return false;
-  }
-
-  float alpha = 1.0f * tau;
-  // *_size() starts from 1, inner_iter --- from 0
-  if (config_.alpha_iter_size() >= (inner_iter + 1))
-    alpha = tau * config_.alpha_iter(inner_iter);
-
+  agent->topic_weight.resize(topic_size, 0.0f);
   if (config_.topic_name_size() == 0) {
-    // proceed the regularization
-    float* data = theta->get_data();
-    for (int i = 0; i < theta->size(); ++i)
-      data[i] += alpha;
-    return true;
-  }
+    for (int i = 0; i < topic_size; ++i)
+      agent->topic_weight[i] = static_cast<float>(tau);
+  } else {
+    if (topic_size != model_config.topic_name_size()) {
+      LOG(ERROR) << "model_config.topics_count() != model_config.topic_name_size()";
+      return nullptr;
+    }
 
-  if (topic_size != model_config.topic_name_size()) {
-    LOG(ERROR) << "model_config.topics_count() != model_config.topic_name_size()";
-    return false;
-  }
-  std::vector<int> topics_to_regularize(topic_size, false);
-  for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
-    int topic_index = ::artm::core::repeated_field_index_of(
-      model_config.topic_name(), config_.topic_name(topic_id));
-    if (topic_index != -1) topics_to_regularize[topic_index] = true;
-  }
-
-  // proceed the regularization
-  for (int item_index = 0; item_index < item_size; ++item_index) {
-    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-      if (topics_to_regularize[topic_id]) {
-        (*theta)(topic_id, item_index) += alpha;
-      }
+    for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
+      int topic_index = ::artm::core::repeated_field_index_of(
+        model_config.topic_name(), config_.topic_name(topic_id));
+      if (topic_index != -1) agent->topic_weight[topic_index] = static_cast<float>(tau);
     }
   }
 
-  return true;
+  return retval;
 }
 
 bool SmoothSparseTheta::Reconfigure(const RegularizerConfig& config) {

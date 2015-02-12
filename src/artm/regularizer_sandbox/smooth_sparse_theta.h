@@ -14,16 +14,23 @@
 namespace artm {
 namespace regularizer_sandbox {
 
+class SmoothSparseThetaAgent : public RegularizeThetaAgent {
+ private:
+  friend class SmoothSparseTheta;
+  std::vector<float> topic_weight;
+  std::vector<float> alpha_weight;
+ public:
+  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta);
+};
+
 class SmoothSparseTheta : public RegularizerInterface {
  public:
   explicit SmoothSparseTheta(const SmoothSparseThetaConfig& config)
     : config_(config) {}
 
-  virtual bool RegularizeTheta(const Batch& batch,
-                               const ModelConfig& model_config,
-                               int inner_iter,
-                               double tau,
-                               ::artm::utility::DenseMatrix<float>* theta);
+  virtual std::shared_ptr<RegularizeThetaAgent>
+  CreateRegularizeThetaAgent(const Batch& batch, const ModelConfig& model_config, double tau);
+
   virtual bool Reconfigure(const RegularizerConfig& config);
 
  private:

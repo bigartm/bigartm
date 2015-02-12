@@ -166,13 +166,12 @@ InitializePhi(const Batch& batch, const ModelConfig& model_config,
   return phi_matrix;
 }
 
-static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, const ModelConfig& model_config,
-                                        const InstanceSchema& schema, DenseMatrix<float>* theta) {
-  int topic_size = model_config.topics_count();
-
+static std::shared_ptr<RegularizeThetaAgentCollection>
+CreateRegularizerAgents(const Batch& batch, const ModelConfig& model_config, const InstanceSchema& schema) {
+  auto retval = std::make_shared<RegularizeThetaAgentCollection>();
   if (model_config.regularizer_name_size() != model_config.regularizer_tau_size()) {
     LOG(ERROR) << "model_config.regularizer_name_size() != model_config.regularizer_tau_size()";
-    return;
+    return retval;
   }
 
   for (int reg_index = 0; reg_index < model_config.regularizer_name_size(); ++reg_index) {
@@ -184,25 +183,10 @@ static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, cons
       continue;
     }
 
-    regularizer->RegularizeTheta(batch, model_config, inner_iter, tau, theta);
+    retval->AddAgent(regularizer->CreateRegularizeThetaAgent(batch, model_config, tau));
   }
 
-  // Normalize theta for every item
-  const int items_size = theta->no_columns();
-  for (int item_index = 0; item_index < items_size; ++item_index) {
-    float sum = 0.0f;
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      float val = (*theta)(topic_index, item_index);
-      if (val > 0)
-        sum += val;
-    }
-
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      float val = (sum > 0) ? ((*theta)(topic_index, item_index) / sum) : 0.0f;
-      if (val < 1e-16f) val = 0.0f;
-      (*theta)(topic_index, item_index) = val;
-    }
-  }
+  return retval;
 }
 
 static std::shared_ptr<CsrMatrix<float>>
@@ -272,12 +256,68 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
   auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
   n_wt->InitializeZeros();
 
+  DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
+  const int topics_count = phi_matrix.no_columns();
+  const int docs_count = theta_matrix->no_columns();
+  const int tokens_count = phi_matrix.no_rows();
+
+  std::shared_ptr<RegularizeThetaAgentCollection> agents = CreateRegularizerAgents(batch, model_config, schema);
+  agents->AddAgent(std::make_shared<NormalizeThetaAgent>());
+
+#if 1
+  // This version is about 40% faster than the second alternative below.
+  // Both versions return 100% equal results.
+  // Speedup is due to several factors:
+  // 1. explicit loops instead of blas->saxpy and blas->sdot
+  //    makes compiler generate AVX instructions (vectorized 128-bit float-point operations)
+  // 2. better memory usage (reduced bandwith to DRAM and more sequential accesss)
+  for (int d = 0; d < docs_count; ++d) {
+    float* ntd_ptr = &n_td(0, d);
+    float* theta_ptr = &(*theta_matrix)(0, d);  // NOLINT
+
+    const int begin_index = sparse_ndw.row_ptr()[d];
+    const int end_index = sparse_ndw.row_ptr()[d + 1];
+    const int local_token_size = end_index - begin_index;
+    DenseMatrix<float> local_phi(local_token_size, topics_count);
+    for (int i = begin_index; i < end_index; ++i) {
+      int w = sparse_ndw.col_ind()[i];
+      const float* phi_ptr = &phi_matrix(w, 0);
+      float* local_phi_ptr = &local_phi(i - begin_index, 0);
+      for (int k = 0; k < topics_count; ++k)
+        local_phi_ptr[k] = phi_ptr[k];
+    }
+
+    for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
+      for (int k = 0; k < topics_count; ++k)
+        ntd_ptr[k] = 0.0f;
+
+      for (int i = begin_index; i < end_index; ++i) {
+        const float* phi_ptr = &local_phi(i - begin_index, 0);
+
+        float p_dw_val = 0;
+        for (int k = 0; k < topics_count; ++k)
+          p_dw_val += phi_ptr[k] * theta_ptr[k];
+        if (p_dw_val == 0) continue;
+
+        const float alpha = sparse_ndw.val()[i] / p_dw_val;
+        for (int k = 0; k < topics_count; ++k)
+          ntd_ptr[k] += alpha * phi_ptr[k];
+      }
+
+      float sum = 0.0f;
+      for (int k = 0; k < topics_count; ++k) {
+        theta_ptr[k] *= ntd_ptr[k];
+        sum += theta_ptr[k];
+      }
+
+      agents->Apply(d, inner_iter, model_config.topics_count(), theta_ptr);
+    }
+  }
+#else
   for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
     DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
     n_td.InitializeZeros();
 
-    int topics_count = phi_matrix.no_columns();
-    int docs_count = theta_matrix->no_columns();
     for (int d = 0; d < docs_count; ++d) {
       for (int i = sparse_ndw.row_ptr()[d]; i < sparse_ndw.row_ptr()[d + 1]; ++i) {
         int w = sparse_ndw.col_ind()[i];
@@ -288,12 +328,11 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
     }
 
     AssignDenseMatrixByProduct(*theta_matrix, n_td, theta_matrix);
-    RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix);
-  }
 
-  int tokens_count = phi_matrix.no_rows();
-  int topics_count = phi_matrix.no_columns();
-  int docs_count = theta_matrix->no_columns();
+    for (int item_index = 0; item_index < batch.item_size(); ++item_index)
+      agents->Apply(item_index, inner_iter, model_config.topics_count(), &(*theta_matrix)(0, item_index));  // NOLINT
+  }
+#endif
 
   CsrMatrix<float> sparse_nwd(sparse_ndw);
   sparse_nwd.Transpose(blas);
@@ -353,7 +392,17 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
       prod_trans_phi_Z.get_data(), Z.no_columns());
 
     AssignDenseMatrixByProduct(*theta_matrix, prod_trans_phi_Z, theta_matrix);
-    RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix);
+
+    std::shared_ptr<RegularizeThetaAgentCollection> agents = CreateRegularizerAgents(batch, model_config, schema);
+    agents->AddAgent(std::make_shared<NormalizeThetaAgent>());
+
+    int topics_count = model_config.topics_count();
+    std::vector<float> theta_copy(topics_count, 0.0f);
+    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+      for (int i = 0; i < topics_count; ++i) theta_copy[i] = (*theta_matrix)(i, item_index);
+      agents->Apply(item_index, inner_iter, model_config.topics_count(), &theta_copy[0]);
+      for (int i = 0; i < topics_count; ++i) (*theta_matrix)(i, item_index) = theta_copy[i];
+    }
   }
 
   blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
@@ -535,8 +584,9 @@ void Processor::ThreadFunction() {
 
     util::Blas* blas = util::Blas::mkl();
     if ((blas == nullptr) || !blas->is_loaded()) {
-      LOG(INFO) << "Intel Math Kernel Library is not detected, "
-          << "using built in implementation (can be slower than MKL)";
+      // Avoid this warning because it only applies to non-default case "use_sparse_bow==false"
+      // LOG(INFO) << "Intel Math Kernel Library is not detected, "
+      //    << "using built in implementation (can be slower than MKL)";
       blas = util::Blas::builtin();
     }
 
