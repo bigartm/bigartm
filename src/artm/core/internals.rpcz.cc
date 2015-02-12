@@ -88,7 +88,7 @@ void rpcz_protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "artm.TopicModel\0225\n\016RequestBatches\022\016.artm"
     ".core.Int\032\023.artm.core.BatchIds\0225\n\rReport"
     "Batches\022\023.artm.core.BatchIds\032\017.artm.core"
-    ".Void2\335\013\n\025NodeControllerService\022K\n\033Creat"
+    ".Void2\361\013\n\025NodeControllerService\022K\n\033Creat"
     "eOrReconfigureInstance\022\033.artm.MasterComp"
     "onentConfig\032\017.artm.core.Void\0223\n\017DisposeI"
     "nstance\022\017.artm.core.Void\032\017.artm.core.Voi"
@@ -119,13 +119,14 @@ void rpcz_protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "RequestThetaMatrix\022\030.artm.GetThetaMatrix"
     "Args\032\021.artm.ThetaMatrix\0228\n\014RequestScore\022"
     "\027.artm.GetScoreValueArgs\032\017.artm.ScoreDat"
-    "a\022(\n\010AddBatch\022\013.artm.Batch\032\017.artm.core.V"
-    "oid\0223\n\017InvokeIteration\022\017.artm.core.Void\032"
-    "\017.artm.core.Void\022+\n\010WaitIdle\022\017.artm.core"
-    ".Void\032\016.artm.core.Int\022\?\n\020SynchronizeMode"
-    "l\022\032.artm.SynchronizeModelArgs\032\017.artm.cor"
-    "e.Void\022=\n\017InitializeModel\022\031.artm.Initial"
-    "izeModelArgs\032\017.artm.core.Void", 3149);
+    "a\022/\n\010AddBatch\022\022.artm.AddBatchArgs\032\017.artm"
+    ".core.Void\022=\n\017InvokeIteration\022\031.artm.Inv"
+    "okeIterationArgs\032\017.artm.core.Void\022.\n\010Wai"
+    "tIdle\022\022.artm.WaitIdleArgs\032\016.artm.core.In"
+    "t\022\?\n\020SynchronizeModel\022\032.artm.Synchronize"
+    "ModelArgs\032\017.artm.core.Void\022=\n\017Initialize"
+    "Model\022\031.artm.InitializeModelArgs\032\017.artm."
+    "core.Void", 3169);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&rpcz_protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto);
@@ -449,19 +450,19 @@ void NodeControllerService::RequestScore(const ::artm::GetScoreValueArgs&,
               "Method RequestScore() not implemented.");
 }
 
-void NodeControllerService::AddBatch(const ::artm::Batch&,
+void NodeControllerService::AddBatch(const ::artm::AddBatchArgs&,
                          ::rpcz::reply< ::artm::core::Void> reply) {
   reply.Error(::rpcz::application_error::METHOD_NOT_IMPLEMENTED,
               "Method AddBatch() not implemented.");
 }
 
-void NodeControllerService::InvokeIteration(const ::artm::core::Void&,
+void NodeControllerService::InvokeIteration(const ::artm::InvokeIterationArgs&,
                          ::rpcz::reply< ::artm::core::Void> reply) {
   reply.Error(::rpcz::application_error::METHOD_NOT_IMPLEMENTED,
               "Method InvokeIteration() not implemented.");
 }
 
-void NodeControllerService::WaitIdle(const ::artm::core::Void&,
+void NodeControllerService::WaitIdle(const ::artm::WaitIdleArgs&,
                          ::rpcz::reply< ::artm::core::Int> reply) {
   reply.Error(::rpcz::application_error::METHOD_NOT_IMPLEMENTED,
               "Method WaitIdle() not implemented.");
@@ -571,17 +572,17 @@ void NodeControllerService::call_method(const ::google::protobuf::MethodDescript
       break;
     case 17:
       AddBatch(
-          *::google::protobuf::down_cast<const ::artm::Batch*>(&request),
+          *::google::protobuf::down_cast<const ::artm::AddBatchArgs*>(&request),
           ::rpcz::reply< ::artm::core::Void>(channel));
       break;
     case 18:
       InvokeIteration(
-          *::google::protobuf::down_cast<const ::artm::core::Void*>(&request),
+          *::google::protobuf::down_cast<const ::artm::InvokeIterationArgs*>(&request),
           ::rpcz::reply< ::artm::core::Void>(channel));
       break;
     case 19:
       WaitIdle(
-          *::google::protobuf::down_cast<const ::artm::core::Void*>(&request),
+          *::google::protobuf::down_cast<const ::artm::WaitIdleArgs*>(&request),
           ::rpcz::reply< ::artm::core::Int>(channel));
       break;
     case 20:
@@ -639,11 +640,11 @@ const ::google::protobuf::Message& NodeControllerService::GetRequestPrototype(
     case 16:
       return ::artm::GetScoreValueArgs::default_instance();
     case 17:
-      return ::artm::Batch::default_instance();
+      return ::artm::AddBatchArgs::default_instance();
     case 18:
-      return ::artm::core::Void::default_instance();
+      return ::artm::InvokeIterationArgs::default_instance();
     case 19:
-      return ::artm::core::Void::default_instance();
+      return ::artm::WaitIdleArgs::default_instance();
     case 20:
       return ::artm::SynchronizeModelArgs::default_instance();
     case 21:
@@ -1078,7 +1079,7 @@ void NodeControllerService_Stub::RequestScore(const ::artm::GetScoreValueArgs& r
     throw ::rpcz::rpc_error(rpc);
   }
 }
-void NodeControllerService_Stub::AddBatch(const ::artm::Batch& request,
+void NodeControllerService_Stub::AddBatch(const ::artm::AddBatchArgs& request,
                               ::artm::core::Void* response,
                               ::rpcz::rpc* rpc,
                               ::rpcz::closure* done) {
@@ -1086,7 +1087,7 @@ void NodeControllerService_Stub::AddBatch(const ::artm::Batch& request,
                         NodeControllerService::descriptor()->method(17),
                         request, response, rpc, done);
 }
-void NodeControllerService_Stub::AddBatch(const ::artm::Batch& request,
+void NodeControllerService_Stub::AddBatch(const ::artm::AddBatchArgs& request,
                               ::artm::core::Void* response,
                               long deadline_ms) {
   ::rpcz::rpc rpc;
@@ -1099,7 +1100,7 @@ void NodeControllerService_Stub::AddBatch(const ::artm::Batch& request,
     throw ::rpcz::rpc_error(rpc);
   }
 }
-void NodeControllerService_Stub::InvokeIteration(const ::artm::core::Void& request,
+void NodeControllerService_Stub::InvokeIteration(const ::artm::InvokeIterationArgs& request,
                               ::artm::core::Void* response,
                               ::rpcz::rpc* rpc,
                               ::rpcz::closure* done) {
@@ -1107,7 +1108,7 @@ void NodeControllerService_Stub::InvokeIteration(const ::artm::core::Void& reque
                         NodeControllerService::descriptor()->method(18),
                         request, response, rpc, done);
 }
-void NodeControllerService_Stub::InvokeIteration(const ::artm::core::Void& request,
+void NodeControllerService_Stub::InvokeIteration(const ::artm::InvokeIterationArgs& request,
                               ::artm::core::Void* response,
                               long deadline_ms) {
   ::rpcz::rpc rpc;
@@ -1120,7 +1121,7 @@ void NodeControllerService_Stub::InvokeIteration(const ::artm::core::Void& reque
     throw ::rpcz::rpc_error(rpc);
   }
 }
-void NodeControllerService_Stub::WaitIdle(const ::artm::core::Void& request,
+void NodeControllerService_Stub::WaitIdle(const ::artm::WaitIdleArgs& request,
                               ::artm::core::Int* response,
                               ::rpcz::rpc* rpc,
                               ::rpcz::closure* done) {
@@ -1128,7 +1129,7 @@ void NodeControllerService_Stub::WaitIdle(const ::artm::core::Void& request,
                         NodeControllerService::descriptor()->method(19),
                         request, response, rpc, done);
 }
-void NodeControllerService_Stub::WaitIdle(const ::artm::core::Void& request,
+void NodeControllerService_Stub::WaitIdle(const ::artm::WaitIdleArgs& request,
                               ::artm::core::Int* response,
                               long deadline_ms) {
   ::rpcz::rpc rpc;

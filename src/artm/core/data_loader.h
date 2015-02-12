@@ -50,13 +50,13 @@ class LocalDataLoader : public DataLoader {
   virtual ~LocalDataLoader();
 
   int GetTotalItemsCount() const;
-  void AddBatch(const Batch& batch, bool invoke);
+  void AddBatch(const AddBatchArgs& args, bool invoke);
   virtual void Callback(ModelIncrement* model_increment);
 
-  void InvokeIteration(int iterations_count);
+  void InvokeIteration(const InvokeIterationArgs& args);
 
   // Returns false if BigARTM is still processing the collection, otherwise true.
-  bool WaitIdle(int timeout = -1);
+  bool WaitIdle(const WaitIdleArgs& args);
   void DisposeModel(ModelName model_name);
   bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                           ::artm::ThetaMatrix* theta_matrix);

@@ -80,11 +80,15 @@ class MasterComponent {
   std::shared_ptr<T> GetScoreAs(const Model& model, const std::string& score_name);
 
   void Reconfigure(const MasterComponentConfig& config);
-  void AddBatch(const Batch& batch);
+  void AddBatch(const AddBatchArgs& args);
   void AddStream(const Stream& stream);
   void RemoveStream(std::string stream_name);
-  void InvokeIteration(int iterations_count);
+
+  void InvokeIteration(int iterations_count = 1);
+  void InvokeIteration(const InvokeIterationArgs& args);
+
   bool WaitIdle(int timeout = -1);
+  bool WaitIdle(const WaitIdleArgs& args);
 
   const MasterComponentConfig& config() const { return config_; }
   MasterComponentConfig* mutable_config() { return &config_; }

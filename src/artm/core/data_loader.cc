@@ -102,7 +102,8 @@ LocalDataLoader::~LocalDataLoader() {
   }
 }
 
-void LocalDataLoader::AddBatch(const Batch& batch, bool invoke) {
+void LocalDataLoader::AddBatch(const AddBatchArgs& args, bool invoke) {
+  auto& batch = args.batch();
   MasterComponentConfig config = instance()->schema()->config();
   std::shared_ptr<Batch> modified_batch;
   if (config.compact_batches()) {
@@ -125,7 +126,8 @@ int LocalDataLoader::GetTotalItemsCount() const {
   return generation_->GetTotalItemsCount();
 }
 
-void LocalDataLoader::InvokeIteration(int iterations_count) {
+void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
+  int iterations_count = args.iterations_count();
   if (iterations_count <= 0) {
     LOG(WARNING) << "DataLoader::InvokeIteration() was called with argument '"
                  << iterations_count << "'. Call is ignored.";
@@ -147,7 +149,8 @@ void LocalDataLoader::InvokeIteration(int iterations_count) {
   }
 }
 
-bool LocalDataLoader::WaitIdle(int timeout) {
+bool LocalDataLoader::WaitIdle(const WaitIdleArgs& args) {
+  int timeout = args.timeout_milliseconds();
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
     if (instance_->batch_manager()->IsEverythingProcessed())

@@ -39,9 +39,9 @@ class MasterInterface {
   virtual bool RequestScore(const ::artm::GetScoreValueArgs& get_score_args,
                             ScoreData* score_data) = 0;
 
-  virtual void AddBatch(const Batch& batch) = 0;
-  virtual void InvokeIteration(int iterations_count) = 0;
-  virtual bool WaitIdle(int timeout = -1) = 0;
+  virtual void AddBatch(const ::artm::AddBatchArgs& args) = 0;
+  virtual void InvokeIteration(const ::artm::InvokeIterationArgs& args) = 0;
+  virtual bool WaitIdle(const ::artm::WaitIdleArgs& args) = 0;
   virtual void SynchronizeModel(const SynchronizeModelArgs& args) = 0;
   virtual void InitializeModel(const InitializeModelArgs& args) = 0;
 };

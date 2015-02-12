@@ -168,28 +168,29 @@ bool MasterProxy::RequestScore(const GetScoreValueArgs& get_score_args,
   return true;
 }
 
-void MasterProxy::AddBatch(const Batch& batch) {
+void MasterProxy::AddBatch(const AddBatchArgs& args) {
   make_rpcz_call([&]() {
     Void response;
     node_controller_service_proxy_->AddBatch(
-      batch, &response, communication_timeout_);
+      args, &response, communication_timeout_);
   }, "MasterProxy::AddBatch");
 }
 
-void MasterProxy::InvokeIteration(int iterations_count) {
+void MasterProxy::InvokeIteration(const InvokeIterationArgs& args) {
   make_rpcz_call([&]() {
     Void response;
     node_controller_service_proxy_->InvokeIteration(
-      Void(), &response, communication_timeout_);
+      args, &response, communication_timeout_);
   }, "MasterProxy::InvokeIteration");
 }
 
-bool MasterProxy::WaitIdle(int timeout) {
+bool MasterProxy::WaitIdle(const WaitIdleArgs& args) {
   Int response;
+  int timeout = args.timeout_milliseconds();
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
     make_rpcz_call([&]() {
-      node_controller_service_proxy_->WaitIdle(Void(), &response, communication_timeout_);
+      node_controller_service_proxy_->WaitIdle(args, &response, communication_timeout_);
     }, "MasterProxy::WaitIdle");
     if (response.value() == ARTM_STILL_WORKING) {
       boost::this_thread::sleep(boost::posix_time::milliseconds(polling_frequency_));

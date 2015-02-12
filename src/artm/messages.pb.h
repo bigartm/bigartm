@@ -80,6 +80,9 @@ class InitializeModelArgs;
 class GetTopicModelArgs;
 class GetThetaMatrixArgs;
 class GetScoreValueArgs;
+class AddBatchArgs;
+class InvokeIterationArgs;
+class WaitIdleArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -6073,6 +6076,264 @@ class GetScoreValueArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static GetScoreValueArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class AddBatchArgs : public ::google::protobuf::Message {
+ public:
+  AddBatchArgs();
+  virtual ~AddBatchArgs();
+
+  AddBatchArgs(const AddBatchArgs& from);
+
+  inline AddBatchArgs& operator=(const AddBatchArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const AddBatchArgs& default_instance();
+
+  void Swap(AddBatchArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  AddBatchArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const AddBatchArgs& from);
+  void MergeFrom(const AddBatchArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .artm.Batch batch = 1;
+  inline bool has_batch() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 1;
+  inline const ::artm::Batch& batch() const;
+  inline ::artm::Batch* mutable_batch();
+  inline ::artm::Batch* release_batch();
+  inline void set_allocated_batch(::artm::Batch* batch);
+
+  // optional int32 timeout_milliseconds = 2;
+  inline bool has_timeout_milliseconds() const;
+  inline void clear_timeout_milliseconds();
+  static const int kTimeoutMillisecondsFieldNumber = 2;
+  inline ::google::protobuf::int32 timeout_milliseconds() const;
+  inline void set_timeout_milliseconds(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.AddBatchArgs)
+ private:
+  inline void set_has_batch();
+  inline void clear_has_batch();
+  inline void set_has_timeout_milliseconds();
+  inline void clear_has_timeout_milliseconds();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::artm::Batch* batch_;
+  ::google::protobuf::int32 timeout_milliseconds_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static AddBatchArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class InvokeIterationArgs : public ::google::protobuf::Message {
+ public:
+  InvokeIterationArgs();
+  virtual ~InvokeIterationArgs();
+
+  InvokeIterationArgs(const InvokeIterationArgs& from);
+
+  inline InvokeIterationArgs& operator=(const InvokeIterationArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const InvokeIterationArgs& default_instance();
+
+  void Swap(InvokeIterationArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  InvokeIterationArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const InvokeIterationArgs& from);
+  void MergeFrom(const InvokeIterationArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 iterations_count = 1 [default = 1];
+  inline bool has_iterations_count() const;
+  inline void clear_iterations_count();
+  static const int kIterationsCountFieldNumber = 1;
+  inline ::google::protobuf::int32 iterations_count() const;
+  inline void set_iterations_count(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.InvokeIterationArgs)
+ private:
+  inline void set_has_iterations_count();
+  inline void clear_has_iterations_count();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::int32 iterations_count_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static InvokeIterationArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class WaitIdleArgs : public ::google::protobuf::Message {
+ public:
+  WaitIdleArgs();
+  virtual ~WaitIdleArgs();
+
+  WaitIdleArgs(const WaitIdleArgs& from);
+
+  inline WaitIdleArgs& operator=(const WaitIdleArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const WaitIdleArgs& default_instance();
+
+  void Swap(WaitIdleArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  WaitIdleArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const WaitIdleArgs& from);
+  void MergeFrom(const WaitIdleArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 timeout_milliseconds = 1 [default = -1];
+  inline bool has_timeout_milliseconds() const;
+  inline void clear_timeout_milliseconds();
+  static const int kTimeoutMillisecondsFieldNumber = 1;
+  inline ::google::protobuf::int32 timeout_milliseconds() const;
+  inline void set_timeout_milliseconds(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.WaitIdleArgs)
+ private:
+  inline void set_has_timeout_milliseconds();
+  inline void clear_has_timeout_milliseconds();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::int32 timeout_milliseconds_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static WaitIdleArgs* default_instance_;
 };
 // ===================================================================
 
@@ -13390,6 +13651,122 @@ inline void GetScoreValueArgs::set_allocated_batch(::artm::Batch* batch) {
   } else {
     clear_has_batch();
   }
+}
+
+// -------------------------------------------------------------------
+
+// AddBatchArgs
+
+// optional .artm.Batch batch = 1;
+inline bool AddBatchArgs::has_batch() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void AddBatchArgs::set_has_batch() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void AddBatchArgs::clear_has_batch() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void AddBatchArgs::clear_batch() {
+  if (batch_ != NULL) batch_->::artm::Batch::Clear();
+  clear_has_batch();
+}
+inline const ::artm::Batch& AddBatchArgs::batch() const {
+  return batch_ != NULL ? *batch_ : *default_instance_->batch_;
+}
+inline ::artm::Batch* AddBatchArgs::mutable_batch() {
+  set_has_batch();
+  if (batch_ == NULL) batch_ = new ::artm::Batch;
+  return batch_;
+}
+inline ::artm::Batch* AddBatchArgs::release_batch() {
+  clear_has_batch();
+  ::artm::Batch* temp = batch_;
+  batch_ = NULL;
+  return temp;
+}
+inline void AddBatchArgs::set_allocated_batch(::artm::Batch* batch) {
+  delete batch_;
+  batch_ = batch;
+  if (batch) {
+    set_has_batch();
+  } else {
+    clear_has_batch();
+  }
+}
+
+// optional int32 timeout_milliseconds = 2;
+inline bool AddBatchArgs::has_timeout_milliseconds() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void AddBatchArgs::set_has_timeout_milliseconds() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void AddBatchArgs::clear_has_timeout_milliseconds() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void AddBatchArgs::clear_timeout_milliseconds() {
+  timeout_milliseconds_ = 0;
+  clear_has_timeout_milliseconds();
+}
+inline ::google::protobuf::int32 AddBatchArgs::timeout_milliseconds() const {
+  return timeout_milliseconds_;
+}
+inline void AddBatchArgs::set_timeout_milliseconds(::google::protobuf::int32 value) {
+  set_has_timeout_milliseconds();
+  timeout_milliseconds_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// InvokeIterationArgs
+
+// optional int32 iterations_count = 1 [default = 1];
+inline bool InvokeIterationArgs::has_iterations_count() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void InvokeIterationArgs::set_has_iterations_count() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void InvokeIterationArgs::clear_has_iterations_count() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void InvokeIterationArgs::clear_iterations_count() {
+  iterations_count_ = 1;
+  clear_has_iterations_count();
+}
+inline ::google::protobuf::int32 InvokeIterationArgs::iterations_count() const {
+  return iterations_count_;
+}
+inline void InvokeIterationArgs::set_iterations_count(::google::protobuf::int32 value) {
+  set_has_iterations_count();
+  iterations_count_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// WaitIdleArgs
+
+// optional int32 timeout_milliseconds = 1 [default = -1];
+inline bool WaitIdleArgs::has_timeout_milliseconds() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void WaitIdleArgs::set_has_timeout_milliseconds() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void WaitIdleArgs::clear_has_timeout_milliseconds() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void WaitIdleArgs::clear_timeout_milliseconds() {
+  timeout_milliseconds_ = -1;
+  clear_has_timeout_milliseconds();
+}
+inline ::google::protobuf::int32 WaitIdleArgs::timeout_milliseconds() const {
+  return timeout_milliseconds_;
+}
+inline void WaitIdleArgs::set_timeout_milliseconds(::google::protobuf::int32 value) {
+  set_has_timeout_milliseconds();
+  timeout_milliseconds_ = value;
 }
 
 

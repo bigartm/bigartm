@@ -138,7 +138,9 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   }
 
   // Index doc-token matrix
-  if (!online_processing && !is_network_mode) master_component->AddBatch(batch);
+  artm::AddBatchArgs add_batch_args;
+  add_batch_args.mutable_batch()->CopyFrom(batch);
+  if (!online_processing && !is_network_mode) master_component->AddBatch(add_batch_args);
   else if (is_network_mode) artm::SaveBatch(batch, "00b6d631-46a6-4edf-8ef6-016c7b27d9f0.batch");
 
   std::shared_ptr<artm::TopicModel> topic_model;
@@ -146,7 +148,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   double previous_perplexity = 0;
   for (int iter = 0; iter < 5; ++iter) {
     if (!online_processing) master_component->InvokeIteration(1);
-    else                    master_component->AddBatch(batch);
+    else                    master_component->AddBatch(add_batch_args);
 
     master_component->WaitIdle();
     model.Synchronize(0.0);
@@ -204,7 +206,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   }
 
   if (!online_processing) master_component->InvokeIteration(1);
-  else                    master_component->AddBatch(batch);
+  else                    master_component->AddBatch(add_batch_args);
 
   EXPECT_TRUE(master_component->WaitIdle());
 
@@ -452,7 +454,10 @@ TEST(CppInterface, ProxyExceptions) {
 TEST(CppInterface, WaitIdleTimeout) {
   ::artm::MasterComponentConfig master_config;
   ::artm::MasterComponent master(master_config);
-  master.AddBatch(::artm::Batch());
+  ::artm::Batch batch;
+  ::artm::AddBatchArgs args;
+  args.mutable_batch()->CopyFrom(batch);
+  master.AddBatch(args);
   master.InvokeIteration(10000);
   EXPECT_FALSE(master.WaitIdle(1));
 }

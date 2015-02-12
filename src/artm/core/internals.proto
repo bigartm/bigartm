@@ -157,9 +157,9 @@ service NodeControllerService {
   rpc RequestThetaMatrix(GetThetaMatrixArgs) returns (ThetaMatrix);
   rpc RequestScore(GetScoreValueArgs) returns (ScoreData);
 
-  rpc AddBatch(Batch) returns (Void);
-  rpc InvokeIteration(Void) returns (Void);
-  rpc WaitIdle(Void) returns (Int);
+  rpc AddBatch(AddBatchArgs) returns (Void);
+  rpc InvokeIteration(InvokeIterationArgs) returns (Void);
+  rpc WaitIdle(WaitIdleArgs) returns (Int);
   rpc SynchronizeModel(SynchronizeModelArgs) returns (Void);
   rpc InitializeModel(InitializeModelArgs) returns (Void);
 }

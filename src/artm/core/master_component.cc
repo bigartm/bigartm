@@ -236,18 +236,19 @@ bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
     "MasterComponentConfig.modus_operandi", config_.get()->modus_operandi()));
 }
 
-bool MasterComponent::WaitIdle(int timeout) {
+bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
+  int timeout = args.timeout_milliseconds();
   if (isInLocalModusOperandi()) {
     auto time_start = boost::posix_time::microsec_clock::local_time();
 
-    bool retval = instance_->local_data_loader()->WaitIdle(timeout);
+    bool retval = instance_->local_data_loader()->WaitIdle(args);
     if (!retval) return false;
 
     auto time_end = boost::posix_time::microsec_clock::local_time();
     if (timeout != -1)
       timeout -= (time_end - time_start).total_milliseconds();
 
-    return instance_->merger()->WaitIdle(timeout);
+    return instance_->merger()->WaitIdle(args);
   }
 
   if (isInNetworkModusOperandi()) {
@@ -277,13 +278,16 @@ bool MasterComponent::WaitIdle(int timeout) {
       auto local_timeout = timeout - (time_end - time_start).total_milliseconds();
       if (timeout >= 0) {
         if (local_timeout >= 0) {
-          bool result = instance_->merger()->WaitIdle(static_cast<int>(local_timeout));
+          WaitIdleArgs new_args;
+          new_args.CopyFrom(args);
+          new_args.set_timeout_milliseconds(static_cast<int>(local_timeout));
+          bool result = instance_->merger()->WaitIdle(new_args);
           if (!result) return false;
         } else {
           return false;
         }
       } else {
-        instance_->merger()->WaitIdle(-1);
+        instance_->merger()->WaitIdle(args);
       }
     }
 
@@ -294,7 +298,7 @@ bool MasterComponent::WaitIdle(int timeout) {
     "MasterComponentConfig.modus_operandi", config_.get()->modus_operandi()));
 }
 
-void MasterComponent::InvokeIteration(int iterations_count) {
+void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
   if (config_.get()->online_batch_processing()) {
     std::stringstream str;
     str << "InvokeIteration() must not be used together with ";
@@ -306,13 +310,13 @@ void MasterComponent::InvokeIteration(int iterations_count) {
   instance_->merger()->ForceResetScores(ModelName());
 
   if (isInLocalModusOperandi()) {
-    instance_->local_data_loader()->InvokeIteration(iterations_count);
+    instance_->local_data_loader()->InvokeIteration(args);
     return;
   }
 
   if (isInNetworkModusOperandi()) {
     auto uuids = BatchHelpers::ListAllBatches(config_.get()->disk_path());
-    for (int iter = 0; iter < iterations_count; ++iter) {
+    for (int iter = 0; iter < args.iterations_count(); ++iter) {
       for (auto &uuid : uuids) {
         instance_->batch_manager()->Add(uuid);
       }
@@ -325,9 +329,9 @@ void MasterComponent::InvokeIteration(int iterations_count) {
     "MasterComponentConfig.modus_operandi", config_.get()->modus_operandi()));
 }
 
-void MasterComponent::AddBatch(const Batch& batch) {
+void MasterComponent::AddBatch(const AddBatchArgs& args) {
   if (isInLocalModusOperandi()) {
-    return instance_->local_data_loader()->AddBatch(batch,
+    return instance_->local_data_loader()->AddBatch(args,
                                                     config_.get()->online_batch_processing());
   }
 

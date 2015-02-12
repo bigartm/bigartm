@@ -153,11 +153,11 @@ class NodeControllerService : public rpcz::service {
                        ::rpcz::reply< ::artm::ThetaMatrix> response);
   virtual void RequestScore(const ::artm::GetScoreValueArgs& request,
                        ::rpcz::reply< ::artm::ScoreData> response);
-  virtual void AddBatch(const ::artm::Batch& request,
+  virtual void AddBatch(const ::artm::AddBatchArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
-  virtual void InvokeIteration(const ::artm::core::Void& request,
+  virtual void InvokeIteration(const ::artm::InvokeIterationArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
-  virtual void WaitIdle(const ::artm::core::Void& request,
+  virtual void WaitIdle(const ::artm::WaitIdleArgs& request,
                        ::rpcz::reply< ::artm::core::Int> response);
   virtual void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
@@ -293,22 +293,22 @@ class NodeControllerService_Stub {
   void RequestScore(const ::artm::GetScoreValueArgs& request,
                        ::artm::ScoreData* response,
                        long deadline_ms = -1);
-  void AddBatch(const ::artm::Batch& request,
+  void AddBatch(const ::artm::AddBatchArgs& request,
                        ::artm::core::Void* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void AddBatch(const ::artm::Batch& request,
+  void AddBatch(const ::artm::AddBatchArgs& request,
                        ::artm::core::Void* response,
                        long deadline_ms = -1);
-  void InvokeIteration(const ::artm::core::Void& request,
+  void InvokeIteration(const ::artm::InvokeIterationArgs& request,
                        ::artm::core::Void* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void InvokeIteration(const ::artm::core::Void& request,
+  void InvokeIteration(const ::artm::InvokeIterationArgs& request,
                        ::artm::core::Void* response,
                        long deadline_ms = -1);
-  void WaitIdle(const ::artm::core::Void& request,
+  void WaitIdle(const ::artm::WaitIdleArgs& request,
                        ::artm::core::Int* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void WaitIdle(const ::artm::core::Void& request,
+  void WaitIdle(const ::artm::WaitIdleArgs& request,
                        ::artm::core::Int* response,
                        long deadline_ms = -1);
   void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
