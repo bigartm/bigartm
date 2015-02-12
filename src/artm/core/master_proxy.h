@@ -44,7 +44,7 @@ class MasterProxy : boost::noncopyable, public MasterInterface {
   virtual bool RequestScore(const GetScoreValueArgs& get_score_args,
                             ScoreData* score_data);
 
-  virtual void AddBatch(const AddBatchArgs& args);
+  virtual bool AddBatch(const AddBatchArgs& args);
   virtual void InvokeIteration(const InvokeIterationArgs& args);
   virtual bool WaitIdle(const WaitIdleArgs& args);
   virtual void SynchronizeModel(const SynchronizeModelArgs& args);

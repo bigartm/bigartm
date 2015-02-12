@@ -46,6 +46,8 @@ class BatchManager : boost::noncopyable, public Notifiable {
   // until it is marked as processed by Done().
   BatchManagerTask Next();
 
+  void AddAndNext(const BatchManagerTask& task);
+
   // Eliminates uuid from "in progress" set.
   void Done(const boost::uuids::uuid& id, const ModelName& model_name);
 

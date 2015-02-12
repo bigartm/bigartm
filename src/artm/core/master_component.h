@@ -80,7 +80,7 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
   virtual void InvokeIteration(const InvokeIterationArgs& args);
   virtual void SynchronizeModel(const SynchronizeModelArgs& args);
   virtual void InitializeModel(const InitializeModelArgs& args);
-  virtual void AddBatch(const AddBatchArgs& args);
+  virtual bool AddBatch(const AddBatchArgs& args);
 
   // Throws InvalidOperation exception if new config is invalid.
   void ValidateConfig(const MasterComponentConfig& config);

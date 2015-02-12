@@ -80,7 +80,7 @@ class MasterComponent {
   std::shared_ptr<T> GetScoreAs(const Model& model, const std::string& score_name);
 
   void Reconfigure(const MasterComponentConfig& config);
-  void AddBatch(const AddBatchArgs& args);
+  bool AddBatch(const AddBatchArgs& args);
   void AddStream(const Stream& stream);
   void RemoveStream(std::string stream_name);
 

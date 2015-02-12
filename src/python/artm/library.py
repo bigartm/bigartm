@@ -320,7 +320,10 @@ class MasterComponent:
     args.timeout_milliseconds = timeout;
     args_blob = args.SerializeToString()
     args_blob_p = ctypes.create_string_buffer(args_blob)
-    HandleErrorCode(self.lib_, self.lib_.ArtmAddBatch(self.id_, len(args_blob), args_blob_p))
+
+    result = self.lib_.ArtmAddBatch(self.id_, len(args_blob), args_blob_p)
+    result = HandleErrorCode(self.lib_, result)
+    return False if (result == ARTM_STILL_WORKING) else True
 
   def InvokeIteration(self, iterations_count = 1):
     args = messages_pb2.InvokeIterationArgs()

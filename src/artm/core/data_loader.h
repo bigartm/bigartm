@@ -50,7 +50,7 @@ class LocalDataLoader : public DataLoader {
   virtual ~LocalDataLoader();
 
   int GetTotalItemsCount() const;
-  void AddBatch(const AddBatchArgs& args, bool invoke);
+  bool AddBatch(const AddBatchArgs& args, bool invoke);
   virtual void Callback(ModelIncrement* model_increment);
 
   void InvokeIteration(const InvokeIterationArgs& args);

@@ -154,7 +154,7 @@ class NodeControllerService : public rpcz::service {
   virtual void RequestScore(const ::artm::GetScoreValueArgs& request,
                        ::rpcz::reply< ::artm::ScoreData> response);
   virtual void AddBatch(const ::artm::AddBatchArgs& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
+                       ::rpcz::reply< ::artm::core::Int> response);
   virtual void InvokeIteration(const ::artm::InvokeIterationArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void WaitIdle(const ::artm::WaitIdleArgs& request,
@@ -294,10 +294,10 @@ class NodeControllerService_Stub {
                        ::artm::ScoreData* response,
                        long deadline_ms = -1);
   void AddBatch(const ::artm::AddBatchArgs& request,
-                       ::artm::core::Void* response,
+                       ::artm::core::Int* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
   void AddBatch(const ::artm::AddBatchArgs& request,
-                       ::artm::core::Void* response,
+                       ::artm::core::Int* response,
                        long deadline_ms = -1);
   void InvokeIteration(const ::artm::InvokeIterationArgs& request,
                        ::artm::core::Void* response,

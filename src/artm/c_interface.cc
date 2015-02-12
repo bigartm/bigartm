@@ -116,8 +116,13 @@ int ArtmAddBatch(int master_id, int length, const char* add_batch_args) {
   try {
     artm::AddBatchArgs add_batch_args_object;
     ParseFromArray(add_batch_args, length, &add_batch_args_object);
-    master_component(master_id)->AddBatch(add_batch_args_object);
-    return ARTM_SUCCESS;
+    bool result = master_component(master_id)->AddBatch(add_batch_args_object);
+    if (result) {
+      return ARTM_SUCCESS;
+    } else {
+      set_last_error("Artm's processor queue is full. Call ArtmAddBatch() later.");
+      return ARTM_STILL_WORKING;
+    }
   } CATCH_EXCEPTIONS;
 }
 
@@ -134,8 +139,7 @@ int ArtmWaitIdle(int master_id, int length, const char* wait_idle_args) {
   try {
     artm::WaitIdleArgs wait_idle_args_object;
     ParseFromArray(wait_idle_args, length, &wait_idle_args_object);
-    bool result = master_component(master_id)->WaitIdle(
-        wait_idle_args_object);
+    bool result = master_component(master_id)->WaitIdle(wait_idle_args_object);
 
     if (result) {
       return ARTM_SUCCESS;

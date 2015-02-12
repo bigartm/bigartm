@@ -307,16 +307,27 @@ void NodeControllerServiceImpl::RequestScore(
 
 void NodeControllerServiceImpl::AddBatch(
     const ::artm::AddBatchArgs& request,
-    ::rpcz::reply< ::artm::core::Void> response) {
+    ::rpcz::reply< ::artm::core::Int> response) {
+  int local_timeout = 10;
+  bool result;
+  Int retval;
   try {
     boost::lock_guard<boost::mutex> guard(lock_);
     if (master_ != nullptr) {
-      master_->AddBatch(request);
+      AddBatchArgs new_args;
+      new_args.CopyFrom(request);
+      new_args.set_timeout_milliseconds(local_timeout);
+      result = master_->AddBatch(new_args);
+      if (result) {
+        retval.set_value(ARTM_SUCCESS);
+        LOG(INFO) << "AddBatch() succeeded";
+      } else {
+        retval.set_value(ARTM_STILL_WORKING);
+      }
+      response.send(retval);
     } else {
       LOG(ERROR) << "No master component exists in node controller";
     }
-
-    response.send(Void());
   } CATCH_EXCEPTIONS_AND_SEND_ERROR;
 }
 

@@ -238,6 +238,8 @@ bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
 
 bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
   int timeout = args.timeout_milliseconds();
+  WaitIdleArgs new_args;
+  new_args.CopyFrom(args);
   if (isInLocalModusOperandi()) {
     auto time_start = boost::posix_time::microsec_clock::local_time();
 
@@ -245,10 +247,11 @@ bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
     if (!retval) return false;
 
     auto time_end = boost::posix_time::microsec_clock::local_time();
-    if (timeout != -1)
+    if (timeout != -1) {
       timeout -= (time_end - time_start).total_milliseconds();
-
-    return instance_->merger()->WaitIdle(args);
+      new_args.set_timeout_milliseconds(timeout);
+    }
+    return instance_->merger()->WaitIdle(new_args);
   }
 
   if (isInNetworkModusOperandi()) {
@@ -278,8 +281,6 @@ bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
       auto local_timeout = timeout - (time_end - time_start).total_milliseconds();
       if (timeout >= 0) {
         if (local_timeout >= 0) {
-          WaitIdleArgs new_args;
-          new_args.CopyFrom(args);
           new_args.set_timeout_milliseconds(static_cast<int>(local_timeout));
           bool result = instance_->merger()->WaitIdle(new_args);
           if (!result) return false;
@@ -329,10 +330,11 @@ void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
     "MasterComponentConfig.modus_operandi", config_.get()->modus_operandi()));
 }
 
-void MasterComponent::AddBatch(const AddBatchArgs& args) {
+bool MasterComponent::AddBatch(const AddBatchArgs& args) {
+  int timeout = args.timeout_milliseconds();
   if (isInLocalModusOperandi()) {
-    return instance_->local_data_loader()->AddBatch(args,
-                                                    config_.get()->online_batch_processing());
+    auto time_start = boost::posix_time::microsec_clock::local_time();
+    return instance_->local_data_loader()->AddBatch(args, config_.get()->online_batch_processing());
   }
 
   if (isInNetworkModusOperandi()) {

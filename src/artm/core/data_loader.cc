@@ -102,9 +102,11 @@ LocalDataLoader::~LocalDataLoader() {
   }
 }
 
-void LocalDataLoader::AddBatch(const AddBatchArgs& args, bool invoke) {
+bool LocalDataLoader::AddBatch(const AddBatchArgs& args, bool invoke) {
   auto& batch = args.batch();
+  int timeout = args.timeout_milliseconds();
   MasterComponentConfig config = instance()->schema()->config();
+
   std::shared_ptr<Batch> modified_batch;
   if (config.compact_batches()) {
     modified_batch = std::make_shared<Batch>();  // constructor
@@ -115,12 +117,29 @@ void LocalDataLoader::AddBatch(const AddBatchArgs& args, bool invoke) {
     BatchHelpers::PopulateClassId(modified_batch.get());
   }
 
-  boost::uuids::uuid uuid = generation_->AddBatch(modified_batch);
+  if (invoke) {
+    auto time_start = boost::posix_time::microsec_clock::local_time();
+    for (;;) {
+      if (instance_->processor_queue()->size() < config.processor_queue_max_size()) break;
 
-  if (invoke)
-    instance_->batch_manager()->Add(uuid, std::string());
+      boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+
+      if (timeout >= 0) {
+        auto time_end = boost::posix_time::microsec_clock::local_time();
+        if ((time_end - time_start).total_milliseconds() >= timeout) return false;
+      }
+    }
+    auto pi = std::make_shared<ProcessorInput>();
+    pi->mutable_batch()->CopyFrom(*modified_batch);
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    pi->set_batch_uuid(boost::lexical_cast<std::string>(uuid));
+    instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
+    instance_->processor_queue()->push(pi);
+  } else {
+    generation_->AddBatch(modified_batch);
+  }
+  return true;
 }
-
 
 int LocalDataLoader::GetTotalItemsCount() const {
   return generation_->GetTotalItemsCount();
@@ -343,6 +362,11 @@ void RemoteDataLoader::ThreadFunction() {
       if (is_stopping) {
         LOG(INFO) << "DataLoader thread stopped";
         break;
+      }
+
+      if (instance()->schema()->config().online_batch_processing()) {
+        boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+        continue;
       }
 
       MasterComponentConfig config = instance()->schema()->config();

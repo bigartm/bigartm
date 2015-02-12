@@ -319,10 +319,16 @@ void Dictionary::Reconfigure(const DictionaryConfig& config) {
   config_.CopyFrom(config);
 }
 
-void MasterComponent::AddBatch(const AddBatchArgs& args) {
+bool MasterComponent::AddBatch(const AddBatchArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
-  HandleErrorCode(ArtmAddBatch(id(), args_blob.size(), StringAsArray(&args_blob)));
+  int result = ArtmAddBatch(id(), args_blob.size(), StringAsArray(&args_blob));
+  if (result == ARTM_STILL_WORKING) {
+    return false;
+  } else {
+    HandleErrorCode(result);
+    return true;
+  }
 }
 
 void MasterComponent::InvokeIteration(int iterations_count) {

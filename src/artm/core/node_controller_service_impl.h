@@ -50,7 +50,7 @@ class NodeControllerServiceImpl : public NodeControllerService {
   virtual void RequestScore(const ::artm::GetScoreValueArgs& request,
                        ::rpcz::reply< ::artm::ScoreData> response);
   virtual void AddBatch(const ::artm::AddBatchArgs& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
+                       ::rpcz::reply< ::artm::core::Int> response);
   virtual void InvokeIteration(const ::artm::InvokeIterationArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void WaitIdle(const ::artm::WaitIdleArgs& request,

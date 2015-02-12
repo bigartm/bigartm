@@ -168,12 +168,25 @@ bool MasterProxy::RequestScore(const GetScoreValueArgs& get_score_args,
   return true;
 }
 
-void MasterProxy::AddBatch(const AddBatchArgs& args) {
-  make_rpcz_call([&]() {
-    Void response;
-    node_controller_service_proxy_->AddBatch(
-      args, &response, communication_timeout_);
-  }, "MasterProxy::AddBatch");
+bool MasterProxy::AddBatch(const AddBatchArgs& args) {
+  Int response;
+  int timeout = args.timeout_milliseconds();
+  auto time_start = boost::posix_time::microsec_clock::local_time();
+  for (;;) {
+    make_rpcz_call([&]() {
+      node_controller_service_proxy_->AddBatch(args, &response, communication_timeout_);
+    }, "MasterProxy::AddBatch");
+    if (response.value() == ARTM_STILL_WORKING) {
+      boost::this_thread::sleep(boost::posix_time::milliseconds(polling_frequency_));
+      auto time_end = boost::posix_time::microsec_clock::local_time();
+
+      if (timeout >= 0) {
+        if ((time_end - time_start).total_milliseconds() >= timeout) return false;
+      }
+    } else {  // return value is ARTM_SUCCESS
+      return true;
+    }
+  }
 }
 
 void MasterProxy::InvokeIteration(const InvokeIterationArgs& args) {
