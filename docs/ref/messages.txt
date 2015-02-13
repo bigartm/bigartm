@@ -90,6 +90,17 @@ of tokens in the Batch.
     optional string name = 1 [default = "@body"];
     repeated int32 token_id = 2;
     repeated int32 token_count = 3;
+    repeated int32 token_offset = 4;
+
+    optional string string_value = 5;
+    optional int64 int_value = 6;
+    optional double double_value = 7;
+    optional string date_value = 8;
+
+    repeated string string_array = 16;
+    repeated int64 int_array = 17;
+    repeated double double_array = 18;
+    repeated string date_array = 19;
   }
 
 
@@ -111,6 +122,7 @@ items in one batch are always processed sequentially.
     repeated string token = 1;
     repeated Item item = 2;
     repeated string class_id = 3;
+    optional string description = 4;
   }
 
 .. attribute:: Batch.token
@@ -126,6 +138,13 @@ items in one batch are always processed sequentially.
    A set of values that define for classes (modalities) of tokens.
    This repeated field must have the same length as :attr:`token`.
    This value is optional, use an empty list indicate that all tokens belong to the default class.
+
+.. attribute:: Batch.description
+
+   An optional text description of the batch.
+   You may describe for example the source of the batch,
+   preprocessing technique and the structure of its fields.
+
 
 .. _Stream:
 
