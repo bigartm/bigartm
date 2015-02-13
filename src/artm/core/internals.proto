@@ -36,6 +36,8 @@ message DataLoaderCacheEntry {
   // If filename is set then this DataLoaderCacheEntry is incomplete
   // ('theta' field is missing). Full message can be loaded from 'filename' file.
   optional string filename = 6;
+
+  repeated string item_title = 7;
 }
 
 // A message containing all data to transfer from DataLoader to Processor
@@ -63,6 +65,7 @@ message ModelIncrement {
     IncrementValue = 1;    // Asks Merger to increment value of this token
     OverwriteValue = 2;    // Asks Merger to overwrite value of this token
     DeleteToken = 3;       // Asks Merger to remote this token
+    SkipToken = 4;         // Asks Merger to skip this token (used when class_id is not included in the model)
   }
 
   required string model_name = 1;

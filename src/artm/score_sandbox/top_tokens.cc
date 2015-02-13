@@ -63,7 +63,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
     int first_index = p_wt[i].size() - 1;
     int last_index = (p_wt[i].size() - config_.num_tokens());
     if (last_index < 0) last_index = 0;
-    for (size_t token_index = first_index; token_index >= last_index; token_index--) {
+    for (int token_index = first_index; token_index >= last_index; token_index--) {
       ::artm::core::Token token = p_wt[i][token_index].second;
       float weight = p_wt[i][token_index].first;
       top_tokens_score->add_token(token.keyword);

@@ -1,0 +1,25 @@
+Download
+========
+
+* Windows - latest release
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.6/BigARTM_v0.5.6_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.6/BigARTM_v0.5.6_x64.7z
+
+* Windows - previous releases
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.5/BigARTM_v0.5.5_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.5/BigARTM_v0.5.5_x64.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.4/BigARTM_v0.5.4_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.4/BigARTM_v0.5.4_x64.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.3/BigARTM_v0.5.3_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.3/BigARTM_v0.5.3_x64.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.2/BigARTM_v0.5.2_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.2/BigARTM_v0.5.2_x64.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.1/BigARTM_v0.5.1_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.1/BigARTM_v0.5.1_x64.7z
+
+	Please refer to :doc:`tutorial` chapter for installation guide.
+
+* Linux, Mac OS-X
+	Currently there is distribution package for Linux or Mac OS-X.
+	To run BigARTM you need to download the source code and built it on your machine.
+	Detailed procesure is available in :doc:`tutorial` and :doc:`devguide` chapters.

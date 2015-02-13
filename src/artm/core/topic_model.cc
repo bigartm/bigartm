@@ -269,6 +269,10 @@ void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff, float apply
         this->RemoveToken(token);
         break;
 
+      case ModelIncrement_OperationType_SkipToken:
+        // skip token == do nothing
+        break;
+
       default:
         BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
           "ModelIncrement.operation_type", operation_type));

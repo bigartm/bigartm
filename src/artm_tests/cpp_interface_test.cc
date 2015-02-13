@@ -122,8 +122,14 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     batch.add_token(str.str());
   }
 
+  std::vector<std::string> item_title;
   for (int iDoc = 0; iDoc < nDocs; iDoc++) {
     artm::Item* item = batch.add_item();
+    std::stringstream str;
+    str << "item" << iDoc;
+    item_title.push_back(str.str());
+    item->set_title(str.str());
+    item->set_id(666 + iDoc);
     artm::Field* field = item->add_field();
     for (int iToken = 0; iToken < nTokens; ++iToken) {
       field->add_token_id(iToken);
@@ -242,8 +248,11 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
       std::shared_ptr< ::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
 
       EXPECT_EQ(theta_matrix->item_id_size(), nDocs);
+      EXPECT_EQ(theta_matrix->item_title_size(), nDocs);
       EXPECT_EQ(theta_matrix->topics_count(), nTopics);
       for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
+        EXPECT_EQ(theta_matrix->item_id(item_index), 666 + item_index);
+        EXPECT_EQ(theta_matrix->item_title(item_index), item_title[item_index]);
         const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
         ASSERT_EQ(weights.value_size(), nTopics);
         float sum = 0;
@@ -290,8 +299,11 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     if (!is_network_mode) {
       std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
       EXPECT_EQ(theta_matrix2->item_id_size(), nDocs);
+      EXPECT_EQ(theta_matrix2->item_title_size(), nDocs);
       EXPECT_EQ(theta_matrix2->topics_count(), nTopics);
       for (int item_index = 0; item_index < theta_matrix2->item_id_size(); ++item_index) {
+        EXPECT_EQ(theta_matrix2->item_id(item_index), 666 + item_index);
+        EXPECT_EQ(theta_matrix2->item_title(item_index), item_title[item_index]);
         const ::artm::FloatArray& weights2 = theta_matrix2->item_weights(item_index);
         EXPECT_EQ(weights2.value_size(), nTopics);
         float sum2 = 0;

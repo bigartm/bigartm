@@ -76,6 +76,12 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
     model_increment->add_class_id(token.class_id);
     FloatArray* counters = model_increment->add_token_increment();
 
+    if ((model_config.class_id_size() > 0) &&
+        (!repeated_field_contains(model_config.class_id(), token.class_id))) {
+      model_increment->add_operation_type(ModelIncrement_OperationType_SkipToken);
+      continue;
+    }
+
     if (topic_model.has_token(token)) {
       model_increment->add_operation_type(ModelIncrement_OperationType_IncrementValue);
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
@@ -413,7 +419,7 @@ static const DataLoaderCacheEntry* FindCacheEntry(const ProcessorInput& part, co
 
 static std::shared_ptr<Score>
 CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, const Batch& batch,
-           const TopicModel& topic_model, const DenseMatrix<float>& theta_matrix,
+           const TopicModel& topic_model, const ModelConfig& model_config, const DenseMatrix<float>& theta_matrix,
            const ProcessorInput* part) {
   if (!score_calc->is_cumulative())
     return nullptr;
@@ -439,7 +445,7 @@ CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, c
       theta_vec.push_back(theta_matrix(topic_index, item_index));
     }
 
-    score_calc->AppendScore(item, token_dict, topic_model, theta_vec, score.get());
+    score_calc->AppendScore(item, token_dict, topic_model, model_config, theta_vec, score.get());
   }
 
   return score;
@@ -499,6 +505,7 @@ void Processor::FindThetaMatrix(const Batch& batch,
     for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
       const Item& item = batch.item(item_index);
       cache_entry.add_item_id(item.id());
+      cache_entry.add_item_title(item.has_title() ? item.title() : std::string());
       FloatArray* item_weights = cache_entry.add_theta();
       for (int topic_index = 0; topic_index < topic_size; ++topic_index)
         item_weights->add_value((*theta_matrix)(topic_index, item_index));
@@ -512,7 +519,7 @@ void Processor::FindThetaMatrix(const Batch& batch,
     if (score_calc == nullptr)
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find score calculator ", score_args.score_name()));
 
-    auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, *theta_matrix, nullptr);
+    auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, model_config, *theta_matrix, nullptr);
     score_result->set_data(score_value->SerializeAsString());
     score_result->set_type(score_calc->score_type());
     score_result->set_name(score_args.score_name());
@@ -651,7 +658,9 @@ void Processor::ThreadFunction() {
           new_cache_entry.set_model_name(model_name);
           new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_name());
           for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-            new_cache_entry.add_item_id(batch.item(item_index).id());
+            const Item& item = batch.item(item_index);
+            new_cache_entry.add_item_id(item.id());
+            new_cache_entry.add_item_title(item.has_title() ? item.title() : std::string());
             FloatArray* cached_theta = new_cache_entry.add_theta();
             for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
               cached_theta->add_value((*theta_matrix)(topic_index, item_index));
@@ -685,7 +694,8 @@ void Processor::ThreadFunction() {
             continue;
           }
 
-          auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, *theta_matrix, part.get());
+          auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, model_config,
+                                        *theta_matrix, part.get());
           if (score_value == nullptr)
             continue;
           model_increment->add_score_name(score_name);

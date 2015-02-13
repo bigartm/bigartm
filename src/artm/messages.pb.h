@@ -5243,6 +5243,22 @@ class ThetaMatrix : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 topics_count() const;
   inline void set_topics_count(::google::protobuf::int32 value);
 
+  // repeated string item_title = 6;
+  inline int item_title_size() const;
+  inline void clear_item_title();
+  static const int kItemTitleFieldNumber = 6;
+  inline const ::std::string& item_title(int index) const;
+  inline ::std::string* mutable_item_title(int index);
+  inline void set_item_title(int index, const ::std::string& value);
+  inline void set_item_title(int index, const char* value);
+  inline void set_item_title(int index, const char* value, size_t size);
+  inline ::std::string* add_item_title();
+  inline void add_item_title(const ::std::string& value);
+  inline void add_item_title(const char* value);
+  inline void add_item_title(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& item_title() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_item_title();
+
   // @@protoc_insertion_point(class_scope:artm.ThetaMatrix)
  private:
   inline void set_has_model_name();
@@ -5257,10 +5273,11 @@ class ThetaMatrix : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > item_weights_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> item_title_;
   ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12355,6 +12372,50 @@ inline ::google::protobuf::int32 ThetaMatrix::topics_count() const {
 inline void ThetaMatrix::set_topics_count(::google::protobuf::int32 value) {
   set_has_topics_count();
   topics_count_ = value;
+}
+
+// repeated string item_title = 6;
+inline int ThetaMatrix::item_title_size() const {
+  return item_title_.size();
+}
+inline void ThetaMatrix::clear_item_title() {
+  item_title_.Clear();
+}
+inline const ::std::string& ThetaMatrix::item_title(int index) const {
+  return item_title_.Get(index);
+}
+inline ::std::string* ThetaMatrix::mutable_item_title(int index) {
+  return item_title_.Mutable(index);
+}
+inline void ThetaMatrix::set_item_title(int index, const ::std::string& value) {
+  item_title_.Mutable(index)->assign(value);
+}
+inline void ThetaMatrix::set_item_title(int index, const char* value) {
+  item_title_.Mutable(index)->assign(value);
+}
+inline void ThetaMatrix::set_item_title(int index, const char* value, size_t size) {
+  item_title_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ThetaMatrix::add_item_title() {
+  return item_title_.Add();
+}
+inline void ThetaMatrix::add_item_title(const ::std::string& value) {
+  item_title_.Add()->assign(value);
+}
+inline void ThetaMatrix::add_item_title(const char* value) {
+  item_title_.Add()->assign(value);
+}
+inline void ThetaMatrix::add_item_title(const char* value, size_t size) {
+  item_title_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ThetaMatrix::item_title() const {
+  return item_title_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ThetaMatrix::mutable_item_title() {
+  return &item_title_;
 }
 
 // -------------------------------------------------------------------

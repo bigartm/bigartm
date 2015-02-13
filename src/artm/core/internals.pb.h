@@ -56,11 +56,12 @@ enum ModelIncrement_OperationType {
   ModelIncrement_OperationType_CreateIfNotExist = 0,
   ModelIncrement_OperationType_IncrementValue = 1,
   ModelIncrement_OperationType_OverwriteValue = 2,
-  ModelIncrement_OperationType_DeleteToken = 3
+  ModelIncrement_OperationType_DeleteToken = 3,
+  ModelIncrement_OperationType_SkipToken = 4
 };
 bool ModelIncrement_OperationType_IsValid(int value);
 const ModelIncrement_OperationType ModelIncrement_OperationType_OperationType_MIN = ModelIncrement_OperationType_CreateIfNotExist;
-const ModelIncrement_OperationType ModelIncrement_OperationType_OperationType_MAX = ModelIncrement_OperationType_DeleteToken;
+const ModelIncrement_OperationType ModelIncrement_OperationType_OperationType_MAX = ModelIncrement_OperationType_SkipToken;
 const int ModelIncrement_OperationType_OperationType_ARRAYSIZE = ModelIncrement_OperationType_OperationType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ModelIncrement_OperationType_descriptor();
@@ -614,6 +615,22 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   inline ::std::string* release_filename();
   inline void set_allocated_filename(::std::string* filename);
 
+  // repeated string item_title = 7;
+  inline int item_title_size() const;
+  inline void clear_item_title();
+  static const int kItemTitleFieldNumber = 7;
+  inline const ::std::string& item_title(int index) const;
+  inline ::std::string* mutable_item_title(int index);
+  inline void set_item_title(int index, const ::std::string& value);
+  inline void set_item_title(int index, const char* value);
+  inline void set_item_title(int index, const char* value, size_t size);
+  inline ::std::string* add_item_title();
+  inline void add_item_title(const ::std::string& value);
+  inline void add_item_title(const char* value);
+  inline void add_item_title(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& item_title() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_item_title();
+
   // @@protoc_insertion_point(class_scope:artm.core.DataLoaderCacheEntry)
  private:
   inline void set_has_model_name();
@@ -631,9 +648,10 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > theta_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::std::string* filename_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> item_title_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -843,6 +861,7 @@ class ModelIncrement : public ::google::protobuf::Message {
   static const OperationType IncrementValue = ModelIncrement_OperationType_IncrementValue;
   static const OperationType OverwriteValue = ModelIncrement_OperationType_OverwriteValue;
   static const OperationType DeleteToken = ModelIncrement_OperationType_DeleteToken;
+  static const OperationType SkipToken = ModelIncrement_OperationType_SkipToken;
   static inline bool OperationType_IsValid(int value) {
     return ModelIncrement_OperationType_IsValid(value);
   }
@@ -2163,6 +2182,50 @@ inline void DataLoaderCacheEntry::set_allocated_filename(::std::string* filename
     clear_has_filename();
     filename_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
+}
+
+// repeated string item_title = 7;
+inline int DataLoaderCacheEntry::item_title_size() const {
+  return item_title_.size();
+}
+inline void DataLoaderCacheEntry::clear_item_title() {
+  item_title_.Clear();
+}
+inline const ::std::string& DataLoaderCacheEntry::item_title(int index) const {
+  return item_title_.Get(index);
+}
+inline ::std::string* DataLoaderCacheEntry::mutable_item_title(int index) {
+  return item_title_.Mutable(index);
+}
+inline void DataLoaderCacheEntry::set_item_title(int index, const ::std::string& value) {
+  item_title_.Mutable(index)->assign(value);
+}
+inline void DataLoaderCacheEntry::set_item_title(int index, const char* value) {
+  item_title_.Mutable(index)->assign(value);
+}
+inline void DataLoaderCacheEntry::set_item_title(int index, const char* value, size_t size) {
+  item_title_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DataLoaderCacheEntry::add_item_title() {
+  return item_title_.Add();
+}
+inline void DataLoaderCacheEntry::add_item_title(const ::std::string& value) {
+  item_title_.Add()->assign(value);
+}
+inline void DataLoaderCacheEntry::add_item_title(const char* value) {
+  item_title_.Add()->assign(value);
+}
+inline void DataLoaderCacheEntry::add_item_title(const char* value, size_t size) {
+  item_title_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DataLoaderCacheEntry::item_title() const {
+  return item_title_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DataLoaderCacheEntry::mutable_item_title() {
+  return &item_title_;
 }
 
 // -------------------------------------------------------------------
