@@ -251,6 +251,14 @@ void TopicModel::ApplyDiff(const ::artm::core::ModelIncrement& diff, float apply
         break;
 
       case ModelIncrement_OperationType_IncrementValue:
+        if (counters.value_size() == 0)
+          break;
+
+        if (counters.value_size() != topics_count) {
+          LOG(ERROR) << "ModelIncrement_OperationType_IncrementValue: counters.value_size() != topics_count";
+          break;
+        }
+
         if (current_token_id == -1)
           current_token_id = this->AddToken(token, false);
         target = n_wt_[current_token_id];

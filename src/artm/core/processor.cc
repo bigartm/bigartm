@@ -84,9 +84,6 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
 
     if (topic_model.has_token(token)) {
       model_increment->add_operation_type(ModelIncrement_OperationType_IncrementValue);
-      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-        counters->add_value(0.0f);
-      }
     } else {
       model_increment->add_operation_type(ModelIncrement_OperationType_CreateIfNotExist);
     }
@@ -249,10 +246,10 @@ InitializeDenseNdw(const Batch& batch) {
   return n_dw;
 }
 
-static std::shared_ptr<DenseMatrix<float>>
-CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask* mask, const InstanceSchema& schema,
-                   const CsrMatrix<float>& sparse_ndw, const ::artm::core::TopicModel& topic_model,
-                   DenseMatrix<float>* theta_matrix, util::Blas* blas) {
+static void
+InferThetaSparse(const ModelConfig& model_config, const Batch& batch, const InstanceSchema& schema,
+                 const CsrMatrix<float>& sparse_ndw, const ::artm::core::TopicModel& topic_model,
+                 DenseMatrix<float>* theta_matrix, util::Blas* blas) {
   DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
   const int topics_count = model_config.topics_count();
   const int docs_count = theta_matrix->no_columns();
@@ -321,7 +318,7 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
   }
 #else
   std::shared_ptr<DenseMatrix<float>> phi_matrix_ptr = InitializePhi(batch, model_config, topic_model);
-  if (phi_matrix_ptr == nullptr) return nullptr;
+  if (phi_matrix_ptr == nullptr) return;
   const DenseMatrix<float>& phi_matrix = *phi_matrix_ptr;
   for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
     DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
@@ -342,18 +339,30 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
       agents->Apply(item_index, inner_iter, model_config.topics_count(), &(*theta_matrix)(0, item_index));  // NOLINT
   }
 #endif
+}
+
+static void
+UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask* mask, const InstanceSchema& schema,
+                const CsrMatrix<float>& sparse_ndw, const ::artm::core::TopicModel& topic_model,
+                const DenseMatrix<float>& theta_matrix, ModelIncrement* model_increment, util::Blas* blas) {
+  const int topics_count = model_config.topics_count();
+  const int docs_count = theta_matrix.no_columns();
+  const int tokens_count = batch.token_size();
 
   CsrMatrix<float> sparse_nwd(sparse_ndw);
   sparse_nwd.Transpose(blas);
 
-  auto n_wt = std::make_shared<DenseMatrix<float>>(tokens_count, topics_count);
-  n_wt->InitializeZeros();
+  std::vector<int> token_id(batch.token_size(), -1);
+  for (int token_index = 0; token_index < batch.token_size(); ++token_index)
+    token_id[token_index] = topic_model.token_id(Token(batch.class_id(token_index), batch.token(token_index)));
 
   // n_wt should be count for items, that have corresponding true-value in stream mask
   // from batch. Or for all items, if such mask doesn't exist
   std::vector<float> p_wt(topics_count, 0.0f);
+  std::vector<float> n_wt(topics_count, 0.0f);
   for (int w = 0; w < tokens_count; ++w) {
     if (token_id[w] == -1) continue;
+    if (model_increment->operation_type(w) != ModelIncrement_OperationType_IncrementValue) continue;
     const float* global_phi_ptr = topic_model.GetPwt(token_id[w]);
     for (int k = 0; k < topics_count; ++k)
       p_wt[k] = global_phi_ptr[k];
@@ -361,31 +370,34 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
     for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
       int d = sparse_nwd.col_ind()[i];
       if ((mask != nullptr) && (mask->value(d) == false)) continue;
-      float p_wd_val = blas->sdot(topics_count, &p_wt[0], 1, &(*theta_matrix)(0, d), 1);  // NOLINT
+      float p_wd_val = blas->sdot(topics_count, &p_wt[0], 1, &theta_matrix(0, d), 1);
       if (p_wd_val == 0) continue;
       blas->saxpy(topics_count, sparse_nwd.val()[i] / p_wd_val,
-        &(*theta_matrix)(0, d), 1, &(*n_wt)(w, 0), 1);  // NOLINT
+        &theta_matrix(0, d), 1, &n_wt[0], 1);
     }
 
-    for (int k = 0; k < topics_count; ++k)
-      (*n_wt)(w, k) *= p_wt[k];
+    FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(w);
+    hat_n_wt_cur->mutable_value()->Reserve(topics_count);
+    assert(hat_n_wt_cur->value_size() == 0);
+    for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+      hat_n_wt_cur->add_value(p_wt[topic_index] * n_wt[topic_index]);
+      n_wt[topic_index] = 0.0f;
+    }
   }
-
-  return n_wt;
 }
 
-static std::shared_ptr<DenseMatrix<float>>
-CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mask* mask, const InstanceSchema& schema,
-                  const DenseMatrix<float>& dense_ndw, const ::artm::core::TopicModel& topic_model,
-                  DenseMatrix<float>* theta_matrix, util::Blas* blas) {
+static void
+InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mask* mask,
+                            const InstanceSchema& schema, const DenseMatrix<float>& dense_ndw,
+                            const ::artm::core::TopicModel& topic_model, DenseMatrix<float>* theta_matrix,
+                            ModelIncrement* model_increment, util::Blas* blas) {
   std::shared_ptr<DenseMatrix<float>> phi_matrix_ptr = InitializePhi(batch, model_config, topic_model);
-  if (phi_matrix_ptr == nullptr) return nullptr;
+  if (phi_matrix_ptr == nullptr) return;
   const DenseMatrix<float>& phi_matrix = *phi_matrix_ptr;
-
-  auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
-  n_wt->InitializeZeros();
+  int topics_count = model_config.topics_count();
 
   DenseMatrix<float> Z(phi_matrix.no_rows(), theta_matrix->no_columns());
+  Z.InitializeZeros();
   for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
     blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
       phi_matrix.no_rows(), theta_matrix->no_columns(), phi_matrix.no_columns(), 1, phi_matrix.get_data(),
@@ -397,6 +409,7 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
 
     // Theta_new = Theta .* (Phi' * Z) ./ repmat(n_d, nTopics, 1);
     DenseMatrix<float> prod_trans_phi_Z(phi_matrix.no_columns(), Z.no_columns());
+    prod_trans_phi_Z.InitializeZeros();
 
     blas->sgemm(util::Blas::RowMajor, util::Blas::Trans, util::Blas::NoTrans,
       phi_matrix.no_columns(), Z.no_columns(), phi_matrix.no_rows(), 1, phi_matrix.get_data(),
@@ -408,7 +421,6 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
     std::shared_ptr<RegularizeThetaAgentCollection> agents = CreateRegularizerAgents(batch, model_config, schema);
     agents->AddAgent(std::make_shared<NormalizeThetaAgent>());
 
-    int topics_count = model_config.topics_count();
     std::vector<float> theta_copy(topics_count, 0.0f);
     for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
       for (int i = 0; i < topics_count; ++i) theta_copy[i] = (*theta_matrix)(i, item_index);
@@ -424,6 +436,11 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
 
   AssignDenseMatrixByDivision(dense_ndw, Z, &Z);
 
+  if (model_increment == nullptr)
+    return;
+
+  auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
+  n_wt->InitializeZeros();
   if (mask != nullptr) {
     // delete columns according to bool mask
     int true_value_count = 0;
@@ -463,7 +480,18 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
     AssignDenseMatrixByProduct(prod_Z_Theta, phi_matrix, n_wt.get());
   }
 
-  return n_wt;
+  for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
+    if (model_increment->operation_type(token_index) ==
+      ModelIncrement_OperationType_IncrementValue) {
+      FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
+      hat_n_wt_cur->mutable_value()->Reserve(topics_count);
+      assert(hat_n_wt_cur->value_size() == 0);
+      for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+        float value = (*n_wt)(token_index, topic_index);
+        hat_n_wt_cur->add_value(value);
+      }
+    }
+  }
 }
 
 static const DataLoaderCacheEntry* FindCacheEntry(const ProcessorInput& part, const ModelConfig& model_config) {
@@ -547,19 +575,12 @@ void Processor::FindThetaMatrix(const Batch& batch,
     return;  // return from lambda; goes to next step of std::for_each
   }
 
-  std::shared_ptr<DenseMatrix<float>> n_wt;
   if (model_config.use_sparse_bow()) {
-    n_wt = CalculateNwtSparse(model_config, batch, nullptr, *schema_.get(), *sparse_ndw, *topic_model,
-      theta_matrix.get(), blas);
+    InferThetaSparse(model_config, batch, *schema, *sparse_ndw, *topic_model, theta_matrix.get(), blas);
   } else {
-    n_wt = CalculateNwtDense(model_config, batch, nullptr, *schema_.get(), *dense_ndw, *topic_model,
-      theta_matrix.get(), blas);
-  }
-
-  if (n_wt == nullptr) {
-    LOG(INFO) << "No increments collected for the model " + model_name +
-      ". Check if Phi matrix had been initialized.";
-    return;  // return from lambda; goes to next step of std::for_each
+    // We don't need 'UpdateNwt' part, but for Dense mode it is hard to split this function.
+    InferThetaAndUpdateNwtDense(model_config, batch, nullptr, *schema, *dense_ndw, *topic_model,
+                                theta_matrix.get(), nullptr, blas);
   }
 
   if (result != nullptr) {
@@ -688,37 +709,11 @@ void Processor::ThreadFunction() {
         int model_stream_index = repeated_field_index_of(part->stream_name(), model_config.stream_name());
         const Mask* stream_mask = (model_stream_index != -1) ? &part->stream_mask(model_stream_index) : nullptr;
 
-        std::shared_ptr<DenseMatrix<float>> n_wt;
         if (model_config.use_sparse_bow()) {
-          n_wt = CalculateNwtSparse(model_config, batch, stream_mask, *schema_.get(), *sparse_ndw, *topic_model,
-                                    theta_matrix.get(), blas);
+          InferThetaSparse(model_config, batch, *schema, *sparse_ndw, *topic_model, theta_matrix.get(), blas);
         } else {
-          n_wt = CalculateNwtDense(model_config, batch, stream_mask, *schema_.get(), *dense_ndw, *topic_model,
-                                   theta_matrix.get(), blas);
-        }
-
-        if (n_wt == nullptr) {
-          LOG(INFO) << "No increments collected for the model " + model_name +
-            ". Check if Phi matrix had been initialized.";
-          return;  // return from lambda; goes to next step of std::for_each
-        }
-
-        for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
-          FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
-
-          if (hat_n_wt_cur->value_size() == 0)
-            continue;
-
-          if (hat_n_wt_cur->value_size() != topic_size)
-            BOOST_THROW_EXCEPTION(InternalError("hat_n_wt_cur->value_size() != topic_size"));
-
-          if (model_increment->operation_type(token_index) ==
-              ModelIncrement_OperationType_IncrementValue) {
-            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-              float value = (*n_wt)(token_index, topic_index);
-              hat_n_wt_cur->set_value(topic_index, value);
-            }
-          }
+          InferThetaAndUpdateNwtDense(model_config, batch, stream_mask, *schema, *dense_ndw, *topic_model,
+                                      theta_matrix.get(), model_increment.get(), blas);
         }
 
         if (schema->config().cache_theta()) {
@@ -770,6 +765,13 @@ void Processor::ThreadFunction() {
             continue;
           model_increment->add_score_name(score_name);
           model_increment->add_score(score_value->SerializeAsString());
+        }
+
+        if (model_config.use_sparse_bow()) {
+          // Keep UpdateNwtSparse as further down in the code as possible,
+          // because it consumes a lot of memory to transfer increments to merger.
+          UpdateNwtSparse(model_config, batch, stream_mask, *schema, *sparse_ndw, *topic_model,
+            *theta_matrix, model_increment.get(), blas);
         }
       });
 
