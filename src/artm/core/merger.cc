@@ -503,6 +503,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       InvokePhiRegularizers(new_ttm.get());
 
     new_ttm->CalcNormalizers();
+    new_ttm->CalcPwt();   // calculate pwt matrix
     topic_model_.set(name, new_ttm);
 
     topic_model_inc_.erase(name);
@@ -542,6 +543,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   }
 
   new_ttm->CalcNormalizers();
+  new_ttm->CalcPwt();   // calculate pwt matrix
   topic_model_.set(args.model_name(), new_ttm);
 }
 

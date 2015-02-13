@@ -456,6 +456,7 @@ void TopicModel::CopyFromExternalTopicModel(const ::artm::TopicModel& external_t
   }
 
   CalcNormalizers();
+  CalcPwt();
 }
 
 int TopicModel::AddToken(const Token& token, bool random_init) {
@@ -574,6 +575,28 @@ void TopicModel::CalcNormalizers() {
       float sum = n_wt[topic_id] + r_wt[topic_id];
       if (sum > 0)
         (*n_t)[topic_id] += sum;
+    }
+  }
+}
+
+void TopicModel::CalcPwt() {
+  const int topic_size = this->topic_size();
+  const int token_size = this->token_size();
+  p_wt_.reset(new ::artm::utility::DenseMatrix<float>(token_size, topic_size));
+  p_wt_->InitializeZeros();
+
+  for (int token_id = 0; token_id < token_size; ++token_id) {
+    const Token& token = this->token(token_id);
+    auto topic_iter = this->GetTopicWeightIterator(token);
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+      float value = topic_iter[topic_index];
+      if (value < 1e-16) {
+        // Reset small values to 0.0 to avoid performance hit.
+        // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
+        // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
+        value = 0.0f;
+      }
+      (*p_wt_)(token_id, topic_index) = value;
     }
   }
 }

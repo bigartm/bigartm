@@ -20,6 +20,7 @@
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/regularizable.h"
+#include "artm/utility/blas.h"
 
 namespace artm {
 namespace core {
@@ -188,9 +189,11 @@ class TopicModel : public Regularizable {
   void SetRegularizerWeight(int token_id, int topic_id, float value);
 
   virtual void CalcNormalizers();
+  void CalcPwt();
 
   TopicWeightIterator GetTopicWeightIterator(const Token& token) const;
   TopicWeightIterator GetTopicWeightIterator(int token_id) const;
+  const float* GetPwt(int token_id) const { return &(*p_wt_)(token_id, 0); }  // NOLINT
 
   ModelName model_name() const;
 
@@ -215,6 +218,8 @@ class TopicModel : public Regularizable {
 
   TokenCollectionWeights n_wt_;  // vector of length tokens_count
   TokenCollectionWeights r_wt_;  // regularizer's additions
+  std::unique_ptr<artm::utility::DenseMatrix<float>> p_wt_;  // normalized matrix
+
   // normalization constant for each topic in each Phi
   std::map<ClassId, std::vector<float> > n_t_;
   // pointer to the vector of default_class
