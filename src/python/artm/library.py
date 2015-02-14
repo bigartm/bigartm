@@ -317,16 +317,31 @@ class MasterComponent:
     HandleErrorCode(self.lib_, self.lib_.ArtmReconfigureMasterComponent(self.id_, len(config_blob), config_blob_p))
     self.config_.CopyFrom(config)
 
-  def AddBatch(self, batch):
-    batch_blob = batch.SerializeToString()
-    batch_blob_p = ctypes.create_string_buffer(batch_blob)
-    HandleErrorCode(self.lib_, self.lib_.ArtmAddBatch(self.id_, len(batch_blob), batch_blob_p))
+  def AddBatch(self, batch, timeout = -1):
+    args = messages_pb2.AddBatchArgs()
+    args.batch.CopyFrom(batch)
+    args.timeout_milliseconds = timeout;
+    args_blob = args.SerializeToString()
+    args_blob_p = ctypes.create_string_buffer(args_blob)
+
+    result = self.lib_.ArtmAddBatch(self.id_, len(args_blob), args_blob_p)
+    result = HandleErrorCode(self.lib_, result)
+    return False if (result == ARTM_STILL_WORKING) else True
 
   def InvokeIteration(self, iterations_count = 1):
-    HandleErrorCode(self.lib_, self.lib_.ArtmInvokeIteration(self.id_, iterations_count))
+    args = messages_pb2.InvokeIterationArgs()
+    args.iterations_count = iterations_count
+    args_blob = args.SerializeToString()
+    args_blob_p = ctypes.create_string_buffer(args_blob)
+    HandleErrorCode(self.lib_, self.lib_.ArtmInvokeIteration(self.id_, len(args_blob), args_blob_p))
 
   def WaitIdle(self, timeout = -1):
-    result = self.lib_.ArtmWaitIdle(self.id_, timeout)
+    args = messages_pb2.WaitIdleArgs()
+    args.timeout_milliseconds = timeout
+    args_blob = args.SerializeToString()
+    args_blob_p = ctypes.create_string_buffer(args_blob)
+
+    result = self.lib_.ArtmWaitIdle(self.id_, len(args_blob), args_blob_p)
     result = HandleErrorCode(self.lib_, result)
     return False if (result == ARTM_STILL_WORKING) else True
 
@@ -486,8 +501,7 @@ class Model:
                     self.lib_.ArtmOverwriteTopicModel(self.master_id_, len(blob), blob_p))
 
     if commit:
-      timeout = -1
-      HandleErrorCode(self.lib_, self.lib_.ArtmWaitIdle(self.master_id_, timeout))
+      self.master_component.WaitIdle()
       self.Synchronize(decay_weight=0.0, apply_weight=1.0, invoke_regularizers=False)
 
   def Enable(self):

@@ -32,7 +32,11 @@ class BatchManager : boost::noncopyable, public Notifiable {
   explicit BatchManager(ThreadSafeHolder<InstanceSchema>* schema);
   virtual ~BatchManager() {}
 
-  // Add batch to the task queue.
+  // Add() adds the a passive task to the queue
+  // Next() finds some passive task and moves it to the active queue (for each model)
+  // AddAndNext() puts the task directly to the active queue (for each model)
+  // Done() marks an active task as "done" (for a given model)
+
   // OK to add the same uuid multiple times.
   void Add(const BatchManagerTask& task);
   void Add(boost::uuids::uuid uuid, std::string file_path) { Add(BatchManagerTask(uuid, file_path));  }
@@ -45,6 +49,8 @@ class BatchManager : boost::noncopyable, public Notifiable {
   // The batch return by this operation will stay in "in progress" list
   // until it is marked as processed by Done().
   BatchManagerTask Next();
+
+  void AddAndNext(const BatchManagerTask& task);
 
   // Eliminates uuid from "in progress" set.
   void Done(const boost::uuids::uuid& id, const ModelName& model_name);

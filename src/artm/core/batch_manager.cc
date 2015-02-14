@@ -23,6 +23,22 @@ void BatchManager::DisposeModel(const ModelName& model_name) {
   in_progress_.erase(model_name);
 }
 
+void BatchManager::AddAndNext(const BatchManagerTask& task) {
+  boost::lock_guard<boost::mutex> guard(lock_);
+
+  std::vector<ModelName> models = schema_->get()->GetModelNames();
+  for (auto &model_name : models) {
+    auto model_iter = in_progress_.find(model_name);
+    if (model_iter == in_progress_.end()) {
+      in_progress_.insert(std::make_pair(
+          model_name, std::make_shared<std::map<boost::uuids::uuid, std::string>>()));
+      model_iter = in_progress_.find(model_name);
+    }
+
+    model_iter->second->insert(std::make_pair(task.uuid, task.file_path));
+  }
+}
+
 BatchManagerTask BatchManager::Next() {
   boost::lock_guard<boost::mutex> guard(lock_);
   for (auto iter = tasks_.begin(); iter != tasks_.end(); ++iter) {

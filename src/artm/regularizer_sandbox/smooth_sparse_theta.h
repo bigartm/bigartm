@@ -24,6 +24,7 @@ class SmoothSparseTheta : public RegularizerInterface {
                                int inner_iter,
                                double tau,
                                ::artm::utility::DenseMatrix<float>* theta);
+
   virtual bool Reconfigure(const RegularizerConfig& config);
 
  private:

@@ -168,28 +168,42 @@ bool MasterProxy::RequestScore(const GetScoreValueArgs& get_score_args,
   return true;
 }
 
-void MasterProxy::AddBatch(const Batch& batch) {
-  make_rpcz_call([&]() {
-    Void response;
-    node_controller_service_proxy_->AddBatch(
-      batch, &response, communication_timeout_);
-  }, "MasterProxy::AddBatch");
-}
-
-void MasterProxy::InvokeIteration(int iterations_count) {
-  make_rpcz_call([&]() {
-    Void response;
-    node_controller_service_proxy_->InvokeIteration(
-      Void(), &response, communication_timeout_);
-  }, "MasterProxy::InvokeIteration");
-}
-
-bool MasterProxy::WaitIdle(int timeout) {
+bool MasterProxy::AddBatch(const AddBatchArgs& args) {
   Int response;
+  int timeout = args.timeout_milliseconds();
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
     make_rpcz_call([&]() {
-      node_controller_service_proxy_->WaitIdle(Void(), &response, communication_timeout_);
+      node_controller_service_proxy_->AddBatch(args, &response, communication_timeout_);
+    }, "MasterProxy::AddBatch");
+    if (response.value() == ARTM_STILL_WORKING) {
+      boost::this_thread::sleep(boost::posix_time::milliseconds(polling_frequency_));
+      auto time_end = boost::posix_time::microsec_clock::local_time();
+
+      if (timeout >= 0) {
+        if ((time_end - time_start).total_milliseconds() >= timeout) return false;
+      }
+    } else {  // return value is ARTM_SUCCESS
+      return true;
+    }
+  }
+}
+
+void MasterProxy::InvokeIteration(const InvokeIterationArgs& args) {
+  make_rpcz_call([&]() {
+    Void response;
+    node_controller_service_proxy_->InvokeIteration(
+      args, &response, communication_timeout_);
+  }, "MasterProxy::InvokeIteration");
+}
+
+bool MasterProxy::WaitIdle(const WaitIdleArgs& args) {
+  Int response;
+  int timeout = args.timeout_milliseconds();
+  auto time_start = boost::posix_time::microsec_clock::local_time();
+  for (;;) {
+    make_rpcz_call([&]() {
+      node_controller_service_proxy_->WaitIdle(args, &response, communication_timeout_);
     }, "MasterProxy::WaitIdle");
     if (response.value() == ARTM_STILL_WORKING) {
       boost::this_thread::sleep(boost::posix_time::milliseconds(polling_frequency_));

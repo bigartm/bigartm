@@ -49,11 +49,11 @@ class NodeControllerServiceImpl : public NodeControllerService {
                        ::rpcz::reply< ::artm::ThetaMatrix> response);
   virtual void RequestScore(const ::artm::GetScoreValueArgs& request,
                        ::rpcz::reply< ::artm::ScoreData> response);
-  virtual void AddBatch(const ::artm::Batch& request,
+  virtual void AddBatch(const ::artm::AddBatchArgs& request,
+                       ::rpcz::reply< ::artm::core::Int> response);
+  virtual void InvokeIteration(const ::artm::InvokeIterationArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
-  virtual void InvokeIteration(const ::artm::core::Void& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void WaitIdle(const ::artm::core::Void& request,
+  virtual void WaitIdle(const ::artm::WaitIdleArgs& request,
                        ::rpcz::reply< ::artm::core::Int> response);
   virtual void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);

@@ -81,17 +81,21 @@ TEST(Instance, Basic) {
     field->add_token_count(i+1);
   }
 
-  instance->local_data_loader()->AddBatch(batch1, online_batch_processing);  // +2
+  artm::AddBatchArgs args1;
+  args1.mutable_batch()->CopyFrom(batch1);
+  instance->local_data_loader()->AddBatch(args1);  // +2
 
   for (int iBatch = 0; iBatch < 2; ++iBatch) {
     artm::Batch batch;
     for (int i = 0; i < (3 + iBatch); ++i) batch.add_item();  // +3, +4
-    instance->local_data_loader()->AddBatch(batch, online_batch_processing);
+    artm::AddBatchArgs args;
+    args.mutable_batch()->CopyFrom(batch);
+    instance->local_data_loader()->AddBatch(args);
   }
 
   EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 9);
 
-  instance->local_data_loader()->AddBatch(batch1, online_batch_processing);  // +2
+  instance->local_data_loader()->AddBatch(args1);  // +2
   EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 11);
 
   artm::Batch batch4;
@@ -104,7 +108,8 @@ TEST(Instance, Basic) {
     field->add_token_count(iToken + 2);
   }
 
-  instance->local_data_loader()->AddBatch(batch4, online_batch_processing);
+  args1.mutable_batch()->CopyFrom(batch4);
+  instance->local_data_loader()->AddBatch(args1);
 
   artm::ModelConfig config;
   config.set_enabled(true);
@@ -114,8 +119,11 @@ TEST(Instance, Basic) {
   config.set_name(boost::lexical_cast<std::string>(model_name));
   instance->CreateOrReconfigureModel(config);
 
-  instance->local_data_loader()->InvokeIteration(20);
-  instance->local_data_loader()->WaitIdle();
+  artm::InvokeIterationArgs inv_iter_args;
+  inv_iter_args.set_iterations_count(20);
+  instance->local_data_loader()->InvokeIteration(inv_iter_args);
+  ::artm::WaitIdleArgs wait_args;
+  instance->local_data_loader()->WaitIdle(wait_args);
   ::artm::SynchronizeModelArgs sync_model_args;
   sync_model_args.set_model_name(model_name);
   sync_model_args.set_decay_weight(1.0);
@@ -153,7 +161,9 @@ TEST(Instance, MultipleStreamsAndModels) {
   // - first model have  Token0, Token2, Token4,
   // - second model have Token1, Token3, Token6,
   auto batch = test.GenerateBatch(6, 6, 0, 1, 1);
-  test.instance()->local_data_loader()->AddBatch(*batch, online_batch_processing);
+  artm::AddBatchArgs add_args;
+  add_args.mutable_batch()->CopyFrom(*batch);
+  test.instance()->local_data_loader()->AddBatch(add_args);
 
   ::artm::MasterComponentConfig config;
   artm::Stream* s1 = config.add_stream();
@@ -197,8 +207,8 @@ TEST(Instance, MultipleStreamsAndModels) {
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 100; ++iter) {
-    test.instance()->local_data_loader()->InvokeIteration(1);
-    test.instance()->local_data_loader()->WaitIdle();
+    test.instance()->local_data_loader()->InvokeIteration(artm::InvokeIterationArgs());
+    test.instance()->local_data_loader()->WaitIdle(artm::WaitIdleArgs());
     test.instance()->merger()->ForceSynchronizeModel(::artm::SynchronizeModelArgs());
   }
 

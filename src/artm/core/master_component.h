@@ -76,11 +76,11 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
   virtual void DisposeDictionary(const std::string& name);
 
   // Returns false if BigARTM is still processing the collection, otherwise true.
-  virtual bool WaitIdle(int timeout = -1);
-  virtual void InvokeIteration(int iterations_count);
+  virtual bool WaitIdle(const WaitIdleArgs& args);
+  virtual void InvokeIteration(const InvokeIterationArgs& args);
   virtual void SynchronizeModel(const SynchronizeModelArgs& args);
   virtual void InitializeModel(const InitializeModelArgs& args);
-  virtual void AddBatch(const Batch& batch);
+  virtual bool AddBatch(const AddBatchArgs& args);
 
   // Throws InvalidOperation exception if new config is invalid.
   void ValidateConfig(const MasterComponentConfig& config);

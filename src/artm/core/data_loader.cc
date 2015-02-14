@@ -102,8 +102,11 @@ LocalDataLoader::~LocalDataLoader() {
   }
 }
 
-void LocalDataLoader::AddBatch(const Batch& batch, bool invoke) {
+bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
+  auto& batch = args.batch();
+  int timeout = args.timeout_milliseconds();
   MasterComponentConfig config = instance()->schema()->config();
+
   std::shared_ptr<Batch> modified_batch;
   if (config.compact_batches()) {
     modified_batch = std::make_shared<Batch>();  // constructor
@@ -114,18 +117,36 @@ void LocalDataLoader::AddBatch(const Batch& batch, bool invoke) {
     BatchHelpers::PopulateClassId(modified_batch.get());
   }
 
-  boost::uuids::uuid uuid = generation_->AddBatch(modified_batch);
+  if (instance()->schema()->config().online_batch_processing()) {
+    auto time_start = boost::posix_time::microsec_clock::local_time();
+    for (;;) {
+      if (instance_->processor_queue()->size() < config.processor_queue_max_size()) break;
 
-  if (invoke)
-    instance_->batch_manager()->Add(uuid, std::string());
+      boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+
+      if (timeout >= 0) {
+        auto time_end = boost::posix_time::microsec_clock::local_time();
+        if ((time_end - time_start).total_milliseconds() >= timeout) return false;
+      }
+    }
+    auto pi = std::make_shared<ProcessorInput>();
+    pi->mutable_batch()->CopyFrom(*modified_batch);
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    pi->set_batch_uuid(boost::lexical_cast<std::string>(uuid));
+    instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
+    instance_->processor_queue()->push(pi);
+  } else {
+    generation_->AddBatch(modified_batch);
+  }
+  return true;
 }
-
 
 int LocalDataLoader::GetTotalItemsCount() const {
   return generation_->GetTotalItemsCount();
 }
 
-void LocalDataLoader::InvokeIteration(int iterations_count) {
+void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
+  int iterations_count = args.iterations_count();
   if (iterations_count <= 0) {
     LOG(WARNING) << "DataLoader::InvokeIteration() was called with argument '"
                  << iterations_count << "'. Call is ignored.";
@@ -147,7 +168,8 @@ void LocalDataLoader::InvokeIteration(int iterations_count) {
   }
 }
 
-bool LocalDataLoader::WaitIdle(int timeout) {
+bool LocalDataLoader::WaitIdle(const WaitIdleArgs& args) {
+  int timeout = args.timeout_milliseconds();
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
     if (instance_->batch_manager()->IsEverythingProcessed())
@@ -340,6 +362,11 @@ void RemoteDataLoader::ThreadFunction() {
       if (is_stopping) {
         LOG(INFO) << "DataLoader thread stopped";
         break;
+      }
+
+      if (instance()->schema()->config().online_batch_processing()) {
+        boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+        continue;
       }
 
       MasterComponentConfig config = instance()->schema()->config();
