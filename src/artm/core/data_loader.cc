@@ -102,7 +102,7 @@ LocalDataLoader::~LocalDataLoader() {
   }
 }
 
-bool LocalDataLoader::AddBatch(const AddBatchArgs& args, bool invoke) {
+bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
   auto& batch = args.batch();
   int timeout = args.timeout_milliseconds();
   MasterComponentConfig config = instance()->schema()->config();
@@ -117,7 +117,7 @@ bool LocalDataLoader::AddBatch(const AddBatchArgs& args, bool invoke) {
     BatchHelpers::PopulateClassId(modified_batch.get());
   }
 
-  if (invoke) {
+  if (instance()->schema()->config().online_batch_processing()) {
     auto time_start = boost::posix_time::microsec_clock::local_time();
     for (;;) {
       if (instance_->processor_queue()->size() < config.processor_queue_max_size()) break;

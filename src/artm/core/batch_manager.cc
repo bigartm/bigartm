@@ -25,7 +25,6 @@ void BatchManager::DisposeModel(const ModelName& model_name) {
 
 void BatchManager::AddAndNext(const BatchManagerTask& task) {
   boost::lock_guard<boost::mutex> guard(lock_);
-  tasks_.push_back(task);
 
   std::vector<ModelName> models = schema_->get()->GetModelNames();
   for (auto &model_name : models) {

@@ -83,19 +83,19 @@ TEST(Instance, Basic) {
 
   artm::AddBatchArgs args1;
   args1.mutable_batch()->CopyFrom(batch1);
-  instance->local_data_loader()->AddBatch(args1, online_batch_processing);  // +2
+  instance->local_data_loader()->AddBatch(args1);  // +2
 
   for (int iBatch = 0; iBatch < 2; ++iBatch) {
     artm::Batch batch;
     for (int i = 0; i < (3 + iBatch); ++i) batch.add_item();  // +3, +4
     artm::AddBatchArgs args;
     args.mutable_batch()->CopyFrom(batch);
-    instance->local_data_loader()->AddBatch(args, online_batch_processing);
+    instance->local_data_loader()->AddBatch(args);
   }
 
   EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 9);
 
-  instance->local_data_loader()->AddBatch(args1, online_batch_processing);  // +2
+  instance->local_data_loader()->AddBatch(args1);  // +2
   EXPECT_EQ(instance->local_data_loader()->GetTotalItemsCount(), 11);
 
   artm::Batch batch4;
@@ -109,7 +109,7 @@ TEST(Instance, Basic) {
   }
 
   args1.mutable_batch()->CopyFrom(batch4);
-  instance->local_data_loader()->AddBatch(args1, online_batch_processing);
+  instance->local_data_loader()->AddBatch(args1);
 
   artm::ModelConfig config;
   config.set_enabled(true);
@@ -163,7 +163,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   auto batch = test.GenerateBatch(6, 6, 0, 1, 1);
   artm::AddBatchArgs add_args;
   add_args.mutable_batch()->CopyFrom(*batch);
-  test.instance()->local_data_loader()->AddBatch(add_args, online_batch_processing);
+  test.instance()->local_data_loader()->AddBatch(add_args);
 
   ::artm::MasterComponentConfig config;
   artm::Stream* s1 = config.add_stream();
@@ -207,10 +207,8 @@ TEST(Instance, MultipleStreamsAndModels) {
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 100; ++iter) {
-    artm::InvokeIterationArgs inv_iter_args;
-    artm::WaitIdleArgs wait_args;
-    test.instance()->local_data_loader()->InvokeIteration(inv_iter_args);
-    test.instance()->local_data_loader()->WaitIdle(wait_args);
+    test.instance()->local_data_loader()->InvokeIteration(artm::InvokeIterationArgs());
+    test.instance()->local_data_loader()->WaitIdle(artm::WaitIdleArgs());
     test.instance()->merger()->ForceSynchronizeModel(::artm::SynchronizeModelArgs());
   }
 

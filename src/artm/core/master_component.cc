@@ -334,7 +334,7 @@ bool MasterComponent::AddBatch(const AddBatchArgs& args) {
   int timeout = args.timeout_milliseconds();
   if (isInLocalModusOperandi()) {
     auto time_start = boost::posix_time::microsec_clock::local_time();
-    return instance_->local_data_loader()->AddBatch(args, config_.get()->online_batch_processing());
+    return instance_->local_data_loader()->AddBatch(args);
   }
 
   if (isInNetworkModusOperandi()) {

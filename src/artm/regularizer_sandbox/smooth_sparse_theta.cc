@@ -16,8 +16,7 @@ bool SmoothSparseTheta::RegularizeTheta(const Batch& batch,
                                         const ModelConfig& model_config,
                                         int inner_iter,
                                         double tau,
-                                        artm::utility::DenseMatrix<float>* theta,
-                                        std::shared_ptr<const artm::core::TopicModel> topic_model) {
+                                        artm::utility::DenseMatrix<float>* theta) {
   const int topic_size = theta->no_rows();
   const int item_size = theta->no_columns();
 

@@ -14,7 +14,6 @@
 #include "artm/utility/blas.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 
 #include "glog/logging.h"
 
@@ -37,8 +36,7 @@ class RegularizerInterface {
                                const ModelConfig& model_config,
                                int inner_iter,
                                double tau,
-                               ::artm::utility::DenseMatrix<float>* theta,
-                               std::shared_ptr<const artm::core::TopicModel> topic_model) { return true; }
+                               ::artm::utility::DenseMatrix<float>* theta) { return true; }
 
   virtual bool RegularizePhi(::artm::core::Regularizable* topic_model, double tau) { return true; }
 

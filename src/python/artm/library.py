@@ -501,12 +501,7 @@ class Model:
                     self.lib_.ArtmOverwriteTopicModel(self.master_id_, len(blob), blob_p))
 
     if commit:
-      timeout = -1
-      args = messages_pb2.WaitIdleArgs()
-      args.timeout_milliseconds = timeout
-      args_blob = args.SerializeToString()
-      args_blob_p = ctypes.create_string_buffer(args_blob)
-      HandleErrorCode(self.lib_, self.lib_.ArtmWaitIdle(self.master_id_, len(args_blob), args_blob_p))
+      self.master_component.WaitIdle()
       self.Synchronize(decay_weight=0.0, apply_weight=1.0, invoke_regularizers=False)
 
   def Enable(self):

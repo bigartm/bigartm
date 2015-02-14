@@ -166,9 +166,8 @@ InitializePhi(const Batch& batch, const ModelConfig& model_config,
   return phi_matrix;
 }
 
-static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch,
-                                        const ModelConfig& model_config, const InstanceSchema& schema,
-                                        DenseMatrix<float>* theta, const Merger& merger) {
+static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch, const ModelConfig& model_config,
+                                        const InstanceSchema& schema, DenseMatrix<float>* theta) {
   int topic_size = model_config.topics_count();
 
   if (model_config.regularizer_name_size() != model_config.regularizer_tau_size()) {
@@ -185,8 +184,7 @@ static void RegularizeAndNormalizeTheta(int inner_iter, const Batch& batch,
       continue;
     }
 
-    regularizer->RegularizeTheta(batch, model_config, inner_iter, tau, theta,
-                                 merger.GetLatestTopicModel(model_config.name()));
+    regularizer->RegularizeTheta(batch, model_config, inner_iter, tau, theta);
   }
 
   // Normalize theta for every item
@@ -270,7 +268,7 @@ InitializeDenseNdw(const Batch& batch) {
 static std::shared_ptr<DenseMatrix<float>>
 CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask* mask, const InstanceSchema& schema,
                    const CsrMatrix<float>& sparse_ndw, const DenseMatrix<float>& phi_matrix,
-                   DenseMatrix<float>* theta_matrix, util::Blas* blas, const Merger& merger) {
+                   DenseMatrix<float>* theta_matrix, util::Blas* blas) {
   auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
   n_wt->InitializeZeros();
 
@@ -290,7 +288,7 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
     }
 
     AssignDenseMatrixByProduct(*theta_matrix, n_td, theta_matrix);
-    RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix, merger);
+    RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix);
   }
 
   int tokens_count = phi_matrix.no_rows();
@@ -332,7 +330,7 @@ CalculateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Ma
 static std::shared_ptr<DenseMatrix<float>>
 CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mask* mask, const InstanceSchema& schema,
                   const DenseMatrix<float>& dense_ndw, const DenseMatrix<float>& phi_matrix,
-                  DenseMatrix<float>* theta_matrix, util::Blas* blas, const Merger& merger) {
+                  DenseMatrix<float>* theta_matrix, util::Blas* blas) {
   auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
   n_wt->InitializeZeros();
 
@@ -355,7 +353,7 @@ CalculateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mas
       prod_trans_phi_Z.get_data(), Z.no_columns());
 
     AssignDenseMatrixByProduct(*theta_matrix, prod_trans_phi_Z, theta_matrix);
-    RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix, merger);
+    RegularizeAndNormalizeTheta(inner_iter, batch, model_config, schema, theta_matrix);
   }
 
   blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::NoTrans,
@@ -492,10 +490,10 @@ void Processor::FindThetaMatrix(const Batch& batch,
   std::shared_ptr<DenseMatrix<float>> n_wt;
   if (model_config.use_sparse_bow()) {
     n_wt = CalculateNwtSparse(model_config, batch, nullptr, *schema_.get(), *sparse_ndw, *phi_matrix,
-      theta_matrix.get(), blas, merger_);
+      theta_matrix.get(), blas);
   } else {
     n_wt = CalculateNwtDense(model_config, batch, nullptr, *schema_.get(), *dense_ndw, *phi_matrix,
-      theta_matrix.get(), blas, merger_);
+      theta_matrix.get(), blas);
   }
 
   if (result != nullptr) {
@@ -627,10 +625,10 @@ void Processor::ThreadFunction() {
         std::shared_ptr<DenseMatrix<float>> n_wt;
         if (model_config.use_sparse_bow()) {
           n_wt = CalculateNwtSparse(model_config, batch, stream_mask, *schema_.get(), *sparse_ndw, *phi_matrix,
-                                    theta_matrix.get(), blas, merger_);
+                                    theta_matrix.get(), blas);
         } else {
           n_wt = CalculateNwtDense(model_config, batch, stream_mask, *schema_.get(), *dense_ndw, *phi_matrix,
-                                   theta_matrix.get(), blas, merger_);
+                                   theta_matrix.get(), blas);
         }
 
         for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {

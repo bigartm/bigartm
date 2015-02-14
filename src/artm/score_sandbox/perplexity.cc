@@ -53,15 +53,12 @@ void Perplexity::AppendScore(
     }
   }
 
-<<<<<<< HEAD
   // the following code counts perplexity
-=======
   std::map<::artm::core::ClassId, float> class_weights;
   for (int i = 0; i < std::min(model_config.class_id_size(), model_config.class_weight_size()); ++i)
     class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
   bool use_class_id = !class_weights.empty();
 
->>>>>>> a40682dbd6833d24419f54b2c311efb3a9786aa2
   const Field* field = nullptr;
   for (int field_index = 0; field_index < item.field_size(); field_index++) {
     if (item.field(field_index).name() == config_.field_name()) {
@@ -118,18 +115,6 @@ void Perplexity::AppendScore(
   for (int token_index = 0; token_index < field->token_count_size(); ++token_index) {
     double sum = 0.0;
     const artm::core::Token& token = token_dict[field->token_id(token_index)];
-<<<<<<< HEAD
-    if (token.class_id == artm::core::DefaultClass) {
-      int token_count_int = field->token_count(token_index);
-      if (token_count_int == 0) continue;
-      double token_count = static_cast<double>(token_count_int);
-
-      if (topic_model.has_token(token)) {
-        ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-        while (topic_iter.NextNonZeroTopic() < topics_count) {
-          sum += theta[topic_iter.TopicIndex()] * topic_iter.Weight();
-        }
-=======
 
     float class_weight = 1.0f;
     if (use_class_id) {
@@ -145,9 +130,8 @@ void Perplexity::AppendScore(
 
     if (topic_model.has_token(token)) {
       ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-      while (topic_iter.NextNonZeroTopic() < topics_size) {
+      while (topic_iter.NextNonZeroTopic() < topics_count) {
         sum += theta[topic_iter.TopicIndex()] * topic_iter.Weight();
->>>>>>> a40682dbd6833d24419f54b2c311efb3a9786aa2
       }
     }
 
