@@ -4,6 +4,7 @@
 
 #include "boost/thread.hpp"
 #include "gtest/gtest.h"
+#include "boost/filesystem/path.hpp"
 
 void ThreadFunction() {
   int counter = 0;
@@ -39,4 +40,13 @@ TEST(Boost, Thread) {
   t.join();
 
   EXPECT_EQ(t.joinable(), false);
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=Boost.Filesystem
+TEST(Boost, Filesystem) {
+  boost::filesystem::path path("hdfs://user/romovpa/batches/");
+  boost::filesystem::path filename("filename");
+  std::string combined = (path / filename).string();
+  EXPECT_TRUE(combined == std::string("hdfs://user/romovpa/batches/filename"));
 }
