@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <sstream>
 #include <unordered_map>
 
 #include "boost/uuid/uuid.hpp"
@@ -147,15 +148,30 @@ inline bool make_rpcz_call_no_throw(std::function<void()> f, const std::string& 
 class CuckooWatch {
  public:
   explicit CuckooWatch(std::string message)
-      : message_(message), start_(std::chrono::system_clock::now()) {}
+      : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(nullptr) {}
+  CuckooWatch(std::string message, CuckooWatch* parent)
+      : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent) {}
+
   ~CuckooWatch() {
     auto delta = (std::chrono::system_clock::now() - start_);
     auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-    LOG(INFO) << message_ << " " << delta_ms.count() << " milliseconds.";
+    if (parent_ == nullptr) {
+      std::stringstream ss;
+      ss << delta_ms.count() << "ms in " + message_;
+      if (!submessage_.empty())
+        ss << " [including " << submessage_ << "]";
+      LOG(INFO) << ss.str();
+    } else if (delta_ms.count() > 0) {
+      std::stringstream ss;
+      ss << delta_ms.count() << "ms in " << message_;
+      parent_->submessage_ += ss.str();
+    }
   }
 
  private:
   std::string message_;
+  std::string submessage_;
+  CuckooWatch* parent_;
   std::chrono::time_point<std::chrono::system_clock> start_;
 };
 

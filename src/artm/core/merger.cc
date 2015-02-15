@@ -492,18 +492,35 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     std::shared_ptr<ModelConfig> target_config = target_model_config_.get(name);
 
     // Accumulate counters in topic model with decay coefficient.
-    auto new_ttm = std::make_shared< ::artm::core::TopicModel>(
-      *old_ttm, decay_weight, target_config == nullptr ? current_config : *target_config);
+    std::shared_ptr< ::artm::core::TopicModel> new_ttm;
+    {
+      CuckooWatch cuckoo2("copy&decay, ", &cuckoo);
+      new_ttm = std::make_shared< ::artm::core::TopicModel>(
+        *old_ttm, decay_weight, target_config == nullptr ? current_config : *target_config);
+    }
     target_model_config_.set(name, nullptr);
-    // Apply increment
-    if (inc_ttm != topic_model_inc_.end())
+
+
+    if (inc_ttm != topic_model_inc_.end()) {
+      CuckooWatch cuckoo2("ApplyDiff, ", &cuckoo);
       new_ttm->ApplyDiff(*inc_ttm->second, apply_weight);
+    }
 
-    if (invoke_regularizers)
+    if (invoke_regularizers) {
+      CuckooWatch cuckoo2("InvokePhiRegularizers, ", &cuckoo);
       InvokePhiRegularizers(new_ttm.get());
+    }
 
-    new_ttm->CalcNormalizers();
-    new_ttm->CalcPwt();   // calculate pwt matrix
+    {
+      CuckooWatch cuckoo2("CalcNormalizers, ", &cuckoo);
+      new_ttm->CalcNormalizers();
+    }
+
+    {
+      CuckooWatch cuckoo2("CalcPwt", &cuckoo);
+      new_ttm->CalcPwt();   // calculate pwt matrix
+    }
+
     topic_model_.set(name, new_ttm);
 
     topic_model_inc_.erase(name);

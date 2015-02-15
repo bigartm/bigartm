@@ -67,6 +67,7 @@ struct artm_options {
   int port;
   int online_period;
   int parsing_format;
+  int merger_queue_size;
   float tau_phi;
   float tau_theta;
   float tau_decor;
@@ -220,6 +221,7 @@ int execute(const artm_options& options) {
   MasterComponentConfig master_config;
   master_config.set_disk_path(options.batch_folder);
   master_config.set_processors_count(options.num_processors);
+  master_config.set_merger_queue_max_size(options.merger_queue_size);
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
   if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
 
@@ -246,12 +248,11 @@ int execute(const artm_options& options) {
   }
 
   // Step 2. Collection parsing
-  if (!options.b_reuse_batch) {
-    try {
-      for (fs::directory_iterator end_dir_it, it(options.batch_folder); it != end_dir_it; ++it) {
-        remove_all(it->path());
-      }
-    } catch (...) {}
+  if (!options.b_reuse_batch && fs::exists(fs::path(options.batch_folder))) {
+    if (!fs::is_empty(fs::path(options.batch_folder))) {
+      std::cerr << "The directory is not empty: " << options.batch_folder;
+      return 1;
+    }
   }
 
   boost::system::error_code error;
@@ -419,6 +420,7 @@ int main(int argc, char * argv[]) {
       ("online_decay", po::value(&options.online_decay)->default_value(0.75f), "decay coefficient [0..1] for online algorithm")
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market)")
       ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
+      ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
     ;
     all_options.add(basic_options);
 
@@ -448,6 +450,9 @@ int main(int argc, char * argv[]) {
       // Automatically reuse batches is safe when user didn't provide docword/vocab
       if (vm.count("batch_folder")) options.b_reuse_batch = true;
     }
+
+    if (vm.count("merger_queue_size") == 0)
+      options.merger_queue_size = options.num_processors;  // by default set queue size based on the number of processors
 
     if (show_help) {
       std::cout << all_options;

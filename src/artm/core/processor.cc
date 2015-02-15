@@ -652,7 +652,7 @@ void Processor::ThreadFunction() {
       LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
       pop_retries = 0;
 
-      CuckooWatch cuckoo("Batch processed in ");  // log time from now to destruction
+      CuckooWatch cuckoo("ProcessBatch");  // log time from now to destruction
       total_processed_batches++;
 
       const Batch& batch = part->batch();
@@ -767,32 +767,28 @@ void Processor::ThreadFunction() {
           model_increment->add_score(score_value->SerializeAsString());
         }
 
+        {
+          CuckooWatch cuckoo2("await merger queue", &cuckoo);
+          // Wait until merger queue has space for a new element
+          int merger_queue_max_size = schema_.get()->config().merger_queue_max_size();
+          for (;;) {
+            if (merger_queue_->size() < merger_queue_max_size)
+              break;
+
+            boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+          }
+        }
+
+        merger_queue_->reserve();
         if (model_config.use_sparse_bow()) {
           // Keep UpdateNwtSparse as further down in the code as possible,
           // because it consumes a lot of memory to transfer increments to merger.
           UpdateNwtSparse(model_config, batch, stream_mask, *schema, *sparse_ndw, *topic_model,
             *theta_matrix, model_increment.get(), blas);
         }
+        merger_queue_->release();
+        // Here call_in_destruction will enqueue processor output into the merger queue.
       });
-
-      // Wait until merger queue has space for a new element
-      int merger_queue_max_size = schema_.get()->config().merger_queue_max_size();
-
-      int push_retries = 0;
-      const int push_retries_max = 50;
-
-      for (;;) {
-        if (merger_queue_->size() < merger_queue_max_size)
-          break;
-
-        push_retries++;
-        LOG_IF(WARNING, push_retries == push_retries_max) << "Merger queue is full, waiting...";
-        boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-      }
-
-      LOG_IF(WARNING, push_retries >= push_retries_max) << "Merger queue is healthy again";
-
-      // Here call_in_destruction will enqueue processor output into the merger queue.
     }
   }
   catch (boost::thread_interrupted&) {
