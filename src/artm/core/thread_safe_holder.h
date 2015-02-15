@@ -136,6 +136,8 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
 template<typename T>
 class ThreadSafeQueue : boost::noncopyable {
  public:
+  ThreadSafeQueue() : lock_(), queue_(), reserved_(0) {}
+
   bool try_pop(T* elem) {
     boost::lock_guard<boost::mutex> guard(lock_);
     if (queue_.empty())
@@ -152,9 +154,19 @@ class ThreadSafeQueue : boost::noncopyable {
     queue_.push(elem);
   }
 
+  void reserve() {
+    boost::lock_guard<boost::mutex> guard(lock_);
+    reserved_++;
+  }
+
+  void release() {
+    boost::lock_guard<boost::mutex> guard(lock_);
+    reserved_--;
+  }
+
   int size() const {
     boost::lock_guard<boost::mutex> guard(lock_);
-    return queue_.size();
+    return queue_.size() + reserved_;
   }
 
   int empty() const {
@@ -165,6 +177,7 @@ class ThreadSafeQueue : boost::noncopyable {
  private:
   mutable boost::mutex lock_;
   std::queue<T> queue_;
+  int reserved_;
 };
 
 }  // namespace core

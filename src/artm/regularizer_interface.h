@@ -27,16 +27,35 @@ namespace core {
   typedef ThreadSafeCollectionHolder<std::string, DictionaryMap> ThreadSafeDictionaryCollection;
 }
 
+class RegularizeThetaAgent {
+ public:
+  virtual ~RegularizeThetaAgent() {}
+  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) { return; }
+};
+
+class RegularizeThetaAgentCollection : public RegularizeThetaAgent {
+ private:
+  std::vector<std::shared_ptr<RegularizeThetaAgent>> agents_;
+
+ public:
+  void AddAgent(std::shared_ptr<RegularizeThetaAgent> agent) { agents_.push_back(agent); }
+  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta);
+};
+
+class NormalizeThetaAgent : public RegularizeThetaAgent {
+ public:
+  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta);
+};
+
 class RegularizerInterface {
  public:
   RegularizerInterface() : dictionaries_(nullptr) {}
   virtual ~RegularizerInterface() { }
 
-  virtual bool RegularizeTheta(const Batch& batch,
-                               const ModelConfig& model_config,
-                               int inner_iter,
-                               double tau,
-                               ::artm::utility::DenseMatrix<float>* theta) { return true; }
+  virtual std::shared_ptr<RegularizeThetaAgent>
+  CreateRegularizeThetaAgent(const Batch& batch, const ModelConfig& model_config, double tau) {
+    return nullptr;
+  }
 
   virtual bool RegularizePhi(::artm::core::Regularizable* topic_model, double tau) { return true; }
 

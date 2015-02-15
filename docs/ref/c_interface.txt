@@ -340,35 +340,42 @@ ArtmDisposeDictionary
 ArtmAddBatch
 ------------
 
-.. c:function::  int ArtmAddBatch(int master_id, int length, const char* batch)
+.. c:function::  int ArtmAddBatch(int master_id, int length, const char* add_batch_args)
 
-   Adds an instance of :ref:`Batch` class to the master component.
+   Adds batch for processing.
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
-   :param const_char* batch:
-      Serialized :ref:`Batch` message.
+   :param const_char* add_batch_args:
+      Serialized :ref:`AddBatchArgs` message,
+      describing the arguments of this operation.
 
-   :param int length: The length in bytes of the *batch* message.
+   :param int length: The length in bytes of the *add_batch_args* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
 
    This operation is only allowed when
+   :attr:`MasterComponentConfig.online_batch_processing` is set to *True* and
    :attr:`MasterComponentConfig.modus_operandi` is set to *Local*.
 
 ArtmInvokeIteration
 -------------------
 
-.. c:function::  int ArtmInvokeIteration(int master_id, int iterations_count)
+.. c:function::  int ArtmInvokeIteration(int master_id, int length, const char* invoke_iteration_args)
 
    Invokes several iterations over the collection. 
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
-   :param int iterations_count: The number of iterations to perform.
+   :param const char* invoke_iteration_args:
+      Serialized :ref:`InvokeIterationArgs` message,
+      describing the arguments of this operation.
+
+   :param int length:
+      The length in bytes of the *invoke_iteration_args* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
@@ -421,14 +428,18 @@ ArtmInitializeModel
 ArtmWaitIdle
 ------------
 
-.. c:function::  int ArtmWaitIdle(int master_id, int timeout_milliseconds)
+.. c:function::  int ArtmWaitIdle(int master_id, int length, const char* wait_idle_args)
 
    Awaits for ongoing iterations. 
 
    :param int master_id: The ID of a master component or a master proxy,
       returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
 
-   :param int timeout_milliseconds: Timeout in milliseconds. Pass *timeout = -1* to allow infinite timeout.
+   :param const_char* wait_idle_args:
+      Serialized :ref:`WaitIdleArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the *wait_idle_args* message.
 
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.

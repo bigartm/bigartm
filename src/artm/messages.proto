@@ -33,6 +33,17 @@ message Field {
   optional string name = 1 [default = "@body"];
   repeated int32 token_id = 2;
   repeated int32 token_count = 3;
+  repeated int32 token_offset = 4;
+
+  optional string string_value = 5;
+  optional int64 int_value = 6;
+  optional double double_value = 7;
+  optional string date_value = 8;
+
+  repeated string string_array = 16;
+  repeated int64 int_array = 17;
+  repeated double double_array = 18;
+  repeated string date_array = 19;
 }
 
 // Represents a set of items.
@@ -40,6 +51,7 @@ message Batch {
   repeated string token = 1;
   repeated string class_id = 2;
   repeated Item item = 3;
+  optional string description = 4;
 }
 
 // Represents a configuration of a stream.

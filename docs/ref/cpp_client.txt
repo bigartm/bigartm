@@ -25,15 +25,8 @@ You may append the following options to customize the resulting topic model:
     Currently *cpp_client* does not allow you to customize regularizer weights for different topics
     and for different iterations. This limitation is only related to *cpp_client*,
     and you can simply achieve this by using BigARTM interface (either in Python or in C++).
-  * ``--online_decay`` and ``--online_period`` are the parameters of online algorithm.
-    *online_period* specifies time interval in milliseconds between model synchronization.
-    Once per this time interval the topic model will be re-calculated as follows:
-    *n_wt* counters in the old model are decreased according to *online_decay* coefficient,
-    and increased by *n_wt* counters calculated by all processors since the last model synchronization.
-    The suggested way to choose *online_period* is to measure single iteration time for *cpp_client* in offline mode
-    (e.g. without *online_period* option). Then set *online_period* to ``lambda = 0.25`` of the iteration time.
-    For larger collections it may be more efficient to set *online_period* to ``lambda = 0.1`` of the iteration time,
-    but then remember to update *online_decay* parameter accordingly (``1-lambda`` should be a reasonable value).
+  * ``--update_every`` is a parameter of the online algorithm.
+    When specified, the model will be updated every *update_every* documents.
 
 You may also apply the following optimizations that should not change the resulting model
 
@@ -50,6 +43,9 @@ You may also apply the following optimizations that should not change the result
   * ``--disk_cache_folder`` applies only together with ``--reuse_theta``.
     This parameter allows you to specify a writable disk location where BigARTM can cache Theta matrix
     between iterations to avoid storing it in main memory.
+
+  * ``--merger_queue_size`` limits the size of the merger queue. Decrease the size of the queue might
+    reduce memory usage, but decrease CPU utilization of the processors.
 
 .. code-block:: bash
 
@@ -81,13 +77,13 @@ You may also apply the following optimizations that should not change the result
      --paused                              wait for keystroke (allows to attach a
                                            debugger)
      --no_scores                           disable calculation of all scores
-     --online_period arg (=0)              period in milliseconds between model
-                                           synchronization on the online algorithm
-     --online_decay arg (=0.75)            decay coefficient [0..1] for online
-                                           algorithm
+     --update_every arg (=0)               [online algorithm] requests an update
+                                           of the model after update_every
+                                           document
      --parsing_format arg (=0)             parsing format (0 - UCI, 1 - matrix
                                            market)
      --disk_cache_folder arg               disk cache folder
+     --merger_queue_size arg               size of the merger queue
    
    Networking options (experimental):
      --nodes arg                  endpoints of the remote nodes (enables network

@@ -37,7 +37,7 @@ MasterComponent
      Returns mutable configuration of the master component.
      Remember to call :cpp:func:`Reconfigure` to propagate your changes to master component.
 
-  .. cpp:function:: void InvokeIteration(int iterations_count)
+  .. cpp:function:: void InvokeIteration(int iterations_count = 1)
 
      Invokes certain number of iterations.
 
