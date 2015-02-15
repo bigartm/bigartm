@@ -65,13 +65,12 @@ struct artm_options {
   int items_per_batch;
   int communication_timeout;
   int port;
-  int online_period;
+  int update_every;
   int parsing_format;
   int merger_queue_size;
   float tau_phi;
   float tau_theta;
   float tau_decor;
-  float online_decay;
   bool b_reuse_batch;
   bool b_paused;
   bool b_no_scores;
@@ -207,10 +206,19 @@ artm::RegularizerConfig configureDecorRegularizer(float tau, ModelConfig* model_
   return regularizer_config;
 }
 
+void configureItemsProcessedScore(artm::MasterComponentConfig* master_config, ModelConfig* model_config) {
+  ::artm::ScoreConfig score_config;
+  score_config.set_config(::artm::ItemsProcessedScoreConfig().SerializeAsString());
+  score_config.set_type(::artm::ScoreConfig_Type_ItemsProcessed);
+  score_config.set_name("items_processed");
+  master_config->add_score_config()->CopyFrom(score_config);
+  model_config->add_score_name(score_config.name());
+}
+
 int execute(const artm_options& options) {
   bool is_network_mode = (options.nodes.size() > 0);
   bool is_proxy = (!options.proxy.empty());
-  bool online = (options.online_period > 0);
+  bool online = (options.update_every > 0);
 
   if (options.b_paused) {
     std::cout << "Press any key to continue. ";
@@ -235,6 +243,8 @@ int execute(const artm_options& options) {
   configureStreams(&master_config);
   if (!options.b_no_scores)
     configureScores(&master_config, &model_config);
+
+  configureItemsProcessedScore(&master_config, &model_config);
 
   if (is_network_mode) {
     master_config.set_modus_operandi(MasterComponentConfig_ModusOperandi_Network);
@@ -326,11 +336,25 @@ int execute(const artm_options& options) {
         master_component->WaitIdle();
         model.Synchronize(0.0);
       } else {
+
+        double kappa = 0.5;
+        double tau0 = 64;
+
         bool done = false;
+        bool first_sync = true;
+        int next_items_processed = options.update_every;
         while (!done) {
-          done = master_component->WaitIdle(options.online_period);
-          model.Synchronize(options.online_decay);
-          std::cout << ".";
+          done = master_component->WaitIdle(10);  // wait 10 ms
+          int current_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(model, "items_processed")->value();
+          if (done || (current_items_processed >= next_items_processed)) {
+            int update_count = current_items_processed / options.update_every;
+            next_items_processed = current_items_processed + options.update_every;
+            double rho = pow(tau0 + update_count, -kappa);
+            double decay_weight = first_sync ? 0.0 : 1.0 - rho;
+            model.Synchronize(decay_weight, rho, true);
+            first_sync = false;
+            std::cout << ".";
+          }
         }
 
         std::cout << " ";
@@ -416,8 +440,7 @@ int main(int argc, char * argv[]) {
       ("tau_decor", po::value(&options.tau_decor)->default_value(0.0f), "regularization coefficient for topics decorrelation (use with care, since this value heavily depends on the size of the dataset)")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "wait for keystroke (allows to attach a debugger)")
       ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
-      ("online_period", po::value(&options.online_period)->default_value(0), "period in milliseconds between model synchronization on the online algorithm")
-      ("online_decay", po::value(&options.online_decay)->default_value(0.75f), "decay coefficient [0..1] for online algorithm")
+      ("update_every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market)")
       ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
