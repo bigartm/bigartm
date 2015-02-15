@@ -22,16 +22,14 @@ message StringArray {
 }
 
 // Represents a unit of textual information.
-message Item
-{
+message Item {
   optional int32 id = 1;
   repeated Field field = 2;
   optional string title = 3;
 }
 
 // Represents a field withing an item.
-message Field
-{
+message Field {
   optional string name = 1 [default = "@body"];
   repeated int32 token_id = 2;
   repeated int32 token_count = 3;
@@ -241,6 +239,8 @@ message PerplexityScoreConfig {
   optional string stream_name = 2 [default = "@global"];
   optional Type model_type = 3 [default = UnigramDocumentModel];
   optional string dictionary_name = 4;
+  optional float theta_sparsity_eps = 5 [default = 1e-37];
+  repeated string theta_sparsity_topic_name = 6;
 }
 
 // Represents a result of calculation of a perplexity score
@@ -249,6 +249,9 @@ message PerplexityScore {
   optional double raw = 2;
   optional double normalizer = 3;
   optional int32 zero_words = 4;
+  optional double theta_sparsity_value = 5;
+  optional int32 theta_sparsity_zero_topics = 6;
+  optional int32 theta_sparsity_total_topics = 7;
 }
 
 // Represents a configuration of a theta sparsity score
@@ -415,4 +418,17 @@ message GetScoreValueArgs {
   optional string model_name = 1;
   optional string score_name = 2;
   optional Batch batch = 3;
+}
+
+message AddBatchArgs {
+  optional Batch batch = 1;
+  optional int32 timeout_milliseconds = 2;
+}
+
+message InvokeIterationArgs {
+  optional int32 iterations_count = 1 [default = 1];
+}
+
+message WaitIdleArgs {
+  optional int32 timeout_milliseconds = 1 [default = -1];
 }

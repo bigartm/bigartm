@@ -226,7 +226,11 @@ void Model::Overwrite(const TopicModel& topic_model, bool commit) {
   topic_model_copy.SerializeToString(&blob);
   HandleErrorCode(ArtmOverwriteTopicModel(master_id(), blob.size(), StringAsArray(&blob)));
   if (commit) {
-    HandleErrorCode(ArtmWaitIdle(master_id(), -1));
+    WaitIdleArgs args;
+    std::string args_blob;
+    args.set_timeout_milliseconds(-1);
+    args.SerializeToString(&args_blob);
+    HandleErrorCode(ArtmWaitIdle(master_id(), args_blob.size(), StringAsArray(&args_blob)));
     Synchronize(0.0, 1.0, false);
   }
 }
@@ -315,18 +319,40 @@ void Dictionary::Reconfigure(const DictionaryConfig& config) {
   config_.CopyFrom(config);
 }
 
-void MasterComponent::AddBatch(const Batch& batch) {
-  std::string batch_blob;
-  batch.SerializeToString(&batch_blob);
-  HandleErrorCode(ArtmAddBatch(id(), batch_blob.size(), StringAsArray(&batch_blob)));
+bool MasterComponent::AddBatch(const AddBatchArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int result = ArtmAddBatch(id(), args_blob.size(), StringAsArray(&args_blob));
+  if (result == ARTM_STILL_WORKING) {
+    return false;
+  } else {
+    HandleErrorCode(result);
+    return true;
+  }
 }
 
 void MasterComponent::InvokeIteration(int iterations_count) {
-  HandleErrorCode(ArtmInvokeIteration(id(), iterations_count));
+  InvokeIterationArgs args;
+  args.set_iterations_count(iterations_count);
+  InvokeIteration(args);
+}
+
+void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  HandleErrorCode(ArtmInvokeIteration(id(), args_blob.size(), StringAsArray(&args_blob)));
 }
 
 bool MasterComponent::WaitIdle(int timeout) {
-  int result = ArtmWaitIdle(id(), timeout);
+  WaitIdleArgs args;
+  args.set_timeout_milliseconds(timeout);
+  return WaitIdle(args);
+}
+
+bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int result = ArtmWaitIdle(id(), args_blob.size(), StringAsArray(&args_blob));
   if (result == ARTM_STILL_WORKING) {
     return false;
   } else {

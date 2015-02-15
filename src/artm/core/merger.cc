@@ -355,7 +355,8 @@ void Merger::RequestRegularizerState(RegularizerName regularizer_name,
   }
 }
 
-bool Merger::WaitIdle(int timeout) {
+bool Merger::WaitIdle(const WaitIdleArgs& args) {
+  int timeout = args.timeout_milliseconds();
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
     if (is_idle_ && merger_queue_->empty())

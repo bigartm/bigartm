@@ -19,8 +19,41 @@ void Perplexity::AppendScore(
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_size = topic_model.topic_size();
+  int topics_count = topic_model.topic_size();
 
+  // the following code counts sparsity of theta
+  auto topic_name = topic_model.topic_name();
+  std::vector<bool> topics_to_score;
+  int topics_to_score_size = 0;
+
+  if (config_.theta_sparsity_topic_name_size() > 0) {
+    for (int i = 0; i < topics_count; ++i)
+      topics_to_score.push_back(false);
+
+    for (int topic_id = 0; topic_id < config_.theta_sparsity_topic_name_size(); ++topic_id) {
+      for (int real_topic_id = 0; real_topic_id < topics_count; ++real_topic_id) {
+        if (topic_name.Get(real_topic_id) == config_.theta_sparsity_topic_name(topic_id)) {
+          topics_to_score[real_topic_id] = true;
+          topics_to_score_size++;
+          break;
+        }
+      }
+    }
+  } else {
+    topics_to_score_size = topics_count;
+    for (int i = 0; i < topics_count; ++i)
+      topics_to_score.push_back(true);
+  }
+
+  int zero_topics_count = 0;
+  for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+    if ((fabs(theta[topic_index]) < config_.theta_sparsity_eps()) &&
+        topics_to_score[topic_index]) {
+      ++zero_topics_count;
+    }
+  }
+
+  // the following code counts perplexity
   std::map<::artm::core::ClassId, float> class_weights;
   for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
     class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
@@ -97,7 +130,7 @@ void Perplexity::AppendScore(
 
     if (topic_model.has_token(token)) {
       ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-      while (topic_iter.NextNonZeroTopic() < topics_size) {
+      while (topic_iter.NextNonZeroTopic() < topics_count) {
         sum += theta[topic_iter.TopicIndex()] * topic_iter.Weight();
       }
     }
@@ -122,10 +155,13 @@ void Perplexity::AppendScore(
     raw        += token_count * log(sum);
   }
 
+  // prepare results
   PerplexityScore perplexity_score;
   perplexity_score.set_normalizer(normalizer);
   perplexity_score.set_raw(raw);
   perplexity_score.set_zero_words(zero_words);
+  perplexity_score.set_theta_sparsity_zero_topics(zero_topics_count);
+  perplexity_score.set_theta_sparsity_total_topics(topics_to_score_size);
   AppendScore(perplexity_score, score);
 }
 
@@ -156,6 +192,15 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
   perplexity_target->set_zero_words(perplexity_target->zero_words() +
                                     perplexity_score->zero_words());
   perplexity_target->set_value(exp(- perplexity_target->raw() / perplexity_target->normalizer()));
+  perplexity_target->set_theta_sparsity_zero_topics(
+      perplexity_target->theta_sparsity_zero_topics() +
+      perplexity_score->theta_sparsity_zero_topics());
+  perplexity_target->set_theta_sparsity_total_topics(
+      perplexity_target->theta_sparsity_total_topics() +
+      perplexity_score->theta_sparsity_total_topics());
+  perplexity_target->set_theta_sparsity_value(
+      static_cast<double>(perplexity_target->theta_sparsity_zero_topics()) /
+      perplexity_target->theta_sparsity_total_topics());
 }
 
 }  // namespace score_sandbox

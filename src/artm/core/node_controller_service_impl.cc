@@ -306,28 +306,42 @@ void NodeControllerServiceImpl::RequestScore(
 }
 
 void NodeControllerServiceImpl::AddBatch(
-    const ::artm::Batch& request,
-    ::rpcz::reply< ::artm::core::Void> response) {
+    const ::artm::AddBatchArgs& request,
+    ::rpcz::reply< ::artm::core::Int> response) {
+  int local_timeout = 10;
+  bool result;
+  Int retval;
   try {
     boost::lock_guard<boost::mutex> guard(lock_);
     if (master_ != nullptr) {
-      master_->AddBatch(request);
+      AddBatchArgs new_args;
+      new_args.CopyFrom(request);
+      new_args.set_timeout_milliseconds(local_timeout);
+      result = master_->AddBatch(new_args);
+      if (result) {
+        retval.set_value(ARTM_SUCCESS);
+        LOG(INFO) << "AddBatch() succeeded";
+      } else {
+        retval.set_value(ARTM_STILL_WORKING);
+      }
+      response.send(retval);
     } else {
-      LOG(ERROR) << "No master component exist in node controller";
+      LOG(ERROR) << "No master component exists in node controller";
     }
-
-    response.send(Void());
   } CATCH_EXCEPTIONS_AND_SEND_ERROR;
 }
 
 void NodeControllerServiceImpl::InvokeIteration(
-    const ::artm::core::Void& request,
+    const ::artm::InvokeIterationArgs& request,
     ::rpcz::reply< ::artm::core::Void> response) {
   try {
     LOG(INFO) << "Invoke a new iteration";
     boost::lock_guard<boost::mutex> guard(lock_);
     if (master_ != nullptr) {
-      master_->InvokeIteration(1);
+      ::artm::InvokeIterationArgs new_args;
+      new_args.CopyFrom(request);
+      new_args.set_iterations_count(1);
+      master_->InvokeIteration(new_args);
     } else {
       LOG(ERROR) << "No master component exist in node controller";
     }
@@ -337,7 +351,7 @@ void NodeControllerServiceImpl::InvokeIteration(
 }
 
 void NodeControllerServiceImpl::WaitIdle(
-    const ::artm::core::Void& request,
+    const ::artm::WaitIdleArgs& request,
     ::rpcz::reply< ::artm::core::Int> response) {
   int local_timeout = 10;
   bool result;
@@ -345,7 +359,10 @@ void NodeControllerServiceImpl::WaitIdle(
   try {
     boost::lock_guard<boost::mutex> guard(lock_);
     if (master_ != nullptr) {
-      result = master_->WaitIdle(local_timeout);
+      WaitIdleArgs new_args;
+      new_args.CopyFrom(request);
+      new_args.set_timeout_milliseconds(local_timeout);
+      result = master_->WaitIdle(new_args);
       if (result) {
         retval.set_value(ARTM_SUCCESS);
         LOG(INFO) << "WaitIdle() succeeded";
