@@ -918,6 +918,8 @@ Represents a configuration of a perplexity score.
     optional string stream_name = 2 [default = "@global"];
     optional Type model_type = 3 [default = UnigramDocumentModel];
     optional string dictionary_name = 4;
+    optional float theta_sparsity_eps = 5 [default = 1e-37];
+    repeated string theta_sparsity_topic_name = 6;
   }
 
 .. attribute:: PerplexityScoreConfig.field_name
@@ -945,6 +947,9 @@ Represents a result of calculation of a perplexity score.
     optional double raw = 2;
     optional double normalizer = 3;
     optional int32 zero_words = 4;
+    optional double theta_sparsity_value = 5;
+    optional int32 theta_sparsity_zero_topics = 6;
+    optional int32 theta_sparsity_total_topics = 7;
   }
 
 .. attribute:: PerplexityScore.value
@@ -966,6 +971,9 @@ Represents a result of calculation of a perplexity score.
    A number of tokens that have zero probability p(w|t,d) in a document.
    Such tokens are evaluated based on to unigram document model or unigram colection model.
 
+.. attribute:: PerplexityScore.theta_sparsity_value
+
+   A fraction of zero entries in the theta matrix.
 
 .. _SparsityThetaScoreConfig:
 
@@ -1853,7 +1861,7 @@ Represents an argument of get score operation.
     optional Batch batch = 3;
   }
 
-.. attribute:: GetScore ValueArgs.model_name
+.. attribute:: GetScoreValueArgs.model_name
 
   The name of the model to retrieved score for.
 
@@ -1866,3 +1874,62 @@ Represents an argument of get score operation.
   The :ref:`Batch` to calculate the score.
   This option is only applicable to cumulative scores.
   When not provided the score will be reported for all batches processed since last :c:func:`ArtmInvokeIteration`.
+
+
+.. _AddBatchArgs:
+
+AddBatchArgs
+============
+
+Represents an argument of :c:func:`ArtmAddBatch` operation.
+
+.. code-block:: bash
+
+  message AddBatchArgs {
+    optional Batch batch = 1;
+    optional int32 timeout_milliseconds = 2;
+  }
+
+.. attribute:: AddBatchArgs.batch
+
+  The :ref:`Batch` to add.
+
+.. attribute:: AddBatchArgs.timeout_milliseconds
+
+  Timeout in milliseconds for this operation.
+
+
+.. _InvokeIterationArgs:
+
+InvokeIterationArgs
+===================
+
+Represents an argument of :c:func:`ArtmInvokeIteration` operation.
+
+.. code-block:: bash
+
+  message InvokeIterationArgs {
+    optional int32 iterations_count = 1 [default = 1];
+  }
+
+.. attribute:: InvokeIterationArgs.iterations_count
+
+  An integer value describing how many iterations to invoke.
+
+
+.. _WaitIdleArgs:
+
+WaitIdleArgs
+============
+
+Represents an argument of :c:func:`ArtmWaitIdle` operation.
+
+.. code-block:: bash
+
+  message WaitIdleArgs {
+    optional int32 timeout_milliseconds = 1 [default = -1];
+  }
+
+.. attribute:: WaitIdleArgs.timeout_milliseconds
+
+  Timeout in milliseconds for this operation.

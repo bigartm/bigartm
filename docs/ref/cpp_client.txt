@@ -51,6 +51,9 @@ You may also apply the following optimizations that should not change the result
     This parameter allows you to specify a writable disk location where BigARTM can cache Theta matrix
     between iterations to avoid storing it in main memory.
 
+  * ``--merger_queue_size`` limits the size of the merger queue. Decrease the size of the queue might
+    reduce memory usage, but decrease CPU utilization of the processors.
+
 .. code-block:: bash
 
    >cpp_client --help
@@ -88,6 +91,7 @@ You may also apply the following optimizations that should not change the result
      --parsing_format arg (=0)             parsing format (0 - UCI, 1 - matrix
                                            market)
      --disk_cache_folder arg               disk cache folder
+     --merger_queue_size arg               size of the merger queue
    
    Networking options (experimental):
      --nodes arg                  endpoints of the remote nodes (enables network
