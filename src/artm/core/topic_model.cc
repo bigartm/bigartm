@@ -302,12 +302,12 @@ void TopicModel::ApplyDiff(const ::artm::core::TopicModel& diff, float apply_wei
        ++token_index) {
     const float* counters = diff.n_wt_[token_index];
     auto current_token = diff.token(token_index);
-    if (!has_token(current_token)) {
-      this->AddToken(current_token, false);
-    }
+    int current_token_id = token_id(current_token);
+    if (current_token_id == -1)
+      current_token_id = this->AddToken(current_token, false);
 
     for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
-      this->IncreaseTokenWeight(current_token, topic_index, apply_weight * counters[topic_index]);
+      this->IncreaseTokenWeight(current_token_id, topic_index, apply_weight * counters[topic_index]);
     }
   }
 
