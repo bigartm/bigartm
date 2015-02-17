@@ -124,13 +124,26 @@ std::vector<BatchManagerTask> BatchHelpers::ListAllBatches(const boost::filesyst
 
 boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,
                                            const std::string& disk_path) {
-  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  boost::uuids::uuid uuid;
+  if (batch.has_id()) {
+    try {
+      uuid = boost::lexical_cast<boost::uuids::uuid>(batch.id());
+    } catch (...) {
+      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Batch.id", batch.id(), "expecting guid"));
+    }
+  } else {
+    uuid = boost::uuids::random_generator()();
+  }
+
   boost::filesystem::path file(boost::lexical_cast<std::string>(uuid) + kBatchExtension);
   SaveMessage(file.string(), disk_path, batch);
   return uuid;
 }
 
 void BatchHelpers::CompactBatch(const Batch& batch, Batch* compacted_batch) {
+  if (batch.has_description()) compacted_batch->set_description(batch.description());
+  if (batch.has_id()) compacted_batch->set_id(batch.id());
+
   std::vector<int> orig_to_compacted_id_map(batch.token_size(), -1);
   int compacted_dictionary_size = 0;
 
@@ -186,6 +199,24 @@ void BatchHelpers::LoadMessage(const std::string& full_filename,
   }
 
   fin.close();
+
+  Batch* batch = dynamic_cast<Batch*>(message);
+  if ((batch != nullptr) && !batch->has_id()) {
+    boost::uuids::uuid uuid;
+
+    try {
+      // Attempt to detect UUID based on batche's filename
+      std::string filename_only = boost::filesystem::path(full_filename).stem().string();
+      uuid = boost::lexical_cast<boost::uuids::uuid>(filename_only);
+    } catch (...) {}
+
+    if (uuid.is_nil()) {
+      // Otherwise generate new random UUID
+      uuid = boost::uuids::random_generator()();
+    }
+
+    batch->set_id(boost::lexical_cast<std::string>(uuid));
+  }
 }
 
 void BatchHelpers::SaveMessage(const std::string& filename, const std::string& disk_path,
@@ -217,6 +248,16 @@ void BatchHelpers::SaveMessage(const std::string& full_filename,
 }
 
 void BatchHelpers::PopulateClassId(Batch* batch) {
+  if (batch->has_id()) {
+    try {
+      boost::lexical_cast<boost::uuids::uuid>(batch->id());
+    } catch (...) {
+      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Batch.id", batch->id(), "expecting guid"));
+    }
+  } else {
+    BOOST_THROW_EXCEPTION(InvalidOperation("Batch.id is not specified"));
+  }
+
   if (batch->class_id_size() != batch->token_size()) {
     if (batch->class_id_size() != 0) {
       // ToDo(alfrey): log the ID of the batch

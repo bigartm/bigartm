@@ -2,6 +2,8 @@
 
 #include "artm/core/generation.h"
 
+#include "boost/lexical_cast.hpp"
+#include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"  // generators
 
 #include "glog/logging.h"
@@ -40,6 +42,7 @@ std::vector<BatchManagerTask> DiskGeneration::batch_uuids() const {
 std::shared_ptr<Batch> DiskGeneration::batch(const BatchManagerTask& task) const {
   auto batch = std::make_shared< ::artm::Batch>();
   ::artm::core::BatchHelpers::LoadMessage(task.file_path, batch.get());
+  batch->set_id(boost::lexical_cast<std::string>(task.uuid));  // keep batch.id and task.uuid in sync
   ::artm::core::BatchHelpers::PopulateClassId(batch.get());
   return batch;
 }

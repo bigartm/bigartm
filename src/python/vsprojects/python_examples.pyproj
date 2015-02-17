@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>8cbe34f8-5d46-4832-b615-db183812f81f</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>..\examples\example04_online_algorithm.py</StartupFile>
+    <StartupFile>..\examples\example01_synthetic_collection.py</StartupFile>
     <SearchPath>..\..\python</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>

@@ -73,6 +73,7 @@ bool CompareThetaMatrices(const ::artm::ThetaMatrix& t1, const ::artm::ThetaMatr
 
 artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::string class2) {
   artm::Batch batch;
+  batch.set_id("11972762-6a23-4524-b089-7122816aff72");
   for (int i = 0; i < nTokens; i++) {
     std::stringstream str;
     str << "token" << i;
@@ -146,7 +147,7 @@ TEST(MultipleClasses, BasicTest) {
   artm::ModelConfig model_config_reg;
   model_config_reg.set_name("model_config_reg");
   model_config_reg.add_regularizer_name("regularizer_smsp_theta");
-  model_config_reg.add_regularizer_tau(-2.0);
+  model_config_reg.add_regularizer_tau(-1.0);
   for (int i = 0; i < nTopics; ++i) {
     std::stringstream ss;
     ss << "Topic" << i;
@@ -156,9 +157,6 @@ TEST(MultipleClasses, BasicTest) {
   model_reg.Overwrite(initial_model);
 
   // Index doc-token matrix
-  artm::AddBatchArgs add_batch_args;
-  add_batch_args.mutable_batch()->CopyFrom(batch);
-  master_component.AddBatch(add_batch_args);
   int nIters = 5;
   std::shared_ptr< ::artm::ThetaMatrix> theta_matrix1_explicit, theta_matrix2_explicit, theta_matrix3_explicit;
   for (int iter = 0; iter < 5; ++iter) {
@@ -177,7 +175,7 @@ TEST(MultipleClasses, BasicTest) {
       theta_matrix2_explicit = master_component.GetThetaMatrix(gtm2);
       theta_matrix3_explicit = master_component.GetThetaMatrix(gtm3);
     }
-    master_component.InvokeIteration(1);
+    master_component.AddBatch(batch, true);
     master_component.WaitIdle();
     model1.Synchronize(0.0);
     model2.Synchronize(0.0);
@@ -297,9 +295,6 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   // Generate doc-token matrix
   int nTokens = 60, nDocs = 100, nTopics = 10;
   artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
-  artm::AddBatchArgs args;
-  args.mutable_batch()->CopyFrom(batch);
-  master_component.AddBatch(args);
 
   artm::ModelConfig model_config1;
   model_config1.set_name("model1"); model_config1.set_topics_count(nTopics);
@@ -321,7 +316,7 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   artm::Model model2(master_component, model_config2);
 
   for (int iter = 0; iter < 5; ++iter) {
-    master_component.InvokeIteration(1);
+    master_component.AddBatch(batch, /*bool reset_scores=*/ true);
     master_component.WaitIdle();
     model1.Synchronize(0.0);
     model2.Synchronize(0.0);

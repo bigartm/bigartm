@@ -319,6 +319,17 @@ void Dictionary::Reconfigure(const DictionaryConfig& config) {
   config_.CopyFrom(config);
 }
 
+bool MasterComponent::AddBatch(const Batch& batch) {
+  return AddBatch(batch, /*bool reset_scores=*/ false);
+}
+
+bool MasterComponent::AddBatch(const Batch& batch, bool reset_scores) {
+  AddBatchArgs args;
+  args.mutable_batch()->CopyFrom(batch);
+  args.set_reset_scores(reset_scores);
+  return AddBatch(args);
+}
+
 bool MasterComponent::AddBatch(const AddBatchArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
