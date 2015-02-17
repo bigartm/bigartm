@@ -85,6 +85,7 @@ artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::strin
     artm::Item* item = batch.add_item();
     item->set_id(iDoc);
     artm::Field* field = item->add_field();
+    field->set_name("custom_field_name");
     for (int iToken = 0; iToken < nTokens; ++iToken) {
       field->add_token_id(iToken);
       int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
