@@ -3,12 +3,13 @@
 # Last 20 tokens are randomly allocated to documents.
 # The example demonstrates that in this clear situation BigARTM can precisely recover all topics.
 
-import artm.messages_pb2, artm.library, random
+import artm.messages_pb2, artm.library, random, uuid
 
 # Generate small collection of random items
 num_tokens = 60
 num_items = 100
 batch = artm.messages_pb2.Batch()
+batch.id = str(uuid.uuid4())
 for token_id in range(0, num_tokens):
   batch.token.append('token' + str(token_id))
 
@@ -24,7 +25,6 @@ for item_id in range(0, num_items):
 
 # Create master component and infer topic model
 with artm.library.MasterComponent() as master:
-  master.AddBatch(batch)
   perplexity_score = master.CreatePerplexityScore()
   top_tokens_score = master.CreateTopTokensScore(num_tokens = 4)
   model = master.CreateModel(topics_count = 10, inner_iterations_count = 10)
@@ -32,7 +32,7 @@ with artm.library.MasterComponent() as master:
   model.EnableScore(top_tokens_score)
 
   for iter in range(0, 10):
-    master.InvokeIteration(1)        # Invoke one scan of the entire collection...
+    master.AddBatch(batch)           # Invoke one scan of this batch...
     master.WaitIdle();               # and wait until it completes.
     model.Synchronize();             # Synchronize topic model.
     print "Iter#" + str(iter) + ": Perplexity = %.3f" % perplexity_score.GetValue(model).value

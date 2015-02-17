@@ -14,7 +14,7 @@
 TEST(CppInterface, Canary) {
 }
 
-void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing) {
+void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   const int nTopics = 5;
 
   // Endpoints:
@@ -49,7 +49,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     master_config.set_modus_operandi(::artm::MasterComponentConfig_ModusOperandi_Network);
   } else {
     master_config.set_modus_operandi(::artm::MasterComponentConfig_ModusOperandi_Local);
-    master_config.set_cache_theta(online_processing ? false : true);
+    master_config.set_cache_theta(true);
   }
 
   ::artm::ScoreConfig score_config;
@@ -57,7 +57,6 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
   score_config.set_name("PerplexityScore");
   master_config.add_score_config()->CopyFrom(score_config);
-  master_config.set_online_batch_processing(online_processing);
   master_config.set_disk_cache_path(".");
 
   // Create master component
@@ -116,6 +115,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   int nDocs = 15;
 
   artm::Batch batch;
+  batch.set_id("00b6d631-46a6-4edf-8ef6-016c7b27d9f0");
   for (int i = 0; i < nTokens; i++) {
     std::stringstream str;
     str << "token" << i;
@@ -144,18 +144,14 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   }
 
   // Index doc-token matrix
-  artm::AddBatchArgs add_batch_args;
-  add_batch_args.mutable_batch()->CopyFrom(batch);
-  if (!online_processing && !is_network_mode) master_component->AddBatch(add_batch_args);
-  else if (is_network_mode) artm::SaveBatch(batch, "00b6d631-46a6-4edf-8ef6-016c7b27d9f0.batch");
+  if (is_network_mode) artm::SaveBatch(batch, "00b6d631-46a6-4edf-8ef6-016c7b27d9f0.batch");
 
   std::shared_ptr<artm::TopicModel> topic_model;
   double expected_normalizer = 0;
   double previous_perplexity = 0;
   for (int iter = 0; iter < 5; ++iter) {
-    if (!online_processing) master_component->InvokeIteration(1);
-    else                    master_component->AddBatch(add_batch_args);
-
+    if (is_network_mode) master_component->InvokeIteration();
+    else master_component->AddBatch(batch, /*reset_scores =*/ true);  // NOLINT
     master_component->WaitIdle();
     model.Synchronize(0.0);
 
@@ -173,7 +169,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
     std::shared_ptr< ::artm::PerplexityScore> perplexity =
       master_component->GetScoreAs< ::artm::PerplexityScore>(model, "PerplexityScore");
 
-    if (!online_processing && !is_network_mode) {
+    if (!is_network_mode) {
       if (iter > 0)
         EXPECT_EQ(perplexity->value(), previous_perplexity);
 
@@ -200,19 +196,16 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
       }
 
     } else if (iter >= 2) {
-      if (!is_network_mode && !online_processing) {
+      if (!is_network_mode) {
         // Verify that normalizer does not grow starting from second iteration.
         // This confirms that the Instance::ForceResetScores() function works as expected.
         EXPECT_EQ(perplexity->normalizer(), expected_normalizer);
       }
-
-      if (online_processing)
-        EXPECT_EQ(perplexity->normalizer(), expected_normalizer * iter);
     }
   }
 
-  if (!online_processing) master_component->InvokeIteration(1);
-  else                    master_component->AddBatch(add_batch_args);
+  if (is_network_mode) master_component->InvokeIteration();
+  else master_component->AddBatch(batch, /*reset_scores =*/ true);  // NOLINT
 
   EXPECT_TRUE(master_component->WaitIdle());
 
@@ -244,7 +237,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
   {
     artm::GetThetaMatrixArgs args;
     args.set_model_name(model.name().c_str());
-    if (!is_network_mode && !online_processing) {
+    if (!is_network_mode) {
       std::shared_ptr< ::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
 
       EXPECT_EQ(theta_matrix->item_id_size(), nDocs);
@@ -414,29 +407,23 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode, bool online_processing)
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode
 TEST(CppInterface, BasicTest_StandaloneMode) {
-  BasicTest(false, false, false);
+  BasicTest(false, false);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneProxyMode
 TEST(CppInterface, BasicTest_StandaloneProxyMode) {
-  BasicTest(false, true, false);
+  BasicTest(false, true);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_NetworkMode
 TEST(CppInterface, BasicTest_NetworkMode) {
-  BasicTest(true, false, false);
+  BasicTest(true, false);
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_NetworkProxyMode
 TEST(CppInterface, BasicTest_NetworkProxyMode) {
-  BasicTest(true, true, false);
+  BasicTest(true, true);
 }
-
-// artm_tests.exe --gtest_filter=CppInterface.BasicTest_OnlineProcessingMode
-TEST(CppInterface, BasicTest_OnlineProcessingMode) {
-  BasicTest(false, false, true);
-}
-
 
 // artm_tests.exe --gtest_filter=CppInterface.ModelExceptions
 TEST(CppInterface, ModelExceptions) {
@@ -463,13 +450,17 @@ TEST(CppInterface, ProxyExceptions) {
     artm::NetworkException);
 }
 
+// artm_tests.exe --gtest_filter=CppInterface.WaitIdleTimeout
 TEST(CppInterface, WaitIdleTimeout) {
   ::artm::MasterComponentConfig master_config;
+  master_config.set_processor_queue_max_size(10000);
   ::artm::MasterComponent master(master_config);
+  ::artm::ModelConfig model_config;
+  model_config.set_name("model_config1");
+  ::artm::Model model(master, model_config);
   ::artm::Batch batch;
-  ::artm::AddBatchArgs args;
-  args.mutable_batch()->CopyFrom(batch);
-  master.AddBatch(args);
-  master.InvokeIteration(10000);
-  EXPECT_FALSE(master.WaitIdle(1));
+  batch.set_id("00b6d631-46a6-4edf-8ef6-016c7b27d9f0");
+  for (int i = 0; i < 1000; ++i)
+    master.AddBatch(batch);
+  EXPECT_FALSE(master.WaitIdle(0));
 }

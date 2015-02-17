@@ -1053,10 +1053,24 @@ class Batch : public ::google::protobuf::Message {
   inline ::std::string* release_description();
   inline void set_allocated_description(::std::string* description);
 
+  // optional string id = 5;
+  inline bool has_id() const;
+  inline void clear_id();
+  static const int kIdFieldNumber = 5;
+  inline const ::std::string& id() const;
+  inline void set_id(const ::std::string& value);
+  inline void set_id(const char* value);
+  inline void set_id(const char* value, size_t size);
+  inline ::std::string* mutable_id();
+  inline ::std::string* release_id();
+  inline void set_allocated_id(::std::string* id);
+
   // @@protoc_insertion_point(class_scope:artm.Batch)
  private:
   inline void set_has_description();
   inline void clear_has_description();
+  inline void set_has_id();
+  inline void clear_has_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -1064,9 +1078,10 @@ class Batch : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::Item > item_;
   ::std::string* description_;
+  ::std::string* id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6094,12 +6109,21 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_topic_index();
 
+  // optional bool clean_cache = 5 [default = false];
+  inline bool has_clean_cache() const;
+  inline void clear_clean_cache();
+  static const int kCleanCacheFieldNumber = 5;
+  inline bool clean_cache() const;
+  inline void set_clean_cache(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.GetThetaMatrixArgs)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
   inline void set_has_batch();
   inline void clear_has_batch();
+  inline void set_has_clean_cache();
+  inline void clear_has_clean_cache();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6107,9 +6131,10 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   ::artm::Batch* batch_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
+  bool clean_cache_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6304,20 +6329,30 @@ class AddBatchArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 timeout_milliseconds() const;
   inline void set_timeout_milliseconds(::google::protobuf::int32 value);
 
+  // optional bool reset_scores = 3 [default = false];
+  inline bool has_reset_scores() const;
+  inline void clear_reset_scores();
+  static const int kResetScoresFieldNumber = 3;
+  inline bool reset_scores() const;
+  inline void set_reset_scores(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.AddBatchArgs)
  private:
   inline void set_has_batch();
   inline void clear_has_batch();
   inline void set_has_timeout_milliseconds();
   inline void clear_has_timeout_milliseconds();
+  inline void set_has_reset_scores();
+  inline void clear_has_reset_scores();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::artm::Batch* batch_;
   ::google::protobuf::int32 timeout_milliseconds_;
+  bool reset_scores_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6389,17 +6424,27 @@ class InvokeIterationArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 iterations_count() const;
   inline void set_iterations_count(::google::protobuf::int32 value);
 
+  // optional bool reset_scores = 2 [default = true];
+  inline bool has_reset_scores() const;
+  inline void clear_reset_scores();
+  static const int kResetScoresFieldNumber = 2;
+  inline bool reset_scores() const;
+  inline void set_reset_scores(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.InvokeIterationArgs)
  private:
   inline void set_has_iterations_count();
   inline void clear_has_iterations_count();
+  inline void set_has_reset_scores();
+  inline void clear_has_reset_scores();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::int32 iterations_count_;
+  bool reset_scores_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7404,6 +7449,76 @@ inline void Batch::set_allocated_description(::std::string* description) {
   } else {
     clear_has_description();
     description_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string id = 5;
+inline bool Batch::has_id() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void Batch::set_has_id() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void Batch::clear_has_id() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void Batch::clear_id() {
+  if (id_ != &::google::protobuf::internal::GetEmptyString()) {
+    id_->clear();
+  }
+  clear_has_id();
+}
+inline const ::std::string& Batch::id() const {
+  return *id_;
+}
+inline void Batch::set_id(const ::std::string& value) {
+  set_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    id_ = new ::std::string;
+  }
+  id_->assign(value);
+}
+inline void Batch::set_id(const char* value) {
+  set_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    id_ = new ::std::string;
+  }
+  id_->assign(value);
+}
+inline void Batch::set_id(const char* value, size_t size) {
+  set_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    id_ = new ::std::string;
+  }
+  id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Batch::mutable_id() {
+  set_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    id_ = new ::std::string;
+  }
+  return id_;
+}
+inline ::std::string* Batch::release_id() {
+  clear_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = id_;
+    id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Batch::set_allocated_id(::std::string* id) {
+  if (id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete id_;
+  }
+  if (id) {
+    set_has_id();
+    id_ = id;
+  } else {
+    clear_has_id();
+    id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
@@ -14087,6 +14202,28 @@ GetThetaMatrixArgs::mutable_topic_index() {
   return &topic_index_;
 }
 
+// optional bool clean_cache = 5 [default = false];
+inline bool GetThetaMatrixArgs::has_clean_cache() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void GetThetaMatrixArgs::set_has_clean_cache() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void GetThetaMatrixArgs::clear_has_clean_cache() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void GetThetaMatrixArgs::clear_clean_cache() {
+  clean_cache_ = false;
+  clear_has_clean_cache();
+}
+inline bool GetThetaMatrixArgs::clean_cache() const {
+  return clean_cache_;
+}
+inline void GetThetaMatrixArgs::set_clean_cache(bool value) {
+  set_has_clean_cache();
+  clean_cache_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // GetScoreValueArgs
@@ -14333,6 +14470,28 @@ inline void AddBatchArgs::set_timeout_milliseconds(::google::protobuf::int32 val
   timeout_milliseconds_ = value;
 }
 
+// optional bool reset_scores = 3 [default = false];
+inline bool AddBatchArgs::has_reset_scores() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void AddBatchArgs::set_has_reset_scores() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void AddBatchArgs::clear_has_reset_scores() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void AddBatchArgs::clear_reset_scores() {
+  reset_scores_ = false;
+  clear_has_reset_scores();
+}
+inline bool AddBatchArgs::reset_scores() const {
+  return reset_scores_;
+}
+inline void AddBatchArgs::set_reset_scores(bool value) {
+  set_has_reset_scores();
+  reset_scores_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // InvokeIterationArgs
@@ -14357,6 +14516,28 @@ inline ::google::protobuf::int32 InvokeIterationArgs::iterations_count() const {
 inline void InvokeIterationArgs::set_iterations_count(::google::protobuf::int32 value) {
   set_has_iterations_count();
   iterations_count_ = value;
+}
+
+// optional bool reset_scores = 2 [default = true];
+inline bool InvokeIterationArgs::has_reset_scores() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void InvokeIterationArgs::set_has_reset_scores() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void InvokeIterationArgs::clear_has_reset_scores() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void InvokeIterationArgs::clear_reset_scores() {
+  reset_scores_ = true;
+  clear_has_reset_scores();
+}
+inline bool InvokeIterationArgs::reset_scores() const {
+  return reset_scores_;
+}
+inline void InvokeIterationArgs::set_reset_scores(bool value) {
+  set_has_reset_scores();
+  reset_scores_ = value;
 }
 
 // -------------------------------------------------------------------

@@ -300,15 +300,8 @@ bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
 }
 
 void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
-  if (config_.get()->online_batch_processing()) {
-    std::stringstream str;
-    str << "InvokeIteration() must not be used together with ";
-    str << "MasterComponentConfig.online_batch_processing().";
-    BOOST_THROW_EXCEPTION(InvalidOperation(str.str()));
-  }
-
-  // Reset scores
-  instance_->merger()->ForceResetScores(ModelName());
+  if (args.reset_scores())
+    instance_->merger()->ForceResetScores(ModelName());
 
   if (isInLocalModusOperandi()) {
     instance_->local_data_loader()->InvokeIteration(args);
@@ -333,7 +326,9 @@ void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
 bool MasterComponent::AddBatch(const AddBatchArgs& args) {
   int timeout = args.timeout_milliseconds();
   if (isInLocalModusOperandi()) {
-    auto time_start = boost::posix_time::microsec_clock::local_time();
+    if (args.reset_scores())
+      instance_->merger()->ForceResetScores(ModelName());
+
     return instance_->local_data_loader()->AddBatch(args);
   }
 
@@ -417,13 +412,6 @@ void MasterComponent::ValidateConfig(const MasterComponentConfig& config) {
       std::string message = "Changing disk_path is not supported.";
       BOOST_THROW_EXCEPTION(InvalidOperation(message));
     }
-  }
-
-  if (config.cache_theta() && config.online_batch_processing()) {
-    std::stringstream str;
-    str << "MasterComponentConfig.cache_theta() is incompatible with "
-        << "MasterComponentConfig.online_batch_processing()";
-    BOOST_THROW_EXCEPTION(InvalidOperation(str.str()));
   }
 }
 
