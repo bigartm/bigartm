@@ -59,30 +59,20 @@ void Perplexity::AppendScore(
     class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
   bool use_class_id = !class_weights.empty();
 
-  const Field* field = nullptr;
-  for (int field_index = 0; field_index < item.field_size(); field_index++) {
-    if (item.field(field_index).name() == config_.field_name()) {
-      field = &item.field(field_index);
-    }
-  }
-
-  if (field == nullptr) {
-    LOG(ERROR) << "Unable to find field " << config_.field_name() << " in item " << item.id();
-    return;
-  }
-
   float n_d = 0;
-  for (int token_index = 0; token_index < field->token_count_size(); ++token_index) {
-    float class_weight = 1.0f;
-    if (use_class_id) {
-      ::artm::core::ClassId class_id = token_dict[field->token_id(token_index)].class_id;
-      auto iter = class_weights.find(class_id);
-      if (iter == class_weights.end())
-        continue;
-      class_weight = iter->second;
-    }
+  for (auto& field : item.field()) {
+    for (int token_index = 0; token_index < field.token_count_size(); ++token_index) {
+      float class_weight = 1.0f;
+      if (use_class_id) {
+        ::artm::core::ClassId class_id = token_dict[field.token_id(token_index)].class_id;
+        auto iter = class_weights.find(class_id);
+        if (iter == class_weights.end())
+          continue;
+        class_weight = iter->second;
+      }
 
-    n_d += class_weight * static_cast<float>(field->token_count(token_index));
+      n_d += class_weight * static_cast<float>(field.token_count(token_index));
+    }
   }
 
   int zero_words = 0;
@@ -112,47 +102,49 @@ void Perplexity::AppendScore(
     }
   }
 
-  for (int token_index = 0; token_index < field->token_count_size(); ++token_index) {
-    double sum = 0.0;
-    const artm::core::Token& token = token_dict[field->token_id(token_index)];
+  for (auto& field : item.field()) {
+    for (int token_index = 0; token_index < field.token_count_size(); ++token_index) {
+      double sum = 0.0;
+      const artm::core::Token& token = token_dict[field.token_id(token_index)];
 
-    float class_weight = 1.0f;
-    if (use_class_id) {
-      auto iter = class_weights.find(token.class_id);
-      if (iter == class_weights.end())
-        continue;
-      class_weight = iter->second;
-    }
-
-    int token_count_int = field->token_count(token_index);
-    if (token_count_int == 0) continue;
-    double token_count = class_weight * static_cast<double>(token_count_int);
-
-    if (topic_model.has_token(token)) {
-      ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-      while (topic_iter.NextNonZeroTopic() < topics_count) {
-        sum += theta[topic_iter.TopicIndex()] * topic_iter.Weight();
+      float class_weight = 1.0f;
+      if (use_class_id) {
+        auto iter = class_weights.find(token.class_id);
+        if (iter == class_weights.end())
+          continue;
+        class_weight = iter->second;
       }
-    }
 
-    if (sum == 0.0) {
-      if (use_document_unigram_model) {
-        sum = token_count / n_d;
-      } else {
-        if (dictionary_ptr->find(token) != dictionary_ptr->end()) {
-          float n_w = dictionary_ptr->find(token)->second.value();
-          sum = n_w / dictionary_ptr->size();
-        } else {
-          LOG(INFO) << "No token " << token.keyword << " from class " << token.class_id <<
-              "in dictionary, document unigram model will be used.";
-          sum = token_count / n_d;
+      int token_count_int = field.token_count(token_index);
+      if (token_count_int == 0) continue;
+      double token_count = class_weight * static_cast<double>(token_count_int);
+
+      if (topic_model.has_token(token)) {
+        ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
+        while (topic_iter.NextNonZeroTopic() < topics_count) {
+          sum += theta[topic_iter.TopicIndex()] * topic_iter.Weight();
         }
       }
-      zero_words++;
-    }
 
-    normalizer += token_count;
-    raw        += token_count * log(sum);
+      if (sum == 0.0) {
+        if (use_document_unigram_model) {
+          sum = token_count / n_d;
+        } else {
+          if (dictionary_ptr->find(token) != dictionary_ptr->end()) {
+            float n_w = dictionary_ptr->find(token)->second.value();
+            sum = n_w / dictionary_ptr->size();
+          } else {
+            LOG(INFO) << "No token " << token.keyword << " from class " << token.class_id <<
+                "in dictionary, document unigram model will be used.";
+            sum = token_count / n_d;
+          }
+        }
+        zero_words++;
+      }
+
+      normalizer += token_count;
+      raw        += token_count * log(sum);
+    }
   }
 
   // prepare results
