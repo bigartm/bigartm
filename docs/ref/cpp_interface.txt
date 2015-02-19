@@ -41,6 +41,10 @@ MasterComponent
 
      Invokes certain number of iterations.
 
+  .. cpp:function:: bool AddBatch(const Batch& batch, bool reset_scores)
+
+     Adds batch to the processing queue.
+
   .. cpp:function:: bool WaitIdle(int timeout = -1)
 
      Waits for iterations to be completed.
