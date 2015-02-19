@@ -52,6 +52,7 @@ message Batch {
   repeated string class_id = 2;
   repeated Item item = 3;
   optional string description = 4;
+  optional string id = 5;
 }
 
 // Represents a configuration of a stream.
@@ -412,6 +413,7 @@ message GetThetaMatrixArgs {
   optional Batch batch = 2;
   repeated string topic_name = 3;
   repeated int32 topic_index = 4;
+  optional bool clean_cache = 5 [default = false];
 }
 
 message GetScoreValueArgs {
@@ -423,10 +425,12 @@ message GetScoreValueArgs {
 message AddBatchArgs {
   optional Batch batch = 1;
   optional int32 timeout_milliseconds = 2;
+  optional bool reset_scores = 3 [default = false];
 }
 
 message InvokeIterationArgs {
   optional int32 iterations_count = 1 [default = 1];
+  optional bool reset_scores = 2 [default = true];
 }
 
 message WaitIdleArgs {
