@@ -78,9 +78,9 @@ MasterComponent
    Check the constructor of :py:class:`Library` for more details.
 
    *disk_path* is an optional value providing the disk folder with batches to process by this master component.
-   If *disk_path* is not specified, MasterComponent will go for in-memory mode.
-   In this mode you may add data with :py:meth:`AddBatch` method, and process as usual.
-   Note that changing *disk_path* is not supported (you must recreate a new instance MasterComponent to do so).
+   Changing *disk_path* is not supported (you must recreate a new instance MasterComponent to do so).
+   Use :py:meth:`InvokeIteration` will process all batches, located under *disk_path*.
+   Alternatively use :py:meth:`AddBatch` to add a specific batch into processor queue.
 
    *proxy_endpoint* is an optional string value that provides connect endpoint of a remote node controller.
    When specified, the master component will operate in a proxy mode (that is, it will redirect all commands
@@ -193,13 +193,14 @@ MasterComponent
       Remember that some changes of the configuration are not allowed (for example, the :attr:`MasterComponentConfig.disk_path` must not change).
       Such configuration parameters must be provided in the constructor of :py:class:`MasterComponent`.
 
-   .. py:method:: AddBatch(batch)
+   .. py:method:: AddBatch(batch, timeout = -1, reset_scores = False)
 
-      Adds an instance of :ref:`Batch` class to the master component.
-      This method is only used for in-memory processing of the collection, and require an empty value of :attr:`MasterComponentConfig.disk_path` in current configuration.
+      Adds an instance of :ref:`Batch` class to the processor queue.
       Master component creates a copy of the *batch*, so any further changes of the *batch* object will not be picked up.
 
-      The behavior of this method also depends on :attr:`MasterComponentConfig.online_batch_processing` flag.
+      This operation awaits until there is enough space in processor queue.
+      It returns *True* if await succeeded within the timeout, otherwise returns *False*.
+      The provided timeout is in milliseconds. Use *timeout = -1* to allow infinite time for :py:meth:`AddBatch` operation.
 
    .. py:method:: InvokeIteration(iterations_count = 1)
 

@@ -4,6 +4,12 @@ Messages
 
 This document explains all protobuf messages that can be transfered between the user code and BigARTM library.
 
+.. warning::
+
+   Remember that all fields is marked as *optional*
+   to enhance backwards compatibility of the binary protobuf format.
+   Some fields will result in run-time exception when not specified.
+   Please refer to the documentation of each field for more details.
 
 .. _DoubleArray:
 
@@ -123,6 +129,7 @@ items in one batch are always processed sequentially.
     repeated Item item = 2;
     repeated string class_id = 3;
     optional string description = 4;
+    optional string id = 5;
   }
 
 .. attribute:: Batch.token
@@ -145,6 +152,11 @@ items in one batch are always processed sequentially.
    You may describe for example the source of the batch,
    preprocessing technique and the structure of its fields.
 
+.. attribute:: Batch.id
+
+   Unique identifier of the batch in a form of a GUID
+   (example: ``4fb38197-3f09-4871-9710-392b14f00d2e``).
+   This field is required.
 
 .. _Stream:
 
@@ -219,7 +231,7 @@ Represents a configuration of a master component.
     optional string create_endpoint = 10;
     optional string connect_endpoint = 11;
     repeated string node_connect_endpoint = 12;
-    optional bool online_batch_processing = 13 [default = false];
+    optional bool online_batch_processing = 13 [default = false];  // obsolete in BigARTM v0.5.8
     optional int32 communication_timeout = 14 [default = 1000];
     optional string disk_cache_path = 15;
   }
@@ -324,11 +336,7 @@ Represents a configuration of a master component.
 
 .. attribute:: MasterComponentConfig.online_batch_processing
 
-  A flag indicating whether to enable online batch processing.
-  This mode imply that all batches added with :c:func:`ArtmAddBatch` will be automatically processed,
-  without explicit call to :c:func:`ArtmInvokeIteration`.
-  The :c:func:`ArtmInvokeIteration` must not be used together with online batch processing mode.
-  Note that online batch processing is currently not allowed together with :attr:`cache_theta`.
+  Obsolete in BigARTM v0.5.8.
 
 .. attribute:: MasterComponentConfig.communication_timeout
 
@@ -436,7 +444,7 @@ Represents a configuration of a topic model.
     repeated string topic_name = 3;
     optional bool enabled = 4 [default = true];
     optional int32 inner_iterations_count = 5 [default = 10];
-    optional string field_name = 6 [default = "@body"];
+    optional string field_name = 6 [default = "@body"];  // obsolete in BigARTM v0.5.8
     optional string stream_name = 7 [default = "@global"];
     repeated string score_name = 8;
     optional bool reuse_theta = 9 [default = false];
@@ -477,7 +485,7 @@ Represents a configuration of a topic model.
 
 .. attribute:: ModelConfig.field_name
 
-   A value that defines which field of an item the model should use.
+   Obsolete in BigARTM v0.5.8
 
 .. attribute:: ModelConfig.stream_name
 
@@ -914,7 +922,7 @@ Represents a configuration of a perplexity score.
       UnigramCollectionModel = 1;
     }
 
-    optional string field_name = 1 [default = "@body"];
+    optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
     optional string stream_name = 2 [default = "@global"];
     optional Type model_type = 3 [default = UnigramDocumentModel];
     optional string dictionary_name = 4;
@@ -924,7 +932,7 @@ Represents a configuration of a perplexity score.
 
 .. attribute:: PerplexityScoreConfig.field_name
 
-   A value that defines which field of an item should be used in perplexity calculation.
+   Obsolete in BigARTM v0.5.8
 
 .. attribute:: PerplexityScoreConfig.stream_name
 
@@ -987,7 +995,7 @@ Represents a configuration of a theta sparsity score.
 .. code-block:: bash
 
   message SparsityThetaScoreConfig {
-    optional string field_name = 1 [default = "@body"];
+    optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
     optional string stream_name = 2 [default = "@global"];
     optional float eps = 3 [default = 1e-37];
     repeated string topic_name = 4;
@@ -995,7 +1003,7 @@ Represents a configuration of a theta sparsity score.
 
 .. attribute:: SparsityThetaScoreConfig.field_name
 
-   A value that defines which field of an item should be used in theta sparsity calculation.
+   Obsolete in BigARTM v0.5.8
 
 .. attribute:: SparsityThetaScoreConfig.stream_name
 
@@ -1123,13 +1131,13 @@ Represents a configuration of an items processed score.
 .. code-block:: bash
 
   message ItemsProcessedScoreConfig {
-    optional string field_name = 1 [default = "@body"];
+    optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
     optional string stream_name = 2 [default = "@global"];
   }
 
 .. attribute:: ItemsProcessedScoreConfig.field_name
 
-   A value that defines which field of an item should be used in calculation of processed items.
+   Obsolete in BigARTM v0.5.8
 
 .. attribute:: ItemsProcessedScoreConfig.stream_name
 
@@ -1153,8 +1161,7 @@ Represents a result of calculation of an items processed score.
 
 .. attribute:: ItemsProcessedScore.value
 
-   A number of items that have the field :attr:`ItemsProcessedScoreConfig.field_name`
-   and belong to the stream :attr:`ItemsProcessedScoreConfig.stream_name`
+   A number of items that belong to the stream :attr:`ItemsProcessedScoreConfig.stream_name`
    and have been processed during iterations.
    Currently this number is aggregated throughout all iterations.
 
@@ -1272,14 +1279,14 @@ Represents a configuration of a theta snippet score.
 .. code-block:: bash
 
   message ThetaSnippetScoreConfig {
-    optional string field_name = 1 [default = "@body"];
+    optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
     optional string stream_name = 2 [default = "@global"];
     repeated int32 item_id = 3 [packed = true];
   }
 
 .. attribute:: ThetaSnippetScoreConfig.field_name
 
-   A value that defines which field of an item should be used in calculation of a theta snippet.
+   Obsolete in BigARTM v0.5.8
 
 .. attribute:: ThetaSnippetScoreConfig.stream_name
 
@@ -1819,6 +1826,7 @@ Represents an argument of get theta matrix operation.
     optional Batch batch = 2;
     repeated string topic_name = 3;
     repeated int32 topic_index = 4;
+    optional bool clean_cache = 5 [default = false];
   }
 
 .. attribute:: GetThetaMatrixArgs.model_name
@@ -1844,6 +1852,12 @@ Represents an argument of get theta matrix operation.
   Note that this field acts similar to :attr:`GetThetaMatrixArgs.topic_name`.
   It is not allowed to specify both *topic_index* and *topic_name* at the same time.
   The recommendation is to use *topic_name*.
+
+.. attribute:: GetThetaMatrixArgs.clean_cache
+
+  An optional flag that defines whether to clear the theta matrix cache after this operation.
+  Setting this value to *True* will clear the cache for a topic model, defined by :attr:`GetThetaMatrixArgs.model_name`.
+  This value is only applicable when :attr:`MasterComponentConfig.cache_theta` is set to *True*.
 
 
 .. _GetScoreValueArgs:
@@ -1888,6 +1902,7 @@ Represents an argument of :c:func:`ArtmAddBatch` operation.
   message AddBatchArgs {
     optional Batch batch = 1;
     optional int32 timeout_milliseconds = 2;
+    optional bool reset_scores = 3 [default = false];
   }
 
 .. attribute:: AddBatchArgs.batch
@@ -1897,6 +1912,10 @@ Represents an argument of :c:func:`ArtmAddBatch` operation.
 .. attribute:: AddBatchArgs.timeout_milliseconds
 
   Timeout in milliseconds for this operation.
+
+.. attribute:: AddBatchArgs.reset_scores
+
+  An optional flag that defines whether to reset all scores before this operation.
 
 
 .. _InvokeIterationArgs:
@@ -1910,11 +1929,16 @@ Represents an argument of :c:func:`ArtmInvokeIteration` operation.
 
   message InvokeIterationArgs {
     optional int32 iterations_count = 1 [default = 1];
+    optional bool reset_scores = 2 [default = true];
   }
 
 .. attribute:: InvokeIterationArgs.iterations_count
 
   An integer value describing how many iterations to invoke.
+
+.. attribute:: InvokeIterationArgs.reset_scores
+
+  An optional flag that defines whether to reset all scores before this operation.
 
 
 .. _WaitIdleArgs:
