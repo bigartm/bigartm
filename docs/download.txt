@@ -2,10 +2,12 @@ Download
 ========
 
 * Windows - latest release
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.7/BigARTM_v0.5.7_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.7/BigARTM_v0.5.7_x64.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.8/BigARTM_v0.5.8_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.8/BigARTM_v0.5.8_x64.7z
 
 * Windows - previous releases
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.7/BigARTM_v0.5.7_win32.7z
+	* https://github.com/bigartm/bigartm/releases/download/v0.5.7/BigARTM_v0.5.7_x64.7z
 	* https://github.com/bigartm/bigartm/releases/download/v0.5.6/BigARTM_v0.5.6_win32.7z
 	* https://github.com/bigartm/bigartm/releases/download/v0.5.6/BigARTM_v0.5.6_x64.7z
 	* https://github.com/bigartm/bigartm/releases/download/v0.5.5/BigARTM_v0.5.5_win32.7z
@@ -25,3 +27,10 @@ Download
 	Currently there is distribution package for Linux or Mac OS-X.
 	To run BigARTM you need to download the source code and built it on your machine.
 	Detailed procesure is available in :doc:`tutorial` and :doc:`devguide` chapters.
+
+Other tools
+-----------
+
+* 7-zip -- http://www.7-zip.org/a/7z920-x64.msi
+* Python 2.7.9, 64 bit -- https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi
+* Python 2.7.9, 32 bit -- https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi
