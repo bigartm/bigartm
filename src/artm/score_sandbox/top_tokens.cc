@@ -33,39 +33,44 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
     }
   }
 
-  std::vector<std::vector<std::pair<float, artm::core::Token>>> p_wt;
-  for (int topic_id : topic_ids) {
-    p_wt.push_back(std::vector<std::pair<float, artm::core::Token>>());
-  }
-
   ::artm::core::ClassId class_id = ::artm::core::DefaultClass;
   if (config_.has_class_id())
     class_id = config_.class_id();
 
+  std::vector<artm::core::Token> tokens;
   for (int token_index = 0; token_index < tokens_size; token_index++) {
     auto token = topic_model.token(token_index);
-    if (token.class_id != class_id)
-      continue;
-
-    ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-    for (int i = 0; i < topic_ids.size(); ++i) {
-      float weight = topic_iter[topic_ids[i]];
-      p_wt[i].push_back(std::pair<float, artm::core::Token>(weight, token));
-    }
+    if (token.class_id == class_id)
+      tokens.push_back(token);
   }
 
   TopTokensScore* top_tokens_score = new TopTokensScore();
   std::shared_ptr<Score> retval(top_tokens_score);
-
   int num_entries = 0;
+
   for (int i = 0; i < topic_ids.size(); ++i) {
-    std::sort(p_wt[i].begin(), p_wt[i].end());
-    int first_index = p_wt[i].size() - 1;
-    int last_index = (p_wt[i].size() - config_.num_tokens());
+    std::vector<std::pair<float, int>> p_wt;
+    p_wt.reserve(tokens.size());
+
+    for (int token_index = 0; token_index < tokens_size; token_index++) {
+      auto token = topic_model.token(token_index);
+      if (token.class_id != class_id)
+        continue;
+
+      ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
+      float weight = topic_iter[topic_ids[i]];
+
+      p_wt.push_back(std::pair<float, int>(weight, p_wt.size()));
+    }
+
+    std::sort(p_wt.begin(), p_wt.end());
+
+    int first_index = p_wt.size() - 1;
+    int last_index = (p_wt.size() - config_.num_tokens());
     if (last_index < 0) last_index = 0;
     for (int token_index = first_index; token_index >= last_index; token_index--) {
-      ::artm::core::Token token = p_wt[i][token_index].second;
-      float weight = p_wt[i][token_index].first;
+      ::artm::core::Token token = tokens[p_wt[token_index].second];
+      float weight = p_wt[token_index].first;
       top_tokens_score->add_token(token.keyword);
       top_tokens_score->add_weight(weight);
       top_tokens_score->add_topic_index(topic_ids[i]);
