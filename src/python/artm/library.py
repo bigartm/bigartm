@@ -291,8 +291,6 @@ class MasterComponent:
   def CreateThetaSnippetScore(self, name = None, config = messages_pb2.ThetaSnippetScoreConfig()):
     if (name is None):
       name = "ThetaSnippetScore:" + uuid.uuid1().urn
-    if (len(config.item_id) == 0):
-      for i in range(1, 11): config.item_id.append(i)
     return self.CreateScore(name, ScoreConfig_Type_ThetaSnippet, config)
 
   def CreateTopicKernelScore(self, name = None, config = messages_pb2.TopicKernelScoreConfig()):

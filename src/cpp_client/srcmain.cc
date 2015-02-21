@@ -156,7 +156,7 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
 
   ::artm::ThetaSnippetScoreConfig theta_snippet_config;
   theta_snippet_config.set_stream_name("train_stream");
-  for (int id = 0; id < 7; ++id) theta_snippet_config.add_item_id(id);
+  theta_snippet_config.set_item_count(7);
   score_config.set_config(theta_snippet_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
   score_config.set_name("train_theta_snippet");
@@ -401,7 +401,12 @@ int execute(const artm_options& options) {
 
     auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
     int docs_to_show = train_theta_snippet.get()->values_size();
-    std::cout << "\nThetaMatrix (first " << docs_to_show << " documents):\n";
+    std::cout << "\nThetaMatrix (last " << docs_to_show << " processed documents, ids = ";
+    for (int item_index = 0; item_index < train_theta_snippet->item_id_size(); ++item_index) {
+      if (item_index != 0) std::cout << ",";
+      std::cout << train_theta_snippet->item_id(item_index);
+    }
+    std::cout << "):\n";
     for (int topic_index = 0; topic_index < options.num_topics; topic_index++) {
       std::cout << "Topic" << topic_index << ": ";
       for (int item_index = 0; item_index < docs_to_show; item_index++) {

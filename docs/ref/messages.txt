@@ -1281,7 +1281,8 @@ Represents a configuration of a theta snippet score.
   message ThetaSnippetScoreConfig {
     optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
     optional string stream_name = 2 [default = "@global"];
-    repeated int32 item_id = 3 [packed = true];
+    repeated int32 item_id = 3 [packed = true];  // obsolete in BigARTM v0.5.8
+    optional int32 item_count = 4 [default = 10];
   }
 
 .. attribute:: ThetaSnippetScoreConfig.field_name
@@ -1294,8 +1295,12 @@ Represents a configuration of a theta snippet score.
 
 .. attribute:: ThetaSnippetScoreConfig.item_id
 
-   A set of values that define items for which theta snippet should be calculated.
-   Items are identified by the item id.
+   Obsolete in BigARTM v0.5.8.
+
+.. attribute:: ThetaSnippetScoreConfig.item_count
+
+   The number of items to retrieve. ThetaSnippetScore will select last *item_count* processed items
+   and return their theta vectors.
 
 
 .. _ThetaSnippetScore:

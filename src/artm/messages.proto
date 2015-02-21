@@ -315,7 +315,8 @@ message TopTokensScore {
 message ThetaSnippetScoreConfig {
   optional string field_name = 1 [default = "@body"];
   optional string stream_name = 2 [default = "@global"];
-  repeated int32 item_id = 3 [packed = true];
+  repeated int32 item_id = 3 [packed = true];  // obsolete in BigARTM v0.5.8
+  optional int32 item_count = 4 [default = 10];
 }
 
 
