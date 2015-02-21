@@ -4618,12 +4618,21 @@ class ThetaSnippetScoreConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_item_id();
 
+  // optional int32 item_count = 4 [default = 10];
+  inline bool has_item_count() const;
+  inline void clear_item_count();
+  static const int kItemCountFieldNumber = 4;
+  inline ::google::protobuf::int32 item_count() const;
+  inline void set_item_count(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.ThetaSnippetScoreConfig)
  private:
   inline void set_has_field_name();
   inline void clear_has_field_name();
   inline void set_has_stream_name();
   inline void clear_has_stream_name();
+  inline void set_has_item_count();
+  inline void clear_has_item_count();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -4633,9 +4642,10 @@ class ThetaSnippetScoreConfig : public ::google::protobuf::Message {
   static ::std::string* _default_stream_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   mutable int _item_id_cached_byte_size_;
+  ::google::protobuf::int32 item_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12075,6 +12085,28 @@ ThetaSnippetScoreConfig::item_id() const {
 inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
 ThetaSnippetScoreConfig::mutable_item_id() {
   return &item_id_;
+}
+
+// optional int32 item_count = 4 [default = 10];
+inline bool ThetaSnippetScoreConfig::has_item_count() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ThetaSnippetScoreConfig::set_has_item_count() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ThetaSnippetScoreConfig::clear_has_item_count() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ThetaSnippetScoreConfig::clear_item_count() {
+  item_count_ = 10;
+  clear_has_item_count();
+}
+inline ::google::protobuf::int32 ThetaSnippetScoreConfig::item_count() const {
+  return item_count_;
+}
+inline void ThetaSnippetScoreConfig::set_item_count(::google::protobuf::int32 value) {
+  set_has_item_count();
+  item_count_ = value;
 }
 
 // -------------------------------------------------------------------

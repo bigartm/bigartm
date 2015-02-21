@@ -253,8 +253,7 @@ void configurePerplexityScore(std::string score_name, artm::MasterComponentConfi
 void configureThetaSnippetScore(std::string score_name, int num_items, artm::MasterComponentConfig* master_config) {
   ::artm::ScoreConfig score_config;
   ::artm::ThetaSnippetScoreConfig theta_snippet_config;
-  for (int i = 0; i < num_items; ++i)
-    theta_snippet_config.add_item_id(i);
+  theta_snippet_config.set_item_count(num_items);
   score_config.set_config(theta_snippet_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
   score_config.set_name(score_name);

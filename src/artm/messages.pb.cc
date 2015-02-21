@@ -786,10 +786,11 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopTokensScore));
   ThetaSnippetScoreConfig_descriptor_ = file->message_type(33);
-  static const int ThetaSnippetScoreConfig_offsets_[3] = {
+  static const int ThetaSnippetScoreConfig_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaSnippetScoreConfig, field_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaSnippetScoreConfig, stream_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaSnippetScoreConfig, item_id_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaSnippetScoreConfig, item_count_),
   };
   ThetaSnippetScoreConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1421,58 +1422,59 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "name\030\003 \003(\t\"m\n\016TopTokensScore\022\023\n\013num_entr"
     "ies\030\001 \001(\005\022\022\n\ntopic_name\030\002 \003(\t\022\023\n\013topic_i"
     "ndex\030\003 \003(\005\022\r\n\005token\030\004 \003(\t\022\016\n\006weight\030\005 \003("
-    "\002\"g\n\027ThetaSnippetScoreConfig\022\031\n\nfield_na"
+    "\002\"\177\n\027ThetaSnippetScoreConfig\022\031\n\nfield_na"
     "me\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@g"
-    "lobal\022\023\n\007item_id\030\003 \003(\005B\002\020\001\"F\n\021ThetaSnipp"
-    "etScore\022\017\n\007item_id\030\001 \003(\005\022 \n\006values\030\002 \003(\013"
-    "2\020.artm.FloatArray\"|\n\026TopicKernelScoreCo"
-    "nfig\022\023\n\003eps\030\001 \001(\002:\0061e-037\022\020\n\010class_id\030\002 "
-    "\001(\t\022\022\n\ntopic_name\030\003 \003(\t\022\'\n\032probability_m"
-    "ass_threshold\030\004 \001(\001:\0030.1\"\355\001\n\020TopicKernel"
-    "Score\022&\n\013kernel_size\030\001 \001(\0132\021.artm.Double"
-    "Array\022(\n\rkernel_purity\030\002 \001(\0132\021.artm.Doub"
-    "leArray\022*\n\017kernel_contrast\030\003 \001(\0132\021.artm."
-    "DoubleArray\022\033\n\023average_kernel_size\030\004 \001(\001"
-    "\022\035\n\025average_kernel_purity\030\005 \001(\001\022\037\n\027avera"
-    "ge_kernel_contrast\030\006 \001(\001\"\200\002\n\nTopicModel\022"
-    "\024\n\004name\030\001 \001(\t:\006@model\022\024\n\014topics_count\030\002 "
-    "\001(\005\022\022\n\ntopic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'"
-    "\n\rtoken_weights\030\005 \003(\0132\020.artm.FloatArray\022"
-    "\020\n\010class_id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\032U\n\023"
-    "TopicModelInternals\022\036\n\004n_wt\030\001 \003(\0132\020.artm"
-    ".FloatArray\022\036\n\004r_wt\030\002 \003(\0132\020.artm.FloatAr"
-    "ray\"\240\001\n\013ThetaMatrix\022\032\n\nmodel_name\030\001 \001(\t:"
-    "\006@model\022\017\n\007item_id\030\002 \003(\005\022&\n\014item_weights"
-    "\030\003 \003(\0132\020.artm.FloatArray\022\022\n\ntopic_name\030\004"
-    " \003(\t\022\024\n\014topics_count\030\005 \001(\005\022\022\n\nitem_title"
-    "\030\006 \003(\t\"\323\002\n\026CollectionParserConfig\022B\n\006for"
-    "mat\030\001 \001(\0162#.artm.CollectionParserConfig."
-    "Format:\rBagOfWordsUci\022\031\n\021docword_file_pa"
-    "th\030\002 \001(\t\022\027\n\017vocab_file_path\030\003 \001(\t\022\025\n\rtar"
-    "get_folder\030\004 \001(\t\022\034\n\024dictionary_file_name"
-    "\030\005 \001(\t\022!\n\023num_items_per_batch\030\006 \001(\005:\004100"
-    "0\022\036\n\026cooccurrence_file_name\030\007 \001(\t\022\032\n\022coo"
-    "ccurrence_token\030\010 \003(\t\"-\n\006Format\022\021\n\rBagOf"
-    "WordsUci\020\000\022\020\n\014MatrixMarket\020\001\"\177\n\024Synchron"
-    "izeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014deca"
-    "y_weight\030\002 \001(\002:\0011\022!\n\023invoke_regularizers"
-    "\030\003 \001(\010:\004true\022\027\n\014apply_weight\030\004 \001(\002:\0011\"B\n"
-    "\023InitializeModelArgs\022\022\n\nmodel_name\030\001 \001(\t"
-    "\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n\021GetTopicMod"
-    "elArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_name"
-    "\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\""
-    "\211\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030\001 \001"
-    "(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic_"
-    "name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clean"
-    "_cache\030\005 \001(\010:\005false\"W\n\021GetScoreValueArgs"
-    "\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t"
-    "\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"e\n\014AddBatch"
-    "Args\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022\034\n\024time"
-    "out_milliseconds\030\002 \001(\005\022\033\n\014reset_scores\030\003"
-    " \001(\010:\005false\"N\n\023InvokeIterationArgs\022\033\n\020it"
-    "erations_count\030\001 \001(\005:\0011\022\032\n\014reset_scores\030"
-    "\002 \001(\010:\004true\"0\n\014WaitIdleArgs\022 \n\024timeout_m"
-    "illiseconds\030\001 \001(\005:\002-1", 6541);
+    "lobal\022\023\n\007item_id\030\003 \003(\005B\002\020\001\022\026\n\nitem_count"
+    "\030\004 \001(\005:\00210\"F\n\021ThetaSnippetScore\022\017\n\007item_"
+    "id\030\001 \003(\005\022 \n\006values\030\002 \003(\0132\020.artm.FloatArr"
+    "ay\"|\n\026TopicKernelScoreConfig\022\023\n\003eps\030\001 \001("
+    "\002:\0061e-037\022\020\n\010class_id\030\002 \001(\t\022\022\n\ntopic_nam"
+    "e\030\003 \003(\t\022\'\n\032probability_mass_threshold\030\004 "
+    "\001(\001:\0030.1\"\355\001\n\020TopicKernelScore\022&\n\013kernel_"
+    "size\030\001 \001(\0132\021.artm.DoubleArray\022(\n\rkernel_"
+    "purity\030\002 \001(\0132\021.artm.DoubleArray\022*\n\017kerne"
+    "l_contrast\030\003 \001(\0132\021.artm.DoubleArray\022\033\n\023a"
+    "verage_kernel_size\030\004 \001(\001\022\035\n\025average_kern"
+    "el_purity\030\005 \001(\001\022\037\n\027average_kernel_contra"
+    "st\030\006 \001(\001\"\200\002\n\nTopicModel\022\024\n\004name\030\001 \001(\t:\006@"
+    "model\022\024\n\014topics_count\030\002 \001(\005\022\022\n\ntopic_nam"
+    "e\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rtoken_weights\030"
+    "\005 \003(\0132\020.artm.FloatArray\022\020\n\010class_id\030\006 \003("
+    "\t\022\021\n\tinternals\030\007 \001(\014\032U\n\023TopicModelIntern"
+    "als\022\036\n\004n_wt\030\001 \003(\0132\020.artm.FloatArray\022\036\n\004r"
+    "_wt\030\002 \003(\0132\020.artm.FloatArray\"\240\001\n\013ThetaMat"
+    "rix\022\032\n\nmodel_name\030\001 \001(\t:\006@model\022\017\n\007item_"
+    "id\030\002 \003(\005\022&\n\014item_weights\030\003 \003(\0132\020.artm.Fl"
+    "oatArray\022\022\n\ntopic_name\030\004 \003(\t\022\024\n\014topics_c"
+    "ount\030\005 \001(\005\022\022\n\nitem_title\030\006 \003(\t\"\323\002\n\026Colle"
+    "ctionParserConfig\022B\n\006format\030\001 \001(\0162#.artm"
+    ".CollectionParserConfig.Format:\rBagOfWor"
+    "dsUci\022\031\n\021docword_file_path\030\002 \001(\t\022\027\n\017voca"
+    "b_file_path\030\003 \001(\t\022\025\n\rtarget_folder\030\004 \001(\t"
+    "\022\034\n\024dictionary_file_name\030\005 \001(\t\022!\n\023num_it"
+    "ems_per_batch\030\006 \001(\005:\0041000\022\036\n\026cooccurrenc"
+    "e_file_name\030\007 \001(\t\022\032\n\022cooccurrence_token\030"
+    "\010 \003(\t\"-\n\006Format\022\021\n\rBagOfWordsUci\020\000\022\020\n\014Ma"
+    "trixMarket\020\001\"\177\n\024SynchronizeModelArgs\022\022\n\n"
+    "model_name\030\001 \001(\t\022\027\n\014decay_weight\030\002 \001(\002:\001"
+    "1\022!\n\023invoke_regularizers\030\003 \001(\010:\004true\022\027\n\014"
+    "apply_weight\030\004 \001(\002:\0011\"B\n\023InitializeModel"
+    "Args\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dictionary_n"
+    "ame\030\002 \001(\t\"\\\n\021GetTopicModelArgs\022\022\n\nmodel_"
+    "name\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030"
+    "\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\"\211\001\n\022GetThetaMatr"
+    "ixArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001("
+    "\0132\013.artm.Batch\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013to"
+    "pic_index\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001(\010:\005fa"
+    "lse\"W\n\021GetScoreValueArgs\022\022\n\nmodel_name\030\001"
+    " \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132"
+    "\013.artm.Batch\"e\n\014AddBatchArgs\022\032\n\005batch\030\001 "
+    "\001(\0132\013.artm.Batch\022\034\n\024timeout_milliseconds"
+    "\030\002 \001(\005\022\033\n\014reset_scores\030\003 \001(\010:\005false\"N\n\023I"
+    "nvokeIterationArgs\022\033\n\020iterations_count\030\001"
+    " \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\"0\n\014W"
+    "aitIdleArgs\022 \n\024timeout_milliseconds\030\001 \001("
+    "\005:\002-1", 6565);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -13481,6 +13483,7 @@ void TopTokensScore::Swap(TopTokensScore* other) {
 const int ThetaSnippetScoreConfig::kFieldNameFieldNumber;
 const int ThetaSnippetScoreConfig::kStreamNameFieldNumber;
 const int ThetaSnippetScoreConfig::kItemIdFieldNumber;
+const int ThetaSnippetScoreConfig::kItemCountFieldNumber;
 #endif  // !_MSC_VER
 
 ThetaSnippetScoreConfig::ThetaSnippetScoreConfig()
@@ -13501,6 +13504,7 @@ void ThetaSnippetScoreConfig::SharedCtor() {
   _cached_size_ = 0;
   field_name_ = const_cast< ::std::string*>(_default_field_name_);
   stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
+  item_count_ = 10;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -13552,6 +13556,7 @@ void ThetaSnippetScoreConfig::Clear() {
         stream_name_->assign(*_default_stream_name_);
       }
     }
+    item_count_ = 10;
   }
   item_id_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -13614,6 +13619,22 @@ bool ThetaSnippetScoreConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(32)) goto parse_item_count;
+        break;
+      }
+
+      // optional int32 item_count = 4 [default = 10];
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_item_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &item_count_)));
+          set_has_item_count();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -13664,6 +13685,11 @@ void ThetaSnippetScoreConfig::SerializeWithCachedSizes(
       this->item_id(i), output);
   }
 
+  // optional int32 item_count = 4 [default = 10];
+  if (has_item_count()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->item_count(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -13706,6 +13732,11 @@ void ThetaSnippetScoreConfig::SerializeWithCachedSizes(
       WriteInt32NoTagToArray(this->item_id(i), target);
   }
 
+  // optional int32 item_count = 4 [default = 10];
+  if (has_item_count()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->item_count(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -13729,6 +13760,13 @@ int ThetaSnippetScoreConfig::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->stream_name());
+    }
+
+    // optional int32 item_count = 4 [default = 10];
+    if (has_item_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->item_count());
     }
 
   }
@@ -13782,6 +13820,9 @@ void ThetaSnippetScoreConfig::MergeFrom(const ThetaSnippetScoreConfig& from) {
     if (from.has_stream_name()) {
       set_stream_name(from.stream_name());
     }
+    if (from.has_item_count()) {
+      set_item_count(from.item_count());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -13808,6 +13849,7 @@ void ThetaSnippetScoreConfig::Swap(ThetaSnippetScoreConfig* other) {
     std::swap(field_name_, other->field_name_);
     std::swap(stream_name_, other->stream_name_);
     item_id_.Swap(&other->item_id_);
+    std::swap(item_count_, other->item_count_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
