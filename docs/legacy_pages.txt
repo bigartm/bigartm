@@ -3,12 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. _stories:
+.. _legacy_pages:
 
-Advanced experiments
-====================
+Legacy documentation pages
+==========================
+
+Legacy pages are kept to preserve existing user's links (favourites in browser, etc).
 
 .. toctree::
    :maxdepth: 2
 
-   experiment02_artm
+   tutorial

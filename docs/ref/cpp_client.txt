@@ -6,7 +6,7 @@ This document provides an overview of ``cpp_client``,
 a simple command-line utility shipped with BigARTM.
 
 To run *cpp_client* you need to download input data (a textual collection represented in bag-of-words format).
-We recommend to download *vocab* and *docword* files by links provided in :ref:`TutorialParseCollection` section of the tutorial.
+We recommend to download *vocab* and *docword* files by links provided in :doc:`/download` section of the tutorial.
 Then you can use *cpp_client* as follows:
 
 .. code-block:: bash
@@ -31,7 +31,7 @@ You may append the following options to customize the resulting topic model:
 You may also apply the following optimizations that should not change the resulting model
 
   * ``--reuse_batches`` skips parsing of *docword* and *vocab* files, and tries to use batches located in ``--batch_folder``.
-    You may download pre-parsed batches by links provided in :ref:`TutorialParseCollection` section of the tutorial.
+    You may download pre-parsed batches by links provided in :doc:`/download` section.
 
   * ``-p`` allows you to specify number of concurrent processors.
     The recommended value is to use the number of logical cores on your machine.

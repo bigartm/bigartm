@@ -1,7 +1,7 @@
 Networking
 ==========
 
-In :doc:`Tutorial <tutorial>` you learned how to use BigARTM
+Other tutorials focus on how to use BigARTM
 locally on your machine, within single process. Now we are
 going to deploy BigARTM on several machines.
 

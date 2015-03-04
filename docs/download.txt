@@ -1,36 +1,62 @@
-Download
-========
+Downloads
+=========
 
-* Windows - latest release
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.8/BigARTM_v0.5.8_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.8/BigARTM_v0.5.8_x64.7z
+* **Windows**
 
-* Windows - previous releases
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.7/BigARTM_v0.5.7_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.7/BigARTM_v0.5.7_x64.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.6/BigARTM_v0.5.6_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.6/BigARTM_v0.5.6_x64.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.5/BigARTM_v0.5.5_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.5/BigARTM_v0.5.5_x64.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.4/BigARTM_v0.5.4_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.4/BigARTM_v0.5.4_x64.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.3/BigARTM_v0.5.3_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.3/BigARTM_v0.5.3_x64.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.2/BigARTM_v0.5.2_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.2/BigARTM_v0.5.2_x64.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.1/BigARTM_v0.5.1_win32.7z
-	* https://github.com/bigartm/bigartm/releases/download/v0.5.1/BigARTM_v0.5.1_x64.7z
+  * Latest 32 bit release: https://github.com/bigartm/bigartm/releases/download/v0.5.8/BigARTM_v0.5.8_win32.7z
+  * Latest 64 bit release: https://github.com/bigartm/bigartm/releases/download/v0.5.8/BigARTM_v0.5.8_x64.7z
+  * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
-	Please refer to :doc:`tutorial` chapter for installation guide.
+  Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
 
-* Linux, Mac OS-X
-	Currently there is distribution package for Linux or Mac OS-X.
-	To run BigARTM you need to download the source code and built it on your machine.
-	Detailed procesure is available in :doc:`tutorial` and :doc:`devguide` chapters.
+* **Linux, Mac OS-X**
 
-Other tools
------------
+  To run BigARTM on Linux and Mac OS-X you need to clone BigARTM repository
+  (https://github.com/bigartm/bigartm) and build it as described in 
+  :doc:`tutorials/linux_basic`.
 
-* 7-zip -- http://www.7-zip.org/a/7z920-x64.msi
-* Python 2.7.9, 64 bit -- https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi
-* Python 2.7.9, 32 bit -- https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi
+* **Datasets**
+
+    ========= ========= ======= ======= ==================================================================================================================
+    Task      Source    #Words  #Items  Files
+    ========= ========= ======= ======= ==================================================================================================================
+    kos       `UCI`_    6906    3430    * `docword.kos.txt.gz (1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz>`_
+                                        * `vocab.kos.txt (54 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt>`_      
+                                        * `kos_1k (700 KB)     <https://s3-eu-west-1.amazonaws.com/artm/kos_1k.7z>`_           
+                                        * `kos_dictionary      <https://s3-eu-west-1.amazonaws.com/artm/kos_dictionary>`_
+                                                           
+
+    nips      `UCI`_    12419   1500    * `docword.nips.txt.gz (2.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nips.txt.gz>`_
+                                        * `vocab.nips.txt (98 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nips.txt>`_
+                                        * `nips_200 (1.5 MB)   <https://s3-eu-west-1.amazonaws.com/artm/nips_200.7z>`_         
+                                        * `nips_dictionary     <https://s3-eu-west-1.amazonaws.com/artm/nips_dictionary>`_
+
+    enron     `UCI`_    28102   39861   * `docword.enron.txt.gz (11.7 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.enron.txt.gz>`_
+                                        * `vocab.enron.txt (230 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.enron.txt>`_
+                                        * `enron_1k (7.1 MB)   <https://s3-eu-west-1.amazonaws.com/artm/enron_1k.7z>`_         
+                                        * `enron_dictionary    <https://s3-eu-west-1.amazonaws.com/artm/enron_dictionary>`_
+
+    nytimes   `UCI`_    102660  300000  * `docword.nytimes.txt.gz (223 MB) <https://s3-eu-west-1.amazonaws.com/artm/docword.nytimes.txt.gz>`_
+                                        * `vocab.nytimes.txt (1.2 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.nytimes.txt>`_
+                                        * `nytimes_1k (131 MB) <https://s3-eu-west-1.amazonaws.com/artm/nytimes_1k.7z>`_
+                                        * `nytimes_dictionary  <https://s3-eu-west-1.amazonaws.com/artm/nytimes_dictionary>`_
+
+    pubmed    `UCI`_    141043  8200000 * `docword.pubmed.txt.gz (1.7 GB) <https://s3-eu-west-1.amazonaws.com/artm/docword.pubmed.txt.gz>`_
+                                        * `vocab.pubmed.txt (1.3 MB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.pubmed.txt>`_
+                                        * `pubmed_10k (1 GB)   <https://s3-eu-west-1.amazonaws.com/artm/pubmed_10k.7z>`_
+                                        * `pubmed_dictionary   <https://s3-eu-west-1.amazonaws.com/artm/pubmed_dictionary>`_
+
+    wiki      `Gensim`_ 100000  3665223 * `enwiki-20141208_10k (1.2 GB)   <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_10k.7z>`_
+                                        * `enwiki-20141208_1k (1.4 GB)    <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_1k.7z>`_
+                                        * `enwiki-20141208_dictionary (3.6 MB) <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_dictionary>`_
+
+    wiki_enru `Wiki`_   196749  216175  * `wiki_enru (282 MB)  <https://s3-eu-west-1.amazonaws.com/artm/wiki_enru.7z>`_
+                                        * `wiki_enru_dictionary (5.3 MB)  <https://s3-eu-west-1.amazonaws.com/artm/wiki_enru_dictionary>`_
+                                        * class_id(s): ``@english``, ``@russian``
+    ========= ========= ======= ======= ==================================================================================================================
+
+.. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words
+
+.. _Gensim: http://radimrehurek.com/gensim/wiki.html
+
+.. _Wiki: http://dumps.wikimedia.org

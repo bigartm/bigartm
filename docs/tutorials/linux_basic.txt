@@ -1,0 +1,13 @@
+Basic BigARTM tutorial for Linux and Mac OS-X users
+===================================================
+
+Currently there is no distribution package of BigARTM for Linux.
+BigARTM had been tested on several Linux OS, and it is known to work well,
+but you have to get the source code and compile it locally on your machine.
+Please, refer to :doc:`Developer's Guide </devguide>` for further instructions.
+
+To get a live usage example of BigARTM you may check BigARTM's
+`.travis.yml <https://raw.githubusercontent.com/bigartm/bigartm/master/.travis.yml>`_
+script and the latest `continuous integration build
+<https://travis-ci.org/bigartm/bigartm>`_.
+

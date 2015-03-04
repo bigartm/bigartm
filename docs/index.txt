@@ -13,13 +13,13 @@ Welcome to BigARTM's documentation!
 
    intro
    download
-   tutorial
-   network
+   tutorials/index
    stories/index
    faq
    devguide
    ref/index
    publications
+   legacy_pages
 
 Indices and tables
 ==================
