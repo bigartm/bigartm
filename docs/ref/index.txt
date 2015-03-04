@@ -17,4 +17,6 @@ BigARTM Reference
    c_interface
    cpp_interface
    cpp_client
+   windows_distribution
+
 

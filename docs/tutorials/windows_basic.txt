@@ -1,0 +1,177 @@
+Basic BigARTM tutorial for Windows users
+========================================
+
+This tutorial gives guidelines for installing and running existing BigARTM examples via command-line interface and from Python environment.
+
+Download
+--------
+
+Download latest binary distribution of BigARTM from https://github.com/bigartm/bigartm/releases.
+Explicit download links can be found at :doc:`/download` section (for 32 bit and 64 bit configurations).
+
+The distribution will contain pre-build binaries, command-line interface and BigARTM API for Python.
+The distribution also contains a simple dataset and few python examples that we will be running in this tutorial.
+More datasets in BigARTM-compatible format are available in the :doc:`/download` section.
+
+Refer to :doc:`/ref/windows_distribution` for details about other files, included in the binary distribution package.
+
+Running BigARTM from command line
+---------------------------------
+
+No installation steps are required to run BigARTM from command line.
+After unpacking binary distribution simply open command prompt (``cmd.exe``),
+change current directory to ``bin`` folder inside BigARTM package, and run ``cpp_client.exe`` application as in the following example.
+As an optional step, we recommend to add ``bin`` folder of the BigARTM distribution to your ``PATH`` system variable.
+
+.. code-block:: bash
+    
+    >C:\BigARTM\bin>set PATH=%PATH%;C:\BigARTM\bin
+    >C:\BigARTM\bin>cpp_client.exe -v ../python/examples/vocab.kos.txt -d ../python/examples/docword.kos.txt -t 4
+    Parsing text collection... OK.
+    Iteration 1 took  197 milliseconds.
+        Test perplexity = 7108.35,
+        Train perplexity = 7106.18,
+        Test spatsity theta = 0,
+        Train sparsity theta = 0,
+        Spatsity phi = 0.000144802,
+        Test items processed = 343,
+        Train items processed = 3087,
+        Kernel size = 5663,
+        Kernel purity = 0.958901,
+        Kernel contrast = 0.292389
+    Iteration 2 took  195 milliseconds.
+        Test perplexity = 2563.31,
+        Train perplexity = 2517.07,
+        Test spatsity theta = 0,
+        Train sparsity theta = 0,
+        Spatsity phi = 0.000144802,
+        Test items processed = 343,
+        Train items processed = 3087,
+        Kernel size = 5559.5,
+        Kernel purity = 0.956709,
+        Kernel contrast = 0.298198
+    ...
+    #1: november(0.054) poll(0.015) bush(0.013) kerry(0.012) polls(0.012) governor(0.011)
+    #2: bush(0.0083) president(0.0059) republicans(0.0047) house(0.0042) people(0.0039) administration(0.0036)
+    #3: bush(0.031) iraq(0.018) war(0.012) kerry(0.0096) president(0.0078) administration(0.0076)
+    #4: kerry(0.018) democratic(0.013) dean(0.012) campaign(0.0097) poll(0.0095) race(0.0082)
+    ThetaMatrix (last 7 processed documents, ids = 1995,1996,1997,1998,1992,2000,1994):
+    Topic0: 0.02104 0.02155 0.00604 0.00835 0.00965 0.00006 0.91716
+    Topic1: 0.15441 0.76643 0.06484 0.11643 0.20409 0.00006 0.00957
+    Topic2: 0.00399 0.16135 0.00093 0.03890 0.10498 0.00001 0.00037
+    Topic3: 0.82055 0.05066 0.92819 0.83632 0.68128 0.99987 0.07289 
+
+We recommend to download larger datasets, available in :doc:`/download` section.
+All ``docword`` and ``vocab`` files can be consumed by BigARTM exactly as in the previous example.
+
+Internally BigARTM always parses such files into batches format
+(for example, `enron_1k (7.1 MB) <https://s3-eu-west-1.amazonaws.com/artm/enron_1k.7z>`_).
+If you have downloaded such pre-parsed collection, you may feed it into BigARTM as follows:
+
+.. code-block:: bash
+
+    >C:\BigARTM\bin>cpp_client.exe --batch_folder C:\BigARTM\enron
+    Reuse 40 batches in folder 'enron'
+    Loading dictionary file... OK.
+    Iteration 1 took  2502 milliseconds.
+
+For more information about ``cpp_client.exe`` refer to :doc:`/ref/cpp_client` section.
+    
+Configure BigARTM Python API
+----------------------------
+
+1.  Install Python, for example from the following links:
+
+    * Python 2.7.9, 64 bit -- https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi, or
+    * Python 2.7.9, 32 bit -- https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi
+
+    Remember that the version of BigARTM package must match your version Python installed on your machine.
+    If you have 32 bit operating system then you must select 32 bit for Python and BigARTM package.
+    If you have 64 bit operating system then you are free to select either version.
+    However, please note that memory usage of 32 bit processes is limited by 2 GB.
+    For this reason we recommend to select 64 bit configurations.
+
+  
+2.  * Add ``C:\BigARTM\bin`` folder to your ``PATH`` system variable,
+    * Add ``C:\BigARTM\python`` to your ``PYTHONPATH`` system variable
+
+    .. code-block:: bash
+  
+       set PATH=%PATH%;C:\BigARTM\bin
+       set PATH=%PATH%;C:\Python27;C:\Python27\Scripts
+       set PYTHONPATH=%PYTHONPATH%;C:\BigARTM\Python
+
+    Remember to change ``C:\BigARTM`` and ``C:\Python27`` with your local folders.
+
+3.  Setup *Google Protocol Buffers* library, included in the BigARTM release package.
+
+    * Copy ``C:\BigARTM\bin\protoc.exe`` file into ``C:\BigARTM\protobuf\src`` folder
+    * Run the following commands from command prompt
+    
+    .. code-block:: bash
+  
+        cd C:\BigARTM\protobuf\Python
+        python setup.py build
+        python setup.py install
+
+    Avoid ``python setup.py test`` step, as it produces several confusing errors. Those errors are harmless.
+    For further details about protobuf installation refer to `protobuf/python/README
+    <https://raw.githubusercontent.com/bigartm/bigartm/master/3rdparty/protobuf/python/README.txt>`_.
+
+Running BigARTM from Python API
+-------------------------------
+
+Folder ``C:\BigARTM\python\examples`` contains several toy examples:
+
+    * `example01_synthetic_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example01_synthetic_collection.py>`_
+    * `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example02_parse_collection.py>`_
+    * `example03_concurrency.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example03_concurrency.py>`_
+    * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example04_online_algorithm.py>`_
+    * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example05_train_and_test_stream.py>`_
+    * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
+    * `example07_master_component_proxy.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example07_master_component_proxy.py>`_
+    * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
+
+All examples does not have any parameters, and you may run them without arguments:
+
+.. code-block:: bash
+
+   C:\BigARTM\python\examples>python example02_parse_collection.py
+
+    No batches found, parsing them from textual collection...  OK.
+    Iter#0 : Perplexity = 6885.223 , Phi sparsity = 0.050 , Theta sparsity = 0.012
+    Iter#1 : Perplexity = 2409.510 , Phi sparsity = 0.113 , Theta sparsity = 0.063
+    Iter#2 : Perplexity = 2075.445 , Phi sparsity = 0.203 , Theta sparsity = 0.174
+    Iter#3 : Perplexity = 1855.196 , Phi sparsity = 0.293 , Theta sparsity = 0.261
+    Iter#4 : Perplexity = 1728.749 , Phi sparsity = 0.370 , Theta sparsity = 0.302
+    Iter#5 : Perplexity = 1661.044 , Phi sparsity = 0.429 , Theta sparsity = 0.317
+    Iter#6 : Perplexity = 1621.851 , Phi sparsity = 0.475 , Theta sparsity = 0.327
+    Iter#7 : Perplexity = 1596.965 , Phi sparsity = 0.511 , Theta sparsity = 0.331
+
+    Top tokens per topic:
+    Topic#1: poll(0.05) iraq(0.04) people(0.02) news(0.02) john(0.01) media(0.01)
+    Topic#2: republican(0.02) party(0.02) state(0.02) general(0.01) democrats(0.01)
+    Topic#3: dean(0.04) edwards(0.02) percent(0.02) primary(0.02) clark(0.02)
+    Topic#4: forces(0.01) baghdad(0.01) iraqis(0.01) coburn(0.01) carson(0.01)
+    Topic#5: military(0.01) officials(0.01) intelligence(0.01) american(0.01)
+    Topic#6: electoral(0.04) labor(0.02) culture(0.02) exit(0.02) scoop(0.01)
+    Topic#7: law(0.01) court(0.01) marriage(0.01) gay(0.01) amendment(0.01)
+    Topic#8: president(0.03) administration(0.02) campaign(0.01) million(0.01)
+    Topic#9: years(0.01) ballot(0.01) rights(0.01) nader(0.01) life(0.01)
+    Topic#10: house(0.08) war(0.03) republicans(0.02) voting(0.02) vote(0.02)
+
+    Snippet of theta matrix:
+    Item#3000: 0.432 0.507 0.059 0.000 0.000 0.000 0.000 0.000 0.002 0.000
+    Item#2991: 0.249 0.382 0.269 0.000 0.000 0.025 0.016 0.034 0.000 0.026
+    Item#2992: 0.000 0.001 0.000 0.000 0.000 0.000 0.000 0.851 0.000 0.147
+    Item#2993: 0.358 0.058 0.030 0.141 0.152 0.000 0.002 0.248 0.000 0.010
+    Item#2994: 0.051 0.142 0.056 0.000 0.000 0.146 0.000 0.000 0.000 0.604
+    Item#2995: 0.004 0.593 0.000 0.000 0.128 0.005 0.168 0.040 0.030 0.033
+    Item#2996: 0.069 0.063 0.054 0.000 0.000 0.107 0.008 0.004 0.000 0.696
+    Item#2997: 0.000 0.194 0.000 0.000 0.043 0.000 0.471 0.228 0.062 0.002
+    Item#2998: 0.026 0.085 0.042 0.001 0.180 0.000 0.146 0.485 0.022 0.012
+    Item#2999: 0.312 0.547 0.099 0.000 0.000 0.004 0.008 0.017 0.013 0.000  
+
+This simple example loads a text collection from disk and uses iterative scans over the collection to infer a topic model.
+Then it outputs top words in each topic and topic distributions of last processed documents.
+For further information about this example refer to :doc:`typical_python_example`.
