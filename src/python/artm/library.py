@@ -315,11 +315,14 @@ class MasterComponent:
     HandleErrorCode(self.lib_, self.lib_.ArtmReconfigureMasterComponent(self.id_, len(config_blob), config_blob_p))
     self.config_.CopyFrom(config)
 
-  def AddBatch(self, batch, timeout = -1, reset_scores = False):
+  def AddBatch(self, batch = None, batch_filename = None, timeout = -1, reset_scores = False):
     args = messages_pb2.AddBatchArgs()
-    args.batch.CopyFrom(batch)
+    if batch is not None:
+        args.batch.CopyFrom(batch)
     args.timeout_milliseconds = timeout;
     args.reset_scores = reset_scores
+    if batch_filename is not None:
+        args.batch_file_name = batch_filename
     args_blob = args.SerializeToString()
     args_blob_p = ctypes.create_string_buffer(args_blob)
 

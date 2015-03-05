@@ -103,18 +103,27 @@ LocalDataLoader::~LocalDataLoader() {
 }
 
 bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
-  auto& batch = args.batch();
+  if (!args.has_batch() && !args.has_batch_file_name()) {
+    std::string message = "AddBatchArgs.batch or AddBatchArgs.batch_file_name must be specified";
+    BOOST_THROW_EXCEPTION(InvalidOperation(message));
+  }
+
   int timeout = args.timeout_milliseconds();
   MasterComponentConfig config = instance()->schema()->config();
 
-  std::shared_ptr<Batch> modified_batch;
-  if (config.compact_batches()) {
-    modified_batch = std::make_shared<Batch>();  // constructor
-    BatchHelpers::CompactBatch(batch, modified_batch.get());
-    BatchHelpers::PopulateClassId(modified_batch.get());
+  std::shared_ptr<Batch> batch = std::make_shared< ::artm::Batch>();
+  if (args.has_batch_file_name()) {
+    ::artm::core::BatchHelpers::LoadMessage(args.batch_file_name(), batch.get());
+    ::artm::core::BatchHelpers::PopulateClassId(batch.get());
   } else {
-    modified_batch = std::make_shared<Batch>(batch);  // copy constructor
-    BatchHelpers::PopulateClassId(modified_batch.get());
+    batch = std::make_shared<Batch>(args.batch());  // copy constructor
+    BatchHelpers::PopulateClassId(batch.get());
+  }
+
+  if (config.compact_batches()) {
+    std::shared_ptr<Batch> modified_batch = std::make_shared<Batch>();  // constructor
+    BatchHelpers::CompactBatch(*batch, modified_batch.get());
+    batch = modified_batch;
   }
 
   auto time_start = boost::posix_time::microsec_clock::local_time();
@@ -129,9 +138,9 @@ bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
     }
   }
   auto pi = std::make_shared<ProcessorInput>();
-  pi->mutable_batch()->CopyFrom(*modified_batch);
-  pi->set_batch_uuid(modified_batch->id());
-  boost::uuids::uuid uuid = boost::lexical_cast<boost::uuids::uuid>(modified_batch->id());
+  pi->mutable_batch()->CopyFrom(*batch);
+  pi->set_batch_uuid(batch->id());
+  boost::uuids::uuid uuid = boost::lexical_cast<boost::uuids::uuid>(batch->id());
   instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
   instance_->processor_queue()->push(pi);
 

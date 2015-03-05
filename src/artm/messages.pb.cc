@@ -1026,10 +1026,11 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetScoreValueArgs));
   AddBatchArgs_descriptor_ = file->message_type(45);
-  static const int AddBatchArgs_offsets_[3] = {
+  static const int AddBatchArgs_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, batch_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, timeout_milliseconds_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, reset_scores_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, batch_file_name_),
   };
   AddBatchArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1468,13 +1469,13 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "pic_index\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001(\010:\005fa"
     "lse\"W\n\021GetScoreValueArgs\022\022\n\nmodel_name\030\001"
     " \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132"
-    "\013.artm.Batch\"e\n\014AddBatchArgs\022\032\n\005batch\030\001 "
+    "\013.artm.Batch\"~\n\014AddBatchArgs\022\032\n\005batch\030\001 "
     "\001(\0132\013.artm.Batch\022\034\n\024timeout_milliseconds"
-    "\030\002 \001(\005\022\033\n\014reset_scores\030\003 \001(\010:\005false\"N\n\023I"
-    "nvokeIterationArgs\022\033\n\020iterations_count\030\001"
-    " \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\"0\n\014W"
-    "aitIdleArgs\022 \n\024timeout_milliseconds\030\001 \001("
-    "\005:\002-1", 6565);
+    "\030\002 \001(\005\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027\n\017b"
+    "atch_file_name\030\004 \001(\t\"N\n\023InvokeIterationA"
+    "rgs\022\033\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014rese"
+    "t_scores\030\002 \001(\010:\004true\"0\n\014WaitIdleArgs\022 \n\024"
+    "timeout_milliseconds\030\001 \001(\005:\002-1", 6590);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -18408,6 +18409,7 @@ void GetScoreValueArgs::Swap(GetScoreValueArgs* other) {
 const int AddBatchArgs::kBatchFieldNumber;
 const int AddBatchArgs::kTimeoutMillisecondsFieldNumber;
 const int AddBatchArgs::kResetScoresFieldNumber;
+const int AddBatchArgs::kBatchFileNameFieldNumber;
 #endif  // !_MSC_VER
 
 AddBatchArgs::AddBatchArgs()
@@ -18430,6 +18432,7 @@ void AddBatchArgs::SharedCtor() {
   batch_ = NULL;
   timeout_milliseconds_ = 0;
   reset_scores_ = false;
+  batch_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -18438,6 +18441,9 @@ AddBatchArgs::~AddBatchArgs() {
 }
 
 void AddBatchArgs::SharedDtor() {
+  if (batch_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete batch_file_name_;
+  }
   if (this != default_instance_) {
     delete batch_;
   }
@@ -18471,6 +18477,11 @@ void AddBatchArgs::Clear() {
     }
     timeout_milliseconds_ = 0;
     reset_scores_ = false;
+    if (has_batch_file_name()) {
+      if (batch_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        batch_file_name_->clear();
+      }
+    }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -18523,6 +18534,23 @@ bool AddBatchArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(34)) goto parse_batch_file_name;
+        break;
+      }
+
+      // optional string batch_file_name = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_batch_file_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_batch_file_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->batch_file_name().data(), this->batch_file_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -18561,6 +18589,15 @@ void AddBatchArgs::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->reset_scores(), output);
   }
 
+  // optional string batch_file_name = 4;
+  if (has_batch_file_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->batch_file_name().data(), this->batch_file_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      4, this->batch_file_name(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -18584,6 +18621,16 @@ void AddBatchArgs::SerializeWithCachedSizes(
   // optional bool reset_scores = 3 [default = false];
   if (has_reset_scores()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->reset_scores(), target);
+  }
+
+  // optional string batch_file_name = 4;
+  if (has_batch_file_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->batch_file_name().data(), this->batch_file_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        4, this->batch_file_name(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -18614,6 +18661,13 @@ int AddBatchArgs::ByteSize() const {
     // optional bool reset_scores = 3 [default = false];
     if (has_reset_scores()) {
       total_size += 1 + 1;
+    }
+
+    // optional string batch_file_name = 4;
+    if (has_batch_file_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->batch_file_name());
     }
 
   }
@@ -18652,6 +18706,9 @@ void AddBatchArgs::MergeFrom(const AddBatchArgs& from) {
     if (from.has_reset_scores()) {
       set_reset_scores(from.reset_scores());
     }
+    if (from.has_batch_file_name()) {
+      set_batch_file_name(from.batch_file_name());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -18678,6 +18735,7 @@ void AddBatchArgs::Swap(AddBatchArgs* other) {
     std::swap(batch_, other->batch_);
     std::swap(timeout_milliseconds_, other->timeout_milliseconds_);
     std::swap(reset_scores_, other->reset_scores_);
+    std::swap(batch_file_name_, other->batch_file_name_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
