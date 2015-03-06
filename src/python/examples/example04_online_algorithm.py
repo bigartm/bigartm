@@ -39,7 +39,7 @@ with artm.library.MasterComponent() as master:
 
     # Online algorithm with AddBatch()
     update_every = 4
-    batches = glob.glob(batches_disk_path + "*.batch")
+    batches = glob.glob(batches_disk_path + "/*.batch")
     for batch_index, batch_filename in enumerate(batches):
         master.AddBatch(batch_filename=batch_filename)
         if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):

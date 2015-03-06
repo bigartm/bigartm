@@ -54,7 +54,7 @@ with artm.library.MasterComponent() as master:
 
     # Online algorithm with AddBatch()
     update_every = master.config().processors_count
-    batches = glob.glob(batches_disk_path + "*.batch")
+    batches = glob.glob(batches_disk_path + "/*.batch")
 
     for iteration in range(0, 5):
         for batch_index, batch_filename in enumerate(batches):
