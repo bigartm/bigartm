@@ -26,6 +26,7 @@ Download and install the following tools:
     * https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi
 * (optional) If you plan to build documentation, download and install sphinx-doc as described here: http://sphinx-doc.org/latest/index.html
 * (optional) 7-zip -- http://www.7-zip.org/a/7z920-x64.msi
+* (optional) Putty -- http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe
 
 All explicit links are given just for convenience if you are setting up new environment.
 You are free to choose other versions or tools, and most likely they will work just fine for BigARTM.
