@@ -1,11 +1,11 @@
 # This example demonstrates objective topics (with high sparsity) and background topics (without sparsity)
 
-import artm.messages_pb2, artm.library, sys, glob
+import artm.messages_pb2, artm.library, sys, glob, os
 
 # Parse collection
 data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
-batches_disk_path = 'kos\\'
-unique_tokens = artm.library.Library().LoadDictionary(batches_disk_path + 'dictionary')
+batches_disk_path = 'kos'
+unique_tokens = artm.library.Library().LoadDictionary(os.path.join(batches_disk_path, 'dictionary'))
 
 # Create master component and infer topic model
 with artm.library.MasterComponent() as master:
