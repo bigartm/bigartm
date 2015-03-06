@@ -5,7 +5,7 @@ import artm.messages_pb2, artm.library, sys, glob
 
 # Parse collection
 data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
-batches_disk_path = 'kos'
+batches_disk_path = 'kos\\'
 unique_tokens = artm.library.Library().LoadDictionary(batches_disk_path + 'dictionary')
 
 # Create master component and infer topic model
