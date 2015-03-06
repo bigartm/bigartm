@@ -427,6 +427,7 @@ message AddBatchArgs {
   optional Batch batch = 1;
   optional int32 timeout_milliseconds = 2;
   optional bool reset_scores = 3 [default = false];
+  optional string batch_file_name = 4;
 }
 
 message InvokeIterationArgs {

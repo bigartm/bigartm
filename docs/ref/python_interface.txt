@@ -193,10 +193,12 @@ MasterComponent
       Remember that some changes of the configuration are not allowed (for example, the :attr:`MasterComponentConfig.disk_path` must not change).
       Such configuration parameters must be provided in the constructor of :py:class:`MasterComponent`.
 
-   .. py:method:: AddBatch(batch, timeout = -1, reset_scores = False)
+   .. py:method:: AddBatch(self, batch = None, batch_filename = None, timeout = -1, reset_scores = False)
 
       Adds an instance of :ref:`Batch` class to the processor queue.
       Master component creates a copy of the *batch*, so any further changes of the *batch* object will not be picked up.
+      *batch_filename* is an alternative to file with binary-serialized batch (you must use either *batch* or *batch_filename* option,
+      but not both at the same time).
 
       This operation awaits until there is enough space in processor queue.
       It returns *True* if await succeeded within the timeout, otherwise returns *False*.

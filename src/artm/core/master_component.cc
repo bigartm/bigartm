@@ -33,10 +33,12 @@ MasterComponent::MasterComponent(int id, const MasterComponentConfig& config)
       service_endpoint_(nullptr),
       instance_(nullptr),
       network_client_interface_(nullptr) {
+  LOG(INFO) << "Creating MasterComponent (id=" << master_id_ << ")...";
   Reconfigure(config);
 }
 
 MasterComponent::~MasterComponent() {
+  LOG(INFO) << "Disposing MasterComponent (id=" << master_id_ << ")...";
 }
 
 int MasterComponent::id() const {

@@ -44,3 +44,6 @@ install(FILES ../datasets/docword.kos.txt ../datasets/vocab.kos.txt DESTINATION 
 
 FILE(GLOB PYTHON_EXAMPLES python/examples/*.py)
 install(FILES ${PYTHON_EXAMPLES} DESTINATION python/examples)
+
+FILE(GLOB PYTHON_EXPERIMENTS python/experiments/*.py)
+install(FILES ${PYTHON_EXPERIMENTS} DESTINATION python/experiments)
