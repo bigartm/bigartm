@@ -24,6 +24,7 @@
 #include "artm/regularizer_sandbox/multilanguage_phi.h"
 #include "artm/regularizer_sandbox/smooth_sparse_theta.h"
 #include "artm/regularizer_sandbox/smooth_sparse_phi.h"
+#include "artm/regularizer_sandbox/label_regularization_phi.h"
 
 
 #include "artm/score_sandbox/items_processed.h"
@@ -176,6 +177,12 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
     case artm::RegularizerConfig_Type_SmoothSparsePhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothSparsePhiConfig,
                                         ::artm::regularizer_sandbox::SmoothSparsePhi);
+      break;
+    }
+
+    case artm::RegularizerConfig_Type_LabelRegularizationPhi: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::LabelRegularizationPhiConfig,
+                                        ::artm::regularizer_sandbox::LabelRegularizationPhi);
       break;
     }
 

@@ -58,6 +58,8 @@ set(SRC_LIST
 	regularizer_sandbox/multilanguage_phi.h
 	regularizer_sandbox/smooth_sparse_phi.cc
 	regularizer_sandbox/smooth_sparse_phi.h
+	regularizer_sandbox/label_regularization_phi.cc
+	regularizer_sandbox/label_regularization_phi.h
 	regularizer_sandbox/smooth_sparse_theta.cc
 	regularizer_sandbox/smooth_sparse_theta.h
 	score_sandbox/items_processed.cc

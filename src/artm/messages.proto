@@ -131,6 +131,7 @@ message RegularizerConfig {
     SmoothSparsePhi = 1;
     DecorrelatorPhi = 2;
     MultiLanguagePhi = 3;
+    LabelRegularizationPhi = 4;
   }
 
   optional string name = 1;
@@ -159,6 +160,12 @@ message DecorrelatorPhiConfig {
 
 // Represents a configuration of a MultiLanguage Phi regularizer
 message MultiLanguagePhiConfig {
+}
+
+message LabelRegularizationPhiConfig {
+  repeated string topic_name = 1;
+  repeated string class_id = 2;
+  optional string dictionary_name = 3;
 }
 
 // Represents an internal state of a general regularizer
