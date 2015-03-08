@@ -3436,17 +3436,33 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
-  // optional float theta_sparsity_eps = 5 [default = 1e-037];
+  // repeated string class_id = 5;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 5;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
+  // optional float theta_sparsity_eps = 6 [default = 1e-037];
   inline bool has_theta_sparsity_eps() const;
   inline void clear_theta_sparsity_eps();
-  static const int kThetaSparsityEpsFieldNumber = 5;
+  static const int kThetaSparsityEpsFieldNumber = 6;
   inline float theta_sparsity_eps() const;
   inline void set_theta_sparsity_eps(float value);
 
-  // repeated string theta_sparsity_topic_name = 6;
+  // repeated string theta_sparsity_topic_name = 7;
   inline int theta_sparsity_topic_name_size() const;
   inline void clear_theta_sparsity_topic_name();
-  static const int kThetaSparsityTopicNameFieldNumber = 6;
+  static const int kThetaSparsityTopicNameFieldNumber = 7;
   inline const ::std::string& theta_sparsity_topic_name(int index) const;
   inline ::std::string* mutable_theta_sparsity_topic_name(int index);
   inline void set_theta_sparsity_topic_name(int index, const ::std::string& value);
@@ -3481,10 +3497,11 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   ::std::string* dictionary_name_;
   int model_type_;
   float theta_sparsity_eps_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::google::protobuf::RepeatedPtrField< ::std::string> theta_sparsity_topic_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3549,65 +3566,93 @@ class PerplexityScore : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional double value = 1;
-  inline bool has_value() const;
+  // repeated double value = 1;
+  inline int value_size() const;
   inline void clear_value();
   static const int kValueFieldNumber = 1;
-  inline double value() const;
-  inline void set_value(double value);
+  inline double value(int index) const;
+  inline void set_value(int index, double value);
+  inline void add_value(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      value() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_value();
 
-  // optional double raw = 2;
-  inline bool has_raw() const;
+  // repeated double raw = 2;
+  inline int raw_size() const;
   inline void clear_raw();
   static const int kRawFieldNumber = 2;
-  inline double raw() const;
-  inline void set_raw(double value);
+  inline double raw(int index) const;
+  inline void set_raw(int index, double value);
+  inline void add_raw(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      raw() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_raw();
 
-  // optional double normalizer = 3;
-  inline bool has_normalizer() const;
+  // repeated double normalizer = 3;
+  inline int normalizer_size() const;
   inline void clear_normalizer();
   static const int kNormalizerFieldNumber = 3;
-  inline double normalizer() const;
-  inline void set_normalizer(double value);
+  inline double normalizer(int index) const;
+  inline void set_normalizer(int index, double value);
+  inline void add_normalizer(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      normalizer() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_normalizer();
 
-  // optional int32 zero_words = 4;
-  inline bool has_zero_words() const;
+  // repeated int32 zero_words = 4;
+  inline int zero_words_size() const;
   inline void clear_zero_words();
   static const int kZeroWordsFieldNumber = 4;
-  inline ::google::protobuf::int32 zero_words() const;
-  inline void set_zero_words(::google::protobuf::int32 value);
+  inline ::google::protobuf::int32 zero_words(int index) const;
+  inline void set_zero_words(int index, ::google::protobuf::int32 value);
+  inline void add_zero_words(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      zero_words() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_zero_words();
 
-  // optional double theta_sparsity_value = 5;
+  // repeated string class_id = 5;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 5;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
+  // optional double theta_sparsity_value = 6;
   inline bool has_theta_sparsity_value() const;
   inline void clear_theta_sparsity_value();
-  static const int kThetaSparsityValueFieldNumber = 5;
+  static const int kThetaSparsityValueFieldNumber = 6;
   inline double theta_sparsity_value() const;
   inline void set_theta_sparsity_value(double value);
 
-  // optional int32 theta_sparsity_zero_topics = 6;
+  // optional int32 theta_sparsity_zero_topics = 7;
   inline bool has_theta_sparsity_zero_topics() const;
   inline void clear_theta_sparsity_zero_topics();
-  static const int kThetaSparsityZeroTopicsFieldNumber = 6;
+  static const int kThetaSparsityZeroTopicsFieldNumber = 7;
   inline ::google::protobuf::int32 theta_sparsity_zero_topics() const;
   inline void set_theta_sparsity_zero_topics(::google::protobuf::int32 value);
 
-  // optional int32 theta_sparsity_total_topics = 7;
+  // optional int32 theta_sparsity_total_topics = 8;
   inline bool has_theta_sparsity_total_topics() const;
   inline void clear_theta_sparsity_total_topics();
-  static const int kThetaSparsityTotalTopicsFieldNumber = 7;
+  static const int kThetaSparsityTotalTopicsFieldNumber = 8;
   inline ::google::protobuf::int32 theta_sparsity_total_topics() const;
   inline void set_theta_sparsity_total_topics(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:artm.PerplexityScore)
  private:
-  inline void set_has_value();
-  inline void clear_has_value();
-  inline void set_has_raw();
-  inline void clear_has_raw();
-  inline void set_has_normalizer();
-  inline void clear_has_normalizer();
-  inline void set_has_zero_words();
-  inline void clear_has_zero_words();
   inline void set_has_theta_sparsity_value();
   inline void clear_has_theta_sparsity_value();
   inline void set_has_theta_sparsity_zero_topics();
@@ -3617,16 +3662,17 @@ class PerplexityScore : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  double value_;
-  double raw_;
-  double normalizer_;
+  ::google::protobuf::RepeatedField< double > value_;
+  ::google::protobuf::RepeatedField< double > raw_;
+  ::google::protobuf::RepeatedField< double > normalizer_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > zero_words_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   double theta_sparsity_value_;
-  ::google::protobuf::int32 zero_words_;
   ::google::protobuf::int32 theta_sparsity_zero_topics_;
   ::google::protobuf::int32 theta_sparsity_total_topics_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -10720,15 +10766,59 @@ inline void PerplexityScoreConfig::set_allocated_dictionary_name(::std::string* 
   }
 }
 
-// optional float theta_sparsity_eps = 5 [default = 1e-037];
+// repeated string class_id = 5;
+inline int PerplexityScoreConfig::class_id_size() const {
+  return class_id_.size();
+}
+inline void PerplexityScoreConfig::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& PerplexityScoreConfig::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* PerplexityScoreConfig::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void PerplexityScoreConfig::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void PerplexityScoreConfig::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void PerplexityScoreConfig::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PerplexityScoreConfig::add_class_id() {
+  return class_id_.Add();
+}
+inline void PerplexityScoreConfig::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void PerplexityScoreConfig::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void PerplexityScoreConfig::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+PerplexityScoreConfig::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+PerplexityScoreConfig::mutable_class_id() {
+  return &class_id_;
+}
+
+// optional float theta_sparsity_eps = 6 [default = 1e-037];
 inline bool PerplexityScoreConfig::has_theta_sparsity_eps() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void PerplexityScoreConfig::set_has_theta_sparsity_eps() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void PerplexityScoreConfig::clear_has_theta_sparsity_eps() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void PerplexityScoreConfig::clear_theta_sparsity_eps() {
   theta_sparsity_eps_ = 1e-037f;
@@ -10742,7 +10832,7 @@ inline void PerplexityScoreConfig::set_theta_sparsity_eps(float value) {
   theta_sparsity_eps_ = value;
 }
 
-// repeated string theta_sparsity_topic_name = 6;
+// repeated string theta_sparsity_topic_name = 7;
 inline int PerplexityScoreConfig::theta_sparsity_topic_name_size() const {
   return theta_sparsity_topic_name_.size();
 }
@@ -10790,103 +10880,159 @@ PerplexityScoreConfig::mutable_theta_sparsity_topic_name() {
 
 // PerplexityScore
 
-// optional double value = 1;
-inline bool PerplexityScore::has_value() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void PerplexityScore::set_has_value() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void PerplexityScore::clear_has_value() {
-  _has_bits_[0] &= ~0x00000001u;
+// repeated double value = 1;
+inline int PerplexityScore::value_size() const {
+  return value_.size();
 }
 inline void PerplexityScore::clear_value() {
-  value_ = 0;
-  clear_has_value();
+  value_.Clear();
 }
-inline double PerplexityScore::value() const {
+inline double PerplexityScore::value(int index) const {
+  return value_.Get(index);
+}
+inline void PerplexityScore::set_value(int index, double value) {
+  value_.Set(index, value);
+}
+inline void PerplexityScore::add_value(double value) {
+  value_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+PerplexityScore::value() const {
   return value_;
 }
-inline void PerplexityScore::set_value(double value) {
-  set_has_value();
-  value_ = value;
+inline ::google::protobuf::RepeatedField< double >*
+PerplexityScore::mutable_value() {
+  return &value_;
 }
 
-// optional double raw = 2;
-inline bool PerplexityScore::has_raw() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void PerplexityScore::set_has_raw() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void PerplexityScore::clear_has_raw() {
-  _has_bits_[0] &= ~0x00000002u;
+// repeated double raw = 2;
+inline int PerplexityScore::raw_size() const {
+  return raw_.size();
 }
 inline void PerplexityScore::clear_raw() {
-  raw_ = 0;
-  clear_has_raw();
+  raw_.Clear();
 }
-inline double PerplexityScore::raw() const {
+inline double PerplexityScore::raw(int index) const {
+  return raw_.Get(index);
+}
+inline void PerplexityScore::set_raw(int index, double value) {
+  raw_.Set(index, value);
+}
+inline void PerplexityScore::add_raw(double value) {
+  raw_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+PerplexityScore::raw() const {
   return raw_;
 }
-inline void PerplexityScore::set_raw(double value) {
-  set_has_raw();
-  raw_ = value;
+inline ::google::protobuf::RepeatedField< double >*
+PerplexityScore::mutable_raw() {
+  return &raw_;
 }
 
-// optional double normalizer = 3;
-inline bool PerplexityScore::has_normalizer() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void PerplexityScore::set_has_normalizer() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void PerplexityScore::clear_has_normalizer() {
-  _has_bits_[0] &= ~0x00000004u;
+// repeated double normalizer = 3;
+inline int PerplexityScore::normalizer_size() const {
+  return normalizer_.size();
 }
 inline void PerplexityScore::clear_normalizer() {
-  normalizer_ = 0;
-  clear_has_normalizer();
+  normalizer_.Clear();
 }
-inline double PerplexityScore::normalizer() const {
+inline double PerplexityScore::normalizer(int index) const {
+  return normalizer_.Get(index);
+}
+inline void PerplexityScore::set_normalizer(int index, double value) {
+  normalizer_.Set(index, value);
+}
+inline void PerplexityScore::add_normalizer(double value) {
+  normalizer_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+PerplexityScore::normalizer() const {
   return normalizer_;
 }
-inline void PerplexityScore::set_normalizer(double value) {
-  set_has_normalizer();
-  normalizer_ = value;
+inline ::google::protobuf::RepeatedField< double >*
+PerplexityScore::mutable_normalizer() {
+  return &normalizer_;
 }
 
-// optional int32 zero_words = 4;
-inline bool PerplexityScore::has_zero_words() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void PerplexityScore::set_has_zero_words() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void PerplexityScore::clear_has_zero_words() {
-  _has_bits_[0] &= ~0x00000008u;
+// repeated int32 zero_words = 4;
+inline int PerplexityScore::zero_words_size() const {
+  return zero_words_.size();
 }
 inline void PerplexityScore::clear_zero_words() {
-  zero_words_ = 0;
-  clear_has_zero_words();
+  zero_words_.Clear();
 }
-inline ::google::protobuf::int32 PerplexityScore::zero_words() const {
+inline ::google::protobuf::int32 PerplexityScore::zero_words(int index) const {
+  return zero_words_.Get(index);
+}
+inline void PerplexityScore::set_zero_words(int index, ::google::protobuf::int32 value) {
+  zero_words_.Set(index, value);
+}
+inline void PerplexityScore::add_zero_words(::google::protobuf::int32 value) {
+  zero_words_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+PerplexityScore::zero_words() const {
   return zero_words_;
 }
-inline void PerplexityScore::set_zero_words(::google::protobuf::int32 value) {
-  set_has_zero_words();
-  zero_words_ = value;
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+PerplexityScore::mutable_zero_words() {
+  return &zero_words_;
 }
 
-// optional double theta_sparsity_value = 5;
+// repeated string class_id = 5;
+inline int PerplexityScore::class_id_size() const {
+  return class_id_.size();
+}
+inline void PerplexityScore::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& PerplexityScore::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* PerplexityScore::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void PerplexityScore::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void PerplexityScore::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void PerplexityScore::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PerplexityScore::add_class_id() {
+  return class_id_.Add();
+}
+inline void PerplexityScore::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void PerplexityScore::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void PerplexityScore::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+PerplexityScore::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+PerplexityScore::mutable_class_id() {
+  return &class_id_;
+}
+
+// optional double theta_sparsity_value = 6;
 inline bool PerplexityScore::has_theta_sparsity_value() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void PerplexityScore::set_has_theta_sparsity_value() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void PerplexityScore::clear_has_theta_sparsity_value() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void PerplexityScore::clear_theta_sparsity_value() {
   theta_sparsity_value_ = 0;
@@ -10900,15 +11046,15 @@ inline void PerplexityScore::set_theta_sparsity_value(double value) {
   theta_sparsity_value_ = value;
 }
 
-// optional int32 theta_sparsity_zero_topics = 6;
+// optional int32 theta_sparsity_zero_topics = 7;
 inline bool PerplexityScore::has_theta_sparsity_zero_topics() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void PerplexityScore::set_has_theta_sparsity_zero_topics() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void PerplexityScore::clear_has_theta_sparsity_zero_topics() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void PerplexityScore::clear_theta_sparsity_zero_topics() {
   theta_sparsity_zero_topics_ = 0;
@@ -10922,15 +11068,15 @@ inline void PerplexityScore::set_theta_sparsity_zero_topics(::google::protobuf::
   theta_sparsity_zero_topics_ = value;
 }
 
-// optional int32 theta_sparsity_total_topics = 7;
+// optional int32 theta_sparsity_total_topics = 8;
 inline bool PerplexityScore::has_theta_sparsity_total_topics() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void PerplexityScore::set_has_theta_sparsity_total_topics() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void PerplexityScore::clear_has_theta_sparsity_total_topics() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void PerplexityScore::clear_theta_sparsity_total_topics() {
   theta_sparsity_total_topics_ = 0;

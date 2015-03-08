@@ -372,8 +372,8 @@ int execute(const artm_options& options) {
       auto topic_kernel = master_component->GetScoreAs< ::artm::TopicKernelScore>(model, "topic_kernel");
 
       std::cout
-        <<   "\tTest perplexity = " << test_perplexity->value() << ", "
-        << "\n\tTrain perplexity = " << train_perplexity->value() << ", "
+        <<   "\tTest perplexity = " << test_perplexity->value(0) << ", "
+        << "\n\tTrain perplexity = " << train_perplexity->value(0) << ", "
         << "\n\tTest spatsity theta = " << test_sparsity_theta->value() << ", "
         << "\n\tTrain sparsity theta = " << train_sparsity_theta->value() << ", "
         << "\n\tSpatsity phi = " << sparsity_phi->value() << ", "

@@ -36,6 +36,6 @@ for processors_count in [4,2,1]:
       end = time.time()
       times.append(end - start)
       print "Iter#" + str(iter),
-      print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value + ", Time = %.3f" % (end - start)
+      print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value[0] + ", Time = %.3f" % (end - start)
 
     print "Averate time per iteration = %.3f " % (float(sum(times))/len(times)) + "\n"

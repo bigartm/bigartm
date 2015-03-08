@@ -336,9 +336,12 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "tts_class_one")->num_entries() > 0);
   EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "tts_class_two")->num_entries() > 0);
 
-  float p1 = master_component.GetScoreAs< ::artm::PerplexityScore>(model1, "perplexity")->value();
-  float p2 = master_component.GetScoreAs< ::artm::PerplexityScore>(model2, "perplexity")->value();
-  EXPECT_TRUE((p1 > 0) && (p2 > 0) && (p1 != p2));
+  auto p1 = master_component.GetScoreAs< ::artm::PerplexityScore>(model1, "perplexity")->value();
+  auto p2 = master_component.GetScoreAs< ::artm::PerplexityScore>(model2, "perplexity")->value();
+
+  EXPECT_TRUE((p1.size() == 1) && (p2.size() == 2));
+  EXPECT_TRUE((p1.Get(0) > 0) && (p2.Get(0) > 0) && (p2.Get(1) > 0));
+  EXPECT_TRUE(p1.Get(0) != p2.Get(0));
 
   auto theta_snippet = master_component.GetScoreAs< ::artm::ThetaSnippetScore>(model1, "theta_snippet");
   EXPECT_EQ(theta_snippet->item_id_size(), 5);

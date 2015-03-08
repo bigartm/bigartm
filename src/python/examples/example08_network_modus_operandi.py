@@ -34,7 +34,7 @@ with artm.library.MasterComponent(config = master_config) as master:
     master.WaitIdle();               # and wait until it completes.
     model.Synchronize();             # Synchronize topic model.
     print "Iter#" + str(iter),
-    print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value
+    print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value[0]
 
 if (create_local_node_controller):
   node_controller1.Dispose()

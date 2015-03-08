@@ -56,7 +56,7 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
       if (items_processed != current_items_processed):
         items_processed = current_items_processed
         model.Synchronize(0.75);         # Synchronize topic model.
-        print "Perplexity = %.3f" % perplexity_score.GetValue(model).value,
+        print "Perplexity = %.3f" % perplexity_score.GetValue(model).value[0],
         print ", Phi sparsity = %.3f " % sparsity_phi_score.GetValue(model).value,
         print ", Theta sparsity = %.3f" % sparsity_theta_score.GetValue(model).value
 

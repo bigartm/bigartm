@@ -608,11 +608,12 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(ScoreData));
   ScoreData_Type_descriptor_ = ScoreData_descriptor_->enum_type(0);
   PerplexityScoreConfig_descriptor_ = file->message_type(23);
-  static const int PerplexityScoreConfig_offsets_[6] = {
+  static const int PerplexityScoreConfig_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, field_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, stream_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, model_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, dictionary_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, theta_sparsity_eps_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, theta_sparsity_topic_name_),
   };
@@ -629,11 +630,12 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(PerplexityScoreConfig));
   PerplexityScoreConfig_Type_descriptor_ = PerplexityScoreConfig_descriptor_->enum_type(0);
   PerplexityScore_descriptor_ = file->message_type(24);
-  static const int PerplexityScore_offsets_[7] = {
+  static const int PerplexityScore_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, raw_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, normalizer_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, zero_words_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, theta_sparsity_value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, theta_sparsity_zero_topics_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, theta_sparsity_total_topics_),
@@ -1391,88 +1393,89 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "e\022\016\n\nPerplexity\020\000\022\021\n\rSparsityTheta\020\001\022\017\n\013"
     "SparsityPhi\020\002\022\022\n\016ItemsProcessed\020\003\022\r\n\tTop"
     "Tokens\020\004\022\020\n\014ThetaSnippet\020\005\022\017\n\013TopicKerne"
-    "l\020\006\"\272\002\n\025PerplexityScoreConfig\022\031\n\nfield_n"
+    "l\020\006\"\314\002\n\025PerplexityScoreConfig\022\031\n\nfield_n"
     "ame\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@"
     "global\022J\n\nmodel_type\030\003 \001(\0162 .artm.Perple"
     "xityScoreConfig.Type:\024UnigramDocumentMod"
-    "el\022\027\n\017dictionary_name\030\004 \001(\t\022\"\n\022theta_spa"
-    "rsity_eps\030\005 \001(\002:\0061e-037\022!\n\031theta_sparsit"
-    "y_topic_name\030\006 \003(\t\"<\n\004Type\022\030\n\024UnigramDoc"
-    "umentModel\020\000\022\032\n\026UnigramCollectionModel\020\001"
-    "\"\274\001\n\017PerplexityScore\022\r\n\005value\030\001 \001(\001\022\013\n\003r"
-    "aw\030\002 \001(\001\022\022\n\nnormalizer\030\003 \001(\001\022\022\n\nzero_wor"
-    "ds\030\004 \001(\005\022\034\n\024theta_sparsity_value\030\005 \001(\001\022\""
-    "\n\032theta_sparsity_zero_topics\030\006 \001(\005\022#\n\033th"
-    "eta_sparsity_total_topics\030\007 \001(\005\"|\n\030Spars"
-    "ityThetaScoreConfig\022\031\n\nfield_name\030\001 \001(\t:"
-    "\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@global\022\023\n\003"
-    "eps\030\003 \001(\002:\0061e-037\022\022\n\ntopic_name\030\004 \003(\t\"N\n"
-    "\022SparsityThetaScore\022\r\n\005value\030\001 \001(\001\022\023\n\013ze"
-    "ro_topics\030\002 \001(\005\022\024\n\014total_topics\030\003 \001(\005\"S\n"
-    "\026SparsityPhiScoreConfig\022\023\n\003eps\030\001 \001(\002:\0061e"
-    "-037\022\020\n\010class_id\030\002 \001(\t\022\022\n\ntopic_name\030\003 \003"
-    "(\t\"L\n\020SparsityPhiScore\022\r\n\005value\030\001 \001(\001\022\023\n"
-    "\013zero_tokens\030\002 \001(\005\022\024\n\014total_tokens\030\003 \001(\005"
-    "\"T\n\031ItemsProcessedScoreConfig\022\031\n\nfield_n"
-    "ame\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@"
-    "global\"$\n\023ItemsProcessedScore\022\r\n\005value\030\001"
-    " \001(\005\"T\n\024TopTokensScoreConfig\022\026\n\nnum_toke"
-    "ns\030\001 \001(\005:\00210\022\020\n\010class_id\030\002 \001(\t\022\022\n\ntopic_"
-    "name\030\003 \003(\t\"m\n\016TopTokensScore\022\023\n\013num_entr"
-    "ies\030\001 \001(\005\022\022\n\ntopic_name\030\002 \003(\t\022\023\n\013topic_i"
-    "ndex\030\003 \003(\005\022\r\n\005token\030\004 \003(\t\022\016\n\006weight\030\005 \003("
-    "\002\"g\n\027ThetaSnippetScoreConfig\022\031\n\nfield_na"
-    "me\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@g"
-    "lobal\022\023\n\007item_id\030\003 \003(\005B\002\020\001\"F\n\021ThetaSnipp"
-    "etScore\022\017\n\007item_id\030\001 \003(\005\022 \n\006values\030\002 \003(\013"
-    "2\020.artm.FloatArray\"|\n\026TopicKernelScoreCo"
-    "nfig\022\023\n\003eps\030\001 \001(\002:\0061e-037\022\020\n\010class_id\030\002 "
-    "\001(\t\022\022\n\ntopic_name\030\003 \003(\t\022\'\n\032probability_m"
-    "ass_threshold\030\004 \001(\001:\0030.1\"\355\001\n\020TopicKernel"
-    "Score\022&\n\013kernel_size\030\001 \001(\0132\021.artm.Double"
-    "Array\022(\n\rkernel_purity\030\002 \001(\0132\021.artm.Doub"
-    "leArray\022*\n\017kernel_contrast\030\003 \001(\0132\021.artm."
-    "DoubleArray\022\033\n\023average_kernel_size\030\004 \001(\001"
-    "\022\035\n\025average_kernel_purity\030\005 \001(\001\022\037\n\027avera"
-    "ge_kernel_contrast\030\006 \001(\001\"\200\002\n\nTopicModel\022"
-    "\024\n\004name\030\001 \001(\t:\006@model\022\024\n\014topics_count\030\002 "
-    "\001(\005\022\022\n\ntopic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'"
-    "\n\rtoken_weights\030\005 \003(\0132\020.artm.FloatArray\022"
-    "\020\n\010class_id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\032U\n\023"
-    "TopicModelInternals\022\036\n\004n_wt\030\001 \003(\0132\020.artm"
-    ".FloatArray\022\036\n\004r_wt\030\002 \003(\0132\020.artm.FloatAr"
-    "ray\"\240\001\n\013ThetaMatrix\022\032\n\nmodel_name\030\001 \001(\t:"
-    "\006@model\022\017\n\007item_id\030\002 \003(\005\022&\n\014item_weights"
-    "\030\003 \003(\0132\020.artm.FloatArray\022\022\n\ntopic_name\030\004"
-    " \003(\t\022\024\n\014topics_count\030\005 \001(\005\022\022\n\nitem_title"
-    "\030\006 \003(\t\"\323\002\n\026CollectionParserConfig\022B\n\006for"
-    "mat\030\001 \001(\0162#.artm.CollectionParserConfig."
-    "Format:\rBagOfWordsUci\022\031\n\021docword_file_pa"
-    "th\030\002 \001(\t\022\027\n\017vocab_file_path\030\003 \001(\t\022\025\n\rtar"
-    "get_folder\030\004 \001(\t\022\034\n\024dictionary_file_name"
-    "\030\005 \001(\t\022!\n\023num_items_per_batch\030\006 \001(\005:\004100"
-    "0\022\036\n\026cooccurrence_file_name\030\007 \001(\t\022\032\n\022coo"
-    "ccurrence_token\030\010 \003(\t\"-\n\006Format\022\021\n\rBagOf"
-    "WordsUci\020\000\022\020\n\014MatrixMarket\020\001\"\177\n\024Synchron"
-    "izeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014deca"
-    "y_weight\030\002 \001(\002:\0011\022!\n\023invoke_regularizers"
-    "\030\003 \001(\010:\004true\022\027\n\014apply_weight\030\004 \001(\002:\0011\"B\n"
-    "\023InitializeModelArgs\022\022\n\nmodel_name\030\001 \001(\t"
-    "\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n\021GetTopicMod"
-    "elArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_name"
-    "\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\""
-    "\211\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030\001 \001"
-    "(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic_"
-    "name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clean"
-    "_cache\030\005 \001(\010:\005false\"W\n\021GetScoreValueArgs"
-    "\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t"
-    "\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"e\n\014AddBatch"
-    "Args\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022\034\n\024time"
-    "out_milliseconds\030\002 \001(\005\022\033\n\014reset_scores\030\003"
-    " \001(\010:\005false\"N\n\023InvokeIterationArgs\022\033\n\020it"
-    "erations_count\030\001 \001(\005:\0011\022\032\n\014reset_scores\030"
-    "\002 \001(\010:\004true\"0\n\014WaitIdleArgs\022 \n\024timeout_m"
-    "illiseconds\030\001 \001(\005:\002-1", 6541);
+    "el\022\027\n\017dictionary_name\030\004 \001(\t\022\020\n\010class_id\030"
+    "\005 \003(\t\022\"\n\022theta_sparsity_eps\030\006 \001(\002:\0061e-03"
+    "7\022!\n\031theta_sparsity_topic_name\030\007 \003(\t\"<\n\004"
+    "Type\022\030\n\024UnigramDocumentModel\020\000\022\032\n\026Unigra"
+    "mCollectionModel\020\001\"\316\001\n\017PerplexityScore\022\r"
+    "\n\005value\030\001 \003(\001\022\013\n\003raw\030\002 \003(\001\022\022\n\nnormalizer"
+    "\030\003 \003(\001\022\022\n\nzero_words\030\004 \003(\005\022\020\n\010class_id\030\005"
+    " \003(\t\022\034\n\024theta_sparsity_value\030\006 \001(\001\022\"\n\032th"
+    "eta_sparsity_zero_topics\030\007 \001(\005\022#\n\033theta_"
+    "sparsity_total_topics\030\010 \001(\005\"|\n\030SparsityT"
+    "hetaScoreConfig\022\031\n\nfield_name\030\001 \001(\t:\005@bo"
+    "dy\022\034\n\013stream_name\030\002 \001(\t:\007@global\022\023\n\003eps\030"
+    "\003 \001(\002:\0061e-037\022\022\n\ntopic_name\030\004 \003(\t\"N\n\022Spa"
+    "rsityThetaScore\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_t"
+    "opics\030\002 \001(\005\022\024\n\014total_topics\030\003 \001(\005\"S\n\026Spa"
+    "rsityPhiScoreConfig\022\023\n\003eps\030\001 \001(\002:\0061e-037"
+    "\022\020\n\010class_id\030\002 \001(\t\022\022\n\ntopic_name\030\003 \003(\t\"L"
+    "\n\020SparsityPhiScore\022\r\n\005value\030\001 \001(\001\022\023\n\013zer"
+    "o_tokens\030\002 \001(\005\022\024\n\014total_tokens\030\003 \001(\005\"T\n\031"
+    "ItemsProcessedScoreConfig\022\031\n\nfield_name\030"
+    "\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@glob"
+    "al\"$\n\023ItemsProcessedScore\022\r\n\005value\030\001 \001(\005"
+    "\"T\n\024TopTokensScoreConfig\022\026\n\nnum_tokens\030\001"
+    " \001(\005:\00210\022\020\n\010class_id\030\002 \001(\t\022\022\n\ntopic_name"
+    "\030\003 \003(\t\"m\n\016TopTokensScore\022\023\n\013num_entries\030"
+    "\001 \001(\005\022\022\n\ntopic_name\030\002 \003(\t\022\023\n\013topic_index"
+    "\030\003 \003(\005\022\r\n\005token\030\004 \003(\t\022\016\n\006weight\030\005 \003(\002\"g\n"
+    "\027ThetaSnippetScoreConfig\022\031\n\nfield_name\030\001"
+    " \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@globa"
+    "l\022\023\n\007item_id\030\003 \003(\005B\002\020\001\"F\n\021ThetaSnippetSc"
+    "ore\022\017\n\007item_id\030\001 \003(\005\022 \n\006values\030\002 \003(\0132\020.a"
+    "rtm.FloatArray\"|\n\026TopicKernelScoreConfig"
+    "\022\023\n\003eps\030\001 \001(\002:\0061e-037\022\020\n\010class_id\030\002 \001(\t\022"
+    "\022\n\ntopic_name\030\003 \003(\t\022\'\n\032probability_mass_"
+    "threshold\030\004 \001(\001:\0030.1\"\355\001\n\020TopicKernelScor"
+    "e\022&\n\013kernel_size\030\001 \001(\0132\021.artm.DoubleArra"
+    "y\022(\n\rkernel_purity\030\002 \001(\0132\021.artm.DoubleAr"
+    "ray\022*\n\017kernel_contrast\030\003 \001(\0132\021.artm.Doub"
+    "leArray\022\033\n\023average_kernel_size\030\004 \001(\001\022\035\n\025"
+    "average_kernel_purity\030\005 \001(\001\022\037\n\027average_k"
+    "ernel_contrast\030\006 \001(\001\"\200\002\n\nTopicModel\022\024\n\004n"
+    "ame\030\001 \001(\t:\006@model\022\024\n\014topics_count\030\002 \001(\005\022"
+    "\022\n\ntopic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rto"
+    "ken_weights\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010c"
+    "lass_id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\032U\n\023Topi"
+    "cModelInternals\022\036\n\004n_wt\030\001 \003(\0132\020.artm.Flo"
+    "atArray\022\036\n\004r_wt\030\002 \003(\0132\020.artm.FloatArray\""
+    "\240\001\n\013ThetaMatrix\022\032\n\nmodel_name\030\001 \001(\t:\006@mo"
+    "del\022\017\n\007item_id\030\002 \003(\005\022&\n\014item_weights\030\003 \003"
+    "(\0132\020.artm.FloatArray\022\022\n\ntopic_name\030\004 \003(\t"
+    "\022\024\n\014topics_count\030\005 \001(\005\022\022\n\nitem_title\030\006 \003"
+    "(\t\"\323\002\n\026CollectionParserConfig\022B\n\006format\030"
+    "\001 \001(\0162#.artm.CollectionParserConfig.Form"
+    "at:\rBagOfWordsUci\022\031\n\021docword_file_path\030\002"
+    " \001(\t\022\027\n\017vocab_file_path\030\003 \001(\t\022\025\n\rtarget_"
+    "folder\030\004 \001(\t\022\034\n\024dictionary_file_name\030\005 \001"
+    "(\t\022!\n\023num_items_per_batch\030\006 \001(\005:\0041000\022\036\n"
+    "\026cooccurrence_file_name\030\007 \001(\t\022\032\n\022cooccur"
+    "rence_token\030\010 \003(\t\"-\n\006Format\022\021\n\rBagOfWord"
+    "sUci\020\000\022\020\n\014MatrixMarket\020\001\"\177\n\024SynchronizeM"
+    "odelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014decay_we"
+    "ight\030\002 \001(\002:\0011\022!\n\023invoke_regularizers\030\003 \001"
+    "(\010:\004true\022\027\n\014apply_weight\030\004 \001(\002:\0011\"B\n\023Ini"
+    "tializeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017"
+    "dictionary_name\030\002 \001(\t\"\\\n\021GetTopicModelAr"
+    "gs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003"
+    "(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\"\211\001\n\022"
+    "GetThetaMatrixArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032"
+    "\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic_name"
+    "\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clean_cac"
+    "he\030\005 \001(\010:\005false\"W\n\021GetScoreValueArgs\022\022\n\n"
+    "model_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005"
+    "batch\030\003 \001(\0132\013.artm.Batch\"e\n\014AddBatchArgs"
+    "\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022\034\n\024timeout_"
+    "milliseconds\030\002 \001(\005\022\033\n\014reset_scores\030\003 \001(\010"
+    ":\005false\"N\n\023InvokeIterationArgs\022\033\n\020iterat"
+    "ions_count\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001("
+    "\010:\004true\"0\n\014WaitIdleArgs\022 \n\024timeout_milli"
+    "seconds\030\001 \001(\005:\002-1", 6577);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -10114,6 +10117,7 @@ const int PerplexityScoreConfig::kFieldNameFieldNumber;
 const int PerplexityScoreConfig::kStreamNameFieldNumber;
 const int PerplexityScoreConfig::kModelTypeFieldNumber;
 const int PerplexityScoreConfig::kDictionaryNameFieldNumber;
+const int PerplexityScoreConfig::kClassIdFieldNumber;
 const int PerplexityScoreConfig::kThetaSparsityEpsFieldNumber;
 const int PerplexityScoreConfig::kThetaSparsityTopicNameFieldNumber;
 #endif  // !_MSC_VER
@@ -10201,6 +10205,7 @@ void PerplexityScoreConfig::Clear() {
     }
     theta_sparsity_eps_ = 1e-037f;
   }
+  class_id_.Clear();
   theta_sparsity_topic_name_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -10279,12 +10284,31 @@ bool PerplexityScoreConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(45)) goto parse_theta_sparsity_eps;
+        if (input->ExpectTag(42)) goto parse_class_id;
         break;
       }
 
-      // optional float theta_sparsity_eps = 5 [default = 1e-037];
+      // repeated string class_id = 5;
       case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_class_id:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_class_id()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->class_id(this->class_id_size() - 1).data(),
+            this->class_id(this->class_id_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(42)) goto parse_class_id;
+        if (input->ExpectTag(53)) goto parse_theta_sparsity_eps;
+        break;
+      }
+
+      // optional float theta_sparsity_eps = 6 [default = 1e-037];
+      case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
          parse_theta_sparsity_eps:
@@ -10295,12 +10319,12 @@ bool PerplexityScoreConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_theta_sparsity_topic_name;
+        if (input->ExpectTag(58)) goto parse_theta_sparsity_topic_name;
         break;
       }
 
-      // repeated string theta_sparsity_topic_name = 6;
-      case 6: {
+      // repeated string theta_sparsity_topic_name = 7;
+      case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_theta_sparsity_topic_name:
@@ -10313,7 +10337,7 @@ bool PerplexityScoreConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_theta_sparsity_topic_name;
+        if (input->ExpectTag(58)) goto parse_theta_sparsity_topic_name;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -10369,18 +10393,27 @@ void PerplexityScoreConfig::SerializeWithCachedSizes(
       4, this->dictionary_name(), output);
   }
 
-  // optional float theta_sparsity_eps = 5 [default = 1e-037];
-  if (has_theta_sparsity_eps()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(5, this->theta_sparsity_eps(), output);
+  // repeated string class_id = 5;
+  for (int i = 0; i < this->class_id_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+    this->class_id(i).data(), this->class_id(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      5, this->class_id(i), output);
   }
 
-  // repeated string theta_sparsity_topic_name = 6;
+  // optional float theta_sparsity_eps = 6 [default = 1e-037];
+  if (has_theta_sparsity_eps()) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(6, this->theta_sparsity_eps(), output);
+  }
+
+  // repeated string theta_sparsity_topic_name = 7;
   for (int i = 0; i < this->theta_sparsity_topic_name_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
     this->theta_sparsity_topic_name(i).data(), this->theta_sparsity_topic_name(i).length(),
     ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      6, this->theta_sparsity_topic_name(i), output);
+      7, this->theta_sparsity_topic_name(i), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -10427,18 +10460,27 @@ void PerplexityScoreConfig::SerializeWithCachedSizes(
         4, this->dictionary_name(), target);
   }
 
-  // optional float theta_sparsity_eps = 5 [default = 1e-037];
-  if (has_theta_sparsity_eps()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(5, this->theta_sparsity_eps(), target);
+  // repeated string class_id = 5;
+  for (int i = 0; i < this->class_id_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->class_id(i).data(), this->class_id(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(5, this->class_id(i), target);
   }
 
-  // repeated string theta_sparsity_topic_name = 6;
+  // optional float theta_sparsity_eps = 6 [default = 1e-037];
+  if (has_theta_sparsity_eps()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(6, this->theta_sparsity_eps(), target);
+  }
+
+  // repeated string theta_sparsity_topic_name = 7;
   for (int i = 0; i < this->theta_sparsity_topic_name_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->theta_sparsity_topic_name(i).data(), this->theta_sparsity_topic_name(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(6, this->theta_sparsity_topic_name(i), target);
+      WriteStringToArray(7, this->theta_sparsity_topic_name(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -10479,13 +10521,20 @@ int PerplexityScoreConfig::ByteSize() const {
           this->dictionary_name());
     }
 
-    // optional float theta_sparsity_eps = 5 [default = 1e-037];
+    // optional float theta_sparsity_eps = 6 [default = 1e-037];
     if (has_theta_sparsity_eps()) {
       total_size += 1 + 4;
     }
 
   }
-  // repeated string theta_sparsity_topic_name = 6;
+  // repeated string class_id = 5;
+  total_size += 1 * this->class_id_size();
+  for (int i = 0; i < this->class_id_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->class_id(i));
+  }
+
+  // repeated string theta_sparsity_topic_name = 7;
   total_size += 1 * this->theta_sparsity_topic_name_size();
   for (int i = 0; i < this->theta_sparsity_topic_name_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -10517,6 +10566,7 @@ void PerplexityScoreConfig::MergeFrom(const ::google::protobuf::Message& from) {
 
 void PerplexityScoreConfig::MergeFrom(const PerplexityScoreConfig& from) {
   GOOGLE_CHECK_NE(&from, this);
+  class_id_.MergeFrom(from.class_id_);
   theta_sparsity_topic_name_.MergeFrom(from.theta_sparsity_topic_name_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_field_name()) {
@@ -10561,6 +10611,7 @@ void PerplexityScoreConfig::Swap(PerplexityScoreConfig* other) {
     std::swap(stream_name_, other->stream_name_);
     std::swap(model_type_, other->model_type_);
     std::swap(dictionary_name_, other->dictionary_name_);
+    class_id_.Swap(&other->class_id_);
     std::swap(theta_sparsity_eps_, other->theta_sparsity_eps_);
     theta_sparsity_topic_name_.Swap(&other->theta_sparsity_topic_name_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -10585,6 +10636,7 @@ const int PerplexityScore::kValueFieldNumber;
 const int PerplexityScore::kRawFieldNumber;
 const int PerplexityScore::kNormalizerFieldNumber;
 const int PerplexityScore::kZeroWordsFieldNumber;
+const int PerplexityScore::kClassIdFieldNumber;
 const int PerplexityScore::kThetaSparsityValueFieldNumber;
 const int PerplexityScore::kThetaSparsityZeroTopicsFieldNumber;
 const int PerplexityScore::kThetaSparsityTotalTopicsFieldNumber;
@@ -10606,10 +10658,6 @@ PerplexityScore::PerplexityScore(const PerplexityScore& from)
 
 void PerplexityScore::SharedCtor() {
   _cached_size_ = 0;
-  value_ = 0;
-  raw_ = 0;
-  normalizer_ = 0;
-  zero_words_ = 0;
   theta_sparsity_value_ = 0;
   theta_sparsity_zero_topics_ = 0;
   theta_sparsity_total_topics_ = 0;
@@ -10647,15 +10695,16 @@ PerplexityScore* PerplexityScore::New() const {
 }
 
 void PerplexityScore::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    value_ = 0;
-    raw_ = 0;
-    normalizer_ = 0;
-    zero_words_ = 0;
+  if (_has_bits_[5 / 32] & (0xffu << (5 % 32))) {
     theta_sparsity_value_ = 0;
     theta_sparsity_zero_topics_ = 0;
     theta_sparsity_total_topics_ = 0;
   }
+  value_.Clear();
+  raw_.Clear();
+  normalizer_.Clear();
+  zero_words_.Clear();
+  class_id_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -10666,71 +10715,115 @@ bool PerplexityScore::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional double value = 1;
+      // repeated double value = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+         parse_value:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &value_)));
-          set_has_value();
+                 1, 9, input, this->mutable_value())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, this->mutable_value())));
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(9)) goto parse_value;
         if (input->ExpectTag(17)) goto parse_raw;
         break;
       }
 
-      // optional double raw = 2;
+      // repeated double raw = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
          parse_raw:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &raw_)));
-          set_has_raw();
+                 1, 17, input, this->mutable_raw())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, this->mutable_raw())));
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(17)) goto parse_raw;
         if (input->ExpectTag(25)) goto parse_normalizer;
         break;
       }
 
-      // optional double normalizer = 3;
+      // repeated double normalizer = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
          parse_normalizer:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &normalizer_)));
-          set_has_normalizer();
+                 1, 25, input, this->mutable_normalizer())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, this->mutable_normalizer())));
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(25)) goto parse_normalizer;
         if (input->ExpectTag(32)) goto parse_zero_words;
         break;
       }
 
-      // optional int32 zero_words = 4;
+      // repeated int32 zero_words = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_zero_words:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &zero_words_)));
-          set_has_zero_words();
+                 1, 32, input, this->mutable_zero_words())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, this->mutable_zero_words())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(41)) goto parse_theta_sparsity_value;
+        if (input->ExpectTag(32)) goto parse_zero_words;
+        if (input->ExpectTag(42)) goto parse_class_id;
         break;
       }
 
-      // optional double theta_sparsity_value = 5;
+      // repeated string class_id = 5;
       case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_class_id:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_class_id()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->class_id(this->class_id_size() - 1).data(),
+            this->class_id(this->class_id_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(42)) goto parse_class_id;
+        if (input->ExpectTag(49)) goto parse_theta_sparsity_value;
+        break;
+      }
+
+      // optional double theta_sparsity_value = 6;
+      case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
          parse_theta_sparsity_value:
@@ -10741,12 +10834,12 @@ bool PerplexityScore::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(48)) goto parse_theta_sparsity_zero_topics;
+        if (input->ExpectTag(56)) goto parse_theta_sparsity_zero_topics;
         break;
       }
 
-      // optional int32 theta_sparsity_zero_topics = 6;
-      case 6: {
+      // optional int32 theta_sparsity_zero_topics = 7;
+      case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_theta_sparsity_zero_topics:
@@ -10757,12 +10850,12 @@ bool PerplexityScore::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(56)) goto parse_theta_sparsity_total_topics;
+        if (input->ExpectTag(64)) goto parse_theta_sparsity_total_topics;
         break;
       }
 
-      // optional int32 theta_sparsity_total_topics = 7;
-      case 7: {
+      // optional int32 theta_sparsity_total_topics = 8;
+      case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_theta_sparsity_total_topics:
@@ -10795,39 +10888,52 @@ bool PerplexityScore::MergePartialFromCodedStream(
 
 void PerplexityScore::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional double value = 1;
-  if (has_value()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(1, this->value(), output);
+  // repeated double value = 1;
+  for (int i = 0; i < this->value_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(
+      1, this->value(i), output);
   }
 
-  // optional double raw = 2;
-  if (has_raw()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(2, this->raw(), output);
+  // repeated double raw = 2;
+  for (int i = 0; i < this->raw_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(
+      2, this->raw(i), output);
   }
 
-  // optional double normalizer = 3;
-  if (has_normalizer()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(3, this->normalizer(), output);
+  // repeated double normalizer = 3;
+  for (int i = 0; i < this->normalizer_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(
+      3, this->normalizer(i), output);
   }
 
-  // optional int32 zero_words = 4;
-  if (has_zero_words()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->zero_words(), output);
+  // repeated int32 zero_words = 4;
+  for (int i = 0; i < this->zero_words_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(
+      4, this->zero_words(i), output);
   }
 
-  // optional double theta_sparsity_value = 5;
+  // repeated string class_id = 5;
+  for (int i = 0; i < this->class_id_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+    this->class_id(i).data(), this->class_id(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      5, this->class_id(i), output);
+  }
+
+  // optional double theta_sparsity_value = 6;
   if (has_theta_sparsity_value()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(5, this->theta_sparsity_value(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->theta_sparsity_value(), output);
   }
 
-  // optional int32 theta_sparsity_zero_topics = 6;
+  // optional int32 theta_sparsity_zero_topics = 7;
   if (has_theta_sparsity_zero_topics()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->theta_sparsity_zero_topics(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->theta_sparsity_zero_topics(), output);
   }
 
-  // optional int32 theta_sparsity_total_topics = 7;
+  // optional int32 theta_sparsity_total_topics = 8;
   if (has_theta_sparsity_total_topics()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->theta_sparsity_total_topics(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->theta_sparsity_total_topics(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -10838,39 +10944,52 @@ void PerplexityScore::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* PerplexityScore::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // optional double value = 1;
-  if (has_value()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(1, this->value(), target);
+  // repeated double value = 1;
+  for (int i = 0; i < this->value_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteDoubleToArray(1, this->value(i), target);
   }
 
-  // optional double raw = 2;
-  if (has_raw()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(2, this->raw(), target);
+  // repeated double raw = 2;
+  for (int i = 0; i < this->raw_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteDoubleToArray(2, this->raw(i), target);
   }
 
-  // optional double normalizer = 3;
-  if (has_normalizer()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(3, this->normalizer(), target);
+  // repeated double normalizer = 3;
+  for (int i = 0; i < this->normalizer_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteDoubleToArray(3, this->normalizer(i), target);
   }
 
-  // optional int32 zero_words = 4;
-  if (has_zero_words()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->zero_words(), target);
+  // repeated int32 zero_words = 4;
+  for (int i = 0; i < this->zero_words_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteInt32ToArray(4, this->zero_words(i), target);
   }
 
-  // optional double theta_sparsity_value = 5;
+  // repeated string class_id = 5;
+  for (int i = 0; i < this->class_id_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->class_id(i).data(), this->class_id(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(5, this->class_id(i), target);
+  }
+
+  // optional double theta_sparsity_value = 6;
   if (has_theta_sparsity_value()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(5, this->theta_sparsity_value(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->theta_sparsity_value(), target);
   }
 
-  // optional int32 theta_sparsity_zero_topics = 6;
+  // optional int32 theta_sparsity_zero_topics = 7;
   if (has_theta_sparsity_zero_topics()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->theta_sparsity_zero_topics(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->theta_sparsity_zero_topics(), target);
   }
 
-  // optional int32 theta_sparsity_total_topics = 7;
+  // optional int32 theta_sparsity_total_topics = 8;
   if (has_theta_sparsity_total_topics()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->theta_sparsity_total_topics(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->theta_sparsity_total_topics(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -10883,42 +11002,20 @@ void PerplexityScore::SerializeWithCachedSizes(
 int PerplexityScore::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional double value = 1;
-    if (has_value()) {
-      total_size += 1 + 8;
-    }
-
-    // optional double raw = 2;
-    if (has_raw()) {
-      total_size += 1 + 8;
-    }
-
-    // optional double normalizer = 3;
-    if (has_normalizer()) {
-      total_size += 1 + 8;
-    }
-
-    // optional int32 zero_words = 4;
-    if (has_zero_words()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->zero_words());
-    }
-
-    // optional double theta_sparsity_value = 5;
+  if (_has_bits_[5 / 32] & (0xffu << (5 % 32))) {
+    // optional double theta_sparsity_value = 6;
     if (has_theta_sparsity_value()) {
       total_size += 1 + 8;
     }
 
-    // optional int32 theta_sparsity_zero_topics = 6;
+    // optional int32 theta_sparsity_zero_topics = 7;
     if (has_theta_sparsity_zero_topics()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->theta_sparsity_zero_topics());
     }
 
-    // optional int32 theta_sparsity_total_topics = 7;
+    // optional int32 theta_sparsity_total_topics = 8;
     if (has_theta_sparsity_total_topics()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
@@ -10926,6 +11023,44 @@ int PerplexityScore::ByteSize() const {
     }
 
   }
+  // repeated double value = 1;
+  {
+    int data_size = 0;
+    data_size = 8 * this->value_size();
+    total_size += 1 * this->value_size() + data_size;
+  }
+
+  // repeated double raw = 2;
+  {
+    int data_size = 0;
+    data_size = 8 * this->raw_size();
+    total_size += 1 * this->raw_size() + data_size;
+  }
+
+  // repeated double normalizer = 3;
+  {
+    int data_size = 0;
+    data_size = 8 * this->normalizer_size();
+    total_size += 1 * this->normalizer_size() + data_size;
+  }
+
+  // repeated int32 zero_words = 4;
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->zero_words_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        Int32Size(this->zero_words(i));
+    }
+    total_size += 1 * this->zero_words_size() + data_size;
+  }
+
+  // repeated string class_id = 5;
+  total_size += 1 * this->class_id_size();
+  for (int i = 0; i < this->class_id_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->class_id(i));
+  }
+
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -10951,19 +11086,12 @@ void PerplexityScore::MergeFrom(const ::google::protobuf::Message& from) {
 
 void PerplexityScore::MergeFrom(const PerplexityScore& from) {
   GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_value()) {
-      set_value(from.value());
-    }
-    if (from.has_raw()) {
-      set_raw(from.raw());
-    }
-    if (from.has_normalizer()) {
-      set_normalizer(from.normalizer());
-    }
-    if (from.has_zero_words()) {
-      set_zero_words(from.zero_words());
-    }
+  value_.MergeFrom(from.value_);
+  raw_.MergeFrom(from.raw_);
+  normalizer_.MergeFrom(from.normalizer_);
+  zero_words_.MergeFrom(from.zero_words_);
+  class_id_.MergeFrom(from.class_id_);
+  if (from._has_bits_[5 / 32] & (0xffu << (5 % 32))) {
     if (from.has_theta_sparsity_value()) {
       set_theta_sparsity_value(from.theta_sparsity_value());
     }
@@ -10996,10 +11124,11 @@ bool PerplexityScore::IsInitialized() const {
 
 void PerplexityScore::Swap(PerplexityScore* other) {
   if (other != this) {
-    std::swap(value_, other->value_);
-    std::swap(raw_, other->raw_);
-    std::swap(normalizer_, other->normalizer_);
-    std::swap(zero_words_, other->zero_words_);
+    value_.Swap(&other->value_);
+    raw_.Swap(&other->raw_);
+    normalizer_.Swap(&other->normalizer_);
+    zero_words_.Swap(&other->zero_words_);
+    class_id_.Swap(&other->class_id_);
     std::swap(theta_sparsity_value_, other->theta_sparsity_value_);
     std::swap(theta_sparsity_zero_topics_, other->theta_sparsity_zero_topics_);
     std::swap(theta_sparsity_total_topics_, other->theta_sparsity_total_topics_);

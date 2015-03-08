@@ -240,19 +240,21 @@ message PerplexityScoreConfig {
   optional string stream_name = 2 [default = "@global"];
   optional Type model_type = 3 [default = UnigramDocumentModel];
   optional string dictionary_name = 4;
-  optional float theta_sparsity_eps = 5 [default = 1e-37];
-  repeated string theta_sparsity_topic_name = 6;
+  repeated string class_id = 5;
+  optional float theta_sparsity_eps = 6 [default = 1e-37];
+  repeated string theta_sparsity_topic_name = 7;
 }
 
 // Represents a result of calculation of a perplexity score
 message PerplexityScore {
-  optional double value = 1;
-  optional double raw = 2;
-  optional double normalizer = 3;
-  optional int32 zero_words = 4;
-  optional double theta_sparsity_value = 5;
-  optional int32 theta_sparsity_zero_topics = 6;
-  optional int32 theta_sparsity_total_topics = 7;
+  repeated double value = 1;
+  repeated double raw = 2;
+  repeated double normalizer = 3;
+  repeated int32 zero_words = 4;
+  repeated string class_id = 5;
+  optional double theta_sparsity_value = 6;
+  optional int32 theta_sparsity_zero_topics = 7;
+  optional int32 theta_sparsity_total_topics = 8;
 }
 
 // Represents a configuration of a theta sparsity score

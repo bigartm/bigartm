@@ -48,6 +48,6 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
     perplexity_collection = perplexity_collection_score.GetValue(model)
     perplexity_document   = perplexity_document_score.GetValue(model)
     print "Iter#" + str(iter),
-    print ": Collection perplexity = %.3f" % perplexity_collection.value,
-    print ", Document perplexity = %.3f " % perplexity_document.value,
+    print ": Collection perplexity = %.3f" % perplexity_collection.value[0],
+    print ", Document perplexity = %.3f " % perplexity_document.value[0],
     print ", Zero words = %i " % perplexity_document.zero_words

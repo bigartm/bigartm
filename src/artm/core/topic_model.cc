@@ -81,7 +81,7 @@ int TokenCollectionWeights::AddToken(bool random_init) {
       values[i] = ThreadSafeRandom::singleton().GenerateFloat();
     }
   } else {
-    memset(values, 0, sizeof(float)* topic_size_);
+    memset(values, 0, sizeof(float) * topic_size_);
   }
 
   return values_.size() - 1;

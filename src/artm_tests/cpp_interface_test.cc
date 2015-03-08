@@ -171,7 +171,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
 
     if (!is_network_mode) {
       if (iter > 0)
-        EXPECT_EQ(perplexity->value(), previous_perplexity);
+        EXPECT_EQ(perplexity->value(0), previous_perplexity);
 
       artm::GetScoreValueArgs score_args;
       score_args.set_model_name(model.name());
@@ -180,11 +180,11 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
       auto perplexity_data = master_component->GetScore(score_args);
       auto perplexity2 = std::make_shared< ::artm::PerplexityScore>();
       perplexity2->ParseFromString(perplexity_data->data());
-      previous_perplexity = perplexity2->value();
+      previous_perplexity = perplexity2->value(0);
     }
 
     if (iter == 1) {
-      expected_normalizer = perplexity->normalizer();
+      expected_normalizer = perplexity->normalizer(0);
       EXPECT_GT(expected_normalizer, 0);
 
       try {
@@ -199,7 +199,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
       if (!is_network_mode) {
         // Verify that normalizer does not grow starting from second iteration.
         // This confirms that the Instance::ForceResetScores() function works as expected.
-        EXPECT_EQ(perplexity->normalizer(), expected_normalizer);
+        EXPECT_EQ(perplexity->normalizer(0), expected_normalizer);
       }
     }
   }

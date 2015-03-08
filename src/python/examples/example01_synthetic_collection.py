@@ -35,7 +35,7 @@ with artm.library.MasterComponent() as master:
     master.AddBatch(batch)           # Invoke one scan of this batch...
     master.WaitIdle();               # and wait until it completes.
     model.Synchronize();             # Synchronize topic model.
-    print "Iter#" + str(iter) + ": Perplexity = %.3f" % perplexity_score.GetValue(model).value
+    print "Iter#" + str(iter) + ": Perplexity = %.3f" % perplexity_score.GetValue(model).value[0]
 
   top_tokens = top_tokens_score.GetValue(model)
 

@@ -250,5 +250,5 @@ TEST(Instance, MultipleStreamsAndModels) {
     }
   }
 
-  EXPECT_GT(perplexity_score.value(), 0);
+  EXPECT_GT(perplexity_score.value(0), 0);
 }

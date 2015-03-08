@@ -45,5 +45,5 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
     master.WaitIdle();               # and wait until it completes.
     model.Synchronize();             # Synchronize topic model.
     print "Iter#" + str(iter),
-    print ": Train perplexity = %.3f" % perplexity_train_score.GetValue(model).value,
-    print ", Test perplexity = %.3f " % perplexity_test_score.GetValue(model).value
+    print ": Train perplexity = %.3f" % perplexity_train_score.GetValue(model).value[0],
+    print ", Test perplexity = %.3f " % perplexity_test_score.GetValue(model).value[0]
