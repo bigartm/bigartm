@@ -5,10 +5,11 @@
 
 .. _stories:
 
-Advanced experiments
-====================
+Whitepapers
+===========
 
 .. toctree::
    :maxdepth: 2
 
    experiment02_artm
+   cloud_service
