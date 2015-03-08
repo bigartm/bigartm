@@ -54,9 +54,22 @@ void Perplexity::AppendScore(
   }
 
   // the following code counts perplexity
+  bool use_classes_from_model = false;
+  if (config_.class_id_size() == 0) use_classes_from_model = true;
+
   std::map<::artm::core::ClassId, float> class_weights;
-  for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
-    class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
+  if (use_classes_from_model) {
+    for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
+      class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
+  } else {
+    for (auto& class_id : config_.class_id()) {
+      for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
+        if (class_id == model_config.class_id(i)) {
+          class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
+          break;
+        }
+    }
+  }
   bool use_class_id = !class_weights.empty();
 
   float n_d = 0;

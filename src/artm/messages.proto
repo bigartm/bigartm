@@ -242,6 +242,7 @@ message PerplexityScoreConfig {
   optional string dictionary_name = 4;
   optional float theta_sparsity_eps = 5 [default = 1e-37];
   repeated string theta_sparsity_topic_name = 6;
+  repeated string class_id = 7;
 }
 
 // Represents a result of calculation of a perplexity score

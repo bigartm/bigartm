@@ -3459,6 +3459,22 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& theta_sparsity_topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_theta_sparsity_topic_name();
 
+  // repeated string class_id = 7;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 7;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
   // @@protoc_insertion_point(class_scope:artm.PerplexityScoreConfig)
  private:
   inline void set_has_field_name();
@@ -3482,9 +3498,10 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   int model_type_;
   float theta_sparsity_eps_;
   ::google::protobuf::RepeatedPtrField< ::std::string> theta_sparsity_topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -10809,6 +10826,50 @@ PerplexityScoreConfig::theta_sparsity_topic_name() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 PerplexityScoreConfig::mutable_theta_sparsity_topic_name() {
   return &theta_sparsity_topic_name_;
+}
+
+// repeated string class_id = 7;
+inline int PerplexityScoreConfig::class_id_size() const {
+  return class_id_.size();
+}
+inline void PerplexityScoreConfig::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& PerplexityScoreConfig::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* PerplexityScoreConfig::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void PerplexityScoreConfig::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void PerplexityScoreConfig::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void PerplexityScoreConfig::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* PerplexityScoreConfig::add_class_id() {
+  return class_id_.Add();
+}
+inline void PerplexityScoreConfig::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void PerplexityScoreConfig::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void PerplexityScoreConfig::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+PerplexityScoreConfig::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+PerplexityScoreConfig::mutable_class_id() {
+  return &class_id_;
 }
 
 // -------------------------------------------------------------------
