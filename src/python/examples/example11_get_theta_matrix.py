@@ -35,6 +35,7 @@ with artm.library.MasterComponent(disk_path=batches_disk_path) as master:
 
     # Option 3.
     # Getting theta matrix online during iteration.
+    # This does requires "master.config().cache_theta = True", but never caches the entire Theta because we clean it.
     # This is the best alternative to Option 1 if you ca not afford caching entire ThetaMatrix in memory.
     batches = glob.glob(batches_disk_path + "/*.batch")
     for batch_index, batch_filename in enumerate(batches):
