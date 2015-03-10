@@ -234,7 +234,7 @@ MasterComponent
 
       Retrieves and returns the internal state of a regularizer with the specific name.
 
-   .. py:method:: GetThetaMatrix(model = None, batch = None, args = messages_pb2.GetThetaMatrixArgs())
+   .. py:method:: GetThetaMatrix(model = None, batch = None, clean_cache = None, args = messages_pb2.GetThetaMatrixArgs())
 
       Retrieves an instance of :ref:`ThetaMatrix` class.
       The content depends on *batch* parameter.
