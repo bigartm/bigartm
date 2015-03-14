@@ -11,10 +11,13 @@
 
 #include "artm/core/internals.pb.h"
 
+#include "artm_tests/test_mother.h"
+
 TEST(CppInterface, Canary) {
 }
 
 void BasicTest(bool is_network_mode, bool is_proxy_mode) {
+  std::string target_path = artm::test::Helpers::getUniqueString();
   const int nTopics = 5;
 
   // Endpoints:
@@ -33,7 +36,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     master_config.set_create_endpoint("tcp://*:5555");
     master_config.set_connect_endpoint("tcp://localhost:5555");
     master_config.add_node_connect_endpoint("tcp://localhost:5556");
-    master_config.set_disk_path(".");
+    master_config.set_disk_path(target_path);
 
     // Clean all .batches files
     boost::filesystem::recursive_directory_iterator it(".");
@@ -144,7 +147,7 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   }
 
   // Index doc-token matrix
-  if (is_network_mode) artm::SaveBatch(batch, "00b6d631-46a6-4edf-8ef6-016c7b27d9f0.batch");
+  if (is_network_mode) artm::SaveBatch(batch, target_path);
 
   std::shared_ptr<artm::TopicModel> topic_model;
   double expected_normalizer = 0;
@@ -403,6 +406,9 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   EXPECT_EQ(new_topic_model4->topic_name(1), model_config.topic_name(2));
   EXPECT_EQ(new_topic_model4->topic_name(2), model_config.topic_name(3));
   EXPECT_EQ(new_topic_model4->topic_name(3), model_config.topic_name(4));
+
+  try { boost::filesystem::remove_all(target_path); }
+  catch (...) {}
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode
