@@ -290,10 +290,15 @@ int execute(const artm_options& options) {
     unique_tokens = ::artm::ParseCollection(collection_parser_config);
     std::cout << "OK.\n";
   } else {
-    std::cout << "Reuse " << batch_files_count << " batches in folder '" << options.batch_folder << "\n";
-    std::cout << "Loading dictionary file... ";
-    unique_tokens = ::artm::LoadDictionary((fs::path(options.batch_folder) / options.dictionary_file).string());
-    std::cout << "OK.\n";
+    std::cout << "Reuse " << batch_files_count << " batches in folder '" << options.batch_folder << "'\n";
+    std::string dictionary_full_filename = (fs::path(options.batch_folder) / options.dictionary_file).string();
+    if (fs::exists(dictionary_full_filename)) {
+      std::cout << "Loading dictionary file... ";
+      unique_tokens = ::artm::LoadDictionary(dictionary_full_filename);
+      std::cout << "OK.\n";
+    } else {
+      std::cout << "Dictionary file " << dictionary_full_filename << " does not exist; BigARTM will use all tokens from batches.\n";
+    }
   }
 
   // Step 3. Create master component.
@@ -308,7 +313,9 @@ int execute(const artm_options& options) {
     master_component.reset(new MasterComponent(master_config));
   }
 
-  Dictionary dictionary(*master_component, *unique_tokens);
+  std::shared_ptr<Dictionary> dictionary;
+  if (unique_tokens != nullptr)
+    dictionary.reset(new Dictionary(*master_component, *unique_tokens));
 
   // Step 4. Configure regularizers.
   std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
@@ -324,7 +331,8 @@ int execute(const artm_options& options) {
 
   // Step 5. Create and initialize model.
   Model model(*master_component, model_config);
-  model.Initialize(dictionary);
+  if (dictionary != nullptr)
+    model.Initialize(*dictionary);
 
   for (int iter = 0; iter < options.num_iters; ++iter) {
     {
@@ -470,7 +478,7 @@ int main(int argc, char * argv[]) {
     // options.docword = "D:\\datasets\\docword.kos.txt";
     // options.vocab   = "D:\\datasets\\vocab.kos.txt";
 
-    bool show_help = vm.count("help");
+    bool show_help = (vm.count("help") > 0);
     if (options.docword.empty() || options.vocab.empty()) {
       // Show help if user neither provided batch folder, nor docword/vocab files
       if (!options.b_reuse_batch && (!vm.count("batch_folder") || vm["batch_folder"].defaulted())) show_help = true;
