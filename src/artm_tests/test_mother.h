@@ -16,6 +16,13 @@
 namespace artm {
 namespace test {
 
+class Helpers {
+ public:
+  static std::string getUniqueString() {
+    return boost::lexical_cast<std::string>(boost::uuids::random_generator()());
+  }
+};
+
 class TestMother {
  public:
   TestMother() : nTopics(10), regularizer_name("regularizer1") {}
