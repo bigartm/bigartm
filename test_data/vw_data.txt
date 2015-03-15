@@ -1,0 +1,2 @@
+doc1 hello world:2 |author alex:3 
+doc2 |author noname |@default_class hello:5

@@ -44,6 +44,8 @@ ScoreData_Type_TopicKernel = 6
 PerplexityScoreConfig_Type_UnigramDocumentModel = 0
 PerplexityScoreConfig_Type_UnigramCollectionModel = 1
 CollectionParserConfig_Format_BagOfWordsUci = 0
+CollectionParserConfig_Format_MatrixMarket = 1
+CollectionParserConfig_Format_VowpalWabbit = 2
 MasterComponentConfig_ModusOperandi_Local = 0
 MasterComponentConfig_ModusOperandi_Network = 1
 
