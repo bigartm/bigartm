@@ -79,6 +79,7 @@ struct artm_options {
   bool b_no_scores;
   bool b_reuse_theta;
   std::vector<std::string> nodes;
+  std::vector<std::string> class_id;
 };
 
 void configureStreams(artm::MasterComponentConfig* master_config) {
@@ -98,7 +99,7 @@ void configureStreams(artm::MasterComponentConfig* master_config) {
   test_stream->add_residuals(9);
 }
 
-void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* model_config) {
+void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* model_config, const artm_options& options) {
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
   perplexity_config.set_stream_name("test_stream");
@@ -149,13 +150,27 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   master_config->add_score_config()->CopyFrom(score_config);
   model_config->add_score_name(score_config.name());
 
-  ::artm::TopTokensScoreConfig top_tokens_config;
-  top_tokens_config.set_num_tokens(6);
-  score_config.set_config(top_tokens_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
-  score_config.set_name("top_tokens");
-  master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
+  if (options.class_id.empty()) {
+    ::artm::TopTokensScoreConfig top_tokens_config;
+    top_tokens_config.set_num_tokens(6);
+    score_config.set_config(top_tokens_config.SerializeAsString());
+    score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
+    score_config.set_name("top_tokens");
+    master_config->add_score_config()->CopyFrom(score_config);
+    model_config->add_score_name(score_config.name());
+  }
+  else {
+    for (const std::string& class_id : options.class_id) {
+      ::artm::TopTokensScoreConfig top_tokens_config;
+      top_tokens_config.set_num_tokens(6);
+      top_tokens_config.set_class_id(class_id);
+      score_config.set_config(top_tokens_config.SerializeAsString());
+      score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
+      score_config.set_name(class_id + "_top_tokens");
+      master_config->add_score_config()->CopyFrom(score_config);
+      model_config->add_score_name(score_config.name());
+    }
+  }
 
   ::artm::ThetaSnippetScoreConfig theta_snippet_config;
   theta_snippet_config.set_stream_name("train_stream");
@@ -218,6 +233,19 @@ void configureItemsProcessedScore(artm::MasterComponentConfig* master_config, Mo
   model_config->add_score_name(score_config.name());
 }
 
+void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class_id) {
+  std::cout << "\nTop tokens for " << class_id << ":";
+  int topic_index = -1;
+  for (int i = 0; i < top_tokens.num_entries(); i++) {
+    if (top_tokens.topic_index(i) != topic_index) {
+      topic_index = top_tokens.topic_index(i);
+      std::cout << "\n#" << (topic_index + 1) << ": ";
+    }
+
+    std::cout << top_tokens.token(i) << "(" << std::setw(2) << std::setprecision(2) << top_tokens.weight(i) << ") ";
+  }
+}
+
 int execute(const artm_options& options) {
   bool is_network_mode = (options.nodes.size() > 0);
   bool is_proxy = (!options.proxy.empty());
@@ -252,10 +280,16 @@ int execute(const artm_options& options) {
   model_config.set_stream_name("train_stream");
   if (options.b_reuse_theta) model_config.set_reuse_theta(true);
   model_config.set_name("15081980-90a7-4767-ab85-7cb551c39339");  // randomly generated GUID
+  if (options.class_id.size() > 0) {
+    for (const std::string& class_id : options.class_id) {
+      model_config.add_class_id(class_id);
+      model_config.add_class_weight(1.0f);
+    }
+  }
 
   configureStreams(&master_config);
   if (!options.b_no_scores)
-    configureScores(&master_config, &model_config);
+    configureScores(&master_config, &model_config, options);
 
   configureItemsProcessedScore(&master_config, &model_config);
 
@@ -430,15 +464,14 @@ int execute(const artm_options& options) {
   if (!options.b_no_scores) {
     std::cout << std::endl;
 
-    auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
-    int topic_index = -1;
-    for (int i = 0; i < top_tokens->num_entries(); i++) {
-      if (top_tokens->topic_index(i) != topic_index) {
-        topic_index = top_tokens->topic_index(i);
-        std::cout << "\n#" << (topic_index + 1) << ": ";
+    if (options.class_id.empty()) {
+      auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
+      showTopTokenScore(*top_tokens, "@default_class");
+    } else {
+      for (const std::string& class_id : options.class_id) {
+        auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, class_id + "_top_tokens");
+        showTopTokenScore(*top_tokens, class_id);
       }
-
-      std::cout << top_tokens->token(i) << "(" << std::setw(2) << std::setprecision(2) << top_tokens->weight(i) << ") ";
     }
 
     auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
@@ -499,6 +532,7 @@ int main(int argc, char * argv[]) {
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market, 2 - vowpal wabbit)")
       ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
+      ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
     ;
     all_options.add(basic_options);
 

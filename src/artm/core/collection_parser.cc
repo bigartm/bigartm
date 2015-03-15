@@ -470,12 +470,10 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
         }
         token = elem.substr(0, split_index);
         std::string token_occurences_string = elem.substr(split_index + 1);
-        try
-        {
+        try {
           token_count = boost::lexical_cast<int>(token_occurences_string);
         }
-        catch (boost::bad_lexical_cast &)
-        {
+        catch (boost::bad_lexical_cast &) {
           std::stringstream ss;
           ss << "Error in " << config_.docword_file_path() << ":" << line_no
              << ", can not parse integer number of occurences: " << elem;
