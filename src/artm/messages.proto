@@ -435,6 +435,7 @@ message AddBatchArgs {
 message InvokeIterationArgs {
   optional int32 iterations_count = 1 [default = 1];
   optional bool reset_scores = 2 [default = true];
+  optional string disk_path = 3;
 }
 
 message WaitIdleArgs {

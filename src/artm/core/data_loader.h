@@ -27,7 +27,7 @@ namespace core {
 
 class Instance;
 class MasterComponentService_Stub;
-class Generation;
+class DiskGeneration;
 
 class DataLoader : boost::noncopyable, public Notifiable {
  public:
@@ -49,7 +49,6 @@ class LocalDataLoader : public DataLoader {
   explicit LocalDataLoader(Instance* instance);
   virtual ~LocalDataLoader();
 
-  int GetTotalItemsCount() const;
   bool AddBatch(const AddBatchArgs& args);
   virtual void Callback(ModelIncrement* model_increment);
 
@@ -62,7 +61,7 @@ class LocalDataLoader : public DataLoader {
                           ::artm::ThetaMatrix* theta_matrix);
 
  private:
-  std::unique_ptr<Generation> generation_;
+  std::unique_ptr<DiskGeneration> generation_;
 
   typedef std::pair<boost::uuids::uuid, ModelName> CacheKey;
   ThreadSafeCollectionHolder<CacheKey, DataLoaderCacheEntry> cache_;

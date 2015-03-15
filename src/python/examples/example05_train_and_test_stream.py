@@ -12,7 +12,7 @@ unique_tokens = artm.library.Library().ParseCollectionOrLoadDictionary(
   data_folder + 'vocab.' + collection_name + '.txt',
   target_folder)
 
-with artm.library.MasterComponent(disk_path = target_folder) as master:
+with artm.library.MasterComponent() as master:
   dictionary = master.CreateDictionary(unique_tokens)
   # Configure test and train streams
   train_stream = artm.messages_pb2.Stream()
@@ -41,9 +41,9 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
   for iter in range(0, 8):
-    master.InvokeIteration(1)        # Invoke one scan of the entire collection...
-    master.WaitIdle();               # and wait until it completes.
-    model.Synchronize();             # Synchronize topic model.
+    master.InvokeIteration(disk_path=target_folder)  # Invoke one scan of the entire collection...
+    master.WaitIdle();                               # and wait until it completes.
+    model.Synchronize();                             # Synchronize topic model.
     print "Iter#" + str(iter),
     print ": Train perplexity = %.3f" % perplexity_train_score.GetValue(model).value,
     print ", Test perplexity = %.3f " % perplexity_test_score.GetValue(model).value

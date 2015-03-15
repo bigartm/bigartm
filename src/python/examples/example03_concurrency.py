@@ -14,7 +14,7 @@ unique_tokens = artm.library.Library().ParseCollectionOrLoadDictionary(
 
 # Create master component and infer topic model
 for processors_count in [4,2,1]:
-  with artm.library.MasterComponent(disk_path = target_folder) as master:
+  with artm.library.MasterComponent() as master:
     dictionary = master.CreateDictionary(unique_tokens)
 
     perplexity_score = master.CreatePerplexityScore()
@@ -30,9 +30,9 @@ for processors_count in [4,2,1]:
     num_iters = 5
     for iter in range(0, num_iters):
       start = time.time()
-      master.InvokeIteration(1)        # Invoke one scan of the entire collection...
-      master.WaitIdle();               # and wait until it completes.
-      model.Synchronize();             # Synchronize topic model.
+      master.InvokeIteration(disk_path=target_folder)  # Invoke one scan over all batches,
+      master.WaitIdle();                               # and wait until it completes.
+      model.Synchronize();                             # Synchronize topic model.
       end = time.time()
       times.append(end - start)
       print "Iter#" + str(iter),

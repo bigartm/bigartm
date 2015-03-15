@@ -1046,9 +1046,10 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AddBatchArgs));
   InvokeIterationArgs_descriptor_ = file->message_type(46);
-  static const int InvokeIterationArgs_offsets_[2] = {
+  static const int InvokeIterationArgs_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InvokeIterationArgs, iterations_count_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InvokeIterationArgs, reset_scores_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InvokeIterationArgs, disk_path_),
   };
   InvokeIterationArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1475,11 +1476,11 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"~\n\014AddBatc"
     "hArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022\034\n\024tim"
     "eout_milliseconds\030\002 \001(\005\022\033\n\014reset_scores\030"
-    "\003 \001(\010:\005false\022\027\n\017batch_file_name\030\004 \001(\t\"N\n"
+    "\003 \001(\010:\005false\022\027\n\017batch_file_name\030\004 \001(\t\"a\n"
     "\023InvokeIterationArgs\022\033\n\020iterations_count"
-    "\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\"0\n"
-    "\014WaitIdleArgs\022 \n\024timeout_milliseconds\030\001 "
-    "\001(\005:\002-1", 6647);
+    "\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\022\021\n"
+    "\tdisk_path\030\003 \001(\t\"0\n\014WaitIdleArgs\022 \n\024time"
+    "out_milliseconds\030\001 \001(\005:\002-1", 6666);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -18852,6 +18853,7 @@ void AddBatchArgs::Swap(AddBatchArgs* other) {
 #ifndef _MSC_VER
 const int InvokeIterationArgs::kIterationsCountFieldNumber;
 const int InvokeIterationArgs::kResetScoresFieldNumber;
+const int InvokeIterationArgs::kDiskPathFieldNumber;
 #endif  // !_MSC_VER
 
 InvokeIterationArgs::InvokeIterationArgs()
@@ -18872,6 +18874,7 @@ void InvokeIterationArgs::SharedCtor() {
   _cached_size_ = 0;
   iterations_count_ = 1;
   reset_scores_ = true;
+  disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -18880,6 +18883,9 @@ InvokeIterationArgs::~InvokeIterationArgs() {
 }
 
 void InvokeIterationArgs::SharedDtor() {
+  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete disk_path_;
+  }
   if (this != default_instance_) {
   }
 }
@@ -18909,6 +18915,11 @@ void InvokeIterationArgs::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     iterations_count_ = 1;
     reset_scores_ = true;
+    if (has_disk_path()) {
+      if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
+        disk_path_->clear();
+      }
+    }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -18947,6 +18958,23 @@ bool InvokeIterationArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(26)) goto parse_disk_path;
+        break;
+      }
+
+      // optional string disk_path = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_disk_path:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_disk_path()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->disk_path().data(), this->disk_path().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -18979,6 +19007,15 @@ void InvokeIterationArgs::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->reset_scores(), output);
   }
 
+  // optional string disk_path = 3;
+  if (has_disk_path()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->disk_path().data(), this->disk_path().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      3, this->disk_path(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -18995,6 +19032,16 @@ void InvokeIterationArgs::SerializeWithCachedSizes(
   // optional bool reset_scores = 2 [default = true];
   if (has_reset_scores()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->reset_scores(), target);
+  }
+
+  // optional string disk_path = 3;
+  if (has_disk_path()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->disk_path().data(), this->disk_path().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->disk_path(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -19018,6 +19065,13 @@ int InvokeIterationArgs::ByteSize() const {
     // optional bool reset_scores = 2 [default = true];
     if (has_reset_scores()) {
       total_size += 1 + 1;
+    }
+
+    // optional string disk_path = 3;
+    if (has_disk_path()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->disk_path());
     }
 
   }
@@ -19053,6 +19107,9 @@ void InvokeIterationArgs::MergeFrom(const InvokeIterationArgs& from) {
     if (from.has_reset_scores()) {
       set_reset_scores(from.reset_scores());
     }
+    if (from.has_disk_path()) {
+      set_disk_path(from.disk_path());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -19078,6 +19135,7 @@ void InvokeIterationArgs::Swap(InvokeIterationArgs* other) {
   if (other != this) {
     std::swap(iterations_count_, other->iterations_count_);
     std::swap(reset_scores_, other->reset_scores_);
+    std::swap(disk_path_, other->disk_path_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
