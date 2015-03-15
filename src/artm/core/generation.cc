@@ -39,7 +39,7 @@ std::vector<BatchManagerTask> DiskGeneration::batch_uuids() const {
   return generation_;
 }
 
-std::shared_ptr<Batch> DiskGeneration::batch(const BatchManagerTask& task) const {
+std::shared_ptr<Batch> DiskGeneration::batch(const BatchManagerTask& task) {
   auto batch = std::make_shared< ::artm::Batch>();
   ::artm::core::BatchHelpers::LoadMessage(task.file_path, batch.get());
   batch->set_id(boost::lexical_cast<std::string>(task.uuid));  // keep batch.id and task.uuid in sync

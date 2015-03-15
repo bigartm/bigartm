@@ -153,13 +153,22 @@ void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
     return;
   }
 
-  if (generation_ == nullptr || generation_->empty()) {
+  DiskGeneration* generation;
+  std::unique_ptr<DiskGeneration> args_generation;
+  if (args.has_disk_path()) {
+    args_generation.reset(new DiskGeneration(args.disk_path()));
+    generation = args_generation.get();
+  } else {
+    generation = generation_.get();
+  }
+
+  if (generation == nullptr || generation->empty()) {
     LOG(WARNING) << "DataLoader::InvokeIteration() - current generation is empty, "
                  << "please populate DataLoader data with some data";
     return;
   }
 
-  std::vector<BatchManagerTask> tasks = generation_->batch_uuids();
+  std::vector<BatchManagerTask> tasks = generation->batch_uuids();
   for (int iter = 0; iter < iterations_count; ++iter) {
     for (auto &task : tasks) {
       instance_->batch_manager()->Add(task);
@@ -275,7 +284,7 @@ void LocalDataLoader::ThreadFunction() {
         continue;
       }
 
-      std::shared_ptr<const Batch> batch = generation_->batch(next_task);
+      std::shared_ptr<const Batch> batch = DiskGeneration::batch(next_task);
       if (batch == nullptr) {
         instance_->batch_manager()->Done(next_task.uuid, ModelName());
         continue;

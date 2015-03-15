@@ -1946,6 +1946,7 @@ Represents an argument of :c:func:`ArtmInvokeIteration` operation.
   message InvokeIterationArgs {
     optional int32 iterations_count = 1 [default = 1];
     optional bool reset_scores = 2 [default = true];
+    optional string disk_path = 3;
   }
 
 .. attribute:: InvokeIterationArgs.iterations_count
@@ -1956,6 +1957,9 @@ Represents an argument of :c:func:`ArtmInvokeIteration` operation.
 
   An optional flag that defines whether to reset all scores before this operation.
 
+.. attribute:: InvokeIterationArgs.disk_path
+
+  A value that defines the disk location with batches to process on this iteration.
 
 .. _WaitIdleArgs:
 

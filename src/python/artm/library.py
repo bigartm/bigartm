@@ -375,9 +375,11 @@ class MasterComponent:
     result = HandleErrorCode(self.lib_, result)
     return False if (result == ARTM_STILL_WORKING) else True
 
-  def InvokeIteration(self, iterations_count = 1):
+  def InvokeIteration(self, iterations_count = 1, disk_path = None):
     args = messages_pb2.InvokeIterationArgs()
     args.iterations_count = iterations_count
+    if disk_path is not None:
+        args.disk_path = disk_path
     args_blob = args.SerializeToString()
     args_blob_p = ctypes.create_string_buffer(args_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmInvokeIteration(self.id_, len(args_blob), args_blob_p))

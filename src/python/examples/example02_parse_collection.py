@@ -32,7 +32,7 @@ else:
   unique_tokens  = artm.library.Library().LoadDictionary(target_folder + '/dictionary');
 
 # Create master component and infer topic model
-with artm.library.MasterComponent(disk_path = target_folder) as master:
+with artm.library.MasterComponent() as master:
   # Create dictionary with tokens frequencies
   dictionary           = master.CreateDictionary(unique_tokens)
 
@@ -61,9 +61,9 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
   for iter in range(0, 8):
-    master.InvokeIteration(1)        # Invoke one scan of the entire collection...
-    master.WaitIdle();               # and wait until it completes.
-    model.Synchronize();             # Synchronize topic model.
+    master.InvokeIteration(disk_path=target_folder)  # Invoke one scan over all batches,
+    master.WaitIdle();                               # and wait until it completes.
+    model.Synchronize();                             # Synchronize topic model.
     print "Iter#" + str(iter),
     print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value,
     print ", Phi sparsity = %.3f" % sparsity_phi_score.GetValue(model).value,
