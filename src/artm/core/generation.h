@@ -16,18 +16,7 @@
 namespace artm {
 namespace core {
 
-// Must be thread-safe (used concurrently in DataLoader).
-class Generation {
- public:
-  virtual std::vector<BatchManagerTask> batch_uuids() const = 0;
-  virtual std::shared_ptr<Batch> batch(const BatchManagerTask& task) const = 0;
-  virtual bool empty() const = 0;
-  virtual int GetTotalItemsCount() const = 0;
-  virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch) = 0;
-  virtual void RemoveBatch(const boost::uuids::uuid& uuid) = 0;
-};
-
-class DiskGeneration : public Generation {
+class DiskGeneration {
  public:
   explicit DiskGeneration(const std::string& disk_path);
 
@@ -36,27 +25,11 @@ class DiskGeneration : public Generation {
 
   virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch);
   virtual void RemoveBatch(const boost::uuids::uuid& uuid);
-  virtual int GetTotalItemsCount() const { return 0; }
   virtual bool empty() const { return generation_.empty(); }
 
  private:
   std::string disk_path_;
   std::vector<BatchManagerTask> generation_;  // created one in constructor and then does not change.
-};
-
-class MemoryGeneration : public Generation {
- public:
-  virtual std::vector<BatchManagerTask> batch_uuids() const;
-  virtual std::shared_ptr<Batch> batch(const BatchManagerTask& task) const;
-
-  virtual boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch);
-  virtual void RemoveBatch(const boost::uuids::uuid& uuid);
-
-  virtual bool empty() const { return generation_.empty(); }
-  virtual int GetTotalItemsCount() const;
-
- private:
-  ThreadSafeCollectionHolder<boost::uuids::uuid, Batch> generation_;
 };
 
 }  // namespace core

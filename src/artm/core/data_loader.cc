@@ -76,9 +76,7 @@ LocalDataLoader::LocalDataLoader(Instance* instance)
       is_stopping(false),
       thread_() {
   std::string disk_path = instance->schema()->config().disk_path();
-  if (disk_path.empty()) {
-    generation_.reset(new MemoryGeneration());
-  } else {
+  if (!disk_path.empty()) {
     generation_.reset(new DiskGeneration(disk_path));
   }
 
@@ -147,10 +145,6 @@ bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
   return true;
 }
 
-int LocalDataLoader::GetTotalItemsCount() const {
-  return generation_->GetTotalItemsCount();
-}
-
 void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
   int iterations_count = args.iterations_count();
   if (iterations_count <= 0) {
@@ -159,14 +153,13 @@ void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
     return;
   }
 
-  auto latest_generation = generation_.get();
-  if (generation_->empty()) {
+  if (generation_ == nullptr || generation_->empty()) {
     LOG(WARNING) << "DataLoader::InvokeIteration() - current generation is empty, "
                  << "please populate DataLoader data with some data";
     return;
   }
 
-  std::vector<BatchManagerTask> tasks = latest_generation->batch_uuids();
+  std::vector<BatchManagerTask> tasks = generation_->batch_uuids();
   for (int iter = 0; iter < iterations_count; ++iter) {
     for (auto &task : tasks) {
       instance_->batch_manager()->Add(task);
