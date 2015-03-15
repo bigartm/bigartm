@@ -9,6 +9,10 @@
 
 #include "boost/lexical_cast.hpp"
 
+#include "boost/uuid/uuid.hpp"
+#include "boost/uuid/uuid_generators.hpp"
+#include "boost/uuid/uuid_io.hpp"
+
 #include "boost/filesystem.hpp"
 namespace fs = boost::filesystem;
 
@@ -71,7 +75,6 @@ struct artm_options {
   float tau_phi;
   float tau_theta;
   float tau_decor;
-  bool b_reuse_batch;
   bool b_paused;
   bool b_no_scores;
   bool b_reuse_theta;
@@ -225,9 +228,19 @@ int execute(const artm_options& options) {
     getchar();
   }
 
+  // There are options for data handling:
+  // 1. User provides docword, vocab and batch_folder => cpp_client parses collection and stores it in batch_folder
+  // 2. User provides docword, vocab, no batch_folder => cpp_client parses collection and stores it in temp folder
+  // 3. User provides batch_folder, but no docword/vocab => cpp_client uses batches from batch_folder
+
+  bool parse_collection = (!options.docword.empty() && !options.vocab.empty());
+  std::string working_batch_folder = options.batch_folder;
+  if (options.batch_folder.empty())
+    working_batch_folder = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
+
   // Step 1. Configuration
   MasterComponentConfig master_config;
-  master_config.set_disk_path(options.batch_folder);
+  master_config.set_disk_path(working_batch_folder);
   master_config.set_processors_count(options.num_processors);
   master_config.set_merger_queue_max_size(options.merger_queue_size);
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
@@ -258,23 +271,21 @@ int execute(const artm_options& options) {
   }
 
   // Step 2. Collection parsing
-  if (!options.b_reuse_batch && fs::exists(fs::path(options.batch_folder))) {
-    if (!fs::is_empty(fs::path(options.batch_folder))) {
-      std::cerr << "The directory is not empty: " << options.batch_folder;
+
+  std::shared_ptr<DictionaryConfig> unique_tokens;
+  if (parse_collection) {
+    if (fs::exists(fs::path(working_batch_folder)) && !fs::is_empty(fs::path(working_batch_folder))) {
+      std::cerr << "Can not parse collection, target batch directory is not empty: " << working_batch_folder;
       return 1;
     }
-  }
 
-  boost::system::error_code error;
-  fs::create_directories(options.batch_folder, error);
-  if (error) {
-    std::cerr << "Unable to create batches folder: " << options.batch_folder;
-    return 1;
-  }
+    boost::system::error_code error;
+    fs::create_directories(working_batch_folder, error);
+    if (error) {
+      std::cerr << "Unable to create batch folder: " << working_batch_folder;
+      return 1;
+    }
 
-  int batch_files_count = countFilesInDirectory(options.batch_folder, ".batch");
-  std::shared_ptr<DictionaryConfig> unique_tokens;
-  if (batch_files_count == 0) {
     std::cout << "Parsing text collection... ";
     ::artm::CollectionParserConfig collection_parser_config;
     if (options.parsing_format == 0)
@@ -285,13 +296,24 @@ int execute(const artm_options& options) {
     collection_parser_config.set_docword_file_path(options.docword);
     collection_parser_config.set_vocab_file_path(options.vocab);
     collection_parser_config.set_dictionary_file_name(options.dictionary_file);
-    collection_parser_config.set_target_folder(options.batch_folder);
+    collection_parser_config.set_target_folder(working_batch_folder);
     collection_parser_config.set_num_items_per_batch(options.items_per_batch);
     unique_tokens = ::artm::ParseCollection(collection_parser_config);
     std::cout << "OK.\n";
   } else {
-    std::cout << "Reuse " << batch_files_count << " batches in folder '" << options.batch_folder << "'\n";
-    std::string dictionary_full_filename = (fs::path(options.batch_folder) / options.dictionary_file).string();
+    if (!fs::exists(fs::path(working_batch_folder))) {
+      std::cerr << "Unable to find batch folder: " << working_batch_folder;
+      return 1;
+    }
+
+    int batch_files_count = countFilesInDirectory(working_batch_folder, ".batch");
+    if (batch_files_count == 0) {
+      std::cerr << "No batches found in " << working_batch_folder;
+      return 1;
+    }
+
+    std::cout << "Using " << batch_files_count << " batch found in folder '" << working_batch_folder << "'\n";
+    std::string dictionary_full_filename = (fs::path(working_batch_folder) / options.dictionary_file).string();
     if (fs::exists(dictionary_full_filename)) {
       std::cout << "Loading dictionary file... ";
       unique_tokens = ::artm::LoadDictionary(dictionary_full_filename);
@@ -425,6 +447,11 @@ int execute(const artm_options& options) {
     }
   }
 
+  if (options.batch_folder.empty()) {
+    try { boost::filesystem::remove_all(working_batch_folder); }
+    catch (...) {}
+  }
+
   return 0;
 }
 
@@ -439,18 +466,21 @@ int main(int argc, char * argv[]) {
       ("help,h", "display this help message")
       ("docword,d", po::value(&options.docword), "docword file in UCI format")
       ("vocab,v", po::value(&options.vocab), "vocab file in UCI format")
+      ("batch_folder,b", po::value(&options.batch_folder)->default_value(""),
+        "If docword or vocab arguments are not provided, cpp_client will try to read pre-parsed batches from batch_folder location. "
+        "Otherwise, if both docword and vocab arguments are provided, cpp_client will parse the data and store batches in batch_folder location. ")
       ("num_topic,t", po::value(&options.num_topics)->default_value(16), "number of topics")
       ("num_processors,p", po::value(&options.num_processors)->default_value(2), "number of concurrent processors")
       ("num_iters,i", po::value(&options.num_iters)->default_value(10), "number of outer iterations")
       ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
       ("reuse_theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
-      ("batch_folder", po::value(&options.batch_folder)->default_value("batches"), "temporary folder to store batches")
-      ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary", "filename of dictionary file"))
-      ("reuse_batches", po::bool_switch(&options.b_reuse_batch), "reuse batches found in batch_folder\n(default = false)")
+      ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary"), "filename of dictionary file")
       ("items_per_batch", po::value(&options.items_per_batch)->default_value(500), "number of items per batch")
       ("tau_phi", po::value(&options.tau_phi)->default_value(0.0f), "regularization coefficient for PHI matrix")
       ("tau_theta", po::value(&options.tau_theta)->default_value(0.0f), "regularization coefficient for THETA matrix")
-      ("tau_decor", po::value(&options.tau_decor)->default_value(0.0f), "regularization coefficient for topics decorrelation (use with care, since this value heavily depends on the size of the dataset)")
+      ("tau_decor", po::value(&options.tau_decor)->default_value(0.0f),
+        "regularization coefficient for topics decorrelation "
+        "(use with care, since this value heavily depends on the size of the dataset)")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "wait for keystroke (allows to attach a debugger)")
       ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
       ("update_every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
@@ -479,13 +509,10 @@ int main(int argc, char * argv[]) {
     // options.vocab   = "D:\\datasets\\vocab.kos.txt";
 
     bool show_help = (vm.count("help") > 0);
-    if (options.docword.empty() || options.vocab.empty()) {
-      // Show help if user neither provided batch folder, nor docword/vocab files
-      if (!options.b_reuse_batch && (!vm.count("batch_folder") || vm["batch_folder"].defaulted())) show_help = true;
 
-      // Automatically reuse batches is safe when user didn't provide docword/vocab
-      if (vm.count("batch_folder")) options.b_reuse_batch = true;
-    }
+    // Show help if user neither provided batch folder, nor docword/vocab files
+    if ((options.docword.empty() || options.vocab.empty()) && options.batch_folder.empty())
+      show_help = true;
 
     if (vm.count("merger_queue_size") == 0)
       options.merger_queue_size = options.num_processors;  // by default set queue size based on the number of processors

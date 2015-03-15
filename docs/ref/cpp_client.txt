@@ -30,9 +30,6 @@ You may append the following options to customize the resulting topic model:
 
 You may also apply the following optimizations that should not change the resulting model
 
-  * ``--reuse_batches`` skips parsing of *docword* and *vocab* files, and tries to use batches located in ``--batch_folder``.
-    You may download pre-parsed batches by links provided in :doc:`/download` section.
-
   * ``-p`` allows you to specify number of concurrent processors.
     The recommended value is to use the number of logical cores on your machine.
 
@@ -49,52 +46,57 @@ You may also apply the following optimizations that should not change the result
 
 .. code-block:: bash
 
-   >cpp_client --help
-   BigARTM - library for advanced topic modeling (http://bigartm.org):
+    >cpp_client --help
+    BigARTM - library for advanced topic modeling (http://bigartm.org):
 
-   Basic options:
-     -h [ --help ]                         display this help message
-     -d [ --docword ] arg                  docword file in UCI format
-     -v [ --vocab ] arg                    vocab file in UCI format
-     -t [ --num_topic ] arg (=16)          number of topics
-     -p [ --num_processors ] arg (=2)      number of concurrent processors
-     -i [ --num_iters ] arg (=10)          number of outer iterations
-     --num_inner_iters arg (=10)           number of inner iterations
-     --reuse_theta                         reuse theta between iterations
-     --batch_folder arg (=batches)         temporary folder to store batches
-     --dictionary_file arg (=filename of dictionary file)
-     --reuse_batches                       reuse batches found in batch_folder
-                                           (default = false)
-     --items_per_batch arg (=500)          number of items per batch
-     --tau_phi arg (=0)                    regularization coefficient for PHI
+    Basic options:
+      -h [ --help ]                        display this help message
+      -d [ --docword ] arg                 docword file in UCI format
+      -v [ --vocab ] arg                   vocab file in UCI format
+      -b [ --batch_folder ] arg            If docword or vocab arguments are not
+                                           provided, cpp_client will try to read
+                                           pre-parsed batches from batch_folder
+                                           location. Otherwise, if both docword and
+                                           vocab arguments are provided, cpp_client
+                                           will parse data and store batches in
+                                           batch_folder location.
+      -t [ --num_topic ] arg (=16)         number of topics
+      -p [ --num_processors ] arg (=2)     number of concurrent processors
+      -i [ --num_iters ] arg (=10)         number of outer iterations
+      --num_inner_iters arg (=10)          number of inner iterations
+      --reuse_theta                        reuse theta between iterations
+      --dictionary_file arg (=dictionary)  filename of dictionary file
+      --items_per_batch arg (=500)         number of items per batch
+      --tau_phi arg (=0)                   regularization coefficient for PHI
                                            matrix
-     --tau_theta arg (=0)                  regularization coefficient for THETA
+      --tau_theta arg (=0)                 regularization coefficient for THETA
                                            matrix
-     --tau_decor arg (=0)                  regularization coefficient for topics
-                                           decorrelation (use with care, since
-                                           this value heavily depends on the size
-                                           of the dataset)
-     --paused                              wait for keystroke (allows to attach a
+      --tau_decor arg (=0)                 regularization coefficient for topics
+                                           decorrelation (use with care, since this
+                                           value heavily depends on the size of the
+                                           dataset)
+      --paused                             wait for keystroke (allows to attach a
                                            debugger)
-     --no_scores                           disable calculation of all scores
-     --update_every arg (=0)               [online algorithm] requests an update
-                                           of the model after update_every
-                                           document
-     --parsing_format arg (=0)             parsing format (0 - UCI, 1 - matrix
+      --no_scores                          disable calculation of all scores
+      --update_every arg (=0)              [online algorithm] requests an update of
+                                           the model after update_every document
+      --parsing_format arg (=0)            parsing format (0 - UCI, 1 - matrix
                                            market)
-     --disk_cache_folder arg               disk cache folder
-     --merger_queue_size arg               size of the merger queue
-   
-   Networking options (experimental):
-     --nodes arg                  endpoints of the remote nodes (enables network
-                                  modus operandi)
-     --localhost arg (=localhost) DNS name or the IP address of the localhost
-     --port arg (=5550)           port to use for master node
-     --proxy arg                  proxy endpoint
-     --timeout arg (=1000)        network communication timeout in milliseconds
+      --disk_cache_folder arg              disk cache folder
+      --merger_queue_size arg              size of the merger queue
 
-   Examples:
-           cpp_client -d docword.kos.txt -v vocab.kos.txt
-           set GLOG_logtostderr=1 & cpp_client -d docword.kos.txt -v vocab.kos.txt
+    Networking options:
+      --nodes arg                          endpoints of the remote nodes (enables
+                                           network modus operandi)
+      --localhost arg (=localhost)         DNS name or the IP address of the
+                                           localhost
+      --port arg (=5550)                   port to use for master node
+      --proxy arg                          proxy endpoint
+      --timeout arg (=1000)                network communication timeout in
+                                           milliseconds
+
+    Examples:
+            cpp_client -d docword.kos.txt -v vocab.kos.txt
+            set GLOG_logtostderr=1 & cpp_client -d docword.kos.txt -v vocab.kos.txt
 
 For further details please refer to the `source code <https://raw.githubusercontent.com/bigartm/bigartm/master/src/cpp_client/srcmain.cc>`_ of cpp_client.
