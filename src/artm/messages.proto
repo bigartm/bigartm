@@ -387,6 +387,7 @@ message CollectionParserConfig {
   optional int32 num_items_per_batch = 6 [default = 1000];
   optional string cooccurrence_file_name = 7;
   repeated string cooccurrence_token = 8;
+  optional bool use_unity_based_indices = 9 [default = true];
 }
 
 // Represents an argument of 'synchronize model' operation

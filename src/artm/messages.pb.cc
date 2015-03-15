@@ -916,7 +916,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ThetaMatrix));
   CollectionParserConfig_descriptor_ = file->message_type(39);
-  static const int CollectionParserConfig_offsets_[8] = {
+  static const int CollectionParserConfig_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, format_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, docword_file_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, vocab_file_path_),
@@ -925,6 +925,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, num_items_per_batch_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, cooccurrence_file_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, cooccurrence_token_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, use_unity_based_indices_),
   };
   CollectionParserConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1449,35 +1450,36 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\t:\006@model\022\017\n\007item_id\030\002 \003(\005\022&\n\014item_weigh"
     "ts\030\003 \003(\0132\020.artm.FloatArray\022\022\n\ntopic_name"
     "\030\004 \003(\t\022\024\n\014topics_count\030\005 \001(\005\022\022\n\nitem_tit"
-    "le\030\006 \003(\t\"\323\002\n\026CollectionParserConfig\022B\n\006f"
+    "le\030\006 \003(\t\"\372\002\n\026CollectionParserConfig\022B\n\006f"
     "ormat\030\001 \001(\0162#.artm.CollectionParserConfi"
     "g.Format:\rBagOfWordsUci\022\031\n\021docword_file_"
     "path\030\002 \001(\t\022\027\n\017vocab_file_path\030\003 \001(\t\022\025\n\rt"
     "arget_folder\030\004 \001(\t\022\034\n\024dictionary_file_na"
     "me\030\005 \001(\t\022!\n\023num_items_per_batch\030\006 \001(\005:\0041"
     "000\022\036\n\026cooccurrence_file_name\030\007 \001(\t\022\032\n\022c"
-    "ooccurrence_token\030\010 \003(\t\"-\n\006Format\022\021\n\rBag"
-    "OfWordsUci\020\000\022\020\n\014MatrixMarket\020\001\"\177\n\024Synchr"
-    "onizeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014de"
-    "cay_weight\030\002 \001(\002:\0011\022!\n\023invoke_regularize"
-    "rs\030\003 \001(\010:\004true\022\027\n\014apply_weight\030\004 \001(\002:\0011\""
-    "B\n\023InitializeModelArgs\022\022\n\nmodel_name\030\001 \001"
-    "(\t\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n\021GetTopicM"
-    "odelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_na"
-    "me\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003("
-    "\t\"\211\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030\001"
-    " \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopi"
-    "c_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013cle"
-    "an_cache\030\005 \001(\010:\005false\"W\n\021GetScoreValueAr"
-    "gs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001"
-    "(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"~\n\014AddBat"
-    "chArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022\034\n\024ti"
-    "meout_milliseconds\030\002 \001(\005\022\033\n\014reset_scores"
-    "\030\003 \001(\010:\005false\022\027\n\017batch_file_name\030\004 \001(\t\"N"
-    "\n\023InvokeIterationArgs\022\033\n\020iterations_coun"
-    "t\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\"0"
-    "\n\014WaitIdleArgs\022 \n\024timeout_milliseconds\030\001"
-    " \001(\005:\002-1", 6608);
+    "ooccurrence_token\030\010 \003(\t\022%\n\027use_unity_bas"
+    "ed_indices\030\t \001(\010:\004true\"-\n\006Format\022\021\n\rBagO"
+    "fWordsUci\020\000\022\020\n\014MatrixMarket\020\001\"\177\n\024Synchro"
+    "nizeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014dec"
+    "ay_weight\030\002 \001(\002:\0011\022!\n\023invoke_regularizer"
+    "s\030\003 \001(\010:\004true\022\027\n\014apply_weight\030\004 \001(\002:\0011\"B"
+    "\n\023InitializeModelArgs\022\022\n\nmodel_name\030\001 \001("
+    "\t\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n\021GetTopicMo"
+    "delArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_nam"
+    "e\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t"
+    "\"\211\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030\001 "
+    "\001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic"
+    "_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clea"
+    "n_cache\030\005 \001(\010:\005false\"W\n\021GetScoreValueArg"
+    "s\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001("
+    "\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"~\n\014AddBatc"
+    "hArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022\034\n\024tim"
+    "eout_milliseconds\030\002 \001(\005\022\033\n\014reset_scores\030"
+    "\003 \001(\010:\005false\022\027\n\017batch_file_name\030\004 \001(\t\"N\n"
+    "\023InvokeIterationArgs\022\033\n\020iterations_count"
+    "\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\"0\n"
+    "\014WaitIdleArgs\022 \n\024timeout_milliseconds\030\001 "
+    "\001(\005:\002-1", 6647);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -16156,6 +16158,7 @@ const int CollectionParserConfig::kDictionaryFileNameFieldNumber;
 const int CollectionParserConfig::kNumItemsPerBatchFieldNumber;
 const int CollectionParserConfig::kCooccurrenceFileNameFieldNumber;
 const int CollectionParserConfig::kCooccurrenceTokenFieldNumber;
+const int CollectionParserConfig::kUseUnityBasedIndicesFieldNumber;
 #endif  // !_MSC_VER
 
 CollectionParserConfig::CollectionParserConfig()
@@ -16181,6 +16184,7 @@ void CollectionParserConfig::SharedCtor() {
   dictionary_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   num_items_per_batch_ = 1000;
   cooccurrence_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  use_unity_based_indices_ = true;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -16258,6 +16262,9 @@ void CollectionParserConfig::Clear() {
         cooccurrence_file_name_->clear();
       }
     }
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    use_unity_based_indices_ = true;
   }
   cooccurrence_token_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -16406,6 +16413,22 @@ bool CollectionParserConfig::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(66)) goto parse_cooccurrence_token;
+        if (input->ExpectTag(72)) goto parse_use_unity_based_indices;
+        break;
+      }
+
+      // optional bool use_unity_based_indices = 9 [default = true];
+      case 9: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_use_unity_based_indices:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &use_unity_based_indices_)));
+          set_has_use_unity_based_indices();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -16493,6 +16516,11 @@ void CollectionParserConfig::SerializeWithCachedSizes(
       8, this->cooccurrence_token(i), output);
   }
 
+  // optional bool use_unity_based_indices = 9 [default = true];
+  if (has_use_unity_based_indices()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(9, this->use_unity_based_indices(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -16571,6 +16599,11 @@ void CollectionParserConfig::SerializeWithCachedSizes(
       WriteStringToArray(8, this->cooccurrence_token(i), target);
   }
 
+  // optional bool use_unity_based_indices = 9 [default = true];
+  if (has_use_unity_based_indices()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(9, this->use_unity_based_indices(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -16631,6 +16664,13 @@ int CollectionParserConfig::ByteSize() const {
     }
 
   }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional bool use_unity_based_indices = 9 [default = true];
+    if (has_use_unity_based_indices()) {
+      total_size += 1 + 1;
+    }
+
+  }
   // repeated string cooccurrence_token = 8;
   total_size += 1 * this->cooccurrence_token_size();
   for (int i = 0; i < this->cooccurrence_token_size(); i++) {
@@ -16687,6 +16727,11 @@ void CollectionParserConfig::MergeFrom(const CollectionParserConfig& from) {
       set_cooccurrence_file_name(from.cooccurrence_file_name());
     }
   }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (from.has_use_unity_based_indices()) {
+      set_use_unity_based_indices(from.use_unity_based_indices());
+    }
+  }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -16717,6 +16762,7 @@ void CollectionParserConfig::Swap(CollectionParserConfig* other) {
     std::swap(num_items_per_batch_, other->num_items_per_batch_);
     std::swap(cooccurrence_file_name_, other->cooccurrence_file_name_);
     cooccurrence_token_.Swap(&other->cooccurrence_token_);
+    std::swap(use_unity_based_indices_, other->use_unity_based_indices_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

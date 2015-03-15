@@ -1569,6 +1569,7 @@ Represents a configuration of a collection parser.
     optional int32 num_items_per_batch = 6 [default = 1000];
     optional string cooccurrence_file_name = 7;
     repeated string cooccurrence_token = 8;
+    optional bool use_unity_based_indices = 9 [default = true];
   }
 
 .. attribute:: CollectionParserConfig.format
@@ -1696,6 +1697,9 @@ Represents a configuration of a collection parser.
    A cooccurrence of the pair `<first>~<second>` will be collected only when both tokens are present in
    :attr:`CollectionParserConfig.cooccurrence_token`.
 
+.. attribute:: CollectionParserConfig.use_unity_based_indices
+   A flag indicating whether to interpret indices in docword file as unity-based or as zero-based.
+   By default `'use_unity_based_indices = True``, as required by UCI bag-of-words format.
 
 .. _SynchronizeModelArgs:
 

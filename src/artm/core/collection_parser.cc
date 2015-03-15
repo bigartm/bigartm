@@ -164,7 +164,8 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
   int item_id, token_id, token_count;
   for (std::string token; docword >> item_id >> token_id >> token_count;) {
-    token_id--;  // convert 1-based to zero-based index
+    if (config_.use_unity_based_indices())
+      token_id--;  // convert 1-based to zero-based index
 
     if (token_map->find(token_id) == token_map->end())  {
       std::stringstream ss;
@@ -173,7 +174,8 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
       if (token_id == -1) {
         ss << ". wordID column appears to be zero-based in the docword file being parsed. "
            << "UCI format defines wordID column to be unity-based. "
-           << "Please, increase wordID by one in your input data.";
+           << "Please, set CollectionParserConfig.use_unity_based_indices=false "
+           << "or increase wordID by one in your input data";
       } else {
         ss << ". Token_id value is outside of the expected range.";
       }
