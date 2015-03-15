@@ -1698,6 +1698,7 @@ Represents a configuration of a collection parser.
    :attr:`CollectionParserConfig.cooccurrence_token`.
 
 .. attribute:: CollectionParserConfig.use_unity_based_indices
+
    A flag indicating whether to interpret indices in docword file as unity-based or as zero-based.
    By default `'use_unity_based_indices = True``, as required by UCI bag-of-words format.
 
