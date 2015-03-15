@@ -143,12 +143,14 @@ void Perplexity::AppendScore(
         if (use_document_unigram_model) {
           sum = token_count / n_d;
         } else {
-          if (dictionary_ptr->find(token) != dictionary_ptr->end()) {
-            float n_w = dictionary_ptr->find(token)->second.value();
+          auto iter = dictionary_ptr->find(token);
+          if (iter != dictionary_ptr->end() && iter->second.has_value()) {
+            float n_w = iter->second.value();
             sum = n_w / dictionary_ptr->size();
           } else {
-            LOG(INFO) << "No token " << token.keyword << " from class " << token.class_id <<
-                "in dictionary, document unigram model will be used.";
+            LOG(INFO) << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
+                      << ". Verify that the token exists in the dictionary and contains DictionaryEntry.value field. "
+                      << "Document unigram model will be used for this token.";
             sum = token_count / n_d;
           }
         }
