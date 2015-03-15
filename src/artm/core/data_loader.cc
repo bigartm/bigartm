@@ -284,7 +284,16 @@ void LocalDataLoader::ThreadFunction() {
         continue;
       }
 
-      std::shared_ptr<const Batch> batch = DiskGeneration::batch(next_task);
+      std::shared_ptr<Batch> batch = std::make_shared< ::artm::Batch>();
+      try {
+        ::artm::core::BatchHelpers::LoadMessage(next_task.file_path, batch.get());
+        batch->set_id(boost::lexical_cast<std::string>(next_task.uuid));  // keep batch.id and task.uuid in sync
+        ::artm::core::BatchHelpers::PopulateClassId(batch.get());
+      } catch (std::exception& ex) {
+        LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+        batch = nullptr;
+      }
+
       if (batch == nullptr) {
         instance_->batch_manager()->Done(next_task.uuid, ModelName());
         continue;
@@ -403,8 +412,14 @@ void RemoteDataLoader::ThreadFunction() {
         std::string batch_file_path = response.batch_file_path(batch_index);
 
         auto batch = std::make_shared< ::artm::Batch>();
-        ::artm::core::BatchHelpers::LoadMessage(batch_file_path, batch.get());
-        ::artm::core::BatchHelpers::PopulateClassId(batch.get());
+        try {
+          ::artm::core::BatchHelpers::LoadMessage(batch_file_path, batch.get());
+          ::artm::core::BatchHelpers::PopulateClassId(batch.get());
+        }
+        catch (std::exception& ex) {
+          LOG(ERROR) << ex.what() << ", the batch will be skipped";
+          batch = nullptr;
+        }
 
         if (batch == nullptr) {
           LOG(ERROR) << "Unable to load batch '" << batch_id << "' from " << config.disk_path();

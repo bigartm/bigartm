@@ -21,10 +21,6 @@ class DiskGeneration {
   explicit DiskGeneration(const std::string& disk_path);
 
   std::vector<BatchManagerTask> batch_uuids() const;
-  static std::shared_ptr<Batch> batch(const BatchManagerTask& task);
-
-  boost::uuids::uuid AddBatch(const std::shared_ptr<Batch>& batch);
-  void RemoveBatch(const boost::uuids::uuid& uuid);
   bool empty() const { return generation_.empty(); }
 
  private:
