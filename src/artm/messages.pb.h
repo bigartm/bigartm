@@ -5636,6 +5636,13 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_token() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_token();
 
+  // optional bool use_unity_based_indices = 9 [default = true];
+  inline bool has_use_unity_based_indices() const;
+  inline void clear_use_unity_based_indices();
+  static const int kUseUnityBasedIndicesFieldNumber = 9;
+  inline bool use_unity_based_indices() const;
+  inline void set_use_unity_based_indices(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.CollectionParserConfig)
  private:
   inline void set_has_format();
@@ -5652,6 +5659,8 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline void clear_has_num_items_per_batch();
   inline void set_has_cooccurrence_file_name();
   inline void clear_has_cooccurrence_file_name();
+  inline void set_has_use_unity_based_indices();
+  inline void clear_has_use_unity_based_indices();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5663,9 +5672,10 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   ::std::string* dictionary_file_name_;
   ::std::string* cooccurrence_file_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_token_;
+  bool use_unity_based_indices_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -13637,6 +13647,28 @@ CollectionParserConfig::cooccurrence_token() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 CollectionParserConfig::mutable_cooccurrence_token() {
   return &cooccurrence_token_;
+}
+
+// optional bool use_unity_based_indices = 9 [default = true];
+inline bool CollectionParserConfig::has_use_unity_based_indices() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void CollectionParserConfig::set_has_use_unity_based_indices() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void CollectionParserConfig::clear_has_use_unity_based_indices() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void CollectionParserConfig::clear_use_unity_based_indices() {
+  use_unity_based_indices_ = true;
+  clear_has_use_unity_based_indices();
+}
+inline bool CollectionParserConfig::use_unity_based_indices() const {
+  return use_unity_based_indices_;
+}
+inline void CollectionParserConfig::set_use_unity_based_indices(bool value) {
+  set_has_use_unity_based_indices();
+  use_unity_based_indices_ = value;
 }
 
 // -------------------------------------------------------------------
