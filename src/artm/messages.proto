@@ -377,6 +377,7 @@ message CollectionParserConfig {
   enum Format {
     BagOfWordsUci = 0;
     MatrixMarket = 1;
+    VowpalWabbit = 2;
   }
 
   optional Format format = 1 [default = BagOfWordsUci];

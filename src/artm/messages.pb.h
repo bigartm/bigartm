@@ -230,11 +230,12 @@ inline bool PerplexityScoreConfig_Type_Parse(
 }
 enum CollectionParserConfig_Format {
   CollectionParserConfig_Format_BagOfWordsUci = 0,
-  CollectionParserConfig_Format_MatrixMarket = 1
+  CollectionParserConfig_Format_MatrixMarket = 1,
+  CollectionParserConfig_Format_VowpalWabbit = 2
 };
 bool CollectionParserConfig_Format_IsValid(int value);
 const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MIN = CollectionParserConfig_Format_BagOfWordsUci;
-const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MAX = CollectionParserConfig_Format_MatrixMarket;
+const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MAX = CollectionParserConfig_Format_VowpalWabbit;
 const int CollectionParserConfig_Format_Format_ARRAYSIZE = CollectionParserConfig_Format_Format_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* CollectionParserConfig_Format_descriptor();
@@ -5523,6 +5524,7 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   typedef CollectionParserConfig_Format Format;
   static const Format BagOfWordsUci = CollectionParserConfig_Format_BagOfWordsUci;
   static const Format MatrixMarket = CollectionParserConfig_Format_MatrixMarket;
+  static const Format VowpalWabbit = CollectionParserConfig_Format_VowpalWabbit;
   static inline bool Format_IsValid(int value) {
     return CollectionParserConfig_Format_IsValid(value);
   }

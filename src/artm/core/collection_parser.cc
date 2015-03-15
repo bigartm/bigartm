@@ -336,6 +336,176 @@ CollectionParser::TokenMap CollectionParser::ParseVocabMatrixMarket() {
   return token_info;  // empty if no input file had been provided
 }
 
+// ToDo: Collect token cooccurrence in BatchCollector, and export it in ParseVowpalWabbit().
+class CollectionParser::BatchCollector {
+ private:
+  Item *item_;
+  Batch batch_;
+  std::map<Token, int> local_map_;
+  std::map<Token, CollectionParserTokenInfo> global_map_;
+  int64_t total_token_count_;
+  int64_t total_items_count_;
+
+  void StartNewItem() {
+    item_ = batch_.add_item();
+    item_->add_field();
+    total_items_count_++;
+  }
+
+ public:
+  BatchCollector() : item_(nullptr), total_token_count_(0), total_items_count_(0) {}
+
+  void Record(Token token, int token_count) {
+    if (global_map_.find(token) == global_map_.end())
+      global_map_.insert(std::make_pair(token, CollectionParserTokenInfo(token.keyword, token.class_id)));
+    if (local_map_.find(token) == local_map_.end()) {
+      local_map_.insert(std::make_pair(token, batch_.token_size()));
+      batch_.add_token(token.keyword);
+      batch_.add_class_id(token.class_id);
+    }
+
+    CollectionParserTokenInfo& token_info = global_map_[token];
+    int local_token_id = local_map_[token];
+
+    if (item_ == nullptr) StartNewItem();
+
+    Field* field = item_->mutable_field(0);
+    field->add_token_id(local_token_id);
+    field->add_token_count(token_count);
+
+    token_info.items_count++;
+    token_info.token_count += token_count;
+    total_token_count_ += token_count;
+  }
+
+  void FinishItem(int item_id, std::string item_title) {
+    if (item_ == nullptr) StartNewItem();  // this item fill be empty;
+
+    item_->set_id(item_id);
+    item_->set_title(item_title);
+
+    LOG_IF(INFO, total_items_count_ % 100000 == 0) << total_items_count_ << " documents parsed.";
+
+
+    // Item is already included in the batch;
+    // Set item_ to nullptr to finish it; then next Record() will create a new item;
+    item_ = nullptr;
+  }
+
+  Batch FinishBatch() {
+    Batch batch;
+    batch.Swap(&batch_);
+    local_map_.clear();
+    return batch;
+  }
+
+  const Batch& batch() { return batch_; }
+
+  std::shared_ptr<DictionaryConfig> ExportDictionaryConfig() {
+    // Craft the dictionary
+    auto retval = std::make_shared<DictionaryConfig>();
+    retval->set_total_items_count(total_items_count_);
+    retval->set_total_token_count(total_token_count_);
+
+    for (auto& key_value : global_map_) {
+      artm::DictionaryEntry* entry = retval->add_entry();
+      entry->set_key_token(key_value.second.keyword);
+      entry->set_class_id(key_value.second.class_id);
+      entry->set_token_count(key_value.second.token_count);
+      entry->set_items_count(key_value.second.items_count);
+      entry->set_value(static_cast<double>(key_value.second.token_count) /
+        static_cast<double>(total_token_count_));
+    }
+
+    return retval;
+  }
+};
+
+std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
+  BatchCollector batch_collector;
+
+  if (!boost::filesystem::exists(config_.docword_file_path()))
+    BOOST_THROW_EXCEPTION(DiskReadException(
+    "File " + config_.docword_file_path() + " does not exist."));
+
+  boost::iostreams::stream<mapped_file_source> docword(config_.docword_file_path());
+  std::string str;
+  int line_no = 0;
+  while (!docword.eof()) {
+    std::getline(docword, str);
+    line_no++;
+    if (docword.eof())
+      break;
+
+    std::vector<std::string> strs;
+    boost::split(strs, str, boost::is_any_of(" \t\r"));
+
+    if (strs.size() <= 1) {
+      std::stringstream ss;
+      ss << "Error in " << config_.docword_file_path() << ":" << line_no << ", too few entries: " << str;
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
+
+    std::string item_title = strs[0];
+
+    ClassId class_id = DefaultClass;
+    for (int elem_index = 1; elem_index < strs.size(); ++elem_index) {
+      std::string elem = strs[elem_index];
+      if (elem.size() == 0)
+        continue;
+      if (elem[0] == '|') {
+        class_id = elem.substr(1);
+        continue;
+      }
+
+      int token_count = 1;
+      std::string token = elem;
+      size_t split_index = elem.find(':');
+      if (split_index != std::string::npos) {
+        if (split_index == 0 || split_index == (elem.size() - 1)) {
+          std::stringstream ss;
+          ss << "Error in " << config_.docword_file_path() << ":" << line_no
+             << ", entries can not start or end with colon: " << elem;
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
+        token = elem.substr(0, split_index);
+        std::string token_occurences_string = elem.substr(split_index + 1);
+        try
+        {
+          token_count = boost::lexical_cast<int>(token_occurences_string);
+        }
+        catch (boost::bad_lexical_cast &)
+        {
+          std::stringstream ss;
+          ss << "Error in " << config_.docword_file_path() << ":" << line_no
+             << ", can not parse integer number of occurences: " << elem;
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
+      }
+
+      batch_collector.Record(artm::core::Token(class_id, token), token_count);
+    }
+
+    batch_collector.FinishItem(line_no, item_title);
+    if (batch_collector.batch().item_size() >= config_.num_items_per_batch()) {
+      ::artm::core::BatchHelpers::SaveBatch(batch_collector.FinishBatch(), config_.target_folder());
+    }
+  }
+
+  if (batch_collector.batch().item_size() > 0) {
+    ::artm::core::BatchHelpers::SaveBatch(batch_collector.FinishBatch(), config_.target_folder());
+  }
+
+  std::shared_ptr<DictionaryConfig> retval = batch_collector.ExportDictionaryConfig();
+
+  if (config_.has_dictionary_file_name()) {
+    ::artm::core::BatchHelpers::SaveMessage(config_.dictionary_file_name(),
+      config_.target_folder(), *retval);
+  }
+
+  return retval;
+}
+
 std::shared_ptr<DictionaryConfig> CollectionParser::Parse() {
   TokenMap token_map;
   switch (config_.format()) {
@@ -347,6 +517,8 @@ std::shared_ptr<DictionaryConfig> CollectionParser::Parse() {
       token_map = ParseVocabMatrixMarket();
       return ParseDocwordBagOfWordsUci(&token_map);
 
+    case CollectionParserConfig_Format_VowpalWabbit:
+      return ParseVowpalWabbit();
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
         "CollectionParserConfig.format", config_.format()));

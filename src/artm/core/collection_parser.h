@@ -59,10 +59,12 @@ class CollectionParser : boost::noncopyable {
     std::map<std::pair<int, int>, int> token_coocurrence_;
     std::vector<int> item_tokens_;
   };
+  class BatchCollector;
 
   // ParseDocwordBagOfWordsUci is also used to parse MatrixMarket format, because
   // the format of docword file is the same for both.
   std::shared_ptr<DictionaryConfig> ParseDocwordBagOfWordsUci(TokenMap* token_map);
+  std::shared_ptr<DictionaryConfig> ParseVowpalWabbit();
 
   TokenMap ParseVocabBagOfWordsUci();
   TokenMap ParseVocabMatrixMarket();

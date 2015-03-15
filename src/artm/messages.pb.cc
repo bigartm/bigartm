@@ -1451,7 +1451,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\t:\006@model\022\017\n\007item_id\030\002 \003(\005\022&\n\014item_weigh"
     "ts\030\003 \003(\0132\020.artm.FloatArray\022\022\n\ntopic_name"
     "\030\004 \003(\t\022\024\n\014topics_count\030\005 \001(\005\022\022\n\nitem_tit"
-    "le\030\006 \003(\t\"\372\002\n\026CollectionParserConfig\022B\n\006f"
+    "le\030\006 \003(\t\"\214\003\n\026CollectionParserConfig\022B\n\006f"
     "ormat\030\001 \001(\0162#.artm.CollectionParserConfi"
     "g.Format:\rBagOfWordsUci\022\031\n\021docword_file_"
     "path\030\002 \001(\t\022\027\n\017vocab_file_path\030\003 \001(\t\022\025\n\rt"
@@ -1459,28 +1459,29 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "me\030\005 \001(\t\022!\n\023num_items_per_batch\030\006 \001(\005:\0041"
     "000\022\036\n\026cooccurrence_file_name\030\007 \001(\t\022\032\n\022c"
     "ooccurrence_token\030\010 \003(\t\022%\n\027use_unity_bas"
-    "ed_indices\030\t \001(\010:\004true\"-\n\006Format\022\021\n\rBagO"
-    "fWordsUci\020\000\022\020\n\014MatrixMarket\020\001\"\177\n\024Synchro"
-    "nizeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014dec"
-    "ay_weight\030\002 \001(\002:\0011\022!\n\023invoke_regularizer"
-    "s\030\003 \001(\010:\004true\022\027\n\014apply_weight\030\004 \001(\002:\0011\"B"
-    "\n\023InitializeModelArgs\022\022\n\nmodel_name\030\001 \001("
-    "\t\022\027\n\017dictionary_name\030\002 \001(\t\"\\\n\021GetTopicMo"
-    "delArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_nam"
-    "e\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t"
-    "\"\211\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030\001 "
-    "\001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic"
-    "_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clea"
-    "n_cache\030\005 \001(\010:\005false\"W\n\021GetScoreValueArg"
-    "s\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001("
-    "\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"~\n\014AddBatc"
-    "hArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022\034\n\024tim"
-    "eout_milliseconds\030\002 \001(\005\022\033\n\014reset_scores\030"
-    "\003 \001(\010:\005false\022\027\n\017batch_file_name\030\004 \001(\t\"a\n"
-    "\023InvokeIterationArgs\022\033\n\020iterations_count"
-    "\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\022\021\n"
-    "\tdisk_path\030\003 \001(\t\"0\n\014WaitIdleArgs\022 \n\024time"
-    "out_milliseconds\030\001 \001(\005:\002-1", 6666);
+    "ed_indices\030\t \001(\010:\004true\"\?\n\006Format\022\021\n\rBagO"
+    "fWordsUci\020\000\022\020\n\014MatrixMarket\020\001\022\020\n\014VowpalW"
+    "abbit\020\002\"\177\n\024SynchronizeModelArgs\022\022\n\nmodel"
+    "_name\030\001 \001(\t\022\027\n\014decay_weight\030\002 \001(\002:\0011\022!\n\023"
+    "invoke_regularizers\030\003 \001(\010:\004true\022\027\n\014apply"
+    "_weight\030\004 \001(\002:\0011\"B\n\023InitializeModelArgs\022"
+    "\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dictionary_name\030\002"
+    " \001(\t\"\\\n\021GetTopicModelArgs\022\022\n\nmodel_name\030"
+    "\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t"
+    "\022\020\n\010class_id\030\004 \003(\t\"\211\001\n\022GetThetaMatrixArg"
+    "s\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.a"
+    "rtm.Batch\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013topic_i"
+    "ndex\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001(\010:\005false\"W"
+    "\n\021GetScoreValueArgs\022\022\n\nmodel_name\030\001 \001(\t\022"
+    "\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.art"
+    "m.Batch\"~\n\014AddBatchArgs\022\032\n\005batch\030\001 \001(\0132\013"
+    ".artm.Batch\022\034\n\024timeout_milliseconds\030\002 \001("
+    "\005\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027\n\017batch_"
+    "file_name\030\004 \001(\t\"a\n\023InvokeIterationArgs\022\033"
+    "\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014reset_sco"
+    "res\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014Wa"
+    "itIdleArgs\022 \n\024timeout_milliseconds\030\001 \001(\005"
+    ":\002-1", 6684);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -16137,6 +16138,7 @@ bool CollectionParserConfig_Format_IsValid(int value) {
   switch(value) {
     case 0:
     case 1:
+    case 2:
       return true;
     default:
       return false;
@@ -16146,6 +16148,7 @@ bool CollectionParserConfig_Format_IsValid(int value) {
 #ifndef _MSC_VER
 const CollectionParserConfig_Format CollectionParserConfig::BagOfWordsUci;
 const CollectionParserConfig_Format CollectionParserConfig::MatrixMarket;
+const CollectionParserConfig_Format CollectionParserConfig::VowpalWabbit;
 const CollectionParserConfig_Format CollectionParserConfig::Format_MIN;
 const CollectionParserConfig_Format CollectionParserConfig::Format_MAX;
 const int CollectionParserConfig::Format_ARRAYSIZE;

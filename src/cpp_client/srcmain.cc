@@ -233,7 +233,7 @@ int execute(const artm_options& options) {
   // 2. User provides docword, vocab, no batch_folder => cpp_client parses collection and stores it in temp folder
   // 3. User provides batch_folder, but no docword/vocab => cpp_client uses batches from batch_folder
 
-  bool parse_collection = (!options.docword.empty() && !options.vocab.empty());
+  bool parse_collection = (!options.docword.empty());
   std::string working_batch_folder = options.batch_folder;
   if (options.batch_folder.empty())
     working_batch_folder = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
@@ -288,13 +288,25 @@ int execute(const artm_options& options) {
 
     std::cout << "Parsing text collection... ";
     ::artm::CollectionParserConfig collection_parser_config;
-    if (options.parsing_format == 0)
+    if (options.parsing_format == 0) {
       collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
-    else
+    } else if (options.parsing_format == 1) {
       collection_parser_config.set_format(CollectionParserConfig_Format_MatrixMarket);
+    } else if (options.parsing_format == 2) {
+      collection_parser_config.set_format(CollectionParserConfig_Format_VowpalWabbit);
+    } else {
+      std::cerr << "Invalid parsing format options: " << options.parsing_format;
+      return 1;
+    }
+
+    if (options.parsing_format != 2 && !options.docword.empty() && options.vocab.empty()) {
+      std::cerr << "Error: no vocab file was specified. All formats except Vowpal Wabbit require both docword and vocab files.";
+      return 1;
+    }
 
     collection_parser_config.set_docword_file_path(options.docword);
-    collection_parser_config.set_vocab_file_path(options.vocab);
+    if (!options.vocab.empty())
+      collection_parser_config.set_vocab_file_path(options.vocab);
     collection_parser_config.set_dictionary_file_name(options.dictionary_file);
     collection_parser_config.set_target_folder(working_batch_folder);
     collection_parser_config.set_num_items_per_batch(options.items_per_batch);
@@ -484,7 +496,7 @@ int main(int argc, char * argv[]) {
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "wait for keystroke (allows to attach a debugger)")
       ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
       ("update_every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
-      ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market)")
+      ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market, 2 - vowpal wabbit)")
       ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
     ;
@@ -511,7 +523,7 @@ int main(int argc, char * argv[]) {
     bool show_help = (vm.count("help") > 0);
 
     // Show help if user neither provided batch folder, nor docword/vocab files
-    if ((options.docword.empty() || options.vocab.empty()) && options.batch_folder.empty())
+    if (options.docword.empty() && options.batch_folder.empty())
       show_help = true;
 
     if (vm.count("merger_queue_size") == 0)

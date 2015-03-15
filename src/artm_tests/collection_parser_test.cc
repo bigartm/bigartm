@@ -146,3 +146,34 @@ TEST(CollectionParser, Multiclass) {
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=CollectionParser.VowpalWabbit
+TEST(CollectionParser, VowpalWabbit) {
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+
+  ::artm::CollectionParserConfig config;
+  config.set_format(::artm::CollectionParserConfig_Format_VowpalWabbit);
+  config.set_target_folder(target_folder);
+  config.set_dictionary_file_name("test_parser.dictionary");
+  config.set_docword_file_path("../../../test_data/vw_data.txt");
+  config.set_num_items_per_batch(1);
+
+  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
+  ASSERT_EQ(dictionary_parsed->entry_size(), 4);
+  EXPECT_EQ(dictionary_parsed->entry(0).key_token(), "alex");
+  EXPECT_EQ(dictionary_parsed->entry(0).class_id(), "author");
+  EXPECT_EQ(dictionary_parsed->entry(0).token_count(), 3);
+  EXPECT_EQ(dictionary_parsed->entry(1).key_token(), "hello");
+  EXPECT_EQ(dictionary_parsed->entry(1).class_id(), "@default_class");
+  EXPECT_EQ(dictionary_parsed->entry(1).token_count(), 6);
+  EXPECT_EQ(dictionary_parsed->entry(2).key_token(), "noname");
+  EXPECT_EQ(dictionary_parsed->entry(2).class_id(), "author");
+  EXPECT_EQ(dictionary_parsed->entry(2).token_count(), 1);
+  EXPECT_EQ(dictionary_parsed->entry(3).key_token(), "world");
+  EXPECT_EQ(dictionary_parsed->entry(3).class_id(), "@default_class");
+  EXPECT_EQ(dictionary_parsed->entry(3).token_count(), 2);
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+}
