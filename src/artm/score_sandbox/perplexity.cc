@@ -57,7 +57,7 @@ void Perplexity::AppendScore(
   bool use_classes_from_model = false;
   if (config_.class_id_size() == 0) use_classes_from_model = true;
 
-  std::map<::artm::core::ClassId, float> class_weights;
+  std::map< ::artm::core::ClassId, float> class_weights;
   if (use_classes_from_model) {
     for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
       class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
