@@ -649,7 +649,9 @@ void Processor::ThreadFunction() {
       LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
       pop_retries = 0;
 
-      CuckooWatch cuckoo("ProcessBatch");  // log time from now to destruction
+
+      // CuckooWatch logs time from now to destruction
+      CuckooWatch cuckoo(std::string("ProcessBatch(") + part->batch().id() + std::string(")"));
       total_processed_batches++;
 
       const Batch& batch = part->batch();
