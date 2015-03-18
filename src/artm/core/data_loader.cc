@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>  // NOLINT
 
+#include "boost/exception/diagnostic_information.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
@@ -328,17 +329,8 @@ void LocalDataLoader::ThreadFunction() {
       DataLoader::PopulateDataStreams(*batch, pi.get());
       instance()->processor_queue()->push(pi);
     }
-  }
-  catch(boost::thread_interrupted&) {
-    LOG(WARNING) << "thread_interrupted exception in LocalDataLoader::ThreadFunction() function";
-    return;
-  }
-  catch (std::runtime_error& ex) {
-    LOG(ERROR) << ex.what();
-    throw;
   } catch(...) {
-    LOG(FATAL) << "Fatal exception in LocalDataLoader::ThreadFunction() function";
-    throw;
+    LOG(FATAL) << boost::current_exception_diagnostic_information();
   }
 }
 
@@ -386,7 +378,6 @@ void RemoteDataLoader::ThreadFunction() {
       int processor_queue_size = instance()->processor_queue()->size();
       int max_queue_size = config.processor_queue_max_size();
       if (processor_queue_size >= max_queue_size) {
-        // Sleep and check for interrupt.
         boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
         continue;
       }
@@ -444,13 +435,8 @@ void RemoteDataLoader::ThreadFunction() {
       }
     }
   }
-  catch(boost::thread_interrupted&) {
-    LOG(WARNING) << "thread_interrupted exception in RemoteDataLoader::ThreadFunction() function";
-    return;
-  }
-  catch(...) {
-    LOG(FATAL) << "Fatal exception in RemoteDataLoader::ThreadFunction() function";
-    throw;
+  catch (...) {
+    LOG(FATAL) << boost::current_exception_diagnostic_information();
   }
 }
 

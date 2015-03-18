@@ -116,7 +116,7 @@ inline bool make_rpcz_call(std::function<void()> f, const std::string& log_messa
       ss << "Network comminication timeout";
       if (!log_message.empty()) ss << " in " << log_message;
       LOG(ERROR) << ss.str();
-      if (!no_throw) throw artm::core::NetworkException(ss.str());
+      if (!no_throw) BOOST_THROW_EXCEPTION(artm::core::NetworkException(ss.str()));
       return false;
     }
 
@@ -126,7 +126,7 @@ inline bool make_rpcz_call(std::function<void()> f, const std::string& log_messa
       ss << ", code = " << error.get_application_error_code();
       if (!error.get_error_message().empty()) ss << ", error_message = " << error.get_error_message();
       LOG(ERROR) << ss.str();
-      if (!no_throw) throw artm::core::NetworkException(ss.str());
+      if (!no_throw) BOOST_THROW_EXCEPTION(artm::core::NetworkException(ss.str()));
       return false;
     }
 
@@ -134,7 +134,7 @@ inline bool make_rpcz_call(std::function<void()> f, const std::string& log_messa
     if (!log_message.empty()) ss << " in " << log_message;
     ss << ", rpcz_error_status = " << error.get_status();
     LOG(ERROR) << ss.str();
-    if (!no_throw) throw artm::core::NetworkException(ss.str());
+    if (!no_throw) BOOST_THROW_EXCEPTION(artm::core::NetworkException(ss.str()));
     return false;
   }
 

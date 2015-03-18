@@ -19,6 +19,7 @@ try {
 #include <stdexcept>
 #include <string>
 
+#include "boost/exception/diagnostic_information.hpp"
 #include "boost/exception/get_error_info.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/throw_exception.hpp"
@@ -97,12 +98,9 @@ catch (const ::artm::core::InternalError& e) {                                 \
 } catch (const rpcz::rpc_error& e) {                                           \
   set_last_error("rpc_error :  " + std::string(e.what()));                     \
   return ARTM_NETWORK_ERROR;                                                   \
-} catch (const std::runtime_error& e) {                                        \
-  set_last_error("InternalError :  " + std::string(e.what()));                 \
-  return ARTM_INTERNAL_ERROR;                                                  \
 } catch (...) {                                                                \
-  LOG(ERROR) << "unknown critical error.";                                     \
-  set_last_error("Unknown critical error. ");                                  \
+  LOG(ERROR) << boost::current_exception_diagnostic_information();             \
+  set_last_error(boost::current_exception_diagnostic_information());           \
   return ARTM_INTERNAL_ERROR;                                                  \
 }
 
