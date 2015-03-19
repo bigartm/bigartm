@@ -363,6 +363,10 @@ void TopicModel::RetrieveExternalTopicModel(
         topic_model, get_model_args.topic_name_size(), get_model_args.topic_name());
   }
 
+  LOG(INFO) << "RetrieveExternalTopicModel() with "
+            << (use_all_topics ? topic_size() : topics_to_use.size()) << " topics, "
+            << (use_all_tokens ? token_size() : tokens_to_use.size()) << " tokens";
+
   for (int token_index = 0; token_index < token_size(); ++token_index) {
     const Token& current_token = token_collection_.token(token_index);
     if (use_all_tokens ||

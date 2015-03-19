@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "boost/lexical_cast.hpp"
+#include "boost/exception/diagnostic_information.hpp"
 
 #include "glog/logging.h"
 
@@ -190,10 +191,6 @@ void Merger::ThreadFunction() {
         break;
       }
 
-      // Sleep and check for interrupt.
-      // To check for interrupt without sleep,
-      // use boost::this_thread::interruption_point()
-      // which also throws boost::thread_interrupted
       is_idle_ = true;
       boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
       is_idle_ = false;
@@ -264,12 +261,8 @@ void Merger::ThreadFunction() {
       }  // MAIN FOR LOOP
     }
   }
-  catch(boost::thread_interrupted&) {
-    LOG(WARNING) << "thread_interrupted exception in Merger::ThreadFunction() function";
-    return;
-  } catch(...) {
-    LOG(FATAL) << "Fatal exception in Merger::ThreadFunction() function";
-    throw;
+  catch(...) {
+    LOG(FATAL) << boost::current_exception_diagnostic_information();
   }
 }
 
@@ -554,6 +547,10 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     ss << "Dictionary " << args.dictionary_name() << " does not exist";
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
+
+  LOG(INFO) << "InitializeModel() with "
+            << model.topics_count() << " topics and "
+            << dict->size()  << " tokens";
 
   for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
     ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;

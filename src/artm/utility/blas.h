@@ -6,7 +6,10 @@
 #include <assert.h>
 #include <memory>
 #include <vector>
+
+#include "boost/exception/diagnostic_information.hpp"
 #include "boost/utility.hpp"
+
 #include "glog/logging.h"
 
 #include "artm/utility/ice.h"
@@ -30,6 +33,13 @@ typedef void blas_saxpy_type(const int size, const float alpha,
 typedef void blas_scsr2csc_type(int m, int n, int nnz,
                             const float *csr_val, const int* csr_row_ptr, const int *csr_col_ind,
                                   float *csc_val,       int* csc_row_ind,       int* csc_col_ptr);
+
+#define CATCH_BIG_ALLOCATION(no_rows, no_cols)                                      \
+catch (...) {                                                                       \
+  LOG(ERROR) << "no_rows_ = " << no_rows << ", no_columns_ = " << no_cols << ". "   \
+    << boost::current_exception_diagnostic_information();                           \
+  throw;                                                                            \
+}
 
 namespace artm {
 namespace utility {
@@ -65,7 +75,9 @@ class DenseMatrix {
     store_by_rows_(store_by_rows),
     data_(nullptr) {
     if (no_rows > 0 && no_columns > 0) {
-      data_ = new T[no_rows_ * no_columns_];
+      try {
+        data_ = new T[no_rows_ * no_columns_];
+      } CATCH_BIG_ALLOCATION(no_rows_, no_columns_)
     }
   }
 
@@ -74,7 +86,10 @@ class DenseMatrix {
     no_columns_ = src_matrix.no_columns();
     store_by_rows_ = src_matrix.store_by_rows_;
     if (no_columns_ >0 && no_rows_ > 0) {
-      data_ = new T[no_rows_ * no_columns_];
+      try {
+        data_ = new T[no_rows_ * no_columns_];
+      } CATCH_BIG_ALLOCATION(no_rows_, no_columns_)
+
       for (int i = 0; i < no_rows_ * no_columns_; ++i) {
         data_[i] = src_matrix.get_data()[i];
       }
@@ -117,7 +132,10 @@ class DenseMatrix {
       delete[] data_;
     }
     if (no_columns_ >0 && no_rows_ > 0) {
-      data_ = new T[no_rows_ * no_columns_];
+      try {
+        data_ = new  T[no_rows_ * no_columns_];
+      } CATCH_BIG_ALLOCATION(no_rows_, no_columns_);
+
       for (int i = 0; i < no_rows_ * no_columns_; ++i) {
         data_[i] = src_matrix.get_data()[i];
       }
@@ -237,5 +255,7 @@ void AssignDenseMatrixByDivision(const DenseMatrix<T>& first_matrix,
 
 }  // namespace utility
 }  // namespace artm
+
+#undef CATCH_BIG_ALLOCATION
 
 #endif  // SRC_ARTM_UTILITY_BLAS_H_

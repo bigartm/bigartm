@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "boost/exception/diagnostic_information.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 #include "boost/uuid/uuid_io.hpp"
@@ -640,10 +641,6 @@ void Processor::ThreadFunction() {
         pop_retries++;
         LOG_IF(INFO, pop_retries == pop_retries_max) << "No data in processing queue, waiting...";
 
-        // Sleep and check for interrupt.
-        // To check for interrupt without sleep,
-        // use boost::this_thread::interruption_point()
-        // which also throws boost::thread_interrupted
         boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
 
         continue;
@@ -652,7 +649,9 @@ void Processor::ThreadFunction() {
       LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
       pop_retries = 0;
 
-      CuckooWatch cuckoo("ProcessBatch");  // log time from now to destruction
+
+      // CuckooWatch logs time from now to destruction
+      CuckooWatch cuckoo(std::string("ProcessBatch(") + part->batch().id() + std::string(")"));
       total_processed_batches++;
 
       const Batch& batch = part->batch();
@@ -791,16 +790,8 @@ void Processor::ThreadFunction() {
       });
     }
   }
-  catch (boost::thread_interrupted&) {
-    LOG(WARNING) << "thread_interrupted exception in Processor::ThreadFunction() function";
-    return;
-  }
-  catch (std::runtime_error& ex) {
-    LOG(ERROR) << ex.what();
-    throw;
-  } catch(...) {
-    LOG(FATAL) << "Fatal exception in Processor::ThreadFunction() function";
-    throw;
+  catch (...) {
+    LOG(FATAL) << boost::current_exception_diagnostic_information();
   }
 }
 
