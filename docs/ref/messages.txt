@@ -27,6 +27,22 @@ Represents an array of double-precision floating point values.
   }
 
 
+.. _FloatArray:
+
+FloatArray
+==========
+
+.. class:: messages_pb2.FloatArray
+
+Represents an array of single-precision floating point values.
+
+.. code-block:: bash
+
+  message FloatArray {
+    repeated float value = 1 [packed = true];
+  }
+
+
 .. _BoolArray:
 
 BoolArray
@@ -42,6 +58,20 @@ Represents an array of boolean values.
     repeated bool value = 1 [packed = true];
   }
 
+.. _IntArray:
+
+IntArray
+========
+
+.. class:: messages_pb2.IntArray
+
+Represents an array of integer values.
+
+.. code-block:: bash
+
+  message IntArray {
+    repeated int32 value = 1 [packed = true];
+  }
 
 .. _Item:
 
@@ -276,7 +306,7 @@ Represents a configuration of a master component.
   BigARTM infers this distribution every time it processes the document. Option
   'cache_theta' allows to cache this theta matrix and re-use theha values when the same
   document is processed on the next iteration. This option must be set to 'true' before
-  calling method 'ArtmRequestThetaMatrix'.
+  calling method :c:func:`ArtmRequestThetaMatrix`.
   This feature is currently not supported in network modus operandi.
 
 .. attribute:: MasterComponentConfig.processors_count
@@ -1446,6 +1476,32 @@ TopicModel
 .. class:: messages_pb2.TopicModel
 
 Represents a topic model.
+This message can contain data in either dense or sparse format.
+The key idea behind sparse format is to avoid storing zero ``p(w|t)``
+elements of the Phi matrix.
+Please refer to the description of :attr:`TopicModel.topic_index` field for more details.
+
+To distinguish between these two formats
+check whether repeated field :attr:`TopicModel.topic_index` is empty.
+An empty field indicate a dense format,
+otherwise the message contains data in a sparse format.
+To request topic model in a sparse format set 
+:attr:`GetTopicModelArgs.use_sparse_format` field to ``True``
+when calling :c:func:`ArtmRequestTopicModel`.
+
+Note that the meaning of :attr:`TopicModel.topic_name` and :attr:`TopicModel.topics_count` fields is slightly different
+in sparse and dense representation.
+In sparse format :attr:`TopicModel.topics_count` and :attr:`TopicModel.topic_name` always refer
+to the entire set of topics in your :ref:`ModelConfig`,
+even if topic model had been requested for a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name` message.
+
+In dense format :attr:`TopicModel.topics_count` represent the number of topics physically present in given :ref:`TopicModel` message,
+and :attr:`TopicModel.topic_name` gives the names of the corresponding topics.
+This values will represent a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name` message.
+
+If topic model had been requested with empty :attr:`GetTopicModelArgs.topic_name` then
+:attr:`TopicModel.topic_name` and :attr:`TopicModel.topics_count` will always represent the entire set of topics
+as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count` fields.
 
 .. code-block:: bash
 
@@ -1463,17 +1519,24 @@ Represents a topic model.
     }
 
     optional bytes internals = 7;
+    repeated IntArray topic_index = 8;
   }
 
 .. attribute:: TopicModel.name
 
-   A value that describes the name of the topic model.
-   This name will match the name of the corresponding model config.
+   A value that describes the name of the topic model (:attr:`TopicModel.name`).
 
 .. attribute:: TopicModel.topics_count
 
    A value that describes the number of topics in the topic model.
-   This value will match :attr:`ModelConfig.topics_count` value, defined in the model config.
+   The meaning of this field is slightly different in sparse and dense representation.
+   Please refer to the general description of :ref:`TopicModel` for detailed information.
+
+.. attribute:: TopicModel.topic_name
+
+   A value that describes the names of the topics in the topic model.
+   The meaning of this field is slightly different in sparse and dense representation.
+   Please refer to the general description of :ref:`TopicModel` for detailed information.
 
 .. attribute:: TopicModel.token
 
@@ -1482,17 +1545,34 @@ Represents a topic model.
 .. attribute:: TopicModel.token_weights
 
    A set of token weights.
-   The length of this repeated field will match the length of the repeated field 'token'.
-   The length of each FloatArray will match the topics_count field.
+   The length of this repeated field will match the length of the repeated field :attr:`TopicModel.token`.
+   The length of each :ref:`FloatArray` will match the :attr:`TopicModel.topics_count` field (in dense representation),
+   or the length of the corresponding :ref:`IntArray` from :attr:`TopicModel.topic_index` field (in sparse representation).
 
 .. attribute:: TopicModel.class_id
 
    A set values that specify the class (modality) of the tokens.
-   The length of this repeated field will match the length of the repeated field 'token'.
+   The length of this repeated field will match the length of the repeated field :attr:`TopicModel.token`.
 
 .. attribute:: TopicModel.internals
 
    A serialized instance of TopicModelInternals message.
+   This field is not available if :ref:`TopicModel` is requested with
+   :attr:`GetTopicModelArgs.use_sparse_format` being set to ``True``. 
+
+.. attribute:: TopicModel.topic_index
+
+   A repeated field used for sparse topic model representation.
+   This field has the same length as
+   :attr:`TopicModel.token`, :attr:`TopicModel.class_id` and :attr:`TopicModel.token_weights`.
+   Each element in *topic_index* is an instance of :ref:`IntArray` message,
+   containing a list of values between 0 and :attr:`TopicModel.topics_count` - 1.
+   This values correspond to the indices in :attr:`TopicModel.topic_name` array,
+   and tell which topics has non-zero ``p(w|t)`` probabilities for a given token.
+   The actual ``p(w|t)`` values can be found in :attr:`TopicModel.token_weights` field.
+   The length of each :ref:`IntArray` message in :attr:`TopicModel.topic_index` field 
+   equals to the length of the corresponding
+   :ref:`FloatArray` message in :attr:`TopicModel.token_weights` field.
 
 
 .. _ThetaMatrix:
@@ -1503,6 +1583,11 @@ ThetaMatrix
 .. class:: messages_pb2.ThetaMatrix
 
 Represents a theta matrix.
+This message can contain data in either dense or sparse format.
+The key idea behind sparse format is to avoid storing zero ``p(t|d)``
+elements of the Theta matrix.
+Sparse representation of Theta matrix is equivalent to sparse representation
+of Phi matrix. Please, refer to :ref:`TopicModel` for detailed description of the sparse format.
 
 .. code-block:: bash
 
@@ -1513,6 +1598,7 @@ Represents a theta matrix.
     repeated string topic_name = 4;
     optional int32 topics_count = 5;
     repeated string item_title = 6;
+    repeated IntArray topic_index = 7;
   }
 
 .. attribute:: ThetaMatrix.model_name
@@ -1527,22 +1613,44 @@ Represents a theta matrix.
 .. attribute:: ThetaMatrix.item_weights
 
    A set of item ID weights.
-   The length of this repeated field will match the length of the repeated field 'item_id'.
-   The length of each FloatArray will match the number of topics in the model.
+   The length of this repeated field will match the length of the repeated field :attr:`ThetaMatrix.item_id`.
+   The length of each :ref:`FloatArray` will match the :attr:`ThetaMatrix.topics_count` field (in dense representation),
+   or the length of the corresponding :ref:`IntArray` from :attr:`ThetaMatrix.topic_index` field (in sparse representation).
 
 .. attribute:: ThetaMatrix.topic_name
 
    A set of values that represent the names of the topics, included in this theta matrix.
    The names correspond to :attr:`ModelConfig.topic_name`.
+   The meaning of this field is slightly different in sparse and dense representation,
+   similar to :attr:`TopicModel.topic_name` field.
+   Please refer to the general description of :ref:`TopicModel` for detailed information.
 
-.. attribute:: TopicModel.topics_count
+.. attribute:: ThetaMatrix.topics_count
 
    A value that describes the number of topics in the topic model.
-   This value will match :attr:`ModelConfig.topics_count` value, defined in the model config.
+   The meaning of this field is slightly different in sparse and dense representation,
+   similar to :attr:`TopicModel.topics_count` field.
+   Please refer to the general description of :ref:`TopicModel` for detailed information.
 
-.. attribute:: ThetaMatrix.item_id
+.. attribute:: ThetaMatrix.item_title
 
    A set of item titles, corresponding to :attr:`Item.title` values.
+   Beware that this field might be empty (e.g. of zero length)
+   if all items did not have title specified in :attr:`Item.title`.
+
+.. attribute:: ThetaMatrix.topic_index
+
+   A repeated field used for sparse theta matrix representation.
+   This field has the same length as
+   :attr:`ThetaMatrix.item_id`, :attr:`ThetaMatrix.item_weights` and :attr:`ThetaMatrix.item_title`.
+   Each element in *topic_index* is an instance of :ref:`IntArray` message,
+   containing a list of values between 0 and :attr:`ThetaMatrix.topics_count` - 1.
+   This values correspond to the indices in :attr:`ThetaMatrix.topic_name` array,
+   and tell which topics has non-zero ``p(t|d)`` probabilities for a given item.
+   The actual ``p(t|d)`` values can be found in :attr:`ThetaMatrix.item_weights` field.
+   The length of each :ref:`IntArray` message in :attr:`ThetaMatrix.topic_index` field 
+   equals to the length of the corresponding
+   :ref:`FloatArray` message in :attr:`ThetaMatrix.item_weights` field.
 
 .. _CollectionParserConfig:
 
@@ -1764,11 +1872,11 @@ Represents an argument of synchronize model operation.
 .. _InitializeModelArgs:
 
 InitializeModelArgs
-====================
+===================
 
 .. class:: messages_pb2.InitializeModelArgs
 
-Represents an argument of initialize model operation.
+Represents an argument of :c:func:`ArtmInitializeModel` operation.
 
 .. code-block:: bash
 
@@ -1790,7 +1898,7 @@ Represents an argument of initialize model operation.
 GetTopicModelArgs
 =================
 
-Represents an argument of get topic model operation.
+Represents an argument of :c:func:`ArtmRequestTopicModel` operation.
 
 .. code-block:: bash
 
@@ -1799,6 +1907,8 @@ Represents an argument of get topic model operation.
     repeated string topic_name = 2;
     repeated string token = 3;
     repeated string class_id = 4;
+    optional bool use_sparse_format = 5;
+    optional float eps = 6 [default = 1e-37];
   }
 
 .. attribute:: GetTopicModelArgs.model_name
@@ -1822,12 +1932,24 @@ Represents an argument of get topic model operation.
   The length of this field must match the length of :attr:`token` field.
   This field is only required together with :attr:`token`, otherwise it is ignored.
   
+.. attribute:: GetTopicModelArgs.use_sparse_format
+
+  An optional flag that defines whether to use sparse format for the resulting :attr:`TopicModel` message.
+  See :attr:`TopicModel` message for additional information about the sparse format.
+  Note that setting *use_sparse_format = true* results in empty :attr:`TopicModel.internals` field.
+
+.. attribute:: GetTopicModelArgs.eps
+
+   A small value that defines zero threshold for ``p(w|t)`` probabilities.
+   This field is only used in sparse format.
+   ``p(w|t)`` below the threshold will be excluded from the resulting Phi matrix.
+
 .. _GetThetaMatrixArgs:
   
 GetThetaMatrixArgs
 ==================
 
-Represents an argument of get theta matrix operation.
+Represents an argument of :c:func:`ArtmRequestThetaMatrix` operation.
 
 .. code-block:: bash
 
@@ -1837,6 +1959,8 @@ Represents an argument of get theta matrix operation.
     repeated string topic_name = 3;
     repeated int32 topic_index = 4;
     optional bool clean_cache = 5 [default = false];
+    optional bool use_sparse_format = 6 [default = false];
+    optional float eps = 7 [default = 1e-37];
   }
 
 .. attribute:: GetThetaMatrixArgs.model_name
@@ -1869,6 +1993,16 @@ Represents an argument of get theta matrix operation.
   Setting this value to *True* will clear the cache for a topic model, defined by :attr:`GetThetaMatrixArgs.model_name`.
   This value is only applicable when :attr:`MasterComponentConfig.cache_theta` is set to *True*.
 
+.. attribute:: GetThetaMatrixArgs.use_sparse_format
+
+  An optional flag that defines whether to use sparse format for the resulting :attr:`ThetaMatrix` message.
+  See :attr:`ThetaMatrix` message for additional information about the sparse format.
+
+.. attribute:: GetThetaMatrixArgs.eps
+
+   A small value that defines zero threshold for ``p(t|d)`` probabilities.
+   This field is only used in sparse format.
+   ``p(t|d)`` below the threshold will be excluded from the resulting Theta matrix.
 
 .. _GetScoreValueArgs:
 

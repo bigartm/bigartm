@@ -16,6 +16,11 @@ message BoolArray {
   repeated bool value = 1 [packed = true];
 }
 
+// Represents an array of integer values
+message IntArray {
+  repeated int32 value = 1 [packed = true];
+}
+
 // Represents an array of string values
 message StringArray {
   repeated string value = 1;
@@ -360,6 +365,7 @@ message TopicModel {
   }
 
   optional bytes internals = 7;
+  repeated IntArray topic_index = 8;
 }
 
 // Represents a theta matrix.
@@ -370,6 +376,7 @@ message ThetaMatrix {
   repeated string topic_name = 4;
   optional int32 topics_count = 5;
   repeated string item_title = 6;
+  repeated IntArray topic_index = 7;
 }
 
 // Represents a configuration of a collection parser.
@@ -410,6 +417,8 @@ message GetTopicModelArgs {
   repeated string topic_name = 2;
   repeated string token = 3;
   repeated string class_id = 4;
+  optional bool use_sparse_format = 5;
+  optional float eps = 6 [default = 1e-37];
 }
 
 message GetThetaMatrixArgs {
@@ -418,6 +427,8 @@ message GetThetaMatrixArgs {
   repeated string topic_name = 3;
   repeated int32 topic_index = 4;
   optional bool clean_cache = 5 [default = false];
+  optional bool use_sparse_format = 6;
+  optional float eps = 7 [default = 1e-37];
 }
 
 message GetScoreValueArgs {

@@ -205,9 +205,6 @@ class TopicModel : public Regularizable {
   int token_id(const Token& token) const { return token_collection_.token_id(token); }
   const Token& token(int index) const { return token_collection_.token(index); }
 
-  template<typename T>
-  void AddTopicsInfoInModel(artm::TopicModel* topicModel, int size, const T& names) const;
-
   std::map<ClassId, int> FindDegeneratedTopicsCount() const;
 
  private:

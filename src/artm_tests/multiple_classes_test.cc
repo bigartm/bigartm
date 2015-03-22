@@ -336,11 +336,122 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "tts_class_one")->num_entries() > 0);
   EXPECT_TRUE(master_component.GetScoreAs< ::artm::TopTokensScore>(model2, "tts_class_two")->num_entries() > 0);
 
-  float p1 = master_component.GetScoreAs< ::artm::PerplexityScore>(model1, "perplexity")->value();
-  float p2 = master_component.GetScoreAs< ::artm::PerplexityScore>(model2, "perplexity")->value();
+  double p1 = master_component.GetScoreAs< ::artm::PerplexityScore>(model1, "perplexity")->value();
+  double p2 = master_component.GetScoreAs< ::artm::PerplexityScore>(model2, "perplexity")->value();
   EXPECT_TRUE((p1 > 0) && (p2 > 0) && (p1 != p2));
 
   auto theta_snippet = master_component.GetScoreAs< ::artm::ThetaSnippetScore>(model1, "theta_snippet");
   EXPECT_EQ(theta_snippet->item_id_size(), 5);
   EXPECT_EQ(master_component.GetScoreAs< ::artm::ItemsProcessedScore>(model1, "items_processed")->value(), nDocs);
+}
+
+void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::artm::MasterComponent* master) {
+  ::artm::GetTopicModelArgs args_dense(args);
+  args_dense.set_use_sparse_format(false);;
+  auto tm_dense = master->GetTopicModel(args_dense);
+
+  ::artm::GetTopicModelArgs args_sparse(args);
+  args_sparse.set_use_sparse_format(true);
+  auto tm_sparse = master->GetTopicModel(args_sparse);
+
+  ::artm::GetTopicModelArgs args_all;
+  args_all.set_model_name(args.model_name());
+  auto tm_all = master->GetTopicModel(args_all);
+
+  bool all_topics = args.topic_name_size() == 0;
+  bool all_tokens = args.token_size() == 0;
+  bool some_classes = all_tokens && (args.class_id_size() > 0);
+
+  EXPECT_EQ(tm_dense->name(), args.model_name());
+  EXPECT_EQ(tm_sparse->name(), args.model_name());
+  ASSERT_EQ(tm_dense->topics_count(), tm_dense->topic_name_size());
+  ASSERT_EQ(tm_sparse->topics_count(), tm_sparse->topic_name_size());
+  ASSERT_GT(tm_dense->topics_count(), 0);
+  ASSERT_GT(tm_sparse->topics_count(), 0);
+  ASSERT_GT(tm_dense->token_size(), 0);
+  ASSERT_GT(tm_sparse->token_size(), 0);
+
+  if (!all_topics) {
+    ASSERT_EQ(tm_dense->topics_count(), args.topic_name_size());
+    for (int i = 0; i < tm_dense->topics_count(); ++i)
+      EXPECT_EQ(tm_dense->topic_name(i), args.topic_name(i));
+  }
+
+  ASSERT_EQ(tm_sparse->topics_count(), tm_all->topics_count());
+  for (int i = 0; i < tm_sparse->topics_count(); ++i)
+    EXPECT_EQ(tm_sparse->topic_name(i), tm_all->topic_name(i));
+
+  ASSERT_EQ(tm_sparse->token_size(), tm_dense->token_size());
+  ASSERT_EQ(tm_sparse->token_weights_size(), tm_dense->token_weights_size());
+  ASSERT_EQ(tm_sparse->class_id_size(), tm_dense->class_id_size());
+  ASSERT_TRUE(tm_sparse->token_size() == tm_sparse->token_weights_size() &&
+              tm_sparse->token_size() == tm_sparse->class_id_size());
+  if (!all_tokens) ASSERT_TRUE(tm_sparse->token_size() == args.token_size());
+
+  for (int i = 0; i < tm_sparse->token_size(); ++i) {
+    EXPECT_EQ(tm_sparse->token(i), tm_dense->token(i));
+    EXPECT_EQ(tm_sparse->class_id(i), tm_dense->class_id(i));
+    if (!all_tokens) {
+      EXPECT_EQ(tm_sparse->token(i), args.token(i));
+      if (args.class_id_size() > 0) {
+        EXPECT_EQ(tm_sparse->class_id(i), args.class_id(i));
+      } else {
+        EXPECT_EQ(tm_sparse->class_id(i), "@default_class");
+      }
+    }
+
+    if (some_classes) {
+      bool contains = false;
+      for (int j = 0; j < args.class_id_size(); ++j)
+        if (args.class_id(j) == tm_sparse->class_id(i))
+          contains = true;
+      EXPECT_TRUE(contains);  // only return classes that had been requested
+    }
+
+    EXPECT_EQ(tm_dense->topic_index_size(), 0);
+    const ::artm::FloatArray& dense_topic = tm_dense->token_weights(i);
+    const ::artm::FloatArray& sparse_topic = tm_sparse->token_weights(i);
+    const ::artm::IntArray& sparse_topic_index = tm_sparse->topic_index(i);
+    ASSERT_EQ(sparse_topic.value_size(), sparse_topic_index.value_size());
+    for (int j = 0; j < sparse_topic.value_size(); ++j) {
+      int topic_index = sparse_topic_index.value(j);
+      float value = sparse_topic.value(j);
+      ASSERT_TRUE(topic_index >= 0 && topic_index <= tm_all->topics_count());
+      EXPECT_TRUE(value >= args.eps());
+      EXPECT_EQ(value, dense_topic.value(topic_index));
+    }
+  }
+}
+
+// artm_tests.exe --gtest_filter=MultipleClasses.GetTopicModel
+TEST(MultipleClasses, GetTopicModel) {
+  ::artm::MasterComponentConfig master_config;
+  ::artm::MasterComponent master_component(master_config);
+
+  // Generate doc-token matrix
+  int nTokens = 60, nDocs = 100, nTopics = 10;
+  artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
+
+  artm::ModelConfig model_config;
+  model_config.set_name("model1"); model_config.set_topics_count(nTopics);
+  model_config.add_class_id("class_one"); model_config.add_class_weight(1.0f);
+  model_config.add_class_id("class_two"); model_config.add_class_weight(1.0f);
+  artm::Model model(master_component, model_config);
+  for (int iter = 0; iter < 5; ++iter) {
+    master_component.AddBatch(batch);
+    master_component.WaitIdle();
+    model.Synchronize(0.0);
+  }
+
+  ::artm::GetTopicModelArgs args;
+  args.set_eps(0.05f);
+  args.set_model_name(model.name());
+  VerifySparseVersusDenseTopicModel(args, &master_component);
+
+  args.add_class_id("class_two");
+  VerifySparseVersusDenseTopicModel(args, &master_component);
+
+  args.add_token("token1");  // class_two
+  args.add_token("token0"); args.add_class_id("class_one");
+  VerifySparseVersusDenseTopicModel(args, &master_component);
 }
