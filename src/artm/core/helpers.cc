@@ -280,59 +280,90 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "GetThetaMatrixArgs.topic_name and GetThetaMatrixArgs.topic_index must not be used together"));
 
-  auto& model_name = get_theta_args.model_name();
-  auto& topic_name = get_theta_args.topic_name();
-  auto& topic_index = get_theta_args.topic_index();
+  auto& args_model_name = get_theta_args.model_name();
+  auto& args_topic_name = get_theta_args.topic_name();
+  auto& args_topic_index = get_theta_args.topic_index();
+  const bool use_sparse_format = get_theta_args.use_sparse_format();
 
-  if (!theta_matrix->has_model_name())
-    theta_matrix->set_model_name(model_name);
-  if ((theta_matrix->topic_name_size() == 0) && topic_name.size() > 0)
-    theta_matrix->mutable_topic_name()->CopyFrom(topic_name);
-  bool all_topics = (topic_name.size() == 0 && topic_index.size() == 0);
-  int max_topic_index = -1;
-  std::vector<int> topic_indices;
-  if (topic_index.size() > 0) {
-    for (int i = 0; i < topic_index.size(); ++i) {
-      topic_indices.push_back(topic_index.Get(i));
-      if (topic_index.Get(i) > max_topic_index)
-        max_topic_index = topic_index.Get(i);
+  std::vector<int> topics_to_use;
+  if (args_topic_index.size() > 0) {
+    for (int i = 0; i < args_topic_index.size(); ++i) {
+      int topic_index = args_topic_index.Get(i);
+      if (topic_index < 0 || topic_index >= cache.topic_name_size()) {
+        std::stringstream ss;
+        ss << "GetThetaMatrixArgs.topic_index[" << i << "] == " << topic_index << " is out of range.";
+        BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(ss.str()));
+      }
+      topics_to_use.push_back(topic_index);
     }
-  }
-
-  bool skip = false;
-  if (topic_name.size() > 0) {
-    topic_indices.clear();
-    for (int i = 0; i < topic_name.size(); ++i) {
-      int index = repeated_field_index_of(cache.topic_name(), topic_name.Get(i));
-      if (index == -1) {
-        LOG(WARNING) << "Topic " << topic_name.Get(i)
-          << " has not been found. The resulting ThetaMatrix may lack some items.";
-        return false;
+  } else if (args_topic_name.size() != 0) {
+    for (int i = 0; i < args_topic_name.size(); ++i) {
+      int topic_index = repeated_field_index_of(cache.topic_name(), args_topic_name.Get(i));
+      if (topic_index == -1) {
+        std::stringstream ss;
+        ss << "GetThetaMatrixArgs.topic_name[" << i << "] == " << args_topic_name.Get(i)
+           << " does not exist in ModelConfig.topic_name";
+        BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(ss.str()));
       }
 
-      topic_indices.push_back(index);
+      assert(topic_index >= 0 && topic_index < cache.topic_name_size());
+      topics_to_use.push_back(topic_index);
+    }
+  } else {  // use all topics
+    assert(cache.topic_name_size() > 0);
+    for (int i = 0; i < cache.topic_name_size(); ++i)
+      topics_to_use.push_back(i);
+  }
+
+  // Populate topics_count and topic_name fields in the resulting message
+  ::google::protobuf::RepeatedPtrField< ::std::string> result_topic_name;
+  if (use_sparse_format) {
+    for (TopicName topic_name : cache.topic_name())
+      result_topic_name.Add()->assign(topic_name);
+  } else {
+    for (int topic_index : topics_to_use)
+      result_topic_name.Add()->assign(cache.topic_name(topic_index));
+  }
+
+  if (!theta_matrix->has_model_name()) {
+    // Assign
+    theta_matrix->set_model_name(args_model_name);
+    theta_matrix->set_topics_count(result_topic_name.size());
+    assert(theta_matrix->topic_name_size() == 0);
+    for (TopicName topic_name : result_topic_name)
+      theta_matrix->add_topic_name(topic_name);
+  } else {
+    // Verify
+    if (theta_matrix->model_name() != args_model_name)
+      BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->model_name() != args_model_name"));
+    if (theta_matrix->topics_count() != result_topic_name.size())
+      BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->topics_count() != result_topic_name.size()"));
+    for (int i = 0; i < theta_matrix->topic_name_size(); ++i) {
+      if (theta_matrix->topic_name(i) != result_topic_name.Get(i))
+        BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->topic_name(i) != result_topic_name.Get(i)"));
     }
   }
 
-  theta_matrix->set_topics_count(topic_indices.size());
   bool has_title = (cache.item_title_size() == cache.item_id_size());
   for (int item_index = 0; item_index < cache.item_id_size(); ++item_index) {
-    const artm::FloatArray& item_theta = cache.theta(item_index);
-    if (all_topics) {
-      theta_matrix->add_item_weights()->CopyFrom(item_theta);
-      theta_matrix->set_topics_count(item_theta.value_size());
-    } else {
-      if (max_topic_index >= item_theta.value_size())
-        continue;  // skip the item to avoid crash.
-
-      ::artm::FloatArray* theta_vec = theta_matrix->add_item_weights();
-      for (int i = 0; i < topic_indices.size(); ++i) {
-        theta_vec->add_value(item_theta.value(topic_indices[i]));
-      }
-    }
-
     theta_matrix->add_item_id(cache.item_id(item_index));
     if (has_title) theta_matrix->add_item_title(cache.item_title(item_index));
+    ::artm::FloatArray* theta_vec = theta_matrix->add_item_weights();
+
+    const artm::FloatArray& item_theta = cache.theta(item_index);
+    if (!use_sparse_format) {
+      for (int topic_index : topics_to_use)
+        theta_vec->add_value(item_theta.value(topic_index));
+    } else {
+      ::artm::IntArray* sparse_topic_index = theta_matrix->add_topic_index();
+      for (int topic_index : topics_to_use) {
+        float value = item_theta.value(topic_index);
+        if (value >= get_theta_args.eps()) {
+          theta_vec->add_value(item_theta.value(topic_index));
+          sparse_topic_index->add_value(topic_index);
+        }
+      }
+    }
   }
 
   return true;
