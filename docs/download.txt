@@ -3,8 +3,8 @@ Downloads
 
 * **Windows**
 
-  * Latest 32 bit release: https://github.com/bigartm/bigartm/releases/download/v0.6.0/BigARTM_v0.6.0_win32.7z
-  * Latest 64 bit release: https://github.com/bigartm/bigartm/releases/download/v0.6.0/BigARTM_v0.6.0_x64.7z
+  * Latest 32 bit release: https://github.com/bigartm/bigartm/releases/download/v0.6.1/BigARTM_v0.6.1_win32.7z
+  * Latest 64 bit release: https://github.com/bigartm/bigartm/releases/download/v0.6.1/BigARTM_v0.6.1_x64.7z
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
   Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
