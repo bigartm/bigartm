@@ -423,9 +423,74 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
   }
 }
 
+void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, ::artm::MasterComponent* master) {
+  ::artm::GetThetaMatrixArgs args_dense(args);
+  args_dense.set_use_sparse_format(false);;
+  auto tm_dense = master->GetThetaMatrix(args_dense);
+
+  ::artm::GetThetaMatrixArgs args_sparse(args);
+  args_sparse.set_use_sparse_format(true);
+  auto tm_sparse = master->GetThetaMatrix(args_sparse);
+
+  ::artm::GetThetaMatrixArgs args_all;
+  args_all.set_model_name(args.model_name());
+  auto tm_all = master->GetThetaMatrix(args_all);
+
+  bool by_names = args.topic_name_size() > 0;
+  bool by_index = args.topic_index_size() > 0;
+  bool all_topics = (!by_names && !by_index);
+
+  EXPECT_EQ(tm_dense->model_name(), args.model_name());
+  EXPECT_EQ(tm_sparse->model_name(), args.model_name());
+  ASSERT_EQ(tm_dense->topics_count(), tm_dense->topic_name_size());
+  ASSERT_EQ(tm_sparse->topics_count(), tm_sparse->topic_name_size());
+  ASSERT_GT(tm_dense->topics_count(), 0);
+  ASSERT_GT(tm_sparse->topics_count(), 0);
+  ASSERT_GT(tm_dense->item_id_size(), 0);
+  ASSERT_GT(tm_sparse->item_id_size(), 0);
+
+  if (by_names) {
+    ASSERT_EQ(tm_dense->topics_count(), args.topic_name_size());
+    for (int i = 0; i < tm_dense->topics_count(); ++i)
+      EXPECT_EQ(tm_dense->topic_name(i), args.topic_name(i));
+  } else if (by_index) {
+    ASSERT_EQ(tm_dense->topics_count(), args.topic_index_size());
+  } else {
+    ASSERT_EQ(tm_dense->topics_count(), tm_all->topics_count());
+  }
+
+  ASSERT_EQ(tm_sparse->topics_count(), tm_all->topics_count());
+  for (int i = 0; i < tm_sparse->topics_count(); ++i)
+    EXPECT_EQ(tm_sparse->topic_name(i), tm_all->topic_name(i));
+
+  ASSERT_EQ(tm_sparse->item_id_size(), tm_dense->item_id_size());
+  ASSERT_EQ(tm_sparse->item_weights_size(), tm_dense->item_weights_size());
+  ASSERT_EQ(tm_sparse->item_title_size(), tm_dense->item_title_size());
+  ASSERT_TRUE(tm_sparse->item_id_size() == tm_sparse->item_weights_size() &&
+              tm_sparse->item_id_size() == tm_sparse->item_title_size());
+
+  for (int i = 0; i < tm_sparse->item_id_size(); ++i) {
+    EXPECT_EQ(tm_sparse->item_id(i), tm_dense->item_id(i));
+    EXPECT_EQ(tm_sparse->item_title(i), tm_dense->item_title(i));
+    EXPECT_EQ(tm_dense->topic_index_size(), 0);
+    const ::artm::FloatArray& dense_topic = tm_dense->item_weights(i);
+    const ::artm::FloatArray& sparse_topic = tm_sparse->item_weights(i);
+    const ::artm::IntArray& sparse_topic_index = tm_sparse->topic_index(i);
+    ASSERT_EQ(sparse_topic.value_size(), sparse_topic_index.value_size());
+    for (int j = 0; j < sparse_topic.value_size(); ++j) {
+      int topic_index = sparse_topic_index.value(j);
+      float value = sparse_topic.value(j);
+      ASSERT_TRUE(topic_index >= 0 && topic_index <= tm_all->topics_count());
+      EXPECT_TRUE(value >= args.eps());
+      EXPECT_EQ(value, dense_topic.value(topic_index));
+    }
+  }
+}
+
 // artm_tests.exe --gtest_filter=MultipleClasses.GetTopicModel
 TEST(MultipleClasses, GetTopicModel) {
   ::artm::MasterComponentConfig master_config;
+  master_config.set_cache_theta(true);
   ::artm::MasterComponent master_component(master_config);
 
   // Generate doc-token matrix
@@ -454,4 +519,9 @@ TEST(MultipleClasses, GetTopicModel) {
   args.add_token("token1");  // class_two
   args.add_token("token0"); args.add_class_id("class_one");
   VerifySparseVersusDenseTopicModel(args, &master_component);
+
+  ::artm::GetThetaMatrixArgs args_theta;
+  args_theta.set_eps(0.05f);
+  args_theta.set_model_name(model.name());;
+  VerifySparseVersusDenseThetaMatrix(args_theta, &master_component);
 }
