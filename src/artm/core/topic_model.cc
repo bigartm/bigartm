@@ -73,13 +73,14 @@ void TokenCollectionWeights::Clear() {
   values_.clear();
 }
 
-int TokenCollectionWeights::AddToken(bool random_init) {
+int TokenCollectionWeights::AddToken(const Token& token, bool random_init) {
   float* values = new float[topic_size_];
   values_.push_back(values);
 
   if (random_init) {
+    std::vector<float> vec = Helpers::GenerateRandomVector(topic_size_, TokenHasher()(token));
     for (int i = 0; i < topic_size_; ++i) {
-      values[i] = ThreadSafeRandom::singleton().GenerateFloat();
+      values[i] = vec[i];
     }
   } else {
     memset(values, 0, sizeof(float)* topic_size_);
@@ -138,7 +139,8 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay,
   }
 
   for (size_t token_id = 0; token_id < rhs.token_size(); token_id++) {
-    AddToken(rhs.token(token_id), false);
+    const Token& token = rhs.token(token_id);
+    AddToken(token, false);
     auto iter = rhs.GetTopicWeightIterator(token_id);
     int topic_index = 0;
     while (iter.NextTopic() < rhs.topic_size()) {
@@ -150,14 +152,9 @@ TopicModel::TopicModel(const TopicModel& rhs, float decay,
     if (topic_index != topic_size()) {
       // here new topics will be added into model
       float sum = 0.0f;
-      std::vector<float> values;
-      for (int i = topic_index; i < topic_size(); ++i) {
-        float val = ThreadSafeRandom::singleton().GenerateFloat();
-        values.push_back(val);
-        sum += val;
-      }
+      std::vector<float> values = Helpers::GenerateRandomVector(topic_size(), TokenHasher()(token));
       for (int i = 0; i < values.size(); ++i) {
-        SetTokenWeight(token_id, topic_index + i, values[i] / sum);
+        SetTokenWeight(token_id, topic_index + i, values[i]);
       }
     }
   }
@@ -490,10 +487,10 @@ int TopicModel::AddToken(const Token& token, bool random_init) {
     return token_id;
 
   token_id = token_collection_.AddToken(token);
-  int token_id2 = n_wt_.AddToken(random_init);
+  int token_id2 = n_wt_.AddToken(token, random_init);
   assert(token_id2 == token_id);
 
-  int token_id3 = r_wt_.AddToken(false);
+  int token_id3 = r_wt_.AddToken(token, false);
   assert(token_id3 == token_id);
 
   return token_id;

@@ -35,6 +35,7 @@
 ../src/artm_tests/cpp_interface_test.cc
 ../src/artm_tests/template_manager_test.cc
 ../src/artm_tests/nodes_connectivity_test.cc
+../src/artm_tests/repeatable_result_test.cc
 ../src/artm_tests/instance_test.cc
 ../src/artm_tests/multiple_classes_test.cc
 ../src/artm_tests/rpcz_canary_test.cc
