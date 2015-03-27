@@ -85,8 +85,9 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
     retval.push_back(static_cast<float>(rand()) / static_cast<float>(RAND_MAX));  // NOLINT
   }
 #else
+  unsigned int int_seed = static_cast<unsigned int>(seed);
   for (int i = 0; i < size; ++i) {
-    retval.push_back(static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX));
+    retval.push_back(static_cast<float>(rand_r(&int_seed)) / static_cast<float>(RAND_MAX));
   }
 #endif
 
