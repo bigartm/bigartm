@@ -240,6 +240,7 @@ bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
 
 bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
   int timeout = args.timeout_milliseconds();
+  LOG_IF(WARNING, timeout == 0) << "WaitIdleArgs.timeout_milliseconds == 0";
   WaitIdleArgs new_args;
   new_args.CopyFrom(args);
   if (isInLocalModusOperandi()) {
@@ -327,6 +328,7 @@ void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
 
 bool MasterComponent::AddBatch(const AddBatchArgs& args) {
   int timeout = args.timeout_milliseconds();
+  LOG_IF(WARNING, timeout == 0) << "AddBatchArgs.timeout_milliseconds == 0";
   if (isInLocalModusOperandi()) {
     if (args.reset_scores())
       instance_->merger()->ForceResetScores(ModelName());

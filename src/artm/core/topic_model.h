@@ -136,7 +136,7 @@ class TokenCollectionWeights {
   float* at(int token_id) { return values_[token_id]; }
 
   void Clear();
-  int AddToken(bool random_init);
+  int AddToken(const Token& token, bool random_init);
   void RemoveToken(int token_id);
 
  private:

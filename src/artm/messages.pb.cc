@@ -1507,14 +1507,14 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "sparse_format\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037"
     "\"W\n\021GetScoreValueArgs\022\022\n\nmodel_name\030\001 \001("
     "\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.a"
-    "rtm.Batch\"~\n\014AddBatchArgs\022\032\n\005batch\030\001 \001(\013"
-    "2\013.artm.Batch\022\034\n\024timeout_milliseconds\030\002 "
-    "\001(\005\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027\n\017batc"
-    "h_file_name\030\004 \001(\t\"a\n\023InvokeIterationArgs"
-    "\022\033\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014reset_s"
-    "cores\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014"
-    "WaitIdleArgs\022 \n\024timeout_milliseconds\030\001 \001"
-    "(\005:\002-1", 6886);
+    "rtm.Batch\"\202\001\n\014AddBatchArgs\022\032\n\005batch\030\001 \001("
+    "\0132\013.artm.Batch\022 \n\024timeout_milliseconds\030\002"
+    " \001(\005:\002-1\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027\n"
+    "\017batch_file_name\030\004 \001(\t\"a\n\023InvokeIteratio"
+    "nArgs\022\033\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014re"
+    "set_scores\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001("
+    "\t\"0\n\014WaitIdleArgs\022 \n\024timeout_millisecond"
+    "s\030\001 \001(\005:\002-1", 6891);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -19025,7 +19025,7 @@ AddBatchArgs::AddBatchArgs(const AddBatchArgs& from)
 void AddBatchArgs::SharedCtor() {
   _cached_size_ = 0;
   batch_ = NULL;
-  timeout_milliseconds_ = 0;
+  timeout_milliseconds_ = -1;
   reset_scores_ = false;
   batch_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -19070,7 +19070,7 @@ void AddBatchArgs::Clear() {
     if (has_batch()) {
       if (batch_ != NULL) batch_->::artm::Batch::Clear();
     }
-    timeout_milliseconds_ = 0;
+    timeout_milliseconds_ = -1;
     reset_scores_ = false;
     if (has_batch_file_name()) {
       if (batch_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -19101,7 +19101,7 @@ bool AddBatchArgs::MergePartialFromCodedStream(
         break;
       }
 
-      // optional int32 timeout_milliseconds = 2;
+      // optional int32 timeout_milliseconds = 2 [default = -1];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -19174,7 +19174,7 @@ void AddBatchArgs::SerializeWithCachedSizes(
       1, this->batch(), output);
   }
 
-  // optional int32 timeout_milliseconds = 2;
+  // optional int32 timeout_milliseconds = 2 [default = -1];
   if (has_timeout_milliseconds()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->timeout_milliseconds(), output);
   }
@@ -19208,7 +19208,7 @@ void AddBatchArgs::SerializeWithCachedSizes(
         1, this->batch(), target);
   }
 
-  // optional int32 timeout_milliseconds = 2;
+  // optional int32 timeout_milliseconds = 2 [default = -1];
   if (has_timeout_milliseconds()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->timeout_milliseconds(), target);
   }
@@ -19246,7 +19246,7 @@ int AddBatchArgs::ByteSize() const {
           this->batch());
     }
 
-    // optional int32 timeout_milliseconds = 2;
+    // optional int32 timeout_milliseconds = 2 [default = -1];
     if (has_timeout_milliseconds()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(

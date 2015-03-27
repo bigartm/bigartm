@@ -6514,7 +6514,7 @@ class AddBatchArgs : public ::google::protobuf::Message {
   inline ::artm::Batch* release_batch();
   inline void set_allocated_batch(::artm::Batch* batch);
 
-  // optional int32 timeout_milliseconds = 2;
+  // optional int32 timeout_milliseconds = 2 [default = -1];
   inline bool has_timeout_milliseconds() const;
   inline void clear_timeout_milliseconds();
   static const int kTimeoutMillisecondsFieldNumber = 2;
@@ -14925,7 +14925,7 @@ inline void AddBatchArgs::set_allocated_batch(::artm::Batch* batch) {
   }
 }
 
-// optional int32 timeout_milliseconds = 2;
+// optional int32 timeout_milliseconds = 2 [default = -1];
 inline bool AddBatchArgs::has_timeout_milliseconds() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -14936,7 +14936,7 @@ inline void AddBatchArgs::clear_has_timeout_milliseconds() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void AddBatchArgs::clear_timeout_milliseconds() {
-  timeout_milliseconds_ = 0;
+  timeout_milliseconds_ = -1;
   clear_has_timeout_milliseconds();
 }
 inline ::google::protobuf::int32 AddBatchArgs::timeout_milliseconds() const {

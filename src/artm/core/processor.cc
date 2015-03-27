@@ -119,12 +119,19 @@ InitializeTheta(const Batch& batch, const ModelConfig& model_config, const DataL
         (*Theta)(topic_index, item_index) = old_thetas.value(topic_index);
       }
     } else {
-      const float default_theta = 1.0f / topic_size;
-      for (int iTopic = 0; iTopic < topic_size; ++iTopic) {
-        float theta_value = default_theta;
-        if (model_config.use_random_theta())
-          theta_value = ThreadSafeRandom::singleton().GenerateFloat();
-        (*Theta)(iTopic, item_index) = theta_value;
+      if (model_config.use_random_theta()) {
+        size_t seed = 0;
+        boost::hash_combine(seed, std::hash<std::string>()(batch.id()));
+        boost::hash_combine(seed, std::hash<int>()(item_index));
+        std::vector<float> theta_values = Helpers::GenerateRandomVector(topic_size, seed);
+        for (int iTopic = 0; iTopic < topic_size; ++iTopic) {
+          (*Theta)(iTopic, item_index) = theta_values[iTopic];
+        }
+      } else {
+        const float default_theta = 1.0f / topic_size;
+        for (int iTopic = 0; iTopic < topic_size; ++iTopic) {
+          (*Theta)(iTopic, item_index) = default_theta;
+        }
       }
     }
   }
