@@ -19,7 +19,7 @@
 // cd to /src folder and execute the following:
 // .\protoc.exe --cpp_out=. --rpcz_plugin_out=. .\artm_tests\rpcz_canary_service.proto
 
-const std::string error_message = "Some error had happened!";
+const std::string error_message = "Some error had happened";
 const int error_code = -999;
 
 class SearchServiceImpl : public SearchService {

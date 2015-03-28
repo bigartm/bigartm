@@ -45,6 +45,8 @@ ScoreData_Type_TopicKernel = 6
 PerplexityScoreConfig_Type_UnigramDocumentModel = 0
 PerplexityScoreConfig_Type_UnigramCollectionModel = 1
 CollectionParserConfig_Format_BagOfWordsUci = 0
+CollectionParserConfig_Format_MatrixMarket = 1
+CollectionParserConfig_Format_VowpalWabbit = 2
 MasterComponentConfig_ModusOperandi_Local = 0
 MasterComponentConfig_ModusOperandi_Network = 1
 
@@ -383,9 +385,11 @@ class MasterComponent:
     result = HandleErrorCode(self.lib_, result)
     return False if (result == ARTM_STILL_WORKING) else True
 
-  def InvokeIteration(self, iterations_count = 1):
+  def InvokeIteration(self, iterations_count = 1, disk_path = None):
     args = messages_pb2.InvokeIterationArgs()
     args.iterations_count = iterations_count
+    if disk_path is not None:
+        args.disk_path = disk_path
     args_blob = args.SerializeToString()
     args_blob_p = ctypes.create_string_buffer(args_blob)
     HandleErrorCode(self.lib_, self.lib_.ArtmInvokeIteration(self.id_, len(args_blob), args_blob_p))
@@ -440,11 +444,13 @@ class MasterComponent:
     regularizer_state.ParseFromString(state_blob)
     return regularizer_state
 
-  def GetThetaMatrix(self, model = None, batch = None, args = messages_pb2.GetThetaMatrixArgs()):
+  def GetThetaMatrix(self, model = None, batch = None, clean_cache = None, args = messages_pb2.GetThetaMatrixArgs()):
     if model is not None:
       args.model_name = model.name()
     if batch is not None:
       args.batch.CopyFrom(batch)
+    if clean_cache is not None:
+      args.clean_cache = clean_cache
     args_blob = args.SerializeToString()
     length = HandleErrorCode(self.lib_,  self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
     blob = ctypes.create_string_buffer(length)

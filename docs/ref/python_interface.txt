@@ -204,9 +204,10 @@ MasterComponent
       It returns *True* if await succeeded within the timeout, otherwise returns *False*.
       The provided timeout is in milliseconds. Use *timeout = -1* to allow infinite time for :py:meth:`AddBatch` operation.
 
-   .. py:method:: InvokeIteration(iterations_count = 1)
+   .. py:method:: InvokeIteration(iterations_count = 1, disk_path = None)
 
       Invokes several iterations over the collection. The recommended value for *iterations_count* is 1.
+      *disk_path* defines the disk location with batches to process on this iteration.
       For more iterations use for loop around :py:meth:`InvokeIteration` method.
       This operation is asynchronous. Use :py:meth:`WaitIdle` to await until all iterations succeeded.
 
@@ -234,7 +235,7 @@ MasterComponent
 
       Retrieves and returns the internal state of a regularizer with the specific name.
 
-   .. py:method:: GetThetaMatrix(model = None, batch = None, args = messages_pb2.GetThetaMatrixArgs())
+   .. py:method:: GetThetaMatrix(model = None, batch = None, clean_cache = None, args = messages_pb2.GetThetaMatrixArgs())
 
       Retrieves an instance of :ref:`ThetaMatrix` class.
       The content depends on *batch* parameter.

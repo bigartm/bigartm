@@ -171,6 +171,7 @@ bool MasterProxy::RequestScore(const GetScoreValueArgs& get_score_args,
 bool MasterProxy::AddBatch(const AddBatchArgs& args) {
   Int response;
   int timeout = args.timeout_milliseconds();
+  LOG_IF(WARNING, timeout == 0) << "AddBatchArgs.timeout_milliseconds == 0";
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
     make_rpcz_call([&]() {
@@ -200,6 +201,7 @@ void MasterProxy::InvokeIteration(const InvokeIterationArgs& args) {
 bool MasterProxy::WaitIdle(const WaitIdleArgs& args) {
   Int response;
   int timeout = args.timeout_milliseconds();
+  LOG_IF(WARNING, timeout == 0) << "WaitIdleArgs.timeout_milliseconds == 0";
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
     make_rpcz_call([&]() {

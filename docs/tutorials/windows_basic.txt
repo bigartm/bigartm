@@ -133,6 +133,9 @@ Folder ``C:\BigARTM\python\examples`` contains several toy examples:
     * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
     * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example09_regularizers.py>`_
     * `example10_multimodal.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example10_multimodal.py>`_
+    * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example11_get_theta_matrix.py>`_
+    * `example12_get_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example12_get_topic_model.py>`_
+
 
 All examples does not have any parameters, and you may run them without arguments:
 

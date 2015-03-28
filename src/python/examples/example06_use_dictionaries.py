@@ -17,7 +17,7 @@ unique_tokens = artm.library.Library().ParseCollectionOrLoadDictionary(
   data_folder + 'vocab.' + collection_name + '.txt',
   target_folder)
 
-with artm.library.MasterComponent(disk_path = target_folder) as master:
+with artm.library.MasterComponent() as master:
   smsp_theta_reg  = master.CreateSmoothSparseThetaRegularizer()
   smsp_phi_reg    = master.CreateSmoothSparsePhiRegularizer()
 
@@ -42,9 +42,9 @@ with artm.library.MasterComponent(disk_path = target_folder) as master:
   model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
   for iter in range(0, 8):
-    master.InvokeIteration(1)        # Invoke one scan of the entire collection...
-    master.WaitIdle();               # and wait until it completes.
-    model.Synchronize();             # Synchronize topic model.
+    master.InvokeIteration(disk_path=target_folder)  # Invoke one scan of the entire collection...
+    master.WaitIdle();                               # and wait until it completes.
+    model.Synchronize();                             # Synchronize topic model.
     perplexity_collection = perplexity_collection_score.GetValue(model)
     perplexity_document   = perplexity_document_score.GetValue(model)
     print "Iter#" + str(iter),

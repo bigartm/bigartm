@@ -45,9 +45,9 @@
   }                                                                                           \
   if (!need_hot_reconfigure) {                                                                \
     regularizer.reset(new RegularizerType(regularizer_config));                               \
-    LOG(INFO) << "Regularizer '" + regularizer_name + "' was cold-reconfigured!";             \
+    LOG(INFO) << "Regularizer '" + regularizer_name + "' was cold-reconfigured";              \
   } else {                                                                                    \
-    LOG(INFO) << "Regularizer '" + regularizer_name + "' was hot-reconfigured!";              \
+    LOG(INFO) << "Regularizer '" + regularizer_name + "' was hot-reconfigured";               \
   }                                                                                           \
 }                                                                                             \
 
@@ -158,7 +158,7 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
   if (need_hot_reconfigure) {
     regularizer = schema_.get()->regularizer(regularizer_name);
   } else {
-    LOG(INFO) << "Regularizer '" + regularizer_name + "' will be created!";
+    LOG(INFO) << "Regularizer '" + regularizer_name + "' will be created";
   }
 
   std::string config_blob;  // Used by CREATE_OR_RECONFIGURE_REGULARIZER marco

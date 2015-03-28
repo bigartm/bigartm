@@ -47,6 +47,7 @@ set(SRC_LIST
 	core/processor.cc
 	core/processor.h
 	core/protobuf_helpers.h
+	core/regularizable.h
 	core/template_manager.h
 	core/thread_safe_holder.h
 	core/topic_model.cc

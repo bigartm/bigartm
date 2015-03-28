@@ -37,6 +37,7 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto();
 class DoubleArray;
 class FloatArray;
 class BoolArray;
+class IntArray;
 class StringArray;
 class Item;
 class Field;
@@ -232,11 +233,12 @@ inline bool PerplexityScoreConfig_Type_Parse(
 }
 enum CollectionParserConfig_Format {
   CollectionParserConfig_Format_BagOfWordsUci = 0,
-  CollectionParserConfig_Format_MatrixMarket = 1
+  CollectionParserConfig_Format_MatrixMarket = 1,
+  CollectionParserConfig_Format_VowpalWabbit = 2
 };
 bool CollectionParserConfig_Format_IsValid(int value);
 const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MIN = CollectionParserConfig_Format_BagOfWordsUci;
-const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MAX = CollectionParserConfig_Format_MatrixMarket;
+const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MAX = CollectionParserConfig_Format_VowpalWabbit;
 const int CollectionParserConfig_Format_Format_ARRAYSIZE = CollectionParserConfig_Format_Format_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* CollectionParserConfig_Format_descriptor();
@@ -506,6 +508,92 @@ class BoolArray : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static BoolArray* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class IntArray : public ::google::protobuf::Message {
+ public:
+  IntArray();
+  virtual ~IntArray();
+
+  IntArray(const IntArray& from);
+
+  inline IntArray& operator=(const IntArray& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const IntArray& default_instance();
+
+  void Swap(IntArray* other);
+
+  // implements Message ----------------------------------------------
+
+  IntArray* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const IntArray& from);
+  void MergeFrom(const IntArray& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated int32 value = 1 [packed = true];
+  inline int value_size() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 1;
+  inline ::google::protobuf::int32 value(int index) const;
+  inline void set_value(int index, ::google::protobuf::int32 value);
+  inline void add_value(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      value() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_value();
+
+  // @@protoc_insertion_point(class_scope:artm.IntArray)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > value_;
+  mutable int _value_cached_byte_size_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static IntArray* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -5402,6 +5490,18 @@ class TopicModel : public ::google::protobuf::Message {
   inline ::std::string* release_internals();
   inline void set_allocated_internals(::std::string* internals);
 
+  // repeated .artm.IntArray topic_index = 8;
+  inline int topic_index_size() const;
+  inline void clear_topic_index();
+  static const int kTopicIndexFieldNumber = 8;
+  inline const ::artm::IntArray& topic_index(int index) const;
+  inline ::artm::IntArray* mutable_topic_index(int index);
+  inline ::artm::IntArray* add_topic_index();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::IntArray >&
+      topic_index() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
+      mutable_topic_index();
+
   // @@protoc_insertion_point(class_scope:artm.TopicModel)
  private:
   inline void set_has_name();
@@ -5420,10 +5520,11 @@ class TopicModel : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > token_weights_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::std::string* internals_;
+  ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
   ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5563,6 +5664,18 @@ class ThetaMatrix : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& item_title() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_item_title();
 
+  // repeated .artm.IntArray topic_index = 7;
+  inline int topic_index_size() const;
+  inline void clear_topic_index();
+  static const int kTopicIndexFieldNumber = 7;
+  inline const ::artm::IntArray& topic_index(int index) const;
+  inline ::artm::IntArray* mutable_topic_index(int index);
+  inline ::artm::IntArray* add_topic_index();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::IntArray >&
+      topic_index() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
+      mutable_topic_index();
+
   // @@protoc_insertion_point(class_scope:artm.ThetaMatrix)
  private:
   inline void set_has_model_name();
@@ -5578,10 +5691,11 @@ class ThetaMatrix : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > item_weights_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> item_title_;
+  ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
   ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5647,6 +5761,7 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   typedef CollectionParserConfig_Format Format;
   static const Format BagOfWordsUci = CollectionParserConfig_Format_BagOfWordsUci;
   static const Format MatrixMarket = CollectionParserConfig_Format_MatrixMarket;
+  static const Format VowpalWabbit = CollectionParserConfig_Format_VowpalWabbit;
   static inline bool Format_IsValid(int value) {
     return CollectionParserConfig_Format_IsValid(value);
   }
@@ -5760,6 +5875,13 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_token() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_token();
 
+  // optional bool use_unity_based_indices = 9 [default = true];
+  inline bool has_use_unity_based_indices() const;
+  inline void clear_use_unity_based_indices();
+  static const int kUseUnityBasedIndicesFieldNumber = 9;
+  inline bool use_unity_based_indices() const;
+  inline void set_use_unity_based_indices(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.CollectionParserConfig)
  private:
   inline void set_has_format();
@@ -5776,6 +5898,8 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline void clear_has_num_items_per_batch();
   inline void set_has_cooccurrence_file_name();
   inline void clear_has_cooccurrence_file_name();
+  inline void set_has_use_unity_based_indices();
+  inline void clear_has_use_unity_based_indices();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5787,9 +5911,10 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   ::std::string* dictionary_file_name_;
   ::std::string* cooccurrence_file_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_token_;
+  bool use_unity_based_indices_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6133,10 +6258,28 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
 
+  // optional bool use_sparse_format = 5;
+  inline bool has_use_sparse_format() const;
+  inline void clear_use_sparse_format();
+  static const int kUseSparseFormatFieldNumber = 5;
+  inline bool use_sparse_format() const;
+  inline void set_use_sparse_format(bool value);
+
+  // optional float eps = 6 [default = 1e-037];
+  inline bool has_eps() const;
+  inline void clear_eps();
+  static const int kEpsFieldNumber = 6;
+  inline float eps() const;
+  inline void set_eps(float value);
+
   // @@protoc_insertion_point(class_scope:artm.GetTopicModelArgs)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
+  inline void set_has_use_sparse_format();
+  inline void clear_has_use_sparse_format();
+  inline void set_has_eps();
+  inline void clear_has_eps();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6144,9 +6287,11 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> token_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  bool use_sparse_format_;
+  float eps_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6267,6 +6412,20 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline bool clean_cache() const;
   inline void set_clean_cache(bool value);
 
+  // optional bool use_sparse_format = 6;
+  inline bool has_use_sparse_format() const;
+  inline void clear_use_sparse_format();
+  static const int kUseSparseFormatFieldNumber = 6;
+  inline bool use_sparse_format() const;
+  inline void set_use_sparse_format(bool value);
+
+  // optional float eps = 7 [default = 1e-037];
+  inline bool has_eps() const;
+  inline void clear_eps();
+  static const int kEpsFieldNumber = 7;
+  inline float eps() const;
+  inline void set_eps(float value);
+
   // @@protoc_insertion_point(class_scope:artm.GetThetaMatrixArgs)
  private:
   inline void set_has_model_name();
@@ -6275,6 +6434,10 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline void clear_has_batch();
   inline void set_has_clean_cache();
   inline void clear_has_clean_cache();
+  inline void set_has_use_sparse_format();
+  inline void clear_has_use_sparse_format();
+  inline void set_has_eps();
+  inline void clear_has_eps();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6283,9 +6446,11 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
   bool clean_cache_;
+  bool use_sparse_format_;
+  float eps_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6473,7 +6638,7 @@ class AddBatchArgs : public ::google::protobuf::Message {
   inline ::artm::Batch* release_batch();
   inline void set_allocated_batch(::artm::Batch* batch);
 
-  // optional int32 timeout_milliseconds = 2;
+  // optional int32 timeout_milliseconds = 2 [default = -1];
   inline bool has_timeout_milliseconds() const;
   inline void clear_timeout_milliseconds();
   static const int kTimeoutMillisecondsFieldNumber = 2;
@@ -6597,20 +6762,35 @@ class InvokeIterationArgs : public ::google::protobuf::Message {
   inline bool reset_scores() const;
   inline void set_reset_scores(bool value);
 
+  // optional string disk_path = 3;
+  inline bool has_disk_path() const;
+  inline void clear_disk_path();
+  static const int kDiskPathFieldNumber = 3;
+  inline const ::std::string& disk_path() const;
+  inline void set_disk_path(const ::std::string& value);
+  inline void set_disk_path(const char* value);
+  inline void set_disk_path(const char* value, size_t size);
+  inline ::std::string* mutable_disk_path();
+  inline ::std::string* release_disk_path();
+  inline void set_allocated_disk_path(::std::string* disk_path);
+
   // @@protoc_insertion_point(class_scope:artm.InvokeIterationArgs)
  private:
   inline void set_has_iterations_count();
   inline void clear_has_iterations_count();
   inline void set_has_reset_scores();
   inline void clear_has_reset_scores();
+  inline void set_has_disk_path();
+  inline void clear_has_disk_path();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::int32 iterations_count_;
   bool reset_scores_;
+  ::std::string* disk_path_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6788,6 +6968,35 @@ BoolArray::value() const {
 }
 inline ::google::protobuf::RepeatedField< bool >*
 BoolArray::mutable_value() {
+  return &value_;
+}
+
+// -------------------------------------------------------------------
+
+// IntArray
+
+// repeated int32 value = 1 [packed = true];
+inline int IntArray::value_size() const {
+  return value_.size();
+}
+inline void IntArray::clear_value() {
+  value_.Clear();
+}
+inline ::google::protobuf::int32 IntArray::value(int index) const {
+  return value_.Get(index);
+}
+inline void IntArray::set_value(int index, ::google::protobuf::int32 value) {
+  value_.Set(index, value);
+}
+inline void IntArray::add_value(::google::protobuf::int32 value) {
+  value_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+IntArray::value() const {
+  return value_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+IntArray::mutable_value() {
   return &value_;
 }
 
@@ -13248,6 +13457,31 @@ inline void TopicModel::set_allocated_internals(::std::string* internals) {
   }
 }
 
+// repeated .artm.IntArray topic_index = 8;
+inline int TopicModel::topic_index_size() const {
+  return topic_index_.size();
+}
+inline void TopicModel::clear_topic_index() {
+  topic_index_.Clear();
+}
+inline const ::artm::IntArray& TopicModel::topic_index(int index) const {
+  return topic_index_.Get(index);
+}
+inline ::artm::IntArray* TopicModel::mutable_topic_index(int index) {
+  return topic_index_.Mutable(index);
+}
+inline ::artm::IntArray* TopicModel::add_topic_index() {
+  return topic_index_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::IntArray >&
+TopicModel::topic_index() const {
+  return topic_index_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
+TopicModel::mutable_topic_index() {
+  return &topic_index_;
+}
+
 // -------------------------------------------------------------------
 
 // ThetaMatrix
@@ -13480,6 +13714,31 @@ ThetaMatrix::item_title() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 ThetaMatrix::mutable_item_title() {
   return &item_title_;
+}
+
+// repeated .artm.IntArray topic_index = 7;
+inline int ThetaMatrix::topic_index_size() const {
+  return topic_index_.size();
+}
+inline void ThetaMatrix::clear_topic_index() {
+  topic_index_.Clear();
+}
+inline const ::artm::IntArray& ThetaMatrix::topic_index(int index) const {
+  return topic_index_.Get(index);
+}
+inline ::artm::IntArray* ThetaMatrix::mutable_topic_index(int index) {
+  return topic_index_.Mutable(index);
+}
+inline ::artm::IntArray* ThetaMatrix::add_topic_index() {
+  return topic_index_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::IntArray >&
+ThetaMatrix::topic_index() const {
+  return topic_index_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
+ThetaMatrix::mutable_topic_index() {
+  return &topic_index_;
 }
 
 // -------------------------------------------------------------------
@@ -13923,6 +14182,28 @@ CollectionParserConfig::cooccurrence_token() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 CollectionParserConfig::mutable_cooccurrence_token() {
   return &cooccurrence_token_;
+}
+
+// optional bool use_unity_based_indices = 9 [default = true];
+inline bool CollectionParserConfig::has_use_unity_based_indices() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void CollectionParserConfig::set_has_use_unity_based_indices() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void CollectionParserConfig::clear_has_use_unity_based_indices() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void CollectionParserConfig::clear_use_unity_based_indices() {
+  use_unity_based_indices_ = true;
+  clear_has_use_unity_based_indices();
+}
+inline bool CollectionParserConfig::use_unity_based_indices() const {
+  return use_unity_based_indices_;
+}
+inline void CollectionParserConfig::set_use_unity_based_indices(bool value) {
+  set_has_use_unity_based_indices();
+  use_unity_based_indices_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -14415,6 +14696,50 @@ GetTopicModelArgs::mutable_class_id() {
   return &class_id_;
 }
 
+// optional bool use_sparse_format = 5;
+inline bool GetTopicModelArgs::has_use_sparse_format() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void GetTopicModelArgs::set_has_use_sparse_format() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void GetTopicModelArgs::clear_has_use_sparse_format() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void GetTopicModelArgs::clear_use_sparse_format() {
+  use_sparse_format_ = false;
+  clear_has_use_sparse_format();
+}
+inline bool GetTopicModelArgs::use_sparse_format() const {
+  return use_sparse_format_;
+}
+inline void GetTopicModelArgs::set_use_sparse_format(bool value) {
+  set_has_use_sparse_format();
+  use_sparse_format_ = value;
+}
+
+// optional float eps = 6 [default = 1e-037];
+inline bool GetTopicModelArgs::has_eps() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void GetTopicModelArgs::set_has_eps() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void GetTopicModelArgs::clear_has_eps() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void GetTopicModelArgs::clear_eps() {
+  eps_ = 1e-037f;
+  clear_has_eps();
+}
+inline float GetTopicModelArgs::eps() const {
+  return eps_;
+}
+inline void GetTopicModelArgs::set_eps(float value) {
+  set_has_eps();
+  eps_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // GetThetaMatrixArgs
@@ -14616,6 +14941,50 @@ inline bool GetThetaMatrixArgs::clean_cache() const {
 inline void GetThetaMatrixArgs::set_clean_cache(bool value) {
   set_has_clean_cache();
   clean_cache_ = value;
+}
+
+// optional bool use_sparse_format = 6;
+inline bool GetThetaMatrixArgs::has_use_sparse_format() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void GetThetaMatrixArgs::set_has_use_sparse_format() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void GetThetaMatrixArgs::clear_has_use_sparse_format() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void GetThetaMatrixArgs::clear_use_sparse_format() {
+  use_sparse_format_ = false;
+  clear_has_use_sparse_format();
+}
+inline bool GetThetaMatrixArgs::use_sparse_format() const {
+  return use_sparse_format_;
+}
+inline void GetThetaMatrixArgs::set_use_sparse_format(bool value) {
+  set_has_use_sparse_format();
+  use_sparse_format_ = value;
+}
+
+// optional float eps = 7 [default = 1e-037];
+inline bool GetThetaMatrixArgs::has_eps() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void GetThetaMatrixArgs::set_has_eps() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void GetThetaMatrixArgs::clear_has_eps() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void GetThetaMatrixArgs::clear_eps() {
+  eps_ = 1e-037f;
+  clear_has_eps();
+}
+inline float GetThetaMatrixArgs::eps() const {
+  return eps_;
+}
+inline void GetThetaMatrixArgs::set_eps(float value) {
+  set_has_eps();
+  eps_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -14842,7 +15211,7 @@ inline void AddBatchArgs::set_allocated_batch(::artm::Batch* batch) {
   }
 }
 
-// optional int32 timeout_milliseconds = 2;
+// optional int32 timeout_milliseconds = 2 [default = -1];
 inline bool AddBatchArgs::has_timeout_milliseconds() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -14853,7 +15222,7 @@ inline void AddBatchArgs::clear_has_timeout_milliseconds() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void AddBatchArgs::clear_timeout_milliseconds() {
-  timeout_milliseconds_ = 0;
+  timeout_milliseconds_ = -1;
   clear_has_timeout_milliseconds();
 }
 inline ::google::protobuf::int32 AddBatchArgs::timeout_milliseconds() const {
@@ -15002,6 +15371,76 @@ inline bool InvokeIterationArgs::reset_scores() const {
 inline void InvokeIterationArgs::set_reset_scores(bool value) {
   set_has_reset_scores();
   reset_scores_ = value;
+}
+
+// optional string disk_path = 3;
+inline bool InvokeIterationArgs::has_disk_path() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InvokeIterationArgs::set_has_disk_path() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InvokeIterationArgs::clear_has_disk_path() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InvokeIterationArgs::clear_disk_path() {
+  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_->clear();
+  }
+  clear_has_disk_path();
+}
+inline const ::std::string& InvokeIterationArgs::disk_path() const {
+  return *disk_path_;
+}
+inline void InvokeIterationArgs::set_disk_path(const ::std::string& value) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(value);
+}
+inline void InvokeIterationArgs::set_disk_path(const char* value) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(value);
+}
+inline void InvokeIterationArgs::set_disk_path(const char* value, size_t size) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* InvokeIterationArgs::mutable_disk_path() {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  return disk_path_;
+}
+inline ::std::string* InvokeIterationArgs::release_disk_path() {
+  clear_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = disk_path_;
+    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void InvokeIterationArgs::set_allocated_disk_path(::std::string* disk_path) {
+  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete disk_path_;
+  }
+  if (disk_path) {
+    set_has_disk_path();
+    disk_path_ = disk_path;
+  } else {
+    clear_has_disk_path();
+    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------

@@ -136,7 +136,7 @@ class TokenCollectionWeights {
   float* at(int token_id) { return values_[token_id]; }
 
   void Clear();
-  int AddToken(bool random_init);
+  int AddToken(const Token& token, bool random_init);
   void RemoveToken(int token_id);
 
  private:
@@ -204,9 +204,6 @@ class TopicModel : public Regularizable {
   bool has_token(const Token& token) const { return token_collection_.has_token(token); }
   int token_id(const Token& token) const { return token_collection_.token_id(token); }
   const Token& token(int index) const { return token_collection_.token(index); }
-
-  template<typename T>
-  void AddTopicsInfoInModel(artm::TopicModel* topicModel, int size, const T& names) const;
 
   std::map<ClassId, int> FindDegeneratedTopicsCount() const;
 

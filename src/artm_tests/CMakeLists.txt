@@ -12,6 +12,7 @@ set(SRC_LIST
 	instance_test.cc
 	multiple_classes_test.cc
 	nodes_connectivity_test.cc
+	repeatable_result_test.cc
 	rpcz_canary_service.pb.cc
 	rpcz_canary_service.rpcz.cc
 	rpcz_canary_test.cc

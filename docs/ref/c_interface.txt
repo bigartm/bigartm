@@ -406,9 +406,9 @@ ArtmSynchronizeModel
 
 
 ArtmInitializeModel
---------------------
+-------------------
 
-.. c:function::  int ArtmSynchronizeModel(int master_id, int length, const char* init_model_args)
+.. c:function::  int ArtmInitializeModel(int master_id, int length, const char* init_model_args)
 
    Initializes the phi matrix of a topic model with some random initial approximation.
 

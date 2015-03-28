@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>  // NOLINT
 
+#include "boost/exception/diagnostic_information.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
@@ -76,9 +77,7 @@ LocalDataLoader::LocalDataLoader(Instance* instance)
       is_stopping(false),
       thread_() {
   std::string disk_path = instance->schema()->config().disk_path();
-  if (disk_path.empty()) {
-    generation_.reset(new MemoryGeneration());
-  } else {
+  if (!disk_path.empty()) {
     generation_.reset(new DiskGeneration(disk_path));
   }
 
@@ -147,10 +146,6 @@ bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
   return true;
 }
 
-int LocalDataLoader::GetTotalItemsCount() const {
-  return generation_->GetTotalItemsCount();
-}
-
 void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
   int iterations_count = args.iterations_count();
   if (iterations_count <= 0) {
@@ -159,14 +154,22 @@ void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
     return;
   }
 
-  auto latest_generation = generation_.get();
-  if (generation_->empty()) {
+  DiskGeneration* generation;
+  std::unique_ptr<DiskGeneration> args_generation;
+  if (args.has_disk_path()) {
+    args_generation.reset(new DiskGeneration(args.disk_path()));
+    generation = args_generation.get();
+  } else {
+    generation = generation_.get();
+  }
+
+  if (generation == nullptr || generation->empty()) {
     LOG(WARNING) << "DataLoader::InvokeIteration() - current generation is empty, "
                  << "please populate DataLoader data with some data";
     return;
   }
 
-  std::vector<BatchManagerTask> tasks = latest_generation->batch_uuids();
+  std::vector<BatchManagerTask> tasks = generation->batch_uuids();
   for (int iter = 0; iter < iterations_count; ++iter) {
     for (auto &task : tasks) {
       instance_->batch_manager()->Add(task);
@@ -282,7 +285,16 @@ void LocalDataLoader::ThreadFunction() {
         continue;
       }
 
-      std::shared_ptr<const Batch> batch = generation_->batch(next_task);
+      std::shared_ptr<Batch> batch = std::make_shared< ::artm::Batch>();
+      try {
+        ::artm::core::BatchHelpers::LoadMessage(next_task.file_path, batch.get());
+        batch->set_id(boost::lexical_cast<std::string>(next_task.uuid));  // keep batch.id and task.uuid in sync
+        ::artm::core::BatchHelpers::PopulateClassId(batch.get());
+      } catch (std::exception& ex) {
+        LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+        batch = nullptr;
+      }
+
       if (batch == nullptr) {
         instance_->batch_manager()->Done(next_task.uuid, ModelName());
         continue;
@@ -317,17 +329,8 @@ void LocalDataLoader::ThreadFunction() {
       DataLoader::PopulateDataStreams(*batch, pi.get());
       instance()->processor_queue()->push(pi);
     }
-  }
-  catch(boost::thread_interrupted&) {
-    LOG(WARNING) << "thread_interrupted exception in LocalDataLoader::ThreadFunction() function";
-    return;
-  }
-  catch (std::runtime_error& ex) {
-    LOG(ERROR) << ex.what();
-    throw;
   } catch(...) {
-    LOG(FATAL) << "Fatal exception in LocalDataLoader::ThreadFunction() function";
-    throw;
+    LOG(FATAL) << boost::current_exception_diagnostic_information();
   }
 }
 
@@ -375,7 +378,6 @@ void RemoteDataLoader::ThreadFunction() {
       int processor_queue_size = instance()->processor_queue()->size();
       int max_queue_size = config.processor_queue_max_size();
       if (processor_queue_size >= max_queue_size) {
-        // Sleep and check for interrupt.
         boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
         continue;
       }
@@ -401,8 +403,14 @@ void RemoteDataLoader::ThreadFunction() {
         std::string batch_file_path = response.batch_file_path(batch_index);
 
         auto batch = std::make_shared< ::artm::Batch>();
-        ::artm::core::BatchHelpers::LoadMessage(batch_file_path, batch.get());
-        ::artm::core::BatchHelpers::PopulateClassId(batch.get());
+        try {
+          ::artm::core::BatchHelpers::LoadMessage(batch_file_path, batch.get());
+          ::artm::core::BatchHelpers::PopulateClassId(batch.get());
+        }
+        catch (std::exception& ex) {
+          LOG(ERROR) << ex.what() << ", the batch will be skipped";
+          batch = nullptr;
+        }
 
         if (batch == nullptr) {
           LOG(ERROR) << "Unable to load batch '" << batch_id << "' from " << config.disk_path();
@@ -427,13 +435,8 @@ void RemoteDataLoader::ThreadFunction() {
       }
     }
   }
-  catch(boost::thread_interrupted&) {
-    LOG(WARNING) << "thread_interrupted exception in RemoteDataLoader::ThreadFunction() function";
-    return;
-  }
-  catch(...) {
-    LOG(FATAL) << "Fatal exception in RemoteDataLoader::ThreadFunction() function";
-    throw;
+  catch (...) {
+    LOG(FATAL) << boost::current_exception_diagnostic_information();
   }
 }
 

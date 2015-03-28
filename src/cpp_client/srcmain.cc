@@ -9,6 +9,10 @@
 
 #include "boost/lexical_cast.hpp"
 
+#include "boost/uuid/uuid.hpp"
+#include "boost/uuid/uuid_generators.hpp"
+#include "boost/uuid/uuid_io.hpp"
+
 #include "boost/filesystem.hpp"
 namespace fs = boost::filesystem;
 
@@ -71,11 +75,11 @@ struct artm_options {
   float tau_phi;
   float tau_theta;
   float tau_decor;
-  bool b_reuse_batch;
   bool b_paused;
   bool b_no_scores;
   bool b_reuse_theta;
   std::vector<std::string> nodes;
+  std::vector<std::string> class_id;
 };
 
 void configureStreams(artm::MasterComponentConfig* master_config) {
@@ -95,7 +99,7 @@ void configureStreams(artm::MasterComponentConfig* master_config) {
   test_stream->add_residuals(9);
 }
 
-void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* model_config) {
+void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* model_config, const artm_options& options) {
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
   perplexity_config.set_stream_name("test_stream");
@@ -146,13 +150,27 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   master_config->add_score_config()->CopyFrom(score_config);
   model_config->add_score_name(score_config.name());
 
-  ::artm::TopTokensScoreConfig top_tokens_config;
-  top_tokens_config.set_num_tokens(6);
-  score_config.set_config(top_tokens_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
-  score_config.set_name("top_tokens");
-  master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
+  if (options.class_id.empty()) {
+    ::artm::TopTokensScoreConfig top_tokens_config;
+    top_tokens_config.set_num_tokens(6);
+    score_config.set_config(top_tokens_config.SerializeAsString());
+    score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
+    score_config.set_name("top_tokens");
+    master_config->add_score_config()->CopyFrom(score_config);
+    model_config->add_score_name(score_config.name());
+  }
+  else {
+    for (const std::string& class_id : options.class_id) {
+      ::artm::TopTokensScoreConfig top_tokens_config;
+      top_tokens_config.set_num_tokens(6);
+      top_tokens_config.set_class_id(class_id);
+      score_config.set_config(top_tokens_config.SerializeAsString());
+      score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
+      score_config.set_name(class_id + "_top_tokens");
+      master_config->add_score_config()->CopyFrom(score_config);
+      model_config->add_score_name(score_config.name());
+    }
+  }
 
   ::artm::ThetaSnippetScoreConfig theta_snippet_config;
   theta_snippet_config.set_stream_name("train_stream");
@@ -215,6 +233,19 @@ void configureItemsProcessedScore(artm::MasterComponentConfig* master_config, Mo
   model_config->add_score_name(score_config.name());
 }
 
+void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class_id) {
+  std::cout << "\nTop tokens for " << class_id << ":";
+  int topic_index = -1;
+  for (int i = 0; i < top_tokens.num_entries(); i++) {
+    if (top_tokens.topic_index(i) != topic_index) {
+      topic_index = top_tokens.topic_index(i);
+      std::cout << "\n#" << (topic_index + 1) << ": ";
+    }
+
+    std::cout << top_tokens.token(i) << "(" << std::setw(2) << std::setprecision(2) << top_tokens.weight(i) << ") ";
+  }
+}
+
 int execute(const artm_options& options) {
   bool is_network_mode = (options.nodes.size() > 0);
   bool is_proxy = (!options.proxy.empty());
@@ -225,9 +256,19 @@ int execute(const artm_options& options) {
     getchar();
   }
 
+  // There are options for data handling:
+  // 1. User provides docword, vocab and batch_folder => cpp_client parses collection and stores it in batch_folder
+  // 2. User provides docword, vocab, no batch_folder => cpp_client parses collection and stores it in temp folder
+  // 3. User provides batch_folder, but no docword/vocab => cpp_client uses batches from batch_folder
+
+  bool parse_collection = (!options.docword.empty());
+  std::string working_batch_folder = options.batch_folder;
+  if (options.batch_folder.empty())
+    working_batch_folder = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
+
   // Step 1. Configuration
   MasterComponentConfig master_config;
-  master_config.set_disk_path(options.batch_folder);
+  master_config.set_disk_path(working_batch_folder);
   master_config.set_processors_count(options.num_processors);
   master_config.set_merger_queue_max_size(options.merger_queue_size);
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
@@ -239,10 +280,16 @@ int execute(const artm_options& options) {
   model_config.set_stream_name("train_stream");
   if (options.b_reuse_theta) model_config.set_reuse_theta(true);
   model_config.set_name("15081980-90a7-4767-ab85-7cb551c39339");  // randomly generated GUID
+  if (options.class_id.size() > 0) {
+    for (const std::string& class_id : options.class_id) {
+      model_config.add_class_id(class_id);
+      model_config.add_class_weight(1.0f);
+    }
+  }
 
   configureStreams(&master_config);
   if (!options.b_no_scores)
-    configureScores(&master_config, &model_config);
+    configureScores(&master_config, &model_config, options);
 
   configureItemsProcessedScore(&master_config, &model_config);
 
@@ -258,42 +305,68 @@ int execute(const artm_options& options) {
   }
 
   // Step 2. Collection parsing
-  if (!options.b_reuse_batch && fs::exists(fs::path(options.batch_folder))) {
-    if (!fs::is_empty(fs::path(options.batch_folder))) {
-      std::cerr << "The directory is not empty: " << options.batch_folder;
+
+  std::shared_ptr<DictionaryConfig> unique_tokens;
+  if (parse_collection) {
+    if (fs::exists(fs::path(working_batch_folder)) && !fs::is_empty(fs::path(working_batch_folder))) {
+      std::cerr << "Can not parse collection, target batch directory is not empty: " << working_batch_folder;
       return 1;
     }
-  }
 
-  boost::system::error_code error;
-  fs::create_directories(options.batch_folder, error);
-  if (error) {
-    std::cerr << "Unable to create batches folder: " << options.batch_folder;
-    return 1;
-  }
+    boost::system::error_code error;
+    fs::create_directories(working_batch_folder, error);
+    if (error) {
+      std::cerr << "Unable to create batch folder: " << working_batch_folder;
+      return 1;
+    }
 
-  int batch_files_count = countFilesInDirectory(options.batch_folder, ".batch");
-  std::shared_ptr<DictionaryConfig> unique_tokens;
-  if (batch_files_count == 0) {
     std::cout << "Parsing text collection... ";
     ::artm::CollectionParserConfig collection_parser_config;
-    if (options.parsing_format == 0)
+    if (options.parsing_format == 0) {
       collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
-    else
+    } else if (options.parsing_format == 1) {
       collection_parser_config.set_format(CollectionParserConfig_Format_MatrixMarket);
+    } else if (options.parsing_format == 2) {
+      collection_parser_config.set_format(CollectionParserConfig_Format_VowpalWabbit);
+    } else {
+      std::cerr << "Invalid parsing format options: " << options.parsing_format;
+      return 1;
+    }
+
+    if (options.parsing_format != 2 && !options.docword.empty() && options.vocab.empty()) {
+      std::cerr << "Error: no vocab file was specified. All formats except Vowpal Wabbit require both docword and vocab files.";
+      return 1;
+    }
 
     collection_parser_config.set_docword_file_path(options.docword);
-    collection_parser_config.set_vocab_file_path(options.vocab);
+    if (!options.vocab.empty())
+      collection_parser_config.set_vocab_file_path(options.vocab);
     collection_parser_config.set_dictionary_file_name(options.dictionary_file);
-    collection_parser_config.set_target_folder(options.batch_folder);
+    collection_parser_config.set_target_folder(working_batch_folder);
     collection_parser_config.set_num_items_per_batch(options.items_per_batch);
     unique_tokens = ::artm::ParseCollection(collection_parser_config);
     std::cout << "OK.\n";
   } else {
-    std::cout << "Reuse " << batch_files_count << " batches in folder '" << options.batch_folder << "\n";
-    std::cout << "Loading dictionary file... ";
-    unique_tokens = ::artm::LoadDictionary((fs::path(options.batch_folder) / options.dictionary_file).string());
-    std::cout << "OK.\n";
+    if (!fs::exists(fs::path(working_batch_folder))) {
+      std::cerr << "Unable to find batch folder: " << working_batch_folder;
+      return 1;
+    }
+
+    int batch_files_count = countFilesInDirectory(working_batch_folder, ".batch");
+    if (batch_files_count == 0) {
+      std::cerr << "No batches found in " << working_batch_folder;
+      return 1;
+    }
+
+    std::cout << "Using " << batch_files_count << " batch found in folder '" << working_batch_folder << "'\n";
+    std::string dictionary_full_filename = (fs::path(working_batch_folder) / options.dictionary_file).string();
+    if (fs::exists(dictionary_full_filename)) {
+      std::cout << "Loading dictionary file... ";
+      unique_tokens = ::artm::LoadDictionary(dictionary_full_filename);
+      std::cout << "OK.\n";
+    } else {
+      std::cout << "Dictionary file " << dictionary_full_filename << " does not exist; BigARTM will use all tokens from batches.\n";
+    }
   }
 
   // Step 3. Create master component.
@@ -308,7 +381,9 @@ int execute(const artm_options& options) {
     master_component.reset(new MasterComponent(master_config));
   }
 
-  Dictionary dictionary(*master_component, *unique_tokens);
+  std::shared_ptr<Dictionary> dictionary;
+  if (unique_tokens != nullptr)
+    dictionary.reset(new Dictionary(*master_component, *unique_tokens));
 
   // Step 4. Configure regularizers.
   std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
@@ -324,7 +399,8 @@ int execute(const artm_options& options) {
 
   // Step 5. Create and initialize model.
   Model model(*master_component, model_config);
-  model.Initialize(dictionary);
+  if (dictionary != nullptr)
+    model.Initialize(*dictionary);
 
   for (int iter = 0; iter < options.num_iters; ++iter) {
     {
@@ -388,15 +464,14 @@ int execute(const artm_options& options) {
   if (!options.b_no_scores) {
     std::cout << std::endl;
 
-    auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
-    int topic_index = -1;
-    for (int i = 0; i < top_tokens->num_entries(); i++) {
-      if (top_tokens->topic_index(i) != topic_index) {
-        topic_index = top_tokens->topic_index(i);
-        std::cout << "\n#" << (topic_index + 1) << ": ";
+    if (options.class_id.empty()) {
+      auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
+      showTopTokenScore(*top_tokens, "@default_class");
+    } else {
+      for (const std::string& class_id : options.class_id) {
+        auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, class_id + "_top_tokens");
+        showTopTokenScore(*top_tokens, class_id);
       }
-
-      std::cout << top_tokens->token(i) << "(" << std::setw(2) << std::setprecision(2) << top_tokens->weight(i) << ") ";
     }
 
     auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
@@ -417,6 +492,11 @@ int execute(const artm_options& options) {
     }
   }
 
+  if (options.batch_folder.empty()) {
+    try { boost::filesystem::remove_all(working_batch_folder); }
+    catch (...) {}
+  }
+
   return 0;
 }
 
@@ -431,24 +511,28 @@ int main(int argc, char * argv[]) {
       ("help,h", "display this help message")
       ("docword,d", po::value(&options.docword), "docword file in UCI format")
       ("vocab,v", po::value(&options.vocab), "vocab file in UCI format")
+      ("batch_folder,b", po::value(&options.batch_folder)->default_value(""),
+        "If docword or vocab arguments are not provided, cpp_client will try to read pre-parsed batches from batch_folder location. "
+        "Otherwise, if both docword and vocab arguments are provided, cpp_client will parse the data and store batches in batch_folder location. ")
       ("num_topic,t", po::value(&options.num_topics)->default_value(16), "number of topics")
       ("num_processors,p", po::value(&options.num_processors)->default_value(2), "number of concurrent processors")
       ("num_iters,i", po::value(&options.num_iters)->default_value(10), "number of outer iterations")
       ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
       ("reuse_theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
-      ("batch_folder", po::value(&options.batch_folder)->default_value("batches"), "temporary folder to store batches")
-      ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary", "filename of dictionary file"))
-      ("reuse_batches", po::bool_switch(&options.b_reuse_batch), "reuse batches found in batch_folder\n(default = false)")
+      ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary"), "filename of dictionary file")
       ("items_per_batch", po::value(&options.items_per_batch)->default_value(500), "number of items per batch")
       ("tau_phi", po::value(&options.tau_phi)->default_value(0.0f), "regularization coefficient for PHI matrix")
       ("tau_theta", po::value(&options.tau_theta)->default_value(0.0f), "regularization coefficient for THETA matrix")
-      ("tau_decor", po::value(&options.tau_decor)->default_value(0.0f), "regularization coefficient for topics decorrelation (use with care, since this value heavily depends on the size of the dataset)")
+      ("tau_decor", po::value(&options.tau_decor)->default_value(0.0f),
+        "regularization coefficient for topics decorrelation "
+        "(use with care, since this value heavily depends on the size of the dataset)")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "wait for keystroke (allows to attach a debugger)")
       ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
       ("update_every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
-      ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market)")
+      ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market, 2 - vowpal wabbit)")
       ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
+      ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
     ;
     all_options.add(basic_options);
 
@@ -470,14 +554,11 @@ int main(int argc, char * argv[]) {
     // options.docword = "D:\\datasets\\docword.kos.txt";
     // options.vocab   = "D:\\datasets\\vocab.kos.txt";
 
-    bool show_help = vm.count("help");
-    if (options.docword.empty() || options.vocab.empty()) {
-      // Show help if user neither provided batch folder, nor docword/vocab files
-      if (!options.b_reuse_batch && (!vm.count("batch_folder") || vm["batch_folder"].defaulted())) show_help = true;
+    bool show_help = (vm.count("help") > 0);
 
-      // Automatically reuse batches is safe when user didn't provide docword/vocab
-      if (vm.count("batch_folder")) options.b_reuse_batch = true;
-    }
+    // Show help if user neither provided batch folder, nor docword/vocab files
+    if (options.docword.empty() && options.batch_folder.empty())
+      show_help = true;
 
     if (vm.count("merger_queue_size") == 0)
       options.merger_queue_size = options.num_processors;  // by default set queue size based on the number of processors

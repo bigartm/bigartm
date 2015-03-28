@@ -58,6 +58,10 @@ This chapter describes content of BigARTM distribution package for Windows, avai
 
                             * `example10_multimodal.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example10_multimodal.py>`_
 
+                            * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example11_get_theta_matrix.py>`_
+
+                            * `example12_get_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example12_get_topic_model.py>`_
+
                             | Files ``docword.kos.txt`` and ``vocab.kos.txt`` represent
                             | a simple collection of text files in Bag-Of-Words format.
                             | The files are taken from UCI Machine Learning Repository
