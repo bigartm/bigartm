@@ -669,6 +669,7 @@ void Processor::ThreadFunction() {
 
       std::shared_ptr<InstanceSchema> schema = schema_.get();
       std::vector<ModelName> model_names = schema->GetModelNames();
+      const MasterComponentConfig& master_config = schema->config();
 
       std::shared_ptr<CsrMatrix<float>> sparse_ndw;
       std::shared_ptr<DenseMatrix<float>> dense_ndw;
@@ -755,8 +756,8 @@ void Processor::ThreadFunction() {
           model_increment->add_cache()->CopyFrom(new_cache_entry);
         }
 
-        for (int score_index = 0; score_index < model_config.score_name_size(); ++score_index) {
-          const ScoreName& score_name = model_config.score_name(score_index);
+        for (int score_index = 0; score_index < master_config.score_config_size(); ++score_index) {
+          const ScoreName& score_name = master_config.score_config(score_index).name();
 
           auto score_calc = schema->score_calculator(score_name);
           if (score_calc == nullptr) {

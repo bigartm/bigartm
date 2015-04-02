@@ -301,9 +301,6 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   model_config1.add_class_id("class_one"); model_config1.add_class_weight(2.0f);
   // model_config1.add_score_name("default_class"); model_config1.add_score_name("tts_class_one");
   // model_config1.add_score_name("tts_class_two");
-  model_config1.add_score_name("perplexity");
-  model_config1.add_score_name("theta_snippet");
-  model_config1.add_score_name("items_processed");
   artm::Model model1(master_component, model_config1);
 
   artm::ModelConfig model_config2;
@@ -312,7 +309,6 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   model_config2.add_class_id("class_two"); model_config2.add_class_weight(0.5f);
   // model_config2.add_score_name("default_class"); model_config2.add_score_name("tts_class_one");
   // model_config2.add_score_name("tts_class_two");
-  model_config2.add_score_name("perplexity");
   artm::Model model2(master_component, model_config2);
 
   for (int iter = 0; iter < 5; ++iter) {

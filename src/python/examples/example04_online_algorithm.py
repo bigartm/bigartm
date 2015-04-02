@@ -27,11 +27,6 @@ with artm.library.MasterComponent() as master:
 
     # Configure the model
     model = master.CreateModel(topics_count=10, inner_iterations_count=10)
-    model.EnableScore(perplexity_score)
-    model.EnableScore(sparsity_phi_score)
-    model.EnableScore(sparsity_theta_score)
-    model.EnableScore(top_tokens_score)
-    model.EnableScore(theta_snippet_score)
     model.EnableRegularizer(theta_regularizer, -0.1)
     model.EnableRegularizer(phi_regularizer, -0.2)
     model.EnableRegularizer(decorrelator_regularizer, 1000000)

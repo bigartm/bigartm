@@ -1,6 +1,5 @@
 # This example demonstrates various ways of retrieving Phi matrix from BigARTM
 # -*- coding: utf-8 -*-
-import glob
 
 import artm.messages_pb2
 import artm.library
@@ -25,7 +24,7 @@ with artm.library.MasterComponent(disk_path=batches_disk_path) as master:
         args = artm.messages_pb2.GetTopicModelArgs()
         args.model_name = model.name()
         args.topic_name.append(topic_name)
-        topic_model = master.GetTopicModel(args=args) # represents one column in Phi matrix
+        topic_model = master.GetTopicModel(args=args)  # represents one column in Phi matrix
         print topic_model.topic_name[0],
         for i in range(0, 5):
             print topic_model.token[i], "%.5f" % topic_model.token_weights[i].value[0],

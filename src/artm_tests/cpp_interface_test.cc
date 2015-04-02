@@ -106,7 +106,6 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
   model_config.add_topic_name("4th topic");
   model_config.add_topic_name("5th topic");
   EXPECT_EQ(model_config.topic_name_size(), nTopics);
-  model_config.add_score_name("PerplexityScore");
   model_config.add_regularizer_name(reg_decor_name);
   model_config.add_regularizer_tau(1);
   model_config.add_regularizer_name(reg_multilang_name);
@@ -465,13 +464,27 @@ TEST(CppInterface, ProxyExceptions) {
 TEST(CppInterface, WaitIdleTimeout) {
   ::artm::MasterComponentConfig master_config;
   master_config.set_processor_queue_max_size(10000);
+  master_config.set_merger_queue_max_size(10000);
   ::artm::MasterComponent master(master_config);
   ::artm::ModelConfig model_config;
   model_config.set_name("model_config1");
+  model_config.set_inner_iterations_count(10000);
+
   ::artm::Model model(master, model_config);
   ::artm::Batch batch;
   batch.set_id("00b6d631-46a6-4edf-8ef6-016c7b27d9f0");
-  for (int i = 0; i < 1000; ++i)
-    master.AddBatch(batch);
+  for (int i = 0; i < 10; ++i) {
+    ::artm::Item* item = batch.add_item();
+    ::artm::Field* field = item->add_field();
+    field->add_token_id(i);
+    field->add_token_count(i + 1);
+    batch.add_token(artm::test::Helpers::getUniqueString());
+  }
+
+  master.AddBatch(batch);
+  EXPECT_TRUE(master.WaitIdle());
+  model.Synchronize(0.0);
+
+  master.AddBatch(batch);
   EXPECT_FALSE(master.WaitIdle(0));
 }

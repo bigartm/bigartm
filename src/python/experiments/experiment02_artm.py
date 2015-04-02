@@ -119,13 +119,6 @@ with artm.library.MasterComponent(master_config) as master:
   # create Model according to its configuration
   model = master.CreateModel(model_config)
 
-  # enable scores in the Model
-  model.EnableScore(perplexity_score)
-  model.EnableScore(sparsity_theta_score)
-  model.EnableScore(sparsity_phi_score)
-  model.EnableScore(topic_kernel_score)
-  model.EnableScore(items_processed_score)
-
   # enable regularizes in Model and initialize them with 0 tau_coefficients
   model.EnableRegularizer(decorrelator_reg, 0)
   model.EnableRegularizer(sparse_phi_reg, 0) 
@@ -270,9 +263,8 @@ if (save_and_test_model):
     # create perplexity score in Master
     test_perplexity_score = test_master.CreatePerplexityScore()
     
-    # Create model for testing and enable perplexity scoring in it
+    # Create model for testing
     test_model = test_master.CreateModel(topics_count = topics_count, inner_iterations_count = inner_iterations_count)
-    test_model.EnableScore(test_perplexity_score)
     
     # restore previously saved topic model into test_master
     test_model.Overwrite(topic_model)

@@ -5867,7 +5867,7 @@ class SynchronizeModelArgs : public ::google::protobuf::Message {
   inline ::std::string* release_model_name();
   inline void set_allocated_model_name(::std::string* model_name);
 
-  // optional float decay_weight = 2 [default = 1];
+  // optional float decay_weight = 2 [default = 0];
   inline bool has_decay_weight() const;
   inline void clear_decay_weight();
   static const int kDecayWeightFieldNumber = 2;
@@ -13994,7 +13994,7 @@ inline void SynchronizeModelArgs::set_allocated_model_name(::std::string* model_
   }
 }
 
-// optional float decay_weight = 2 [default = 1];
+// optional float decay_weight = 2 [default = 0];
 inline bool SynchronizeModelArgs::has_decay_weight() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -14005,7 +14005,7 @@ inline void SynchronizeModelArgs::clear_has_decay_weight() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void SynchronizeModelArgs::clear_decay_weight() {
-  decay_weight_ = 1;
+  decay_weight_ = 0;
   clear_has_decay_weight();
 }
 inline float SynchronizeModelArgs::decay_weight() const {

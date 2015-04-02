@@ -68,26 +68,30 @@ with artm.library.MasterComponent() as master:
     # Create one top-token score per each class_id
     ru_top_tokens_score = master.CreateTopTokensScore(class_id='@russian')
     en_top_tokens_score = master.CreateTopTokensScore(class_id='@english')
+    ru_sparsity = master.CreateSparsityPhiScore(class_id='@russian')
+    en_sparsity = master.CreateSparsityPhiScore(class_id='@english')
+    theta_sparsity = master.CreateSparsityThetaScore()
 
-    # Populate class_id and class_weight in ModelConfig
-    config = artm.messages_pb2.ModelConfig()
-    config.class_id.append('@russian')
-    config.class_weight.append(1.00)
-    config.class_id.append('@english')
-    config.class_weight.append(1.00)
-
-    # Create and initialize model, enable scores. Our expert knowledge says we need 2 topics ;)
-    model = master.CreateModel(topics_count=2, inner_iterations_count=10, config=config)
+    # Create and initialize model. Our expert knowledge says we need 2 topics ;)
+    model = master.CreateModel(topics_count=2, inner_iterations_count=10,
+                               class_ids=('@russian', '@english'),
+                               class_weights=(1.00, 1.00))
     model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
-    model.EnableScore(ru_top_tokens_score)
-    model.EnableScore(en_top_tokens_score)
 
     # Infer the model in 10 passes over the batch
     for iteration in range(0, 10):
         master.AddBatch(batch=batch)
-        master.WaitIdle()  # wait for all batches are processed
+        master.WaitIdle()    # wait for all batches are processed
         model.Synchronize()  # synchronize model
 
     # Retrieve and visualize top tokens in each topic
     artm.library.Visualizers.PrintTopTokensScore(ru_top_tokens_score.GetValue(model))
     artm.library.Visualizers.PrintTopTokensScore(en_top_tokens_score.GetValue(model))
+
+    ru_phi = master.GetTopicModel(model=model, class_ids={"@russian"})
+    en_phi = master.GetTopicModel(model=model, class_ids={"@english"})
+    combined_phi = master.GetTopicModel(model=model)
+
+    print "\nSparsity of theta matrix = %.3f" % theta_sparsity.GetValue(model).value
+    print "@russian: phi matrix sparsity = %.3f," % ru_sparsity.GetValue(model).value, ' #tokens=%i' % len(ru_phi.token)
+    print "@english: phi matrix sparsity = %.3f," % en_sparsity.GetValue(model).value, ' #tokens=%i' % len(en_phi.token)

@@ -1,7 +1,5 @@
 # Copyright 2014, Additive Regularization of Topic Models.
 
-import artm.messages_pb2
-import artm.library
 from artm.library import *
 
 #################################################################################
@@ -13,7 +11,7 @@ master_config.processors_count = 2
 master_config.processor_queue_max_size = 5
 master_config.cache_theta = 1
 
-perplexity_config = messages_pb2.PerplexityScoreConfig();
+perplexity_config = messages_pb2.PerplexityScoreConfig()
 perplexity_config.stream_name = 'stream_0'
 
 master_proxy_config = messages_pb2.MasterProxyConfig()
@@ -61,7 +59,6 @@ model_config_new = messages_pb2.ModelConfig()
 model_config_new.CopyFrom(model_config)
 model_config_new.inner_iterations_count = 20
 
-
 dictionary_config = messages_pb2.DictionaryConfig()
 dictionary_config.name = 'dictionary_1'
 
@@ -77,49 +74,49 @@ entry_2.value = 0.6
 
 artm_library = Library()
 with MasterComponent() as master_component:
-  master_component.Reconfigure(master_config)
-  perplexity_score = master_component.CreateScore('perplexity_score', ScoreConfig_Type_Perplexity, perplexity_config)
-  master_component.CreateStream(stream)
-  master_component.RemoveStream(stream)
-  model = master_component.CreateModel(model_config)
-  master_component.RemoveModel(model)
-  model = master_component.CreateModel(model_config)
+    master_component.Reconfigure(master_config)
+    perplexity_score = master_component.CreateScore('perplexity_score', ScoreConfig_Type_Perplexity, perplexity_config)
+    master_component.CreateStream(stream)
+    master_component.RemoveStream(stream)
+    model = master_component.CreateModel(model_config)
+    master_component.RemoveModel(model)
+    model = master_component.CreateModel(model_config)
 
-  dictionary = master_component.CreateDictionary(dictionary_config)
-  regularizer = master_component.CreateRegularizer('regularizer_1', 0, smsp_theta_config)
-  master_component.RemoveRegularizer(regularizer)
-  regularizer = master_component.CreateRegularizer('regularizer_1', 0, smsp_theta_config)
+    dictionary = master_component.CreateDictionary(dictionary_config)
+    regularizer = master_component.CreateRegularizer('regularizer_1', 0, smsp_theta_config)
+    master_component.RemoveRegularizer(regularizer)
+    regularizer = master_component.CreateRegularizer('regularizer_1', 0, smsp_theta_config)
 
-  regularizer_phi = master_component.CreateRegularizer('regularizer_2', 1, smsp_phi_config)
+    regularizer_phi = master_component.CreateRegularizer('regularizer_2', 1, smsp_phi_config)
 
-  model.Enable()
-  batch.id = str(uuid.uuid4())
-  for i in range(0, 10):
-    master_component.AddBatch(batch)
-  master_component.WaitIdle()
-  model.Synchronize(0.0)
-  model.Disable()
-  args_tm = messages_pb2.GetTopicModelArgs()
-  args_tm.model_name = model.name()
-  topic_model = master_component.GetTopicModel(None, args = args_tm)
-  args_theta = messages_pb2.GetThetaMatrixArgs()
-  args_theta.model_name = model.name()
-  theta_matrix = master_component.GetThetaMatrix(None, args = args_theta)
-  perplexity_score = perplexity_score.GetValue(model)
+    model.Enable()
+    batch.id = str(uuid.uuid4())
+    for i in range(0, 10):
+        master_component.AddBatch(batch)
+    master_component.WaitIdle()
+    model.Synchronize(0.0)
+    model.Disable()
+    args_tm = messages_pb2.GetTopicModelArgs()
+    args_tm.model_name = model.name()
+    topic_model = master_component.GetTopicModel(None, args=args_tm)
+    args_theta = messages_pb2.GetThetaMatrixArgs()
+    args_theta.model_name = model.name()
+    theta_matrix = master_component.GetThetaMatrix(None, args=args_theta)
+    perplexity_score = perplexity_score.GetValue(model)
 
-  model.Overwrite(topic_model);
+    model.Overwrite(topic_model)
 
-  # Test all 'reconfigure' methods
-  regularizer.Reconfigure(0, smsp_theta_config)
-  model.Reconfigure(model_config_new)
-  master_config_new = master_component.config();
-  master_config_new.processors_count = 1
-  master_config_new.processor_queue_max_size = 2
-  master_component.Reconfigure(master_config_new)
-  master_component.RemoveDictionary(dictionary)
+    # Test all 'reconfigure' methods
+    regularizer.Reconfigure(0, smsp_theta_config)
+    model.Reconfigure(model_config_new)
+    master_config_new = master_component.config()
+    master_config_new.processors_count = 1
+    master_config_new.processor_queue_max_size = 2
+    master_component.Reconfigure(master_config_new)
+    master_component.RemoveDictionary(dictionary)
 
 with NodeController("tcp://*:5555") as node_controller:
-  with MasterComponent(master_proxy_config) as master_component:
-    master_component.Reconfigure(master_config)
+    with MasterComponent(master_proxy_config) as master_component:
+        master_component.Reconfigure(master_config)
 
 print 'All tests have been successfully passed!'
