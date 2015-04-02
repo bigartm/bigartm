@@ -485,24 +485,6 @@ def run_bigartm(name, train, test, wordids,
             test_model.EnableRegularizer(smooth_sparse_theta, alpha)
             test_model.Overwrite(topic_model)
 
-            # with TimeChecker() as timer:
-            #     print 'Estimate perplexity on held out batches... '
-            #     perplexity = 0.0; perplexity_norm = 1e-15
-            #     for test_batch_filename in glob.glob(test_batches_folder + "*.batch"):
-            #         print 'Test batch:', test_batch_filename
-            #         test_batch = artm.library.Library().LoadBatch(test_batch_filename)
-            #         test_batch_theta = test_master.GetThetaMatrix(model=test_model, batch=test_batch)
-            #         theta_sparsity = calc_theta_sparsity(test_batch_theta)
-            #         (batch_perplexity, batch_perplexity_norm) = calc_perplexity(topic_model, test_batch_theta, test_batch)
-            #         print 'Batch = %s, Theta sparsity = %f, Perplexity = %f' % (
-            #             test_batch_filename, theta_sparsity, math.exp(-batch_perplexity / batch_perplexity_norm))
-            #         perplexity += batch_perplexity
-            #         perplexity_norm += batch_perplexity_norm
-            #     print 'Overall test perplexity = %f' % math.exp(-perplexity / perplexity_norm)
-            #
-            #     report[test_key]['inference_time'] = timer.status()
-            #     report[test_key]['perplexity_artm'] = math.exp(-perplexity / perplexity_norm)
-
             with ResourceTracker() as tracker:
                 test_master.InvokeIteration()
                 test_master.WaitIdle()
@@ -513,3 +495,4 @@ def run_bigartm(name, train, test, wordids,
 
     with open('target/%s.report.json' % name, 'w') as report_file:
         json.dump(report, report_file, indent=2)
+
