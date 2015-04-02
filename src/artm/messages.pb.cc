@@ -1493,7 +1493,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\010:\004true\"\?\n\006Format\022\021\n\rBagOfWordsUci\020\000\022\020\n\014"
     "MatrixMarket\020\001\022\020\n\014VowpalWabbit\020\002\"\177\n\024Sync"
     "hronizeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014"
-    "decay_weight\030\002 \001(\002:\0011\022!\n\023invoke_regulari"
+    "decay_weight\030\002 \001(\002:\0010\022!\n\023invoke_regulari"
     "zers\030\003 \001(\010:\004true\022\027\n\014apply_weight\030\004 \001(\002:\001"
     "1\"B\n\023InitializeModelArgs\022\022\n\nmodel_name\030\001"
     " \001(\t\022\027\n\017dictionary_name\030\002 \001(\t\"\214\001\n\021GetTop"
@@ -17151,7 +17151,7 @@ SynchronizeModelArgs::SynchronizeModelArgs(const SynchronizeModelArgs& from)
 void SynchronizeModelArgs::SharedCtor() {
   _cached_size_ = 0;
   model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  decay_weight_ = 1;
+  decay_weight_ = 0;
   invoke_regularizers_ = true;
   apply_weight_ = 1;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -17197,7 +17197,7 @@ void SynchronizeModelArgs::Clear() {
         model_name_->clear();
       }
     }
-    decay_weight_ = 1;
+    decay_weight_ = 0;
     invoke_regularizers_ = true;
     apply_weight_ = 1;
   }
@@ -17227,7 +17227,7 @@ bool SynchronizeModelArgs::MergePartialFromCodedStream(
         break;
       }
 
-      // optional float decay_weight = 2 [default = 1];
+      // optional float decay_weight = 2 [default = 0];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
@@ -17302,7 +17302,7 @@ void SynchronizeModelArgs::SerializeWithCachedSizes(
       1, this->model_name(), output);
   }
 
-  // optional float decay_weight = 2 [default = 1];
+  // optional float decay_weight = 2 [default = 0];
   if (has_decay_weight()) {
     ::google::protobuf::internal::WireFormatLite::WriteFloat(2, this->decay_weight(), output);
   }
@@ -17335,7 +17335,7 @@ void SynchronizeModelArgs::SerializeWithCachedSizes(
         1, this->model_name(), target);
   }
 
-  // optional float decay_weight = 2 [default = 1];
+  // optional float decay_weight = 2 [default = 0];
   if (has_decay_weight()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(2, this->decay_weight(), target);
   }
@@ -17368,7 +17368,7 @@ int SynchronizeModelArgs::ByteSize() const {
           this->model_name());
     }
 
-    // optional float decay_weight = 2 [default = 1];
+    // optional float decay_weight = 2 [default = 0];
     if (has_decay_weight()) {
       total_size += 1 + 4;
     }
