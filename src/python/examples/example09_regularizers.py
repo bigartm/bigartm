@@ -40,10 +40,10 @@ with artm.library.MasterComponent() as master:
 
     # Configure the model
     model = master.CreateModel(topics_count=10, inner_iterations_count=30, topic_names=all_topics)
-    model.EnableRegularizer(theta_objective, -1.0)
+    model.EnableRegularizer(theta_objective, -0.5)
     model.EnableRegularizer(theta_background, 0.5)
-    model.EnableRegularizer(phi_objective, -1.0)
-    model.EnableRegularizer(phi_background, 1.0)
+    model.EnableRegularizer(phi_objective, -0.5)
+    model.EnableRegularizer(phi_background, 0.5)
     model.EnableRegularizer(decorrelator_regularizer, 1000000)
     model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
 
