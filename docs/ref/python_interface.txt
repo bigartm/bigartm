@@ -20,7 +20,7 @@ Library
    ``PATH`` system variable. You may also configure ``ARTM_SHARED_LIBRARY`` system variable
    to provide full file name of artm shared library.
 
-   .. py:method:: CreateMasterComponent(config = messages_pb2.MasterComponentConfig())
+   .. py:method:: CreateMasterComponent(config = None)
 
       Creates and returns an instance of :py:class:`MasterComponent` class.
       *config* defines an optional :ref:`MasterComponentConfig` parameter
@@ -67,7 +67,7 @@ Library
 MasterComponent
 ===============
 
-.. py:class:: MasterComponent(config = messages_pb2.MasterComponentConfig(), lib = None, disk_path = None, proxy_endpoint = None)
+.. py:class:: MasterComponent(config = None, lib = None, disk_path = None, proxy_endpoint = None)
 
    Creates a master component.
    
@@ -94,13 +94,13 @@ MasterComponent
 
       Returns current :ref:`MasterComponentConfig` of the master component.
 
-   .. py:method:: CreateModel(config = messages_pb2.ModelConfig(), topics_count = None, inner_iterations_count = None)
+   .. py:method:: CreateModel(config=None, topics_count=None, inner_iterations_count=None, class_ids=None, class_weights=None)
 
       Creates and returns an instance of :py:class:`Model` class based on a given :ref:`ModelConfig`.
       Note that the model has to be further tuned by several iterative scans over the text collection.
       Use :py:meth:`InvokeIteration` to perform such scans.
 
-      Parameters *topics_count* and *inner_iterations_count* will override values, specified in *config*.
+      Parameters *topics_count*, *inner_iterations_count*, *class_ids* and *class_weights* will override values, specifed in *config*.
 
    .. py:method:: RemoveModel(model)
 
@@ -114,25 +114,20 @@ MasterComponent
       *type* can be any regularizer type (for example, the :py:data:`RegularizerConfig_Type_DirichletTheta`).
       *config* can be any regularizer config (for example, a :ref:`SmoothSparseThetaConfig`).
 
-   .. py:method:: CreateDirichletThetaRegularizer(name = None, config = messages_pb2.DirichletThetaConfig())
-
-      Creates an instance of DirichletThetaRegularizer.
-
-   .. py:method:: CreateDirichletPhiRegularizer(name = None, config = messages_pb2.DirichletPhiConfig())
-
-      Creates an instance of DirichletPhiRegularizer.
-
-   .. py:method:: CreateSmoothSparseThetaRegularizer(name = None, config = messages_pb2.SmoothSparseThetaConfig())
+   .. py:method:: CreateSmoothSparseThetaRegularizer(name = None, config = None)
 
       Creates an instance of SmoothSparseThetaRegularizer.
+      *config* is an optional argument of :ref:`SmoothSparseThetaConfig` type.
 
-   .. py:method:: CreateSmoothSparsePhiRegularizer(name = None, config = messages_pb2.SmoothSparsePhiConfig())
+   .. py:method:: CreateSmoothSparsePhiRegularizer(name = None, config = None, topic_names=None, class_ids=None)
 
       Creates an instance of SmoothSparsePhiRegularizer.
+      *config* is an optional argument of :ref:`SmoothSparsePhiConfig` type.
 
-   .. py:method:: CreateDecorrelatorPhiRegularizer(name = None, config = messages_pb2.DecorrelatorPhiConfig())
+   .. py:method:: CreateDecorrelatorPhiRegularizer(name = None, config = None, topic_names=None, class_ids=None)
 
       Creates an instance of DecorrelatorPhiRegularizer.
+      *config* is an optional argument of :ref:`DecorrelatorPhiConfig` type.
 
    .. py:method:: RemoveRegularizer(regularizer)
 
@@ -146,33 +141,40 @@ MasterComponent
       *type* can be any score type (for example, the :py:data:`ScoreConfig_Type_Perplexity`).
       *config* can be any score config (for example, a :ref:`PerplexityScoreConfig`).
 
-   .. py:method:: CreatePerplexityScore(self, name = None, config = messages_pb2.PerplexityScoreConfig(), stream_name = None)
+   .. py:method:: CreatePerplexityScore(self, name = None, config = None, stream_name = None, class_ids=None)
 
       Creates an instance of PerplexityScore.
+      *config* is an optional argument of :ref:`PerplexityScoreConfig` type.
 
-   .. py:method:: CreateSparsityThetaScore(self, name = None, config = messages_pb2.SparsityThetaScoreConfig())
+   .. py:method:: CreateSparsityThetaScore(self, name = None, config = None, topic_names=None)
 
       Creates an instance of SparsityThetaScore.
+      *config* is an optional argument of :ref:`SparsityThetaScoreConfig` type.
 
-   .. py:method:: CreateSparsityPhiScore(self, name = None, config = messages_pb2.SparsityPhiScoreConfig())
+   .. py:method:: CreateSparsityPhiScore(self, name = None, config = None, topic_names=None, class_id=None)
 
       Creates an instance of SparsityPhiScore.
+      *config* is an optional argument of :ref:`SparsityPhiScoreConfig` type.
 
-   .. py:method:: CreateItemsProcessedScore(self, name = None, config = messages_pb2.ItemsProcessedScoreConfig())
+   .. py:method:: CreateItemsProcessedScore(self, name = None, config = None)
 
       Creates an instance of ItemsProcessedScore.
+      *config* is an optional argument of :ref:`ItemsProcessedScoreConfig` type.
 
-   .. py:method:: CreateTopTokensScore(self, name = None, config = messages_pb2.TopTokensScoreConfig(), num_tokens = None, class_id = None)
+   .. py:method:: CreateTopTokensScore(self, name = None, config = None, num_tokens = None, class_id = None, topic_names=None)
 
       Creates an instance of TopTokensScore.
+      *config* is an optional argument of :ref:`TopTokensScoreConfig` type.
 
-   .. py:method:: CreateThetaSnippetScore(self, name = None, config = messages_pb2.ThetaSnippetScoreConfig())
+   .. py:method:: CreateThetaSnippetScore(self, name = None, config = None)
 
       Creates an instance of ThetaSnippetScore.
+      *config* is an optional argument of :ref:`ThetaSnippetScoreConfig` type.
 
-   .. py:method:: CreateTopicKernelScore(self, name = None, config = messages_pb2.TopicKernelScoreConfig())
+   .. py:method:: CreateTopicKernelScore(self, name = None, config = None, topic_names=None, class_id=None)
 
       Creates an instance of TopicKernelScore.
+      *config* is an optional argument of :ref:`TopicKernelScoreConfig` type.
 
    .. py:method:: RemoveScore(name)
 
@@ -193,7 +195,7 @@ MasterComponent
       Remember that some changes of the configuration are not allowed (for example, the :attr:`MasterComponentConfig.disk_path` must not change).
       Such configuration parameters must be provided in the constructor of :py:class:`MasterComponent`.
 
-   .. py:method:: AddBatch(self, batch = None, batch_filename = None, timeout = -1, reset_scores = False)
+   .. py:method:: AddBatch(self, batch = None, batch_filename = None, timeout = None, reset_scores = False, args=None)
 
       Adds an instance of :ref:`Batch` class to the processor queue.
       Master component creates a copy of the *batch*, so any further changes of the *batch* object will not be picked up.
@@ -202,20 +204,26 @@ MasterComponent
 
       This operation awaits until there is enough space in processor queue.
       It returns *True* if await succeeded within the timeout, otherwise returns *False*.
-      The provided timeout is in milliseconds. Use *timeout = -1* to allow infinite time for :py:meth:`AddBatch` operation.
+      The provided timeout is in milliseconds. By default it allows an infinite time for :py:meth:`AddBatch` operation.
 
-   .. py:method:: InvokeIteration(iterations_count = 1, disk_path = None)
+      *args* is an optional argument of :ref:`AddBatchArgs` type.
+
+   .. py:method:: InvokeIteration(iterations_count = 1, disk_path = None, args=None)
 
       Invokes several iterations over the collection. The recommended value for *iterations_count* is 1.
       *disk_path* defines the disk location with batches to process on this iteration.
       For more iterations use for loop around :py:meth:`InvokeIteration` method.
       This operation is asynchronous. Use :py:meth:`WaitIdle` to await until all iterations succeeded.
 
-   .. py:method:: WaitIdle(timeout = -1)
+      *args* is an optional argument of :ref:`InvokeIterationArgs` type.
+
+   .. py:method:: WaitIdle(timeout = None, args=None)
 
       Awaits for ongoing iterations. Returns *True* if iterations had been finished within the timeout, otherwise returns *False*.
       The provided timeout is in milliseconds. Use *timeout = -1* to allow infinite time for :py:meth:`WaitIdle` operation.
       Remember to call :py:meth:`Model.Synchronize` operation to synchronize each model that you are currently processing.
+
+      *args* is an optional argument of :ref:`WaitIdleArgs` type.
 
    .. py:method:: CreateStream(stream)
 
@@ -225,7 +233,7 @@ MasterComponent
 
       Removes a stream with the specific name from the master component.
 
-   .. py:method:: GetTopicModel(model = None, args = messages_pb2.GetTopicModelArgs())
+   .. py:method:: GetTopicModel(model = None, args = None)
 
       Retrieves and returns an instance of :ref:`TopicModel` class, carrying all the data of the topic model (including the Phi matrix).
       Parameter *model* should be an instance of :py:class:`Model` class.
@@ -235,7 +243,7 @@ MasterComponent
 
       Retrieves and returns the internal state of a regularizer with the specific name.
 
-   .. py:method:: GetThetaMatrix(model = None, batch = None, clean_cache = None, args = messages_pb2.GetThetaMatrixArgs())
+   .. py:method:: GetThetaMatrix(model = None, batch = None, clean_cache = None, args = None)
 
       Retrieves an instance of :ref:`ThetaMatrix` class.
       The content depends on *batch* parameter.
@@ -297,7 +305,7 @@ Model
 
       Returns current :ref:`ModelConfig` of the topic model.
 
-   .. py:method:: Synchronize(decay_weight = 0.0, apply_weight = 1.0, invoke_regularizers = True)
+   .. py:method:: Synchronize(decay_weight = 0.0, apply_weight = 1.0, invoke_regularizers = True, args=None)
 
       This operation updates the Phi matrix of the topic model with all model increments, collected since the last call to :py:meth:`Synchronize` method.
       The Phi matrix is calculated according to *decay_weight* and *apply_weight* (refer to :attr:`SynchronizeModelArgs.decay_weight` for more details).
@@ -305,11 +313,15 @@ Model
 
       Remember to call :py:meth:`Synchronize` operation every time after call :py:meth:`MasterComponent.WaitIdle`.
 
-   .. py:method:: Initialize(tokens, dictionary)
+      For more settings use *args* parameter (see :ref:`SynchronizeModelArgs` for all available options).
+
+   .. py:method:: Initialize(dictionary = None, args=None)
 
       Generates a random initial approximation for the Phi matrix of the topic model.
 
       *dictionary* must be an instance of :py:class:`Dictionary` class.
+      
+      For more settings use *args* parameter (see :ref:`InitializeModelArgs` for all available options).
 
    .. py:method:: Overwrite(topic_model, commit = True)
 
