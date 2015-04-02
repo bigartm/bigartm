@@ -50,11 +50,6 @@ with artm.library.MasterComponent() as master:
 
     # Configure the model
     model = master.CreateModel(topics_count=10, inner_iterations_count=10)
-    model.EnableScore(perplexity_score)
-    model.EnableScore(sparsity_phi_score)
-    model.EnableScore(sparsity_theta_score)
-    model.EnableScore(top_tokens_score)
-    model.EnableScore(theta_snippet_score)
     model.EnableRegularizer(smsp_theta_reg, -0.1)
     model.EnableRegularizer(smsp_phi_reg, -0.2)
     model.EnableRegularizer(decorrelator_reg, 1000000)

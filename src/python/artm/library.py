@@ -617,7 +617,7 @@ class Model:
         config_copy_.enabled = False
         self.Reconfigure(config_copy_)
 
-    def EnableScore(self, score):
+    def EnableScore(self, score):  # obsolete in BigARTM v0.6.3
         config_copy_ = messages_pb2.ModelConfig()
         config_copy_.CopyFrom(self.config_)
         config_copy_.score_name.append(score.name())

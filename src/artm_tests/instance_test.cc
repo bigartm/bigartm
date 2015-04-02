@@ -186,7 +186,6 @@ TEST(Instance, MultipleStreamsAndModels) {
   m1.set_stream_name("train");
   m1.set_enabled(true);
   m1.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-  m1.add_score_name("perplexity");
   test.instance()->CreateOrReconfigureModel(m1);
 
   artm::ModelConfig m2;

@@ -22,7 +22,6 @@ for processors_count in [4, 2, 1]:
 
         perplexity_score = master.CreatePerplexityScore()
         model = master.CreateModel(topics_count=10, inner_iterations_count=10)
-        model.EnableScore(perplexity_score)
         model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
         print "Setting processors_count to " + str(processors_count)

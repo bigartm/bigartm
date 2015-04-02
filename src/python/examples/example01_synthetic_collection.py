@@ -28,8 +28,6 @@ with artm.library.MasterComponent() as master:
     perplexity_score = master.CreatePerplexityScore()
     top_tokens_score = master.CreateTopTokensScore(num_tokens=4)
     model = master.CreateModel(topics_count=10, inner_iterations_count=10)
-    model.EnableScore(perplexity_score)
-    model.EnableScore(top_tokens_score)
 
     for iteration in range(0, 10):
         master.AddBatch(batch)           # Invoke one scan of this batch...

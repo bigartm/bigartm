@@ -124,7 +124,6 @@ with artm.library.MasterComponent(master_config) as master:
     # Configure the model
     model = master.CreateModel(config=artm.messages_pb2.ModelConfig(),
                                topics_count=numTopics, inner_iterations_count=numInnerIters)
-    model.EnableScore(items_processed_score)
     model.EnableRegularizer(smooth_sparse_phi, beta)
     model.EnableRegularizer(smooth_sparse_theta, alpha)
 
@@ -154,7 +153,6 @@ with artm.library.MasterComponent(master_config) as master:
     print "Done. "
 
     # Perform one iteration to calculate Perplexity on the entire train dataset
-    # model.EnableScore(perplexity_score)
     # master.InvokeIteration()
     # master.WaitIdle()
     # print "Train Perplexity calculated in BigARTM = %.3f" % perplexity_score.GetValue(model).value
@@ -176,7 +174,6 @@ with artm.library.MasterComponent(test_master_config) as test_master:
     smooth_sparse_theta = test_master.CreateSmoothSparseThetaRegularizer()
 
     test_model = test_master.CreateModel(topics_count = numTopics, inner_iterations_count = numInnerIters)
-    test_model.EnableScore(test_perplexity_score)
     test_model.EnableRegularizer(smooth_sparse_phi, beta)
     test_model.EnableRegularizer(smooth_sparse_theta, alpha)
     test_model.Overwrite(topic_model)  # restore previously saved topic model into test_master

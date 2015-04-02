@@ -27,7 +27,6 @@ with artm.library.MasterComponent(config=master_config) as master:
     dictionary = master.CreateDictionary(unique_tokens)
     perplexity_score = master.CreatePerplexityScore()
     model = master.CreateModel(topics_count=10, inner_iterations_count=10)
-    model.EnableScore(perplexity_score)
     model.Initialize(dictionary)
 
     for iteration in range(0, 8):

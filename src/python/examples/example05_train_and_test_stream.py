@@ -36,8 +36,6 @@ with artm.library.MasterComponent() as master:
     # Configure the model
     model = master.CreateModel(topics_count=10, inner_iterations_count=10)
     model.config().stream_name = train_stream.name
-    model.EnableScore(perplexity_train_score)
-    model.EnableScore(perplexity_test_score)
     model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
 
     for iteration in range(0, 8):

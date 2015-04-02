@@ -72,14 +72,11 @@ with artm.library.MasterComponent() as master:
     en_sparsity = master.CreateSparsityPhiScore(class_id='@english')
     theta_sparsity = master.CreateSparsityThetaScore()
 
-    # Create and initialize model, enable scores. Our expert knowledge says we need 2 topics ;)
+    # Create and initialize model. Our expert knowledge says we need 2 topics ;)
     model = master.CreateModel(topics_count=2, inner_iterations_count=10,
                                class_ids=('@russian', '@english'),
                                class_weights=(1.00, 1.00))
     model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
-    model.EnableScore(ru_top_tokens_score)
-    model.EnableScore(en_top_tokens_score)
-    model.EnableScore(theta_sparsity)
 
     # Infer the model in 10 passes over the batch
     for iteration in range(0, 10):

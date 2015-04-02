@@ -35,8 +35,6 @@ with artm.library.MasterComponent() as master:
 
     # Configure the model
     model = master.CreateModel(topics_count=10, inner_iterations_count=10)
-    model.EnableScore(perplexity_document_score)
-    model.EnableScore(perplexity_collection_score)
     model.EnableRegularizer(smsp_theta_reg, -1.0)
     model.EnableRegularizer(smsp_phi_reg, -1.0)
     model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.

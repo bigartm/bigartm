@@ -119,7 +119,7 @@ message ModelConfig {
   optional int32 inner_iterations_count = 5 [default = 10];
   optional string field_name = 6 [default = "@body"];  // obsolete in BigARTM v0.5.8
   optional string stream_name = 7 [default = "@global"];
-  repeated string score_name = 8;
+  repeated string score_name = 8;  // obsolete in BigARTM v0.6.3
   optional bool reuse_theta = 9 [default = false];
   repeated string regularizer_name = 10;
   repeated double regularizer_tau = 11;
