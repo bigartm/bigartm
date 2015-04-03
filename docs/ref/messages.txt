@@ -484,6 +484,7 @@ Represents a configuration of a topic model.
     repeated float class_weight = 13;
     optional bool use_sparse_bow = 14 [default = true];
     optional bool use_random_theta = 15 [default = false];
+    optional bool use_new_tokens = 16 [default = true];
   }
 
 .. attribute:: ModelConfig.name
@@ -569,6 +570,13 @@ Represents a configuration of a topic model.
    Note that :attr:`reuse_theta` flag takes priority over *use_random_theta* flag,
    so that if *reuse_theta = true* and there is a cache entry from previous iteration the cache entry
    will be used regardless of *use_random_theta* flag.
+
+.. attribute:: ModelConfig.use_new_tokens
+
+   A flag indicating whether to automatically include new tokens into the topic model.
+   This setting is set to *True* by default. As a result, every new token observed in batches
+   is automatically incorporated into topic model during the next model synchronization (:c:func:`ArtmSynchronizeModel`).
+   The ``n_wt_`` weights for new tokens randomly generated from ``[0..1]`` range.
 
 
 .. _RegularizerConfig:

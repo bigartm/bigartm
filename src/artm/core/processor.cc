@@ -86,7 +86,10 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
     if (topic_model.has_token(token)) {
       model_increment->add_operation_type(ModelIncrement_OperationType_IncrementValue);
     } else {
-      model_increment->add_operation_type(ModelIncrement_OperationType_CreateIfNotExist);
+      if (model_config.use_new_tokens())
+        model_increment->add_operation_type(ModelIncrement_OperationType_CreateIfNotExist);
+      else
+        model_increment->add_operation_type(ModelIncrement_OperationType_SkipToken);
     }
   }
 

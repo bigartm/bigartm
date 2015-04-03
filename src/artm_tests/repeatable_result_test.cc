@@ -73,7 +73,7 @@ std::string runOfflineTest() {
 
   std::shared_ptr< ::artm::TopicModel> topic_model = master_component.GetTopicModel(model.name());
   std::stringstream ss;
-  std::cout << "Topic model:\n";
+  ss << "Topic model:\n";
   for (int i = 0; i < topic_model->token_size(); ++i) {
     ss << topic_model->token(i) << ": ";
     for (int j = 0; j < topic_model->topics_count(); ++j) {
@@ -82,7 +82,7 @@ std::string runOfflineTest() {
     ss << std::endl;
   }
 
-  std::cout << "Theta matrix:\n";
+  ss << "Theta matrix:\n";
   for (int i = 0; i < batches_size; ++i) {
     ::artm::GetThetaMatrixArgs args;
     args.set_model_name(model.name());

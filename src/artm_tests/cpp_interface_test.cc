@@ -488,3 +488,60 @@ TEST(CppInterface, WaitIdleTimeout) {
   master.AddBatch(batch);
   EXPECT_FALSE(master.WaitIdle(0));
 }
+
+// artm_tests.exe --gtest_filter=CppInterface.GatherNewTokens
+TEST(CppInterface, GatherNewTokens) {
+  artm::MasterComponentConfig master_config;
+  artm::MasterComponent master(master_config);
+
+  artm::ModelConfig model_config;
+  model_config.set_topics_count(10);
+  model_config.set_name("model_config1");
+  artm::Model model(master, model_config);
+
+  std::string token1 = artm::test::Helpers::getUniqueString();
+  std::string token2 = artm::test::Helpers::getUniqueString();
+
+  // Generate batch with one token (token1)
+  ::artm::Batch batch;
+  batch.set_id(artm::test::Helpers::getUniqueString());
+  batch.add_token(token1);
+  ::artm::Item* item = batch.add_item();
+  ::artm::Field* field = item->add_field();
+  field->add_token_id(0);
+  field->add_token_count(1);
+
+  // Process batch and expect that token is automatically picked up by the model
+  master.AddBatch(batch);
+  master.WaitIdle();
+  model.Synchronize(1.0);
+  auto tm1 = master.GetTopicModel(model.name());
+  ASSERT_EQ(tm1->token_size(), 1);
+  ASSERT_EQ(tm1->token(0), token1);
+
+  // Change configuration to not use new tokens
+  model_config.set_use_new_tokens(false);
+  model.Reconfigure(model_config);
+
+  // Create different batch that contains token2
+  batch.mutable_token(0)->assign(token2);
+
+  // Process batch with token2, and expect that it is ignored by the model
+  master.AddBatch(batch);
+  master.WaitIdle();
+  model.Synchronize(1.0);
+  auto tm2 = master.GetTopicModel(model.name());
+  ASSERT_EQ(tm2->token_size(), 1);  // new token is ignored
+  ASSERT_EQ(tm2->token(0), token1);
+
+  // Change configuration back to use new tokens
+  model_config.set_use_new_tokens(true);
+  model.Reconfigure(model_config);
+  master.AddBatch(batch);
+  master.WaitIdle();
+  model.Synchronize(1.0);
+  auto tm3 = master.GetTopicModel(model.name());
+  ASSERT_EQ(tm3->token_size(), 2);  // now new token is picked up
+  ASSERT_TRUE((tm3->token(0) == token1 && tm3->token(1) == token2) ||
+              (tm3->token(0) == token2 && tm3->token(1) == token1));
+}
