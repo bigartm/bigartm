@@ -34,7 +34,7 @@ std::string runOfflineTest() {
   model_config.set_name(artm::test::Helpers::getUniqueString());
   artm::Model model(master_component, model_config);
 
-  std::vector<std::shared_ptr<::artm::Batch>> batches;
+  std::vector<std::shared_ptr< ::artm::Batch>> batches;
   int batches_size = 2;
   int nTokens = 10;
   srand(1);

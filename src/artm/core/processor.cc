@@ -12,6 +12,7 @@
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 #include "boost/uuid/uuid_io.hpp"
+#include "boost/functional/hash.hpp"
 
 #include "glog/logging.h"
 
