@@ -51,6 +51,7 @@ import sre_compile
 import string
 import sys
 import unicodedata
+import cpplint_bigartm
 
 
 _USAGE = """
@@ -4742,8 +4743,9 @@ def main():
                                          'replace')
 
   _cpplint_state.ResetErrorCounts()
+  extra_check_functions = [cpplint_bigartm.CheckSpaceBetweenLangleAndSemicolon]
   for filename in filenames:
-    ProcessFile(filename, _cpplint_state.verbose_level)
+    ProcessFile(filename, _cpplint_state.verbose_level, extra_check_functions)
   _cpplint_state.PrintErrorCounts()
 
   sys.exit(_cpplint_state.error_count > 0)

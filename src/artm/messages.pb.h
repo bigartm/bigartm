@@ -2030,6 +2030,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool use_random_theta() const;
   inline void set_use_random_theta(bool value);
 
+  // optional bool use_new_tokens = 16 [default = true];
+  inline bool has_use_new_tokens() const;
+  inline void clear_use_new_tokens();
+  static const int kUseNewTokensFieldNumber = 16;
+  inline bool use_new_tokens() const;
+  inline void set_use_new_tokens(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2050,6 +2057,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_sparse_bow();
   inline void set_has_use_random_theta();
   inline void clear_has_use_random_theta();
+  inline void set_has_use_new_tokens();
+  inline void clear_has_use_new_tokens();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2065,15 +2074,16 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
+  bool use_new_tokens_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9272,6 +9282,28 @@ inline bool ModelConfig::use_random_theta() const {
 inline void ModelConfig::set_use_random_theta(bool value) {
   set_has_use_random_theta();
   use_random_theta_ = value;
+}
+
+// optional bool use_new_tokens = 16 [default = true];
+inline bool ModelConfig::has_use_new_tokens() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void ModelConfig::set_has_use_new_tokens() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void ModelConfig::clear_has_use_new_tokens() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void ModelConfig::clear_use_new_tokens() {
+  use_new_tokens_ = true;
+  clear_has_use_new_tokens();
+}
+inline bool ModelConfig::use_new_tokens() const {
+  return use_new_tokens_;
+}
+inline void ModelConfig::set_use_new_tokens(bool value) {
+  set_has_use_new_tokens();
+  use_new_tokens_ = value;
 }
 
 // -------------------------------------------------------------------
