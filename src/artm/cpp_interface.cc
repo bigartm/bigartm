@@ -208,6 +208,8 @@ Model::~Model() {
 }
 
 void Model::Reconfigure(const ModelConfig& config) {
+  if (name() != config.name())
+    throw InvalidOperationException("Changing model name is not allowed");
   std::string model_config_blob;
   config.SerializeToString(&model_config_blob);
   HandleErrorCode(ArtmReconfigureModel(master_id(), model_config_blob.size(),

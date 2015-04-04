@@ -121,10 +121,15 @@ TEST(MultipleClasses, BasicTest) {
 
   artm::Batch batch = GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
   artm::TopicModel initial_model;
+  for (int i = 0; i < nTopics; ++i) {
+    std::stringstream ss;
+    ss << "@topic_" + i;
+    initial_model.add_topic_name(ss.str());
+  }
+
   for (int i = 0; i < batch.token_size(); i++) {
     initial_model.add_token(batch.token(i));
     initial_model.add_class_id(batch.class_id(i));
-    initial_model.set_topics_count(nTopics);
     ::artm::FloatArray* token_weights = initial_model.add_token_weights();
     for (int topic_index = 0; topic_index < nTopics; ++topic_index) {
       token_weights->add_value(static_cast<float>(rand()) / static_cast<float>(RAND_MAX));  // NOLINT
@@ -360,21 +365,18 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
 
   EXPECT_EQ(tm_dense->name(), args.model_name());
   EXPECT_EQ(tm_sparse->name(), args.model_name());
-  ASSERT_EQ(tm_dense->topics_count(), tm_dense->topic_name_size());
-  ASSERT_EQ(tm_sparse->topics_count(), tm_sparse->topic_name_size());
-  ASSERT_GT(tm_dense->topics_count(), 0);
-  ASSERT_GT(tm_sparse->topics_count(), 0);
+  ASSERT_GT(tm_dense->topic_name_size(), 0);
+  ASSERT_GT(tm_sparse->topic_name_size(), 0);
   ASSERT_GT(tm_dense->token_size(), 0);
   ASSERT_GT(tm_sparse->token_size(), 0);
 
   if (!all_topics) {
-    ASSERT_EQ(tm_dense->topics_count(), args.topic_name_size());
-    for (int i = 0; i < tm_dense->topics_count(); ++i)
+    for (int i = 0; i < tm_dense->topic_name_size(); ++i)
       EXPECT_EQ(tm_dense->topic_name(i), args.topic_name(i));
   }
 
-  ASSERT_EQ(tm_sparse->topics_count(), tm_all->topics_count());
-  for (int i = 0; i < tm_sparse->topics_count(); ++i)
+  ASSERT_EQ(tm_sparse->topic_name_size(), tm_all->topic_name_size());
+  for (int i = 0; i < tm_sparse->topic_name_size(); ++i)
     EXPECT_EQ(tm_sparse->topic_name(i), tm_all->topic_name(i));
 
   ASSERT_EQ(tm_sparse->token_size(), tm_dense->token_size());
@@ -412,7 +414,7 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
     for (int j = 0; j < sparse_topic.value_size(); ++j) {
       int topic_index = sparse_topic_index.value(j);
       float value = sparse_topic.value(j);
-      ASSERT_TRUE(topic_index >= 0 && topic_index <= tm_all->topics_count());
+      ASSERT_TRUE(topic_index >= 0 && topic_index <= tm_all->topic_name_size());
       EXPECT_TRUE(value >= args.eps());
       EXPECT_EQ(value, dense_topic.value(topic_index));
     }

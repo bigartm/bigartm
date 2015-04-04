@@ -34,7 +34,7 @@ std::string runOfflineTest() {
   model_config.set_name(artm::test::Helpers::getUniqueString());
   artm::Model model(master_component, model_config);
 
-  std::vector<std::shared_ptr<::artm::Batch>> batches;
+  std::vector<std::shared_ptr< ::artm::Batch>> batches;
   int batches_size = 2;
   int nTokens = 10;
   srand(1);
@@ -76,7 +76,7 @@ std::string runOfflineTest() {
   ss << "Topic model:\n";
   for (int i = 0; i < topic_model->token_size(); ++i) {
     ss << topic_model->token(i) << ": ";
-    for (int j = 0; j < topic_model->topics_count(); ++j) {
+    for (int j = 0; j < topic_model->topic_name_size(); ++j) {
       ss << topic_model->token_weights(i).value(j) << " ";
     }
     ss << std::endl;

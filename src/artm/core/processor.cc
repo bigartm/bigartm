@@ -68,28 +68,28 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
   int topic_size = model_config.topics_count();
 
   // process part and store result in merger queue
-  model_increment->set_model_name(model_config.name());
-  model_increment->set_topics_count(topic_size);
-  model_increment->mutable_topic_name()->CopyFrom(topic_model.topic_name());
+  ::artm::TopicModel* topic_model_inc = model_increment->mutable_topic_model();
+  topic_model_inc->set_name(model_config.name());
+  topic_model_inc->mutable_topic_name()->CopyFrom(topic_model.topic_name());
   for (int token_index = 0; token_index < part.batch().token_size(); ++token_index) {
     Token token = Token(batch.class_id(token_index), batch.token(token_index));
-    model_increment->add_token(token.keyword);
-    model_increment->add_class_id(token.class_id);
-    FloatArray* counters = model_increment->add_token_increment();
+    topic_model_inc->add_token(token.keyword);
+    topic_model_inc->add_class_id(token.class_id);
+    FloatArray* counters = topic_model_inc->add_n_wt();
 
     if ((model_config.class_id_size() > 0) &&
         (!repeated_field_contains(model_config.class_id(), token.class_id))) {
-      model_increment->add_operation_type(ModelIncrement_OperationType_SkipToken);
+      topic_model_inc->add_operation_type(TopicModel_OperationType_Ignore);
       continue;
     }
 
     if (topic_model.has_token(token)) {
-      model_increment->add_operation_type(ModelIncrement_OperationType_IncrementValue);
+      topic_model_inc->add_operation_type(TopicModel_OperationType_Increment);
     } else {
       if (model_config.use_new_tokens())
-        model_increment->add_operation_type(ModelIncrement_OperationType_CreateIfNotExist);
+        topic_model_inc->add_operation_type(TopicModel_OperationType_Initialize);
       else
-        model_increment->add_operation_type(ModelIncrement_OperationType_SkipToken);
+        topic_model_inc->add_operation_type(TopicModel_OperationType_Ignore);
     }
   }
 
@@ -373,7 +373,7 @@ UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask*
   std::vector<float> n_wt(topics_count, 0.0f);
   for (int w = 0; w < tokens_count; ++w) {
     if (token_id[w] == -1) continue;
-    if (model_increment->operation_type(w) != ModelIncrement_OperationType_IncrementValue) continue;
+    if (model_increment->topic_model().operation_type(w) != TopicModel_OperationType_Increment) continue;
     const float* global_phi_ptr = topic_model.GetPwt(token_id[w]);
     for (int k = 0; k < topics_count; ++k)
       p_wt[k] = global_phi_ptr[k];
@@ -387,7 +387,7 @@ UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask*
         &theta_matrix(0, d), 1, &n_wt[0], 1);
     }
 
-    FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(w);
+    FloatArray* hat_n_wt_cur = model_increment->mutable_topic_model()->mutable_n_wt(w);
     hat_n_wt_cur->mutable_value()->Reserve(topics_count);
     assert(hat_n_wt_cur->value_size() == 0);
     for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
@@ -492,9 +492,9 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
   }
 
   for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
-    if (model_increment->operation_type(token_index) ==
-      ModelIncrement_OperationType_IncrementValue) {
-      FloatArray* hat_n_wt_cur = model_increment->mutable_token_increment(token_index);
+    if (model_increment->topic_model().operation_type(token_index) ==
+      TopicModel_OperationType_Increment) {
+      FloatArray* hat_n_wt_cur = model_increment->mutable_topic_model()->mutable_n_wt(token_index);
       hat_n_wt_cur->mutable_value()->Reserve(topics_count);
       assert(hat_n_wt_cur->value_size() == 0);
       for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
@@ -731,7 +731,7 @@ void Processor::ThreadFunction() {
           DataLoaderCacheEntry new_cache_entry;
           new_cache_entry.set_batch_uuid(part->batch_uuid());
           new_cache_entry.set_model_name(model_name);
-          new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_name());
+          new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
           for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
             const Item& item = batch.item(item_index);
             new_cache_entry.add_item_id(item.id());

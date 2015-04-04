@@ -135,7 +135,7 @@ TEST(Instance, Basic) {
 
   instance->merger()->RetrieveExternalTopicModel(args, &topic_model);
   EXPECT_EQ(topic_model.token_size(), 3);
-  EXPECT_EQ(topic_model.topics_count(), 3);
+  EXPECT_EQ(topic_model.topic_name_size(), 3);
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "first token")));
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "second")));
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "last")));
@@ -226,7 +226,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   for (int token_index = 0; token_index < m1t.token_size(); ++token_index) {
     std::string token = m1t.token(token_index);
     if ((token == "token1") || (token == "token3") || (token == "token5")) {
-      for (int topic_index = 0; topic_index < m1t.topics_count(); ++topic_index) {
+      for (int topic_index = 0; topic_index < m1t.topic_name_size(); ++topic_index) {
         // todo(alfrey) Verification was disabled because now all tokens are initialized with random values.
         // EXPECT_EQ(m1t.token_weights(token_index).value(topic_index), 0);
       }
@@ -242,7 +242,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   for (int token_index = 0; token_index < m2t.token_size(); ++token_index) {
     std::string token = m2t.token(token_index);
     if ((token == "token0") || (token == "token2") || (token == "token4")) {
-      for (int topic_index = 0; topic_index < m2t.topics_count(); ++topic_index) {
+      for (int topic_index = 0; topic_index < m2t.topic_name_size(); ++topic_index) {
         // todo(alfrey) Verification was disabled because now all tokens are initialized with random values.
         // EXPECT_EQ(m2t.token_weights(token_index).value(topic_index), 0);
       }

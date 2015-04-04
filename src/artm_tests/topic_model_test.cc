@@ -6,6 +6,7 @@
 #include "artm/core/topic_model.h"
 #include "artm/messages.pb.h"
 
+// artm_tests.exe --gtest_filter=TopicModelTest.Basic
 TEST(TopicModelTest, Basic) {
   const float kTolerance = 1e-5f;
 
@@ -32,8 +33,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetTokenWeight(i, j, 1);
     }
   }
-  topic_model.CalcNormalizers();
-  auto n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
+  std::vector<float> n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
   }
@@ -47,8 +47,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetRegularizerWeight(i, j, -0.5f);
     }
   }
-  topic_model.CalcNormalizers();
-  n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
+  n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
   }
@@ -62,8 +61,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetRegularizerWeight(i, j, -1.5);
     }
   }
-  topic_model.CalcNormalizers();
-  n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
+  n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
   }
@@ -77,8 +75,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.IncreaseTokenWeight(i, j, 0.4f);
     }
   }
-  topic_model.CalcNormalizers();
-  n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
+  n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
   }
@@ -92,8 +89,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.IncreaseTokenWeight(i, j, 0.6f);
     }
   }
-  topic_model.CalcNormalizers();
-  n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
+  n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
   }
@@ -107,8 +103,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetTokenWeight(i, j, 1);
     }
   }
-  topic_model.CalcNormalizers();
-  n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
+  n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
   }
@@ -122,8 +117,7 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetRegularizerWeight(i, j, -0.5f);
     }
   }
-  topic_model.CalcNormalizers();
-  n_t = topic_model.GetTopicWeightIterator(0).GetNormalizer();
+  n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
   }
@@ -164,7 +158,7 @@ TEST(TopicModelTest, Basic) {
         break;
       }
 
-      topic_model_1.CalcNormalizers();
+      n_t = topic_model_1.FindNormalizers()[::artm::core::DefaultClass];
       float expected_norm = 0;
       float real_norm = 0;
       for (int token_id = 0; token_id < no_tokens; ++token_id) {
@@ -172,7 +166,7 @@ TEST(TopicModelTest, Basic) {
         iter.NextTopic();
         float r = (iter.GetRegularizer())[0];
         float n = (iter.GetData())[0];
-        expected_norm = (iter.GetNormalizer())[0];
+        expected_norm = n_t[0];
         if (r + n > 0.0) {
           real_norm += (r + n);
         }

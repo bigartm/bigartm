@@ -86,3 +86,5 @@ src/Win32/*
 docs/_build/*
 
 build*
+
+/src/python/.idea/*

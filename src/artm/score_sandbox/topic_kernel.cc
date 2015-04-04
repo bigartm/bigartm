@@ -2,6 +2,7 @@
 
 #include "artm/score_sandbox/topic_kernel.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "artm/core/exceptions.h"
@@ -75,15 +76,18 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
       double normalizer = 0.0;
       while (topic_iter.NextTopic() < topics_count) {
         if (topics_to_score[topic_iter.TopicIndex()]) {
-          normalizer += topic_iter.Weight() * topic_iter.GetNormalizer()[topic_iter.TopicIndex()];
+          float val = std::max<float>(topic_iter.NotNormalizedWeight() +
+                                      topic_iter.NotNormalizedRegularizerWeight(), 0);
+          normalizer += static_cast<double>(val);
         }
       }
       topic_iter.Reset();
       while (topic_iter.NextTopic() < topics_count) {
         int topic_index = topic_iter.TopicIndex();
         if (topics_to_score[topic_index]) {
-          double p_tw = topic_iter.Weight() *
-            topic_iter.GetNormalizer()[topic_index] / normalizer;
+          float val = std::max<float>(topic_iter.NotNormalizedWeight() +
+                                      topic_iter.NotNormalizedRegularizerWeight(), 0);
+          double p_tw = static_cast<double>(val) / normalizer;
 
           if (p_tw >= probability_mass_threshold) {
             artm::core::repeated_field_append(kernel_size->mutable_value(), topic_index, 1.0);

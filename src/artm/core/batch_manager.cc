@@ -114,7 +114,7 @@ void BatchManager::Callback(ModelIncrement* model_increment) {
     std::string uuid_str = model_increment->batch_uuid(batch_index);
     boost::uuids::uuid uuid(boost::uuids::string_generator()(uuid_str.c_str()));
 
-    ModelName model_name = model_increment->model_name();
+    ModelName model_name = model_increment->topic_model().name();
     Done(uuid, model_name);
   }
 }

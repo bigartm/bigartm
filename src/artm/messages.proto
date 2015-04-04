@@ -351,22 +351,27 @@ message TopicKernelScore {
   optional double average_kernel_contrast = 6;
 }
 
-// Represents a topic model
+// Represents a topic model (or an operation on topic model)
 message TopicModel {
-  optional string name = 1 [default = "@model"];
-  optional int32 topics_count = 2;
-  repeated string topic_name = 3;
-  repeated string token = 4;
-  repeated FloatArray token_weights = 5;
-  repeated string class_id = 6;
-
-  message TopicModelInternals {
-    repeated FloatArray n_wt = 1;
-    repeated FloatArray r_wt = 2;
+  enum OperationType {
+    Initialize = 0;   // Initialize n_wt with random 0..1 values; existing tokens will be left unchanged;
+    Increment = 1;    // Increment n_wt; r_wt will be ignored;
+    Overwrite = 2;    // Overwrite n_wt and r_wt values of this token
+    Remove = 3;       // Remove this token
+    Ignore = 4;       // Ignore this token
   }
 
-  optional bytes internals = 7;
-  repeated IntArray topic_index = 8;
+  optional string name = 1 [default = "@model"];
+  repeated string topic_name = 2;
+
+  repeated string token = 3;
+  repeated string class_id = 4;
+  repeated OperationType operation_type = 5;
+
+  repeated IntArray topic_index = 6;
+  repeated FloatArray token_weights = 7;
+  repeated FloatArray n_wt = 8;
+  repeated FloatArray r_wt = 9;
 }
 
 // Represents a theta matrix.
@@ -414,12 +419,19 @@ message InitializeModelArgs {
 }
 
 message GetTopicModelArgs {
+  enum RequestType {  // [Flags]
+    TokenWeights = 1;
+    Nwt = 2;
+    Rwt = 4;
+  }
+
   optional string model_name = 1;
   repeated string topic_name = 2;
   repeated string token = 3;
   repeated string class_id = 4;
   optional bool use_sparse_format = 5;
   optional float eps = 6 [default = 1e-37];
+  optional int32 request_type = 7 [default = 1];  // RequsetType bit mask
 }
 
 message GetThetaMatrixArgs {
