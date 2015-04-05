@@ -73,7 +73,6 @@ class ThetaSnippetScore;
 class TopicKernelScoreConfig;
 class TopicKernelScore;
 class TopicModel;
-class TopicModel_TopicModelInternals;
 class ThetaMatrix;
 class CollectionParserConfig;
 class SynchronizeModelArgs;
@@ -5172,104 +5171,6 @@ class TopicKernelScore : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class TopicModel_TopicModelInternals : public ::google::protobuf::Message {
- public:
-  TopicModel_TopicModelInternals();
-  virtual ~TopicModel_TopicModelInternals();
-
-  TopicModel_TopicModelInternals(const TopicModel_TopicModelInternals& from);
-
-  inline TopicModel_TopicModelInternals& operator=(const TopicModel_TopicModelInternals& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const TopicModel_TopicModelInternals& default_instance();
-
-  void Swap(TopicModel_TopicModelInternals* other);
-
-  // implements Message ----------------------------------------------
-
-  TopicModel_TopicModelInternals* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const TopicModel_TopicModelInternals& from);
-  void MergeFrom(const TopicModel_TopicModelInternals& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated .artm.FloatArray n_wt = 1;
-  inline int n_wt_size() const;
-  inline void clear_n_wt();
-  static const int kNWtFieldNumber = 1;
-  inline const ::artm::FloatArray& n_wt(int index) const;
-  inline ::artm::FloatArray* mutable_n_wt(int index);
-  inline ::artm::FloatArray* add_n_wt();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      n_wt() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_n_wt();
-
-  // repeated .artm.FloatArray r_wt = 2;
-  inline int r_wt_size() const;
-  inline void clear_r_wt();
-  static const int kRWtFieldNumber = 2;
-  inline const ::artm::FloatArray& r_wt(int index) const;
-  inline ::artm::FloatArray* mutable_r_wt(int index);
-  inline ::artm::FloatArray* add_r_wt();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      r_wt() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_r_wt();
-
-  // @@protoc_insertion_point(class_scope:artm.TopicModel.TopicModelInternals)
- private:
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > n_wt_;
-  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > r_wt_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static TopicModel_TopicModelInternals* default_instance_;
-};
-// -------------------------------------------------------------------
-
 class TopicModel : public ::google::protobuf::Message {
  public:
   TopicModel();
@@ -5321,8 +5222,6 @@ class TopicModel : public ::google::protobuf::Message {
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
-
-  typedef TopicModel_TopicModelInternals TopicModelInternals;
 
   typedef TopicModel_OperationType OperationType;
   static const OperationType Initialize = TopicModel_OperationType_Initialize;
@@ -12937,60 +12836,6 @@ inline double TopicKernelScore::average_kernel_contrast() const {
 inline void TopicKernelScore::set_average_kernel_contrast(double value) {
   set_has_average_kernel_contrast();
   average_kernel_contrast_ = value;
-}
-
-// -------------------------------------------------------------------
-
-// TopicModel_TopicModelInternals
-
-// repeated .artm.FloatArray n_wt = 1;
-inline int TopicModel_TopicModelInternals::n_wt_size() const {
-  return n_wt_.size();
-}
-inline void TopicModel_TopicModelInternals::clear_n_wt() {
-  n_wt_.Clear();
-}
-inline const ::artm::FloatArray& TopicModel_TopicModelInternals::n_wt(int index) const {
-  return n_wt_.Get(index);
-}
-inline ::artm::FloatArray* TopicModel_TopicModelInternals::mutable_n_wt(int index) {
-  return n_wt_.Mutable(index);
-}
-inline ::artm::FloatArray* TopicModel_TopicModelInternals::add_n_wt() {
-  return n_wt_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-TopicModel_TopicModelInternals::n_wt() const {
-  return n_wt_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-TopicModel_TopicModelInternals::mutable_n_wt() {
-  return &n_wt_;
-}
-
-// repeated .artm.FloatArray r_wt = 2;
-inline int TopicModel_TopicModelInternals::r_wt_size() const {
-  return r_wt_.size();
-}
-inline void TopicModel_TopicModelInternals::clear_r_wt() {
-  r_wt_.Clear();
-}
-inline const ::artm::FloatArray& TopicModel_TopicModelInternals::r_wt(int index) const {
-  return r_wt_.Get(index);
-}
-inline ::artm::FloatArray* TopicModel_TopicModelInternals::mutable_r_wt(int index) {
-  return r_wt_.Mutable(index);
-}
-inline ::artm::FloatArray* TopicModel_TopicModelInternals::add_r_wt() {
-  return r_wt_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-TopicModel_TopicModelInternals::r_wt() const {
-  return r_wt_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-TopicModel_TopicModelInternals::mutable_r_wt() {
-  return &r_wt_;
 }
 
 // -------------------------------------------------------------------

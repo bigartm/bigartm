@@ -1514,20 +1514,25 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
 .. code-block:: bash
 
   message TopicModel {
+    enum OperationType {
+      Initialize = 0;
+      Increment = 1;
+      Overwrite = 2;
+      Remove = 3;
+      Ignore = 4;
+    }
+
     optional string name = 1 [default = "@model"];
-    optional int32 topics_count = 2;
+    optional int32 topics_count = 2;  // obsolete in BigARTM v0.6.3
     repeated string topic_name = 3;
+
     repeated string token = 4;
     repeated FloatArray token_weights = 5;
     repeated string class_id = 6;
 
-    message TopicModelInternals {
-      repeated FloatArray n_wt = 1;
-      repeated FloatArray r_wt = 2;
-    }
-
-    optional bytes internals = 7;
+    optional bytes internals = 7;  // obsolete in BigARTM v0.6.3
     repeated IntArray topic_index = 8;
+    repeated OperationType operation_type = 9;
   }
 
 .. attribute:: TopicModel.name
@@ -1536,9 +1541,7 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
 
 .. attribute:: TopicModel.topics_count
 
-   A value that describes the number of topics in the topic model.
-   The meaning of this field is slightly different in sparse and dense representation.
-   Please refer to the general description of :ref:`TopicModel` for detailed information.
+   Obsolete in BigARTM v0.6.3.
 
 .. attribute:: TopicModel.topic_name
 
@@ -1564,9 +1567,7 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
 
 .. attribute:: TopicModel.internals
 
-   A serialized instance of TopicModelInternals message.
-   This field is not available if :ref:`TopicModel` is requested with
-   :attr:`GetTopicModelArgs.use_sparse_format` being set to ``True``. 
+   Obsolete in BigARTM v0.6.3.
 
 .. attribute:: TopicModel.topic_index
 
@@ -1581,6 +1582,37 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
    The length of each :ref:`IntArray` message in :attr:`TopicModel.topic_index` field 
    equals to the length of the corresponding
    :ref:`FloatArray` message in :attr:`TopicModel.token_weights` field.
+
+.. attribute:: TopicModel.operation_type
+
+   A set of values that define operation to perform on each token
+   when topic model is used as an argument of :c:func:`ArtmOverwriteTopicModel`.
+
+   ================== =========================================================
+   ``Initialize``     Indicates that a new token should be added to the
+                      topic model. Initial ``n_wt`` counter will be initialized
+                      with random value from ``[0, 1]`` range.
+                      :attr:`TopicModel.token_weights` is ignored.
+                      This operation is ignored if token already exists.
+
+   ``Increment``      Indicates that ``n_wt`` counter of the token should be
+                      increased by values, specified in
+                      :attr:`TopicModel.token_weights` field.
+                      A new token will be created if it does not exist yet.
+
+   ``Overwrite``      Indicates that ``n_wt`` counter of the token should be
+                      set to the value, specified in
+                      :attr:`TopicModel.token_weights` field.
+                      A new token will be created if it does not exist yet.
+
+   ``Remove``         Indicates that the token should be removed from the
+                      topic model.
+                      :attr:`TopicModel.token_weights` is ignored.
+
+   ``Ignore``         Indicates no operation for the token.
+                      The effect is the same as if
+                      the token is not present in this message.
+   ================== =========================================================
 
 
 .. _ThetaMatrix:
@@ -1911,12 +1943,18 @@ Represents an argument of :c:func:`ArtmRequestTopicModel` operation.
 .. code-block:: bash
 
   message GetTopicModelArgs {
+    enum RequestType {
+      Pwt = 1;
+      Nwt = 2;
+    }
+
     optional string model_name = 1;
     repeated string topic_name = 2;
     repeated string token = 3;
     repeated string class_id = 4;
     optional bool use_sparse_format = 5;
     optional float eps = 6 [default = 1e-37];
+    optional RequestType request_type = 7 [default = Pwt];
   }
 
 .. attribute:: GetTopicModelArgs.model_name
@@ -1951,6 +1989,36 @@ Represents an argument of :c:func:`ArtmRequestTopicModel` operation.
    A small value that defines zero threshold for ``p(w|t)`` probabilities.
    This field is only used in sparse format.
    ``p(w|t)`` below the threshold will be excluded from the resulting Phi matrix.
+
+.. attribute:: GetTopicModelArgs.request_type
+
+   An optional value that defines what kind of data to retrieve in this operation.
+
+   ======== ====================================================================
+   Pwt      Indicates that the resulting :ref:`TopicModel` message
+            should contain ``p(w|t)`` probabilities.
+            This values are normalized to form a probability distribution
+            (``sum_w p(w|t) = 1`` for all topics ``t``).
+
+   Nwt      Indicates that the resulting :ref:`TopicModel` message
+            should contain internal ``n_wt`` counters of the topic model.
+            This values represent an internal state of the topic model.
+   ======== ====================================================================
+
+   Default setting is to retrieve ``p(w|t)`` probabilities.
+   This probabilities are sufficient to infer ``p(t|d)`` distributions
+   using this topic model.
+
+   ``n_wt`` counters allow you to restore the precise state of the topic model.
+   By passing this values in :c:func:`ArtmOverwriteTopicModel` operation
+   you are guarantied to get the model in the same state as you retrieved it.
+   As the result you may continue topic model inference from the point
+   you have stopped it last time.
+
+   ``p(w|t)`` values can be also restored via c:func:`ArtmOverwriteTopicModel`
+   operation. The resulting model will give the same ``p(t|d)`` distributions,
+   however you should consider this model as *read-only*, and do not call
+   :c:func:`ArtmSynchronizeModel` on it.
 
 .. _GetThetaMatrixArgs:
   

@@ -369,11 +369,6 @@ message TopicModel {
   repeated FloatArray token_weights = 5;
   repeated string class_id = 6;
 
-  message TopicModelInternals {
-    repeated FloatArray n_wt = 1;
-    repeated FloatArray r_wt = 2;
-  }
-
   optional bytes internals = 7;  // obsolete in BigARTM v0.6.3
   repeated IntArray topic_index = 8;
   repeated OperationType operation_type = 9;
