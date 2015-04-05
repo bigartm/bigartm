@@ -78,47 +78,8 @@ void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  if (ttm->topic_size() != topic_model.topic_name_size()) {
-    std::stringstream ss;
-    ss << "Unable to overwrite model '" << topic_model.name();
-    ss << "' with " << topic_model.topic_name_size() << " topics. ";
-    ss << "According to ModelConfig it must have " << ttm->topic_size() << " topics.";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  }
-
-  bool has_classes = false;
-  if (topic_model.class_id_size() != 0) {
-    has_classes = true;
-    if (topic_model.class_id_size() != topic_model.token_size()) {
-      BOOST_THROW_EXCEPTION(InvalidOperation(
-        "TopicModel.class_id_size() != TopicModel.token_size()"));
-    }
-  }
-
-  bool remove_tokens = true;
-  if (topic_model.token_weights_size() != 0) {
-    remove_tokens = false;
-    if (topic_model.token_weights_size() != topic_model.token_size()) {
-      BOOST_THROW_EXCEPTION(InvalidOperation(
-        "TopicModel.token_weights_size() != TopicModel.token_size()"));
-    }
-  }
-
   auto model_increment = std::make_shared<ModelIncrement>();
-  ::artm::TopicModel *topic_model_inc = model_increment->mutable_topic_model();
-  topic_model_inc->set_name(topic_model.name());
-  for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
-    topic_model_inc->add_token(topic_model.token(token_index));
-    topic_model_inc->add_class_id(has_classes ? topic_model.class_id(token_index) : DefaultClass);
-    artm::FloatArray* token_increment = topic_model_inc->add_n_wt();
-    if (remove_tokens) {
-      topic_model_inc->add_operation_type(TopicModel_OperationType_Remove);
-    } else {
-      token_increment->CopyFrom(topic_model.token_weights(token_index));
-      topic_model_inc->add_operation_type(TopicModel_OperationType_Overwrite);
-    }
-  }
-
+  model_increment->mutable_topic_model()->CopyFrom(topic_model);
   merger_queue_->push(model_increment);
 }
 
@@ -281,8 +242,7 @@ void Merger::PullTopicModel() {
 
     ::artm::GetTopicModelArgs request;
     request.set_model_name(model_name);
-    request.set_request_type(GetTopicModelArgs::Nwt | GetTopicModelArgs::Rwt);
-
+    request.set_request_type(GetTopicModelArgs_RequestType_Pwt);
     make_rpcz_call_no_throw([&]() {
       ::artm::TopicModel reply;
       master_component_service_->RetrieveModel(request, &reply, timeout);
@@ -314,7 +274,7 @@ void Merger::PushTopicModelIncrement() {
     ModelIncrement model_increment;
 
     ::artm::GetTopicModelArgs get_topic_model_args;
-    get_topic_model_args.set_request_type(GetTopicModelArgs::Nwt);
+    get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
     inc_ttm->second->RetrieveExternalTopicModel(get_topic_model_args, model_increment.mutable_topic_model());
     scores_merger_.RetrieveModelIncrement(model_name, &model_increment);
 
@@ -502,19 +462,18 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       if (old_ttm->token_size() > 0) {
         ::artm::TopicModel topic_model;
         GetTopicModelArgs get_topic_model_args;
-        get_topic_model_args.set_request_type(GetTopicModelArgs::Nwt);
+        get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
         old_ttm->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
         new_ttm->ApplyTopicModelOperation(topic_model, decay_weight);
       }
     }
     target_model_config_.set(name, nullptr);
 
-
     if (inc_ttm != topic_model_inc_.end()) {
       CuckooWatch cuckoo2("ApplyTopicModelOperation, ", &cuckoo);
       ::artm::TopicModel topic_model;
       GetTopicModelArgs get_topic_model_args;
-      get_topic_model_args.set_request_type(GetTopicModelArgs::Nwt);
+      get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
       inc_ttm->second->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
       new_ttm->ApplyTopicModelOperation(topic_model, apply_weight);
     }

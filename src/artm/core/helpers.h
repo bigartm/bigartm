@@ -13,6 +13,7 @@
 #include "boost/thread/tss.hpp"
 
 #include "artm/core/common.h"
+#include "artm/messages.pb.h"
 
 namespace artm {
 
@@ -26,6 +27,10 @@ class Helpers {
   // (thread_id == -1 stands for the current thread)
   static void SetThreadName(int thread_id, const char* thread_name);
   static std::vector<float> GenerateRandomVector(int size, size_t seed);
+
+  static void Fix(::artm::TopicModel* message);
+  static bool Validate(const ::artm::TopicModel& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::TopicModel* message, bool throw_error = true);
 };
 
 class BatchHelpers {

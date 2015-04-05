@@ -124,23 +124,14 @@ void TopicModel::Clear(ModelName model_name, int topics_count) {
 }
 
 void TopicModel::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model, float apply_weight) {
-  int diff_token_size = topic_model.token_size();
-  if ((topic_model.class_id_size() != diff_token_size) ||
-    (topic_model.operation_type_size() != diff_token_size) ||
-    (topic_model.n_wt_size() != diff_token_size)) {
-    LOG(ERROR) << "Inconsistent fields size in TopicModel: "
-               << topic_model.token_size() << " vs " << topic_model.class_id_size()
-               << " vs " << topic_model.operation_type_size() << " vs " << topic_model.n_wt_size();
-    return;
-  }
+  if (!Helpers::Validate(topic_model, /* throw_error=*/ false)) return;
 
   int topics_count = this->topic_size();
-
-  for (int token_index = 0; token_index < diff_token_size; ++token_index) {
+  for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
     const std::string& token_keyword = topic_model.token(token_index);
     const ClassId& class_id = topic_model.class_id(token_index);
     Token token(class_id, token_keyword);
-    const FloatArray& counters = topic_model.n_wt(token_index);
+    const FloatArray& counters = topic_model.token_weights(token_index);
     TopicModel_OperationType operation_type = topic_model.operation_type(token_index);
     int current_token_id = token_id(token);
 
@@ -198,10 +189,7 @@ void TopicModel::RetrieveExternalTopicModel(
     return;
   }
 
-  bool use_sparse_format = get_model_args.use_sparse_format();
-  const bool use_pwt = get_model_args.request_type() & GetTopicModelArgs::TokenWeights;
-  const bool use_nwt = get_model_args.request_type() & GetTopicModelArgs::Nwt;
-  const bool use_rwt = get_model_args.request_type() & GetTopicModelArgs::Rwt;
+  const bool use_sparse_format = get_model_args.use_sparse_format();
 
   std::vector<int> tokens_to_use;
   if (get_model_args.token_size() > 0) {
@@ -271,10 +259,18 @@ void TopicModel::RetrieveExternalTopicModel(
 
   // Populate all non-internal part of the resulting message
   topic_model->set_name(model_name_);
+  topic_model->set_topics_count(topic_model->topic_name_size());
+
+  const bool use_pwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Pwt);
+  const bool use_nwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Nwt);
+  const bool use_rwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Rwt);
 
   if (use_pwt && p_wt_.empty())
-    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
-      "Unable to retrieve pwt increment for this TopicModel"));
+    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("pwt is not available in this TopicModel"));
+  if (use_nwt && n_wt_.empty())
+    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("nwt is not available in this TopicModel"));
+  if (use_rwt && r_wt_.empty())
+    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("rwt is not available in this TopicModel"));
 
   for (int token_index : tokens_to_use) {
     const Token& current_token = token_collection_.token(token_index);
@@ -282,44 +278,24 @@ void TopicModel::RetrieveExternalTopicModel(
     topic_model->add_class_id(current_token.class_id);
     topic_model->add_operation_type(TopicModel_OperationType_Increment);
 
-    ::artm::FloatArray *target[3] = { nullptr, nullptr, nullptr };
-    const float *source[3] = { nullptr, nullptr, nullptr };
-    const bool use[3] = { use_pwt, use_nwt, use_rwt };
-
-    if (use[0]) {  // use_pwt
-      target[0] = topic_model->add_token_weights();
-      source[0] = GetPwt(token_index);
-    }
-
-    if (use[1]) {  // use_nwt
-      target[1] = topic_model->add_n_wt();
-      source[1] = n_wt_[token_index];
-    }
-
-    if (use[2]) {  // use_rwt
-      target[2] = topic_model->add_r_wt();
-      source[2] = r_wt_[token_index];
-    }
+    ::artm::FloatArray *target = topic_model->add_token_weights();
+    const float *source = use_pwt ? p_wt_[token_index] :
+                          use_nwt ? n_wt_[token_index] :
+                          use_rwt ? r_wt_[token_index] : nullptr;
+    if (source == nullptr)
+      BOOST_THROW_EXCEPTION(artm::core::ArgumentOutOfRangeException(
+        "GetTopicModelArgs.request_type", get_model_args.request_type()));
 
     if (!use_sparse_format) {
-      for (int i = 0; i < 3; ++i) if (use[i])
-        target[i]->mutable_value()->Reserve(topics_to_use.size());
-
-      for (int i = 0; i < 3; ++i) if (use[i])
-        for (int topic_index : topics_to_use) {
-          target[i]->add_value(source[i][topic_index]);
-      }
+      target->mutable_value()->Reserve(topics_to_use.size());
+      for (int topic_index : topics_to_use)
+        target->add_value(source[topic_index]);
     } else {
       ::artm::IntArray* sparse_topic_index = topic_model->add_topic_index();
       for (int topic_index : topics_to_use) {
-        bool has_nonzero_value = false;
-        for (int i = 0; i < 3; ++i) if (use[i])
-          has_nonzero_value |= (fabs(source[i][topic_index]) > get_model_args.eps());
-
-        if (has_nonzero_value) {
+        if (fabs(source[topic_index]) > get_model_args.eps()) {
           sparse_topic_index->add_value(topic_index);
-          for (int i = 0; i < 3; ++i) if (use[i])
-            target[i]->add_value(source[i][topic_index]);
+          target->add_value(source[topic_index]);
         }
       }
     }

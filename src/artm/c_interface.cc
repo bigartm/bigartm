@@ -248,6 +248,7 @@ int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) 
   try {
     artm::TopicModel topic_model_object;
     ParseFromArray(topic_model, length, &topic_model_object);
+    ::artm::core::Helpers::FixAndValidate(&topic_model_object, /* throw_error =*/ true);
     master_component(master_id)->OverwriteTopicModel(topic_model_object);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;

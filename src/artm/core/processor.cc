@@ -75,7 +75,7 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
     Token token = Token(batch.class_id(token_index), batch.token(token_index));
     topic_model_inc->add_token(token.keyword);
     topic_model_inc->add_class_id(token.class_id);
-    FloatArray* counters = topic_model_inc->add_n_wt();
+    FloatArray* counters = topic_model_inc->add_token_weights();
 
     if ((model_config.class_id_size() > 0) &&
         (!repeated_field_contains(model_config.class_id(), token.class_id))) {
@@ -387,7 +387,7 @@ UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask*
         &theta_matrix(0, d), 1, &n_wt[0], 1);
     }
 
-    FloatArray* hat_n_wt_cur = model_increment->mutable_topic_model()->mutable_n_wt(w);
+    FloatArray* hat_n_wt_cur = model_increment->mutable_topic_model()->mutable_token_weights(w);
     hat_n_wt_cur->mutable_value()->Reserve(topics_count);
     assert(hat_n_wt_cur->value_size() == 0);
     for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
@@ -494,7 +494,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
   for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
     if (model_increment->topic_model().operation_type(token_index) ==
       TopicModel_OperationType_Increment) {
-      FloatArray* hat_n_wt_cur = model_increment->mutable_topic_model()->mutable_n_wt(token_index);
+      FloatArray* hat_n_wt_cur = model_increment->mutable_topic_model()->mutable_token_weights(token_index);
       hat_n_wt_cur->mutable_value()->Reserve(topics_count);
       assert(hat_n_wt_cur->value_size() == 0);
       for (int topic_index = 0; topic_index < topics_count; ++topic_index) {

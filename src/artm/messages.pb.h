@@ -73,6 +73,7 @@ class ThetaSnippetScore;
 class TopicKernelScoreConfig;
 class TopicKernelScore;
 class TopicModel;
+class TopicModel_TopicModelInternals;
 class ThetaMatrix;
 class CollectionParserConfig;
 class SynchronizeModelArgs;
@@ -271,12 +272,12 @@ inline bool CollectionParserConfig_Format_Parse(
     CollectionParserConfig_Format_descriptor(), name, value);
 }
 enum GetTopicModelArgs_RequestType {
-  GetTopicModelArgs_RequestType_TokenWeights = 1,
+  GetTopicModelArgs_RequestType_Pwt = 1,
   GetTopicModelArgs_RequestType_Nwt = 2,
-  GetTopicModelArgs_RequestType_Rwt = 4
+  GetTopicModelArgs_RequestType_Rwt = 3
 };
 bool GetTopicModelArgs_RequestType_IsValid(int value);
-const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MIN = GetTopicModelArgs_RequestType_TokenWeights;
+const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MIN = GetTopicModelArgs_RequestType_Pwt;
 const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MAX = GetTopicModelArgs_RequestType_Rwt;
 const int GetTopicModelArgs_RequestType_RequestType_ARRAYSIZE = GetTopicModelArgs_RequestType_RequestType_MAX + 1;
 
@@ -5172,6 +5173,104 @@ class TopicKernelScore : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class TopicModel_TopicModelInternals : public ::google::protobuf::Message {
+ public:
+  TopicModel_TopicModelInternals();
+  virtual ~TopicModel_TopicModelInternals();
+
+  TopicModel_TopicModelInternals(const TopicModel_TopicModelInternals& from);
+
+  inline TopicModel_TopicModelInternals& operator=(const TopicModel_TopicModelInternals& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TopicModel_TopicModelInternals& default_instance();
+
+  void Swap(TopicModel_TopicModelInternals* other);
+
+  // implements Message ----------------------------------------------
+
+  TopicModel_TopicModelInternals* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TopicModel_TopicModelInternals& from);
+  void MergeFrom(const TopicModel_TopicModelInternals& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .artm.FloatArray n_wt = 1;
+  inline int n_wt_size() const;
+  inline void clear_n_wt();
+  static const int kNWtFieldNumber = 1;
+  inline const ::artm::FloatArray& n_wt(int index) const;
+  inline ::artm::FloatArray* mutable_n_wt(int index);
+  inline ::artm::FloatArray* add_n_wt();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
+      n_wt() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
+      mutable_n_wt();
+
+  // repeated .artm.FloatArray r_wt = 2;
+  inline int r_wt_size() const;
+  inline void clear_r_wt();
+  static const int kRWtFieldNumber = 2;
+  inline const ::artm::FloatArray& r_wt(int index) const;
+  inline ::artm::FloatArray* mutable_r_wt(int index);
+  inline ::artm::FloatArray* add_r_wt();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
+      r_wt() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
+      mutable_r_wt();
+
+  // @@protoc_insertion_point(class_scope:artm.TopicModel.TopicModelInternals)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > n_wt_;
+  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > r_wt_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static TopicModel_TopicModelInternals* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class TopicModel : public ::google::protobuf::Message {
  public:
   TopicModel();
@@ -5224,6 +5323,8 @@ class TopicModel : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
+  typedef TopicModel_TopicModelInternals TopicModelInternals;
+
   typedef TopicModel_OperationType OperationType;
   static const OperationType Initialize = TopicModel_OperationType_Initialize;
   static const OperationType Increment = TopicModel_OperationType_Increment;
@@ -5265,10 +5366,17 @@ class TopicModel : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // repeated string topic_name = 2;
+  // optional int32 topics_count = 2;
+  inline bool has_topics_count() const;
+  inline void clear_topics_count();
+  static const int kTopicsCountFieldNumber = 2;
+  inline ::google::protobuf::int32 topics_count() const;
+  inline void set_topics_count(::google::protobuf::int32 value);
+
+  // repeated string topic_name = 3;
   inline int topic_name_size() const;
   inline void clear_topic_name();
-  static const int kTopicNameFieldNumber = 2;
+  static const int kTopicNameFieldNumber = 3;
   inline const ::std::string& topic_name(int index) const;
   inline ::std::string* mutable_topic_name(int index);
   inline void set_topic_name(int index, const ::std::string& value);
@@ -5281,10 +5389,10 @@ class TopicModel : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
-  // repeated string token = 3;
+  // repeated string token = 4;
   inline int token_size() const;
   inline void clear_token();
-  static const int kTokenFieldNumber = 3;
+  static const int kTokenFieldNumber = 4;
   inline const ::std::string& token(int index) const;
   inline ::std::string* mutable_token(int index);
   inline void set_token(int index, const ::std::string& value);
@@ -5297,10 +5405,22 @@ class TopicModel : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& token() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_token();
 
-  // repeated string class_id = 4;
+  // repeated .artm.FloatArray token_weights = 5;
+  inline int token_weights_size() const;
+  inline void clear_token_weights();
+  static const int kTokenWeightsFieldNumber = 5;
+  inline const ::artm::FloatArray& token_weights(int index) const;
+  inline ::artm::FloatArray* mutable_token_weights(int index);
+  inline ::artm::FloatArray* add_token_weights();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
+      token_weights() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
+      mutable_token_weights();
+
+  // repeated string class_id = 6;
   inline int class_id_size() const;
   inline void clear_class_id();
-  static const int kClassIdFieldNumber = 4;
+  static const int kClassIdFieldNumber = 6;
   inline const ::std::string& class_id(int index) const;
   inline ::std::string* mutable_class_id(int index);
   inline void set_class_id(int index, const ::std::string& value);
@@ -5313,20 +5433,22 @@ class TopicModel : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
 
-  // repeated .artm.TopicModel.OperationType operation_type = 5;
-  inline int operation_type_size() const;
-  inline void clear_operation_type();
-  static const int kOperationTypeFieldNumber = 5;
-  inline ::artm::TopicModel_OperationType operation_type(int index) const;
-  inline void set_operation_type(int index, ::artm::TopicModel_OperationType value);
-  inline void add_operation_type(::artm::TopicModel_OperationType value);
-  inline const ::google::protobuf::RepeatedField<int>& operation_type() const;
-  inline ::google::protobuf::RepeatedField<int>* mutable_operation_type();
+  // optional bytes internals = 7;
+  inline bool has_internals() const;
+  inline void clear_internals();
+  static const int kInternalsFieldNumber = 7;
+  inline const ::std::string& internals() const;
+  inline void set_internals(const ::std::string& value);
+  inline void set_internals(const char* value);
+  inline void set_internals(const void* value, size_t size);
+  inline ::std::string* mutable_internals();
+  inline ::std::string* release_internals();
+  inline void set_allocated_internals(::std::string* internals);
 
-  // repeated .artm.IntArray topic_index = 6;
+  // repeated .artm.IntArray topic_index = 8;
   inline int topic_index_size() const;
   inline void clear_topic_index();
-  static const int kTopicIndexFieldNumber = 6;
+  static const int kTopicIndexFieldNumber = 8;
   inline const ::artm::IntArray& topic_index(int index) const;
   inline ::artm::IntArray* mutable_topic_index(int index);
   inline ::artm::IntArray* add_topic_index();
@@ -5335,46 +5457,24 @@ class TopicModel : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
       mutable_topic_index();
 
-  // repeated .artm.FloatArray token_weights = 7;
-  inline int token_weights_size() const;
-  inline void clear_token_weights();
-  static const int kTokenWeightsFieldNumber = 7;
-  inline const ::artm::FloatArray& token_weights(int index) const;
-  inline ::artm::FloatArray* mutable_token_weights(int index);
-  inline ::artm::FloatArray* add_token_weights();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      token_weights() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_token_weights();
-
-  // repeated .artm.FloatArray n_wt = 8;
-  inline int n_wt_size() const;
-  inline void clear_n_wt();
-  static const int kNWtFieldNumber = 8;
-  inline const ::artm::FloatArray& n_wt(int index) const;
-  inline ::artm::FloatArray* mutable_n_wt(int index);
-  inline ::artm::FloatArray* add_n_wt();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      n_wt() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_n_wt();
-
-  // repeated .artm.FloatArray r_wt = 9;
-  inline int r_wt_size() const;
-  inline void clear_r_wt();
-  static const int kRWtFieldNumber = 9;
-  inline const ::artm::FloatArray& r_wt(int index) const;
-  inline ::artm::FloatArray* mutable_r_wt(int index);
-  inline ::artm::FloatArray* add_r_wt();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      r_wt() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_r_wt();
+  // repeated .artm.TopicModel.OperationType operation_type = 9;
+  inline int operation_type_size() const;
+  inline void clear_operation_type();
+  static const int kOperationTypeFieldNumber = 9;
+  inline ::artm::TopicModel_OperationType operation_type(int index) const;
+  inline void set_operation_type(int index, ::artm::TopicModel_OperationType value);
+  inline void add_operation_type(::artm::TopicModel_OperationType value);
+  inline const ::google::protobuf::RepeatedField<int>& operation_type() const;
+  inline ::google::protobuf::RepeatedField<int>* mutable_operation_type();
 
   // @@protoc_insertion_point(class_scope:artm.TopicModel)
  private:
   inline void set_has_name();
   inline void clear_has_name();
+  inline void set_has_topics_count();
+  inline void clear_has_topics_count();
+  inline void set_has_internals();
+  inline void clear_has_internals();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5382,12 +5482,12 @@ class TopicModel : public ::google::protobuf::Message {
   static ::std::string* _default_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> token_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField<int> operation_type_;
-  ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > token_weights_;
-  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > n_wt_;
-  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > r_wt_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::std::string* internals_;
+  ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
+  ::google::protobuf::RepeatedField<int> operation_type_;
+  ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
@@ -6063,7 +6163,7 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   // nested types ----------------------------------------------------
 
   typedef GetTopicModelArgs_RequestType RequestType;
-  static const RequestType TokenWeights = GetTopicModelArgs_RequestType_TokenWeights;
+  static const RequestType Pwt = GetTopicModelArgs_RequestType_Pwt;
   static const RequestType Nwt = GetTopicModelArgs_RequestType_Nwt;
   static const RequestType Rwt = GetTopicModelArgs_RequestType_Rwt;
   static inline bool RequestType_IsValid(int value) {
@@ -6163,12 +6263,12 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
-  // optional int32 request_type = 7 [default = 1];
+  // optional .artm.GetTopicModelArgs.RequestType request_type = 7 [default = Pwt];
   inline bool has_request_type() const;
   inline void clear_request_type();
   static const int kRequestTypeFieldNumber = 7;
-  inline ::google::protobuf::int32 request_type() const;
-  inline void set_request_type(::google::protobuf::int32 value);
+  inline ::artm::GetTopicModelArgs_RequestType request_type() const;
+  inline void set_request_type(::artm::GetTopicModelArgs_RequestType value);
 
   // @@protoc_insertion_point(class_scope:artm.GetTopicModelArgs)
  private:
@@ -6189,7 +6289,7 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   bool use_sparse_format_;
   float eps_;
-  ::google::protobuf::int32 request_type_;
+  int request_type_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
@@ -12843,6 +12943,60 @@ inline void TopicKernelScore::set_average_kernel_contrast(double value) {
 
 // -------------------------------------------------------------------
 
+// TopicModel_TopicModelInternals
+
+// repeated .artm.FloatArray n_wt = 1;
+inline int TopicModel_TopicModelInternals::n_wt_size() const {
+  return n_wt_.size();
+}
+inline void TopicModel_TopicModelInternals::clear_n_wt() {
+  n_wt_.Clear();
+}
+inline const ::artm::FloatArray& TopicModel_TopicModelInternals::n_wt(int index) const {
+  return n_wt_.Get(index);
+}
+inline ::artm::FloatArray* TopicModel_TopicModelInternals::mutable_n_wt(int index) {
+  return n_wt_.Mutable(index);
+}
+inline ::artm::FloatArray* TopicModel_TopicModelInternals::add_n_wt() {
+  return n_wt_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
+TopicModel_TopicModelInternals::n_wt() const {
+  return n_wt_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
+TopicModel_TopicModelInternals::mutable_n_wt() {
+  return &n_wt_;
+}
+
+// repeated .artm.FloatArray r_wt = 2;
+inline int TopicModel_TopicModelInternals::r_wt_size() const {
+  return r_wt_.size();
+}
+inline void TopicModel_TopicModelInternals::clear_r_wt() {
+  r_wt_.Clear();
+}
+inline const ::artm::FloatArray& TopicModel_TopicModelInternals::r_wt(int index) const {
+  return r_wt_.Get(index);
+}
+inline ::artm::FloatArray* TopicModel_TopicModelInternals::mutable_r_wt(int index) {
+  return r_wt_.Mutable(index);
+}
+inline ::artm::FloatArray* TopicModel_TopicModelInternals::add_r_wt() {
+  return r_wt_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
+TopicModel_TopicModelInternals::r_wt() const {
+  return r_wt_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
+TopicModel_TopicModelInternals::mutable_r_wt() {
+  return &r_wt_;
+}
+
+// -------------------------------------------------------------------
+
 // TopicModel
 
 // optional string name = 1 [default = "@model"];
@@ -12915,7 +13069,29 @@ inline void TopicModel::set_allocated_name(::std::string* name) {
   }
 }
 
-// repeated string topic_name = 2;
+// optional int32 topics_count = 2;
+inline bool TopicModel::has_topics_count() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void TopicModel::set_has_topics_count() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void TopicModel::clear_has_topics_count() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void TopicModel::clear_topics_count() {
+  topics_count_ = 0;
+  clear_has_topics_count();
+}
+inline ::google::protobuf::int32 TopicModel::topics_count() const {
+  return topics_count_;
+}
+inline void TopicModel::set_topics_count(::google::protobuf::int32 value) {
+  set_has_topics_count();
+  topics_count_ = value;
+}
+
+// repeated string topic_name = 3;
 inline int TopicModel::topic_name_size() const {
   return topic_name_.size();
 }
@@ -12959,7 +13135,7 @@ TopicModel::mutable_topic_name() {
   return &topic_name_;
 }
 
-// repeated string token = 3;
+// repeated string token = 4;
 inline int TopicModel::token_size() const {
   return token_.size();
 }
@@ -13003,7 +13179,32 @@ TopicModel::mutable_token() {
   return &token_;
 }
 
-// repeated string class_id = 4;
+// repeated .artm.FloatArray token_weights = 5;
+inline int TopicModel::token_weights_size() const {
+  return token_weights_.size();
+}
+inline void TopicModel::clear_token_weights() {
+  token_weights_.Clear();
+}
+inline const ::artm::FloatArray& TopicModel::token_weights(int index) const {
+  return token_weights_.Get(index);
+}
+inline ::artm::FloatArray* TopicModel::mutable_token_weights(int index) {
+  return token_weights_.Mutable(index);
+}
+inline ::artm::FloatArray* TopicModel::add_token_weights() {
+  return token_weights_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
+TopicModel::token_weights() const {
+  return token_weights_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
+TopicModel::mutable_token_weights() {
+  return &token_weights_;
+}
+
+// repeated string class_id = 6;
 inline int TopicModel::class_id_size() const {
   return class_id_.size();
 }
@@ -13047,34 +13248,77 @@ TopicModel::mutable_class_id() {
   return &class_id_;
 }
 
-// repeated .artm.TopicModel.OperationType operation_type = 5;
-inline int TopicModel::operation_type_size() const {
-  return operation_type_.size();
+// optional bytes internals = 7;
+inline bool TopicModel::has_internals() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void TopicModel::clear_operation_type() {
-  operation_type_.Clear();
+inline void TopicModel::set_has_internals() {
+  _has_bits_[0] |= 0x00000040u;
 }
-inline ::artm::TopicModel_OperationType TopicModel::operation_type(int index) const {
-  return static_cast< ::artm::TopicModel_OperationType >(operation_type_.Get(index));
+inline void TopicModel::clear_has_internals() {
+  _has_bits_[0] &= ~0x00000040u;
 }
-inline void TopicModel::set_operation_type(int index, ::artm::TopicModel_OperationType value) {
-  assert(::artm::TopicModel_OperationType_IsValid(value));
-  operation_type_.Set(index, value);
+inline void TopicModel::clear_internals() {
+  if (internals_ != &::google::protobuf::internal::GetEmptyString()) {
+    internals_->clear();
+  }
+  clear_has_internals();
 }
-inline void TopicModel::add_operation_type(::artm::TopicModel_OperationType value) {
-  assert(::artm::TopicModel_OperationType_IsValid(value));
-  operation_type_.Add(value);
+inline const ::std::string& TopicModel::internals() const {
+  return *internals_;
 }
-inline const ::google::protobuf::RepeatedField<int>&
-TopicModel::operation_type() const {
-  return operation_type_;
+inline void TopicModel::set_internals(const ::std::string& value) {
+  set_has_internals();
+  if (internals_ == &::google::protobuf::internal::GetEmptyString()) {
+    internals_ = new ::std::string;
+  }
+  internals_->assign(value);
 }
-inline ::google::protobuf::RepeatedField<int>*
-TopicModel::mutable_operation_type() {
-  return &operation_type_;
+inline void TopicModel::set_internals(const char* value) {
+  set_has_internals();
+  if (internals_ == &::google::protobuf::internal::GetEmptyString()) {
+    internals_ = new ::std::string;
+  }
+  internals_->assign(value);
+}
+inline void TopicModel::set_internals(const void* value, size_t size) {
+  set_has_internals();
+  if (internals_ == &::google::protobuf::internal::GetEmptyString()) {
+    internals_ = new ::std::string;
+  }
+  internals_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicModel::mutable_internals() {
+  set_has_internals();
+  if (internals_ == &::google::protobuf::internal::GetEmptyString()) {
+    internals_ = new ::std::string;
+  }
+  return internals_;
+}
+inline ::std::string* TopicModel::release_internals() {
+  clear_has_internals();
+  if (internals_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = internals_;
+    internals_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void TopicModel::set_allocated_internals(::std::string* internals) {
+  if (internals_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete internals_;
+  }
+  if (internals) {
+    set_has_internals();
+    internals_ = internals;
+  } else {
+    clear_has_internals();
+    internals_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
-// repeated .artm.IntArray topic_index = 6;
+// repeated .artm.IntArray topic_index = 8;
 inline int TopicModel::topic_index_size() const {
   return topic_index_.size();
 }
@@ -13099,79 +13343,31 @@ TopicModel::mutable_topic_index() {
   return &topic_index_;
 }
 
-// repeated .artm.FloatArray token_weights = 7;
-inline int TopicModel::token_weights_size() const {
-  return token_weights_.size();
+// repeated .artm.TopicModel.OperationType operation_type = 9;
+inline int TopicModel::operation_type_size() const {
+  return operation_type_.size();
 }
-inline void TopicModel::clear_token_weights() {
-  token_weights_.Clear();
+inline void TopicModel::clear_operation_type() {
+  operation_type_.Clear();
 }
-inline const ::artm::FloatArray& TopicModel::token_weights(int index) const {
-  return token_weights_.Get(index);
+inline ::artm::TopicModel_OperationType TopicModel::operation_type(int index) const {
+  return static_cast< ::artm::TopicModel_OperationType >(operation_type_.Get(index));
 }
-inline ::artm::FloatArray* TopicModel::mutable_token_weights(int index) {
-  return token_weights_.Mutable(index);
+inline void TopicModel::set_operation_type(int index, ::artm::TopicModel_OperationType value) {
+  assert(::artm::TopicModel_OperationType_IsValid(value));
+  operation_type_.Set(index, value);
 }
-inline ::artm::FloatArray* TopicModel::add_token_weights() {
-  return token_weights_.Add();
+inline void TopicModel::add_operation_type(::artm::TopicModel_OperationType value) {
+  assert(::artm::TopicModel_OperationType_IsValid(value));
+  operation_type_.Add(value);
 }
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-TopicModel::token_weights() const {
-  return token_weights_;
+inline const ::google::protobuf::RepeatedField<int>&
+TopicModel::operation_type() const {
+  return operation_type_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-TopicModel::mutable_token_weights() {
-  return &token_weights_;
-}
-
-// repeated .artm.FloatArray n_wt = 8;
-inline int TopicModel::n_wt_size() const {
-  return n_wt_.size();
-}
-inline void TopicModel::clear_n_wt() {
-  n_wt_.Clear();
-}
-inline const ::artm::FloatArray& TopicModel::n_wt(int index) const {
-  return n_wt_.Get(index);
-}
-inline ::artm::FloatArray* TopicModel::mutable_n_wt(int index) {
-  return n_wt_.Mutable(index);
-}
-inline ::artm::FloatArray* TopicModel::add_n_wt() {
-  return n_wt_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-TopicModel::n_wt() const {
-  return n_wt_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-TopicModel::mutable_n_wt() {
-  return &n_wt_;
-}
-
-// repeated .artm.FloatArray r_wt = 9;
-inline int TopicModel::r_wt_size() const {
-  return r_wt_.size();
-}
-inline void TopicModel::clear_r_wt() {
-  r_wt_.Clear();
-}
-inline const ::artm::FloatArray& TopicModel::r_wt(int index) const {
-  return r_wt_.Get(index);
-}
-inline ::artm::FloatArray* TopicModel::mutable_r_wt(int index) {
-  return r_wt_.Mutable(index);
-}
-inline ::artm::FloatArray* TopicModel::add_r_wt() {
-  return r_wt_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-TopicModel::r_wt() const {
-  return r_wt_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-TopicModel::mutable_r_wt() {
-  return &r_wt_;
+inline ::google::protobuf::RepeatedField<int>*
+TopicModel::mutable_operation_type() {
+  return &operation_type_;
 }
 
 // -------------------------------------------------------------------
@@ -14432,7 +14628,7 @@ inline void GetTopicModelArgs::set_eps(float value) {
   eps_ = value;
 }
 
-// optional int32 request_type = 7 [default = 1];
+// optional .artm.GetTopicModelArgs.RequestType request_type = 7 [default = Pwt];
 inline bool GetTopicModelArgs::has_request_type() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -14446,10 +14642,11 @@ inline void GetTopicModelArgs::clear_request_type() {
   request_type_ = 1;
   clear_has_request_type();
 }
-inline ::google::protobuf::int32 GetTopicModelArgs::request_type() const {
-  return request_type_;
+inline ::artm::GetTopicModelArgs_RequestType GetTopicModelArgs::request_type() const {
+  return static_cast< ::artm::GetTopicModelArgs_RequestType >(request_type_);
 }
-inline void GetTopicModelArgs::set_request_type(::google::protobuf::int32 value) {
+inline void GetTopicModelArgs::set_request_type(::artm::GetTopicModelArgs_RequestType value) {
+  assert(::artm::GetTopicModelArgs_RequestType_IsValid(value));
   set_has_request_type();
   request_type_ = value;
 }

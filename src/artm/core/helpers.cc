@@ -71,6 +71,38 @@ void Helpers::SetThreadName(int thread_id, const char* thread_name) {
 
 #endif
 
+void Helpers::Fix(::artm::TopicModel* message) {
+  const int token_size = message->token_size();
+  if ((message->class_id_size() == 0) && (token_size > 0)) {
+    message->mutable_class_id()->Reserve(token_size);
+    for (int i = 0; i < token_size; ++i)
+      message->add_class_id(::artm::core::DefaultClass);
+  }
+}
+
+bool Helpers::Validate(const ::artm::TopicModel& message, bool throw_error) {
+  const int token_size = message.token_size();
+  if ((message.class_id_size() != token_size) ||
+      (message.operation_type_size() != token_size) ||
+      (message.token_weights_size() != token_size) ||
+      ((message.topic_index_size() != 0) && (message.topic_index_size() != token_size))) {
+    std::stringstream ss;
+    ss << "Inconsistent fields size in TopicModel: "
+       << message.token_size() << " vs " << message.class_id_size()
+       << " vs " << message.operation_type_size() << " vs " << message.token_weights_size();
+
+    if (throw_error)
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    return false;
+  }
+
+  return true;
+}
+
+bool Helpers::FixAndValidate(::artm::TopicModel* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
 
 std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   std::vector<float> retval;

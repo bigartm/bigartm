@@ -130,6 +130,7 @@ TEST(MultipleClasses, BasicTest) {
   for (int i = 0; i < batch.token_size(); i++) {
     initial_model.add_token(batch.token(i));
     initial_model.add_class_id(batch.class_id(i));
+    initial_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
     ::artm::FloatArray* token_weights = initial_model.add_token_weights();
     for (int topic_index = 0; topic_index < nTopics; ++topic_index) {
       token_weights->add_value(static_cast<float>(rand()) / static_cast<float>(RAND_MAX));  // NOLINT

@@ -323,6 +323,8 @@ void BasicTest(bool is_network_mode, bool is_proxy_mode) {
     new_topic_model.mutable_topic_name()->CopyFrom(model_config.topic_name());
     new_topic_model.add_token("my overwritten token");
     new_topic_model.add_token("my overwritten token2");
+    new_topic_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
+    new_topic_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
     auto weights = new_topic_model.add_token_weights();
     auto weights2 = new_topic_model.add_token_weights();
     for (int i = 0; i < nTopics; ++i) {
