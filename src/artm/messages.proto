@@ -427,7 +427,6 @@ message GetTopicModelArgs {
   enum RequestType {
     Pwt = 1;
     Nwt = 2;
-    Rwt = 3;
   }
 
   optional string model_name = 1;

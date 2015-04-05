@@ -273,12 +273,11 @@ inline bool CollectionParserConfig_Format_Parse(
 }
 enum GetTopicModelArgs_RequestType {
   GetTopicModelArgs_RequestType_Pwt = 1,
-  GetTopicModelArgs_RequestType_Nwt = 2,
-  GetTopicModelArgs_RequestType_Rwt = 3
+  GetTopicModelArgs_RequestType_Nwt = 2
 };
 bool GetTopicModelArgs_RequestType_IsValid(int value);
 const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MIN = GetTopicModelArgs_RequestType_Pwt;
-const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MAX = GetTopicModelArgs_RequestType_Rwt;
+const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MAX = GetTopicModelArgs_RequestType_Nwt;
 const int GetTopicModelArgs_RequestType_RequestType_ARRAYSIZE = GetTopicModelArgs_RequestType_RequestType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_RequestType_descriptor();
@@ -6165,7 +6164,6 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   typedef GetTopicModelArgs_RequestType RequestType;
   static const RequestType Pwt = GetTopicModelArgs_RequestType_Pwt;
   static const RequestType Nwt = GetTopicModelArgs_RequestType_Nwt;
-  static const RequestType Rwt = GetTopicModelArgs_RequestType_Rwt;
   static inline bool RequestType_IsValid(int value) {
     return GetTopicModelArgs_RequestType_IsValid(value);
   }

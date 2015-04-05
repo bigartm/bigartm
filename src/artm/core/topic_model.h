@@ -62,32 +62,16 @@ class TopicWeightIterator {
     return p_w_[index];
   }
 
-  // Not normalized weight.
-  inline float NotNormalizedWeight() {
-    assert(current_topic_ < topics_count_);
-    return n_w_[current_topic_];
-  }
-
-  inline float NotNormalizedRegularizerWeight() {
-    assert(current_topic_ < topics_count_);
-    return r_w_[current_topic_];
-  }
-
-  inline const float* GetRegularizer() { return r_w_; }
-  inline const float* GetData() { return n_w_; }
-
   // Resets the iterator to the initial state.
   inline void Reset() { current_topic_ = -1; }
 
  private:
-  const float* n_w_;
-  const float* r_w_;
   const float* p_w_;
   int topics_count_;
   mutable int current_topic_;
 
-  TopicWeightIterator(const float* n_w, const float* r_w, const float* p_w, int topics_count)
-      : n_w_(n_w), r_w_(r_w), p_w_(p_w), topics_count_(topics_count), current_topic_(-1) {}
+  TopicWeightIterator(const float* p_w, int topics_count)
+      : p_w_(p_w), topics_count_(topics_count), current_topic_(-1) {}
 
   friend class ::artm::core::TopicModel;
   friend class ::artm::core::Regularizable;
@@ -127,6 +111,7 @@ class TokenCollectionWeights : boost::noncopyable {
   bool empty() const { return values_.empty(); }
 
   void Clear();
+  int AddToken();
   int AddToken(const Token& token, bool random_init);
   void RemoveToken(int token_id);
 
@@ -167,6 +152,8 @@ class TopicModel : public Regularizable {
   void SetRegularizerWeight(const Token& token, int topic_id, float value);
   void SetRegularizerWeight(int token_id, int topic_id, float value);
 
+  void InitializeRwt() { r_wt_.Clear(); for (int i = 0; i < token_size(); i++) r_wt_.AddToken(); }
+  void ClearRwt() { r_wt_.Clear(); }
   void CalcPwt() { FindPwt(&p_wt_); }
 
   TopicWeightIterator GetTopicWeightIterator(const Token& token) const;

@@ -478,36 +478,37 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       new_ttm->ApplyTopicModelOperation(topic_model, apply_weight);
     }
 
-    if (invoke_regularizers) {
+    if (invoke_regularizers && (current_config.regularizer_name_size() > 0)) {
       CuckooWatch cuckoo2("InvokePhiRegularizers, ", &cuckoo);
+      new_ttm->InitializeRwt();
       InvokePhiRegularizers(new_ttm.get());
+
+      // Verify if model became overregularized
+      std::map<ClassId, std::vector<float>> new_ttm_normalizers = new_ttm->FindNormalizers();
+      for (auto iter : new_ttm_normalizers) {
+        int bad_topics = 0;
+        for (int topic_index = 0; topic_index < iter.second.size(); ++topic_index) {
+          if (iter.second[topic_index] < 1e-20) {
+            bad_topics++;
+          }
+        }
+
+        LOG_IF(WARNING, bad_topics > 0)
+          << bad_topics << " of " << new_ttm->topic_size()
+          << " topics have zero probability mass."
+          << " Consider reducing values of ModelConfig.regularizer_tau"
+          << " for model '" << model_name << "', class_id=" << iter.first;
+      }
     }
 
     {
       CuckooWatch cuckoo2("CalcPwt", &cuckoo);
       new_ttm->CalcPwt();   // calculate pwt matrix
+      new_ttm->ClearRwt();
     }
 
     topic_model_.set(name, new_ttm);
-
     topic_model_inc_.erase(name);
-
-    // Verify if model became overregularized
-    std::map<ClassId, std::vector<float>> new_ttm_normalizers = new_ttm->FindNormalizers();
-    for (auto iter : new_ttm_normalizers) {
-      int bad_topics = 0;
-      for (int topic_index = 0; topic_index < iter.second.size(); ++topic_index) {
-        if (iter.second[topic_index] < 1e-20) {
-          bad_topics++;
-        }
-      }
-
-      LOG_IF(WARNING, bad_topics > 0)
-        << bad_topics << " of " << new_ttm->topic_size()
-        << " topics have zero probability mass."
-        << " Consider reducing values of ModelConfig.regularizer_tau"
-        << " for model '" << model_name << "', class_id=" << iter.first;
-    }
   }
 }
 

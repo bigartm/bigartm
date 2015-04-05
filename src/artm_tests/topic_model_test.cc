@@ -25,6 +25,7 @@ TEST(TopicModelTest, Basic) {
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_3"));
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_4"));
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_5"));
+  topic_model.InitializeRwt();
 
   //  test 1
   float real_normalizer = 0;
@@ -123,55 +124,4 @@ TEST(TopicModelTest, Basic) {
   }
   expected_normalizer = no_tokens * no_topics / 2.0f;
   EXPECT_TRUE(std::abs(real_normalizer - expected_normalizer) < kTolerance);
-
-  //  test 8
-  no_topics = 1;
-  topic_name.Clear();
-  std::string* name = topic_name.Add();
-  std::string str_name = "topic1";
-  name = &str_name;
-
-  for (int i = 1; i < 10; ++i) {
-    artm::core::TopicModel topic_model_1(::artm::core::ModelName(), topic_name);
-    topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_1"));
-    topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_2"));
-    topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_3"));
-    topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_4"));
-    topic_model_1.AddToken(artm::core::Token(artm::core::DefaultClass, "token_5"));
-
-    for (int j = 0; j < 100; ++j) {
-      int index = 0 + rand() % 5;  // NOLINT
-      int func = 0 + rand() % 4;   // NOLINT
-      float value = -1.0f + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / 2));  // NOLINT
-      switch (func) {
-      case 0:
-        topic_model_1.SetRegularizerWeight(index, 0, value);
-        break;
-      case 1:
-        topic_model_1.SetTokenWeight(index, 0, value);
-        break;
-      case 2:
-        topic_model_1.IncreaseTokenWeight(index, 0, value);
-        break;
-      case 4:
-        topic_model_1.IncreaseRegularizerWeight(index, 0, value);
-        break;
-      }
-
-      n_t = topic_model_1.FindNormalizers()[::artm::core::DefaultClass];
-      float expected_norm = 0;
-      float real_norm = 0;
-      for (int token_id = 0; token_id < no_tokens; ++token_id) {
-        auto iter = topic_model_1.GetTopicWeightIterator(token_id);
-        iter.NextTopic();
-        float r = (iter.GetRegularizer())[0];
-        float n = (iter.GetData())[0];
-        expected_norm = n_t[0];
-        if (r + n > 0.0) {
-          real_norm += (r + n);
-        }
-      }
-      EXPECT_TRUE(std::abs(real_norm - expected_norm) < kTolerance);
-    }
-  }
 }

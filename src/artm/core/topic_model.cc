@@ -74,6 +74,13 @@ void TokenCollectionWeights::Clear() {
   values_.clear();
 }
 
+int TokenCollectionWeights::AddToken() {
+  float* values = new float[topic_size_];
+  values_.push_back(values);
+  memset(values, 0, sizeof(float)* topic_size_);
+  return values_.size() - 1;
+}
+
 int TokenCollectionWeights::AddToken(const Token& token, bool random_init) {
   float* values = new float[topic_size_];
   values_.push_back(values);
@@ -263,14 +270,11 @@ void TopicModel::RetrieveExternalTopicModel(
 
   const bool use_pwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Pwt);
   const bool use_nwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Nwt);
-  const bool use_rwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Rwt);
 
   if (use_pwt && p_wt_.empty())
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("pwt is not available in this TopicModel"));
   if (use_nwt && n_wt_.empty())
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("nwt is not available in this TopicModel"));
-  if (use_rwt && r_wt_.empty())
-    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("rwt is not available in this TopicModel"));
 
   for (int token_index : tokens_to_use) {
     const Token& current_token = token_collection_.token(token_index);
@@ -280,8 +284,7 @@ void TopicModel::RetrieveExternalTopicModel(
 
     ::artm::FloatArray *target = topic_model->add_token_weights();
     const float *source = use_pwt ? p_wt_[token_index] :
-                          use_nwt ? n_wt_[token_index] :
-                          use_rwt ? r_wt_[token_index] : nullptr;
+                          use_nwt ? n_wt_[token_index] : nullptr;
     if (source == nullptr)
       BOOST_THROW_EXCEPTION(artm::core::ArgumentOutOfRangeException(
         "GetTopicModelArgs.request_type", get_model_args.request_type()));
@@ -311,9 +314,6 @@ int TopicModel::AddToken(const Token& token, bool random_init) {
   int token_id2 = n_wt_.AddToken(token, random_init);
   assert(token_id2 == token_id);
 
-  int token_id3 = r_wt_.AddToken(token, false);
-  assert(token_id3 == token_id);
-
   return token_id;
 }
 
@@ -323,7 +323,6 @@ void TopicModel::RemoveToken(const Token& token) {
     return;
 
   n_wt_.RemoveToken(token_id);
-  r_wt_.RemoveToken(token_id);
   token_collection_.RemoveToken(token);
 }
 
@@ -414,9 +413,9 @@ std::map<ClassId, std::vector<float> > TopicModel::FindNormalizers() const {
     }
 
     const float* n_wt = n_wt_[token_id];
-    const float* r_wt = r_wt_[token_id];
+    const float* r_wt = r_wt_.empty() ? nullptr : r_wt_[token_id];
     for (int topic_id = 0; topic_id < topic_size(); ++topic_id) {
-      const float sum = n_wt[topic_id] + r_wt[topic_id];
+      const float sum = n_wt[topic_id] + ((r_wt == nullptr) ? 0.0f : r_wt[topic_id]);
       if (sum > 0)
         iter->second[topic_id] += sum;
     }
@@ -442,7 +441,7 @@ void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
     assert(token_id == token_id2);
 
     const float* nwt = n_wt_.at(token_id);
-    const float* rwt = r_wt_.at(token_id);
+    const float* rwt = r_wt_.empty() ? nullptr : r_wt_.at(token_id);
     float *pwt = p_wt->at(token_id);
 
     const std::vector<float>& nt = n_t[token.class_id];
@@ -450,7 +449,8 @@ void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
       if (nt[topic_index] <= 0)
         continue;
 
-      float value = std::max<float>(nwt[topic_index] + rwt[topic_index], 0.0f) / nt[topic_index];
+      float rwt_value = ((rwt == nullptr) ? 0.0f : rwt[topic_index]);
+      float value = std::max<float>(nwt[topic_index] + rwt_value, 0.0f) / nt[topic_index];
       if (value < 1e-16) {
         // Reset small values to 0.0 to avoid performance hit.
         // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
@@ -469,10 +469,8 @@ TopicWeightIterator TopicModel::GetTopicWeightIterator(const Token& token) const
 TopicWeightIterator TopicModel::GetTopicWeightIterator(int token_id) const {
   assert(token_id >= 0);
   assert(token_id < token_size());
-  const float* n_wt = (token_id < n_wt_.size()) ? n_wt_[token_id] : nullptr;
-  const float* r_wt = (token_id < r_wt_.size()) ? r_wt_[token_id] : nullptr;
-  const float* p_wt = (token_id < p_wt_.size()) ? p_wt_[token_id] : nullptr;
-  return TopicWeightIterator(n_wt, r_wt, p_wt, topic_size());
+  assert(p_wt_.size() == token_size());
+  return TopicWeightIterator(p_wt_[token_id], topic_size());
 }
 
 }  // namespace core

@@ -1508,27 +1508,27 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "voke_regularizers\030\003 \001(\010:\004true\022\027\n\014apply_w"
     "eight\030\004 \001(\002:\0011\"B\n\023InitializeModelArgs\022\022\n"
     "\nmodel_name\030\001 \001(\t\022\027\n\017dictionary_name\030\002 \001"
-    "(\t\"\366\001\n\021GetTopicModelArgs\022\022\n\nmodel_name\030\001"
+    "(\t\"\355\001\n\021GetTopicModelArgs\022\022\n\nmodel_name\030\001"
     " \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022"
     "\020\n\010class_id\030\004 \003(\t\022\031\n\021use_sparse_format\030\005"
     " \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n\014request_typ"
     "e\030\007 \001(\0162#.artm.GetTopicModelArgs.Request"
-    "Type:\003Pwt\"(\n\013RequestType\022\007\n\003Pwt\020\001\022\007\n\003Nwt"
-    "\020\002\022\007\n\003Rwt\020\003\"\271\001\n\022GetThetaMatrixArgs\022\022\n\nmo"
-    "del_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Bat"
-    "ch\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 "
-    "\003(\005\022\032\n\013clean_cache\030\005 \001(\010:\005false\022\031\n\021use_s"
-    "parse_format\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\""
-    "W\n\021GetScoreValueArgs\022\022\n\nmodel_name\030\001 \001(\t"
-    "\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.ar"
-    "tm.Batch\"\202\001\n\014AddBatchArgs\022\032\n\005batch\030\001 \001(\013"
-    "2\013.artm.Batch\022 \n\024timeout_milliseconds\030\002 "
-    "\001(\005:\002-1\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027\n\017"
-    "batch_file_name\030\004 \001(\t\"a\n\023InvokeIteration"
-    "Args\022\033\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014res"
-    "et_scores\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001(\t"
-    "\"0\n\014WaitIdleArgs\022 \n\024timeout_milliseconds"
-    "\030\001 \001(\005:\002-1", 7170);
+    "Type:\003Pwt\"\037\n\013RequestType\022\007\n\003Pwt\020\001\022\007\n\003Nwt"
+    "\020\002\"\271\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030"
+    "\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntop"
+    "ic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013cl"
+    "ean_cache\030\005 \001(\010:\005false\022\031\n\021use_sparse_for"
+    "mat\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\"W\n\021GetSco"
+    "reValueArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore"
+    "_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\""
+    "\202\001\n\014AddBatchArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.B"
+    "atch\022 \n\024timeout_milliseconds\030\002 \001(\005:\002-1\022\033"
+    "\n\014reset_scores\030\003 \001(\010:\005false\022\027\n\017batch_fil"
+    "e_name\030\004 \001(\t\"a\n\023InvokeIterationArgs\022\033\n\020i"
+    "terations_count\030\001 \001(\005:\0011\022\032\n\014reset_scores"
+    "\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014WaitI"
+    "dleArgs\022 \n\024timeout_milliseconds\030\001 \001(\005:\002-"
+    "1", 7161);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -17890,7 +17890,6 @@ bool GetTopicModelArgs_RequestType_IsValid(int value) {
   switch(value) {
     case 1:
     case 2:
-    case 3:
       return true;
     default:
       return false;
@@ -17900,7 +17899,6 @@ bool GetTopicModelArgs_RequestType_IsValid(int value) {
 #ifndef _MSC_VER
 const GetTopicModelArgs_RequestType GetTopicModelArgs::Pwt;
 const GetTopicModelArgs_RequestType GetTopicModelArgs::Nwt;
-const GetTopicModelArgs_RequestType GetTopicModelArgs::Rwt;
 const GetTopicModelArgs_RequestType GetTopicModelArgs::RequestType_MIN;
 const GetTopicModelArgs_RequestType GetTopicModelArgs::RequestType_MAX;
 const int GetTopicModelArgs::RequestType_ARRAYSIZE;
