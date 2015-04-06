@@ -209,6 +209,7 @@ int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args
     artm::GetThetaMatrixArgs args;
     ParseFromArray(get_theta_args, length, &args);
     master_component(master_id)->RequestThetaMatrix(args, &theta_matrix);
+    ::artm::core::Helpers::Validate(theta_matrix);
     theta_matrix.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
@@ -220,6 +221,7 @@ int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args)
     artm::GetTopicModelArgs args;
     ParseFromArray(get_model_args, length, &args);
     master_component(master_id)->RequestTopicModel(args, &topic_model);
+    ::artm::core::Helpers::Validate(topic_model);
     topic_model.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

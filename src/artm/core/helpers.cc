@@ -185,6 +185,63 @@ bool Helpers::FixAndValidate(::artm::ModelConfig* message, bool throw_error) {
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::ThetaMatrix* message) {
+}
+
+bool Helpers::Validate(const ::artm::ThetaMatrix& message, bool throw_error) {
+  std::stringstream ss;
+  const int item_size = message.item_id_size();
+  const bool has_title = (message.item_title_size() > 0);
+  const bool use_sparse_format = (message.topic_index_size() != 0);
+  if ((message.item_weights_size() != item_size) ||
+      (has_title && (message.item_title_size() != item_size)) ||
+      (use_sparse_format && (message.topic_index_size() != item_size))) {
+    ss << "Inconsistent fields size in ThetaMatrix: "
+       << message.item_id_size() << " vs " << message.item_weights_size()
+       << " vs " << message.item_title_size() << " vs " << message.topic_index_size() << ";";
+  }
+
+  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+    ss << "ThetaMatrix.topic_name_size is empty";
+  if (message.topics_count() != message.topic_name_size())
+    ss << "Length mismatch in fields ThetaMatrix.topics_count and ThetaMatrix.topic_name";
+
+  for (int i = 0; i < message.item_id_size(); ++i) {
+    if (use_sparse_format) {
+      if (message.topic_index(i).value_size() != message.item_weights(i).value_size()) {
+        ss << "Length mismatch between ThetaMatrix.topic_index(" << i << ") and ThetaMatrix.item_weights(" << i << ")";
+        break;
+      }
+
+      bool ok = true;
+      for (int topic_index : message.topic_index(i).value()) {
+        if (topic_index < 0 || topic_index >= message.topics_count()) {
+          ss << "Value " << topic_index << " in message.topic_index(" << i
+             << ") is negative or exceeds ThetaMatrix.topics_count";
+          ok = false;
+          break;
+        }
+      }
+
+      if (!ok)
+        break;
+    }
+  }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::ThetaMatrix* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
 std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   std::vector<float> retval;
   retval.reserve(size);

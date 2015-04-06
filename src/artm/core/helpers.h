@@ -35,6 +35,10 @@ class Helpers {
   static void Fix(::artm::ModelConfig* message);
   static bool Validate(const ::artm::ModelConfig& message, bool throw_error = true);
   static bool FixAndValidate(::artm::ModelConfig* message, bool throw_error = true);
+
+  static void Fix(::artm::ThetaMatrix* message);
+  static bool Validate(const ::artm::ThetaMatrix& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::ThetaMatrix* message, bool throw_error = true);
 };
 
 class BatchHelpers {
