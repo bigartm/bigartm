@@ -10,6 +10,7 @@
 
 #include "artm/messages.pb.h"
 #include "artm/core/instance.h"
+#include "artm/core/helpers.h"
 #include "artm/core/merger.h"
 #include "artm/core/data_loader.h"
 #include "artm/core/protobuf_helpers.h"
@@ -66,7 +67,7 @@ class InstanceTest : boost::noncopyable {
   std::shared_ptr<artm::core::Instance> instance_;
 };
 
-// artm_tests.exe --gtest_filter=Instance.*
+// artm_tests.exe --gtest_filter=Instance.Basic
 TEST(Instance, Basic) {
   auto instance = std::make_shared< ::artm::core::Instance>(
     ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal);
@@ -104,6 +105,7 @@ TEST(Instance, Basic) {
   config.set_topics_count(3);
   artm::core::ModelName model_name =
     boost::lexical_cast<std::string>(boost::uuids::random_generator()());
+  artm::core::Helpers::Fix(&config);
   config.set_name(boost::lexical_cast<std::string>(model_name));
   instance->CreateOrReconfigureModel(config);
 
@@ -124,6 +126,7 @@ TEST(Instance, Basic) {
     config.add_topic_name("@topic_" + std::to_string(i));
   }
   config.set_topics_count(0);
+  ::artm::core::Helpers::Fix(&config);
   instance->CreateOrReconfigureModel(config);
 
   artm::TopicModel topic_model;
@@ -186,12 +189,14 @@ TEST(Instance, MultipleStreamsAndModels) {
   m1.set_stream_name("train");
   m1.set_enabled(true);
   m1.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+  artm::core::Helpers::Fix(&m1);
   test.instance()->CreateOrReconfigureModel(m1);
 
   artm::ModelConfig m2;
   m2.set_stream_name("test");
   m2.set_enabled(true);
   m2.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+  artm::core::Helpers::Fix(&m2);
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 5; ++iter) {

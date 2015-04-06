@@ -31,6 +31,10 @@ class Helpers {
   static void Fix(::artm::TopicModel* message);
   static bool Validate(const ::artm::TopicModel& message, bool throw_error = true);
   static bool FixAndValidate(::artm::TopicModel* message, bool throw_error = true);
+
+  static void Fix(::artm::ModelConfig* message);
+  static bool Validate(const ::artm::ModelConfig& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::ModelConfig* message, bool throw_error = true);
 };
 
 class BatchHelpers {

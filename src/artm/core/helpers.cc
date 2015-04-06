@@ -78,28 +78,109 @@ void Helpers::Fix(::artm::TopicModel* message) {
     for (int i = 0; i < token_size; ++i)
       message->add_class_id(::artm::core::DefaultClass);
   }
+
+  if (message->topic_name_size() > 0)
+    message->set_topics_count(message->topic_name_size());
 }
 
 bool Helpers::Validate(const ::artm::TopicModel& message, bool throw_error) {
+  std::stringstream ss;
   const int token_size = message.token_size();
+  const bool use_sparse_format = (message.topic_index_size() != 0);
   if ((message.class_id_size() != token_size) ||
       (message.operation_type_size() != token_size) ||
       (message.token_weights_size() != token_size) ||
-      ((message.topic_index_size() != 0) && (message.topic_index_size() != token_size))) {
-    std::stringstream ss;
+      (use_sparse_format && (message.topic_index_size() != token_size))) {
     ss << "Inconsistent fields size in TopicModel: "
        << message.token_size() << " vs " << message.class_id_size()
-       << " vs " << message.operation_type_size() << " vs " << message.token_weights_size();
-
-    if (throw_error)
-      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-    return false;
+       << " vs " << message.operation_type_size() << " vs " << message.token_weights_size() << ";";
   }
 
-  return true;
+  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+    ss << "TopicModel.topic_name_size is empty";
+  if (message.topics_count() != message.topic_name_size())
+    ss << "Length mismatch in fields TopicModel.topics_count and TopicModel.topic_name";
+
+  for (int i = 0; i < message.token_size(); ++i) {
+    if (use_sparse_format) {
+      if (message.topic_index(i).value_size() != message.token_weights(i).value_size()) {
+        ss << "Length mismatch between TopicModel.topic_index(" << i << ") and TopicModel.token_weights(" << i << ")";
+        break;
+      }
+
+      bool ok = true;
+      for (int topic_index : message.topic_index(i).value()) {
+        if (topic_index < 0 || topic_index >= message.topics_count()) {
+          ss << "Value " << topic_index << " in message.topic_index(" << i
+             << ") is negative or exceeds TopicModel.topics_count";
+          ok = false;
+          break;
+        }
+      }
+
+      if (!ok)
+        break;
+    }
+
+    if (!use_sparse_format) {
+      if (message.operation_type(i) == TopicModel_OperationType_Increment ||
+          message.operation_type(i) == TopicModel_OperationType_Overwrite) {
+        if (message.token_weights(i).value_size() != message.topics_count()) {
+          ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+          break;
+        }
+      }
+    }
+  }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
 }
 
 bool Helpers::FixAndValidate(::artm::TopicModel* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::ModelConfig* message) {
+  if (message->topic_name_size() == 0) {
+    for (int i = 0; i < message->topics_count(); ++i) {
+      message->add_topic_name("@topic_" + std::to_string(i));
+    }
+  } else {
+    message->set_topics_count(message->topic_name_size());
+  }
+
+  if (message->class_weight_size() == 0) {
+    for (int i = 0; i < message->class_id_size(); ++i)
+      message->add_class_weight(1.0f);
+  }
+}
+
+bool Helpers::Validate(const ::artm::ModelConfig& message, bool throw_error) {
+  std::stringstream ss;
+  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+    ss << "ModelConfig.topic_name() is empty";
+  if (message.topics_count() !=  message.topic_name_size())
+    ss << "Length mismatch in fields ModelConfig.topics_count and ModelConfig.topic_name";
+  if (message.class_weight_size() != message.class_id_size())
+    ss << "Length mismatch in fields ModelConfig.class_id and ModelConfig.class_weight";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::ModelConfig* message, bool throw_error) {
   Fix(message);
   return Validate(*message, throw_error);
 }
@@ -353,13 +434,8 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
 
   // Populate topics_count and topic_name fields in the resulting message
   ::google::protobuf::RepeatedPtrField< ::std::string> result_topic_name;
-  if (use_sparse_format) {
-    for (TopicName topic_name : cache.topic_name())
-      result_topic_name.Add()->assign(topic_name);
-  } else {
-    for (int topic_index : topics_to_use)
-      result_topic_name.Add()->assign(cache.topic_name(topic_index));
-  }
+  for (int topic_index : topics_to_use)
+    result_topic_name.Add()->assign(cache.topic_name(topic_index));
 
   if (!theta_matrix->has_model_name()) {
     // Assign
@@ -392,11 +468,12 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
         theta_vec->add_value(item_theta.value(topic_index));
     } else {
       ::artm::IntArray* sparse_topic_index = theta_matrix->add_topic_index();
-      for (int topic_index : topics_to_use) {
+      for (int topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
+        int topic_index = topics_to_use[topics_to_use_index];
         float value = item_theta.value(topic_index);
         if (value >= get_theta_args.eps()) {
           theta_vec->add_value(item_theta.value(topic_index));
-          sparse_topic_index->add_value(topic_index);
+          sparse_topic_index->add_value(topics_to_use_index);
         }
       }
     }

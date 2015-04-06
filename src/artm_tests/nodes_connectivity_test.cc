@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 
 #include "artm/core/node_controller.h"
+#include "artm/core/helpers.h"
 #include "artm/core/master_component.h"
 #include "artm/messages.pb.h"
 #include "artm/core/instance.h"
@@ -36,7 +37,9 @@ TEST(NodesConnectivityTest, Basic) {
   EXPECT_FALSE(node->impl()->instance() == nullptr);
 
   auto regularizer_config = test_mother.GenerateRegularizerConfig();
-  auto model_config = test_mother.GenerateModelConfig();
+  ::artm::ModelConfig model_config = test_mother.GenerateModelConfig();
+  ::artm::core::Helpers::Fix(&model_config);
+
   master->CreateOrReconfigureRegularizer(regularizer_config);
   master->CreateOrReconfigureModel(model_config);
   auto schema = node->impl()->instance()->schema();

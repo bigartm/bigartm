@@ -155,6 +155,14 @@ std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& 
   return GetThetaMatrix(args);
 }
 
+std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& model_name,
+                                                             const ::artm::Batch& batch) {
+  ::artm::GetThetaMatrixArgs args;
+  args.set_model_name(model_name);
+  args.mutable_batch()->CopyFrom(batch);
+  return GetThetaMatrix(args);
+}
+
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);

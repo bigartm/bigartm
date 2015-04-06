@@ -71,6 +71,7 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
   ::artm::TopicModel* topic_model_inc = model_increment->mutable_topic_model();
   topic_model_inc->set_name(model_config.name());
   topic_model_inc->mutable_topic_name()->CopyFrom(topic_model.topic_name());
+  topic_model_inc->set_topics_count(topic_model.topic_size());
   for (int token_index = 0; token_index < part.batch().token_size(); ++token_index) {
     Token token = Token(batch.class_id(token_index), batch.token(token_index));
     topic_model_inc->add_token(token.keyword);

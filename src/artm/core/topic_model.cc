@@ -133,12 +133,32 @@ void TopicModel::Clear(ModelName model_name, int topics_count) {
 void TopicModel::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model, float apply_weight) {
   if (!Helpers::Validate(topic_model, /* throw_error=*/ false)) return;
 
-  int topics_count = this->topic_size();
+  const bool use_sparse_format = (topic_model.topic_index_size() > 0);
+  std::vector<int> target_topic_index;
+  if (topic_model.topic_name_size() > 0) {
+    bool ok = false;
+    for (auto& topic_name : topic_model.topic_name()) {
+      int index = repeated_field_index_of(this->topic_name(), topic_name);
+      target_topic_index.push_back(index);
+      if (index != -1) ok = true;
+    }
+    if (!ok) {
+      LOG(ERROR) << "None of TopicModel.topic_name match topic names in target model";
+      return;
+    }
+  } else {
+    if (this->topic_size() != topic_model.topics_count())
+      BOOST_THROW_EXCEPTION(InvalidOperation("Mismatch between target topics_count and TopicModel.topics_count"));
+    for (int i = 0; i < topic_model.topics_count(); ++i)
+      target_topic_index.push_back(i);
+  }
+
   for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
     const std::string& token_keyword = topic_model.token(token_index);
     const ClassId& class_id = topic_model.class_id(token_index);
     Token token(class_id, token_keyword);
     const FloatArray& counters = topic_model.token_weights(token_index);
+    const IntArray* sparse_topic_index = use_sparse_format ? &topic_model.topic_index(token_index) : nullptr;
     TopicModel_OperationType operation_type = topic_model.operation_type(token_index);
     int current_token_id = token_id(token);
 
@@ -151,26 +171,29 @@ void TopicModel::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model,
         break;
 
       case TopicModel_OperationType_Increment:
-        if (counters.value_size() == 0)
-          break;
-
-        if (counters.value_size() != topics_count) {
-          LOG(ERROR) << "TopicModel_OperationType_Increment: counters.value_size() != topics_count";
-          break;
-        }
-
         if (current_token_id == -1)
           current_token_id = this->AddToken(token, false);
         target = n_wt_[current_token_id];
-        for (int topic_index = 0; topic_index < topics_count; ++topic_index)
-          target[topic_index] += apply_weight * counters.value(topic_index);
+        for (int i = 0; i < counters.value_size(); ++i) {
+          int topic_index = use_sparse_format ? sparse_topic_index->value(i) : i;
+          assert(topic_index < target_topic_index.size());
+          if (target_topic_index[topic_index] == -1)
+            continue;
+          target[target_topic_index[topic_index]] += apply_weight * counters.value(i);
+        }
         break;
 
       case TopicModel_OperationType_Overwrite:
         if (current_token_id == -1)
           current_token_id = this->AddToken(token, false);
-        for (int topic_index = 0; topic_index < topics_count; ++topic_index)
-          this->SetTokenWeight(current_token_id, topic_index, counters.value(topic_index));
+        target = n_wt_[current_token_id];
+        for (int i = 0; i < counters.value_size(); ++i) {
+          int topic_index = use_sparse_format ? sparse_topic_index->value(i) : i;
+          assert(topic_index < target_topic_index.size());
+          if (target_topic_index[topic_index] == -1)
+            continue;
+          target[target_topic_index[topic_index]] = counters.value(i);
+        }
         break;
 
       case TopicModel_OperationType_Remove:
@@ -256,17 +279,12 @@ void TopicModel::RetrieveExternalTopicModel(
             << tokens_to_use.size() << " tokens";
 
   // Populate topics_count and topic_name fields in the resulting message
-  if (use_sparse_format) {
-    for (TopicName topic_name : topic_name_)
-      topic_model->add_topic_name(topic_name);
-  } else {
-    for (int topic_index : topics_to_use)
-      topic_model->add_topic_name(topic_name_[topic_index]);
-  }
+  for (int topic_index : topics_to_use)
+    topic_model->add_topic_name(topic_name_[topic_index]);
+  topic_model->set_topics_count(topics_to_use.size());
 
   // Populate all non-internal part of the resulting message
   topic_model->set_name(model_name_);
-  topic_model->set_topics_count(topic_model->topic_name_size());
 
   const bool use_pwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Pwt);
   const bool use_nwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Nwt);
@@ -295,9 +313,10 @@ void TopicModel::RetrieveExternalTopicModel(
         target->add_value(source[topic_index]);
     } else {
       ::artm::IntArray* sparse_topic_index = topic_model->add_topic_index();
-      for (int topic_index : topics_to_use) {
+      for (int topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
+        int topic_index = topics_to_use[topics_to_use_index];
         if (fabs(source[topic_index]) > get_model_args.eps()) {
-          sparse_topic_index->add_value(topic_index);
+          sparse_topic_index->add_value(topics_to_use_index);
           target->add_value(source[topic_index]);
         }
       }

@@ -11,6 +11,9 @@ This document explains all protobuf messages that can be transfered between the 
    Some fields will result in run-time exception when not specified.
    Please refer to the documentation of each field for more details.
 
+Note that we discourage any usage of fields marked as *obsolete*.
+Those fields will be removed in future releases.
+
 .. _DoubleArray:
 
 DoubleArray
@@ -1497,20 +1500,6 @@ To request topic model in a sparse format set
 :attr:`GetTopicModelArgs.use_sparse_format` field to ``True``
 when calling :c:func:`ArtmRequestTopicModel`.
 
-Note that the meaning of :attr:`TopicModel.topic_name` and :attr:`TopicModel.topics_count` fields is slightly different
-in sparse and dense representation.
-In sparse format :attr:`TopicModel.topics_count` and :attr:`TopicModel.topic_name` always refer
-to the entire set of topics in your :ref:`ModelConfig`,
-even if topic model had been requested for a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name` message.
-
-In dense format :attr:`TopicModel.topics_count` represent the number of topics physically present in given :ref:`TopicModel` message,
-and :attr:`TopicModel.topic_name` gives the names of the corresponding topics.
-This values will represent a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name` message.
-
-If topic model had been requested with empty :attr:`GetTopicModelArgs.topic_name` then
-:attr:`TopicModel.topic_name` and :attr:`TopicModel.topics_count` will always represent the entire set of topics
-as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count` fields.
-
 .. code-block:: bash
 
   message TopicModel {
@@ -1523,7 +1512,7 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
     }
 
     optional string name = 1 [default = "@model"];
-    optional int32 topics_count = 2;  // obsolete in BigARTM v0.6.3
+    optional int32 topics_count = 2;
     repeated string topic_name = 3;
 
     repeated string token = 4;
@@ -1541,13 +1530,14 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
 
 .. attribute:: TopicModel.topics_count
 
-   Obsolete in BigARTM v0.6.3.
+   A value that describes the number of topics in this message.
 
 .. attribute:: TopicModel.topic_name
 
-   A value that describes the names of the topics in the topic model.
-   The meaning of this field is slightly different in sparse and dense representation.
-   Please refer to the general description of :ref:`TopicModel` for detailed information.
+   A value that describes the names of the topics included in given :ref:`TopicModel` message.
+   This values will represent a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name` message.
+   In case of empty :attr:`GetTopicModelArgs.topic_name` this values will correspond to the entire
+   set of topics, defined in :attr:`ModelConfig.topic_name` field.
 
 .. attribute:: TopicModel.token
 
@@ -1575,13 +1565,20 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
    This field has the same length as
    :attr:`TopicModel.token`, :attr:`TopicModel.class_id` and :attr:`TopicModel.token_weights`.
    Each element in *topic_index* is an instance of :ref:`IntArray` message,
-   containing a list of values between 0 and :attr:`TopicModel.topics_count` - 1.
+   containing a list of values between 0 and the length of :attr:`TopicModel.topic_name` field.
    This values correspond to the indices in :attr:`TopicModel.topic_name` array,
    and tell which topics has non-zero ``p(w|t)`` probabilities for a given token.
    The actual ``p(w|t)`` values can be found in :attr:`TopicModel.token_weights` field.
    The length of each :ref:`IntArray` message in :attr:`TopicModel.topic_index` field 
    equals to the length of the corresponding
    :ref:`FloatArray` message in :attr:`TopicModel.token_weights` field.
+
+   .. warning::
+
+      Be careful with :attr:`TopicModel.topic_index` when this message
+      represents a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name`.
+      In this case indices correspond to the selected subset of topics,
+      which might not correspond to topic indices in the original :ref:`ModelConfig` message.
 
 .. attribute:: TopicModel.operation_type
 
@@ -1659,18 +1656,14 @@ of Phi matrix. Please, refer to :ref:`TopicModel` for detailed description of th
 
 .. attribute:: ThetaMatrix.topic_name
 
-   A set of values that represent the names of the topics, included in this theta matrix.
-   The names correspond to :attr:`ModelConfig.topic_name`.
-   The meaning of this field is slightly different in sparse and dense representation,
-   similar to :attr:`TopicModel.topic_name` field.
-   Please refer to the general description of :ref:`TopicModel` for detailed information.
+   A value that describes the names of the topics included in given :ref:`ThetaMatrix` message.
+   This values will represent a subset of topics, defined by :attr:`GetThetaMatrixArgs.topic_name` message.
+   In case of empty :attr:`GetTopicModelArgs.topic_name` this values will correspond to the entire
+   set of topics, defined in :attr:`ModelConfig.topic_name` field.
 
 .. attribute:: ThetaMatrix.topics_count
 
-   A value that describes the number of topics in the topic model.
-   The meaning of this field is slightly different in sparse and dense representation,
-   similar to :attr:`TopicModel.topics_count` field.
-   Please refer to the general description of :ref:`TopicModel` for detailed information.
+   A value that describes the number of topics in this message.
 
 .. attribute:: ThetaMatrix.item_title
 
@@ -1684,13 +1677,20 @@ of Phi matrix. Please, refer to :ref:`TopicModel` for detailed description of th
    This field has the same length as
    :attr:`ThetaMatrix.item_id`, :attr:`ThetaMatrix.item_weights` and :attr:`ThetaMatrix.item_title`.
    Each element in *topic_index* is an instance of :ref:`IntArray` message,
-   containing a list of values between 0 and :attr:`ThetaMatrix.topics_count` - 1.
+   containing a list of values between 0 and the length of :attr:`TopicModel.topic_name` field.
    This values correspond to the indices in :attr:`ThetaMatrix.topic_name` array,
    and tell which topics has non-zero ``p(t|d)`` probabilities for a given item.
    The actual ``p(t|d)`` values can be found in :attr:`ThetaMatrix.item_weights` field.
    The length of each :ref:`IntArray` message in :attr:`ThetaMatrix.topic_index` field 
    equals to the length of the corresponding
    :ref:`FloatArray` message in :attr:`ThetaMatrix.item_weights` field.
+
+   .. warning::
+
+      Be careful with :attr:`ThetaMatrix.topic_index` when this message
+      represents a subset of topics, defined by :attr:`GetThetaMatrixArgs.topic_name`.
+      In this case indices correspond to the selected subset of topics,
+      which might not correspond to topic indices in the original :ref:`ModelConfig` message.
 
 .. _CollectionParserConfig:
 

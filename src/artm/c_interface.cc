@@ -197,6 +197,7 @@ int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
   try {
     artm::ModelConfig config;
     ParseFromArray(model_config, length, &config);
+    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
     master_component(master_id)->CreateOrReconfigureModel(config);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
