@@ -1514,10 +1514,14 @@ when calling :c:func:`ArtmRequestTopicModel`.
     optional string name = 1 [default = "@model"];
     optional int32 topics_count = 2;
     repeated string topic_name = 3;
-
     repeated string token = 4;
     repeated FloatArray token_weights = 5;
     repeated string class_id = 6;
+
+    message TopicModelInternals {
+      repeated FloatArray n_wt = 1;
+      repeated FloatArray r_wt = 2;
+    }
 
     optional bytes internals = 7;  // obsolete in BigARTM v0.6.3
     repeated IntArray topic_index = 8;
@@ -1944,8 +1948,8 @@ Represents an argument of :c:func:`ArtmRequestTopicModel` operation.
 
   message GetTopicModelArgs {
     enum RequestType {
-      Pwt = 1;
-      Nwt = 2;
+      Pwt = 0;
+      Nwt = 1;
     }
 
     optional string model_name = 1;

@@ -1513,8 +1513,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\020\n\010class_id\030\004 \003(\t\022\031\n\021use_sparse_format\030\005"
     " \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n\014request_typ"
     "e\030\007 \001(\0162#.artm.GetTopicModelArgs.Request"
-    "Type:\003Pwt\"\037\n\013RequestType\022\007\n\003Pwt\020\001\022\007\n\003Nwt"
-    "\020\002\"\271\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030"
+    "Type:\003Pwt\"\037\n\013RequestType\022\007\n\003Pwt\020\000\022\007\n\003Nwt"
+    "\020\001\"\271\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030"
     "\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntop"
     "ic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013cl"
     "ean_cache\030\005 \001(\010:\005false\022\031\n\021use_sparse_for"
@@ -17888,8 +17888,8 @@ const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_RequestType_descript
 }
 bool GetTopicModelArgs_RequestType_IsValid(int value) {
   switch(value) {
+    case 0:
     case 1:
-    case 2:
       return true;
     default:
       return false;
@@ -17932,7 +17932,7 @@ void GetTopicModelArgs::SharedCtor() {
   model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   use_sparse_format_ = false;
   eps_ = 1e-037f;
-  request_type_ = 1;
+  request_type_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -17978,7 +17978,7 @@ void GetTopicModelArgs::Clear() {
     }
     use_sparse_format_ = false;
     eps_ = 1e-037f;
-    request_type_ = 1;
+    request_type_ = 0;
   }
   topic_name_.Clear();
   token_.Clear();

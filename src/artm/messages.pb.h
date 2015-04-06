@@ -272,8 +272,8 @@ inline bool CollectionParserConfig_Format_Parse(
     CollectionParserConfig_Format_descriptor(), name, value);
 }
 enum GetTopicModelArgs_RequestType {
-  GetTopicModelArgs_RequestType_Pwt = 1,
-  GetTopicModelArgs_RequestType_Nwt = 2
+  GetTopicModelArgs_RequestType_Pwt = 0,
+  GetTopicModelArgs_RequestType_Nwt = 1
 };
 bool GetTopicModelArgs_RequestType_IsValid(int value);
 const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MIN = GetTopicModelArgs_RequestType_Pwt;
@@ -14637,7 +14637,7 @@ inline void GetTopicModelArgs::clear_has_request_type() {
   _has_bits_[0] &= ~0x00000040u;
 }
 inline void GetTopicModelArgs::clear_request_type() {
-  request_type_ = 1;
+  request_type_ = 0;
   clear_has_request_type();
 }
 inline ::artm::GetTopicModelArgs_RequestType GetTopicModelArgs::request_type() const {

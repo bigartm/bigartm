@@ -48,6 +48,8 @@ CollectionParserConfig_Format_MatrixMarket = 1
 CollectionParserConfig_Format_VowpalWabbit = 2
 MasterComponentConfig_ModusOperandi_Local = 0
 MasterComponentConfig_ModusOperandi_Network = 1
+GetTopicModelArgs_RequestType_Pwt = 0
+GetTopicModelArgs_RequestType_Nwt = 1
 
 #################################################################################
 
@@ -227,6 +229,7 @@ class MasterComponent:
         if inner_iterations_count is not None:
             config.inner_iterations_count = inner_iterations_count
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         if class_ids is not None:
@@ -258,6 +261,7 @@ class MasterComponent:
         if config is None:
             config = messages_pb2.SmoothSparseThetaConfig()
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         return self.CreateRegularizer(name, RegularizerConfig_Type_SmoothSparseTheta, config)
@@ -268,6 +272,7 @@ class MasterComponent:
         if config is None:
             config = messages_pb2.SmoothSparsePhiConfig()
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         if class_ids is not None:
@@ -282,6 +287,7 @@ class MasterComponent:
         if config is None:
             config = messages_pb2.DecorrelatorPhiConfig()
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         if class_ids is not None:
@@ -317,6 +323,7 @@ class MasterComponent:
         if config is None:
             config = messages_pb2.SparsityThetaScoreConfig()
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         if name is None:
@@ -327,6 +334,7 @@ class MasterComponent:
         if config is None:
             config = messages_pb2.SparsityPhiScoreConfig()
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         if class_id is not None:
@@ -348,6 +356,7 @@ class MasterComponent:
         if config is None:
             config = messages_pb2.TopTokensScoreConfig()
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         if num_tokens is not None:
@@ -362,6 +371,7 @@ class MasterComponent:
         if config is None:
             config = messages_pb2.ThetaSnippetScoreConfig()
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         if name is None:
@@ -372,6 +382,7 @@ class MasterComponent:
         if config is None:
             config = messages_pb2.TopicKernelScoreConfig()
         if topic_names is not None:
+            config.ClearField('topic_name')
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
         if class_id is not None:
@@ -451,7 +462,8 @@ class MasterComponent:
                 s.CopyFrom(self.config_.stream[stream_index])
         self.Reconfigure(new_config_)
 
-    def GetTopicModel(self, model=None, args=None, class_ids=None):
+    def GetTopicModel(self, model=None, args=None, class_ids=None, topic_names=None, use_sparse_format=None,
+                      request_type=None):
         if args is None:
             args = messages_pb2.GetTopicModelArgs()
         if model is not None:
@@ -460,6 +472,15 @@ class MasterComponent:
             args.ClearField('class_id')
             for class_id in class_ids:
                 args.class_id.append(class_id)
+        if topic_names is not None:
+            args.ClearField('topic_name')
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
+        if use_sparse_format is not None:
+            args.use_sparse_format=use_sparse_format
+        if request_type is not None:
+            args.request_type = request_type
+
         args_blob = args.SerializeToString()
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob))
 
@@ -480,7 +501,7 @@ class MasterComponent:
         regularizer_state.ParseFromString(state_blob)
         return regularizer_state
 
-    def GetThetaMatrix(self, model=None, batch=None, clean_cache=None, args=None):
+    def GetThetaMatrix(self, model=None, batch=None, clean_cache=None, args=None, topic_names=None):
         if args is None:
             args = messages_pb2.GetThetaMatrixArgs()
         if model is not None:
@@ -489,6 +510,10 @@ class MasterComponent:
             args.batch.CopyFrom(batch)
         if clean_cache is not None:
             args.clean_cache = clean_cache
+        if topic_names is not None:
+            args.ClearField('topic_name')
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
         args_blob = args.SerializeToString()
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
         blob = ctypes.create_string_buffer(length)

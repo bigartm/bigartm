@@ -424,8 +424,8 @@ message InitializeModelArgs {
 
 message GetTopicModelArgs {
   enum RequestType {
-    Pwt = 1;
-    Nwt = 2;
+    Pwt = 0;
+    Nwt = 1;
   }
 
   optional string model_name = 1;
