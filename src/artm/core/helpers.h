@@ -39,6 +39,10 @@ class Helpers {
   static void Fix(::artm::ThetaMatrix* message);
   static bool Validate(const ::artm::ThetaMatrix& message, bool throw_error = true);
   static bool FixAndValidate(::artm::ThetaMatrix* message, bool throw_error = true);
+
+  static void Fix(::artm::Batch* message);
+  static bool Validate(const ::artm::Batch& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::Batch* message, bool throw_error = true);
 };
 
 class BatchHelpers {
@@ -55,7 +59,6 @@ class BatchHelpers {
                           const ::google::protobuf::Message& message);
   static void SaveMessage(const std::string& filename, const std::string& disk_path,
                           const ::google::protobuf::Message& message);
-  static void PopulateClassId(Batch* batch);
   static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
                                                 const GetThetaMatrixArgs& get_theta_args,
                                                 ::artm::ThetaMatrix* theta_matrix);

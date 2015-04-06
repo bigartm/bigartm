@@ -35,6 +35,11 @@ typedef struct tagTHREADNAME_INFO {
 
 #endif
 
+#define ARTM_HELPERS_REPORT_ERROR(error_message)                            \
+  if (throw_error) BOOST_THROW_EXCEPTION(InvalidOperation(error_message));  \
+  else             LOG(WARNING) << error_message;                           \
+  return false;                                                             \
+
 namespace artm {
 namespace core {
 
@@ -242,6 +247,61 @@ bool Helpers::FixAndValidate(::artm::ThetaMatrix* message, bool throw_error) {
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::Batch* message) {
+  if (message->class_id_size() == 0) {
+    for (int i = 0; i < message->token_size(); ++i) {
+      message->add_class_id(DefaultClass);
+    }
+  }
+}
+
+bool Helpers::Validate(const ::artm::Batch& message, bool throw_error) {
+  std::stringstream ss;
+  if (message.has_id()) {
+    try {
+      boost::lexical_cast<boost::uuids::uuid>(message.id());
+    }
+    catch (...) {
+      ss << "Batch.id must be GUID, got: " << message.id();
+      ARTM_HELPERS_REPORT_ERROR(ss.str())
+    }
+  } else {
+    ARTM_HELPERS_REPORT_ERROR("Batch.id is not specified");
+  }
+
+  if (message.class_id_size() != message.token_size()) {
+    ss << "Length mismatch in fields Batch.class_id and Batch.token, batch.id = " << message.id();
+    ARTM_HELPERS_REPORT_ERROR(ss.str());
+  }
+
+  for (int item_id = 0; item_id < message.item_size(); ++item_id) {
+    for (const Field& field : message.item(item_id).field()) {
+      if (field.token_count_size() != field.token_id_size()) {
+        ss << "Length mismatch in field Batch.item(" << item_id << ").token_count and token_id; ";
+        break;
+      }
+
+      for (int token_index = 0; token_index < field.token_count_size(); token_index++) {
+        int token_id = field.token_id(token_index);
+        int token_count = field.token_count(token_index);
+      }
+    }
+  }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::Batch* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
 std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   std::vector<float> retval;
   retval.reserve(size);
@@ -391,6 +451,9 @@ void BatchHelpers::LoadMessage(const std::string& full_filename,
 
     batch->set_id(boost::lexical_cast<std::string>(uuid));
   }
+
+  if (batch != nullptr)
+    Helpers::FixAndValidate(batch);
 }
 
 void BatchHelpers::SaveMessage(const std::string& filename, const std::string& disk_path,
@@ -419,31 +482,6 @@ void BatchHelpers::SaveMessage(const std::string& full_filename,
   }
 
   fout.close();
-}
-
-void BatchHelpers::PopulateClassId(Batch* batch) {
-  if (batch->has_id()) {
-    try {
-      boost::lexical_cast<boost::uuids::uuid>(batch->id());
-    } catch (...) {
-      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Batch.id", batch->id(), "expecting guid"));
-    }
-  } else {
-    BOOST_THROW_EXCEPTION(InvalidOperation("Batch.id is not specified"));
-  }
-
-  if (batch->class_id_size() != batch->token_size()) {
-    if (batch->class_id_size() != 0) {
-      // ToDo(alfrey): log the ID of the batch
-      LOG(ERROR) << "Field batch.class_id must have the same length as field batch.token. "
-                 << "Setting '@DefaultClass' label for all tokens.";
-    }
-
-    batch->clear_class_id();
-    for (int i = 0; i < batch->token_size(); ++i) {
-      batch->add_class_id(DefaultClass);
-    }
-  }
 }
 
 bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(

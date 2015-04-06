@@ -60,6 +60,7 @@ class InstanceTest : boost::noncopyable {
       iLength = (iLength + 1) % max_length;
     }
 
+    ::artm::core::Helpers::FixAndValidate(batch.get());
     return batch;
   }
 
@@ -83,6 +84,7 @@ TEST(Instance, Basic) {
     field->add_token_count(i+1);
   }
 
+  ::artm::core::Helpers::Fix(&batch1);
   artm::AddBatchArgs args1;
   args1.mutable_batch()->CopyFrom(batch1);  // +1
 
@@ -98,6 +100,7 @@ TEST(Instance, Basic) {
   }
 
   artm::AddBatchArgs args4;
+  ::artm::core::Helpers::Fix(&batch4);
   args4.mutable_batch()->CopyFrom(batch4);  // +4
 
   artm::ModelConfig config;

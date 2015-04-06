@@ -113,10 +113,8 @@ bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
   std::shared_ptr<Batch> batch = std::make_shared< ::artm::Batch>();
   if (args.has_batch_file_name()) {
     ::artm::core::BatchHelpers::LoadMessage(args.batch_file_name(), batch.get());
-    ::artm::core::BatchHelpers::PopulateClassId(batch.get());
   } else {
     batch = std::make_shared<Batch>(args.batch());  // copy constructor
-    BatchHelpers::PopulateClassId(batch.get());
   }
 
   if (config.compact_batches()) {
@@ -289,7 +287,6 @@ void LocalDataLoader::ThreadFunction() {
       try {
         ::artm::core::BatchHelpers::LoadMessage(next_task.file_path, batch.get());
         batch->set_id(boost::lexical_cast<std::string>(next_task.uuid));  // keep batch.id and task.uuid in sync
-        ::artm::core::BatchHelpers::PopulateClassId(batch.get());
       } catch (std::exception& ex) {
         LOG(ERROR) << ex.what() << ", the batch will be skipped.";
         batch = nullptr;
@@ -405,7 +402,6 @@ void RemoteDataLoader::ThreadFunction() {
         auto batch = std::make_shared< ::artm::Batch>();
         try {
           ::artm::core::BatchHelpers::LoadMessage(batch_file_path, batch.get());
-          ::artm::core::BatchHelpers::PopulateClassId(batch.get());
         }
         catch (std::exception& ex) {
           LOG(ERROR) << ex.what() << ", the batch will be skipped";

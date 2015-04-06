@@ -191,9 +191,8 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
   if (isInLocalModusOperandi()) {
     if (instance_->processor_size() == 0)
       BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
-    Batch batch(get_score_args.batch());
-    BatchHelpers::PopulateClassId(&batch);
-    instance_->processor(0)->FindThetaMatrix(batch, GetThetaMatrixArgs(), nullptr, get_score_args, score_data);
+    instance_->processor(0)->FindThetaMatrix(
+      get_score_args.batch(), GetThetaMatrixArgs(), nullptr, get_score_args, score_data);
     return true;
   }
 
@@ -222,9 +221,8 @@ bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
     } else {
       if (instance_->processor_size() == 0)
         BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
-      Batch batch(get_theta_args.batch());
-      BatchHelpers::PopulateClassId(&batch);
-      instance_->processor(0)->FindThetaMatrix(batch, get_theta_args, theta_matrix, GetScoreValueArgs(), nullptr);
+      instance_->processor(0)->FindThetaMatrix(
+        get_theta_args.batch(), get_theta_args, theta_matrix, GetScoreValueArgs(), nullptr);
       return true;
     }
   }
