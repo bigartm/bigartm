@@ -284,6 +284,11 @@ bool Helpers::Validate(const ::artm::Batch& message, bool throw_error) {
       for (int token_index = 0; token_index < field.token_count_size(); token_index++) {
         int token_id = field.token_id(token_index);
         int token_count = field.token_count(token_index);
+        if (token_id < 0 || token_id >= message.token_size()) {
+          ss << "Value " << token_id << " in Batch.Item(" << item_id
+             << ").token_id is negative or exceeds Batch.token_size";
+          ARTM_HELPERS_REPORT_ERROR(ss.str());
+        }
       }
     }
   }

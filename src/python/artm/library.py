@@ -50,6 +50,8 @@ MasterComponentConfig_ModusOperandi_Local = 0
 MasterComponentConfig_ModusOperandi_Network = 1
 GetTopicModelArgs_RequestType_Pwt = 0
 GetTopicModelArgs_RequestType_Nwt = 1
+InitializeModelArgs_SourceType_Dictionary = 0
+InitializeModelArgs_SourceType_Batches = 1
 
 #################################################################################
 
@@ -612,6 +614,7 @@ class Model:
         args.model_name = self.name()
         if dictionary is not None:
             args.dictionary_name = dictionary.name()
+            args.source_type = InitializeModelArgs_SourceType_Dictionary
         blob = args.SerializeToString()
         blob_p = ctypes.create_string_buffer(blob)
         HandleErrorCode(self.lib_,

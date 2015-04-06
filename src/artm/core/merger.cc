@@ -4,6 +4,9 @@
 
 #include <algorithm>
 #include <sstream>
+#include <unordered_map>
+#include <iostream>  // NOLINT
+#include <iomanip>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/exception/diagnostic_information.hpp"
@@ -521,20 +524,98 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   const ModelConfig& model = schema->model_config(args.model_name());
   auto new_ttm = std::make_shared< ::artm::core::TopicModel>(
       model.name(), model.topic_name());
-  std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
-  if (dict == nullptr) {
-    std::stringstream ss;
-    ss << "Dictionary " << args.dictionary_name() << " does not exist";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  }
 
-  LOG(INFO) << "InitializeModel() with "
-            << model.topics_count() << " topics and "
-            << dict->size()  << " tokens";
+  if (args.source_type() == InitializeModelArgs_SourceType_Dictionary) {
+    std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
+    if (dict == nullptr) {
+      std::stringstream ss;
+      ss << "Dictionary " << args.dictionary_name() << " does not exist";
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
 
-  for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
-    ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
-    new_ttm->AddToken(Token(class_id, iter->second.key_token()), true);
+    LOG(INFO) << "InitializeModel() with "
+      << model.topics_count() << " topics and "
+      << dict->size() << " tokens";
+
+    for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
+      ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
+      new_ttm->AddToken(Token(class_id, iter->second.key_token()), true);
+    }
+  } else if (args.source_type() == InitializeModelArgs_SourceType_Batches) {
+    std::unordered_map<Token, int, TokenHasher> token_freq_map;
+    size_t total_items_count = 0, total_token_count = 0;
+    std::vector<BatchManagerTask> batches = BatchHelpers::ListAllBatches(args.disk_path());
+
+    for (const BatchManagerTask& batch_file : batches) {
+      Batch batch;
+      try {
+        ::artm::core::BatchHelpers::LoadMessage(batch_file.file_path, &batch);
+      }
+      catch (std::exception& ex) {
+        LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+        continue;
+      }
+
+      std::vector<char> token_mask(batch.token_size(), 0);
+      for (int item_id = 0; item_id < batch.item_size(); ++item_id) {
+        total_items_count++;
+        total_token_count++;
+        for (const Field& field : batch.item(item_id).field()) {
+          for (int token_count : field.token_count())
+            total_token_count += token_count;
+          for (int token_id : field.token_id()) {
+            if (!token_mask[token_id]) {
+              token_mask[token_id] = 1;
+              Token token(batch.class_id(token_id), batch.token(token_id));
+              auto iter = token_freq_map.find(token);
+              if (iter != token_freq_map.end()) {
+                iter->second++;
+              } else {
+                token_freq_map.insert(std::make_pair(token, 1));
+              }
+            }
+          }
+        }
+
+        for (const Field& field : batch.item(item_id).field())
+          for (int token_id : field.token_id())
+            token_mask[token_id] = 0;
+      }
+    }
+
+    LOG(INFO) << "Find "
+      << token_freq_map.size() << " unique tokens in "
+      << total_items_count << " items, average token frequency is "
+      << std::fixed << std::setw(4) << std::setprecision(5)
+      << static_cast<double>(total_token_count) / total_items_count << ".";
+
+    for (auto& filter : args.filter()) {
+      int max_freq = INT_MAX, min_freq = -1;
+      if (filter.has_max_percentage()) max_freq = total_items_count * filter.max_percentage();
+      if (filter.has_min_percentage()) min_freq = total_items_count * filter.min_percentage();
+      if (filter.has_max_items() && (max_freq > filter.max_items())) max_freq = filter.max_items();
+      if (filter.has_min_items() && (min_freq < filter.min_items())) min_freq = filter.min_items();
+
+      for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
+        if (filter.has_class_id() && iter->first.class_id != filter.class_id())
+          continue;
+        if (iter->second > max_freq || iter->second < min_freq)
+          iter->second = -1;
+      }
+    }
+
+    size_t unique_tokens_left = 0;
+    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
+      if (iter->second != -1) unique_tokens_left++;
+    }
+    LOG(INFO) << "All filters applied, " << unique_tokens_left << " unique tokens left.";
+
+    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
+      if (iter->second != -1)
+        new_ttm->AddToken(iter->first, true);
+  } else {
+    BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
+      "InitializeModelArgs.source_type", args.source_type()));
   }
 
   new_ttm->CalcPwt();   // calculate pwt matrix

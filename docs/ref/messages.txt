@@ -1921,12 +1921,32 @@ InitializeModelArgs
 .. class:: messages_pb2.InitializeModelArgs
 
 Represents an argument of :c:func:`ArtmInitializeModel` operation.
+Please refer to
+`example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example14_initialize_topic_model.py>`_
+for further information.
 
 .. code-block:: bash
 
   message InitializeModelArgs {
+    enum SourceType {
+      Dictionary = 0;
+      Batches = 1;
+    }
+
+    message Filter {
+      optional string class_id = 1;
+      optional float min_percentage = 2;
+      optional float max_percentage = 3;
+      optional int32 min_items = 4;
+      optional int32 max_items = 5;
+    }
+
     optional string model_name = 1;
     optional string dictionary_name = 2;
+    optional SourceType source_type = 3 [default = Dictionary];
+
+    optional string disk_path = 4;
+    repeated Filter filter = 5;
   }
 
 .. attribute:: InitializeModelArgs.model_name
