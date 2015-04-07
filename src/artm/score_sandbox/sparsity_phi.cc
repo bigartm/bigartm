@@ -48,8 +48,7 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::TopicModel&
           topic_model.GetTopicWeightIterator(token_index);
 
       while (topic_iter.NextTopic() < topics_count) {
-        if ((fabs(topic_iter.Weight()) < config_.eps() ||
-            fabs(topic_iter.NotNormalizedWeight()) < config_.eps()) &&
+        if ((fabs(topic_iter.Weight()) < config_.eps()) &&
             topics_to_score[topic_iter.TopicIndex()]) {
           ++zero_tokens_count;
         }

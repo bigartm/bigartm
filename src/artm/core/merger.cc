@@ -4,6 +4,9 @@
 
 #include <algorithm>
 #include <sstream>
+#include <unordered_map>
+#include <iostream>  // NOLINT
+#include <iomanip>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/exception/diagnostic_information.hpp"
@@ -78,47 +81,8 @@ void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  if (ttm->topic_size() != topic_model.topics_count()) {
-    std::stringstream ss;
-    ss << "Unable to overwrite model '" << topic_model.name();
-    ss << "' with " << topic_model.topics_count() << " topics. ";
-    ss << "According to ModelConfig it must have " << ttm->topic_size() << " topics.";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  }
-
-  bool has_classes = false;
-  if (topic_model.class_id_size() != 0) {
-    has_classes = true;
-    if (topic_model.class_id_size() != topic_model.token_size()) {
-      BOOST_THROW_EXCEPTION(InvalidOperation(
-        "TopicModel.class_id_size() != TopicModel.token_size()"));
-    }
-  }
-
-  bool remove_tokens = true;
-  if (topic_model.token_weights_size() != 0) {
-    remove_tokens = false;
-    if (topic_model.token_weights_size() != topic_model.token_size()) {
-      BOOST_THROW_EXCEPTION(InvalidOperation(
-        "TopicModel.token_weights_size() != TopicModel.token_size()"));
-    }
-  }
-
   auto model_increment = std::make_shared<ModelIncrement>();
-  model_increment->set_model_name(topic_model.name());
-  model_increment->set_topics_count(topic_model.topics_count());
-  for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
-    model_increment->add_token(topic_model.token(token_index));
-    model_increment->add_class_id(has_classes ? topic_model.class_id(token_index) : DefaultClass);
-    artm::FloatArray* token_increment = model_increment->add_token_increment();
-    if (remove_tokens) {
-      model_increment->add_operation_type(ModelIncrement_OperationType_DeleteToken);
-    } else {
-      token_increment->CopyFrom(topic_model.token_weights(token_index));
-      model_increment->add_operation_type(ModelIncrement_OperationType_OverwriteValue);
-    }
-  }
-
+  model_increment->mutable_topic_model()->CopyFrom(topic_model);
   merger_queue_->push(model_increment);
 }
 
@@ -236,7 +200,7 @@ void Merger::ThreadFunction() {
           }
         });
 
-        ModelName model_name = model_increment->model_name();
+        ModelName model_name = model_increment->topic_model().name();
         auto cur_ttm = topic_model_.get(model_name);
         if (cur_ttm.get() == nullptr) {
           // model had been disposed during ongoing processing;
@@ -251,7 +215,7 @@ void Merger::ThreadFunction() {
           iter = topic_model_inc_.find(model_name);
         }
 
-        iter->second->ApplyDiff(*model_increment, 1.0f);
+        iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
         for (int score_index = 0;
              score_index < model_increment->score_name_size();
              ++score_index) {
@@ -281,12 +245,14 @@ void Merger::PullTopicModel() {
 
     ::artm::GetTopicModelArgs request;
     request.set_model_name(model_name);
-
+    request.set_request_type(GetTopicModelArgs_RequestType_Pwt);
     make_rpcz_call_no_throw([&]() {
       ::artm::TopicModel reply;
       master_component_service_->RetrieveModel(request, &reply, timeout);
       std::shared_ptr< ::artm::core::TopicModel> new_global_ttm(
-        new ::artm::core::TopicModel(reply));
+        new ::artm::core::TopicModel(reply.name(), reply.topic_name()));
+      new_global_ttm->ApplyTopicModelOperation(reply, 1.0f);
+      new_global_ttm->CalcPwt();
 
       topic_model_.set(model_name, new_global_ttm);
     }, "Merger::PullTopicModel");
@@ -309,7 +275,10 @@ void Merger::PushTopicModelIncrement() {
       return;  // model had been disposed during ongoing processing;
 
     ModelIncrement model_increment;
-    inc_ttm->second->RetrieveModelIncrement(&model_increment);
+
+    ::artm::GetTopicModelArgs get_topic_model_args;
+    get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
+    inc_ttm->second->RetrieveExternalTopicModel(get_topic_model_args, model_increment.mutable_topic_model());
     scores_merger_.RetrieveModelIncrement(model_name, &model_increment);
 
     make_rpcz_call_no_throw([&]() {
@@ -489,46 +458,60 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     std::shared_ptr< ::artm::core::TopicModel> new_ttm;
     {
       CuckooWatch cuckoo2("copy&decay, ", &cuckoo);
+
       new_ttm = std::make_shared< ::artm::core::TopicModel>(
-        *old_ttm, decay_weight, target_config == nullptr ? current_config : *target_config);
+        name, target_config != nullptr ? target_config->topic_name() : current_config.topic_name());
+
+      if (old_ttm->token_size() > 0) {
+        ::artm::TopicModel topic_model;
+        GetTopicModelArgs get_topic_model_args;
+        get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
+        old_ttm->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
+        new_ttm->ApplyTopicModelOperation(topic_model, decay_weight);
+      }
     }
     target_model_config_.set(name, nullptr);
 
-
     if (inc_ttm != topic_model_inc_.end()) {
-      CuckooWatch cuckoo2("ApplyDiff, ", &cuckoo);
-      new_ttm->ApplyDiff(*inc_ttm->second, apply_weight);
+      CuckooWatch cuckoo2("ApplyTopicModelOperation, ", &cuckoo);
+      ::artm::TopicModel topic_model;
+      GetTopicModelArgs get_topic_model_args;
+      get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
+      inc_ttm->second->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
+      new_ttm->ApplyTopicModelOperation(topic_model, apply_weight);
     }
 
-    if (invoke_regularizers) {
+    if (invoke_regularizers && (current_config.regularizer_name_size() > 0)) {
       CuckooWatch cuckoo2("InvokePhiRegularizers, ", &cuckoo);
+      new_ttm->InitializeRwt();
       InvokePhiRegularizers(new_ttm.get());
-    }
 
-    {
-      CuckooWatch cuckoo2("CalcNormalizers, ", &cuckoo);
-      new_ttm->CalcNormalizers();
+      // Verify if model became overregularized
+      std::map<ClassId, std::vector<float>> new_ttm_normalizers = new_ttm->FindNormalizers();
+      for (auto iter : new_ttm_normalizers) {
+        int bad_topics = 0;
+        for (int topic_index = 0; topic_index < iter.second.size(); ++topic_index) {
+          if (iter.second[topic_index] < 1e-20) {
+            bad_topics++;
+          }
+        }
+
+        LOG_IF(WARNING, bad_topics > 0)
+          << bad_topics << " of " << new_ttm->topic_size()
+          << " topics have zero probability mass."
+          << " Consider reducing values of ModelConfig.regularizer_tau"
+          << " for model '" << model_name << "', class_id=" << iter.first;
+      }
     }
 
     {
       CuckooWatch cuckoo2("CalcPwt", &cuckoo);
       new_ttm->CalcPwt();   // calculate pwt matrix
+      new_ttm->ClearRwt();
     }
 
     topic_model_.set(name, new_ttm);
-
     topic_model_inc_.erase(name);
-
-    // Verify if model became overregularized
-    std::map<ClassId, int> degenerated_topics_count = new_ttm->FindDegeneratedTopicsCount();
-    for (auto iter : degenerated_topics_count) {
-      if (iter.second) {
-        LOG(WARNING) << iter.second << " of " << new_ttm->topic_size()
-                     << " topics have zero probability mass."
-                     << " Consider reducing values of ModelConfig.regularizer_tau"
-                     << " for model '" << model_name << "', class_id=" << iter.first;
-      }
-    }
   }
 }
 
@@ -541,23 +524,100 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   const ModelConfig& model = schema->model_config(args.model_name());
   auto new_ttm = std::make_shared< ::artm::core::TopicModel>(
       model.name(), model.topic_name());
-  std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
-  if (dict == nullptr) {
-    std::stringstream ss;
-    ss << "Dictionary " << args.dictionary_name() << " does not exist";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+
+  if (args.source_type() == InitializeModelArgs_SourceType_Dictionary) {
+    std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
+    if (dict == nullptr) {
+      std::stringstream ss;
+      ss << "Dictionary " << args.dictionary_name() << " does not exist";
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
+
+    LOG(INFO) << "InitializeModel() with "
+      << model.topics_count() << " topics and "
+      << dict->size() << " tokens";
+
+    for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
+      ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
+      new_ttm->AddToken(Token(class_id, iter->second.key_token()), true);
+    }
+  } else if (args.source_type() == InitializeModelArgs_SourceType_Batches) {
+    std::unordered_map<Token, int, TokenHasher> token_freq_map;
+    size_t total_items_count = 0, total_token_count = 0;
+    std::vector<BatchManagerTask> batches = BatchHelpers::ListAllBatches(args.disk_path());
+
+    for (const BatchManagerTask& batch_file : batches) {
+      Batch batch;
+      try {
+        ::artm::core::BatchHelpers::LoadMessage(batch_file.file_path, &batch);
+      }
+      catch (std::exception& ex) {
+        LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+        continue;
+      }
+
+      std::vector<char> token_mask(batch.token_size(), 0);
+      for (int item_id = 0; item_id < batch.item_size(); ++item_id) {
+        total_items_count++;
+        total_token_count++;
+        for (const Field& field : batch.item(item_id).field()) {
+          for (int token_count : field.token_count())
+            total_token_count += token_count;
+          for (int token_id : field.token_id()) {
+            if (!token_mask[token_id]) {
+              token_mask[token_id] = 1;
+              Token token(batch.class_id(token_id), batch.token(token_id));
+              auto iter = token_freq_map.find(token);
+              if (iter != token_freq_map.end()) {
+                iter->second++;
+              } else {
+                token_freq_map.insert(std::make_pair(token, 1));
+              }
+            }
+          }
+        }
+
+        for (const Field& field : batch.item(item_id).field())
+          for (int token_id : field.token_id())
+            token_mask[token_id] = 0;
+      }
+    }
+
+    LOG(INFO) << "Find "
+      << token_freq_map.size() << " unique tokens in "
+      << total_items_count << " items, average token frequency is "
+      << std::fixed << std::setw(4) << std::setprecision(5)
+      << static_cast<double>(total_token_count) / total_items_count << ".";
+
+    for (auto& filter : args.filter()) {
+      int max_freq = INT_MAX, min_freq = -1;
+      if (filter.has_max_percentage()) max_freq = total_items_count * filter.max_percentage();
+      if (filter.has_min_percentage()) min_freq = total_items_count * filter.min_percentage();
+      if (filter.has_max_items() && (max_freq > filter.max_items())) max_freq = filter.max_items();
+      if (filter.has_min_items() && (min_freq < filter.min_items())) min_freq = filter.min_items();
+
+      for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
+        if (filter.has_class_id() && iter->first.class_id != filter.class_id())
+          continue;
+        if (iter->second > max_freq || iter->second < min_freq)
+          iter->second = -1;
+      }
+    }
+
+    size_t unique_tokens_left = 0;
+    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
+      if (iter->second != -1) unique_tokens_left++;
+    }
+    LOG(INFO) << "All filters applied, " << unique_tokens_left << " unique tokens left.";
+
+    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
+      if (iter->second != -1)
+        new_ttm->AddToken(iter->first, true);
+  } else {
+    BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
+      "InitializeModelArgs.source_type", args.source_type()));
   }
 
-  LOG(INFO) << "InitializeModel() with "
-            << model.topics_count() << " topics and "
-            << dict->size()  << " tokens";
-
-  for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
-    ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
-    new_ttm->AddToken(Token(class_id, iter->second.key_token()), true);
-  }
-
-  new_ttm->CalcNormalizers();
   new_ttm->CalcPwt();   // calculate pwt matrix
   topic_model_.set(args.model_name(), new_ttm);
 }

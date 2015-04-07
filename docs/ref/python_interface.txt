@@ -94,13 +94,14 @@ MasterComponent
 
       Returns current :ref:`MasterComponentConfig` of the master component.
 
-   .. py:method:: CreateModel(config=None, topics_count=None, inner_iterations_count=None, class_ids=None, class_weights=None)
+   .. py:method:: CreateModel(config=None, topics_count=None, inner_iterations_count=None, class_ids=None, class_weights=None,
+                              topic_names=None, use_sparse_format=None, request_type=None)
 
       Creates and returns an instance of :py:class:`Model` class based on a given :ref:`ModelConfig`.
       Note that the model has to be further tuned by several iterative scans over the text collection.
       Use :py:meth:`InvokeIteration` to perform such scans.
 
-      Parameters *topics_count*, *inner_iterations_count*, *class_ids* and *class_weights* will override values, specifed in *config*.
+      All parameters will override values, specifed in *config*.
 
    .. py:method:: RemoveModel(model)
 

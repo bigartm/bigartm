@@ -103,10 +103,9 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
     EnableLogging();
     artm::Batch batch_object;
     ParseFromArray(batch, length, &batch_object);
-
+    artm::core::Helpers::FixAndValidate(&batch_object);
     artm::Batch compacted_batch;
     artm::core::BatchHelpers::CompactBatch(batch_object, &compacted_batch);
-    artm::core::BatchHelpers::PopulateClassId(&compacted_batch);
     artm::core::BatchHelpers::SaveBatch(compacted_batch, std::string(disk_path));
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -114,9 +113,10 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
 
 int ArtmAddBatch(int master_id, int length, const char* add_batch_args) {
   try {
-    artm::AddBatchArgs add_batch_args_object;
-    ParseFromArray(add_batch_args, length, &add_batch_args_object);
-    bool result = master_component(master_id)->AddBatch(add_batch_args_object);
+    artm::AddBatchArgs args;
+    ParseFromArray(add_batch_args, length, &args);
+    if (args.has_batch()) artm::core::Helpers::FixAndValidate(args.mutable_batch());
+    bool result = master_component(master_id)->AddBatch(args);
     if (result) {
       return ARTM_SUCCESS;
     } else {
@@ -197,6 +197,7 @@ int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
   try {
     artm::ModelConfig config;
     ParseFromArray(model_config, length, &config);
+    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
     master_component(master_id)->CreateOrReconfigureModel(config);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -207,7 +208,9 @@ int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args
     artm::ThetaMatrix theta_matrix;
     artm::GetThetaMatrixArgs args;
     ParseFromArray(get_theta_args, length, &args);
+    if (args.has_batch()) ::artm::core::Helpers::FixAndValidate(args.mutable_batch());
     master_component(master_id)->RequestThetaMatrix(args, &theta_matrix);
+    ::artm::core::Helpers::Validate(theta_matrix, false);
     theta_matrix.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
@@ -219,6 +222,7 @@ int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args)
     artm::GetTopicModelArgs args;
     ParseFromArray(get_model_args, length, &args);
     master_component(master_id)->RequestTopicModel(args, &topic_model);
+    ::artm::core::Helpers::Validate(topic_model, false);
     topic_model.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
@@ -238,6 +242,7 @@ int ArtmRequestScore(int master_id, int length, const char* get_score_args) {
     ::artm::ScoreData score_data;
     artm::GetScoreValueArgs args;
     ParseFromArray(get_score_args, length, &args);
+    if (args.has_batch()) ::artm::core::Helpers::FixAndValidate(args.mutable_batch());
     master_component(master_id)->RequestScore(args, &score_data);
     score_data.SerializeToString(last_message());
     return last_message()->size();
@@ -248,6 +253,7 @@ int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) 
   try {
     artm::TopicModel topic_model_object;
     ParseFromArray(topic_model, length, &topic_model_object);
+    ::artm::core::Helpers::FixAndValidate(&topic_model_object, /* throw_error =*/ true);
     master_component(master_id)->OverwriteTopicModel(topic_model_object);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -372,7 +378,6 @@ int ArtmRequestLoadBatch(const char* filename) {
     EnableLogging();
     auto batch = std::make_shared< ::artm::Batch>();
     ::artm::core::BatchHelpers::LoadMessage(filename, batch.get());
-    ::artm::core::BatchHelpers::PopulateClassId(batch.get());
     batch->SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

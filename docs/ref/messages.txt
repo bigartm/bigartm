@@ -11,6 +11,9 @@ This document explains all protobuf messages that can be transfered between the 
    Some fields will result in run-time exception when not specified.
    Please refer to the documentation of each field for more details.
 
+Note that we discourage any usage of fields marked as *obsolete*.
+Those fields will be removed in future releases.
+
 .. _DoubleArray:
 
 DoubleArray
@@ -1497,23 +1500,17 @@ To request topic model in a sparse format set
 :attr:`GetTopicModelArgs.use_sparse_format` field to ``True``
 when calling :c:func:`ArtmRequestTopicModel`.
 
-Note that the meaning of :attr:`TopicModel.topic_name` and :attr:`TopicModel.topics_count` fields is slightly different
-in sparse and dense representation.
-In sparse format :attr:`TopicModel.topics_count` and :attr:`TopicModel.topic_name` always refer
-to the entire set of topics in your :ref:`ModelConfig`,
-even if topic model had been requested for a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name` message.
-
-In dense format :attr:`TopicModel.topics_count` represent the number of topics physically present in given :ref:`TopicModel` message,
-and :attr:`TopicModel.topic_name` gives the names of the corresponding topics.
-This values will represent a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name` message.
-
-If topic model had been requested with empty :attr:`GetTopicModelArgs.topic_name` then
-:attr:`TopicModel.topic_name` and :attr:`TopicModel.topics_count` will always represent the entire set of topics
-as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count` fields.
-
 .. code-block:: bash
 
   message TopicModel {
+    enum OperationType {
+      Initialize = 0;
+      Increment = 1;
+      Overwrite = 2;
+      Remove = 3;
+      Ignore = 4;
+    }
+
     optional string name = 1 [default = "@model"];
     optional int32 topics_count = 2;
     repeated string topic_name = 3;
@@ -1526,8 +1523,9 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
       repeated FloatArray r_wt = 2;
     }
 
-    optional bytes internals = 7;
+    optional bytes internals = 7;  // obsolete in BigARTM v0.6.3
     repeated IntArray topic_index = 8;
+    repeated OperationType operation_type = 9;
   }
 
 .. attribute:: TopicModel.name
@@ -1536,15 +1534,14 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
 
 .. attribute:: TopicModel.topics_count
 
-   A value that describes the number of topics in the topic model.
-   The meaning of this field is slightly different in sparse and dense representation.
-   Please refer to the general description of :ref:`TopicModel` for detailed information.
+   A value that describes the number of topics in this message.
 
 .. attribute:: TopicModel.topic_name
 
-   A value that describes the names of the topics in the topic model.
-   The meaning of this field is slightly different in sparse and dense representation.
-   Please refer to the general description of :ref:`TopicModel` for detailed information.
+   A value that describes the names of the topics included in given :ref:`TopicModel` message.
+   This values will represent a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name` message.
+   In case of empty :attr:`GetTopicModelArgs.topic_name` this values will correspond to the entire
+   set of topics, defined in :attr:`ModelConfig.topic_name` field.
 
 .. attribute:: TopicModel.token
 
@@ -1564,9 +1561,7 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
 
 .. attribute:: TopicModel.internals
 
-   A serialized instance of TopicModelInternals message.
-   This field is not available if :ref:`TopicModel` is requested with
-   :attr:`GetTopicModelArgs.use_sparse_format` being set to ``True``. 
+   Obsolete in BigARTM v0.6.3.
 
 .. attribute:: TopicModel.topic_index
 
@@ -1574,13 +1569,51 @@ as defined in :attr:`ModelConfig.topic_name` and :attr:`ModelConfig.topics_count
    This field has the same length as
    :attr:`TopicModel.token`, :attr:`TopicModel.class_id` and :attr:`TopicModel.token_weights`.
    Each element in *topic_index* is an instance of :ref:`IntArray` message,
-   containing a list of values between 0 and :attr:`TopicModel.topics_count` - 1.
+   containing a list of values between 0 and the length of :attr:`TopicModel.topic_name` field.
    This values correspond to the indices in :attr:`TopicModel.topic_name` array,
    and tell which topics has non-zero ``p(w|t)`` probabilities for a given token.
    The actual ``p(w|t)`` values can be found in :attr:`TopicModel.token_weights` field.
    The length of each :ref:`IntArray` message in :attr:`TopicModel.topic_index` field 
    equals to the length of the corresponding
    :ref:`FloatArray` message in :attr:`TopicModel.token_weights` field.
+
+   .. warning::
+
+      Be careful with :attr:`TopicModel.topic_index` when this message
+      represents a subset of topics, defined by :attr:`GetTopicModelArgs.topic_name`.
+      In this case indices correspond to the selected subset of topics,
+      which might not correspond to topic indices in the original :ref:`ModelConfig` message.
+
+.. attribute:: TopicModel.operation_type
+
+   A set of values that define operation to perform on each token
+   when topic model is used as an argument of :c:func:`ArtmOverwriteTopicModel`.
+
+   ================== =========================================================
+   ``Initialize``     Indicates that a new token should be added to the
+                      topic model. Initial ``n_wt`` counter will be initialized
+                      with random value from ``[0, 1]`` range.
+                      :attr:`TopicModel.token_weights` is ignored.
+                      This operation is ignored if token already exists.
+
+   ``Increment``      Indicates that ``n_wt`` counter of the token should be
+                      increased by values, specified in
+                      :attr:`TopicModel.token_weights` field.
+                      A new token will be created if it does not exist yet.
+
+   ``Overwrite``      Indicates that ``n_wt`` counter of the token should be
+                      set to the value, specified in
+                      :attr:`TopicModel.token_weights` field.
+                      A new token will be created if it does not exist yet.
+
+   ``Remove``         Indicates that the token should be removed from the
+                      topic model.
+                      :attr:`TopicModel.token_weights` is ignored.
+
+   ``Ignore``         Indicates no operation for the token.
+                      The effect is the same as if
+                      the token is not present in this message.
+   ================== =========================================================
 
 
 .. _ThetaMatrix:
@@ -1627,18 +1660,14 @@ of Phi matrix. Please, refer to :ref:`TopicModel` for detailed description of th
 
 .. attribute:: ThetaMatrix.topic_name
 
-   A set of values that represent the names of the topics, included in this theta matrix.
-   The names correspond to :attr:`ModelConfig.topic_name`.
-   The meaning of this field is slightly different in sparse and dense representation,
-   similar to :attr:`TopicModel.topic_name` field.
-   Please refer to the general description of :ref:`TopicModel` for detailed information.
+   A value that describes the names of the topics included in given :ref:`ThetaMatrix` message.
+   This values will represent a subset of topics, defined by :attr:`GetThetaMatrixArgs.topic_name` message.
+   In case of empty :attr:`GetTopicModelArgs.topic_name` this values will correspond to the entire
+   set of topics, defined in :attr:`ModelConfig.topic_name` field.
 
 .. attribute:: ThetaMatrix.topics_count
 
-   A value that describes the number of topics in the topic model.
-   The meaning of this field is slightly different in sparse and dense representation,
-   similar to :attr:`TopicModel.topics_count` field.
-   Please refer to the general description of :ref:`TopicModel` for detailed information.
+   A value that describes the number of topics in this message.
 
 .. attribute:: ThetaMatrix.item_title
 
@@ -1652,13 +1681,20 @@ of Phi matrix. Please, refer to :ref:`TopicModel` for detailed description of th
    This field has the same length as
    :attr:`ThetaMatrix.item_id`, :attr:`ThetaMatrix.item_weights` and :attr:`ThetaMatrix.item_title`.
    Each element in *topic_index* is an instance of :ref:`IntArray` message,
-   containing a list of values between 0 and :attr:`ThetaMatrix.topics_count` - 1.
+   containing a list of values between 0 and the length of :attr:`TopicModel.topic_name` field.
    This values correspond to the indices in :attr:`ThetaMatrix.topic_name` array,
    and tell which topics has non-zero ``p(t|d)`` probabilities for a given item.
    The actual ``p(t|d)`` values can be found in :attr:`ThetaMatrix.item_weights` field.
    The length of each :ref:`IntArray` message in :attr:`ThetaMatrix.topic_index` field 
    equals to the length of the corresponding
    :ref:`FloatArray` message in :attr:`ThetaMatrix.item_weights` field.
+
+   .. warning::
+
+      Be careful with :attr:`ThetaMatrix.topic_index` when this message
+      represents a subset of topics, defined by :attr:`GetThetaMatrixArgs.topic_name`.
+      In this case indices correspond to the selected subset of topics,
+      which might not correspond to topic indices in the original :ref:`ModelConfig` message.
 
 .. _CollectionParserConfig:
 
@@ -1885,12 +1921,32 @@ InitializeModelArgs
 .. class:: messages_pb2.InitializeModelArgs
 
 Represents an argument of :c:func:`ArtmInitializeModel` operation.
+Please refer to
+`example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example14_initialize_topic_model.py>`_
+for further information.
 
 .. code-block:: bash
 
   message InitializeModelArgs {
+    enum SourceType {
+      Dictionary = 0;
+      Batches = 1;
+    }
+
+    message Filter {
+      optional string class_id = 1;
+      optional float min_percentage = 2;
+      optional float max_percentage = 3;
+      optional int32 min_items = 4;
+      optional int32 max_items = 5;
+    }
+
     optional string model_name = 1;
     optional string dictionary_name = 2;
+    optional SourceType source_type = 3 [default = Dictionary];
+
+    optional string disk_path = 4;
+    repeated Filter filter = 5;
   }
 
 .. attribute:: InitializeModelArgs.model_name
@@ -1911,12 +1967,18 @@ Represents an argument of :c:func:`ArtmRequestTopicModel` operation.
 .. code-block:: bash
 
   message GetTopicModelArgs {
+    enum RequestType {
+      Pwt = 0;
+      Nwt = 1;
+    }
+
     optional string model_name = 1;
     repeated string topic_name = 2;
     repeated string token = 3;
     repeated string class_id = 4;
     optional bool use_sparse_format = 5;
     optional float eps = 6 [default = 1e-37];
+    optional RequestType request_type = 7 [default = Pwt];
   }
 
 .. attribute:: GetTopicModelArgs.model_name
@@ -1951,6 +2013,36 @@ Represents an argument of :c:func:`ArtmRequestTopicModel` operation.
    A small value that defines zero threshold for ``p(w|t)`` probabilities.
    This field is only used in sparse format.
    ``p(w|t)`` below the threshold will be excluded from the resulting Phi matrix.
+
+.. attribute:: GetTopicModelArgs.request_type
+
+   An optional value that defines what kind of data to retrieve in this operation.
+
+   ======== ====================================================================
+   Pwt      Indicates that the resulting :ref:`TopicModel` message
+            should contain ``p(w|t)`` probabilities.
+            This values are normalized to form a probability distribution
+            (``sum_w p(w|t) = 1`` for all topics ``t``).
+
+   Nwt      Indicates that the resulting :ref:`TopicModel` message
+            should contain internal ``n_wt`` counters of the topic model.
+            This values represent an internal state of the topic model.
+   ======== ====================================================================
+
+   Default setting is to retrieve ``p(w|t)`` probabilities.
+   This probabilities are sufficient to infer ``p(t|d)`` distributions
+   using this topic model.
+
+   ``n_wt`` counters allow you to restore the precise state of the topic model.
+   By passing this values in :c:func:`ArtmOverwriteTopicModel` operation
+   you are guarantied to get the model in the same state as you retrieved it.
+   As the result you may continue topic model inference from the point
+   you have stopped it last time.
+
+   ``p(w|t)`` values can be also restored via c:func:`ArtmOverwriteTopicModel`
+   operation. The resulting model will give the same ``p(t|d)`` distributions,
+   however you should consider this model as *read-only*, and do not call
+   :c:func:`ArtmSynchronizeModel` on it.
 
 .. _GetThetaMatrixArgs:
   
