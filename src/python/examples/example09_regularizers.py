@@ -40,15 +40,10 @@ with artm.library.MasterComponent() as master:
 
     # Configure the model
     model = master.CreateModel(topics_count=10, inner_iterations_count=30, topic_names=all_topics)
-    model.EnableScore(perplexity_score)
-    model.EnableScore(sparsity_theta_objective)
-    model.EnableScore(sparsity_phi_objective)
-    model.EnableScore(top_tokens_score)
-    model.EnableScore(theta_snippet_score)
-    model.EnableRegularizer(theta_objective, -1.0)
+    model.EnableRegularizer(theta_objective, -0.5)
     model.EnableRegularizer(theta_background, 0.5)
-    model.EnableRegularizer(phi_objective, -1.0)
-    model.EnableRegularizer(phi_background, 1.0)
+    model.EnableRegularizer(phi_objective, -0.5)
+    model.EnableRegularizer(phi_background, 0.5)
     model.EnableRegularizer(decorrelator_regularizer, 1000000)
     model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
 

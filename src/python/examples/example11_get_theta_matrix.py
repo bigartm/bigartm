@@ -13,7 +13,6 @@ with artm.library.MasterComponent(disk_path=batches_disk_path) as master:
 
     model = master.CreateModel(topics_count=8)
     theta_snippet_score = master.CreateThetaSnippetScore()
-    model.EnableScore(theta_snippet_score)
 
     for iteration in range(0, 2):
         master.InvokeIteration()

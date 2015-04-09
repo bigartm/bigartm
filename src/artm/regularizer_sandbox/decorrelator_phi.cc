@@ -14,8 +14,6 @@ namespace artm {
 namespace regularizer_sandbox {
 
 bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
-  // count n_t_
-  topic_model->CalcNormalizers();
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
 
@@ -47,6 +45,9 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
     use_all_classes = true;
   }
 
+  ::artm::core::TokenCollectionWeights p_wt(topic_model->topic_size());
+  topic_model->FindPwt(&p_wt);
+
   // proceed the regularization
   for (int token_id = 0; token_id < topic_model->token_size(); ++token_id) {
     bool regularize_this_token = false;
@@ -62,19 +63,16 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
     }
     if (regularize_this_token) {
       // count sum of weights
-      auto topic_iterator = topic_model->GetTopicWeightIterator(token_id);
       float weights_sum = 0.0f;
-      while (topic_iterator.NextTopic() < topic_size) {
-        if (topics_to_regularize[topic_iterator.TopicIndex()])
-          weights_sum += topic_iterator.Weight();
+      for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+        if (topics_to_regularize[topic_id])
+          weights_sum += p_wt[token_id][topic_id];
       }
 
       // form the value
-      topic_iterator.Reset();
-      while (topic_iterator.NextTopic() < topic_size) {
-        int topic_id = topic_iterator.TopicIndex();
+      for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
         if (topics_to_regularize[topic_id]) {
-          float weight = topic_iterator.Weight();
+          float weight = p_wt[token_id][topic_id];
           float value = static_cast<float>(- tau * weight * (weights_sum - weight));
           topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
         }

@@ -79,6 +79,7 @@ class ThetaMatrix;
 class CollectionParserConfig;
 class SynchronizeModelArgs;
 class InitializeModelArgs;
+class InitializeModelArgs_Filter;
 class GetTopicModelArgs;
 class GetThetaMatrixArgs;
 class GetScoreValueArgs;
@@ -231,6 +232,28 @@ inline bool PerplexityScoreConfig_Type_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<PerplexityScoreConfig_Type>(
     PerplexityScoreConfig_Type_descriptor(), name, value);
 }
+enum TopicModel_OperationType {
+  TopicModel_OperationType_Initialize = 0,
+  TopicModel_OperationType_Increment = 1,
+  TopicModel_OperationType_Overwrite = 2,
+  TopicModel_OperationType_Remove = 3,
+  TopicModel_OperationType_Ignore = 4
+};
+bool TopicModel_OperationType_IsValid(int value);
+const TopicModel_OperationType TopicModel_OperationType_OperationType_MIN = TopicModel_OperationType_Initialize;
+const TopicModel_OperationType TopicModel_OperationType_OperationType_MAX = TopicModel_OperationType_Ignore;
+const int TopicModel_OperationType_OperationType_ARRAYSIZE = TopicModel_OperationType_OperationType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* TopicModel_OperationType_descriptor();
+inline const ::std::string& TopicModel_OperationType_Name(TopicModel_OperationType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    TopicModel_OperationType_descriptor(), value);
+}
+inline bool TopicModel_OperationType_Parse(
+    const ::std::string& name, TopicModel_OperationType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<TopicModel_OperationType>(
+    TopicModel_OperationType_descriptor(), name, value);
+}
 enum CollectionParserConfig_Format {
   CollectionParserConfig_Format_BagOfWordsUci = 0,
   CollectionParserConfig_Format_MatrixMarket = 1,
@@ -250,6 +273,44 @@ inline bool CollectionParserConfig_Format_Parse(
     const ::std::string& name, CollectionParserConfig_Format* value) {
   return ::google::protobuf::internal::ParseNamedEnum<CollectionParserConfig_Format>(
     CollectionParserConfig_Format_descriptor(), name, value);
+}
+enum InitializeModelArgs_SourceType {
+  InitializeModelArgs_SourceType_Dictionary = 0,
+  InitializeModelArgs_SourceType_Batches = 1
+};
+bool InitializeModelArgs_SourceType_IsValid(int value);
+const InitializeModelArgs_SourceType InitializeModelArgs_SourceType_SourceType_MIN = InitializeModelArgs_SourceType_Dictionary;
+const InitializeModelArgs_SourceType InitializeModelArgs_SourceType_SourceType_MAX = InitializeModelArgs_SourceType_Batches;
+const int InitializeModelArgs_SourceType_SourceType_ARRAYSIZE = InitializeModelArgs_SourceType_SourceType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* InitializeModelArgs_SourceType_descriptor();
+inline const ::std::string& InitializeModelArgs_SourceType_Name(InitializeModelArgs_SourceType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    InitializeModelArgs_SourceType_descriptor(), value);
+}
+inline bool InitializeModelArgs_SourceType_Parse(
+    const ::std::string& name, InitializeModelArgs_SourceType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<InitializeModelArgs_SourceType>(
+    InitializeModelArgs_SourceType_descriptor(), name, value);
+}
+enum GetTopicModelArgs_RequestType {
+  GetTopicModelArgs_RequestType_Pwt = 0,
+  GetTopicModelArgs_RequestType_Nwt = 1
+};
+bool GetTopicModelArgs_RequestType_IsValid(int value);
+const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MIN = GetTopicModelArgs_RequestType_Pwt;
+const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MAX = GetTopicModelArgs_RequestType_Nwt;
+const int GetTopicModelArgs_RequestType_RequestType_ARRAYSIZE = GetTopicModelArgs_RequestType_RequestType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_RequestType_descriptor();
+inline const ::std::string& GetTopicModelArgs_RequestType_Name(GetTopicModelArgs_RequestType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    GetTopicModelArgs_RequestType_descriptor(), value);
+}
+inline bool GetTopicModelArgs_RequestType_Parse(
+    const ::std::string& name, GetTopicModelArgs_RequestType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<GetTopicModelArgs_RequestType>(
+    GetTopicModelArgs_RequestType_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -2032,6 +2093,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool use_random_theta() const;
   inline void set_use_random_theta(bool value);
 
+  // optional bool use_new_tokens = 16 [default = true];
+  inline bool has_use_new_tokens() const;
+  inline void clear_use_new_tokens();
+  static const int kUseNewTokensFieldNumber = 16;
+  inline bool use_new_tokens() const;
+  inline void set_use_new_tokens(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2052,6 +2120,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_sparse_bow();
   inline void set_has_use_random_theta();
   inline void clear_has_use_random_theta();
+  inline void set_has_use_new_tokens();
+  inline void clear_has_use_new_tokens();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2067,15 +2137,16 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
+  bool use_new_tokens_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5397,6 +5468,33 @@ class TopicModel : public ::google::protobuf::Message {
 
   typedef TopicModel_TopicModelInternals TopicModelInternals;
 
+  typedef TopicModel_OperationType OperationType;
+  static const OperationType Initialize = TopicModel_OperationType_Initialize;
+  static const OperationType Increment = TopicModel_OperationType_Increment;
+  static const OperationType Overwrite = TopicModel_OperationType_Overwrite;
+  static const OperationType Remove = TopicModel_OperationType_Remove;
+  static const OperationType Ignore = TopicModel_OperationType_Ignore;
+  static inline bool OperationType_IsValid(int value) {
+    return TopicModel_OperationType_IsValid(value);
+  }
+  static const OperationType OperationType_MIN =
+    TopicModel_OperationType_OperationType_MIN;
+  static const OperationType OperationType_MAX =
+    TopicModel_OperationType_OperationType_MAX;
+  static const int OperationType_ARRAYSIZE =
+    TopicModel_OperationType_OperationType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  OperationType_descriptor() {
+    return TopicModel_OperationType_descriptor();
+  }
+  static inline const ::std::string& OperationType_Name(OperationType value) {
+    return TopicModel_OperationType_Name(value);
+  }
+  static inline bool OperationType_Parse(const ::std::string& name,
+      OperationType* value) {
+    return TopicModel_OperationType_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
 
   // optional string name = 1 [default = "@model"];
@@ -5502,6 +5600,16 @@ class TopicModel : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
       mutable_topic_index();
 
+  // repeated .artm.TopicModel.OperationType operation_type = 9;
+  inline int operation_type_size() const;
+  inline void clear_operation_type();
+  static const int kOperationTypeFieldNumber = 9;
+  inline ::artm::TopicModel_OperationType operation_type(int index) const;
+  inline void set_operation_type(int index, ::artm::TopicModel_OperationType value);
+  inline void add_operation_type(::artm::TopicModel_OperationType value);
+  inline const ::google::protobuf::RepeatedField<int>& operation_type() const;
+  inline ::google::protobuf::RepeatedField<int>* mutable_operation_type();
+
   // @@protoc_insertion_point(class_scope:artm.TopicModel)
  private:
   inline void set_has_name();
@@ -5521,10 +5629,11 @@ class TopicModel : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::std::string* internals_;
   ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
+  ::google::protobuf::RepeatedField<int> operation_type_;
   ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5991,7 +6100,7 @@ class SynchronizeModelArgs : public ::google::protobuf::Message {
   inline ::std::string* release_model_name();
   inline void set_allocated_model_name(::std::string* model_name);
 
-  // optional float decay_weight = 2 [default = 1];
+  // optional float decay_weight = 2 [default = 0];
   inline bool has_decay_weight() const;
   inline void clear_decay_weight();
   static const int kDecayWeightFieldNumber = 2;
@@ -6039,6 +6148,133 @@ class SynchronizeModelArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static SynchronizeModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class InitializeModelArgs_Filter : public ::google::protobuf::Message {
+ public:
+  InitializeModelArgs_Filter();
+  virtual ~InitializeModelArgs_Filter();
+
+  InitializeModelArgs_Filter(const InitializeModelArgs_Filter& from);
+
+  inline InitializeModelArgs_Filter& operator=(const InitializeModelArgs_Filter& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const InitializeModelArgs_Filter& default_instance();
+
+  void Swap(InitializeModelArgs_Filter* other);
+
+  // implements Message ----------------------------------------------
+
+  InitializeModelArgs_Filter* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const InitializeModelArgs_Filter& from);
+  void MergeFrom(const InitializeModelArgs_Filter& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string class_id = 1;
+  inline bool has_class_id() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 1;
+  inline const ::std::string& class_id() const;
+  inline void set_class_id(const ::std::string& value);
+  inline void set_class_id(const char* value);
+  inline void set_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_class_id();
+  inline ::std::string* release_class_id();
+  inline void set_allocated_class_id(::std::string* class_id);
+
+  // optional float min_percentage = 2;
+  inline bool has_min_percentage() const;
+  inline void clear_min_percentage();
+  static const int kMinPercentageFieldNumber = 2;
+  inline float min_percentage() const;
+  inline void set_min_percentage(float value);
+
+  // optional float max_percentage = 3;
+  inline bool has_max_percentage() const;
+  inline void clear_max_percentage();
+  static const int kMaxPercentageFieldNumber = 3;
+  inline float max_percentage() const;
+  inline void set_max_percentage(float value);
+
+  // optional int32 min_items = 4;
+  inline bool has_min_items() const;
+  inline void clear_min_items();
+  static const int kMinItemsFieldNumber = 4;
+  inline ::google::protobuf::int32 min_items() const;
+  inline void set_min_items(::google::protobuf::int32 value);
+
+  // optional int32 max_items = 5;
+  inline bool has_max_items() const;
+  inline void clear_max_items();
+  static const int kMaxItemsFieldNumber = 5;
+  inline ::google::protobuf::int32 max_items() const;
+  inline void set_max_items(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs.Filter)
+ private:
+  inline void set_has_class_id();
+  inline void clear_has_class_id();
+  inline void set_has_min_percentage();
+  inline void clear_has_min_percentage();
+  inline void set_has_max_percentage();
+  inline void clear_has_max_percentage();
+  inline void set_has_min_items();
+  inline void clear_has_min_items();
+  inline void set_has_max_items();
+  inline void clear_has_max_items();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* class_id_;
+  float min_percentage_;
+  float max_percentage_;
+  ::google::protobuf::int32 min_items_;
+  ::google::protobuf::int32 max_items_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static InitializeModelArgs_Filter* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -6094,6 +6330,32 @@ class InitializeModelArgs : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
+  typedef InitializeModelArgs_Filter Filter;
+
+  typedef InitializeModelArgs_SourceType SourceType;
+  static const SourceType Dictionary = InitializeModelArgs_SourceType_Dictionary;
+  static const SourceType Batches = InitializeModelArgs_SourceType_Batches;
+  static inline bool SourceType_IsValid(int value) {
+    return InitializeModelArgs_SourceType_IsValid(value);
+  }
+  static const SourceType SourceType_MIN =
+    InitializeModelArgs_SourceType_SourceType_MIN;
+  static const SourceType SourceType_MAX =
+    InitializeModelArgs_SourceType_SourceType_MAX;
+  static const int SourceType_ARRAYSIZE =
+    InitializeModelArgs_SourceType_SourceType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  SourceType_descriptor() {
+    return InitializeModelArgs_SourceType_descriptor();
+  }
+  static inline const ::std::string& SourceType_Name(SourceType value) {
+    return InitializeModelArgs_SourceType_Name(value);
+  }
+  static inline bool SourceType_Parse(const ::std::string& name,
+      SourceType* value) {
+    return InitializeModelArgs_SourceType_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
 
   // optional string model_name = 1;
@@ -6120,20 +6382,58 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
+  // optional .artm.InitializeModelArgs.SourceType source_type = 3 [default = Dictionary];
+  inline bool has_source_type() const;
+  inline void clear_source_type();
+  static const int kSourceTypeFieldNumber = 3;
+  inline ::artm::InitializeModelArgs_SourceType source_type() const;
+  inline void set_source_type(::artm::InitializeModelArgs_SourceType value);
+
+  // optional string disk_path = 4;
+  inline bool has_disk_path() const;
+  inline void clear_disk_path();
+  static const int kDiskPathFieldNumber = 4;
+  inline const ::std::string& disk_path() const;
+  inline void set_disk_path(const ::std::string& value);
+  inline void set_disk_path(const char* value);
+  inline void set_disk_path(const char* value, size_t size);
+  inline ::std::string* mutable_disk_path();
+  inline ::std::string* release_disk_path();
+  inline void set_allocated_disk_path(::std::string* disk_path);
+
+  // repeated .artm.InitializeModelArgs.Filter filter = 5;
+  inline int filter_size() const;
+  inline void clear_filter();
+  static const int kFilterFieldNumber = 5;
+  inline const ::artm::InitializeModelArgs_Filter& filter(int index) const;
+  inline ::artm::InitializeModelArgs_Filter* mutable_filter(int index);
+  inline ::artm::InitializeModelArgs_Filter* add_filter();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >&
+      filter() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >*
+      mutable_filter();
+
   // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
   inline void set_has_dictionary_name();
   inline void clear_has_dictionary_name();
+  inline void set_has_source_type();
+  inline void clear_has_source_type();
+  inline void set_has_disk_path();
+  inline void clear_has_disk_path();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
   ::std::string* dictionary_name_;
+  ::std::string* disk_path_;
+  ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter > filter_;
+  int source_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6195,6 +6495,30 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
+
+  typedef GetTopicModelArgs_RequestType RequestType;
+  static const RequestType Pwt = GetTopicModelArgs_RequestType_Pwt;
+  static const RequestType Nwt = GetTopicModelArgs_RequestType_Nwt;
+  static inline bool RequestType_IsValid(int value) {
+    return GetTopicModelArgs_RequestType_IsValid(value);
+  }
+  static const RequestType RequestType_MIN =
+    GetTopicModelArgs_RequestType_RequestType_MIN;
+  static const RequestType RequestType_MAX =
+    GetTopicModelArgs_RequestType_RequestType_MAX;
+  static const int RequestType_ARRAYSIZE =
+    GetTopicModelArgs_RequestType_RequestType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  RequestType_descriptor() {
+    return GetTopicModelArgs_RequestType_descriptor();
+  }
+  static inline const ::std::string& RequestType_Name(RequestType value) {
+    return GetTopicModelArgs_RequestType_Name(value);
+  }
+  static inline bool RequestType_Parse(const ::std::string& name,
+      RequestType* value) {
+    return GetTopicModelArgs_RequestType_Parse(name, value);
+  }
 
   // accessors -------------------------------------------------------
 
@@ -6272,6 +6596,13 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
+  // optional .artm.GetTopicModelArgs.RequestType request_type = 7 [default = Pwt];
+  inline bool has_request_type() const;
+  inline void clear_request_type();
+  static const int kRequestTypeFieldNumber = 7;
+  inline ::artm::GetTopicModelArgs_RequestType request_type() const;
+  inline void set_request_type(::artm::GetTopicModelArgs_RequestType value);
+
   // @@protoc_insertion_point(class_scope:artm.GetTopicModelArgs)
  private:
   inline void set_has_model_name();
@@ -6280,6 +6611,8 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline void clear_has_use_sparse_format();
   inline void set_has_eps();
   inline void clear_has_eps();
+  inline void set_has_request_type();
+  inline void clear_has_request_type();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6289,9 +6622,10 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   bool use_sparse_format_;
   float eps_;
+  int request_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9396,6 +9730,28 @@ inline bool ModelConfig::use_random_theta() const {
 inline void ModelConfig::set_use_random_theta(bool value) {
   set_has_use_random_theta();
   use_random_theta_ = value;
+}
+
+// optional bool use_new_tokens = 16 [default = true];
+inline bool ModelConfig::has_use_new_tokens() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void ModelConfig::set_has_use_new_tokens() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void ModelConfig::clear_has_use_new_tokens() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void ModelConfig::clear_use_new_tokens() {
+  use_new_tokens_ = true;
+  clear_has_use_new_tokens();
+}
+inline bool ModelConfig::use_new_tokens() const {
+  return use_new_tokens_;
+}
+inline void ModelConfig::set_use_new_tokens(bool value) {
+  set_has_use_new_tokens();
+  use_new_tokens_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -13482,6 +13838,33 @@ TopicModel::mutable_topic_index() {
   return &topic_index_;
 }
 
+// repeated .artm.TopicModel.OperationType operation_type = 9;
+inline int TopicModel::operation_type_size() const {
+  return operation_type_.size();
+}
+inline void TopicModel::clear_operation_type() {
+  operation_type_.Clear();
+}
+inline ::artm::TopicModel_OperationType TopicModel::operation_type(int index) const {
+  return static_cast< ::artm::TopicModel_OperationType >(operation_type_.Get(index));
+}
+inline void TopicModel::set_operation_type(int index, ::artm::TopicModel_OperationType value) {
+  assert(::artm::TopicModel_OperationType_IsValid(value));
+  operation_type_.Set(index, value);
+}
+inline void TopicModel::add_operation_type(::artm::TopicModel_OperationType value) {
+  assert(::artm::TopicModel_OperationType_IsValid(value));
+  operation_type_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField<int>&
+TopicModel::operation_type() const {
+  return operation_type_;
+}
+inline ::google::protobuf::RepeatedField<int>*
+TopicModel::mutable_operation_type() {
+  return &operation_type_;
+}
+
 // -------------------------------------------------------------------
 
 // ThetaMatrix
@@ -14280,7 +14663,7 @@ inline void SynchronizeModelArgs::set_allocated_model_name(::std::string* model_
   }
 }
 
-// optional float decay_weight = 2 [default = 1];
+// optional float decay_weight = 2 [default = 0];
 inline bool SynchronizeModelArgs::has_decay_weight() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -14291,7 +14674,7 @@ inline void SynchronizeModelArgs::clear_has_decay_weight() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void SynchronizeModelArgs::clear_decay_weight() {
-  decay_weight_ = 1;
+  decay_weight_ = 0;
   clear_has_decay_weight();
 }
 inline float SynchronizeModelArgs::decay_weight() const {
@@ -14344,6 +14727,168 @@ inline float SynchronizeModelArgs::apply_weight() const {
 inline void SynchronizeModelArgs::set_apply_weight(float value) {
   set_has_apply_weight();
   apply_weight_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// InitializeModelArgs_Filter
+
+// optional string class_id = 1;
+inline bool InitializeModelArgs_Filter::has_class_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_class_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void InitializeModelArgs_Filter::clear_has_class_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void InitializeModelArgs_Filter::clear_class_id() {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    class_id_->clear();
+  }
+  clear_has_class_id();
+}
+inline const ::std::string& InitializeModelArgs_Filter::class_id() const {
+  return *class_id_;
+}
+inline void InitializeModelArgs_Filter::set_class_id(const ::std::string& value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void InitializeModelArgs_Filter::set_class_id(const char* value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void InitializeModelArgs_Filter::set_class_id(const char* value, size_t size) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* InitializeModelArgs_Filter::mutable_class_id() {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  return class_id_;
+}
+inline ::std::string* InitializeModelArgs_Filter::release_class_id() {
+  clear_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = class_id_;
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void InitializeModelArgs_Filter::set_allocated_class_id(::std::string* class_id) {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete class_id_;
+  }
+  if (class_id) {
+    set_has_class_id();
+    class_id_ = class_id;
+  } else {
+    clear_has_class_id();
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional float min_percentage = 2;
+inline bool InitializeModelArgs_Filter::has_min_percentage() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_percentage() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_percentage() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void InitializeModelArgs_Filter::clear_min_percentage() {
+  min_percentage_ = 0;
+  clear_has_min_percentage();
+}
+inline float InitializeModelArgs_Filter::min_percentage() const {
+  return min_percentage_;
+}
+inline void InitializeModelArgs_Filter::set_min_percentage(float value) {
+  set_has_min_percentage();
+  min_percentage_ = value;
+}
+
+// optional float max_percentage = 3;
+inline bool InitializeModelArgs_Filter::has_max_percentage() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_max_percentage() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InitializeModelArgs_Filter::clear_has_max_percentage() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InitializeModelArgs_Filter::clear_max_percentage() {
+  max_percentage_ = 0;
+  clear_has_max_percentage();
+}
+inline float InitializeModelArgs_Filter::max_percentage() const {
+  return max_percentage_;
+}
+inline void InitializeModelArgs_Filter::set_max_percentage(float value) {
+  set_has_max_percentage();
+  max_percentage_ = value;
+}
+
+// optional int32 min_items = 4;
+inline bool InitializeModelArgs_Filter::has_min_items() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_items() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_items() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void InitializeModelArgs_Filter::clear_min_items() {
+  min_items_ = 0;
+  clear_has_min_items();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::min_items() const {
+  return min_items_;
+}
+inline void InitializeModelArgs_Filter::set_min_items(::google::protobuf::int32 value) {
+  set_has_min_items();
+  min_items_ = value;
+}
+
+// optional int32 max_items = 5;
+inline bool InitializeModelArgs_Filter::has_max_items() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_max_items() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void InitializeModelArgs_Filter::clear_has_max_items() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void InitializeModelArgs_Filter::clear_max_items() {
+  max_items_ = 0;
+  clear_has_max_items();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::max_items() const {
+  return max_items_;
+}
+inline void InitializeModelArgs_Filter::set_max_items(::google::protobuf::int32 value) {
+  set_has_max_items();
+  max_items_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -14488,6 +15033,124 @@ inline void InitializeModelArgs::set_allocated_dictionary_name(::std::string* di
     clear_has_dictionary_name();
     dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
+}
+
+// optional .artm.InitializeModelArgs.SourceType source_type = 3 [default = Dictionary];
+inline bool InitializeModelArgs::has_source_type() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InitializeModelArgs::set_has_source_type() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InitializeModelArgs::clear_has_source_type() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InitializeModelArgs::clear_source_type() {
+  source_type_ = 0;
+  clear_has_source_type();
+}
+inline ::artm::InitializeModelArgs_SourceType InitializeModelArgs::source_type() const {
+  return static_cast< ::artm::InitializeModelArgs_SourceType >(source_type_);
+}
+inline void InitializeModelArgs::set_source_type(::artm::InitializeModelArgs_SourceType value) {
+  assert(::artm::InitializeModelArgs_SourceType_IsValid(value));
+  set_has_source_type();
+  source_type_ = value;
+}
+
+// optional string disk_path = 4;
+inline bool InitializeModelArgs::has_disk_path() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void InitializeModelArgs::set_has_disk_path() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void InitializeModelArgs::clear_has_disk_path() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void InitializeModelArgs::clear_disk_path() {
+  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_->clear();
+  }
+  clear_has_disk_path();
+}
+inline const ::std::string& InitializeModelArgs::disk_path() const {
+  return *disk_path_;
+}
+inline void InitializeModelArgs::set_disk_path(const ::std::string& value) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(value);
+}
+inline void InitializeModelArgs::set_disk_path(const char* value) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(value);
+}
+inline void InitializeModelArgs::set_disk_path(const char* value, size_t size) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* InitializeModelArgs::mutable_disk_path() {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  return disk_path_;
+}
+inline ::std::string* InitializeModelArgs::release_disk_path() {
+  clear_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = disk_path_;
+    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void InitializeModelArgs::set_allocated_disk_path(::std::string* disk_path) {
+  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete disk_path_;
+  }
+  if (disk_path) {
+    set_has_disk_path();
+    disk_path_ = disk_path;
+  } else {
+    clear_has_disk_path();
+    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// repeated .artm.InitializeModelArgs.Filter filter = 5;
+inline int InitializeModelArgs::filter_size() const {
+  return filter_.size();
+}
+inline void InitializeModelArgs::clear_filter() {
+  filter_.Clear();
+}
+inline const ::artm::InitializeModelArgs_Filter& InitializeModelArgs::filter(int index) const {
+  return filter_.Get(index);
+}
+inline ::artm::InitializeModelArgs_Filter* InitializeModelArgs::mutable_filter(int index) {
+  return filter_.Mutable(index);
+}
+inline ::artm::InitializeModelArgs_Filter* InitializeModelArgs::add_filter() {
+  return filter_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >&
+InitializeModelArgs::filter() const {
+  return filter_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >*
+InitializeModelArgs::mutable_filter() {
+  return &filter_;
 }
 
 // -------------------------------------------------------------------
@@ -14738,6 +15401,29 @@ inline float GetTopicModelArgs::eps() const {
 inline void GetTopicModelArgs::set_eps(float value) {
   set_has_eps();
   eps_ = value;
+}
+
+// optional .artm.GetTopicModelArgs.RequestType request_type = 7 [default = Pwt];
+inline bool GetTopicModelArgs::has_request_type() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void GetTopicModelArgs::set_has_request_type() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void GetTopicModelArgs::clear_has_request_type() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void GetTopicModelArgs::clear_request_type() {
+  request_type_ = 0;
+  clear_has_request_type();
+}
+inline ::artm::GetTopicModelArgs_RequestType GetTopicModelArgs::request_type() const {
+  return static_cast< ::artm::GetTopicModelArgs_RequestType >(request_type_);
+}
+inline void GetTopicModelArgs::set_request_type(::artm::GetTopicModelArgs_RequestType value) {
+  assert(::artm::GetTopicModelArgs_RequestType_IsValid(value));
+  set_has_request_type();
+  request_type_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -15507,8 +16193,20 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::PerplexityScoreConfig_Ty
   return ::artm::PerplexityScoreConfig_Type_descriptor();
 }
 template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::TopicModel_OperationType>() {
+  return ::artm::TopicModel_OperationType_descriptor();
+}
+template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::CollectionParserConfig_Format>() {
   return ::artm::CollectionParserConfig_Format_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::InitializeModelArgs_SourceType>() {
+  return ::artm::InitializeModelArgs_SourceType_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::GetTopicModelArgs_RequestType>() {
+  return ::artm::GetTopicModelArgs_RequestType_descriptor();
 }
 
 }  // namespace google

@@ -8,6 +8,7 @@
 #include "boost/bind.hpp"
 
 #include "artm/core/common.h"
+#include "artm/core/helpers.h"
 #include "artm/core/data_loader.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/dictionary.h"
@@ -122,9 +123,8 @@ Merger* Instance::merger() {
 }
 
 void Instance::CreateOrReconfigureModel(const ModelConfig& config) {
+  if (!Helpers::Validate(config)) return;
   auto corrected_config = std::make_shared<artm::ModelConfig>(config);
-  PopulateClassId(corrected_config.get());
-  PopulateTopicsName(corrected_config.get());
   if (merger_ != nullptr) {
     merger_->CreateOrReconfigureModel(*corrected_config);
   }
@@ -384,34 +384,6 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
           &merger_queue_,
           *merger_,
           schema_)));
-    }
-  }
-}
-
-void Instance::PopulateTopicsName(ModelConfig* model_config) {
-  int topics_count = model_config->topics_count();
-  int topic_name_size = model_config->topic_name_size();
-  if (topic_name_size == 0) {
-    // topic names will be auto-generated
-    for (int i = 0; i < topics_count; ++i) {
-      model_config->add_topic_name("@topic_" + std::to_string(i));
-    }
-  } else {
-    model_config->set_topics_count(topic_name_size);
-  }
-}
-
-void Instance::PopulateClassId(ModelConfig* model_config) {
-  int class_id_size = model_config->class_id_size();
-  if (class_id_size != 0) {
-    // model has list of classes and it is nesessary to check correctness of weights
-    if (model_config->class_weight_size() != class_id_size) {
-      model_config->clear_class_weight();
-      for (int i = 0; i < class_id_size; ++i) {
-        model_config->add_class_weight(1.0f);
-      }
-      LOG(ERROR) << "Field ModelConfig.class_weight must have the same length as field ModelConfig.class_id. "
-                 << "Setting the weights of all classes to 1.0";
     }
   }
 }

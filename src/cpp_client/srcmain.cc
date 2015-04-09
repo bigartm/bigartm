@@ -107,13 +107,11 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
   score_config.set_name("test_perplexity");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 
   perplexity_config.set_stream_name("train_stream");
   score_config.set_config(perplexity_config.SerializeAsString());
   score_config.set_name("train_perplexity");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 
   ::artm::SparsityThetaScoreConfig sparsity_theta_config;
   sparsity_theta_config.set_stream_name("test_stream");
@@ -121,20 +119,17 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   score_config.set_type(::artm::ScoreConfig_Type_SparsityTheta);
   score_config.set_name("test_sparsity_theta");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 
   sparsity_theta_config.set_stream_name("train_stream");
   score_config.set_config(sparsity_theta_config.SerializeAsString());
   score_config.set_name("train_sparsity_theta");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 
   ::artm::SparsityPhiScoreConfig sparsity_phi_config;
   score_config.set_config(sparsity_phi_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_SparsityPhi);
   score_config.set_name("sparsity_phi");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 
   ::artm::ItemsProcessedScoreConfig items_processed_config;
   items_processed_config.set_stream_name("test_stream");
@@ -142,13 +137,11 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   score_config.set_type(::artm::ScoreConfig_Type_ItemsProcessed);
   score_config.set_name("test_items_processed");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 
   items_processed_config.set_stream_name("train_stream");
   score_config.set_config(items_processed_config.SerializeAsString());
   score_config.set_name("train_items_processed");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 
   if (options.class_id.empty()) {
     ::artm::TopTokensScoreConfig top_tokens_config;
@@ -157,7 +150,6 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
     score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
     score_config.set_name("top_tokens");
     master_config->add_score_config()->CopyFrom(score_config);
-    model_config->add_score_name(score_config.name());
   }
   else {
     for (const std::string& class_id : options.class_id) {
@@ -168,7 +160,6 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
       score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
       score_config.set_name(class_id + "_top_tokens");
       master_config->add_score_config()->CopyFrom(score_config);
-      model_config->add_score_name(score_config.name());
     }
   }
 
@@ -179,7 +170,6 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
   score_config.set_name("train_theta_snippet");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 
   ::artm::TopicKernelScoreConfig topic_kernel_config;
   std::string tr = topic_kernel_config.SerializeAsString();
@@ -187,7 +177,6 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   score_config.set_type(::artm::ScoreConfig_Type_TopicKernel);
   score_config.set_name("topic_kernel");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 }
 
 artm::RegularizerConfig configurePhiRegularizer(float tau, ModelConfig* model_config) {
@@ -230,7 +219,6 @@ void configureItemsProcessedScore(artm::MasterComponentConfig* master_config, Mo
   score_config.set_type(::artm::ScoreConfig_Type_ItemsProcessed);
   score_config.set_name("items_processed");
   master_config->add_score_config()->CopyFrom(score_config);
-  model_config->add_score_name(score_config.name());
 }
 
 void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class_id) {

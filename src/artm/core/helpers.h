@@ -13,6 +13,7 @@
 #include "boost/thread/tss.hpp"
 
 #include "artm/core/common.h"
+#include "artm/messages.pb.h"
 
 namespace artm {
 
@@ -26,6 +27,22 @@ class Helpers {
   // (thread_id == -1 stands for the current thread)
   static void SetThreadName(int thread_id, const char* thread_name);
   static std::vector<float> GenerateRandomVector(int size, size_t seed);
+
+  static void Fix(::artm::TopicModel* message);
+  static bool Validate(const ::artm::TopicModel& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::TopicModel* message, bool throw_error = true);
+
+  static void Fix(::artm::ModelConfig* message);
+  static bool Validate(const ::artm::ModelConfig& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::ModelConfig* message, bool throw_error = true);
+
+  static void Fix(::artm::ThetaMatrix* message);
+  static bool Validate(const ::artm::ThetaMatrix& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::ThetaMatrix* message, bool throw_error = true);
+
+  static void Fix(::artm::Batch* message);
+  static bool Validate(const ::artm::Batch& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::Batch* message, bool throw_error = true);
 };
 
 class BatchHelpers {
@@ -42,7 +59,6 @@ class BatchHelpers {
                           const ::google::protobuf::Message& message);
   static void SaveMessage(const std::string& filename, const std::string& disk_path,
                           const ::google::protobuf::Message& message);
-  static void PopulateClassId(Batch* batch);
   static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
                                                 const GetThetaMatrixArgs& get_theta_args,
                                                 ::artm::ThetaMatrix* theta_matrix);

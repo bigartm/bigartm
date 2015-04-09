@@ -1,5 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+#include <sstream>  // NOLINT
+
 #include "boost/thread.hpp"
 #include "gtest/gtest.h"
 
@@ -109,8 +111,8 @@ TEST(MultipleClasses, BasicTest) {
   regularizer_config.set_name("regularizer_smsp_theta");
   regularizer_config.set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
   ::artm::SmoothSparseThetaConfig smooth_sparse_theta_config;
-  smooth_sparse_theta_config.add_topic_name("Topic3");
-  smooth_sparse_theta_config.add_topic_name("Topic7");
+  smooth_sparse_theta_config.add_topic_name("@topic_3");
+  smooth_sparse_theta_config.add_topic_name("@topic_7");
   regularizer_config.set_config(smooth_sparse_theta_config.SerializeAsString());
   ::artm::Regularizer regularizer_smsp_theta(master_component, regularizer_config);
 
@@ -121,10 +123,16 @@ TEST(MultipleClasses, BasicTest) {
 
   artm::Batch batch = GenerateBatch(nTokens, nDocs, "@default_class", "__custom_class");
   artm::TopicModel initial_model;
+  for (int i = 0; i < nTopics; ++i) {
+    std::stringstream ss;
+    ss << "@topic_" << i;
+    initial_model.add_topic_name(ss.str());
+  }
+
   for (int i = 0; i < batch.token_size(); i++) {
     initial_model.add_token(batch.token(i));
     initial_model.add_class_id(batch.class_id(i));
-    initial_model.set_topics_count(nTopics);
+    initial_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
     ::artm::FloatArray* token_weights = initial_model.add_token_weights();
     for (int topic_index = 0; topic_index < nTopics; ++topic_index) {
       token_weights->add_value(static_cast<float>(rand()) / static_cast<float>(RAND_MAX));  // NOLINT
@@ -301,9 +309,6 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   model_config1.add_class_id("class_one"); model_config1.add_class_weight(2.0f);
   // model_config1.add_score_name("default_class"); model_config1.add_score_name("tts_class_one");
   // model_config1.add_score_name("tts_class_two");
-  model_config1.add_score_name("perplexity");
-  model_config1.add_score_name("theta_snippet");
-  model_config1.add_score_name("items_processed");
   artm::Model model1(master_component, model_config1);
 
   artm::ModelConfig model_config2;
@@ -312,7 +317,6 @@ TEST(MultipleClasses, WithoutDefaultClass) {
   model_config2.add_class_id("class_two"); model_config2.add_class_weight(0.5f);
   // model_config2.add_score_name("default_class"); model_config2.add_score_name("tts_class_one");
   // model_config2.add_score_name("tts_class_two");
-  model_config2.add_score_name("perplexity");
   artm::Model model2(master_component, model_config2);
 
   for (int iter = 0; iter < 5; ++iter) {
@@ -364,22 +368,17 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
 
   EXPECT_EQ(tm_dense->name(), args.model_name());
   EXPECT_EQ(tm_sparse->name(), args.model_name());
-  ASSERT_EQ(tm_dense->topics_count(), tm_dense->topic_name_size());
-  ASSERT_EQ(tm_sparse->topics_count(), tm_sparse->topic_name_size());
-  ASSERT_GT(tm_dense->topics_count(), 0);
-  ASSERT_GT(tm_sparse->topics_count(), 0);
+  ASSERT_GT(tm_dense->topic_name_size(), 0);
+  ASSERT_GT(tm_sparse->topic_name_size(), 0);
   ASSERT_GT(tm_dense->token_size(), 0);
   ASSERT_GT(tm_sparse->token_size(), 0);
 
   if (!all_topics) {
-    ASSERT_EQ(tm_dense->topics_count(), args.topic_name_size());
-    for (int i = 0; i < tm_dense->topics_count(); ++i)
+    for (int i = 0; i < tm_dense->topic_name_size(); ++i)
       EXPECT_EQ(tm_dense->topic_name(i), args.topic_name(i));
+    for (int i = 0; i < tm_sparse->topic_name_size(); ++i)
+      EXPECT_EQ(tm_sparse->topic_name(i), args.topic_name(i));
   }
-
-  ASSERT_EQ(tm_sparse->topics_count(), tm_all->topics_count());
-  for (int i = 0; i < tm_sparse->topics_count(); ++i)
-    EXPECT_EQ(tm_sparse->topic_name(i), tm_all->topic_name(i));
 
   ASSERT_EQ(tm_sparse->token_size(), tm_dense->token_size());
   ASSERT_EQ(tm_sparse->token_weights_size(), tm_dense->token_weights_size());
@@ -416,7 +415,7 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
     for (int j = 0; j < sparse_topic.value_size(); ++j) {
       int topic_index = sparse_topic_index.value(j);
       float value = sparse_topic.value(j);
-      ASSERT_TRUE(topic_index >= 0 && topic_index <= tm_all->topics_count());
+      ASSERT_TRUE(topic_index >= 0 && topic_index <= tm_all->topic_name_size());
       EXPECT_TRUE(value >= args.eps());
       EXPECT_EQ(value, dense_topic.value(topic_index));
     }
@@ -498,7 +497,12 @@ TEST(MultipleClasses, GetTopicModel) {
   artm::Batch batch = GenerateBatch(nTokens, nDocs, "class_one", "class_two");
 
   artm::ModelConfig model_config;
-  model_config.set_name("model1"); model_config.set_topics_count(nTopics);
+  model_config.set_name("model1");
+  for (int i = 0; i < nTopics; ++i) {
+    std::stringstream ss;
+    ss << "@topic_" << i;
+    model_config.add_topic_name(ss.str());
+  }
   model_config.add_class_id("class_one"); model_config.add_class_weight(1.0f);
   model_config.add_class_id("class_two"); model_config.add_class_weight(1.0f);
   artm::Model model(master_component, model_config);
@@ -511,6 +515,10 @@ TEST(MultipleClasses, GetTopicModel) {
   ::artm::GetTopicModelArgs args;
   args.set_eps(0.05f);
   args.set_model_name(model.name());
+  VerifySparseVersusDenseTopicModel(args, &master_component);
+
+  for (int i = 0; i < nTopics; i += 2)
+    args.add_topic_name(model_config.topic_name(i));
   VerifySparseVersusDenseTopicModel(args, &master_component);
 
   args.add_class_id("class_two");

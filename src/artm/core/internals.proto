@@ -60,27 +60,7 @@ message ProcessorInput
 
 // All information, gathered by Processor for a particular batch and model.
 message ModelIncrement {
-  enum OperationType {
-    CreateIfNotExist = 0;  // Asks Merger to create a new token if it does not exist yet.
-    IncrementValue = 1;    // Asks Merger to increment value of this token
-    OverwriteValue = 2;    // Asks Merger to overwrite value of this token
-    DeleteToken = 3;       // Asks Merger to remote this token
-    SkipToken = 4;         // Asks Merger to skip this token (used when class_id is not included in the model)
-  }
-
-  required string model_name = 1;
-  required int32 topics_count = 2;
-  repeated string topic_name = 3;
-
-  repeated string token = 4;
-  repeated string class_id = 5;
-  repeated OperationType operation_type = 6;
-
-  // Length of this repeated field is equal to the lengh of "repeated string token" field.
-  // Values corresponding to CreateIfNotExist and DeleteToken are empty.
-  // Values corresponding to IncrementValue and OverwriteValue carry n_wt values for this batch.
-  // In this cases the length of the FloatArray equals to the topics_count.
-  repeated FloatArray token_increment = 7;
+  optional TopicModel topic_model = 1;
 
   repeated string score_name = 8;
   repeated bytes score = 9;

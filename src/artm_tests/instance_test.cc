@@ -10,6 +10,7 @@
 
 #include "artm/messages.pb.h"
 #include "artm/core/instance.h"
+#include "artm/core/helpers.h"
 #include "artm/core/merger.h"
 #include "artm/core/data_loader.h"
 #include "artm/core/protobuf_helpers.h"
@@ -59,6 +60,7 @@ class InstanceTest : boost::noncopyable {
       iLength = (iLength + 1) % max_length;
     }
 
+    ::artm::core::Helpers::FixAndValidate(batch.get());
     return batch;
   }
 
@@ -66,7 +68,7 @@ class InstanceTest : boost::noncopyable {
   std::shared_ptr<artm::core::Instance> instance_;
 };
 
-// artm_tests.exe --gtest_filter=Instance.*
+// artm_tests.exe --gtest_filter=Instance.Basic
 TEST(Instance, Basic) {
   auto instance = std::make_shared< ::artm::core::Instance>(
     ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal);
@@ -82,6 +84,7 @@ TEST(Instance, Basic) {
     field->add_token_count(i+1);
   }
 
+  ::artm::core::Helpers::Fix(&batch1);
   artm::AddBatchArgs args1;
   args1.mutable_batch()->CopyFrom(batch1);  // +1
 
@@ -97,6 +100,7 @@ TEST(Instance, Basic) {
   }
 
   artm::AddBatchArgs args4;
+  ::artm::core::Helpers::Fix(&batch4);
   args4.mutable_batch()->CopyFrom(batch4);  // +4
 
   artm::ModelConfig config;
@@ -104,6 +108,7 @@ TEST(Instance, Basic) {
   config.set_topics_count(3);
   artm::core::ModelName model_name =
     boost::lexical_cast<std::string>(boost::uuids::random_generator()());
+  artm::core::Helpers::Fix(&config);
   config.set_name(boost::lexical_cast<std::string>(model_name));
   instance->CreateOrReconfigureModel(config);
 
@@ -124,6 +129,7 @@ TEST(Instance, Basic) {
     config.add_topic_name("@topic_" + std::to_string(i));
   }
   config.set_topics_count(0);
+  ::artm::core::Helpers::Fix(&config);
   instance->CreateOrReconfigureModel(config);
 
   artm::TopicModel topic_model;
@@ -135,7 +141,7 @@ TEST(Instance, Basic) {
 
   instance->merger()->RetrieveExternalTopicModel(args, &topic_model);
   EXPECT_EQ(topic_model.token_size(), 3);
-  EXPECT_EQ(topic_model.topics_count(), 3);
+  EXPECT_EQ(topic_model.topic_name_size(), 3);
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "first token")));
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "second")));
   EXPECT_TRUE(artm::core::model_has_token(topic_model, artm::core::Token(artm::core::DefaultClass, "last")));
@@ -186,13 +192,14 @@ TEST(Instance, MultipleStreamsAndModels) {
   m1.set_stream_name("train");
   m1.set_enabled(true);
   m1.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-  m1.add_score_name("perplexity");
+  artm::core::Helpers::Fix(&m1);
   test.instance()->CreateOrReconfigureModel(m1);
 
   artm::ModelConfig m2;
   m2.set_stream_name("test");
   m2.set_enabled(true);
   m2.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+  artm::core::Helpers::Fix(&m2);
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 5; ++iter) {
@@ -227,7 +234,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   for (int token_index = 0; token_index < m1t.token_size(); ++token_index) {
     std::string token = m1t.token(token_index);
     if ((token == "token1") || (token == "token3") || (token == "token5")) {
-      for (int topic_index = 0; topic_index < m1t.topics_count(); ++topic_index) {
+      for (int topic_index = 0; topic_index < m1t.topic_name_size(); ++topic_index) {
         // todo(alfrey) Verification was disabled because now all tokens are initialized with random values.
         // EXPECT_EQ(m1t.token_weights(token_index).value(topic_index), 0);
       }
@@ -243,7 +250,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   for (int token_index = 0; token_index < m2t.token_size(); ++token_index) {
     std::string token = m2t.token(token_index);
     if ((token == "token0") || (token == "token2") || (token == "token4")) {
-      for (int topic_index = 0; topic_index < m2t.topics_count(); ++topic_index) {
+      for (int topic_index = 0; topic_index < m2t.topic_name_size(); ++topic_index) {
         // todo(alfrey) Verification was disabled because now all tokens are initialized with random values.
         // EXPECT_EQ(m2t.token_weights(token_index).value(topic_index), 0);
       }

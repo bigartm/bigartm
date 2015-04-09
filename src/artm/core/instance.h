@@ -107,9 +107,6 @@ class Instance : boost::noncopyable {
   std::shared_ptr<ScoreCalculatorInterface> CreateScoreCalculator(const ScoreConfig& config);
 
  private:
-  void PopulateClassId(ModelConfig* model_config);
-  void PopulateTopicsName(ModelConfig* model_config);
-
   bool is_configured_;
   InstanceType instance_type_;
 

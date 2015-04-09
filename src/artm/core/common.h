@@ -157,7 +157,7 @@ class CuckooWatch {
     auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
     if (parent_ == nullptr) {
       std::stringstream ss;
-      ss << delta_ms.count() << "ms in " + message_;
+      ss << delta_ms.count() << "ms in " << message_;
       if (!submessage_.empty())
         ss << " [including " << submessage_ << "]";
       LOG(INFO) << ss.str();

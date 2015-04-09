@@ -23,7 +23,6 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 #include "artm/messages.pb.h"
 // @@protoc_insertion_point(includes)
@@ -52,28 +51,6 @@ class DisposeRegularizerArgs;
 class CreateOrReconfigureDictionaryArgs;
 class DisposeDictionaryArgs;
 
-enum ModelIncrement_OperationType {
-  ModelIncrement_OperationType_CreateIfNotExist = 0,
-  ModelIncrement_OperationType_IncrementValue = 1,
-  ModelIncrement_OperationType_OverwriteValue = 2,
-  ModelIncrement_OperationType_DeleteToken = 3,
-  ModelIncrement_OperationType_SkipToken = 4
-};
-bool ModelIncrement_OperationType_IsValid(int value);
-const ModelIncrement_OperationType ModelIncrement_OperationType_OperationType_MIN = ModelIncrement_OperationType_CreateIfNotExist;
-const ModelIncrement_OperationType ModelIncrement_OperationType_OperationType_MAX = ModelIncrement_OperationType_SkipToken;
-const int ModelIncrement_OperationType_OperationType_ARRAYSIZE = ModelIncrement_OperationType_OperationType_MAX + 1;
-
-const ::google::protobuf::EnumDescriptor* ModelIncrement_OperationType_descriptor();
-inline const ::std::string& ModelIncrement_OperationType_Name(ModelIncrement_OperationType value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    ModelIncrement_OperationType_descriptor(), value);
-}
-inline bool ModelIncrement_OperationType_Parse(
-    const ::std::string& name, ModelIncrement_OperationType* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<ModelIncrement_OperationType>(
-    ModelIncrement_OperationType_descriptor(), name, value);
-}
 // ===================================================================
 
 class Mask : public ::google::protobuf::Message {
@@ -856,123 +833,16 @@ class ModelIncrement : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
-  typedef ModelIncrement_OperationType OperationType;
-  static const OperationType CreateIfNotExist = ModelIncrement_OperationType_CreateIfNotExist;
-  static const OperationType IncrementValue = ModelIncrement_OperationType_IncrementValue;
-  static const OperationType OverwriteValue = ModelIncrement_OperationType_OverwriteValue;
-  static const OperationType DeleteToken = ModelIncrement_OperationType_DeleteToken;
-  static const OperationType SkipToken = ModelIncrement_OperationType_SkipToken;
-  static inline bool OperationType_IsValid(int value) {
-    return ModelIncrement_OperationType_IsValid(value);
-  }
-  static const OperationType OperationType_MIN =
-    ModelIncrement_OperationType_OperationType_MIN;
-  static const OperationType OperationType_MAX =
-    ModelIncrement_OperationType_OperationType_MAX;
-  static const int OperationType_ARRAYSIZE =
-    ModelIncrement_OperationType_OperationType_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  OperationType_descriptor() {
-    return ModelIncrement_OperationType_descriptor();
-  }
-  static inline const ::std::string& OperationType_Name(OperationType value) {
-    return ModelIncrement_OperationType_Name(value);
-  }
-  static inline bool OperationType_Parse(const ::std::string& name,
-      OperationType* value) {
-    return ModelIncrement_OperationType_Parse(name, value);
-  }
-
   // accessors -------------------------------------------------------
 
-  // required string model_name = 1;
-  inline bool has_model_name() const;
-  inline void clear_model_name();
-  static const int kModelNameFieldNumber = 1;
-  inline const ::std::string& model_name() const;
-  inline void set_model_name(const ::std::string& value);
-  inline void set_model_name(const char* value);
-  inline void set_model_name(const char* value, size_t size);
-  inline ::std::string* mutable_model_name();
-  inline ::std::string* release_model_name();
-  inline void set_allocated_model_name(::std::string* model_name);
-
-  // required int32 topics_count = 2;
-  inline bool has_topics_count() const;
-  inline void clear_topics_count();
-  static const int kTopicsCountFieldNumber = 2;
-  inline ::google::protobuf::int32 topics_count() const;
-  inline void set_topics_count(::google::protobuf::int32 value);
-
-  // repeated string topic_name = 3;
-  inline int topic_name_size() const;
-  inline void clear_topic_name();
-  static const int kTopicNameFieldNumber = 3;
-  inline const ::std::string& topic_name(int index) const;
-  inline ::std::string* mutable_topic_name(int index);
-  inline void set_topic_name(int index, const ::std::string& value);
-  inline void set_topic_name(int index, const char* value);
-  inline void set_topic_name(int index, const char* value, size_t size);
-  inline ::std::string* add_topic_name();
-  inline void add_topic_name(const ::std::string& value);
-  inline void add_topic_name(const char* value);
-  inline void add_topic_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
-
-  // repeated string token = 4;
-  inline int token_size() const;
-  inline void clear_token();
-  static const int kTokenFieldNumber = 4;
-  inline const ::std::string& token(int index) const;
-  inline ::std::string* mutable_token(int index);
-  inline void set_token(int index, const ::std::string& value);
-  inline void set_token(int index, const char* value);
-  inline void set_token(int index, const char* value, size_t size);
-  inline ::std::string* add_token();
-  inline void add_token(const ::std::string& value);
-  inline void add_token(const char* value);
-  inline void add_token(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& token() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_token();
-
-  // repeated string class_id = 5;
-  inline int class_id_size() const;
-  inline void clear_class_id();
-  static const int kClassIdFieldNumber = 5;
-  inline const ::std::string& class_id(int index) const;
-  inline ::std::string* mutable_class_id(int index);
-  inline void set_class_id(int index, const ::std::string& value);
-  inline void set_class_id(int index, const char* value);
-  inline void set_class_id(int index, const char* value, size_t size);
-  inline ::std::string* add_class_id();
-  inline void add_class_id(const ::std::string& value);
-  inline void add_class_id(const char* value);
-  inline void add_class_id(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
-
-  // repeated .artm.core.ModelIncrement.OperationType operation_type = 6;
-  inline int operation_type_size() const;
-  inline void clear_operation_type();
-  static const int kOperationTypeFieldNumber = 6;
-  inline ::artm::core::ModelIncrement_OperationType operation_type(int index) const;
-  inline void set_operation_type(int index, ::artm::core::ModelIncrement_OperationType value);
-  inline void add_operation_type(::artm::core::ModelIncrement_OperationType value);
-  inline const ::google::protobuf::RepeatedField<int>& operation_type() const;
-  inline ::google::protobuf::RepeatedField<int>* mutable_operation_type();
-
-  // repeated .artm.FloatArray token_increment = 7;
-  inline int token_increment_size() const;
-  inline void clear_token_increment();
-  static const int kTokenIncrementFieldNumber = 7;
-  inline const ::artm::FloatArray& token_increment(int index) const;
-  inline ::artm::FloatArray* mutable_token_increment(int index);
-  inline ::artm::FloatArray* add_token_increment();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      token_increment() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_token_increment();
+  // optional .artm.TopicModel topic_model = 1;
+  inline bool has_topic_model() const;
+  inline void clear_topic_model();
+  static const int kTopicModelFieldNumber = 1;
+  inline const ::artm::TopicModel& topic_model() const;
+  inline ::artm::TopicModel* mutable_topic_model();
+  inline ::artm::TopicModel* release_topic_model();
+  inline void set_allocated_topic_model(::artm::TopicModel* topic_model);
 
   // repeated string score_name = 8;
   inline int score_name_size() const;
@@ -1036,27 +906,19 @@ class ModelIncrement : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.core.ModelIncrement)
  private:
-  inline void set_has_model_name();
-  inline void clear_has_model_name();
-  inline void set_has_topics_count();
-  inline void clear_has_topics_count();
+  inline void set_has_topic_model();
+  inline void clear_has_topic_model();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* model_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> token_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField<int> operation_type_;
-  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > token_increment_;
+  ::artm::TopicModel* topic_model_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_;
   ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry > cache_;
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_uuid_;
-  ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -2438,280 +2300,42 @@ ProcessorInput::mutable_cached_theta() {
 
 // ModelIncrement
 
-// required string model_name = 1;
-inline bool ModelIncrement::has_model_name() const {
+// optional .artm.TopicModel topic_model = 1;
+inline bool ModelIncrement::has_topic_model() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ModelIncrement::set_has_model_name() {
+inline void ModelIncrement::set_has_topic_model() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void ModelIncrement::clear_has_model_name() {
+inline void ModelIncrement::clear_has_topic_model() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void ModelIncrement::clear_model_name() {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    model_name_->clear();
-  }
-  clear_has_model_name();
+inline void ModelIncrement::clear_topic_model() {
+  if (topic_model_ != NULL) topic_model_->::artm::TopicModel::Clear();
+  clear_has_topic_model();
 }
-inline const ::std::string& ModelIncrement::model_name() const {
-  return *model_name_;
+inline const ::artm::TopicModel& ModelIncrement::topic_model() const {
+  return topic_model_ != NULL ? *topic_model_ : *default_instance_->topic_model_;
 }
-inline void ModelIncrement::set_model_name(const ::std::string& value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
+inline ::artm::TopicModel* ModelIncrement::mutable_topic_model() {
+  set_has_topic_model();
+  if (topic_model_ == NULL) topic_model_ = new ::artm::TopicModel;
+  return topic_model_;
 }
-inline void ModelIncrement::set_model_name(const char* value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
+inline ::artm::TopicModel* ModelIncrement::release_topic_model() {
+  clear_has_topic_model();
+  ::artm::TopicModel* temp = topic_model_;
+  topic_model_ = NULL;
+  return temp;
 }
-inline void ModelIncrement::set_model_name(const char* value, size_t size) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelIncrement::mutable_model_name() {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  return model_name_;
-}
-inline ::std::string* ModelIncrement::release_model_name() {
-  clear_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
+inline void ModelIncrement::set_allocated_topic_model(::artm::TopicModel* topic_model) {
+  delete topic_model_;
+  topic_model_ = topic_model;
+  if (topic_model) {
+    set_has_topic_model();
   } else {
-    ::std::string* temp = model_name_;
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
+    clear_has_topic_model();
   }
-}
-inline void ModelIncrement::set_allocated_model_name(::std::string* model_name) {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_;
-  }
-  if (model_name) {
-    set_has_model_name();
-    model_name_ = model_name;
-  } else {
-    clear_has_model_name();
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// required int32 topics_count = 2;
-inline bool ModelIncrement::has_topics_count() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ModelIncrement::set_has_topics_count() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ModelIncrement::clear_has_topics_count() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ModelIncrement::clear_topics_count() {
-  topics_count_ = 0;
-  clear_has_topics_count();
-}
-inline ::google::protobuf::int32 ModelIncrement::topics_count() const {
-  return topics_count_;
-}
-inline void ModelIncrement::set_topics_count(::google::protobuf::int32 value) {
-  set_has_topics_count();
-  topics_count_ = value;
-}
-
-// repeated string topic_name = 3;
-inline int ModelIncrement::topic_name_size() const {
-  return topic_name_.size();
-}
-inline void ModelIncrement::clear_topic_name() {
-  topic_name_.Clear();
-}
-inline const ::std::string& ModelIncrement::topic_name(int index) const {
-  return topic_name_.Get(index);
-}
-inline ::std::string* ModelIncrement::mutable_topic_name(int index) {
-  return topic_name_.Mutable(index);
-}
-inline void ModelIncrement::set_topic_name(int index, const ::std::string& value) {
-  topic_name_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_topic_name(int index, const char* value) {
-  topic_name_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_topic_name(int index, const char* value, size_t size) {
-  topic_name_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelIncrement::add_topic_name() {
-  return topic_name_.Add();
-}
-inline void ModelIncrement::add_topic_name(const ::std::string& value) {
-  topic_name_.Add()->assign(value);
-}
-inline void ModelIncrement::add_topic_name(const char* value) {
-  topic_name_.Add()->assign(value);
-}
-inline void ModelIncrement::add_topic_name(const char* value, size_t size) {
-  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelIncrement::topic_name() const {
-  return topic_name_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelIncrement::mutable_topic_name() {
-  return &topic_name_;
-}
-
-// repeated string token = 4;
-inline int ModelIncrement::token_size() const {
-  return token_.size();
-}
-inline void ModelIncrement::clear_token() {
-  token_.Clear();
-}
-inline const ::std::string& ModelIncrement::token(int index) const {
-  return token_.Get(index);
-}
-inline ::std::string* ModelIncrement::mutable_token(int index) {
-  return token_.Mutable(index);
-}
-inline void ModelIncrement::set_token(int index, const ::std::string& value) {
-  token_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_token(int index, const char* value) {
-  token_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_token(int index, const char* value, size_t size) {
-  token_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelIncrement::add_token() {
-  return token_.Add();
-}
-inline void ModelIncrement::add_token(const ::std::string& value) {
-  token_.Add()->assign(value);
-}
-inline void ModelIncrement::add_token(const char* value) {
-  token_.Add()->assign(value);
-}
-inline void ModelIncrement::add_token(const char* value, size_t size) {
-  token_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelIncrement::token() const {
-  return token_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelIncrement::mutable_token() {
-  return &token_;
-}
-
-// repeated string class_id = 5;
-inline int ModelIncrement::class_id_size() const {
-  return class_id_.size();
-}
-inline void ModelIncrement::clear_class_id() {
-  class_id_.Clear();
-}
-inline const ::std::string& ModelIncrement::class_id(int index) const {
-  return class_id_.Get(index);
-}
-inline ::std::string* ModelIncrement::mutable_class_id(int index) {
-  return class_id_.Mutable(index);
-}
-inline void ModelIncrement::set_class_id(int index, const ::std::string& value) {
-  class_id_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_class_id(int index, const char* value) {
-  class_id_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_class_id(int index, const char* value, size_t size) {
-  class_id_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelIncrement::add_class_id() {
-  return class_id_.Add();
-}
-inline void ModelIncrement::add_class_id(const ::std::string& value) {
-  class_id_.Add()->assign(value);
-}
-inline void ModelIncrement::add_class_id(const char* value) {
-  class_id_.Add()->assign(value);
-}
-inline void ModelIncrement::add_class_id(const char* value, size_t size) {
-  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelIncrement::class_id() const {
-  return class_id_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelIncrement::mutable_class_id() {
-  return &class_id_;
-}
-
-// repeated .artm.core.ModelIncrement.OperationType operation_type = 6;
-inline int ModelIncrement::operation_type_size() const {
-  return operation_type_.size();
-}
-inline void ModelIncrement::clear_operation_type() {
-  operation_type_.Clear();
-}
-inline ::artm::core::ModelIncrement_OperationType ModelIncrement::operation_type(int index) const {
-  return static_cast< ::artm::core::ModelIncrement_OperationType >(operation_type_.Get(index));
-}
-inline void ModelIncrement::set_operation_type(int index, ::artm::core::ModelIncrement_OperationType value) {
-  assert(::artm::core::ModelIncrement_OperationType_IsValid(value));
-  operation_type_.Set(index, value);
-}
-inline void ModelIncrement::add_operation_type(::artm::core::ModelIncrement_OperationType value) {
-  assert(::artm::core::ModelIncrement_OperationType_IsValid(value));
-  operation_type_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField<int>&
-ModelIncrement::operation_type() const {
-  return operation_type_;
-}
-inline ::google::protobuf::RepeatedField<int>*
-ModelIncrement::mutable_operation_type() {
-  return &operation_type_;
-}
-
-// repeated .artm.FloatArray token_increment = 7;
-inline int ModelIncrement::token_increment_size() const {
-  return token_increment_.size();
-}
-inline void ModelIncrement::clear_token_increment() {
-  token_increment_.Clear();
-}
-inline const ::artm::FloatArray& ModelIncrement::token_increment(int index) const {
-  return token_increment_.Get(index);
-}
-inline ::artm::FloatArray* ModelIncrement::mutable_token_increment(int index) {
-  return token_increment_.Mutable(index);
-}
-inline ::artm::FloatArray* ModelIncrement::add_token_increment() {
-  return token_increment_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-ModelIncrement::token_increment() const {
-  return token_increment_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-ModelIncrement::mutable_token_increment() {
-  return &token_increment_;
 }
 
 // repeated string score_name = 8;
@@ -3461,10 +3085,6 @@ inline void DisposeDictionaryArgs::set_allocated_dictionary_name(::std::string* 
 namespace google {
 namespace protobuf {
 
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::artm::core::ModelIncrement_OperationType>() {
-  return ::artm::core::ModelIncrement_OperationType_descriptor();
-}
 
 }  // namespace google
 }  // namespace protobuf

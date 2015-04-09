@@ -35,6 +35,11 @@ typedef struct tagTHREADNAME_INFO {
 
 #endif
 
+#define ARTM_HELPERS_REPORT_ERROR(error_message)                            \
+  if (throw_error) BOOST_THROW_EXCEPTION(InvalidOperation(error_message));  \
+  else             LOG(WARNING) << error_message;                           \
+  return false;                                                             \
+
 namespace artm {
 namespace core {
 
@@ -71,6 +76,236 @@ void Helpers::SetThreadName(int thread_id, const char* thread_name) {
 
 #endif
 
+void Helpers::Fix(::artm::TopicModel* message) {
+  const int token_size = message->token_size();
+  if ((message->class_id_size() == 0) && (token_size > 0)) {
+    message->mutable_class_id()->Reserve(token_size);
+    for (int i = 0; i < token_size; ++i)
+      message->add_class_id(::artm::core::DefaultClass);
+  }
+
+  if (message->topic_name_size() > 0)
+    message->set_topics_count(message->topic_name_size());
+}
+
+bool Helpers::Validate(const ::artm::TopicModel& message, bool throw_error) {
+  std::stringstream ss;
+  const int token_size = message.token_size();
+  const bool use_sparse_format = (message.topic_index_size() != 0);
+  if ((message.class_id_size() != token_size) ||
+      (message.operation_type_size() != token_size) ||
+      (message.token_weights_size() != token_size) ||
+      (use_sparse_format && (message.topic_index_size() != token_size))) {
+    ss << "Inconsistent fields size in TopicModel: "
+       << message.token_size() << " vs " << message.class_id_size()
+       << " vs " << message.operation_type_size() << " vs " << message.token_weights_size() << ";";
+  }
+
+  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+    ss << "TopicModel.topic_name_size is empty";
+  if (message.topics_count() != message.topic_name_size())
+    ss << "Length mismatch in fields TopicModel.topics_count and TopicModel.topic_name";
+
+  for (int i = 0; i < message.token_size(); ++i) {
+    if (use_sparse_format) {
+      if (message.topic_index(i).value_size() != message.token_weights(i).value_size()) {
+        ss << "Length mismatch between TopicModel.topic_index(" << i << ") and TopicModel.token_weights(" << i << ")";
+        break;
+      }
+
+      bool ok = true;
+      for (int topic_index : message.topic_index(i).value()) {
+        if (topic_index < 0 || topic_index >= message.topics_count()) {
+          ss << "Value " << topic_index << " in message.topic_index(" << i
+             << ") is negative or exceeds TopicModel.topics_count";
+          ok = false;
+          break;
+        }
+      }
+
+      if (!ok)
+        break;
+    }
+
+    if (!use_sparse_format) {
+      if (message.operation_type(i) == TopicModel_OperationType_Increment ||
+          message.operation_type(i) == TopicModel_OperationType_Overwrite) {
+        if (message.token_weights(i).value_size() != message.topics_count()) {
+          ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+          break;
+        }
+      }
+    }
+  }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::TopicModel* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::ModelConfig* message) {
+  if (message->topic_name_size() == 0) {
+    for (int i = 0; i < message->topics_count(); ++i) {
+      message->add_topic_name("@topic_" + std::to_string(i));
+    }
+  } else {
+    message->set_topics_count(message->topic_name_size());
+  }
+
+  if (message->class_weight_size() == 0) {
+    for (int i = 0; i < message->class_id_size(); ++i)
+      message->add_class_weight(1.0f);
+  }
+}
+
+bool Helpers::Validate(const ::artm::ModelConfig& message, bool throw_error) {
+  std::stringstream ss;
+  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+    ss << "ModelConfig.topic_name() is empty";
+  if (message.topics_count() !=  message.topic_name_size())
+    ss << "Length mismatch in fields ModelConfig.topics_count and ModelConfig.topic_name";
+  if (message.class_weight_size() != message.class_id_size())
+    ss << "Length mismatch in fields ModelConfig.class_id and ModelConfig.class_weight";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::ModelConfig* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::ThetaMatrix* message) {
+}
+
+bool Helpers::Validate(const ::artm::ThetaMatrix& message, bool throw_error) {
+  std::stringstream ss;
+  const int item_size = message.item_id_size();
+  const bool has_title = (message.item_title_size() > 0);
+  const bool use_sparse_format = (message.topic_index_size() != 0);
+  if ((message.item_weights_size() != item_size) ||
+      (has_title && (message.item_title_size() != item_size)) ||
+      (use_sparse_format && (message.topic_index_size() != item_size))) {
+    ss << "Inconsistent fields size in ThetaMatrix: "
+       << message.item_id_size() << " vs " << message.item_weights_size()
+       << " vs " << message.item_title_size() << " vs " << message.topic_index_size() << ";";
+  }
+
+  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+    ss << "ThetaMatrix.topic_name_size is empty";
+  if (message.topics_count() != message.topic_name_size())
+    ss << "Length mismatch in fields ThetaMatrix.topics_count and ThetaMatrix.topic_name";
+
+  for (int i = 0; i < message.item_id_size(); ++i) {
+    if (use_sparse_format) {
+      if (message.topic_index(i).value_size() != message.item_weights(i).value_size()) {
+        ss << "Length mismatch between ThetaMatrix.topic_index(" << i << ") and ThetaMatrix.item_weights(" << i << ")";
+        break;
+      }
+
+      bool ok = true;
+      for (int topic_index : message.topic_index(i).value()) {
+        if (topic_index < 0 || topic_index >= message.topics_count()) {
+          ss << "Value " << topic_index << " in message.topic_index(" << i
+             << ") is negative or exceeds ThetaMatrix.topics_count";
+          ok = false;
+          break;
+        }
+      }
+
+      if (!ok)
+        break;
+    }
+  }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::ThetaMatrix* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::Batch* message) {
+  if (message->class_id_size() == 0) {
+    for (int i = 0; i < message->token_size(); ++i) {
+      message->add_class_id(DefaultClass);
+    }
+  }
+}
+
+bool Helpers::Validate(const ::artm::Batch& message, bool throw_error) {
+  std::stringstream ss;
+  if (message.has_id()) {
+    try {
+      boost::lexical_cast<boost::uuids::uuid>(message.id());
+    }
+    catch (...) {
+      ss << "Batch.id must be GUID, got: " << message.id();
+      ARTM_HELPERS_REPORT_ERROR(ss.str())
+    }
+  } else {
+    ARTM_HELPERS_REPORT_ERROR("Batch.id is not specified");
+  }
+
+  if (message.class_id_size() != message.token_size()) {
+    ss << "Length mismatch in fields Batch.class_id and Batch.token, batch.id = " << message.id();
+    ARTM_HELPERS_REPORT_ERROR(ss.str());
+  }
+
+  for (int item_id = 0; item_id < message.item_size(); ++item_id) {
+    for (const Field& field : message.item(item_id).field()) {
+      if (field.token_count_size() != field.token_id_size()) {
+        ss << "Length mismatch in field Batch.item(" << item_id << ").token_count and token_id; ";
+        break;
+      }
+
+      for (int token_index = 0; token_index < field.token_count_size(); token_index++) {
+        int token_id = field.token_id(token_index);
+        int token_count = field.token_count(token_index);
+        if (token_id < 0 || token_id >= message.token_size()) {
+          ss << "Value " << token_id << " in Batch.Item(" << item_id
+             << ").token_id is negative or exceeds Batch.token_size";
+          ARTM_HELPERS_REPORT_ERROR(ss.str());
+        }
+      }
+    }
+  }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::Batch* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
 
 std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   std::vector<float> retval;
@@ -221,6 +456,9 @@ void BatchHelpers::LoadMessage(const std::string& full_filename,
 
     batch->set_id(boost::lexical_cast<std::string>(uuid));
   }
+
+  if (batch != nullptr)
+    Helpers::FixAndValidate(batch);
 }
 
 void BatchHelpers::SaveMessage(const std::string& filename, const std::string& disk_path,
@@ -249,31 +487,6 @@ void BatchHelpers::SaveMessage(const std::string& full_filename,
   }
 
   fout.close();
-}
-
-void BatchHelpers::PopulateClassId(Batch* batch) {
-  if (batch->has_id()) {
-    try {
-      boost::lexical_cast<boost::uuids::uuid>(batch->id());
-    } catch (...) {
-      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Batch.id", batch->id(), "expecting guid"));
-    }
-  } else {
-    BOOST_THROW_EXCEPTION(InvalidOperation("Batch.id is not specified"));
-  }
-
-  if (batch->class_id_size() != batch->token_size()) {
-    if (batch->class_id_size() != 0) {
-      // ToDo(alfrey): log the ID of the batch
-      LOG(ERROR) << "Field batch.class_id must have the same length as field batch.token. "
-                 << "Setting '@DefaultClass' label for all tokens.";
-    }
-
-    batch->clear_class_id();
-    for (int i = 0; i < batch->token_size(); ++i) {
-      batch->add_class_id(DefaultClass);
-    }
-  }
 }
 
 bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
@@ -321,13 +534,8 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
 
   // Populate topics_count and topic_name fields in the resulting message
   ::google::protobuf::RepeatedPtrField< ::std::string> result_topic_name;
-  if (use_sparse_format) {
-    for (TopicName topic_name : cache.topic_name())
-      result_topic_name.Add()->assign(topic_name);
-  } else {
-    for (int topic_index : topics_to_use)
-      result_topic_name.Add()->assign(cache.topic_name(topic_index));
-  }
+  for (int topic_index : topics_to_use)
+    result_topic_name.Add()->assign(cache.topic_name(topic_index));
 
   if (!theta_matrix->has_model_name()) {
     // Assign
@@ -360,11 +568,12 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
         theta_vec->add_value(item_theta.value(topic_index));
     } else {
       ::artm::IntArray* sparse_topic_index = theta_matrix->add_topic_index();
-      for (int topic_index : topics_to_use) {
+      for (int topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
+        int topic_index = topics_to_use[topics_to_use_index];
         float value = item_theta.value(topic_index);
         if (value >= get_theta_args.eps()) {
           theta_vec->add_value(item_theta.value(topic_index));
-          sparse_topic_index->add_value(topic_index);
+          sparse_topic_index->add_value(topics_to_use_index);
         }
       }
     }
