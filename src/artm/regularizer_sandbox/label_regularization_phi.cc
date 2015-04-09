@@ -56,105 +56,65 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
     has_dictionary = false;
   }
 
-  if (!has_dictionary) {
-    // if there's no dictionary, a uniform distribution on labels will be used.
-    // To create it we need one more loop over tokens.
-    // We can't use 'p_c' == 1, because it may lead to large value, that will
-    // avoid the influence of other regularizers.
-    int useful_tokens_count = 0;
-    for (int token_id = 0; token_id < token_size; ++token_id) {
-      if (!use_all_classes) {
-        if (std::find(classes_to_regularize.begin(),
-                      classes_to_regularize.end(),
-                      topic_model->token(token_id).class_id)
-            != classes_to_regularize.end()) {
-          ++useful_tokens_count;
-        }
-      } else {
-        ++useful_tokens_count;
-      }
-    }
-    // proceed the regularization
-    for (int token_id = 0; token_id < token_size; ++token_id) {
-      bool regularize_this_token = false;
-      if (!use_all_classes) {
-        if (std::find(classes_to_regularize.begin(),
-                      classes_to_regularize.end(),
-                      topic_model->token(token_id).class_id)
-            != classes_to_regularize.end()) {
-          regularize_this_token = true;
-        }
-      } else {
-        regularize_this_token = true;
-      }
-      if (regularize_this_token) {
-        // count sum of weights
-        auto topic_iterator = topic_model->GetTopicWeightIterator(token_id);
-        float weights_sum = 0.0f;
-        while (topic_iterator.NextTopic() < topic_size) {
-          if (topics_to_regularize[topic_iterator.TopicIndex()])
-            weights_sum += topic_iterator.Weight() *
-                           topic_iterator.GetNormalizer()[topic_iterator.TopicIndex()];
-        }
+  core::TokenCollectionWeights p_wt(topic_model->topic_size());
+  topic_model->FindPwt(&p_wt);
+  std::map<core::ClassId, std::vector<float> >& n_t = topic_model->FindNormalizers();
 
-        // form the value
-        topic_iterator.Reset();
-        while (topic_iterator.NextTopic() < topic_size) {
-          int topic_id = topic_iterator.TopicIndex();
-          if (topics_to_regularize[topic_id]) {
-            float p_c = static_cast<float>(1.0 / useful_tokens_count);
-            float weight = topic_iterator.Weight() *
-                           topic_iterator.GetNormalizer()[topic_iterator.TopicIndex()];
-            float value = static_cast<float>(p_c * tau * weight / weights_sum);
-            topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
-          }
+  std::vector<float> p_c_coeffs;
+  if (!has_dictionary) {
+    for (int token_id = 0; token_id < token_size; ++token_id) {
+      if (!use_all_classes) {
+        if (std::find(classes_to_regularize.begin(),
+                      classes_to_regularize.end(),
+                      topic_model->token(token_id).class_id)
+            != classes_to_regularize.end()) {
+          p_c_coeffs.push_back(1);
         }
+      } else {
+        p_c_coeffs.push_back(1);
       }
     }
   } else {
-    // proceed the regularization
-    for (int token_id = 0; token_id < token_size; ++token_id) {
-      bool regularize_this_token = false;
-      if (!use_all_classes) {
-        if (std::find(classes_to_regularize.begin(),
-                      classes_to_regularize.end(),
-                      topic_model->token(token_id).class_id)
-            != classes_to_regularize.end()) {
-          regularize_this_token = true;
-        }
-      } else {
+    for (auto& entry_iter = dictionary_ptr->begin(); entry_iter != dictionary_ptr->end(); ++entry_iter)
+      p_c_coeffs.push_back(entry_iter->second.value());
+  }
+    
+  // proceed the regularization
+  int useful_token_id = 0;
+  for (int token_id = 0; token_id < token_size; ++token_id) {
+    bool regularize_this_token = false;
+    auto token_class_id = topic_model->token(token_id).class_id;
+    if (!use_all_classes) {
+      if (std::find(classes_to_regularize.begin(),
+                    classes_to_regularize.end(),
+                    token_class_id)
+          != classes_to_regularize.end()) {
         regularize_this_token = true;
       }
-      if (regularize_this_token) {
-        // count sum of weights
-        auto topic_iterator = topic_model->GetTopicWeightIterator(token_id);
-        float weights_sum = 0.0f;
-        while (topic_iterator.NextTopic() < topic_size) {
-          if (topics_to_regularize[topic_iterator.TopicIndex()])
-            weights_sum += topic_iterator.Weight() *
-                           topic_iterator.GetNormalizer()[topic_iterator.TopicIndex()];
+    } else {
+      regularize_this_token = true;
+    }
+    if (regularize_this_token) {
+      // count sum of weights
+      float weights_sum = 0.0f;
+      for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+        if (topics_to_regularize[topic_id]) {
+          // token_class_id is anyway presented in n_t
+          weights_sum += p_wt[token_id][topic_id] * n_t.find(token_class_id)->second[topic_id];
         }
-
-        // form the value
-        topic_iterator.Reset();
-        while (topic_iterator.NextTopic() < topic_size) {
-          int topic_id = topic_iterator.TopicIndex();
-          if (topics_to_regularize[topic_id]) {
-            float weight = topic_iterator.Weight() *
-                           topic_iterator.GetNormalizer()[topic_iterator.TopicIndex()];
-            core::Token token = topic_model->token(token_id);
-            // if there's no info about this label, minimize it's influence on regularization
-            float p_c = static_cast<float>(1.0 / token_size);
-            if (dictionary_ptr->find(token) != dictionary_ptr->end())
-              p_c = dictionary_ptr->find(token)->second.value();
-
-            float value = static_cast<float>(p_c * tau * weight / weights_sum);
-            topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
-          }
+      }
+      // form the value
+      for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+        if (topics_to_regularize[topic_id]) {
+          float p_c = p_c_coeffs[useful_token_id++];
+          float weight = p_wt[token_id][topic_id] * n_t.find(token_class_id)->second[topic_id];
+          float value = static_cast<float>(p_c * tau * weight / weights_sum);
+          topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
         }
       }
     }
   }
+
   return true;
 }
 

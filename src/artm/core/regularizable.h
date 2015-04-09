@@ -31,6 +31,7 @@ class Regularizable {
   virtual TopicWeightIterator GetTopicWeightIterator(const Token& token) const = 0;
   virtual TopicWeightIterator GetTopicWeightIterator(int token_id) const = 0;
   virtual void FindPwt(TokenCollectionWeights* p_wt) const = 0;
+  virtual std::map<ClassId, std::vector<float> > FindNormalizers() const = 0;
 
   virtual ~Regularizable() {}
 };

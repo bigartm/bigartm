@@ -194,292 +194,6 @@ class Library:
 
 
 class MasterComponent:
-<<<<<<< HEAD
-  def __init__(self, config = messages_pb2.MasterComponentConfig(), lib = None, disk_path = None, proxy_endpoint = None):
-    if lib is None:
-      lib = Library().lib_
-
-    if disk_path is not None:
-      config.disk_path = disk_path
-
-    self.lib_ = lib
-    master_config_blob = config.SerializeToString()
-    master_config_blob_p = ctypes.create_string_buffer(master_config_blob)
-
-    if isinstance(config, messages_pb2.MasterComponentConfig):
-      self.config_ = config
-      self.id_ = HandleErrorCode(self.lib_, self.lib_.ArtmCreateMasterComponent(
-                 len(master_config_blob), master_config_blob_p))
-      return
-
-    if isinstance(config, messages_pb2.MasterProxyConfig):
-      self.config_ = config.config
-      self.id_ = HandleErrorCode(self.lib_, self.lib_.ArtmCreateMasterProxy(
-                 len(master_config_blob), master_config_blob_p))
-      return
-
-    raise InvalidOperation(GetLastErrorMessage(self.lib_))
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, type, value, traceback):
-    self.Dispose()
-
-  def Dispose(self):
-    self.lib_.ArtmDisposeMasterComponent(self.id_)
-    self.id_ = -1
-
-  def config(self):
-    return self.config_
-
-  def CreateModel(self, config = messages_pb2.ModelConfig(), 
-                  topics_count = None, inner_iterations_count = None,
-                  topic_names = None):
-    if topics_count is not None:
-      config.topics_count = topics_count
-    if inner_iterations_count is not None:
-      config.inner_iterations_count = inner_iterations_count
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    return Model(self, config)
-
-  def RemoveModel(self, model):
-    model.__Dispose__()
-
-  def CreateRegularizer(self, name, type, config):
-    general_config = messages_pb2.RegularizerConfig()
-    general_config.name = name
-    general_config.type = type
-    general_config.config = config.SerializeToString()
-    return Regularizer(self, general_config)
-
-  def RemoveRegularizer(self, regularizer):
-    regularizer.__Dispose__()
-
-  def CreateSmoothSparseThetaRegularizer(self, name = None, config = None, topic_names = None):
-    if name is None:
-      name = "SmoothSparseThetaRegularizer:" + uuid.uuid1().urn
-    if config is None:
-      config = messages_pb2.SmoothSparseThetaConfig()
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    return self.CreateRegularizer(name, RegularizerConfig_Type_SmoothSparseTheta, config)
-
-  def CreateSmoothSparsePhiRegularizer(self, name = None, config = None, topic_names = None):
-    if name is None:
-      name = "SmoothSparsePhiRegularizer:" + uuid.uuid1().urn
-    if config is None:
-      config = messages_pb2.SmoothSparsePhiConfig()
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    return self.CreateRegularizer(name, RegularizerConfig_Type_SmoothSparsePhi, config)
-
-  def CreateDecorrelatorPhiRegularizer(self, name = None, config = None, topic_names = None):
-    if name is None:
-      name = "DecorrelatorPhiRegularizer:" + uuid.uuid1().urn
-    if config is None:
-      config = messages_pb2.DecorrelatorPhiConfig()
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    return self.CreateRegularizer(name, RegularizerConfig_Type_DecorrelatorPhi, config)
-
-  def CreateLabelRegularizationPhiRegularizer(self, name = None, config = None):
-    if name is None:
-      name = "LabelRegularizationPhiRegularizer:" + uuid.uuid1().urn
-    if config is None:
-      config = messages_pb2.LabelRegularizationPhiConfig()
-    return self.CreateRegularizer(name, RegularizerConfig_Type_LabelRegularizationPhi, config)
-
-  def CreateScore(self, name, type, config):
-    master_config = messages_pb2.MasterComponentConfig();
-    master_config.CopyFrom(self.config_);
-    score_config = master_config.score_config.add();
-    score_config.name = name
-    score_config.type = type;
-    score_config.config = config.SerializeToString();
-    self.Reconfigure(master_config)
-    return Score(self, name)
-
-  def CreatePerplexityScore(self, name = None, config = messages_pb2.PerplexityScoreConfig(), stream_name = None):
-    if name is None:
-      name = "PerplexityScore:" + uuid.uuid1().urn
-    if stream_name is not None:
-      config.stream_name = stream_name
-    return self.CreateScore(name, ScoreConfig_Type_Perplexity, config)
-
-  def CreateSparsityThetaScore(self, name = None, config = None, topic_names = None):
-    if config is None:
-      config = messages_pb2.SparsityThetaScoreConfig()
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    if name is None:
-      name = "SparsityThetaScore:" + uuid.uuid1().urn
-    return self.CreateScore(name, ScoreConfig_Type_SparsityTheta, config)
-
-  def CreateSparsityPhiScore(self, name = None, config = None, topic_names = None):
-    if config is None:
-      config = messages_pb2.SparsityPhiScoreConfig()
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    if name is None:
-      name = "SparsityPhiScore:" + uuid.uuid1().urn
-
-    return self.CreateScore(name, ScoreConfig_Type_SparsityPhi, config)
-
-  def CreateItemsProcessedScore(self, name = None, config = messages_pb2.ItemsProcessedScoreConfig()):
-    if name is None:
-      name = "ItemsProcessedScore:" + uuid.uuid1().urn
-    return self.CreateScore(name, ScoreConfig_Type_ItemsProcessed, config)
-
-  def CreateTopTokensScore(self, name = None, config = None, num_tokens = None,
-                           class_id = None, topic_names = None):
-    if config is None:
-      config = messages_pb2.TopTokensScoreConfig()
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    if num_tokens is not None:
-      config.num_tokens = num_tokens
-    if class_id is not None:
-      config.class_id = class_id
-    if name is None:
-      name = "TopTokensScore:" + uuid.uuid1().urn
-    return self.CreateScore(name, ScoreConfig_Type_TopTokens, config)
-
-  def CreateThetaSnippetScore(self, name = None, config = None, topic_names = None):
-    if config is None:
-      config = messages_pb2.ThetaSnippetScoreConfig()
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    if name is None:
-      name = "ThetaSnippetScore:" + uuid.uuid1().urn
-    return self.CreateScore(name, ScoreConfig_Type_ThetaSnippet, config)
-
-  def CreateTopicKernelScore(self, name = None, config = None, topic_names = None):
-    if config is None:
-      config = messages_pb2.TopicKernelScoreConfig()
-    if topic_names is not None:
-      for topic_name in topic_names:
-        config.topic_name.append(topic_name)
-    if name is None:
-      name = "TopicKernelScore:" + uuid.uuid1().urn
-    return self.CreateScore(name, ScoreConfig_Type_TopicKernel, config)
-
-  def RemoveScore(self, name):
-    raise NotImplementedError
-
-  def CreateDictionary(self, config):
-    return Dictionary(self, config)
-
-  def RemoveDictionary(self, dictionary):
-    dictionary.__Dispose__()
-
-  def Reconfigure(self, config = None):
-    if config is None:
-      config = self.config_
-    config_blob = config.SerializeToString()
-    config_blob_p = ctypes.create_string_buffer(config_blob)
-    HandleErrorCode(self.lib_, self.lib_.ArtmReconfigureMasterComponent(self.id_, len(config_blob), config_blob_p))
-    self.config_.CopyFrom(config)
-
-  def AddBatch(self, batch = None, batch_filename = None, timeout = -1, reset_scores = False):
-    args = messages_pb2.AddBatchArgs()
-    if batch is not None:
-        args.batch.CopyFrom(batch)
-    args.timeout_milliseconds = timeout;
-    args.reset_scores = reset_scores
-    if batch_filename is not None:
-        args.batch_file_name = batch_filename
-    args_blob = args.SerializeToString()
-    args_blob_p = ctypes.create_string_buffer(args_blob)
-
-    result = self.lib_.ArtmAddBatch(self.id_, len(args_blob), args_blob_p)
-    result = HandleErrorCode(self.lib_, result)
-    return False if (result == ARTM_STILL_WORKING) else True
-
-  def InvokeIteration(self, iterations_count = 1, disk_path = None):
-    args = messages_pb2.InvokeIterationArgs()
-    args.iterations_count = iterations_count
-    if disk_path is not None:
-        args.disk_path = disk_path
-    args_blob = args.SerializeToString()
-    args_blob_p = ctypes.create_string_buffer(args_blob)
-    HandleErrorCode(self.lib_, self.lib_.ArtmInvokeIteration(self.id_, len(args_blob), args_blob_p))
-
-  def WaitIdle(self, timeout = -1):
-    args = messages_pb2.WaitIdleArgs()
-    args.timeout_milliseconds = timeout
-    args_blob = args.SerializeToString()
-    args_blob_p = ctypes.create_string_buffer(args_blob)
-
-    result = self.lib_.ArtmWaitIdle(self.id_, len(args_blob), args_blob_p)
-    result = HandleErrorCode(self.lib_, result)
-    return False if (result == ARTM_STILL_WORKING) else True
-
-  def CreateStream(self, stream):
-    s = self.config_.stream.add()
-    s.CopyFrom(stream)
-    self.Reconfigure(self.config_)
-
-  def RemoveStream(self, stream_name):
-    new_config_ = messages_pb2.MasterComponentConfig()
-    new_config_.CopyFrom(self.config_)
-    new_config_.ClearField('stream')
-
-    for stream_index in range(0, len(self.config_.stream)):
-      if (self.config_.stream[stream_index].name != stream_name):
-        s = new_config_.stream.add()
-        s.CopyFrom(self.config_.stream[stream_index])
-    self.Reconfigure(new_config_)
-
-  def GetTopicModel(self, model = None, args = messages_pb2.GetTopicModelArgs()):
-    if model is not None:
-      args.model_name = model.name()
-    
-    args_blob = args.SerializeToString()
-    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob))
-
-    topic_model_blob = ctypes.create_string_buffer(length)
-    HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, topic_model_blob))
-
-    topic_model = messages_pb2.TopicModel()
-    topic_model.ParseFromString(topic_model_blob)
-    return topic_model
-
-  def GetRegularizerState(self, regularizer_name):
-    length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestRegularizerState(self.id_, regularizer_name))
-
-    state_blob = ctypes.create_string_buffer(length)
-    HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, state_blob))
-
-    regularizer_state = messages_pb2.RegularizerInternalState()
-    regularizer_state.ParseFromString(state_blob)
-    return regularizer_state
-
-  def GetThetaMatrix(self, model = None, batch = None, clean_cache = None, args = messages_pb2.GetThetaMatrixArgs()):
-    if model is not None:
-      args.model_name = model.name()
-    if batch is not None:
-      args.batch.CopyFrom(batch)
-    if clean_cache is not None:
-      args.clean_cache = clean_cache
-    args_blob = args.SerializeToString()
-    length = HandleErrorCode(self.lib_,  self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
-    blob = ctypes.create_string_buffer(length)
-    HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
-
-    theta_matrix = messages_pb2.ThetaMatrix()
-    theta_matrix.ParseFromString(blob)
-    return theta_matrix
-=======
     def __init__(self, config=None, lib=None, disk_path=None, proxy_endpoint=None):
         if lib is None:
             lib = Library().lib_
@@ -596,6 +310,21 @@ class MasterComponent:
                 config.class_id.append(class_id)
         return self.CreateRegularizer(name, RegularizerConfig_Type_DecorrelatorPhi, config)
 
+    def CreateLabelRegularizationPhiRegularizer(self, name=None, config=None, topic_names=None, class_ids=None):
+      if name is None:
+        name = "LabelRegularizationPhiRegularizer:" + uuid.uuid1().urn
+      if config is None:
+        config = messages_pb2.LabelRegularizationPhiConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
+        if class_ids is not None:
+            config.ClearField('class_id')
+            for class_id in class_ids:
+                config.class_id.append(class_id)
+      return self.CreateRegularizer(name, RegularizerConfig_Type_LabelRegularizationPhi, config)
+		
     def CreateScore(self, name, type, config):
         master_config = messages_pb2.MasterComponentConfig()
         master_config.CopyFrom(self.config_)
@@ -822,7 +551,6 @@ class MasterComponent:
         theta_matrix = messages_pb2.ThetaMatrix()
         theta_matrix.ParseFromString(blob)
         return theta_matrix
->>>>>>> c7072663581c59e970ef165a577dc4969810a19d
 
 #################################################################################
 
