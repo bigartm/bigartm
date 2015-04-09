@@ -4,6 +4,7 @@
 #define SRC_ARTM_CORE_PROTOBUF_HELPERS_H_
 
 #include <string>
+#include <vector>
 
 #include "artm/core/common.h"
 #include "artm/messages.pb.h"
@@ -49,6 +50,38 @@ void repeated_field_append(T* field, int index, V value) {
   field->Set(index, new_value);
 }
 
+template<class T>
+std::vector<bool> is_member(T a, T b) {
+  std::vector<bool> retval;
+
+  if (a.size() > 0) {
+    for (int i = 0; i < b.size(); ++i)
+      retval.push_back(false);
+
+    for (int i = 0; i < a.size(); ++i)
+      for (int j = 0; j < b.size(); ++j)
+        if (b.Get(j) == a.Get(i)) {
+          retval[j] = true;
+          break;
+        }
+  } else {
+    for (int i = 0; i < b.size(); ++i)
+      retval.push_back(true);
+  }
+
+  return retval;
+}
+
+template<class T, class V>
+bool is_member(V a, T b) {
+  for (int i = 0; i < b.size(); ++i) {
+    if (b.Get(i) == a) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 }  // namespace core
 }  // namespace artm

@@ -2,9 +2,12 @@
 
 // Author: Murat Apishev (great-mel@yandex.ru)
 
+#include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
+#include "artm/core/protobuf_helpers.h"
 #include "artm/core/regularizable.h"
 #include "artm/regularizer_sandbox/smooth_sparse_phi.h"
 
@@ -14,32 +17,13 @@ namespace regularizer_sandbox {
 bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
+  const int token_size = topic_model->token_size();
 
-  auto topic_name = topic_model->topic_name();
-  std::vector<bool> topics_to_regularize;
-  if (config_.topic_name_size() > 0) {
-    for (int i = 0; i < topic_size; ++i)
-      topics_to_regularize.push_back(false);
-
-    for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
-      for (int real_topic_id = 0; real_topic_id < topic_size; ++real_topic_id) {
-        if (topic_name.Get(real_topic_id) == config_.topic_name(topic_id)) {
-          topics_to_regularize[real_topic_id] = true;
-          break;
-        }
-      }
-    }
-  } else {
-    for (int i = 0; i < topic_size; ++i)
-      topics_to_regularize.push_back(true);
-  }
+  std::vector<bool> topics_to_regularize = core::is_member(config_.topic_name(),
+                                                           topic_model->topic_name());
 
   bool use_all_classes = false;
-  std::vector<artm::core::ClassId> classes_to_regularize;
-  if (config_.class_id_size() > 0) {
-    for (auto& class_id : config_.class_id())
-      classes_to_regularize.push_back(class_id);
-  } else {
+  if (config_.class_id_size() == 0) {
     use_all_classes = true;
   }
 
@@ -53,55 +37,36 @@ bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
     has_dictionary = false;
   }
 
+  std::map<core::Token, float> coeffs;
   if (!has_dictionary) {
-  // proceed the regularization
-    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-      for (int token_id = 0; token_id < topic_model->token_size(); ++token_id) {
-        if (topics_to_regularize[topic_id]) {
-          bool regularize_this_token = false;
-          if (!use_all_classes) {
-            if (std::find(classes_to_regularize.begin(),
-                          classes_to_regularize.end(),
-                          topic_model->token(token_id).class_id)
-                != classes_to_regularize.end()) {
-              regularize_this_token = true;
-            }
-          } else {
-            regularize_this_token = true;
-          }
-          if (regularize_this_token) {
-            topic_model->IncreaseRegularizerWeight(token_id, topic_id, static_cast<float>(tau));
-          }
-        }
-      }
+    for (int token_id = 0; token_id < token_size; ++token_id) {
+      auto token = topic_model->token(token_id);
+      if (use_all_classes || core::is_member(token.class_id, config_.class_id()))
+        coeffs.insert(std::pair<core::Token, float>(token, 1));
     }
   } else {
-    // proceed the regularization
-    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-      for (int token_id = 0; token_id < topic_model->token_size(); ++token_id) {
+    for (auto& entry_iter = dictionary_ptr->begin();
+         entry_iter != dictionary_ptr->end();
+         ++entry_iter) {
+      auto token = entry_iter->first;
+      if (use_all_classes || core::is_member(token.class_id, config_.class_id()))
+        coeffs.insert(std::pair<core::Token, float>(token, entry_iter->second.value()));
+    }
+  }
+
+  // proceed the regularization
+  for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+    for (int token_id = 0; token_id < topic_model->token_size(); ++token_id) {
+      if (topics_to_regularize[topic_id]) {
         auto token = topic_model->token(token_id);
-        if (topics_to_regularize[topic_id]) {
-          bool regularize_this_token = false;
-          if (!use_all_classes) {
-            if (std::find(classes_to_regularize.begin(),
-                          classes_to_regularize.end(),
-                          topic_model->token(token_id).class_id)
-                != classes_to_regularize.end()) {
-              regularize_this_token = true;
-            }
-          } else {
-            regularize_this_token = true;
-          }
-          if (regularize_this_token) {
-            if (dictionary_ptr->find(token) != dictionary_ptr->end()) {
-              float value = dictionary_ptr->find(token)->second.value() * static_cast<float>(tau);
-              topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
-            }
-          }
+        if (use_all_classes || core::is_member(token.class_id, config_.class_id())) {
+          float value = static_cast<float>(tau) * coeffs.find(token)->second;
+          topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
         }
       }
     }
   }
+
   return true;
 }
 

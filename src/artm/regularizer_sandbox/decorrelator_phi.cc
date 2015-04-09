@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "artm/core/protobuf_helpers.h"
 #include "artm/core/regularizable.h"
 #include "artm/core/topic_model.h"
 
@@ -17,31 +18,11 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
 
-  auto topic_name = topic_model->topic_name();
-  std::vector<bool> topics_to_regularize;
-  if (config_.topic_name_size() > 0) {
-    for (int i = 0; i < topic_size; ++i)
-      topics_to_regularize.push_back(false);
-
-    for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
-      for (int real_topic_id = 0; real_topic_id < topic_size; ++real_topic_id) {
-        if (topic_name.Get(real_topic_id) == config_.topic_name(topic_id)) {
-          topics_to_regularize[real_topic_id] = true;
-          break;
-        }
-      }
-    }
-  } else {
-    for (int i = 0; i < topic_size; ++i)
-      topics_to_regularize.push_back(true);
-  }
+  std::vector<bool> topics_to_regularize = core::is_member(config_.topic_name(),
+                                                           topic_model->topic_name());
 
   bool use_all_classes = false;
-  std::vector<artm::core::ClassId> classes_to_regularize;
-  if (config_.class_id_size() > 0) {
-    for (auto& class_id : config_.class_id())
-      classes_to_regularize.push_back(class_id);
-  } else {
+  if (config_.class_id_size() == 0) {
     use_all_classes = true;
   }
 
@@ -50,18 +31,8 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
 
   // proceed the regularization
   for (int token_id = 0; token_id < topic_model->token_size(); ++token_id) {
-    bool regularize_this_token = false;
-    if (!use_all_classes) {
-      if (std::find(classes_to_regularize.begin(),
-                    classes_to_regularize.end(),
-                    topic_model->token(token_id).class_id)
-          != classes_to_regularize.end()) {
-        regularize_this_token = true;
-      }
-    } else {
-      regularize_this_token = true;
-    }
-    if (regularize_this_token) {
+    if (use_all_classes ||
+        core::is_member(topic_model->token(token_id).class_id, config_.class_id())) {
       // count sum of weights
       float weights_sum = 0.0f;
       for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
