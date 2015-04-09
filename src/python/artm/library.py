@@ -100,6 +100,8 @@ class Library:
         if not artm_shared_library:
             if sys.platform.count('linux') == 1:
                 artm_shared_library = 'libartm.so'
+            elif sys.platform.count('darwin') == 1:
+                artm_shared_library = 'libartm.dylib'
             else:
                 artm_shared_library = 'artm.dll'
 
@@ -107,9 +109,18 @@ class Library:
             self.lib_ = ctypes.CDLL(artm_shared_library)
             return
         except OSError as e:
-            print str(e) + ", fall back to ARTM_SHARED_LIBRARY environment variable"
+            print >> sys.stderr, str(e) + ", fall back to ARTM_SHARED_LIBRARY environment variable"
 
-        self.lib_ = ctypes.CDLL(os.environ['ARTM_SHARED_LIBRARY'])
+        if "ARTM_SHARED_LIBRARY" in os.environ:
+            try:
+                self.lib_ = ctypes.CDLL(os.environ['ARTM_SHARED_LIBRARY'])
+                return
+            except OSError as e:
+                print >> sys.stderr, str(e)
+
+        print "Failed to load artm shared library, try to set ARTM_SHARED_LIBRARY environment variable"
+        sys.exit(1)
+
 
     def CreateMasterComponent(self, config=None):
         if config is None:
