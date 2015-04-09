@@ -41,7 +41,7 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
 
   core::TokenCollectionWeights p_wt(topic_model->topic_size());
   topic_model->FindPwt(&p_wt);
-  std::map<core::ClassId, std::vector<float> >& n_t = topic_model->FindNormalizers();
+  std::map<core::ClassId, std::vector<float> > n_t = topic_model->FindNormalizers();
 
   std::map<core::Token, float> coeffs;
   if (!has_dictionary) {
