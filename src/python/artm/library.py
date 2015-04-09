@@ -66,8 +66,8 @@ class NetworkException(BaseException): pass
 
 
 def GetLastErrorMessage(lib):
-    error_message = lib.ArtmGetLastErrorMessage()
-    return ctypes.c_char_p(error_message).value
+    lib.ArtmGetLastErrorMessage.restype = ctypes.c_char_p
+    return lib.ArtmGetLastErrorMessage()
 
 
 def HandleErrorCode(lib, artm_error_code):
