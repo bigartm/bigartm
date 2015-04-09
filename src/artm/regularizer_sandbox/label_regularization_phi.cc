@@ -51,7 +51,7 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
         coeffs.insert(std::pair<core::Token, float>(token, 1));
     }
   } else {
-    for (auto& entry_iter = dictionary_ptr->begin();
+    for (auto entry_iter = dictionary_ptr->begin();
          entry_iter != dictionary_ptr->end();
          ++entry_iter) {
       auto token = entry_iter->first;
@@ -62,7 +62,6 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    bool regularize_this_token = false;
     auto token = topic_model->token(token_id);
 
     if (use_all_classes || core::is_member(token.class_id, config_.class_id())) {

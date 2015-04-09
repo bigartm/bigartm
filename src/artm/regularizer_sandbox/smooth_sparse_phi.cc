@@ -45,7 +45,7 @@ bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
         coeffs.insert(std::pair<core::Token, float>(token, 1));
     }
   } else {
-    for (auto& entry_iter = dictionary_ptr->begin();
+    for (auto entry_iter = dictionary_ptr->begin();
          entry_iter != dictionary_ptr->end();
          ++entry_iter) {
       auto token = entry_iter->first;
