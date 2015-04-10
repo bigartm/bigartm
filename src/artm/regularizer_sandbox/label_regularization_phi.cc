@@ -45,36 +45,26 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
   topic_model->FindPwt(&p_wt);
   std::map<core::ClassId, std::vector<float> > n_t = topic_model->FindNormalizers();
 
-  // fill the vector of coefficients with ones or with values from dictionary
-  std::vector<float> coefficients;
-  if (!has_dictionary) {
-    for (int token_id = 0; token_id < token_size; ++token_id) {
-      if (use_all_classes ||
-          core::is_member(topic_model->token(token_id).class_id, config_.class_id()))
-        coefficients.push_back(1);
-    }
-  } else {
-    for (int token_id = 0; token_id < token_size; ++token_id) {
-      auto token = topic_model->token(token_id);
+  // proceed the regularization
+  for (int token_id = 0; token_id < token_size; ++token_id) {
+    auto token = topic_model->token(token_id);
+    auto class_iter = n_t.find(token.class_id);
+    assert(class_iter != n_t.end());
+
+    float coefficient = 1.0f;
+    if (has_dictionary) {
       if (use_all_classes ||
           core::is_member(token.class_id, config_.class_id())) {
         auto entry_iter = dictionary_ptr->find(token);
-        // don't process tokens without value in dictionary
+        // don't process tokens without value in the dictionary
         if (entry_iter == dictionary_ptr->end())
-          coefficients.push_back(0);
+          coefficient = 0.0f;
         else
-          coefficients.push_back(entry_iter->second.value());
+          coefficient = entry_iter->second.value();
       }
     }
-  }
 
-  // proceed the regularization
-  for (int token_id = 0; token_id < token_size; ++token_id) {
-    auto token_class_id = topic_model->token(token_id).class_id;
-    auto class_iter = n_t.find(token_class_id);
-    assert(class_iter != n_t.end());
-
-    if (use_all_classes || core::is_member(token_class_id, config_.class_id())) {
+    if (use_all_classes || core::is_member(token.class_id, config_.class_id())) {
       // count sum of weights
       float weights_sum = 0.0f;
       for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
@@ -86,9 +76,8 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
       // form the value
       for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
         if (topics_to_regularize[topic_id]) {
-          float p_c = coefficients[token_id];
           float weight = p_wt[token_id][topic_id] * class_iter->second[topic_id];
-          float value = static_cast<float>(p_c * tau * weight / weights_sum);
+          float value = static_cast<float>(coefficient * tau * weight / weights_sum);
           topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
         }
       }

@@ -38,36 +38,26 @@ bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
     has_dictionary = false;
   }
 
-  // fill the vector of coefficients with ones or with values from dictionary
-  std::vector<float> coefficients;
-  if (!has_dictionary) {
-    for (int token_id = 0; token_id < token_size; ++token_id) {
-      if (use_all_classes ||
-          core::is_member(topic_model->token(token_id).class_id, config_.class_id()))
-        coefficients.push_back(1);
-    }
-  } else {
-    for (int token_id = 0; token_id < token_size; ++token_id) {
-      auto token = topic_model->token(token_id);
+  // proceed the regularization
+  for (int token_id = 0; token_id < topic_model->token_size(); ++token_id) {
+    float coefficient = 1.0f;
+    auto token = topic_model->token(token_id);
+    if (has_dictionary) {
       if (use_all_classes ||
           core::is_member(token.class_id, config_.class_id())) {
         auto entry_iter = dictionary_ptr->find(token);
         // don't process tokens without value in the dictionary
         if (entry_iter == dictionary_ptr->end())
-          coefficients.push_back(0);
+          coefficient = 0.0f;
         else
-          coefficients.push_back(entry_iter->second.value());
+          coefficient = entry_iter->second.value();
       }
     }
-  }
-
-  // proceed the regularization
-  for (int token_id = 0; token_id < topic_model->token_size(); ++token_id) {
-    bool use_this_token = core::is_member(topic_model->token(token_id).class_id, config_.class_id());
+    bool use_this_token = core::is_member(token.class_id, config_.class_id());
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
         if (use_all_classes || use_this_token) {
-          float value = static_cast<float>(tau) * coefficients[token_id];
+          float value = static_cast<float>(tau) * coefficient;
           topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
         }
       }
