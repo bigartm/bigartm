@@ -18,8 +18,11 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
 
-  std::vector<bool> topics_to_regularize = core::is_member(config_.topic_name(),
-                                                           topic_model->topic_name());
+  std::vector<bool> topics_to_regularize;
+  if (config_.topic_name().size() == 0)
+    topics_to_regularize.assign(topic_size, true);
+  else
+    topics_to_regularize = core::is_member(config_.topic_name(), topic_model->topic_name());
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {

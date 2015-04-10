@@ -51,31 +51,26 @@ void repeated_field_append(T* field, int index, V value) {
 }
 
 template<class T>
-std::vector<bool> is_member(T a, T b) {
+std::vector<bool> is_member(const T& elements, const T& set) {
   std::vector<bool> retval;
+  retval.assign(set.size(), false);
 
-  if (a.size() > 0) {
-    for (int i = 0; i < b.size(); ++i)
-      retval.push_back(false);
-
-    for (int i = 0; i < a.size(); ++i)
-      for (int j = 0; j < b.size(); ++j)
-        if (b.Get(j) == a.Get(i)) {
+  if (elements.size() > 0) {
+    for (int j = 0; j < set.size(); ++j)
+      for (int i = 0; i < elements.size(); ++i)
+        if (set.Get(j) == elements.Get(i)) {
           retval[j] = true;
           break;
         }
-  } else {
-    for (int i = 0; i < b.size(); ++i)
-      retval.push_back(true);
   }
 
   return retval;
 }
 
 template<class T, class V>
-bool is_member(V a, T b) {
-  for (int i = 0; i < b.size(); ++i) {
-    if (b.Get(i) == a) {
+bool is_member(const V& value, const T& set) {
+  for (int i = 0; i < set.size(); ++i) {
+    if (set.Get(i) == value) {
       return true;
     }
   }
