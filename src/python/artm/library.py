@@ -27,6 +27,7 @@ Stream_Type_ItemIdModulus = 1
 RegularizerConfig_Type_SmoothSparseTheta = 0
 RegularizerConfig_Type_SmoothSparsePhi = 1
 RegularizerConfig_Type_DecorrelatorPhi = 2
+RegularizerConfig_Type_LabelRegularizationPhi = 4
 ScoreConfig_Type_Perplexity = 0
 ScoreData_Type_Perplexity = 0
 ScoreConfig_Type_SparsityTheta = 1
@@ -309,6 +310,21 @@ class MasterComponent:
                 config.class_id.append(class_id)
         return self.CreateRegularizer(name, RegularizerConfig_Type_DecorrelatorPhi, config)
 
+    def CreateLabelRegularizationPhiRegularizer(self, name=None, config=None, topic_names=None, class_ids=None):
+      if name is None:
+        name = "LabelRegularizationPhiRegularizer:" + uuid.uuid1().urn
+      if config is None:
+        config = messages_pb2.LabelRegularizationPhiConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
+        if class_ids is not None:
+            config.ClearField('class_id')
+            for class_id in class_ids:
+                config.class_id.append(class_id)
+      return self.CreateRegularizer(name, RegularizerConfig_Type_LabelRegularizationPhi, config)
+		
     def CreateScore(self, name, type, config):
         master_config = messages_pb2.MasterComponentConfig()
         master_config.CopyFrom(self.config_)
