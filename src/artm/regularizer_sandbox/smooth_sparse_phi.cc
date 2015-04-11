@@ -21,7 +21,7 @@ bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
   if (config_.topic_name().size() == 0)
     topics_to_regularize.assign(topic_size, true);
   else
-    topics_to_regularize = core::is_member(config_.topic_name(), topic_model->topic_name());
+    topics_to_regularize = core::is_member(topic_model->topic_name(), config_.topic_name());
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
@@ -53,14 +53,11 @@ bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
           coefficient = entry_iter->second.value();
       }
     }
-    bool use_this_token = core::is_member(token.class_id, config_.class_id());
+    float value = static_cast<float>(tau) * coefficient;
+    if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-      if (topics_to_regularize[topic_id]) {
-        if (use_all_classes || use_this_token) {
-          float value = static_cast<float>(tau) * coefficient;
-          topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
-        }
-      }
+      if (topics_to_regularize[topic_id])
+        topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
     }
   }
 

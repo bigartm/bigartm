@@ -53,13 +53,13 @@ void repeated_field_append(T* field, int index, V value) {
 template<class T>
 std::vector<bool> is_member(const T& elements, const T& set) {
   std::vector<bool> retval;
-  retval.assign(set.size(), false);
+  retval.assign(elements.size(), false);
 
   if (elements.size() > 0) {
     for (int j = 0; j < set.size(); ++j)
       for (int i = 0; i < elements.size(); ++i)
         if (set.Get(j) == elements.Get(i)) {
-          retval[j] = true;
+          retval[i] = true;
           break;
         }
   }

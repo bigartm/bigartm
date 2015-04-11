@@ -22,7 +22,7 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
   if (config_.topic_name().size() == 0)
     topics_to_regularize.assign(topic_size, true);
   else
-    topics_to_regularize = core::is_member(config_.topic_name(), topic_model->topic_name());
+    topics_to_regularize = core::is_member(topic_model->topic_name(), config_.topic_name());
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
