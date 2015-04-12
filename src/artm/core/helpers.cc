@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <fstream>  // NOLINT
+#include <sstream>
 
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
@@ -166,6 +167,11 @@ void Helpers::Fix(::artm::ModelConfig* message) {
     for (int i = 0; i < message->class_id_size(); ++i)
       message->add_class_weight(1.0f);
   }
+
+  if (message->regularizer_tau_size() == 0) {
+    for (int i = 0; i < message->regularizer_name_size(); ++i)
+      message->add_regularizer_tau(1.0);
+  }
 }
 
 bool Helpers::Validate(const ::artm::ModelConfig& message, bool throw_error) {
@@ -176,6 +182,8 @@ bool Helpers::Validate(const ::artm::ModelConfig& message, bool throw_error) {
     ss << "Length mismatch in fields ModelConfig.topics_count and ModelConfig.topic_name";
   if (message.class_weight_size() != message.class_id_size())
     ss << "Length mismatch in fields ModelConfig.class_id and ModelConfig.class_weight";
+  if (message.regularizer_name_size() != message.regularizer_tau_size())
+    ss << "Length mismatch in fields ModelConfig.regularizer_name_size and ModelConfig.regularizer_tau_size";
 
   if (ss.str().empty())
     return true;
@@ -306,6 +314,50 @@ bool Helpers::Validate(const ::artm::Batch& message, bool throw_error) {
 bool Helpers::FixAndValidate(::artm::Batch* message, bool throw_error) {
   Fix(message);
   return Validate(*message, throw_error);
+}
+
+std::string Helpers::Describe(const ::artm::ModelConfig& message) {
+  std::stringstream ss;
+  ss << "ModelConfig";
+  ss << ": name=" << message.name();
+  ss << ", topics_count=" << message.topics_count();
+  ss << ", topic_name_size=" << message.topic_name_size();
+  ss << ", enabled=" << (message.enabled() ? "yes" : "no");
+  ss << ", inner_iterations_count=" << message.inner_iterations_count();
+  ss << ", field_name=" << message.field_name();
+  ss << ", stream_name=" << message.stream_name();
+  ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
+  for (int i = 0; i < message.regularizer_name_size(); ++i)
+    ss << ", regularizer=(" << message.regularizer_name(i) << ":" << message.regularizer_tau(i) << ")";
+  for (int i = 0; i < message.class_id_size(); ++i)
+    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
+  ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
+  ss << ", use_random_theta=" << (message.use_random_theta() ? "yes" : "no");
+  ss << ", use_new_tokens=" << (message.use_new_tokens() ? "yes" : "no");
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::MasterComponentConfig& message) {
+  std::stringstream ss;
+  ss << "MasterComponentConfig";
+  ss << ": modus_operandi=" << message.modus_operandi();
+  ss << ", disk_path=" << message.disk_path();
+  ss << ", stream_size=" << message.stream_size();
+  ss << ", compact_batches=" << (message.compact_batches() ? "yes" : "no");
+  ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
+  ss << ", processors_count=" << message.processors_count();
+  ss << ", processor_queue_max_size=" << message.processor_queue_max_size();
+  ss << ", merger_queue_max_size=" << message.merger_queue_max_size();
+  ss << ", score_config_size=" << message.score_config_size();
+  if (message.modus_operandi() == MasterComponentConfig_ModusOperandi_Network) {
+    ss << ", create_endpoint=" << message.create_endpoint();
+    ss << ", connect_endpoint=" << message.connect_endpoint();
+    ss << ", node_connect_endpoint_size=" << message.node_connect_endpoint_size();
+    ss << ", communication_timeout=" << message.communication_timeout();
+  }
+
+  ss << ", disk_cache_path" << message.disk_cache_path();
+  return ss.str();
 }
 
 std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {

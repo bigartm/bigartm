@@ -296,6 +296,7 @@ void Merger::PushTopicModelIncrement() {
 }
 
 void Merger::ResetScores(ModelName model_name) {
+  LOG(INFO) << "Merger::ResetScores(" << (model_name.empty() ? "" : ("model_name=" + model_name)) << ")";
   scores_merger_.ResetScores(model_name);
 }
 
@@ -416,6 +417,7 @@ bool Merger::ScoresMerger::RequestScore(const GetScoreValueArgs& get_score_args,
 
 bool Merger::RequestScore(const GetScoreValueArgs& get_score_args,
                           ScoreData *score_data) const {
+  LOG(INFO) << "Merger::RequestScore(score_name=" << get_score_args.score_name() << ")";
   return scores_merger_.RequestScore(get_score_args, score_data);
 }
 
