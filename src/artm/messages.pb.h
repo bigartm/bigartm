@@ -52,6 +52,7 @@ class SmoothSparseThetaConfig;
 class SmoothSparsePhiConfig;
 class DecorrelatorPhiConfig;
 class MultiLanguagePhiConfig;
+class LabelRegularizationPhiConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class DictionaryConfig;
@@ -128,11 +129,12 @@ enum RegularizerConfig_Type {
   RegularizerConfig_Type_SmoothSparseTheta = 0,
   RegularizerConfig_Type_SmoothSparsePhi = 1,
   RegularizerConfig_Type_DecorrelatorPhi = 2,
-  RegularizerConfig_Type_MultiLanguagePhi = 3
+  RegularizerConfig_Type_MultiLanguagePhi = 3,
+  RegularizerConfig_Type_LabelRegularizationPhi = 4
 };
 bool RegularizerConfig_Type_IsValid(int value);
 const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_SmoothSparseTheta;
-const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_MultiLanguagePhi;
+const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_LabelRegularizationPhi;
 const int RegularizerConfig_Type_Type_ARRAYSIZE = RegularizerConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* RegularizerConfig_Type_descriptor();
@@ -2212,6 +2214,7 @@ class RegularizerConfig : public ::google::protobuf::Message {
   static const Type SmoothSparsePhi = RegularizerConfig_Type_SmoothSparsePhi;
   static const Type DecorrelatorPhi = RegularizerConfig_Type_DecorrelatorPhi;
   static const Type MultiLanguagePhi = RegularizerConfig_Type_MultiLanguagePhi;
+  static const Type LabelRegularizationPhi = RegularizerConfig_Type_LabelRegularizationPhi;
   static inline bool Type_IsValid(int value) {
     return RegularizerConfig_Type_IsValid(value);
   }
@@ -2691,6 +2694,127 @@ class MultiLanguagePhiConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static MultiLanguagePhiConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class LabelRegularizationPhiConfig : public ::google::protobuf::Message {
+ public:
+  LabelRegularizationPhiConfig();
+  virtual ~LabelRegularizationPhiConfig();
+
+  LabelRegularizationPhiConfig(const LabelRegularizationPhiConfig& from);
+
+  inline LabelRegularizationPhiConfig& operator=(const LabelRegularizationPhiConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const LabelRegularizationPhiConfig& default_instance();
+
+  void Swap(LabelRegularizationPhiConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  LabelRegularizationPhiConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const LabelRegularizationPhiConfig& from);
+  void MergeFrom(const LabelRegularizationPhiConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string topic_name = 1;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 1;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated string class_id = 2;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
+  // optional string dictionary_name = 3;
+  inline bool has_dictionary_name() const;
+  inline void clear_dictionary_name();
+  static const int kDictionaryNameFieldNumber = 3;
+  inline const ::std::string& dictionary_name() const;
+  inline void set_dictionary_name(const ::std::string& value);
+  inline void set_dictionary_name(const char* value);
+  inline void set_dictionary_name(const char* value, size_t size);
+  inline ::std::string* mutable_dictionary_name();
+  inline ::std::string* release_dictionary_name();
+  inline void set_allocated_dictionary_name(::std::string* dictionary_name);
+
+  // @@protoc_insertion_point(class_scope:artm.LabelRegularizationPhiConfig)
+ private:
+  inline void set_has_dictionary_name();
+  inline void clear_has_dictionary_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::std::string* dictionary_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static LabelRegularizationPhiConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -10127,6 +10251,168 @@ DecorrelatorPhiConfig::mutable_class_id() {
 // -------------------------------------------------------------------
 
 // MultiLanguagePhiConfig
+
+// -------------------------------------------------------------------
+
+// LabelRegularizationPhiConfig
+
+// repeated string topic_name = 1;
+inline int LabelRegularizationPhiConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void LabelRegularizationPhiConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& LabelRegularizationPhiConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* LabelRegularizationPhiConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void LabelRegularizationPhiConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void LabelRegularizationPhiConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void LabelRegularizationPhiConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* LabelRegularizationPhiConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void LabelRegularizationPhiConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void LabelRegularizationPhiConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void LabelRegularizationPhiConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+LabelRegularizationPhiConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+LabelRegularizationPhiConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated string class_id = 2;
+inline int LabelRegularizationPhiConfig::class_id_size() const {
+  return class_id_.size();
+}
+inline void LabelRegularizationPhiConfig::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& LabelRegularizationPhiConfig::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* LabelRegularizationPhiConfig::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void LabelRegularizationPhiConfig::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void LabelRegularizationPhiConfig::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void LabelRegularizationPhiConfig::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* LabelRegularizationPhiConfig::add_class_id() {
+  return class_id_.Add();
+}
+inline void LabelRegularizationPhiConfig::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void LabelRegularizationPhiConfig::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void LabelRegularizationPhiConfig::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+LabelRegularizationPhiConfig::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+LabelRegularizationPhiConfig::mutable_class_id() {
+  return &class_id_;
+}
+
+// optional string dictionary_name = 3;
+inline bool LabelRegularizationPhiConfig::has_dictionary_name() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void LabelRegularizationPhiConfig::set_has_dictionary_name() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void LabelRegularizationPhiConfig::clear_has_dictionary_name() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void LabelRegularizationPhiConfig::clear_dictionary_name() {
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_->clear();
+  }
+  clear_has_dictionary_name();
+}
+inline const ::std::string& LabelRegularizationPhiConfig::dictionary_name() const {
+  return *dictionary_name_;
+}
+inline void LabelRegularizationPhiConfig::set_dictionary_name(const ::std::string& value) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(value);
+}
+inline void LabelRegularizationPhiConfig::set_dictionary_name(const char* value) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(value);
+}
+inline void LabelRegularizationPhiConfig::set_dictionary_name(const char* value, size_t size) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* LabelRegularizationPhiConfig::mutable_dictionary_name() {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  return dictionary_name_;
+}
+inline ::std::string* LabelRegularizationPhiConfig::release_dictionary_name() {
+  clear_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = dictionary_name_;
+    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void LabelRegularizationPhiConfig::set_allocated_dictionary_name(::std::string* dictionary_name) {
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_name_;
+  }
+  if (dictionary_name) {
+    set_has_dictionary_name();
+    dictionary_name_ = dictionary_name;
+  } else {
+    clear_has_dictionary_name();
+    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
 
 // -------------------------------------------------------------------
 

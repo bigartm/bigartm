@@ -2,17 +2,20 @@
 
 // Author: Murat Apishev (great-mel@yandex.ru)
 
+#include "artm/regularizer_sandbox/label_regularization_phi.h"
+
+#include <map>
 #include <string>
 #include <vector>
 
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/regularizable.h"
-#include "artm/regularizer_sandbox/smooth_sparse_phi.h"
+#include "artm/core/topic_model.h"
 
 namespace artm {
 namespace regularizer_sandbox {
 
-bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
+bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
   const int token_size = topic_model->token_size();
@@ -38,10 +41,17 @@ bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
     has_dictionary = false;
   }
 
+  core::TokenCollectionWeights p_wt(topic_model->topic_size());
+  topic_model->FindPwt(&p_wt);
+  std::map<core::ClassId, std::vector<float> > n_t = topic_model->FindNormalizers();
+
   // proceed the regularization
-  for (int token_id = 0; token_id < topic_model->token_size(); ++token_id) {
-    float coefficient = 1.0f;
+  for (int token_id = 0; token_id < token_size; ++token_id) {
     auto token = topic_model->token(token_id);
+    auto class_iter = n_t.find(token.class_id);
+    assert(class_iter != n_t.end());
+
+    float coefficient = 1.0f;
     if (has_dictionary) {
       if (use_all_classes ||
           core::is_member(token.class_id, config_.class_id())) {
@@ -53,23 +63,36 @@ bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
           coefficient = entry_iter->second.value();
       }
     }
-    float value = static_cast<float>(tau) * coefficient;
+
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
+
+    // count sum of weights
+    float weights_sum = 0.0f;
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-      if (topics_to_regularize[topic_id])
+      if (topics_to_regularize[topic_id]) {
+        // token_class_id is anyway presented in n_t
+        weights_sum += p_wt[token_id][topic_id] * class_iter->second[topic_id];
+      }
+    }
+    // form the value
+    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+      if (topics_to_regularize[topic_id]) {
+        float weight = p_wt[token_id][topic_id] * class_iter->second[topic_id];
+        float value = static_cast<float>(coefficient * tau * weight / weights_sum);
         topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
+      }
     }
   }
 
   return true;
 }
 
-bool SmoothSparsePhi::Reconfigure(const RegularizerConfig& config) {
+bool LabelRegularizationPhi::Reconfigure(const RegularizerConfig& config) {
   std::string config_blob = config.config();
-  SmoothSparsePhiConfig regularizer_config;
+  LabelRegularizationPhiConfig regularizer_config;
   if (!regularizer_config.ParseFromArray(config_blob.c_str(), config_blob.length())) {
     BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
-      "Unable to parse SmoothSparsePhiConfig from RegularizerConfig.config"));
+      "Unable to parse LabelRegularizationPhiConfig from RegularizerConfig.config"));
   }
 
   config_.CopyFrom(regularizer_config);
