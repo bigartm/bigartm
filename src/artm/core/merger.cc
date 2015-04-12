@@ -215,7 +215,11 @@ void Merger::ThreadFunction() {
           iter = topic_model_inc_.find(model_name);
         }
 
-        iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
+        {
+          CuckooWatch cuckoo2("Merger::ApplyTopicModelOperation(" +
+            ((model_increment->batch_uuid_size() == 1) ? model_increment->batch_uuid(0) : "") + ")");
+          iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
+        }
         for (int score_index = 0;
              score_index < model_increment->score_name_size();
              ++score_index) {

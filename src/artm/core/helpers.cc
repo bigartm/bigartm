@@ -107,7 +107,8 @@ bool Helpers::Validate(const ::artm::TopicModel& message, bool throw_error) {
     ss << "Length mismatch in fields TopicModel.topics_count and TopicModel.topic_name";
 
   for (int i = 0; i < message.token_size(); ++i) {
-    if (use_sparse_format) {
+    bool use_sparse_format_local = use_sparse_format && (message.topic_index(i).value_size() > 0);
+    if (use_sparse_format_local) {
       if (message.topic_index(i).value_size() != message.token_weights(i).value_size()) {
         ss << "Length mismatch between TopicModel.topic_index(" << i << ") and TopicModel.token_weights(" << i << ")";
         break;

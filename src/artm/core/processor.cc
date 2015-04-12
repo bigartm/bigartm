@@ -33,6 +33,8 @@ namespace fs = boost::filesystem;
 using ::util::CsrMatrix;
 using ::util::DenseMatrix;
 
+const float kProcessorEps = 1e-16;
+
 namespace artm {
 namespace core {
 
@@ -78,6 +80,7 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
     topic_model_inc->add_token(token.keyword);
     topic_model_inc->add_class_id(token.class_id);
     FloatArray* counters = topic_model_inc->add_token_weights();
+    IntArray* topic_indices = topic_model_inc->add_topic_index();
 
     if ((model_config.class_id_size() > 0) &&
         (!repeated_field_contains(model_config.class_id(), token.class_id))) {
@@ -159,7 +162,7 @@ InitializePhi(const Batch& batch, const ModelConfig& model_config,
       auto topic_iter = topic_model.GetTopicWeightIterator(token);
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         float value = topic_iter[topic_index];
-        if (value < 1e-16) {
+        if (value < kProcessorEps) {
           // Reset small values to 0.0 to avoid performance hit.
           // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
           // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
@@ -390,11 +393,33 @@ UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask*
     }
 
     FloatArray* hat_n_wt_cur = model_increment->mutable_topic_model()->mutable_token_weights(w);
-    hat_n_wt_cur->mutable_value()->Reserve(topics_count);
+    IntArray* topic_indices = model_increment->mutable_topic_model()->mutable_topic_index(w);
     assert(hat_n_wt_cur->value_size() == 0);
+    std::vector<float> values(topics_count, 0.0f);
+    int nnz_values = 0;
     for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
-      hat_n_wt_cur->add_value(p_wt[topic_index] * n_wt[topic_index]);
+      values[topic_index] = p_wt[topic_index] * n_wt[topic_index];
       n_wt[topic_index] = 0.0f;
+      if (values[topic_index] >= kProcessorEps) nnz_values++;  // Find nnz_values
+    }
+
+    if (nnz_values < (topics_count / 2)) {
+      // Use sparse format
+      hat_n_wt_cur->mutable_value()->Reserve(nnz_values);
+      topic_indices->mutable_value()->Reserve(nnz_values);
+      for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+        // The next line needs to be consistent with "Find nnz_values" line above
+        if (values[topic_index] >= kProcessorEps) {
+          hat_n_wt_cur->mutable_value()->Add(values[topic_index]);
+          topic_indices->mutable_value()->Add(topic_index);
+        }
+      }
+    } else {
+      // Use dense format
+      hat_n_wt_cur->mutable_value()->Reserve(topics_count);
+      for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+        hat_n_wt_cur->add_value(values[topic_index]);
+      }
     }
   }
 }
