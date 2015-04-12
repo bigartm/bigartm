@@ -598,6 +598,7 @@ Represents a configuration of a general regularizer.
       SmoothSparseTheta = 0;
       SmoothSparsePhi = 1;
       DecorrelatorPhi = 2;
+      LabelRegularizationPhi = 4;
     }
 
     optional string name = 1;
@@ -615,13 +616,15 @@ Represents a configuration of a general regularizer.
 
    A value that defines the type of the regularizer.
 
-   ====================== =======================================================================
-   ``SmoothSparseTheta``  Smooth-sparse regularizer for theta matrix
+   ========================== =======================================================================
+   ``SmoothSparseTheta``      Smooth-sparse regularizer for theta matrix
 
-   ``SmoothSparsePhi``    Smooth-sparse regularizer for phi matrix
+   ``SmoothSparsePhi``        Smooth-sparse regularizer for phi matrix
 
-   ``DecorrelatorPhi``    Decorrelator regularizer for phi matrix
-   ====================== =======================================================================
+   ``DecorrelatorPhi``        Decorrelator regularizer for phi matrix
+
+   ``LabelRegularizationPhi`` Label regularizer for phi matrix
+   ========================== =======================================================================
 
 
 .. attribute:: RegularizerConfig.config
@@ -725,6 +728,37 @@ Represents a configuration of a Decorrelator Phi regularizer.
 
    This set defines which classes in the model should be regularized.
    This value is optional, use an empty list to regularize all classes.
+
+
+.. _LabelRegularizationPhiConfig:
+
+LabelRegularizationPhiConfig
+============================
+
+.. class:: messages_pb2.LabelRegularizationPhiConfig
+
+Represents a configuration of a Label Regularizer Phi regularizer.
+
+.. code-block:: bash
+
+  message LabelRegularizationPhiConfig {
+    repeated string topic_name = 1;
+    repeated string class_id = 2;
+    optional string dictionary_name = 3;
+  }
+
+.. attribute:: LabelRegularizationPhiConfig.topic_name
+
+   A set of topic names that defines which topics in the model should be regularized.
+
+.. attribute:: LabelRegularizationPhiConfig.class_id
+
+   This set defines which classes in the model should be regularized.
+   This value is optional, use an empty list to regularize all classes.
+
+.. attribute:: LabelRegularizationPhiConfig.dictionary_name
+
+   An optional value defining the name of the dictionary to use.
 
 
 .. _RegularizerInternalState:
@@ -1939,6 +1973,8 @@ for further information.
       optional float max_percentage = 3;
       optional int32 min_items = 4;
       optional int32 max_items = 5;
+      optional int32 min_total_count = 6;
+      optional int32 min_one_item_count = 7;
     }
 
     optional string model_name = 1;

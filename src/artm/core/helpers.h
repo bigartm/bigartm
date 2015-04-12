@@ -43,6 +43,9 @@ class Helpers {
   static void Fix(::artm::Batch* message);
   static bool Validate(const ::artm::Batch& message, bool throw_error = true);
   static bool FixAndValidate(::artm::Batch* message, bool throw_error = true);
+
+  static std::string Describe(const ::artm::ModelConfig& message);
+  static std::string Describe(const ::artm::MasterComponentConfig& message);
 };
 
 class BatchHelpers {

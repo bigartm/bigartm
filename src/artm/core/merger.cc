@@ -215,7 +215,11 @@ void Merger::ThreadFunction() {
           iter = topic_model_inc_.find(model_name);
         }
 
-        iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
+        {
+          CuckooWatch cuckoo2("Merger::ApplyTopicModelOperation(" +
+            ((model_increment->batch_uuid_size() == 1) ? model_increment->batch_uuid(0) : "") + ")");
+          iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
+        }
         for (int score_index = 0;
              score_index < model_increment->score_name_size();
              ++score_index) {
@@ -292,6 +296,7 @@ void Merger::PushTopicModelIncrement() {
 }
 
 void Merger::ResetScores(ModelName model_name) {
+  LOG(INFO) << "Merger::ResetScores(" << (model_name.empty() ? "" : ("model_name=" + model_name)) << ")";
   scores_merger_.ResetScores(model_name);
 }
 
@@ -412,6 +417,7 @@ bool Merger::ScoresMerger::RequestScore(const GetScoreValueArgs& get_score_args,
 
 bool Merger::RequestScore(const GetScoreValueArgs& get_score_args,
                           ScoreData *score_data) const {
+  LOG(INFO) << "Merger::RequestScore(score_name=" << get_score_args.score_name() << ")";
   return scores_merger_.RequestScore(get_score_args, score_data);
 }
 
@@ -515,10 +521,20 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
   }
 }
 
+struct TokenInfo {
+ public:
+  TokenInfo() : num_items(0), num_total_count(0), max_one_item_count(0) {}
+  int num_items;  // number of items containing this token
+  int num_total_count;  // total number of token' occurencies in the collection
+  int max_one_item_count;  // max number of token's toccurencies in one item
+};
+
 void Merger::InitializeModel(const InitializeModelArgs& args) {
   if (master_component_service_ != nullptr) {
     return;  // no-op in network modus operandi
   }
+
+  int token_duplicates = 0;
 
   auto schema = schema_->get();
   const ModelConfig& model = schema->model_config(args.model_name());
@@ -542,7 +558,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
       new_ttm->AddToken(Token(class_id, iter->second.key_token()), true);
     }
   } else if (args.source_type() == InitializeModelArgs_SourceType_Batches) {
-    std::unordered_map<Token, int, TokenHasher> token_freq_map;
+    std::unordered_map<Token, TokenInfo, TokenHasher> token_freq_map;
     size_t total_items_count = 0, total_token_count = 0;
     std::vector<BatchManagerTask> batches = BatchHelpers::ListAllBatches(args.disk_path());
 
@@ -561,18 +577,25 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
         total_items_count++;
         total_token_count++;
         for (const Field& field : batch.item(item_id).field()) {
-          for (int token_count : field.token_count())
+          for (int token_index = 0; token_index < field.token_count_size(); ++token_index) {
+            const int token_count = field.token_count(token_index);
+            const int token_id = field.token_id(token_index);
+
             total_token_count += token_count;
-          for (int token_id : field.token_id()) {
             if (!token_mask[token_id]) {
               token_mask[token_id] = 1;
               Token token(batch.class_id(token_id), batch.token(token_id));
-              auto iter = token_freq_map.find(token);
-              if (iter != token_freq_map.end()) {
-                iter->second++;
-              } else {
-                token_freq_map.insert(std::make_pair(token, 1));
-              }
+              TokenInfo& token_info = token_freq_map[token];
+              token_info.num_items++;
+              token_info.num_total_count += token_count;
+              if (token_info.max_one_item_count < token_count)
+                token_info.max_one_item_count = token_count;
+            } else {
+              LOG_IF(WARNING, token_duplicates == 0)
+                << "Token (" << batch.token(token_id) << ", " << batch.class_id(token_id)
+                << ") has multiple entries in item_id=" << batch.item(item_id).id()
+                << ", batch_id=" << batch.id();
+              token_duplicates++;
             }
           }
         }
@@ -591,27 +614,32 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
 
     for (auto& filter : args.filter()) {
       int max_freq = INT_MAX, min_freq = -1;
+      int min_total_count = -1, min_one_item_count = -1;
       if (filter.has_max_percentage()) max_freq = total_items_count * filter.max_percentage();
       if (filter.has_min_percentage()) min_freq = total_items_count * filter.min_percentage();
       if (filter.has_max_items() && (max_freq > filter.max_items())) max_freq = filter.max_items();
       if (filter.has_min_items() && (min_freq < filter.min_items())) min_freq = filter.min_items();
+      if (filter.has_min_total_count()) min_total_count = filter.min_total_count();
+      if (filter.has_min_one_item_count()) min_one_item_count = filter.min_one_item_count();
 
       for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
         if (filter.has_class_id() && iter->first.class_id != filter.class_id())
           continue;
-        if (iter->second > max_freq || iter->second < min_freq)
-          iter->second = -1;
+        if (iter->second.num_items > max_freq) iter->second.num_items = -1;
+        if (iter->second.num_items < min_freq) iter->second.num_items = -1;
+        if (iter->second.max_one_item_count < min_one_item_count) iter->second.num_items = -1;
+        if (iter->second.num_total_count < min_total_count) iter->second.num_items = -1;
       }
     }
 
     size_t unique_tokens_left = 0;
     for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
-      if (iter->second != -1) unique_tokens_left++;
+      if (iter->second.num_items != -1) unique_tokens_left++;
     }
     LOG(INFO) << "All filters applied, " << unique_tokens_left << " unique tokens left.";
 
     for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
-      if (iter->second != -1)
+      if (iter->second.num_items != -1)
         new_ttm->AddToken(iter->first, true);
   } else {
     BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(

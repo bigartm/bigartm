@@ -61,6 +61,7 @@ void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
+  LOG(INFO) << "Merger::CreateOrReconfigureModel() with " << Helpers::Describe(config);
   instance_->CreateOrReconfigureModel(config);
   network_client_interface_->CreateOrReconfigureModel(config);
 }
@@ -107,6 +108,7 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& user_config) {
+  LOG(INFO) << "Merger::CreateOrReconfigureModel() with " << Helpers::Describe(user_config);
   ValidateConfig(user_config);
 
   MasterComponentConfig config(user_config);  // make a copy

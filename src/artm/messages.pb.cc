@@ -1026,12 +1026,14 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(InitializeModelArgs));
   InitializeModelArgs_Filter_descriptor_ = InitializeModelArgs_descriptor_->nested_type(0);
-  static const int InitializeModelArgs_Filter_offsets_[5] = {
+  static const int InitializeModelArgs_Filter_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs_Filter, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs_Filter, min_percentage_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs_Filter, max_percentage_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs_Filter, min_items_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs_Filter, max_items_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs_Filter, min_total_count_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs_Filter, min_one_item_count_),
   };
   InitializeModelArgs_Filter_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1564,36 +1566,37 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "Wabbit\020\002\"\177\n\024SynchronizeModelArgs\022\022\n\nmode"
     "l_name\030\001 \001(\t\022\027\n\014decay_weight\030\002 \001(\002:\0010\022!\n"
     "\023invoke_regularizers\030\003 \001(\010:\004true\022\027\n\014appl"
-    "y_weight\030\004 \001(\002:\0011\"\353\002\n\023InitializeModelArg"
+    "y_weight\030\004 \001(\002:\0011\"\241\003\n\023InitializeModelArg"
     "s\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dictionary_name"
     "\030\002 \001(\t\022E\n\013source_type\030\003 \001(\0162$.artm.Initi"
     "alizeModelArgs.SourceType:\nDictionary\022\021\n"
     "\tdisk_path\030\004 \001(\t\0220\n\006filter\030\005 \003(\0132 .artm."
-    "InitializeModelArgs.Filter\032p\n\006Filter\022\020\n\010"
-    "class_id\030\001 \001(\t\022\026\n\016min_percentage\030\002 \001(\002\022\026"
-    "\n\016max_percentage\030\003 \001(\002\022\021\n\tmin_items\030\004 \001("
-    "\005\022\021\n\tmax_items\030\005 \001(\005\")\n\nSourceType\022\016\n\nDi"
-    "ctionary\020\000\022\013\n\007Batches\020\001\"\355\001\n\021GetTopicMode"
-    "lArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_name\030"
-    "\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\022\031"
-    "\n\021use_sparse_format\030\005 \001(\010\022\023\n\003eps\030\006 \001(\002:\006"
-    "1e-037\022>\n\014request_type\030\007 \001(\0162#.artm.GetT"
-    "opicModelArgs.RequestType:\003Pwt\"\037\n\013Reques"
-    "tType\022\007\n\003Pwt\020\000\022\007\n\003Nwt\020\001\"\271\001\n\022GetThetaMatr"
-    "ixArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001("
-    "\0132\013.artm.Batch\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013to"
-    "pic_index\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001(\010:\005fa"
-    "lse\022\031\n\021use_sparse_format\030\006 \001(\010\022\023\n\003eps\030\007 "
-    "\001(\002:\0061e-037\"W\n\021GetScoreValueArgs\022\022\n\nmode"
-    "l_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batc"
-    "h\030\003 \001(\0132\013.artm.Batch\"\202\001\n\014AddBatchArgs\022\032\n"
-    "\005batch\030\001 \001(\0132\013.artm.Batch\022 \n\024timeout_mil"
-    "liseconds\030\002 \001(\005:\002-1\022\033\n\014reset_scores\030\003 \001("
-    "\010:\005false\022\027\n\017batch_file_name\030\004 \001(\t\"a\n\023Inv"
-    "okeIterationArgs\022\033\n\020iterations_count\030\001 \001"
-    "(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\022\021\n\tdis"
-    "k_path\030\003 \001(\t\"0\n\014WaitIdleArgs\022 \n\024timeout_"
-    "milliseconds\030\001 \001(\005:\002-1", 7582);
+    "InitializeModelArgs.Filter\032\245\001\n\006Filter\022\020\n"
+    "\010class_id\030\001 \001(\t\022\026\n\016min_percentage\030\002 \001(\002\022"
+    "\026\n\016max_percentage\030\003 \001(\002\022\021\n\tmin_items\030\004 \001"
+    "(\005\022\021\n\tmax_items\030\005 \001(\005\022\027\n\017min_total_count"
+    "\030\006 \001(\005\022\032\n\022min_one_item_count\030\007 \001(\005\")\n\nSo"
+    "urceType\022\016\n\nDictionary\020\000\022\013\n\007Batches\020\001\"\355\001"
+    "\n\021GetTopicModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022"
+    "\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010cl"
+    "ass_id\030\004 \003(\t\022\031\n\021use_sparse_format\030\005 \001(\010\022"
+    "\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n\014request_type\030\007 \001"
+    "(\0162#.artm.GetTopicModelArgs.RequestType:"
+    "\003Pwt\"\037\n\013RequestType\022\007\n\003Pwt\020\000\022\007\n\003Nwt\020\001\"\271\001"
+    "\n\022GetThetaMatrixArgs\022\022\n\nmodel_name\030\001 \001(\t"
+    "\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic_na"
+    "me\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clean_c"
+    "ache\030\005 \001(\010:\005false\022\031\n\021use_sparse_format\030\006"
+    " \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\"W\n\021GetScoreVal"
+    "ueArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name"
+    "\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"\202\001\n\014A"
+    "ddBatchArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022"
+    " \n\024timeout_milliseconds\030\002 \001(\005:\002-1\022\033\n\014res"
+    "et_scores\030\003 \001(\010:\005false\022\027\n\017batch_file_nam"
+    "e\030\004 \001(\t\"a\n\023InvokeIterationArgs\022\033\n\020iterat"
+    "ions_count\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001("
+    "\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014WaitIdleAr"
+    "gs\022 \n\024timeout_milliseconds\030\001 \001(\005:\002-1", 7636);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -18020,6 +18023,8 @@ const int InitializeModelArgs_Filter::kMinPercentageFieldNumber;
 const int InitializeModelArgs_Filter::kMaxPercentageFieldNumber;
 const int InitializeModelArgs_Filter::kMinItemsFieldNumber;
 const int InitializeModelArgs_Filter::kMaxItemsFieldNumber;
+const int InitializeModelArgs_Filter::kMinTotalCountFieldNumber;
+const int InitializeModelArgs_Filter::kMinOneItemCountFieldNumber;
 #endif  // !_MSC_VER
 
 InitializeModelArgs_Filter::InitializeModelArgs_Filter()
@@ -18043,6 +18048,8 @@ void InitializeModelArgs_Filter::SharedCtor() {
   max_percentage_ = 0;
   min_items_ = 0;
   max_items_ = 0;
+  min_total_count_ = 0;
+  min_one_item_count_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -18090,6 +18097,8 @@ void InitializeModelArgs_Filter::Clear() {
     max_percentage_ = 0;
     min_items_ = 0;
     max_items_ = 0;
+    min_total_count_ = 0;
+    min_one_item_count_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -18177,6 +18186,38 @@ bool InitializeModelArgs_Filter::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(48)) goto parse_min_total_count;
+        break;
+      }
+
+      // optional int32 min_total_count = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_min_total_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &min_total_count_)));
+          set_has_min_total_count();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(56)) goto parse_min_one_item_count;
+        break;
+      }
+
+      // optional int32 min_one_item_count = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_min_one_item_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &min_one_item_count_)));
+          set_has_min_one_item_count();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -18228,6 +18269,16 @@ void InitializeModelArgs_Filter::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->max_items(), output);
   }
 
+  // optional int32 min_total_count = 6;
+  if (has_min_total_count()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->min_total_count(), output);
+  }
+
+  // optional int32 min_one_item_count = 7;
+  if (has_min_one_item_count()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->min_one_item_count(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -18264,6 +18315,16 @@ void InitializeModelArgs_Filter::SerializeWithCachedSizes(
   // optional int32 max_items = 5;
   if (has_max_items()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->max_items(), target);
+  }
+
+  // optional int32 min_total_count = 6;
+  if (has_min_total_count()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->min_total_count(), target);
+  }
+
+  // optional int32 min_one_item_count = 7;
+  if (has_min_one_item_count()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->min_one_item_count(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -18308,6 +18369,20 @@ int InitializeModelArgs_Filter::ByteSize() const {
           this->max_items());
     }
 
+    // optional int32 min_total_count = 6;
+    if (has_min_total_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->min_total_count());
+    }
+
+    // optional int32 min_one_item_count = 7;
+    if (has_min_one_item_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->min_one_item_count());
+    }
+
   }
   if (!unknown_fields().empty()) {
     total_size +=
@@ -18350,6 +18425,12 @@ void InitializeModelArgs_Filter::MergeFrom(const InitializeModelArgs_Filter& fro
     if (from.has_max_items()) {
       set_max_items(from.max_items());
     }
+    if (from.has_min_total_count()) {
+      set_min_total_count(from.min_total_count());
+    }
+    if (from.has_min_one_item_count()) {
+      set_min_one_item_count(from.min_one_item_count());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -18378,6 +18459,8 @@ void InitializeModelArgs_Filter::Swap(InitializeModelArgs_Filter* other) {
     std::swap(max_percentage_, other->max_percentage_);
     std::swap(min_items_, other->min_items_);
     std::swap(max_items_, other->max_items_);
+    std::swap(min_total_count_, other->min_total_count_);
+    std::swap(min_one_item_count_, other->min_one_item_count_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

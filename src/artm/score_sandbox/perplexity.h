@@ -14,8 +14,7 @@ namespace score_sandbox {
 
 class Perplexity : public ScoreCalculatorInterface {
  public:
-  explicit Perplexity(const PerplexityScoreConfig& config)
-    : config_(config) {}
+  explicit Perplexity(const PerplexityScoreConfig& config);
 
   virtual bool is_cumulative() const { return true; }
 

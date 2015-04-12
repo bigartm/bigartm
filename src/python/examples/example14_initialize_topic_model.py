@@ -15,16 +15,18 @@ with artm.library.MasterComponent() as master:
     init_args.source_type = artm.library.InitializeModelArgs_SourceType_Batches
     init_args.disk_path = batches_disk_path
     init_filter = init_args.filter.add()
-    init_filter.max_percentage = 0.2
-    init_filter.min_items = 10
+    init_filter.max_percentage = 0.2  # filter out frequent tokens present in 20% (or more) of items in the collection
+    init_filter.min_items = 10  # filter out rare tokens that are present in up to 10 items
 
     # Use the following option to separately filter each modality.
     # By default filter is applied to all modalities.
     # init_filter.class_id = ... (for example "@default_class")
 
-    # The following alternatives are also available, but they are not nearly as useful as previous two.
-    # init_filter.min_percentage = ...
-    # init_filter.max_items = ...
+    # The following alternatives are also available, but they are not as useful as previous options.
+    # init_filter.min_percentage = ...    # opposite to max_percentage
+    # init_filter.max_items = ...         # opposite to min_items
+    # init_filter.min_total_count = 50    # filter out tokens that have in total less than 50 occurrences in collection
+    # init_filter.min_one_item_count = 5  # use tokens only if they are present 5 or more times in a single item
 
     model.Initialize(args=init_args)
 

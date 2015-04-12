@@ -6245,6 +6245,20 @@ class InitializeModelArgs_Filter : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 max_items() const;
   inline void set_max_items(::google::protobuf::int32 value);
 
+  // optional int32 min_total_count = 6;
+  inline bool has_min_total_count() const;
+  inline void clear_min_total_count();
+  static const int kMinTotalCountFieldNumber = 6;
+  inline ::google::protobuf::int32 min_total_count() const;
+  inline void set_min_total_count(::google::protobuf::int32 value);
+
+  // optional int32 min_one_item_count = 7;
+  inline bool has_min_one_item_count() const;
+  inline void clear_min_one_item_count();
+  static const int kMinOneItemCountFieldNumber = 7;
+  inline ::google::protobuf::int32 min_one_item_count() const;
+  inline void set_min_one_item_count(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs.Filter)
  private:
   inline void set_has_class_id();
@@ -6257,6 +6271,10 @@ class InitializeModelArgs_Filter : public ::google::protobuf::Message {
   inline void clear_has_min_items();
   inline void set_has_max_items();
   inline void clear_has_max_items();
+  inline void set_has_min_total_count();
+  inline void clear_has_min_total_count();
+  inline void set_has_min_one_item_count();
+  inline void clear_has_min_one_item_count();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6265,9 +6283,11 @@ class InitializeModelArgs_Filter : public ::google::protobuf::Message {
   float max_percentage_;
   ::google::protobuf::int32 min_items_;
   ::google::protobuf::int32 max_items_;
+  ::google::protobuf::int32 min_total_count_;
+  ::google::protobuf::int32 min_one_item_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -14889,6 +14909,50 @@ inline ::google::protobuf::int32 InitializeModelArgs_Filter::max_items() const {
 inline void InitializeModelArgs_Filter::set_max_items(::google::protobuf::int32 value) {
   set_has_max_items();
   max_items_ = value;
+}
+
+// optional int32 min_total_count = 6;
+inline bool InitializeModelArgs_Filter::has_min_total_count() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_total_count() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_total_count() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void InitializeModelArgs_Filter::clear_min_total_count() {
+  min_total_count_ = 0;
+  clear_has_min_total_count();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::min_total_count() const {
+  return min_total_count_;
+}
+inline void InitializeModelArgs_Filter::set_min_total_count(::google::protobuf::int32 value) {
+  set_has_min_total_count();
+  min_total_count_ = value;
+}
+
+// optional int32 min_one_item_count = 7;
+inline bool InitializeModelArgs_Filter::has_min_one_item_count() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_one_item_count() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_one_item_count() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void InitializeModelArgs_Filter::clear_min_one_item_count() {
+  min_one_item_count_ = 0;
+  clear_has_min_one_item_count();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::min_one_item_count() const {
+  return min_one_item_count_;
+}
+inline void InitializeModelArgs_Filter::set_min_one_item_count(::google::protobuf::int32 value) {
+  set_has_min_one_item_count();
+  min_one_item_count_ = value;
 }
 
 // -------------------------------------------------------------------
