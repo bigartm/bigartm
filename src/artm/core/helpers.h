@@ -44,6 +44,13 @@ class Helpers {
   static bool Validate(const ::artm::Batch& message, bool throw_error = true);
   static bool FixAndValidate(::artm::Batch* message, bool throw_error = true);
 
+  static void Fix(::artm::GetScoreValueArgs* message);
+  static bool Validate(const ::artm::GetScoreValueArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::GetScoreValueArgs* message, bool throw_error = true);
+
+  static bool Validate(const ::artm::MasterComponentConfig& message, bool throw_error = true);
+  static bool Validate(const ::artm::InitializeModelArgs& message, bool throw_error = true);
+
   static std::string Describe(const ::artm::ModelConfig& message);
   static std::string Describe(const ::artm::MasterComponentConfig& message);
 };
