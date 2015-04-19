@@ -160,6 +160,8 @@ void Merger::ThreadFunction() {
       is_idle_ = false;
 
       for (;;) {  // MAIN FOR LOOP
+        CuckooWatch cuckoo("Merger::MainLoopIteration", 3);
+
         // First, handle priority tasks in the internal_task_queue.
         MergerTask merger_task;
         if (internal_task_queue_.try_pop(&merger_task)) {
@@ -216,13 +218,15 @@ void Merger::ThreadFunction() {
         }
 
         {
-          CuckooWatch cuckoo2("Merger::ApplyTopicModelOperation(" +
-            ((model_increment->batch_uuid_size() == 1) ? model_increment->batch_uuid(0) : "") + ")");
+          CuckooWatch cuckoo2("ApplyTopicModelOperation(" +
+            ((model_increment->batch_uuid_size() == 1) ? model_increment->batch_uuid(0) : "") + "), ", &cuckoo);
           iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
         }
+
         for (int score_index = 0;
              score_index < model_increment->score_name_size();
              ++score_index) {
+          CuckooWatch cuckoo2(std::string("AppendScore") + model_increment->score_name(score_index) + "), ", &cuckoo);
           scores_merger_.Append(model_name, model_increment->score_name(score_index),
                                 model_increment->score(score_index));
         }
