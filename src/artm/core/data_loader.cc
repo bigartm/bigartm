@@ -277,29 +277,31 @@ void LocalDataLoader::ThreadFunction() {
         continue;
       }
 
+      CuckooWatch cuckoo("LoadBatch", 2);
+
       BatchManagerTask next_task = instance_->batch_manager()->Next();
       if (next_task.uuid.is_nil()) {
         boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
         continue;
       }
 
-      std::shared_ptr<Batch> batch = std::make_shared< ::artm::Batch>();
+      std::shared_ptr<ProcessorInput> pi = std::make_shared<ProcessorInput>();
       try {
-        ::artm::core::BatchHelpers::LoadMessage(next_task.file_path, batch.get());
-        batch->set_id(boost::lexical_cast<std::string>(next_task.uuid));  // keep batch.id and task.uuid in sync
+        CuckooWatch cuckoo2(std::string("LoadMessage(") + next_task.file_path + ")", &cuckoo);
+        ::artm::core::BatchHelpers::LoadMessage(next_task.file_path, pi->mutable_batch());
+
+        // keep batch.id and task.uuid in sync
+        pi->set_batch_uuid(boost::lexical_cast<std::string>(next_task.uuid));
+        pi->mutable_batch()->set_id(boost::lexical_cast<std::string>(next_task.uuid));
       } catch (std::exception& ex) {
         LOG(ERROR) << ex.what() << ", the batch will be skipped.";
-        batch = nullptr;
+        pi = nullptr;
       }
 
-      if (batch == nullptr) {
+      if (pi == nullptr) {
         instance_->batch_manager()->Done(next_task.uuid, ModelName());
         continue;
       }
-
-      auto pi = std::make_shared<ProcessorInput>();
-      pi->mutable_batch()->CopyFrom(*batch);
-      pi->set_batch_uuid(boost::lexical_cast<std::string>(next_task.uuid));
 
       auto keys = cache_.keys();
       for (auto &key : keys) {
@@ -323,7 +325,7 @@ void LocalDataLoader::ThreadFunction() {
         }
       }
 
-      DataLoader::PopulateDataStreams(*batch, pi.get());
+      DataLoader::PopulateDataStreams(pi->batch(), pi.get());
       instance()->processor_queue()->push(pi);
     }
   } catch(...) {
