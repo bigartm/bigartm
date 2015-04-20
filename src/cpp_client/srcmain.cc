@@ -78,6 +78,7 @@ struct artm_options {
   bool b_paused;
   bool b_no_scores;
   bool b_reuse_theta;
+  bool b_disable_avx_opt;
   std::vector<std::string> nodes;
   std::vector<std::string> class_id;
 };
@@ -266,6 +267,7 @@ int execute(const artm_options& options) {
   model_config.set_topics_count(options.num_topics);
   model_config.set_inner_iterations_count(options.num_inner_iters);
   model_config.set_stream_name("train_stream");
+  model_config.set_opt_for_avx(!options.b_disable_avx_opt);
   if (options.b_reuse_theta) model_config.set_reuse_theta(true);
   model_config.set_name("15081980-90a7-4767-ab85-7cb551c39339");  // randomly generated GUID
   if (options.class_id.size() > 0) {
@@ -521,6 +523,7 @@ int main(int argc, char * argv[]) {
       ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
       ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
+      ("disable_avx_opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
     ;
     all_options.add(basic_options);
 

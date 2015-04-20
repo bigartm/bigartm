@@ -2100,6 +2100,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool use_new_tokens() const;
   inline void set_use_new_tokens(bool value);
 
+  // optional bool opt_for_avx = 17 [default = true];
+  inline bool has_opt_for_avx() const;
+  inline void clear_opt_for_avx();
+  static const int kOptForAvxFieldNumber = 17;
+  inline bool opt_for_avx() const;
+  inline void set_opt_for_avx(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2122,6 +2129,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_random_theta();
   inline void set_has_use_new_tokens();
   inline void clear_has_use_new_tokens();
+  inline void set_has_opt_for_avx();
+  inline void clear_has_opt_for_avx();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2137,16 +2146,17 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
   bool use_new_tokens_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  bool opt_for_avx_;
   ::google::protobuf::RepeatedField< float > class_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9772,6 +9782,28 @@ inline bool ModelConfig::use_new_tokens() const {
 inline void ModelConfig::set_use_new_tokens(bool value) {
   set_has_use_new_tokens();
   use_new_tokens_ = value;
+}
+
+// optional bool opt_for_avx = 17 [default = true];
+inline bool ModelConfig::has_opt_for_avx() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void ModelConfig::set_has_opt_for_avx() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void ModelConfig::clear_has_opt_for_avx() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline void ModelConfig::clear_opt_for_avx() {
+  opt_for_avx_ = true;
+  clear_has_opt_for_avx();
+}
+inline bool ModelConfig::opt_for_avx() const {
+  return opt_for_avx_;
+}
+inline void ModelConfig::set_opt_for_avx(bool value) {
+  set_has_opt_for_avx();
+  opt_for_avx_ = value;
 }
 
 // -------------------------------------------------------------------
