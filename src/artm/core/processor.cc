@@ -278,7 +278,7 @@ InferThetaSparse(const ModelConfig& model_config, const Batch& batch, const Inst
   for (int token_index = 0; token_index < batch.token_size(); ++token_index)
     token_id[token_index] = topic_model.token_id(Token(batch.class_id(token_index), batch.token(token_index)));
 
-#if 1
+  if (model_config.opt_for_avx()) {
   // This version is about 40% faster than the second alternative below.
   // Both versions return 100% equal results.
   // Speedup is due to several factors:
@@ -332,7 +332,7 @@ InferThetaSparse(const ModelConfig& model_config, const Batch& batch, const Inst
       agents->Apply(d, inner_iter, model_config.topics_count(), theta_ptr);
     }
   }
-#else
+  } else {
   std::shared_ptr<DenseMatrix<float>> phi_matrix_ptr = InitializePhi(batch, model_config, topic_model);
   if (phi_matrix_ptr == nullptr) return;
   const DenseMatrix<float>& phi_matrix = *phi_matrix_ptr;
@@ -354,7 +354,7 @@ InferThetaSparse(const ModelConfig& model_config, const Batch& batch, const Inst
     for (int item_index = 0; item_index < batch.item_size(); ++item_index)
       agents->Apply(item_index, inner_iter, model_config.topics_count(), &(*theta_matrix)(0, item_index));  // NOLINT
   }
-#endif
+  }
 }
 
 static void

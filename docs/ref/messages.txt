@@ -488,6 +488,7 @@ Represents a configuration of a topic model.
     optional bool use_sparse_bow = 14 [default = true];
     optional bool use_random_theta = 15 [default = false];
     optional bool use_new_tokens = 16 [default = true];
+    optional bool opt_for_avx = 17 [default = true];
   }
 
 .. attribute:: ModelConfig.name
@@ -580,6 +581,15 @@ Represents a configuration of a topic model.
    This setting is set to *True* by default. As a result, every new token observed in batches
    is automatically incorporated into topic model during the next model synchronization (:c:func:`ArtmSynchronizeModel`).
    The ``n_wt_`` weights for new tokens randomly generated from ``[0..1]`` range.
+
+.. attribute:: ModelConfig.opt_for_avx
+
+   An experimental flag that allows to disable AVX optimization in processor.
+   By default this option is enabled as on average it adds ca. 40% speedup on physical hardware.
+   You may want to disable this option if you are running on Windows inside virtual machine,
+   or in situation when BigARTM performance degrades from iteration to interation.
+
+   This option does not affect the results, and is only intended for advanced users experimenting with BigARTM performance.
 
 
 .. _RegularizerConfig:
