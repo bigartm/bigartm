@@ -28,7 +28,6 @@ std::string runOfflineTest() {
   // Endpoints:
   // 5555 - master component (network_mode)
   // 5556 - node controller for workers (network_mode)
-  // 5557 - node controller for master (proxy_mode)
 
   ::artm::MasterComponentConfig master_config;
   master_config.set_cache_theta(true);

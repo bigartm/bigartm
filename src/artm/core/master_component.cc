@@ -528,7 +528,6 @@ bool NetworkClientCollection::ConnectClient(std::string endpoint) {
     // Reset the state of the remote node controller
     Void response;
     make_rpcz_call([&]() { client->DisposeInstance(Void(), &response, communication_timeout()); });
-    make_rpcz_call([&]() { client->DisposeMasterComponent(Void(), &response, communication_timeout()); });
   } catch(...) {
     LOG(ERROR) << "Unable to clear the state of the remote node controller.";
     return false;

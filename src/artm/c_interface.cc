@@ -17,7 +17,6 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/master_component.h"
-#include "artm/core/master_proxy.h"
 #include "artm/core/node_controller.h"
 #include "artm/core/collection_parser.h"
 
@@ -58,7 +57,7 @@ static void EnableLogging() {
   }
 }
 
-static std::shared_ptr< ::artm::core::MasterInterface> master_component(int master_id) {
+static std::shared_ptr< ::artm::core::MasterComponent> master_component(int master_id) {
   auto master_component = artm::core::MasterComponentManager::singleton().Get(master_id);
   if (master_component == nullptr) {
     BOOST_THROW_EXCEPTION(::artm::core::InvalidMasterIdException(boost::lexical_cast<std::string>(master_id)));
@@ -151,21 +150,8 @@ int ArtmWaitIdle(int master_id, int length, const char* wait_idle_args) {
 }
 
 // =========================================================================
-// MasterComponent / MasterProxy
+// MasterComponent
 // =========================================================================
-
-int ArtmCreateMasterProxy(int length, const char* master_proxy_config) {
-  try {
-    EnableLogging();
-
-    artm::MasterProxyConfig config;
-    ParseFromArray(master_proxy_config, length, &config);
-    auto& mcm = artm::core::MasterComponentManager::singleton();
-    int retval = mcm.Create< ::artm::core::MasterProxy, ::artm::MasterProxyConfig>(config);
-    assert(retval > 0);
-    return retval;
-  } CATCH_EXCEPTIONS;
-}
 
 int ArtmCreateMasterComponent(int length, const char* master_component_config) {
   try {

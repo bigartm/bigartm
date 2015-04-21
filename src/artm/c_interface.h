@@ -18,7 +18,6 @@
 
 extern "C" {
   DLL_PUBLIC int ArtmCreateMasterComponent(int length, const char* master_component_config);
-  DLL_PUBLIC int ArtmCreateMasterProxy(int length, const char* master_proxy_config);
   DLL_PUBLIC int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config);
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);
 

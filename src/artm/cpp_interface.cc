@@ -99,13 +99,6 @@ MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), 
     config_blob.size(), StringAsArray(&config_blob)));
 }
 
-MasterComponent::MasterComponent(const MasterProxyConfig& config)
-    : id_(0), config_(config.config()) {
-  std::string config_blob;
-  config.SerializeToString(&config_blob);
-  id_ = HandleErrorCode(ArtmCreateMasterProxy(config_blob.size(), StringAsArray(&config_blob)));
-}
-
 MasterComponent::~MasterComponent() {
   ArtmDisposeMasterComponent(id());
 }

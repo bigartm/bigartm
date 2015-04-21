@@ -194,7 +194,7 @@ class Library:
 
 
 class MasterComponent:
-    def __init__(self, config=None, lib=None, disk_path=None, proxy_endpoint=None):
+    def __init__(self, config=None, lib=None, disk_path=None):
         if lib is None:
             lib = Library().lib_
 
@@ -213,13 +213,7 @@ class MasterComponent:
                 len(master_config_blob), master_config_blob_p))
             return
 
-        if isinstance(config, messages_pb2.MasterProxyConfig):
-            self.config_ = config.config
-            self.id_ = HandleErrorCode(self.lib_, self.lib_.ArtmCreateMasterProxy(
-                len(master_config_blob), master_config_blob_p))
-            return
-
-        raise ArgumentOutOfRangeException("config is neither MasterComponentConfig nor MasterProxyConfig")
+        raise ArgumentOutOfRangeException("config must be MasterComponentConfig")
 
     def __enter__(self):
         return self

@@ -64,7 +64,6 @@ std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& 
 class MasterComponent {
  public:
   explicit MasterComponent(const MasterComponentConfig& config);
-  explicit MasterComponent(const MasterProxyConfig& config);
   ~MasterComponent();
 
   int id() const { return id_; }

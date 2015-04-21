@@ -59,7 +59,6 @@ struct artm_options {
   std::string vocab;
   std::string batch_folder;
   std::string disk_cache_folder;
-  std::string proxy;
   std::string localhost;
   std::string dictionary_file;
   int num_topics;
@@ -237,7 +236,6 @@ void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class
 
 int execute(const artm_options& options) {
   bool is_network_mode = (options.nodes.size() > 0);
-  bool is_proxy = (!options.proxy.empty());
   bool online = (options.update_every > 0);
 
   if (options.b_paused) {
@@ -361,15 +359,7 @@ int execute(const artm_options& options) {
 
   // Step 3. Create master component.
   std::shared_ptr<MasterComponent> master_component;
-  if (is_proxy) {
-     MasterProxyConfig master_proxy_config;
-     master_proxy_config.set_node_connect_endpoint(options.proxy);
-     master_proxy_config.mutable_config()->CopyFrom(master_config);
-     master_proxy_config.set_communication_timeout(options.communication_timeout);
-     master_component.reset(new MasterComponent(master_proxy_config));
-  } else {
-    master_component.reset(new MasterComponent(master_config));
-  }
+  master_component.reset(new MasterComponent(master_config));
 
   std::shared_ptr<Dictionary> dictionary;
   if (unique_tokens != nullptr)
@@ -532,7 +522,6 @@ int main(int argc, char * argv[]) {
       ("nodes", po::value< std::vector<std::string> >(&options.nodes)->multitoken(), "endpoints of the remote nodes (enables network modus operandi)")
       ("localhost", po::value(&options.localhost)->default_value("localhost"), "DNS name or the IP address of the localhost")
       ("port", po::value(&options.port)->default_value(5550), "port to use for master node")
-      ("proxy", po::value(&options.proxy)->default_value(""), "proxy endpoint")
       ("timeout", po::value(&options.communication_timeout)->default_value(1000), "network communication timeout in milliseconds")
     ;
     all_options.add(networking_options);

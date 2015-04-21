@@ -20,10 +20,6 @@ MasterComponent
 
      Creates a master component with configuration defined by :ref:`MasterComponentConfig` message.
 
-  .. cpp:function:: MasterComponent(const MasterProxyConfig& config)
-
-     Creates a proxy to remote master component with configuration defined by :ref:`MasterProxyConfig` message.
-
   .. cpp:function:: void Reconfigure(const MasterComponentConfig& config)
 
      Updates the configuration of the master component.

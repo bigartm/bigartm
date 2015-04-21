@@ -102,14 +102,6 @@ message NodeControllerConfig {
   optional string create_endpoint = 1;
 }
 
-// Represents a configuration of a proxy to MasterComponent.
-message MasterProxyConfig {
-  optional string node_connect_endpoint = 1;
-  optional MasterComponentConfig config = 2;
-  optional int32 communication_timeout = 3 [default = 1000];
-  optional int32 polling_frequency = 4 [default = 50];
-}
-
 // Represents a configuration of a topic model.
 message ModelConfig {
   message RegularizerSettings {

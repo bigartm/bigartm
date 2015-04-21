@@ -35,9 +35,6 @@ set(SRC_LIST
 	core/master_component.h
 	core/master_component_service_impl.cc
 	core/master_component_service_impl.h
-	core/master_interface.h
-	core/master_proxy.cc
-	core/master_proxy.h
 	core/merger.cc
 	core/merger.h
 	core/node_controller.cc

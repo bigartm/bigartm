@@ -21,7 +21,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
-#include "artm/core/master_interface.h"
 #include "artm/core/master_component_service_impl.h"
 #include "artm/core/template_manager.h"
 #include "artm/core/thread_safe_holder.h"
@@ -41,11 +40,11 @@ class Instance;
 class TopicModel;
 class Score;
 
-class MasterComponent : boost::noncopyable, public MasterInterface {
+class MasterComponent : boost::noncopyable {
  public:
   ~MasterComponent();
 
-  virtual int id() const;
+  int id() const;
   bool isInLocalModusOperandi() const;
   bool isInNetworkModusOperandi() const;
 
@@ -53,34 +52,34 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
 
   // Retrieves topic model.
   // Returns true if succeeded, and false if model_name hasn't been found.
-  virtual bool RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
-                                 ::artm::TopicModel* topic_model);
-  virtual void RequestRegularizerState(RegularizerName regularizer_name,
-                                       ::artm::RegularizerInternalState* regularizer_state);
-  virtual bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
-                                  ::artm::ThetaMatrix* theta_matrix);
-  virtual bool RequestScore(const GetScoreValueArgs& get_score_args,
-                            ScoreData* score_data);
+  bool RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
+                         ::artm::TopicModel* topic_model);
+  void RequestRegularizerState(RegularizerName regularizer_name,
+                               ::artm::RegularizerInternalState* regularizer_state);
+  bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
+                          ::artm::ThetaMatrix* theta_matrix);
+  bool RequestScore(const GetScoreValueArgs& get_score_args,
+                    ScoreData* score_data);
 
   // Reconfigures topic model if already exists, otherwise creates a new model.
-  virtual void CreateOrReconfigureModel(const ModelConfig& config);
-  virtual void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
+  void CreateOrReconfigureModel(const ModelConfig& config);
+  void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
 
-  virtual void DisposeModel(ModelName model_name);
-  virtual void Reconfigure(const MasterComponentConfig& config);
+  void DisposeModel(ModelName model_name);
+  void Reconfigure(const MasterComponentConfig& config);
 
-  virtual void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
-  virtual void DisposeRegularizer(const std::string& name);
+  void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
+  void DisposeRegularizer(const std::string& name);
 
-  virtual void CreateOrReconfigureDictionary(const DictionaryConfig& config);
-  virtual void DisposeDictionary(const std::string& name);
+  void CreateOrReconfigureDictionary(const DictionaryConfig& config);
+  void DisposeDictionary(const std::string& name);
 
   // Returns false if BigARTM is still processing the collection, otherwise true.
-  virtual bool WaitIdle(const WaitIdleArgs& args);
-  virtual void InvokeIteration(const InvokeIterationArgs& args);
-  virtual void SynchronizeModel(const SynchronizeModelArgs& args);
-  virtual void InitializeModel(const InitializeModelArgs& args);
-  virtual bool AddBatch(const AddBatchArgs& args);
+  bool WaitIdle(const WaitIdleArgs& args);
+  void InvokeIteration(const InvokeIterationArgs& args);
+  void SynchronizeModel(const SynchronizeModelArgs& args);
+  void InitializeModel(const InitializeModelArgs& args);
+  bool AddBatch(const AddBatchArgs& args);
 
   // Throws InvalidOperation exception if new config is invalid.
   void ValidateConfig(const MasterComponentConfig& config);
@@ -105,7 +104,7 @@ class MasterComponent : boost::noncopyable, public MasterInterface {
     void ThreadFunction();
   };
 
-  friend class TemplateManager<MasterInterface>;
+  friend class TemplateManager<MasterComponent>;
 
   // All master components must be created via TemplateManager.
   MasterComponent(int id, const MasterComponentConfig& config);
@@ -160,6 +159,8 @@ class NetworkClientCollection {
   std::unique_ptr<rpcz::application> application_;
   ThreadSafeCollectionHolder<std::string, artm::core::NodeControllerService_Stub> clients_;
 };
+
+typedef TemplateManager<MasterComponent> MasterComponentManager;
 
 }  // namespace core
 }  // namespace artm

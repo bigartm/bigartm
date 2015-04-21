@@ -24,15 +24,9 @@ namespace {
 const ::google::protobuf::Descriptor* Mask_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Mask_reflection_ = NULL;
-const ::google::protobuf::Descriptor* Bool_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  Bool_reflection_ = NULL;
 const ::google::protobuf::Descriptor* Int_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Int_reflection_ = NULL;
-const ::google::protobuf::Descriptor* String_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  String_reflection_ = NULL;
 const ::google::protobuf::Descriptor* Void_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Void_reflection_ = NULL;
@@ -91,22 +85,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Mask));
-  Bool_descriptor_ = file->message_type(1);
-  static const int Bool_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Bool, value_),
-  };
-  Bool_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      Bool_descriptor_,
-      Bool::default_instance_,
-      Bool_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Bool, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Bool, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(Bool));
-  Int_descriptor_ = file->message_type(2);
+  Int_descriptor_ = file->message_type(1);
   static const int Int_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Int, value_),
   };
@@ -121,22 +100,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Int));
-  String_descriptor_ = file->message_type(3);
-  static const int String_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(String, value_),
-  };
-  String_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      String_descriptor_,
-      String::default_instance_,
-      String_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(String, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(String, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(String));
-  Void_descriptor_ = file->message_type(4);
+  Void_descriptor_ = file->message_type(2);
   static const int Void_offsets_[1] = {
   };
   Void_reflection_ =
@@ -150,7 +114,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Void));
-  DataLoaderCacheEntry_descriptor_ = file->message_type(5);
+  DataLoaderCacheEntry_descriptor_ = file->message_type(3);
   static const int DataLoaderCacheEntry_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, batch_uuid_),
@@ -171,7 +135,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DataLoaderCacheEntry));
-  ProcessorInput_descriptor_ = file->message_type(6);
+  ProcessorInput_descriptor_ = file->message_type(4);
   static const int ProcessorInput_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessorInput, batch_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessorInput, batch_uuid_),
@@ -190,7 +154,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ProcessorInput));
-  ModelIncrement_descriptor_ = file->message_type(7);
+  ModelIncrement_descriptor_ = file->message_type(5);
   static const int ModelIncrement_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, topic_model_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, score_name_),
@@ -209,7 +173,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ModelIncrement));
-  BatchIds_descriptor_ = file->message_type(8);
+  BatchIds_descriptor_ = file->message_type(6);
   static const int BatchIds_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BatchIds, batch_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BatchIds, batch_file_path_),
@@ -225,7 +189,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(BatchIds));
-  CreateOrReconfigureModelArgs_descriptor_ = file->message_type(9);
+  CreateOrReconfigureModelArgs_descriptor_ = file->message_type(7);
   static const int CreateOrReconfigureModelArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CreateOrReconfigureModelArgs, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CreateOrReconfigureModelArgs, config_),
@@ -241,7 +205,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(CreateOrReconfigureModelArgs));
-  DisposeModelArgs_descriptor_ = file->message_type(10);
+  DisposeModelArgs_descriptor_ = file->message_type(8);
   static const int DisposeModelArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DisposeModelArgs, model_name_),
   };
@@ -256,7 +220,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DisposeModelArgs));
-  CreateOrReconfigureRegularizerArgs_descriptor_ = file->message_type(11);
+  CreateOrReconfigureRegularizerArgs_descriptor_ = file->message_type(9);
   static const int CreateOrReconfigureRegularizerArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CreateOrReconfigureRegularizerArgs, regularizer_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CreateOrReconfigureRegularizerArgs, config_),
@@ -272,7 +236,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(CreateOrReconfigureRegularizerArgs));
-  DisposeRegularizerArgs_descriptor_ = file->message_type(12);
+  DisposeRegularizerArgs_descriptor_ = file->message_type(10);
   static const int DisposeRegularizerArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DisposeRegularizerArgs, regularizer_name_),
   };
@@ -287,7 +251,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DisposeRegularizerArgs));
-  CreateOrReconfigureDictionaryArgs_descriptor_ = file->message_type(13);
+  CreateOrReconfigureDictionaryArgs_descriptor_ = file->message_type(11);
   static const int CreateOrReconfigureDictionaryArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CreateOrReconfigureDictionaryArgs, dictionary_),
   };
@@ -302,7 +266,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(CreateOrReconfigureDictionaryArgs));
-  DisposeDictionaryArgs_descriptor_ = file->message_type(14);
+  DisposeDictionaryArgs_descriptor_ = file->message_type(12);
   static const int DisposeDictionaryArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DisposeDictionaryArgs, dictionary_name_),
   };
@@ -332,11 +296,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     Mask_descriptor_, &Mask::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    Bool_descriptor_, &Bool::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     Int_descriptor_, &Int::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    String_descriptor_, &String::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     Void_descriptor_, &Void::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -366,12 +326,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto() {
   delete Mask::default_instance_;
   delete Mask_reflection_;
-  delete Bool::default_instance_;
-  delete Bool_reflection_;
   delete Int::default_instance_;
   delete Int_reflection_;
-  delete String::default_instance_;
-  delete String_reflection_;
   delete Void::default_instance_;
   delete Void_reflection_;
   delete DataLoaderCacheEntry::default_instance_;
@@ -406,84 +362,62 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\031artm/core/internals.proto\022\tartm.core\032\023"
     "artm/messages.proto\"\031\n\004Mask\022\021\n\005value\030\001 \003"
-    "(\010B\002\020\001\"\025\n\004Bool\022\r\n\005value\030\001 \001(\010\"\024\n\003Int\022\r\n\005"
-    "value\030\001 \001(\005\"\027\n\006String\022\r\n\005value\030\001 \001(\t\"\006\n\004"
-    "Void\"\252\001\n\024DataLoaderCacheEntry\022\022\n\nmodel_n"
-    "ame\030\001 \001(\t\022\022\n\nbatch_uuid\030\002 \001(\t\022\017\n\007item_id"
-    "\030\003 \003(\005\022\037\n\005theta\030\004 \003(\0132\020.artm.FloatArray\022"
-    "\022\n\ntopic_name\030\005 \003(\t\022\020\n\010filename\030\006 \001(\t\022\022\n"
-    "\nitem_title\030\007 \003(\t\"\262\001\n\016ProcessorInput\022\032\n\005"
-    "batch\030\001 \002(\0132\013.artm.Batch\022\022\n\nbatch_uuid\030\002"
-    " \002(\t\022$\n\013stream_mask\030\004 \003(\0132\017.artm.core.Ma"
-    "sk\022\023\n\013stream_name\030\005 \003(\t\0225\n\014cached_theta\030"
-    "\006 \003(\0132\037.artm.core.DataLoaderCacheEntry\"\236"
-    "\001\n\016ModelIncrement\022%\n\013topic_model\030\001 \001(\0132\020"
-    ".artm.TopicModel\022\022\n\nscore_name\030\010 \003(\t\022\r\n\005"
-    "score\030\t \003(\014\022.\n\005cache\030\n \003(\0132\037.artm.core.D"
-    "ataLoaderCacheEntry\022\022\n\nbatch_uuid\030\013 \003(\t\""
-    "5\n\010BatchIds\022\020\n\010batch_id\030\001 \003(\t\022\027\n\017batch_f"
-    "ile_path\030\002 \003(\t\"U\n\034CreateOrReconfigureMod"
-    "elArgs\022\022\n\nmodel_name\030\002 \001(\t\022!\n\006config\030\003 \001"
-    "(\0132\021.artm.ModelConfig\"&\n\020DisposeModelArg"
-    "s\022\022\n\nmodel_name\030\002 \001(\t\"g\n\"CreateOrReconfi"
-    "gureRegularizerArgs\022\030\n\020regularizer_name\030"
-    "\002 \001(\t\022\'\n\006config\030\003 \001(\0132\027.artm.Regularizer"
-    "Config\"2\n\026DisposeRegularizerArgs\022\030\n\020regu"
-    "larizer_name\030\002 \001(\t\"O\n!CreateOrReconfigur"
-    "eDictionaryArgs\022*\n\ndictionary\030\002 \001(\0132\026.ar"
-    "tm.DictionaryConfig\"0\n\025DisposeDictionary"
-    "Args\022\027\n\017dictionary_name\030\002 \001(\t2\375\001\n\026Master"
-    "ComponentService\0229\n\013UpdateModel\022\031.artm.c"
-    "ore.ModelIncrement\032\017.artm.core.Void\022:\n\rR"
-    "etrieveModel\022\027.artm.GetTopicModelArgs\032\020."
-    "artm.TopicModel\0225\n\016RequestBatches\022\016.artm"
-    ".core.Int\032\023.artm.core.BatchIds\0225\n\rReport"
-    "Batches\022\023.artm.core.BatchIds\032\017.artm.core"
-    ".Void2\360\013\n\025NodeControllerService\022K\n\033Creat"
-    "eOrReconfigureInstance\022\033.artm.MasterComp"
-    "onentConfig\032\017.artm.core.Void\0223\n\017DisposeI"
-    "nstance\022\017.artm.core.Void\032\017.artm.core.Voi"
-    "d\022R\n\"CreateOrReconfigureMasterComponent\022"
-    "\033.artm.MasterComponentConfig\032\017.artm.core"
-    ".Void\022:\n\026DisposeMasterComponent\022\017.artm.c"
-    "ore.Void\032\017.artm.core.Void\022T\n\030CreateOrRec"
-    "onfigureModel\022\'.artm.core.CreateOrReconf"
-    "igureModelArgs\032\017.artm.core.Void\022<\n\014Dispo"
-    "seModel\022\033.artm.core.DisposeModelArgs\032\017.a"
-    "rtm.core.Void\022`\n\036CreateOrReconfigureRegu"
-    "larizer\022-.artm.core.CreateOrReconfigureR"
-    "egularizerArgs\032\017.artm.core.Void\022H\n\022Dispo"
-    "seRegularizer\022!.artm.core.DisposeRegular"
-    "izerArgs\032\017.artm.core.Void\022^\n\035CreateOrRec"
-    "onfigureDictionary\022,.artm.core.CreateOrR"
-    "econfigureDictionaryArgs\032\017.artm.core.Voi"
-    "d\022F\n\021DisposeDictionary\022 .artm.core.Dispo"
-    "seDictionaryArgs\032\017.artm.core.Void\0227\n\023For"
-    "cePullTopicModel\022\017.artm.core.Void\032\017.artm"
-    ".core.Void\022@\n\034ForcePushTopicModelIncreme"
-    "nt\022\017.artm.core.Void\032\017.artm.core.Void\0228\n\023"
-    "OverwriteTopicModel\022\020.artm.TopicModel\032\017."
-    "artm.core.Void\022>\n\021RequestTopicModel\022\027.ar"
-    "tm.GetTopicModelArgs\032\020.artm.TopicModel\022L"
-    "\n\027RequestRegularizerState\022\021.artm.core.St"
-    "ring\032\036.artm.RegularizerInternalState\022A\n\022"
-    "RequestThetaMatrix\022\030.artm.GetThetaMatrix"
-    "Args\032\021.artm.ThetaMatrix\0228\n\014RequestScore\022"
-    "\027.artm.GetScoreValueArgs\032\017.artm.ScoreDat"
-    "a\022.\n\010AddBatch\022\022.artm.AddBatchArgs\032\016.artm"
-    ".core.Int\022=\n\017InvokeIteration\022\031.artm.Invo"
-    "keIterationArgs\032\017.artm.core.Void\022.\n\010Wait"
-    "Idle\022\022.artm.WaitIdleArgs\032\016.artm.core.Int"
-    "\022\?\n\020SynchronizeModel\022\032.artm.SynchronizeM"
-    "odelArgs\032\017.artm.core.Void\022=\n\017InitializeM"
-    "odel\022\031.artm.InitializeModelArgs\032\017.artm.c"
-    "ore.Void", 2928);
+    "(\010B\002\020\001\"\024\n\003Int\022\r\n\005value\030\001 \001(\005\"\006\n\004Void\"\252\001\n"
+    "\024DataLoaderCacheEntry\022\022\n\nmodel_name\030\001 \001("
+    "\t\022\022\n\nbatch_uuid\030\002 \001(\t\022\017\n\007item_id\030\003 \003(\005\022\037"
+    "\n\005theta\030\004 \003(\0132\020.artm.FloatArray\022\022\n\ntopic"
+    "_name\030\005 \003(\t\022\020\n\010filename\030\006 \001(\t\022\022\n\nitem_ti"
+    "tle\030\007 \003(\t\"\262\001\n\016ProcessorInput\022\032\n\005batch\030\001 "
+    "\002(\0132\013.artm.Batch\022\022\n\nbatch_uuid\030\002 \002(\t\022$\n\013"
+    "stream_mask\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013st"
+    "ream_name\030\005 \003(\t\0225\n\014cached_theta\030\006 \003(\0132\037."
+    "artm.core.DataLoaderCacheEntry\"\236\001\n\016Model"
+    "Increment\022%\n\013topic_model\030\001 \001(\0132\020.artm.To"
+    "picModel\022\022\n\nscore_name\030\010 \003(\t\022\r\n\005score\030\t "
+    "\003(\014\022.\n\005cache\030\n \003(\0132\037.artm.core.DataLoade"
+    "rCacheEntry\022\022\n\nbatch_uuid\030\013 \003(\t\"5\n\010Batch"
+    "Ids\022\020\n\010batch_id\030\001 \003(\t\022\027\n\017batch_file_path"
+    "\030\002 \003(\t\"U\n\034CreateOrReconfigureModelArgs\022\022"
+    "\n\nmodel_name\030\002 \001(\t\022!\n\006config\030\003 \001(\0132\021.art"
+    "m.ModelConfig\"&\n\020DisposeModelArgs\022\022\n\nmod"
+    "el_name\030\002 \001(\t\"g\n\"CreateOrReconfigureRegu"
+    "larizerArgs\022\030\n\020regularizer_name\030\002 \001(\t\022\'\n"
+    "\006config\030\003 \001(\0132\027.artm.RegularizerConfig\"2"
+    "\n\026DisposeRegularizerArgs\022\030\n\020regularizer_"
+    "name\030\002 \001(\t\"O\n!CreateOrReconfigureDiction"
+    "aryArgs\022*\n\ndictionary\030\002 \001(\0132\026.artm.Dicti"
+    "onaryConfig\"0\n\025DisposeDictionaryArgs\022\027\n\017"
+    "dictionary_name\030\002 \001(\t2\375\001\n\026MasterComponen"
+    "tService\0229\n\013UpdateModel\022\031.artm.core.Mode"
+    "lIncrement\032\017.artm.core.Void\022:\n\rRetrieveM"
+    "odel\022\027.artm.GetTopicModelArgs\032\020.artm.Top"
+    "icModel\0225\n\016RequestBatches\022\016.artm.core.In"
+    "t\032\023.artm.core.BatchIds\0225\n\rReportBatches\022"
+    "\023.artm.core.BatchIds\032\017.artm.core.Void2\374\005"
+    "\n\025NodeControllerService\022K\n\033CreateOrRecon"
+    "figureInstance\022\033.artm.MasterComponentCon"
+    "fig\032\017.artm.core.Void\0223\n\017DisposeInstance\022"
+    "\017.artm.core.Void\032\017.artm.core.Void\022T\n\030Cre"
+    "ateOrReconfigureModel\022\'.artm.core.Create"
+    "OrReconfigureModelArgs\032\017.artm.core.Void\022"
+    "<\n\014DisposeModel\022\033.artm.core.DisposeModel"
+    "Args\032\017.artm.core.Void\022`\n\036CreateOrReconfi"
+    "gureRegularizer\022-.artm.core.CreateOrReco"
+    "nfigureRegularizerArgs\032\017.artm.core.Void\022"
+    "H\n\022DisposeRegularizer\022!.artm.core.Dispos"
+    "eRegularizerArgs\032\017.artm.core.Void\022^\n\035Cre"
+    "ateOrReconfigureDictionary\022,.artm.core.C"
+    "reateOrReconfigureDictionaryArgs\032\017.artm."
+    "core.Void\022F\n\021DisposeDictionary\022 .artm.co"
+    "re.DisposeDictionaryArgs\032\017.artm.core.Voi"
+    "d\0227\n\023ForcePullTopicModel\022\017.artm.core.Voi"
+    "d\032\017.artm.core.Void\022@\n\034ForcePushTopicMode"
+    "lIncrement\022\017.artm.core.Void\032\017.artm.core."
+    "Void", 2124);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
-  Bool::default_instance_ = new Bool();
   Int::default_instance_ = new Int();
-  String::default_instance_ = new String();
   Void::default_instance_ = new Void();
   DataLoaderCacheEntry::default_instance_ = new DataLoaderCacheEntry();
   ProcessorInput::default_instance_ = new ProcessorInput();
@@ -496,9 +430,7 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
   CreateOrReconfigureDictionaryArgs::default_instance_ = new CreateOrReconfigureDictionaryArgs();
   DisposeDictionaryArgs::default_instance_ = new DisposeDictionaryArgs();
   Mask::default_instance_->InitAsDefaultInstance();
-  Bool::default_instance_->InitAsDefaultInstance();
   Int::default_instance_->InitAsDefaultInstance();
-  String::default_instance_->InitAsDefaultInstance();
   Void::default_instance_->InitAsDefaultInstance();
   DataLoaderCacheEntry::default_instance_->InitAsDefaultInstance();
   ProcessorInput::default_instance_->InitAsDefaultInstance();
@@ -748,212 +680,6 @@ void Mask::Swap(Mask* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int Bool::kValueFieldNumber;
-#endif  // !_MSC_VER
-
-Bool::Bool()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void Bool::InitAsDefaultInstance() {
-}
-
-Bool::Bool(const Bool& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void Bool::SharedCtor() {
-  _cached_size_ = 0;
-  value_ = false;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-Bool::~Bool() {
-  SharedDtor();
-}
-
-void Bool::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void Bool::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* Bool::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return Bool_descriptor_;
-}
-
-const Bool& Bool::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
-  return *default_instance_;
-}
-
-Bool* Bool::default_instance_ = NULL;
-
-Bool* Bool::New() const {
-  return new Bool;
-}
-
-void Bool::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    value_ = false;
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool Bool::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional bool value = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &value_)));
-          set_has_value();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void Bool::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional bool value = 1;
-  if (has_value()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(1, this->value(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* Bool::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional bool value = 1;
-  if (has_value()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(1, this->value(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int Bool::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional bool value = 1;
-    if (has_value()) {
-      total_size += 1 + 1;
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void Bool::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const Bool* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Bool*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void Bool::MergeFrom(const Bool& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_value()) {
-      set_value(from.value());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void Bool::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void Bool::CopyFrom(const Bool& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool Bool::IsInitialized() const {
-
-  return true;
-}
-
-void Bool::Swap(Bool* other) {
-  if (other != this) {
-    std::swap(value_, other->value_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata Bool::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = Bool_descriptor_;
-  metadata.reflection = Bool_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
 const int Int::kValueFieldNumber;
 #endif  // !_MSC_VER
 
@@ -1155,231 +881,6 @@ void Int::Swap(Int* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = Int_descriptor_;
   metadata.reflection = Int_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int String::kValueFieldNumber;
-#endif  // !_MSC_VER
-
-String::String()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void String::InitAsDefaultInstance() {
-}
-
-String::String(const String& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void String::SharedCtor() {
-  _cached_size_ = 0;
-  value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-String::~String() {
-  SharedDtor();
-}
-
-void String::SharedDtor() {
-  if (value_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete value_;
-  }
-  if (this != default_instance_) {
-  }
-}
-
-void String::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* String::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return String_descriptor_;
-}
-
-const String& String::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
-  return *default_instance_;
-}
-
-String* String::default_instance_ = NULL;
-
-String* String::New() const {
-  return new String;
-}
-
-void String::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_value()) {
-      if (value_ != &::google::protobuf::internal::GetEmptyString()) {
-        value_->clear();
-      }
-    }
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool String::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string value = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_value()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->value().data(), this->value().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void String::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional string value = 1;
-  if (has_value()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->value().data(), this->value().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      1, this->value(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* String::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional string value = 1;
-  if (has_value()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->value().data(), this->value().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->value(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int String::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string value = 1;
-    if (has_value()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->value());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void String::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const String* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const String*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void String::MergeFrom(const String& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_value()) {
-      set_value(from.value());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void String::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void String::CopyFrom(const String& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool String::IsInitialized() const {
-
-  return true;
-}
-
-void String::Swap(String* other) {
-  if (other != this) {
-    std::swap(value_, other->value_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata String::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = String_descriptor_;
-  metadata.reflection = String_reflection_;
   return metadata;
 }
 

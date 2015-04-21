@@ -10,7 +10,6 @@
 ../src/artm/core/instance_schema.cc
 ../src/artm/core/master_component.cc
 ../src/artm/core/master_component_service_impl.cc
-../src/artm/core/master_proxy.cc
 ../src/artm/core/merger.cc
 ../src/artm/core/node_controller.cc
 ../src/artm/core/node_controller_service_impl.cc
@@ -60,8 +59,6 @@
 ../src/artm/core/instance_schema.h
 ../src/artm/core/master_component.h
 ../src/artm/core/master_component_service_impl.h
-../src/artm/core/master_interface.h
-../src/artm/core/master_proxy.h
 ../src/artm/core/merger.h
 ../src/artm/core/node_controller.h
 ../src/artm/core/node_controller_service_impl.h

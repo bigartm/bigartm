@@ -406,60 +406,6 @@ Represents a configuration of a NodeController
   ZeroMQ documentation (http://api.zeromq.org).
 
 
-.. _MasterProxyConfig:
-
-MasterProxyConfig
-=================
-
-.. class:: messages_pb2.MasterProxyConfig
-
-Represents a configuration of a
-proxy to MasterComponent. The purpose of the proxy is to
-operate MasterComponent from a remote machine. There is no
-requirement to run MasterComponent and its proxy in the same
-operating system (MasterComponent can run on linux while the
-proxy can be on Windows). Any type of MasterComponent (either
-in local or in network modus operandi) can be operated by a
-proxy.
-
-.. code-block:: bash
-
-  message MasterProxyConfig {
-    optional string node_connect_endpoint = 1;
-    optional MasterComponentConfig config = 2;
-    optional int32 communication_timeout = 3 [default = 1000];
-    optional int32 polling_frequency = 4 [default = 50];
-  }
-
-.. attribute:: MasterProxyConfig.node_connect_endpoint
-
-  A value that defines ZeroMQ endpoint of an external node controller.
-  (example: ``tcp://192.168.0.2:5556``). For further details about the format of endpoint string
-  refer to ZeroMQ documentation (http://api.zeromq.org).
-  A node controller component at the remote machine must be created prior to configuring
-  master component with its endpoint.
-
-
-.. attribute:: MasterProxyConfig.config
-
-  A message that defines MasterComponent configuration of a remote node.
-
-.. attribute:: MasterProxyConfig.communication_timeout
-
-  An communication timeout in milliseconds.
-  Any remote network call that exceeds communication timeout
-  will result in :c:macro:`ARTM_NETWORK_ERROR` error.
-
-.. attribute:: MasterProxyConfig.polling_frequency
-
-  Defines the frequency that the proxy object uses to
-  repeatedly pool remote master component for a status.
-
-  When :c:func:`ArtmWaitIdle` on the remote master component reports
-  :c:macro:`ARTM_STILL_WORKING`, the proxy object will retry the request
-  within specified pooling frequency.
-
-
 .. _ModelConfig:
 
 ModelConfig
