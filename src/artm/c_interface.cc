@@ -173,6 +173,7 @@ int ArtmCreateMasterComponent(int length, const char* master_component_config) {
 
     artm::MasterComponentConfig config;
     ParseFromArray(master_component_config, length, &config);
+    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
     auto& mcm = artm::core::MasterComponentManager::singleton();
     int retval = mcm.Create< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(config);
     assert(retval > 0);
@@ -188,6 +189,7 @@ int ArtmReconfigureMasterComponent(int master_id, int length, const char* master
   try {
     artm::MasterComponentConfig config;
     ParseFromArray(master_component_config, length, &config);
+    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
     master_component(master_id)->Reconfigure(config);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -242,7 +244,7 @@ int ArtmRequestScore(int master_id, int length, const char* get_score_args) {
     ::artm::ScoreData score_data;
     artm::GetScoreValueArgs args;
     ParseFromArray(get_score_args, length, &args);
-    if (args.has_batch()) ::artm::core::Helpers::FixAndValidate(args.mutable_batch());
+    ::artm::core::Helpers::FixAndValidate(&args,  /* throw_error =*/ true);
     master_component(master_id)->RequestScore(args, &score_data);
     score_data.SerializeToString(last_message());
     return last_message()->size();
@@ -263,6 +265,7 @@ int ArtmInitializeModel(int master_id, int length, const char* init_model_args) 
   try {
     artm::InitializeModelArgs args;
     ParseFromArray(init_model_args, length, &args);
+    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
     master_component(master_id)->InitializeModel(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;

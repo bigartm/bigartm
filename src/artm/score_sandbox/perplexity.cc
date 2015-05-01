@@ -5,12 +5,23 @@
 #include <cmath>
 #include <map>
 #include <algorithm>
+#include <sstream>
 
 #include "artm/core/exceptions.h"
 #include "artm/core/topic_model.h"
 
 namespace artm {
 namespace score_sandbox {
+
+Perplexity::Perplexity(const PerplexityScoreConfig& config)
+    : config_(config) {
+  std::stringstream ss;
+  ss << ": stream_name=" << config.stream_name();
+  ss << ", model_type=" << config.model_type();
+  if (config.has_dictionary_name())
+    ss << ", dictionary_name=" << config.dictionary_name();
+  LOG(INFO) << "Perplexity score calculator created" << ss.str();
+}
 
 void Perplexity::AppendScore(
     const Item& item,
@@ -177,6 +188,7 @@ std::string Perplexity::stream_name() const {
 }
 
 std::shared_ptr<Score> Perplexity::CreateScore() {
+  VLOG(1) << "Perplexity::CreateScore()";
   return std::make_shared<PerplexityScore>();
 }
 
@@ -208,6 +220,10 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
   perplexity_target->set_theta_sparsity_value(
       static_cast<double>(perplexity_target->theta_sparsity_zero_topics()) /
       perplexity_target->theta_sparsity_total_topics());
+
+  VLOG(1) << "normalizer=" << perplexity_target->normalizer()
+          << ", raw=" << perplexity_target->raw()
+          << ", zero_words=" << perplexity_target->zero_words();
 }
 
 }  // namespace score_sandbox

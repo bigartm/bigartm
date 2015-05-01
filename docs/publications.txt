@@ -1,19 +1,29 @@
 Publications
 ============
 
-1.  Vorontsov K. V. Additive Regularization for Topic Models of Text Collections //
+*   Vorontsov K., Potapenko A., Plavin A.
+    Additive Regularization of Topic Models for Topic Selection and Sparse Factorization. //
+    Statistical Learning and Data Sciences. 2015 --- pp. 193-202.
+    `PDF in English <https://s3-eu-west-1.amazonaws.com/artm/voron15slds.pdf>`__.
+
+*   Vorontsov K., Frei O., Apishev M., Romov P., Dudarenko M.
+    BigARTM: Open Source Library for Regularized Multimodal Topic Modeling of Large Collections
+    Analysis of Images, Social Networks and Texts. 2015.
+    `Slides in English <https://s3-eu-west-1.amazonaws.com/artm/voron15aist-slides.pdf>`__.
+
+*   Vorontsov K. V. Additive Regularization for Topic Models of Text Collections //
     Doklady Mathematics. 2014, Pleiades Publishing, Ltd. --- Vol. 89, No. 3, pp. 301--304.
     `PDF in English <https://s3-eu-west-1.amazonaws.com/artm/voron14dan-eng.pdf>`__,
     `PDF in Russian <https://s3-eu-west-1.amazonaws.com/artm/voron14dan.pdf>`__.
 
-2.  Vorontsov K. V., Potapenko A. A. Tutorial on Probabilistic Topic Modeling: Additive Regularization for Stochastic Matrix Factorization //
+*   Vorontsov K. V., Potapenko A. A. Tutorial on Probabilistic Topic Modeling: Additive Regularization for Stochastic Matrix Factorization //
     AIST'2014, Analysis of Images, Social networks and Texts. Springer International Publishing Switzerland, 2014.
     Communications in Computer and Information Science (CCIS).
     Vol. 436. pp. 29--46.
     `PDF in English <https://s3-eu-west-1.amazonaws.com/artm/voron14aist.pdf>`__.
 
-3.  Vorontsov K. V., Potapenko A. A. Additive Regularization of Topic Models //
+*   Vorontsov K. V., Potapenko A. A. Additive Regularization of Topic Models //
     Machine Learning Journal, Special Issue "Data Analysis and Intelligent Optimization",
-    Springer, 2014. (to appear).
+    Springer, 2014.
     `PDF in English <https://s3-eu-west-1.amazonaws.com/artm/voron-potap14artm-eng.pdf>`__,
     `PDF in Russian <https://s3-eu-west-1.amazonaws.com/artm/voron-potap14artm-rus.pdf>`__.

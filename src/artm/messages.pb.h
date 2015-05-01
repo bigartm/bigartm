@@ -2100,6 +2100,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool use_new_tokens() const;
   inline void set_use_new_tokens(bool value);
 
+  // optional bool opt_for_avx = 17 [default = true];
+  inline bool has_opt_for_avx() const;
+  inline void clear_opt_for_avx();
+  static const int kOptForAvxFieldNumber = 17;
+  inline bool opt_for_avx() const;
+  inline void set_opt_for_avx(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2122,6 +2129,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_random_theta();
   inline void set_has_use_new_tokens();
   inline void clear_has_use_new_tokens();
+  inline void set_has_opt_for_avx();
+  inline void clear_has_opt_for_avx();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2137,16 +2146,17 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
   bool use_new_tokens_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  bool opt_for_avx_;
   ::google::protobuf::RepeatedField< float > class_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6245,6 +6255,20 @@ class InitializeModelArgs_Filter : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 max_items() const;
   inline void set_max_items(::google::protobuf::int32 value);
 
+  // optional int32 min_total_count = 6;
+  inline bool has_min_total_count() const;
+  inline void clear_min_total_count();
+  static const int kMinTotalCountFieldNumber = 6;
+  inline ::google::protobuf::int32 min_total_count() const;
+  inline void set_min_total_count(::google::protobuf::int32 value);
+
+  // optional int32 min_one_item_count = 7;
+  inline bool has_min_one_item_count() const;
+  inline void clear_min_one_item_count();
+  static const int kMinOneItemCountFieldNumber = 7;
+  inline ::google::protobuf::int32 min_one_item_count() const;
+  inline void set_min_one_item_count(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs.Filter)
  private:
   inline void set_has_class_id();
@@ -6257,6 +6281,10 @@ class InitializeModelArgs_Filter : public ::google::protobuf::Message {
   inline void clear_has_min_items();
   inline void set_has_max_items();
   inline void clear_has_max_items();
+  inline void set_has_min_total_count();
+  inline void clear_has_min_total_count();
+  inline void set_has_min_one_item_count();
+  inline void clear_has_min_one_item_count();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6265,9 +6293,11 @@ class InitializeModelArgs_Filter : public ::google::protobuf::Message {
   float max_percentage_;
   ::google::protobuf::int32 min_items_;
   ::google::protobuf::int32 max_items_;
+  ::google::protobuf::int32 min_total_count_;
+  ::google::protobuf::int32 min_one_item_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9752,6 +9782,28 @@ inline bool ModelConfig::use_new_tokens() const {
 inline void ModelConfig::set_use_new_tokens(bool value) {
   set_has_use_new_tokens();
   use_new_tokens_ = value;
+}
+
+// optional bool opt_for_avx = 17 [default = true];
+inline bool ModelConfig::has_opt_for_avx() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void ModelConfig::set_has_opt_for_avx() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void ModelConfig::clear_has_opt_for_avx() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline void ModelConfig::clear_opt_for_avx() {
+  opt_for_avx_ = true;
+  clear_has_opt_for_avx();
+}
+inline bool ModelConfig::opt_for_avx() const {
+  return opt_for_avx_;
+}
+inline void ModelConfig::set_opt_for_avx(bool value) {
+  set_has_opt_for_avx();
+  opt_for_avx_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -14889,6 +14941,50 @@ inline ::google::protobuf::int32 InitializeModelArgs_Filter::max_items() const {
 inline void InitializeModelArgs_Filter::set_max_items(::google::protobuf::int32 value) {
   set_has_max_items();
   max_items_ = value;
+}
+
+// optional int32 min_total_count = 6;
+inline bool InitializeModelArgs_Filter::has_min_total_count() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_total_count() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_total_count() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void InitializeModelArgs_Filter::clear_min_total_count() {
+  min_total_count_ = 0;
+  clear_has_min_total_count();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::min_total_count() const {
+  return min_total_count_;
+}
+inline void InitializeModelArgs_Filter::set_min_total_count(::google::protobuf::int32 value) {
+  set_has_min_total_count();
+  min_total_count_ = value;
+}
+
+// optional int32 min_one_item_count = 7;
+inline bool InitializeModelArgs_Filter::has_min_one_item_count() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_one_item_count() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_one_item_count() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void InitializeModelArgs_Filter::clear_min_one_item_count() {
+  min_one_item_count_ = 0;
+  clear_has_min_one_item_count();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::min_one_item_count() const {
+  return min_one_item_count_;
+}
+inline void InitializeModelArgs_Filter::set_min_one_item_count(::google::protobuf::int32 value) {
+  set_has_min_one_item_count();
+  min_one_item_count_ = value;
 }
 
 // -------------------------------------------------------------------

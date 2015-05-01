@@ -128,6 +128,7 @@ message ModelConfig {
   optional bool use_sparse_bow = 14 [default = true];
   optional bool use_random_theta = 15 [default = false];
   optional bool use_new_tokens = 16 [default = true];
+  optional bool opt_for_avx = 17 [default = true];
 }
 
 // Represents a configuration of a general regularizer
@@ -436,6 +437,8 @@ message InitializeModelArgs {
     optional float max_percentage = 3;
     optional int32 min_items = 4;
     optional int32 max_items = 5;
+    optional int32 min_total_count = 6;
+    optional int32 min_one_item_count = 7;
   }
 
   optional string model_name = 1;

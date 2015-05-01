@@ -311,10 +311,10 @@ class MasterComponent:
         return self.CreateRegularizer(name, RegularizerConfig_Type_DecorrelatorPhi, config)
 
     def CreateLabelRegularizationPhiRegularizer(self, name=None, config=None, topic_names=None, class_ids=None):
-      if name is None:
-        name = "LabelRegularizationPhiRegularizer:" + uuid.uuid1().urn
-      if config is None:
-        config = messages_pb2.LabelRegularizationPhiConfig()
+        if name is None:
+            name = "LabelRegularizationPhiRegularizer:" + uuid.uuid1().urn
+        if config is None:
+            config = messages_pb2.LabelRegularizationPhiConfig()
         if topic_names is not None:
             config.ClearField('topic_name')
             for topic_name in topic_names:
@@ -323,8 +323,8 @@ class MasterComponent:
             config.ClearField('class_id')
             for class_id in class_ids:
                 config.class_id.append(class_id)
-      return self.CreateRegularizer(name, RegularizerConfig_Type_LabelRegularizationPhi, config)
-		
+        return self.CreateRegularizer(name, RegularizerConfig_Type_LabelRegularizationPhi, config)
+
     def CreateScore(self, name, type, config):
         master_config = messages_pb2.MasterComponentConfig()
         master_config.CopyFrom(self.config_)
