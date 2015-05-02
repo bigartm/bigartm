@@ -129,6 +129,9 @@ message ModelConfig {
   optional bool use_random_theta = 15 [default = false];
   optional bool use_new_tokens = 16 [default = true];
   optional bool opt_for_avx = 17 [default = true];
+  repeated double regularizer_gamma = 18;
+  optional bool use_relative_regularizers_phi = 19 [default = false];
+  optional bool use_relative_regularizers_theta = 20 [default = false];
 }
 
 // Represents a configuration of a general regularizer
@@ -378,7 +381,6 @@ message TopicModel {
 
   message TopicModelInternals {
     repeated FloatArray n_wt = 1;
-    repeated FloatArray r_wt = 2;
   }
 
   optional bytes internals = 7;  // obsolete in BigARTM v0.6.3

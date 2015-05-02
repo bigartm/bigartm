@@ -67,6 +67,12 @@ int TokenCollection::token_size() const {
   return token_to_token_id_.size();
 }
 
+void TokenCollectionWeights::Reset() {
+  std::for_each(values_.begin(), values_.end(), [&](float* value) {
+    for (int i = 0; i < topic_size_; ++i) value[i] = 0.0f;
+  });
+}
+
 void TokenCollectionWeights::Clear() {
   std::for_each(values_.begin(), values_.end(), [&](float* value) {
     delete[] value;
@@ -111,7 +117,6 @@ TopicModel::TopicModel(const ModelName& model_name,
       token_collection_(),
       topic_name_(),
       n_wt_(topic_name.size()),
-      r_wt_(topic_name.size()),
       p_wt_(topic_name.size()) {
   for (auto iter = topic_name.begin(); iter != topic_name.end(); ++iter) {
     topic_name_.push_back(*iter);
@@ -124,7 +129,6 @@ TopicModel::~TopicModel() {
 
 void TopicModel::Clear(ModelName model_name, int topics_count) {
   n_wt_.Clear();
-  r_wt_.Clear();
   p_wt_.Clear();
   model_name_ = model_name;
   token_collection_.Clear();
@@ -234,7 +238,7 @@ void TopicModel::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model,
 void TopicModel::RetrieveExternalTopicModel(
     const ::artm::GetTopicModelArgs& get_model_args,
     ::artm::TopicModel* topic_model) const {
-  if (n_wt_.empty() && r_wt_.empty() && p_wt_.empty()) {
+  if (n_wt_.empty() && p_wt_.empty()) {
     LOG(WARNING) << "Attempt to retrieve empty topic model";
     return;
   }
@@ -395,35 +399,6 @@ void TopicModel::SetTokenWeight(int token_id, int topic_id, float value) {
   n_wt_[token_id][topic_id] = value;
 }
 
-void TopicModel::SetRegularizerWeight(const Token& token, int topic_id, float value) {
-  if (!has_token(token)) {
-    LOG(ERROR) << "Token '" << token.keyword << "' not found in the model";
-    return;
-  }
-
-  SetRegularizerWeight(token_id(token), topic_id, value);
-}
-
-void TopicModel::SetRegularizerWeight(int token_id, int topic_id, float value) {
-  r_wt_[token_id][topic_id] = value;
-}
-
-void TopicModel::IncreaseRegularizerWeight(const Token& token, int topic_id, float value) {
-  if (!has_token(token)) {
-    if (value != 0.0f) {
-      LOG(ERROR) << "Token '" << token.keyword << "' not found in the model";
-    }
-
-    return;
-  }
-
-  IncreaseRegularizerWeight(token_id(token), topic_id, value);
-}
-
-void TopicModel::IncreaseRegularizerWeight(int token_id, int topic_id, float value) {
-  r_wt_[token_id][topic_id] += value;
-}
-
 int TopicModel::topic_size() const {
   return topic_name_.size();
 }
@@ -452,12 +427,8 @@ std::map<ClassId, std::vector<float> > TopicModel::FindNormalizers() const {
     }
 
     const float* n_wt = n_wt_[token_id];
-    const float* r_wt = r_wt_.empty() ? nullptr : r_wt_[token_id];
-    for (int topic_id = 0; topic_id < topic_size(); ++topic_id) {
-      const float sum = n_wt[topic_id] + ((r_wt == nullptr) ? 0.0f : r_wt[topic_id]);
-      if (sum > 0)
-        iter->second[topic_id] += sum;
-    }
+    for (int topic_id = 0; topic_id < topic_size(); ++topic_id)
+      iter->second[topic_id] += n_wt[topic_id];
   }
 
   return retval;
@@ -480,7 +451,6 @@ void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
     assert(token_id == token_id2);
 
     const float* nwt = n_wt_.at(token_id);
-    const float* rwt = r_wt_.empty() ? nullptr : r_wt_.at(token_id);
     float *pwt = p_wt->at(token_id);
 
     const std::vector<float>& nt = n_t[token.class_id];
@@ -488,8 +458,7 @@ void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
       if (nt[topic_index] <= 0)
         continue;
 
-      float rwt_value = ((rwt == nullptr) ? 0.0f : rwt[topic_index]);
-      float value = std::max<float>(nwt[topic_index] + rwt_value, 0.0f) / nt[topic_index];
+      float value = nwt[topic_index] / nt[topic_index];
       if (value < 1e-16) {
         // Reset small values to 0.0 to avoid performance hit.
         // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
@@ -497,6 +466,34 @@ void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
         value = 0.0f;
       }
       pwt[topic_index] = value;
+    }
+  }
+}
+
+void TopicModel::UpdateNwt(const TokenCollectionWeights& r_wt) {
+  const int topic_size = this->topic_size();
+  const int token_size = this->token_size();
+
+  if (topic_size == 0 || token_size == 0) {
+    LOG(WARNING) << "Attempt to update an empty matrix";
+    return;
+  }
+
+  if (topic_size != r_wt.topic_size() || token_size != r_wt.size()) {
+    LOG(WARNING) << "Attempt to update n_wt with r_wt is impossible due to different sizes";
+    return;
+  }
+
+  for (int token_id = 0; token_id < token_size; ++token_id) {
+    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+      float value = std::max<float>(n_wt_[token_id][topic_id] + r_wt[token_id][topic_id], 0.0f);
+      if (value < 1e-16) {
+        // Reset small values to 0.0 to avoid performance hit.
+        // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
+        // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
+        value = 0.0f;
+      }
+      n_wt_[token_id][topic_id] = value;
     }
   }
 }

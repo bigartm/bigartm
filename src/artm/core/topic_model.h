@@ -110,6 +110,9 @@ class TokenCollectionWeights : boost::noncopyable {
   size_t size() const { return values_.size(); }
   bool empty() const { return values_.empty(); }
 
+  inline int topic_size() const { return topic_size_; }
+
+  void Reset();
   void Clear();
   int AddToken();
   int AddToken(const Token& token, bool random_init);
@@ -147,14 +150,8 @@ class TopicModel : public Regularizable {
   void SetTokenWeight(const Token& token, int topic_id, float value);
   void SetTokenWeight(int token_id, int topic_id, float value);
 
-  void IncreaseRegularizerWeight(const Token& token, int topic_id, float value);
-  void IncreaseRegularizerWeight(int token_id, int topic_id, float value);
-  void SetRegularizerWeight(const Token& token, int topic_id, float value);
-  void SetRegularizerWeight(int token_id, int topic_id, float value);
-
-  void InitializeRwt() { r_wt_.Clear(); for (int i = 0; i < token_size(); i++) r_wt_.AddToken(); }
-  void ClearRwt() { r_wt_.Clear(); }
   void CalcPwt() { FindPwt(&p_wt_); }
+  TokenCollectionWeights& GetPwt() { return p_wt_; }
 
   TopicWeightIterator GetTopicWeightIterator(const Token& token) const;
   TopicWeightIterator GetTopicWeightIterator(int token_id) const;
@@ -172,6 +169,7 @@ class TopicModel : public Regularizable {
 
   std::map<ClassId, std::vector<float> > FindNormalizers() const;
   virtual void FindPwt(TokenCollectionWeights* p_wt) const;
+  void UpdateNwt(const TokenCollectionWeights& r_wt);
 
  private:
   ModelName model_name_;
@@ -180,7 +178,6 @@ class TopicModel : public Regularizable {
   std::vector<std::string> topic_name_;
 
   TokenCollectionWeights n_wt_;  // vector of length tokens_count
-  TokenCollectionWeights r_wt_;  // regularizer's additions
   TokenCollectionWeights p_wt_;  // normalized matrix
 };
 

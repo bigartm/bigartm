@@ -14,7 +14,8 @@
 namespace artm {
 namespace regularizer_sandbox {
 
-bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
+bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model,
+                                    ::artm::core::TokenCollectionWeights* result) {
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
 
@@ -47,13 +48,21 @@ bool DecorrelatorPhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
       for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
         if (topics_to_regularize[topic_id]) {
           float weight = p_wt[token_id][topic_id];
-          float value = static_cast<float>(- tau * weight * (weights_sum - weight));
-          topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
+          float value = static_cast<float>(- weight * (weights_sum - weight));
+          (*result)[token_id][topic_id] = value;
         }
       }
     }
   }
   return true;
+}
+
+google::protobuf::RepeatedPtrField<std::string> DecorrelatorPhi::topics_to_regularize() {
+  return config_.topic_name();
+}
+
+google::protobuf::RepeatedPtrField<std::string> DecorrelatorPhi::class_ids_to_regularize() {
+  return config_.class_id();
 }
 
 bool DecorrelatorPhi::Reconfigure(const RegularizerConfig& config) {

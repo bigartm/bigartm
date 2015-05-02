@@ -147,7 +147,6 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
     artm::GetTopicModelArgs_RequestType_Nwt };
 
   bool pwt_request = request_type == artm::GetTopicModelArgs_RequestType_Pwt;
-  bool nwt_request = !pwt_request;
 
   int slices = 3;
   for (int i = 0; i < slices; ++i) {
@@ -169,7 +168,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
   master2.WaitIdle();
   model2.Synchronize(/* decay_weight =*/ 0.0,
                       /* apply_weight =*/ 1.0,
-                      /* invoke_regularizers =*/ nwt_request);  // invoke regularizers only for nwt_request
+                      /* invoke_regularizers =*/ false);  // n_wt counters includes regularization
 
   bool ok = false;
   CompareTopicModels(*master2.GetTopicModel(model2.name()),
