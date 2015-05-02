@@ -10,6 +10,8 @@
 
 #include "boost/lexical_cast.hpp"
 #include "boost/exception/diagnostic_information.hpp"
+#include "boost/range/adaptor/map.hpp"
+#include "boost/range/algorithm/copy.hpp"
 
 #include "glog/logging.h"
 
@@ -21,6 +23,7 @@
 #include "artm/core/helpers.h"
 #include "artm/core/topic_model.h"
 #include "artm/core/instance_schema.h"
+#include "artm/core/protobuf_helpers.h"
 
 using ::artm::core::MasterComponentService_Stub;
 
@@ -122,18 +125,26 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
   auto& model = schema->model_config(topic_model->model_name());
   auto& reg_names = model.regularizer_name();
   auto& reg_tau = model.regularizer_tau();
+  auto& reg_gamma = model.regularizer_gamma();
   int topic_size = topic_model->topic_size();
+
+  if (reg_tau.size() != reg_names.size()) {
+    LOG(ERROR) << "The vector of tau coefficients for regularizers must have a length" <<
+        "equal to the number of regularizers in model.";
+  }
 
   // call FindPwt() to allow regularizers GetPwt() usage
   topic_model->CalcPwt();
 
   ::artm::core::TokenCollectionWeights global_r_wt(topic_size);
-  topic_model->FindPwt(&global_r_wt); // set global r_wt to necessary size
+  topic_model->FindPwt(&global_r_wt);  // set global r_wt to necessary size
   global_r_wt.Reset();
 
   ::artm::core::TokenCollectionWeights local_r_wt(topic_size);
-  topic_model->FindPwt(&local_r_wt); // set global r_wt to necessary size
+  topic_model->FindPwt(&local_r_wt);  // set global r_wt to necessary size
   local_r_wt.Reset();
+
+  auto& n_t_all = topic_model->FindNormalizers();
 
   for (auto reg_name_iterator = reg_names.begin();
        reg_name_iterator != reg_names.end();
@@ -141,19 +152,104 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
     auto regularizer = schema->regularizer(reg_name_iterator->c_str());
 
     if (regularizer != nullptr) {
-      auto tau_index = reg_name_iterator - reg_names.begin();
-      double tau = reg_tau.Get(tau_index);
+      auto coef_index = reg_name_iterator - reg_names.begin();
+      double tau = reg_tau.Get(coef_index);
 
-      float coeffitient = 1.0f;
+      bool use_relative_regularizers_phi = false;
       if (model.use_relative_regularizers_phi()) {
-        // count coeffcient
+        if (reg_gamma.size() != reg_names.size()) {
+          LOG(ERROR) << "The vector of gamma coefficients for regularizers must have a length" <<
+              "equal to the number of regularizers in model.";
+        }
+
+        float gamma = reg_gamma.Get(coef_index);
+        if (gamma >= 0 && gamma <= 1) {
+          LOG(WARNING) << "Gamma coefficient for relative regularization of Phi should be in [0, 1]." <<
+            "Restore to non-relative mode";
+        } else {
+          use_relative_regularizers_phi = true;
+        }
       }
 
       bool retval = regularizer->RegularizePhi(topic_model, &local_r_wt);
+
+      // count n and r_i for relative regularization, if necessary
+      // prepare next structure with parameters:
+      // pair of pairs, first pair --- n and n_t, second one --- r_i and r_it
+      std::unordered_map<core::ClassId, std::pair<std::pair<double, std::vector<float> >,
+                                                  std::pair<double, std::vector<float> > > > parameters;
+      std::vector<bool> topics_to_regularize;
+
+      if (use_relative_regularizers_phi) {
+        std::vector<core::ClassId> class_ids;
+        if (regularizer->class_ids_to_regularize().size() > 0) {
+          auto& class_ids_to_regularize = regularizer->class_ids_to_regularize();
+          for (auto class_id : class_ids_to_regularize) class_ids.push_back(class_id);
+        } else {
+          boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
+        }
+
+        if (regularizer->topics_to_regularize().size() > 0)
+          topics_to_regularize.assign(topic_size, true);
+        else
+          topics_to_regularize = core::is_member(topic_model->topic_name(), regularizer->topics_to_regularize());
+
+        for (auto class_id : class_ids) {
+          auto iter = n_t_all.find(class_id);
+          if (iter != n_t_all.end()) {
+            double n = 0.0;
+            double r_i = 0.0;
+            std::vector<float> r_it;
+            std::vector<float> n_t = iter->second;
+
+            for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+              if (!topics_to_regularize[topic_id]) {
+                r_it.push_back(-1.0f);
+                continue;
+              }
+              n += n_t[topic_id];
+
+              float r_it_current = 0.0f;
+              for (int token_id = 0; token_id < local_r_wt.size(); ++token_id) {
+                if (topic_model->token(token_id).class_id != iter->first) continue;
+
+                r_it_current += local_r_wt[token_id][topic_id];
+              }
+
+              r_it.push_back(r_it_current);
+              r_i += r_it_current;
+            }
+
+            auto pair_n = std::pair<double, std::vector<float> >(n, n_t);
+            auto pair_r = std::pair<double, std::vector<float> >(r_i, r_it);
+            auto pair_data = std::pair<std::pair<double, std::vector<float> >,
+                                       std::pair<double, std::vector<float> > >(pair_n, pair_r);
+            auto pair_last = std::pair<core::ClassId,
+                                    std::pair<std::pair<double, std::vector<float> >,
+                                    std::pair<double, std::vector<float> > > >(iter->first, pair_data);
+            parameters.insert(pair_last);
+          }
+        }
+      }
+
       for (int token_id = 0; token_id < local_r_wt.size(); ++token_id) {
+        auto iter = parameters.find(topic_model->token(token_id).class_id);
+        if (use_relative_regularizers_phi) {
+          if (iter == parameters.end()) continue;
+        }
         for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-          // update global r_wt using coefficients and tau
-          global_r_wt[token_id][topic_id] += coeffitient * tau * local_r_wt[token_id][topic_id];
+          float coefficient = 1.0f;
+          if (use_relative_regularizers_phi) {
+            double gamma = reg_gamma.Get(coef_index);
+            if (!topics_to_regularize[topic_id]) continue;
+            float n_t = iter->second.first.second[topic_id];
+            float n = iter->second.first.first;
+            float r_it = iter->second.second.second[topic_id];
+            float r_i = iter->second.second.first;
+            coefficient = static_cast<float>(gamma) * (n_t / r_it) * static_cast<float>(1 - gamma) * (n / r_i);
+          }
+          // update global r_wt using coefficient and tau
+          global_r_wt[token_id][topic_id] += coefficient * tau * local_r_wt[token_id][topic_id];
         }
       }
       local_r_wt.Reset();

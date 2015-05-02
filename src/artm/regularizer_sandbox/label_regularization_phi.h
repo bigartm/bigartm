@@ -5,6 +5,8 @@
 #ifndef SRC_ARTM_REGULARIZER_SANDBOX_LABEL_REGULARIZATION_PHI_H_
 #define SRC_ARTM_REGULARIZER_SANDBOX_LABEL_REGULARIZATION_PHI_H_
 
+#include <string>
+
 #include "artm/messages.pb.h"
 #include "artm/regularizer_interface.h"
 

@@ -470,7 +470,7 @@ void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
   }
 }
 
-void TopicModel::UpdateNwt(TokenCollectionWeights& r_wt) {
+void TopicModel::UpdateNwt(const TokenCollectionWeights& r_wt) {
   const int topic_size = this->topic_size();
   const int token_size = this->token_size();
 

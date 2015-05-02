@@ -42,7 +42,7 @@ TEST(TopicModelTest, Basic) {
 
   //  test 2
   real_normalizer = 0;
-  
+
   ::artm::core::TokenCollectionWeights r_wt(no_topics);
   topic_model.FindPwt(&r_wt);
   r_wt.Reset();

@@ -110,7 +110,7 @@ class TokenCollectionWeights : boost::noncopyable {
   size_t size() const { return values_.size(); }
   bool empty() const { return values_.empty(); }
 
-  inline int topic_size() { return topic_size_; }
+  inline int topic_size() const { return topic_size_; }
 
   void Reset();
   void Clear();
@@ -169,7 +169,7 @@ class TopicModel : public Regularizable {
 
   std::map<ClassId, std::vector<float> > FindNormalizers() const;
   virtual void FindPwt(TokenCollectionWeights* p_wt) const;
-  void UpdateNwt(TokenCollectionWeights& r_wt);
+  void UpdateNwt(const TokenCollectionWeights& r_wt);
 
  private:
   ModelName model_name_;
