@@ -2107,6 +2107,32 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool opt_for_avx() const;
   inline void set_opt_for_avx(bool value);
 
+  // repeated double regularizer_gamma = 18;
+  inline int regularizer_gamma_size() const;
+  inline void clear_regularizer_gamma();
+  static const int kRegularizerGammaFieldNumber = 18;
+  inline double regularizer_gamma(int index) const;
+  inline void set_regularizer_gamma(int index, double value);
+  inline void add_regularizer_gamma(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      regularizer_gamma() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_regularizer_gamma();
+
+  // optional bool use_relative_regularizers_phi = 19 [default = false];
+  inline bool has_use_relative_regularizers_phi() const;
+  inline void clear_use_relative_regularizers_phi();
+  static const int kUseRelativeRegularizersPhiFieldNumber = 19;
+  inline bool use_relative_regularizers_phi() const;
+  inline void set_use_relative_regularizers_phi(bool value);
+
+  // optional bool use_relative_regularizers_theta = 20 [default = false];
+  inline bool has_use_relative_regularizers_theta() const;
+  inline void clear_use_relative_regularizers_theta();
+  static const int kUseRelativeRegularizersThetaFieldNumber = 20;
+  inline bool use_relative_regularizers_theta() const;
+  inline void set_use_relative_regularizers_theta(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2131,6 +2157,10 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_new_tokens();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
+  inline void set_has_use_relative_regularizers_phi();
+  inline void clear_has_use_relative_regularizers_phi();
+  inline void set_has_use_relative_regularizers_theta();
+  inline void clear_has_use_relative_regularizers_theta();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2147,16 +2177,19 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
   bool use_new_tokens_;
   bool opt_for_avx_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
+  bool use_relative_regularizers_phi_;
+  bool use_relative_regularizers_theta_;
+  ::google::protobuf::RepeatedField< double > regularizer_gamma_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5392,28 +5425,15 @@ class TopicModel_TopicModelInternals : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
       mutable_n_wt();
 
-  // repeated .artm.FloatArray r_wt = 2;
-  inline int r_wt_size() const;
-  inline void clear_r_wt();
-  static const int kRWtFieldNumber = 2;
-  inline const ::artm::FloatArray& r_wt(int index) const;
-  inline ::artm::FloatArray* mutable_r_wt(int index);
-  inline ::artm::FloatArray* add_r_wt();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      r_wt() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_r_wt();
-
   // @@protoc_insertion_point(class_scope:artm.TopicModel.TopicModelInternals)
  private:
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > n_wt_;
-  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > r_wt_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9806,6 +9826,75 @@ inline void ModelConfig::set_opt_for_avx(bool value) {
   opt_for_avx_ = value;
 }
 
+// repeated double regularizer_gamma = 18;
+inline int ModelConfig::regularizer_gamma_size() const {
+  return regularizer_gamma_.size();
+}
+inline void ModelConfig::clear_regularizer_gamma() {
+  regularizer_gamma_.Clear();
+}
+inline double ModelConfig::regularizer_gamma(int index) const {
+  return regularizer_gamma_.Get(index);
+}
+inline void ModelConfig::set_regularizer_gamma(int index, double value) {
+  regularizer_gamma_.Set(index, value);
+}
+inline void ModelConfig::add_regularizer_gamma(double value) {
+  regularizer_gamma_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+ModelConfig::regularizer_gamma() const {
+  return regularizer_gamma_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+ModelConfig::mutable_regularizer_gamma() {
+  return &regularizer_gamma_;
+}
+
+// optional bool use_relative_regularizers_phi = 19 [default = false];
+inline bool ModelConfig::has_use_relative_regularizers_phi() const {
+  return (_has_bits_[0] & 0x00040000u) != 0;
+}
+inline void ModelConfig::set_has_use_relative_regularizers_phi() {
+  _has_bits_[0] |= 0x00040000u;
+}
+inline void ModelConfig::clear_has_use_relative_regularizers_phi() {
+  _has_bits_[0] &= ~0x00040000u;
+}
+inline void ModelConfig::clear_use_relative_regularizers_phi() {
+  use_relative_regularizers_phi_ = false;
+  clear_has_use_relative_regularizers_phi();
+}
+inline bool ModelConfig::use_relative_regularizers_phi() const {
+  return use_relative_regularizers_phi_;
+}
+inline void ModelConfig::set_use_relative_regularizers_phi(bool value) {
+  set_has_use_relative_regularizers_phi();
+  use_relative_regularizers_phi_ = value;
+}
+
+// optional bool use_relative_regularizers_theta = 20 [default = false];
+inline bool ModelConfig::has_use_relative_regularizers_theta() const {
+  return (_has_bits_[0] & 0x00080000u) != 0;
+}
+inline void ModelConfig::set_has_use_relative_regularizers_theta() {
+  _has_bits_[0] |= 0x00080000u;
+}
+inline void ModelConfig::clear_has_use_relative_regularizers_theta() {
+  _has_bits_[0] &= ~0x00080000u;
+}
+inline void ModelConfig::clear_use_relative_regularizers_theta() {
+  use_relative_regularizers_theta_ = false;
+  clear_has_use_relative_regularizers_theta();
+}
+inline bool ModelConfig::use_relative_regularizers_theta() const {
+  return use_relative_regularizers_theta_;
+}
+inline void ModelConfig::set_use_relative_regularizers_theta(bool value) {
+  set_has_use_relative_regularizers_theta();
+  use_relative_regularizers_theta_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // RegularizerConfig
@@ -13515,31 +13604,6 @@ TopicModel_TopicModelInternals::n_wt() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
 TopicModel_TopicModelInternals::mutable_n_wt() {
   return &n_wt_;
-}
-
-// repeated .artm.FloatArray r_wt = 2;
-inline int TopicModel_TopicModelInternals::r_wt_size() const {
-  return r_wt_.size();
-}
-inline void TopicModel_TopicModelInternals::clear_r_wt() {
-  r_wt_.Clear();
-}
-inline const ::artm::FloatArray& TopicModel_TopicModelInternals::r_wt(int index) const {
-  return r_wt_.Get(index);
-}
-inline ::artm::FloatArray* TopicModel_TopicModelInternals::mutable_r_wt(int index) {
-  return r_wt_.Mutable(index);
-}
-inline ::artm::FloatArray* TopicModel_TopicModelInternals::add_r_wt() {
-  return r_wt_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-TopicModel_TopicModelInternals::r_wt() const {
-  return r_wt_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-TopicModel_TopicModelInternals::mutable_r_wt() {
-  return &r_wt_;
 }
 
 // -------------------------------------------------------------------

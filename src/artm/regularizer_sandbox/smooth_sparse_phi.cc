@@ -7,12 +7,14 @@
 
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/regularizable.h"
+#include "artm/core/topic_model.h"
 #include "artm/regularizer_sandbox/smooth_sparse_phi.h"
 
 namespace artm {
 namespace regularizer_sandbox {
 
-bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
+bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model,
+                                    ::artm::core::TokenCollectionWeights* result) {
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
   const int token_size = topic_model->token_size();
@@ -53,15 +55,23 @@ bool SmoothSparsePhi::RegularizePhi(::artm::core::Regularizable* topic_model, do
           coefficient = entry_iter->second.value();
       }
     }
-    float value = static_cast<float>(tau) * coefficient;
+
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id])
-        topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
+        (*result)[token_id][topic_id] = coefficient;
     }
   }
 
   return true;
+}
+
+google::protobuf::RepeatedPtrField<std::string> SmoothSparsePhi::topics_to_regularize() {
+  return config_.topic_name();
+}
+
+google::protobuf::RepeatedPtrField<std::string> SmoothSparsePhi::class_ids_to_regularize() {
+  return config_.class_id();
 }
 
 bool SmoothSparsePhi::Reconfigure(const RegularizerConfig& config) {

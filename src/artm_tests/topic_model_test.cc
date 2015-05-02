@@ -25,7 +25,6 @@ TEST(TopicModelTest, Basic) {
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_3"));
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_4"));
   topic_model.AddToken(artm::core::Token(artm::core::DefaultClass, "token_5"));
-  topic_model.InitializeRwt();
 
   //  test 1
   float real_normalizer = 0;
@@ -43,11 +42,18 @@ TEST(TopicModelTest, Basic) {
 
   //  test 2
   real_normalizer = 0;
+  
+  ::artm::core::TokenCollectionWeights r_wt(no_topics);
+  topic_model.FindPwt(&r_wt);
+  r_wt.Reset();
+
   for (int i = 0; i < no_tokens; ++i) {
     for (int j = 0; j < no_topics; ++j) {
-      topic_model.SetRegularizerWeight(i, j, -0.5f);
+      r_wt[i][j] = -0.5f;
     }
   }
+  topic_model.UpdateNwt(r_wt);
+
   n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -59,9 +65,11 @@ TEST(TopicModelTest, Basic) {
   real_normalizer = 0;
   for (int i = 0; i < no_tokens; ++i) {
     for (int j = 0; j < no_topics; ++j) {
-      topic_model.SetRegularizerWeight(i, j, -1.5);
+      r_wt[i][j] = -1.5f;
     }
   }
+  topic_model.UpdateNwt(r_wt);
+
   n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -71,11 +79,20 @@ TEST(TopicModelTest, Basic) {
 
   //  test 4
   real_normalizer = 0;
+  // restore previous values of n_wt
+  for (int i = 0; i < no_tokens; ++i) {
+    for (int j = 0; j < no_topics; ++j) {
+      topic_model.SetTokenWeight(i, j, 1);
+    }
+  }
+
   for (int i = 0; i < no_tokens; ++i) {
     for (int j = 0; j < no_topics; ++j) {
       topic_model.IncreaseTokenWeight(i, j, 0.4f);
     }
   }
+  topic_model.UpdateNwt(r_wt);
+
   n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -85,11 +102,20 @@ TEST(TopicModelTest, Basic) {
 
   //  test 5
   real_normalizer = 0;
+  // restore previous values of n_wt
+  for (int i = 0; i < no_tokens; ++i) {
+    for (int j = 0; j < no_topics; ++j) {
+      topic_model.SetTokenWeight(i, j, 1.4);
+    }
+  }
+
   for (int i = 0; i < no_tokens; ++i) {
     for (int j = 0; j < no_topics; ++j) {
       topic_model.IncreaseTokenWeight(i, j, 0.6f);
     }
   }
+  topic_model.UpdateNwt(r_wt);
+
   n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -104,6 +130,8 @@ TEST(TopicModelTest, Basic) {
       topic_model.SetTokenWeight(i, j, 1);
     }
   }
+  topic_model.UpdateNwt(r_wt);
+
   n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];
@@ -113,11 +141,20 @@ TEST(TopicModelTest, Basic) {
 
   //  test 7
   real_normalizer = 0;
+  // restore previous values of n_wt
   for (int i = 0; i < no_tokens; ++i) {
     for (int j = 0; j < no_topics; ++j) {
-      topic_model.SetRegularizerWeight(i, j, -0.5f);
+      topic_model.SetTokenWeight(i, j, 1.0);
     }
   }
+
+  for (int i = 0; i < no_tokens; ++i) {
+    for (int j = 0; j < no_topics; ++j) {
+      r_wt[i][j] = -0.5f;
+    }
+  }
+  topic_model.UpdateNwt(r_wt);
+
   n_t = topic_model.FindNormalizers()[::artm::core::DefaultClass];
   for (int j = 0; j < no_topics; ++j) {
     real_normalizer += n_t[j];

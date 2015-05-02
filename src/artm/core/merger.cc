@@ -122,6 +122,18 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
   auto& model = schema->model_config(topic_model->model_name());
   auto& reg_names = model.regularizer_name();
   auto& reg_tau = model.regularizer_tau();
+  int topic_size = topic_model->topic_size();
+
+  // call FindPwt() to allow regularizers GetPwt() usage
+  topic_model->CalcPwt();
+
+  ::artm::core::TokenCollectionWeights global_r_wt(topic_size);
+  topic_model->FindPwt(&global_r_wt); // set global r_wt to necessary size
+  global_r_wt.Reset();
+
+  ::artm::core::TokenCollectionWeights local_r_wt(topic_size);
+  topic_model->FindPwt(&local_r_wt); // set global r_wt to necessary size
+  local_r_wt.Reset();
 
   for (auto reg_name_iterator = reg_names.begin();
        reg_name_iterator != reg_names.end();
@@ -132,7 +144,20 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
       auto tau_index = reg_name_iterator - reg_names.begin();
       double tau = reg_tau.Get(tau_index);
 
-      bool retval = regularizer->RegularizePhi(topic_model, tau);
+      float coeffitient = 1.0f;
+      if (model.use_relative_regularizers_phi()) {
+        // count coeffcient
+      }
+
+      bool retval = regularizer->RegularizePhi(topic_model, &local_r_wt);
+      for (int token_id = 0; token_id < local_r_wt.size(); ++token_id) {
+        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+          // update global r_wt using coefficients and tau
+          global_r_wt[token_id][topic_id] += coeffitient * tau * local_r_wt[token_id][topic_id];
+        }
+      }
+      local_r_wt.Reset();
+
       if (!retval) {
         LOG(ERROR) << "Problems with type or number of parameters in Phi regularizer <" <<
           reg_name_iterator->c_str() <<
@@ -143,6 +168,9 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
         reg_name_iterator->c_str() << "> does not exist.\n";
     }
   }
+
+  // merge final r_wt with n_wt and proceed cutoff operation
+  topic_model->UpdateNwt(global_r_wt);
 }
 
 void Merger::ThreadFunction() {
@@ -493,7 +521,6 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
 
     if (invoke_regularizers && (current_config.regularizer_name_size() > 0)) {
       CuckooWatch cuckoo2("InvokePhiRegularizers, ", &cuckoo);
-      new_ttm->InitializeRwt();
       InvokePhiRegularizers(new_ttm.get());
 
       // Verify if model became overregularized
@@ -517,7 +544,6 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     {
       CuckooWatch cuckoo2("CalcPwt", &cuckoo);
       new_ttm->CalcPwt();   // calculate pwt matrix
-      new_ttm->ClearRwt();
     }
 
     topic_model_.set(name, new_ttm);

@@ -16,7 +16,12 @@ class DecorrelatorPhi : public RegularizerInterface {
   explicit DecorrelatorPhi(const DecorrelatorPhiConfig& config)
     : config_(config) {}
 
-  virtual bool RegularizePhi(::artm::core::Regularizable* topic_model, double tau);
+  virtual bool RegularizePhi(::artm::core::Regularizable* topic_model,
+                             ::artm::core::TokenCollectionWeights* result);
+
+  virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
+  virtual google::protobuf::RepeatedPtrField<std::string> class_ids_to_regularize();
+
   virtual bool Reconfigure(const RegularizerConfig& config);
 
  private:

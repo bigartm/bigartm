@@ -15,7 +15,8 @@
 namespace artm {
 namespace regularizer_sandbox {
 
-bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
+bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_model,
+                                           ::artm::core::TokenCollectionWeights* result) {
   // read the parameters from config and control their correctness
   const int topic_size = topic_model->topic_size();
   const int token_size = topic_model->token_size();
@@ -78,13 +79,21 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
         float weight = p_wt[token_id][topic_id] * class_iter->second[topic_id];
-        float value = static_cast<float>(coefficient * tau * weight / weights_sum);
-        topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
+        float value = static_cast<float>(coefficient * weight / weights_sum);
+        (*result)[token_id][topic_id] = value;
       }
     }
   }
 
   return true;
+}
+
+google::protobuf::RepeatedPtrField<std::string> LabelRegularizationPhi::topics_to_regularize() {
+  return config_.topic_name();
+}
+
+google::protobuf::RepeatedPtrField<std::string> LabelRegularizationPhi::class_ids_to_regularize() {
+  return config_.class_id();
 }
 
 bool LabelRegularizationPhi::Reconfigure(const RegularizerConfig& config) {

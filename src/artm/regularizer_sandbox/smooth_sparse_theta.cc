@@ -64,6 +64,10 @@ SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
   return retval;
 }
 
+google::protobuf::RepeatedPtrField<std::string> SmoothSparseTheta::topics_to_regularize() {
+  return config_.topic_name();
+}
+
 bool SmoothSparseTheta::Reconfigure(const RegularizerConfig& config) {
   std::string config_blob = config.config();
   SmoothSparseThetaConfig regularizer_config;
