@@ -182,14 +182,10 @@ InitializePhi(const Batch& batch, const ModelConfig& model_config,
 static std::shared_ptr<RegularizeThetaAgentCollection>
 CreateRegularizerAgents(const Batch& batch, const ModelConfig& model_config, const InstanceSchema& schema) {
   auto retval = std::make_shared<RegularizeThetaAgentCollection>();
-  if (model_config.regularizer_name_size() != model_config.regularizer_tau_size()) {
-    LOG(ERROR) << "model_config.regularizer_name_size() != model_config.regularizer_tau_size()";
-    return retval;
-  }
 
-  for (int reg_index = 0; reg_index < model_config.regularizer_name_size(); ++reg_index) {
-    std::string reg_name = model_config.regularizer_name(reg_index);
-    double tau = model_config.regularizer_tau(reg_index);
+  for (int reg_index = 0; reg_index < model_config.regularizer_settings_size(); ++reg_index) {
+    std::string reg_name = model_config.regularizer_settings(reg_index).name();
+    double tau = model_config.regularizer_settings(reg_index).tau();
     auto regularizer = schema.regularizer(reg_name);
     if (regularizer == nullptr) {
       LOG(ERROR) << "Theta Regularizer with name <" << reg_name << "> does not exist.";

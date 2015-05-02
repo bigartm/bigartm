@@ -5,6 +5,8 @@
 #ifndef SRC_ARTM_REGULARIZER_SANDBOX_DECORRELATOR_PHI_H_
 #define SRC_ARTM_REGULARIZER_SANDBOX_DECORRELATOR_PHI_H_
 
+#include <string>
+
 #include "artm/messages.pb.h"
 #include "artm/regularizer_interface.h"
 
@@ -16,7 +18,12 @@ class DecorrelatorPhi : public RegularizerInterface {
   explicit DecorrelatorPhi(const DecorrelatorPhiConfig& config)
     : config_(config) {}
 
-  virtual bool RegularizePhi(::artm::core::Regularizable* topic_model, double tau);
+  virtual bool RegularizePhi(const ::artm::core::Regularizable& topic_model,
+                             ::artm::core::TokenCollectionWeights* result);
+
+  virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
+  virtual google::protobuf::RepeatedPtrField<std::string> class_ids_to_regularize();
+
   virtual bool Reconfigure(const RegularizerConfig& config);
 
  private:

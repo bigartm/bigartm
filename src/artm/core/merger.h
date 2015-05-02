@@ -29,6 +29,7 @@ namespace artm {
 namespace core {
 
 class TopicModel;
+class TokenCollectionWeights;
 class InstanceSchema;
 
 class Merger : boost::noncopyable {
@@ -133,7 +134,8 @@ class Merger : boost::noncopyable {
                         bool invoke_regularizers);
   void PullTopicModel();
   void PushTopicModelIncrement();
-  void InvokePhiRegularizers(::artm::core::TopicModel* topic_model);
+  void InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
+                             ::artm::core::TokenCollectionWeights* global_r_wt);
   void ResetScores(ModelName model_name);
 };
 

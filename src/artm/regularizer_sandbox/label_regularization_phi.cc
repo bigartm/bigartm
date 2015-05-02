@@ -15,16 +15,17 @@
 namespace artm {
 namespace regularizer_sandbox {
 
-bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
+bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::Regularizable& topic_model,
+                                           ::artm::core::TokenCollectionWeights* result) {
   // read the parameters from config and control their correctness
-  const int topic_size = topic_model->topic_size();
-  const int token_size = topic_model->token_size();
+  const int topic_size = topic_model.topic_size();
+  const int token_size = topic_model.token_size();
 
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0)
     topics_to_regularize.assign(topic_size, true);
   else
-    topics_to_regularize = core::is_member(topic_model->topic_name(), config_.topic_name());
+    topics_to_regularize = core::is_member(topic_model.topic_name(), config_.topic_name());
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
@@ -41,13 +42,13 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
     has_dictionary = false;
   }
 
-  core::TokenCollectionWeights p_wt(topic_model->topic_size());
-  topic_model->FindPwt(&p_wt);
-  std::map<core::ClassId, std::vector<float> > n_t = topic_model->FindNormalizers();
+  core::TokenCollectionWeights p_wt(topic_model.topic_size());
+  topic_model.FindPwt(&p_wt);
+  std::map<core::ClassId, std::vector<float> > n_t = topic_model.FindNormalizers();
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    auto token = topic_model->token(token_id);
+    auto token = topic_model.token(token_id);
     auto class_iter = n_t.find(token.class_id);
     assert(class_iter != n_t.end());
 
@@ -78,13 +79,21 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
         float weight = p_wt[token_id][topic_id] * class_iter->second[topic_id];
-        float value = static_cast<float>(coefficient * tau * weight / weights_sum);
-        topic_model->IncreaseRegularizerWeight(token_id, topic_id, value);
+        float value = static_cast<float>(coefficient * weight / weights_sum);
+        (*result)[token_id][topic_id] = value;
       }
     }
   }
 
   return true;
+}
+
+google::protobuf::RepeatedPtrField<std::string> LabelRegularizationPhi::topics_to_regularize() {
+  return config_.topic_name();
+}
+
+google::protobuf::RepeatedPtrField<std::string> LabelRegularizationPhi::class_ids_to_regularize() {
+  return config_.class_id();
 }
 
 bool LabelRegularizationPhi::Reconfigure(const RegularizerConfig& config) {

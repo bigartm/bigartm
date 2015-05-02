@@ -10,7 +10,8 @@
 namespace artm {
 namespace regularizer_sandbox {
 
-bool MultiLanguagePhi::RegularizePhi(::artm::core::Regularizable* topic_model, double tau) {
+bool MultiLanguagePhi::RegularizePhi(const ::artm::core::Regularizable& topic_model,
+                                     ::artm::core::TokenCollectionWeights* result) {
   // the body of this method will be defined later
 
   no_regularization_calls_++;

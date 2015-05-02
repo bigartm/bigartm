@@ -44,7 +44,7 @@ with artm.library.MasterComponent() as master:
     model.EnableRegularizer(theta_background, 0.5)
     model.EnableRegularizer(phi_objective, -0.5)
     model.EnableRegularizer(phi_background, 0.5)
-    model.EnableRegularizer(decorrelator_regularizer, 1000000)
+    model.EnableRegularizer(decorrelator_regularizer, 100000)
     model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
 
     # Online algorithm with AddBatch()
