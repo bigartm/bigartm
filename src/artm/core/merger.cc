@@ -144,7 +144,7 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
   topic_model->FindPwt(&local_r_wt);  // set global r_wt to necessary size
   local_r_wt.Reset();
 
-  auto& n_t_all = topic_model->FindNormalizers();
+  auto n_t_all = topic_model->FindNormalizers();
 
   for (auto reg_name_iterator = reg_names.begin();
        reg_name_iterator != reg_names.end();
@@ -183,7 +183,7 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
       if (use_relative_regularizers_phi) {
         std::vector<core::ClassId> class_ids;
         if (regularizer->class_ids_to_regularize().size() > 0) {
-          auto& class_ids_to_regularize = regularizer->class_ids_to_regularize();
+          auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
           for (auto class_id : class_ids_to_regularize) class_ids.push_back(class_id);
         } else {
           boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
