@@ -168,9 +168,32 @@ void Helpers::Fix(::artm::ModelConfig* message) {
       message->add_class_weight(1.0f);
   }
 
-  if (message->regularizer_tau_size() == 0) {
-    for (int i = 0; i < message->regularizer_name_size(); ++i)
-      message->add_regularizer_tau(1.0);
+  if (message->regularizer_settings_size() == 0) {
+    // using old version of parameters, convert to new one
+    if (message->regularizer_tau_size() == 0) {
+      for (int i = 0; i < message->regularizer_name_size(); ++i)
+        message->add_regularizer_tau(1.0);
+    }
+
+    for (int i = 0; i < message->regularizer_name_size(); ++i) {
+      auto settings = message->add_regularizer_settings();
+      settings->set_name(message->regularizer_name(i));
+      settings->set_use_relative_regularization(false);
+      settings->set_tau(message->regularizer_tau(i));
+    }
+  } else {
+    // using new version of parameters, skip old one
+    for (int i = 0; i < message->regularizer_settings_size(); ++i) {
+      if (!message->regularizer_settings(i).has_tau())
+        message->mutable_regularizer_settings(i)->set_tau(1.0);
+
+      if (!message->regularizer_settings(i).has_use_relative_regularization())
+        message->mutable_regularizer_settings(i)->set_use_relative_regularization(false);
+
+      if (message->regularizer_settings(i).use_relative_regularization() &&
+          !message->regularizer_settings(i).has_gamma())
+        message->mutable_regularizer_settings(i)->set_gamma(1.0);
+    }
   }
 }
 
@@ -182,8 +205,6 @@ bool Helpers::Validate(const ::artm::ModelConfig& message, bool throw_error) {
     ss << "Length mismatch in fields ModelConfig.topics_count and ModelConfig.topic_name";
   if (message.class_weight_size() != message.class_id_size())
     ss << "Length mismatch in fields ModelConfig.class_id and ModelConfig.class_weight";
-  if (message.regularizer_name_size() != message.regularizer_tau_size())
-    ss << "Length mismatch in fields ModelConfig.regularizer_name_size and ModelConfig.regularizer_tau_size";
 
   if (ss.str().empty())
     return true;
@@ -418,8 +439,14 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   ss << ", field_name=" << message.field_name();
   ss << ", stream_name=" << message.stream_name();
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
-  for (int i = 0; i < message.regularizer_name_size(); ++i)
-    ss << ", regularizer=(" << message.regularizer_name(i) << ":" << message.regularizer_tau(i) << ")";
+  for (int i = 0; i < message.regularizer_settings().size(); ++i) {
+    ss << ", regularizer=(name=" << message.regularizer_settings(i).name() <<
+      ", tau=" << message.regularizer_settings(i).tau();
+    if (message.regularizer_settings(i).use_relative_regularization())
+      ss << "relative_regularization=True, gamma=" << message.regularizer_settings(i).gamma() << ")";
+    else
+      ss << "relative_regularization=False" << ")";
+  }
   for (int i = 0; i < message.class_id_size(); ++i)
     ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");

@@ -67,6 +67,21 @@ int TokenCollection::token_size() const {
   return token_to_token_id_.size();
 }
 
+TokenCollectionWeights::TokenCollectionWeights(int token_size, int topic_size)
+  : topic_size_(topic_size) {
+  for (int i = 0; i < token_size; ++i) {
+    float* values = new float[topic_size];
+    values_.push_back(values);
+    memset(values, 0, sizeof(float) * topic_size);
+  }
+}
+
+void TokenCollectionWeights::Reset() {
+  std::for_each(values_.begin(), values_.end(), [&](float* value) {
+    for (int i = 0; i < topic_size_; ++i) value[i] = 0.0f;
+  });
+}
+
 void TokenCollectionWeights::Clear() {
   std::for_each(values_.begin(), values_.end(), [&](float* value) {
     delete[] value;
@@ -77,7 +92,7 @@ void TokenCollectionWeights::Clear() {
 int TokenCollectionWeights::AddToken() {
   float* values = new float[topic_size_];
   values_.push_back(values);
-  memset(values, 0, sizeof(float)* topic_size_);
+  memset(values, 0, sizeof(float) * topic_size_);
   return values_.size() - 1;
 }
 
@@ -111,7 +126,6 @@ TopicModel::TopicModel(const ModelName& model_name,
       token_collection_(),
       topic_name_(),
       n_wt_(topic_name.size()),
-      r_wt_(topic_name.size()),
       p_wt_(topic_name.size()) {
   for (auto iter = topic_name.begin(); iter != topic_name.end(); ++iter) {
     topic_name_.push_back(*iter);
@@ -124,7 +138,6 @@ TopicModel::~TopicModel() {
 
 void TopicModel::Clear(ModelName model_name, int topics_count) {
   n_wt_.Clear();
-  r_wt_.Clear();
   p_wt_.Clear();
   model_name_ = model_name;
   token_collection_.Clear();
@@ -234,7 +247,7 @@ void TopicModel::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model,
 void TopicModel::RetrieveExternalTopicModel(
     const ::artm::GetTopicModelArgs& get_model_args,
     ::artm::TopicModel* topic_model) const {
-  if (n_wt_.empty() && r_wt_.empty() && p_wt_.empty()) {
+  if (n_wt_.empty() && p_wt_.empty()) {
     LOG(WARNING) << "Attempt to retrieve empty topic model";
     return;
   }
@@ -395,35 +408,6 @@ void TopicModel::SetTokenWeight(int token_id, int topic_id, float value) {
   n_wt_[token_id][topic_id] = value;
 }
 
-void TopicModel::SetRegularizerWeight(const Token& token, int topic_id, float value) {
-  if (!has_token(token)) {
-    LOG(ERROR) << "Token '" << token.keyword << "' not found in the model";
-    return;
-  }
-
-  SetRegularizerWeight(token_id(token), topic_id, value);
-}
-
-void TopicModel::SetRegularizerWeight(int token_id, int topic_id, float value) {
-  r_wt_[token_id][topic_id] = value;
-}
-
-void TopicModel::IncreaseRegularizerWeight(const Token& token, int topic_id, float value) {
-  if (!has_token(token)) {
-    if (value != 0.0f) {
-      LOG(ERROR) << "Token '" << token.keyword << "' not found in the model";
-    }
-
-    return;
-  }
-
-  IncreaseRegularizerWeight(token_id(token), topic_id, value);
-}
-
-void TopicModel::IncreaseRegularizerWeight(int token_id, int topic_id, float value) {
-  r_wt_[token_id][topic_id] += value;
-}
-
 int TopicModel::topic_size() const {
   return topic_name_.size();
 }
@@ -441,7 +425,7 @@ ModelName TopicModel::model_name() const {
   return model_name_;
 }
 
-std::map<ClassId, std::vector<float> > TopicModel::FindNormalizers() const {
+std::map<ClassId, std::vector<float> > TopicModel::FindNormalizers(const TokenCollectionWeights& r_wt_) const {
   std::map<ClassId, std::vector<float> > retval;
   for (int token_id = 0; token_id < token_size(); ++token_id) {
     const Token& token = this->token(token_id);
@@ -463,7 +447,7 @@ std::map<ClassId, std::vector<float> > TopicModel::FindNormalizers() const {
   return retval;
 }
 
-void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
+void TopicModel::FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeights* p_wt) const {
   const int topic_size = this->topic_size();
   const int token_size = this->token_size();
 
@@ -473,14 +457,14 @@ void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
   }
 
   p_wt->Clear();
-  std::map<ClassId, std::vector<float> > n_t = FindNormalizers();
+  std::map<ClassId, std::vector<float> > n_t = FindNormalizers(r_wt);
   for (int token_id = 0; token_id < token_size; ++token_id) {
     const Token& token = this->token(token_id);
     int token_id2 = p_wt->AddToken(token, false);
     assert(token_id == token_id2);
 
     const float* nwt = n_wt_.at(token_id);
-    const float* rwt = r_wt_.empty() ? nullptr : r_wt_.at(token_id);
+    const float* rwt = r_wt.empty() ? nullptr : r_wt.at(token_id);
     float *pwt = p_wt->at(token_id);
 
     const std::vector<float>& nt = n_t[token.class_id];
