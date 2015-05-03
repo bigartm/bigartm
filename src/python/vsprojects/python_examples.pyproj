@@ -35,12 +35,12 @@
     <Compile Include="../examples/example06_use_dictionaries.py" />
     <Compile Include="../examples/example07_master_component_proxy.py" />
     <Compile Include="../examples/example08_network_modus_operandi.py" />
-    <Compile Include="example09_regularizers.py" />
-    <Compile Include="example10_multimodal.py" />
-    <Compile Include="example11_get_theta_matrix.py" />
-    <Compile Include="example12_get_topic_model.py" />
-    <Compile Include="example13_overwrite_topic_model.py" />
-    <Compile Include="example14_initialize_topic_model.py" />
+    <Compile Include="../examples/example09_regularizers.py" />
+    <Compile Include="../examples/example10_multimodal.py" />
+    <Compile Include="../examples/example11_get_theta_matrix.py" />
+    <Compile Include="../examples/example12_get_topic_model.py" />
+    <Compile Include="../examples/example13_overwrite_topic_model.py" />
+    <Compile Include="../examples/example14_initialize_topic_model.py" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>

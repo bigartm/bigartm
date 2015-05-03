@@ -58,7 +58,7 @@ class RegularizerInterface {
     return nullptr;
   }
 
-  virtual bool RegularizePhi(::artm::core::Regularizable* topic_model,
+  virtual bool RegularizePhi(const ::artm::core::Regularizable& topic_model,
                              ::artm::core::TokenCollectionWeights* result) { return true; }
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize() {

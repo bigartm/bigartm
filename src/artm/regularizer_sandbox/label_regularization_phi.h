@@ -18,7 +18,7 @@ class LabelRegularizationPhi : public RegularizerInterface {
   explicit LabelRegularizationPhi(const LabelRegularizationPhiConfig& config)
     : config_(config) {}
 
-  virtual bool RegularizePhi(::artm::core::Regularizable* topic_model,
+  virtual bool RegularizePhi(const ::artm::core::Regularizable& topic_model,
                              ::artm::core::TokenCollectionWeights* result);
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();

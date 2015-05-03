@@ -15,17 +15,17 @@
 namespace artm {
 namespace regularizer_sandbox {
 
-bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_model,
+bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::Regularizable& topic_model,
                                            ::artm::core::TokenCollectionWeights* result) {
   // read the parameters from config and control their correctness
-  const int topic_size = topic_model->topic_size();
-  const int token_size = topic_model->token_size();
+  const int topic_size = topic_model.topic_size();
+  const int token_size = topic_model.token_size();
 
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0)
     topics_to_regularize.assign(topic_size, true);
   else
-    topics_to_regularize = core::is_member(topic_model->topic_name(), config_.topic_name());
+    topics_to_regularize = core::is_member(topic_model.topic_name(), config_.topic_name());
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
@@ -42,13 +42,13 @@ bool LabelRegularizationPhi::RegularizePhi(::artm::core::Regularizable* topic_mo
     has_dictionary = false;
   }
 
-  core::TokenCollectionWeights p_wt(topic_model->topic_size());
-  topic_model->FindPwt(&p_wt);
-  std::map<core::ClassId, std::vector<float> > n_t = topic_model->FindNormalizers();
+  core::TokenCollectionWeights p_wt(topic_model.topic_size());
+  topic_model.FindPwt(&p_wt);
+  std::map<core::ClassId, std::vector<float> > n_t = topic_model.FindNormalizers();
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    auto token = topic_model->token(token_id);
+    auto token = topic_model.token(token_id);
     auto class_iter = n_t.find(token.class_id);
     assert(class_iter != n_t.end());
 

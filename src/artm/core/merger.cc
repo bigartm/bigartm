@@ -123,55 +123,29 @@ Merger::GetLatestTopicModel(ModelName model_name) const {
 void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
   auto schema = schema_->get();
   auto& model = schema->model_config(topic_model->model_name());
-  auto& reg_names = model.regularizer_name();
-  auto& reg_tau = model.regularizer_tau();
-  auto& reg_gamma = model.regularizer_gamma();
+  auto& reg_settings = model.regularizer_settings();
+
   int topic_size = topic_model->topic_size();
+  int token_size = topic_model->token_size();
 
-  if (reg_tau.size() != reg_names.size()) {
-    LOG(ERROR) << "The vector of tau coefficients for regularizers must have a length" <<
-        "equal to the number of regularizers in model.";
-  }
-
-  // call FindPwt() to allow regularizers GetPwt() usage
+  // call CalcPwt() to allow regularizers GetPwt() usage
   topic_model->CalcPwt();
 
-  ::artm::core::TokenCollectionWeights global_r_wt(topic_size);
-  topic_model->FindPwt(&global_r_wt);  // set global r_wt to necessary size
-  global_r_wt.Reset();
-
-  ::artm::core::TokenCollectionWeights local_r_wt(topic_size);
-  topic_model->FindPwt(&local_r_wt);  // set global r_wt to necessary size
-  local_r_wt.Reset();
+  ::artm::core::TokenCollectionWeights global_r_wt(token_size, topic_size);
+  ::artm::core::TokenCollectionWeights local_r_wt(token_size, topic_size);
 
   auto n_t_all = topic_model->FindNormalizers();
 
-  for (auto reg_name_iterator = reg_names.begin();
-       reg_name_iterator != reg_names.end();
-       reg_name_iterator++) {
-    auto regularizer = schema->regularizer(reg_name_iterator->c_str());
+  for (auto reg_iterator = reg_settings.begin();
+       reg_iterator != reg_settings.end();
+       reg_iterator++) {
+    auto regularizer = schema->regularizer(reg_iterator->name().c_str());
 
     if (regularizer != nullptr) {
-      auto coef_index = reg_name_iterator - reg_names.begin();
-      double tau = reg_tau.Get(coef_index);
+      double tau = reg_iterator->tau();
+      bool relative_reg = reg_iterator->use_relative_regularization();
 
-      bool use_relative_regularizers_phi = false;
-      if (model.use_relative_regularizers_phi()) {
-        if (reg_gamma.size() != reg_names.size()) {
-          LOG(ERROR) << "The vector of gamma coefficients for regularizers must have a length" <<
-              "equal to the number of regularizers in model.";
-        }
-
-        float gamma = reg_gamma.Get(coef_index);
-        if (gamma >= 0 && gamma <= 1) {
-          LOG(WARNING) << "Gamma coefficient for relative regularization of Phi should be in [0, 1]." <<
-            "Restore to non-relative mode";
-        } else {
-          use_relative_regularizers_phi = true;
-        }
-      }
-
-      bool retval = regularizer->RegularizePhi(topic_model, &local_r_wt);
+      bool retval = regularizer->RegularizePhi(*topic_model, &local_r_wt);
 
       // count n and r_i for relative regularization, if necessary
       // prepare next structure with parameters:
@@ -180,7 +154,7 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
                                                   std::pair<double, std::vector<float> > > > parameters;
       std::vector<bool> topics_to_regularize;
 
-      if (use_relative_regularizers_phi) {
+      if (relative_reg) {
         std::vector<core::ClassId> class_ids;
         if (regularizer->class_ids_to_regularize().size() > 0) {
           auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
@@ -210,7 +184,7 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
               n += n_t[topic_id];
 
               float r_it_current = 0.0f;
-              for (int token_id = 0; token_id < local_r_wt.size(); ++token_id) {
+              for (int token_id = 0; token_id < token_size; ++token_id) {
                 if (topic_model->token(token_id).class_id != iter->first) continue;
 
                 r_it_current += local_r_wt[token_id][topic_id];
@@ -232,16 +206,17 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
         }
       }
 
-      for (int token_id = 0; token_id < local_r_wt.size(); ++token_id) {
+      for (int token_id = 0; token_id < token_size; ++token_id) {
         auto iter = parameters.find(topic_model->token(token_id).class_id);
-        if (use_relative_regularizers_phi) {
+        if (relative_reg) {
           if (iter == parameters.end()) continue;
         }
         for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
           float coefficient = 1.0f;
-          if (use_relative_regularizers_phi) {
-            double gamma = reg_gamma.Get(coef_index);
+          if (relative_reg) {
             if (!topics_to_regularize[topic_id]) continue;
+
+            double gamma = reg_iterator->gamma();
             float n_t = iter->second.first.second[topic_id];
             float n = iter->second.first.first;
             float r_it = iter->second.second.second[topic_id];
@@ -256,17 +231,17 @@ void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
 
       if (!retval) {
         LOG(ERROR) << "Problems with type or number of parameters in Phi regularizer <" <<
-          reg_name_iterator->c_str() <<
+          reg_iterator->name().c_str() <<
           ">. On this iteration this regularizer was turned off.\n";
       }
     } else {
       LOG(ERROR) << "Phi Regularizer with name <" <<
-        reg_name_iterator->c_str() << "> does not exist.\n";
+        reg_iterator->name().c_str() << "> does not exist.\n";
     }
   }
 
-  // merge final r_wt with n_wt and proceed cutoff operation
-  topic_model->UpdateNwt(global_r_wt);
+  // merge final r_wt with n_wt in p_wt (n_wt is const)
+  topic_model->CalcPwt(global_r_wt);
 }
 
 void Merger::ThreadFunction() {
@@ -615,7 +590,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       new_ttm->ApplyTopicModelOperation(topic_model, apply_weight);
     }
 
-    if (invoke_regularizers && (current_config.regularizer_name_size() > 0)) {
+    if (invoke_regularizers && (current_config.regularizer_settings_size() > 0)) {
       CuckooWatch cuckoo2("InvokePhiRegularizers, ", &cuckoo);
       InvokePhiRegularizers(new_ttm.get());
 
@@ -633,6 +608,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
           << bad_topics << " of " << new_ttm->topic_size()
           << " topics have zero probability mass."
           << " Consider reducing values of ModelConfig.regularizer_tau"
+          << " (or ModelConfig.regularizer_settings.tau)"
           << " for model '" << model_name << "', class_id=" << iter.first;
       }
     }

@@ -112,6 +112,13 @@ message MasterProxyConfig {
 
 // Represents a configuration of a topic model.
 message ModelConfig {
+  message RegularizerSettings {
+    optional string name = 1;
+    optional double tau = 2;
+    optional bool use_relative_regularization = 3;
+    optional double gamma = 4;
+  }
+
   optional string name = 1 [default = "@model"];
   optional int32 topics_count = 2 [default = 32];
   repeated string topic_name = 3;
@@ -129,9 +136,7 @@ message ModelConfig {
   optional bool use_random_theta = 15 [default = false];
   optional bool use_new_tokens = 16 [default = true];
   optional bool opt_for_avx = 17 [default = true];
-  repeated double regularizer_gamma = 18;
-  optional bool use_relative_regularizers_phi = 19 [default = false];
-  optional bool use_relative_regularizers_theta = 20 [default = false];
+  repeated RegularizerSettings regularizer_settings = 18;
 }
 
 // Represents a configuration of a general regularizer

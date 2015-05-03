@@ -67,6 +67,15 @@ int TokenCollection::token_size() const {
   return token_to_token_id_.size();
 }
 
+TokenCollectionWeights::TokenCollectionWeights(int token_size, int topic_size)
+  : topic_size_(topic_size) {
+  for (int i = 0; i < token_size; ++i) {
+    float* values = new float[topic_size];
+    values_.push_back(values);
+    memset(values, 0, sizeof(float) * topic_size);
+  }
+}
+
 void TokenCollectionWeights::Reset() {
   std::for_each(values_.begin(), values_.end(), [&](float* value) {
     for (int i = 0; i < topic_size_; ++i) value[i] = 0.0f;
@@ -83,7 +92,7 @@ void TokenCollectionWeights::Clear() {
 int TokenCollectionWeights::AddToken() {
   float* values = new float[topic_size_];
   values_.push_back(values);
-  memset(values, 0, sizeof(float)* topic_size_);
+  memset(values, 0, sizeof(float) * topic_size_);
   return values_.size() - 1;
 }
 
@@ -470,30 +479,40 @@ void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
   }
 }
 
-void TopicModel::UpdateNwt(const TokenCollectionWeights& r_wt) {
+void TopicModel::FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeights* p_wt) const {
   const int topic_size = this->topic_size();
   const int token_size = this->token_size();
 
   if (topic_size == 0 || token_size == 0) {
-    LOG(WARNING) << "Attempt to update an empty matrix";
+    LOG(WARNING) << "Attempt to calculate p_wt for empty matrix";
     return;
   }
 
-  if (topic_size != r_wt.topic_size() || token_size != r_wt.size()) {
-    LOG(WARNING) << "Attempt to update n_wt with r_wt is impossible due to different sizes";
-    return;
-  }
-
+  p_wt->Clear();
+  std::map<ClassId, std::vector<float> > n_t = FindNormalizers();
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-      float value = std::max<float>(n_wt_[token_id][topic_id] + r_wt[token_id][topic_id], 0.0f);
+    const Token& token = this->token(token_id);
+    int token_id2 = p_wt->AddToken(token, false);
+    assert(token_id == token_id2);
+
+    const float* nwt = n_wt_.at(token_id);
+    const float* rwt = r_wt.empty() ? nullptr : r_wt.at(token_id);
+    float *pwt = p_wt->at(token_id);
+
+    const std::vector<float>& nt = n_t[token.class_id];
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+      if (nt[topic_index] <= 0)
+        continue;
+
+      float rwt_value = ((rwt == nullptr) ? 0.0f : rwt[topic_index]);
+      float value = std::max<float>(nwt[topic_index] + rwt_value, 0.0f) / nt[topic_index];
       if (value < 1e-16) {
         // Reset small values to 0.0 to avoid performance hit.
         // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
         // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
         value = 0.0f;
       }
-      n_wt_[token_id][topic_id] = value;
+      pwt[topic_index] = value;
     }
   }
 }
