@@ -425,7 +425,7 @@ ModelName TopicModel::model_name() const {
   return model_name_;
 }
 
-std::map<ClassId, std::vector<float> > TopicModel::FindNormalizers() const {
+std::map<ClassId, std::vector<float> > TopicModel::FindNormalizers(const TokenCollectionWeights& r_wt_) const {
   std::map<ClassId, std::vector<float> > retval;
   for (int token_id = 0; token_id < token_size(); ++token_id) {
     const Token& token = this->token(token_id);
@@ -436,47 +436,15 @@ std::map<ClassId, std::vector<float> > TopicModel::FindNormalizers() const {
     }
 
     const float* n_wt = n_wt_[token_id];
-    for (int topic_id = 0; topic_id < topic_size(); ++topic_id)
-      iter->second[topic_id] += n_wt[topic_id];
+    const float* r_wt = r_wt_.empty() ? nullptr : r_wt_[token_id];
+    for (int topic_id = 0; topic_id < topic_size(); ++topic_id) {
+      const float sum = n_wt[topic_id] + ((r_wt == nullptr) ? 0.0f : r_wt[topic_id]);
+      if (sum > 0)
+        iter->second[topic_id] += sum;
+    }
   }
 
   return retval;
-}
-
-void TopicModel::FindPwt(TokenCollectionWeights *p_wt) const {
-  const int topic_size = this->topic_size();
-  const int token_size = this->token_size();
-
-  if (topic_size == 0 || token_size == 0) {
-    LOG(WARNING) << "Attempt to calculate p_wt for empty matrix";
-    return;
-  }
-
-  p_wt->Clear();
-  std::map<ClassId, std::vector<float> > n_t = FindNormalizers();
-  for (int token_id = 0; token_id < token_size; ++token_id) {
-    const Token& token = this->token(token_id);
-    int token_id2 = p_wt->AddToken(token, false);
-    assert(token_id == token_id2);
-
-    const float* nwt = n_wt_.at(token_id);
-    float *pwt = p_wt->at(token_id);
-
-    const std::vector<float>& nt = n_t[token.class_id];
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      if (nt[topic_index] <= 0)
-        continue;
-
-      float value = nwt[topic_index] / nt[topic_index];
-      if (value < 1e-16) {
-        // Reset small values to 0.0 to avoid performance hit.
-        // http://en.wikipedia.org/wiki/Denormal_number#Performance_issues
-        // http://stackoverflow.com/questions/13964606/inconsistent-multiplication-performance-with-floats
-        value = 0.0f;
-      }
-      pwt[topic_index] = value;
-    }
-  }
 }
 
 void TopicModel::FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeights* p_wt) const {
@@ -489,7 +457,7 @@ void TopicModel::FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeig
   }
 
   p_wt->Clear();
-  std::map<ClassId, std::vector<float> > n_t = FindNormalizers();
+  std::map<ClassId, std::vector<float> > n_t = FindNormalizers(r_wt);
   for (int token_id = 0; token_id < token_size; ++token_id) {
     const Token& token = this->token(token_id);
     int token_id2 = p_wt->AddToken(token, false);
