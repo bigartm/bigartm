@@ -187,6 +187,12 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* WaitIdleArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   WaitIdleArgs_reflection_ = NULL;
+const ::google::protobuf::Descriptor* ExportModelArgs_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ExportModelArgs_reflection_ = NULL;
+const ::google::protobuf::Descriptor* ImportModelArgs_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ImportModelArgs_reflection_ = NULL;
 
 }  // namespace
 
@@ -1158,6 +1164,38 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(WaitIdleArgs));
+  ExportModelArgs_descriptor_ = file->message_type(49);
+  static const int ExportModelArgs_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ExportModelArgs, file_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ExportModelArgs, model_name_),
+  };
+  ExportModelArgs_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ExportModelArgs_descriptor_,
+      ExportModelArgs::default_instance_,
+      ExportModelArgs_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ExportModelArgs, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ExportModelArgs, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(ExportModelArgs));
+  ImportModelArgs_descriptor_ = file->message_type(50);
+  static const int ImportModelArgs_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportModelArgs, file_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportModelArgs, model_name_),
+  };
+  ImportModelArgs_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ImportModelArgs_descriptor_,
+      ImportModelArgs::default_instance_,
+      ImportModelArgs_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportModelArgs, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportModelArgs, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(ImportModelArgs));
 }
 
 namespace {
@@ -1274,6 +1312,10 @@ void protobuf_RegisterTypes(const ::std::string&) {
     InvokeIterationArgs_descriptor_, &InvokeIterationArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     WaitIdleArgs_descriptor_, &WaitIdleArgs::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ExportModelArgs_descriptor_, &ExportModelArgs::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ImportModelArgs_descriptor_, &ImportModelArgs::default_instance());
 }
 
 }  // namespace
@@ -1398,6 +1440,10 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete InvokeIterationArgs_reflection_;
   delete WaitIdleArgs::default_instance_;
   delete WaitIdleArgs_reflection_;
+  delete ExportModelArgs::default_instance_;
+  delete ExportModelArgs_reflection_;
+  delete ImportModelArgs::default_instance_;
+  delete ImportModelArgs_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fmessages_2eproto() {
@@ -1597,7 +1643,10 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "e\030\004 \001(\t\"a\n\023InvokeIterationArgs\022\033\n\020iterat"
     "ions_count\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001("
     "\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014WaitIdleAr"
-    "gs\022 \n\024timeout_milliseconds\030\001 \001(\005:\002-1", 7636);
+    "gs\022 \n\024timeout_milliseconds\030\001 \001(\005:\002-1\"8\n\017"
+    "ExportModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmo"
+    "del_name\030\002 \001(\t\"8\n\017ImportModelArgs\022\021\n\tfil"
+    "e_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t", 7752);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -1682,6 +1731,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   AddBatchArgs::default_instance_ = new AddBatchArgs();
   InvokeIterationArgs::default_instance_ = new InvokeIterationArgs();
   WaitIdleArgs::default_instance_ = new WaitIdleArgs();
+  ExportModelArgs::default_instance_ = new ExportModelArgs();
+  ImportModelArgs::default_instance_ = new ImportModelArgs();
   DoubleArray::default_instance_->InitAsDefaultInstance();
   FloatArray::default_instance_->InitAsDefaultInstance();
   BoolArray::default_instance_->InitAsDefaultInstance();
@@ -1734,6 +1785,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   AddBatchArgs::default_instance_->InitAsDefaultInstance();
   InvokeIterationArgs::default_instance_->InitAsDefaultInstance();
   WaitIdleArgs::default_instance_->InitAsDefaultInstance();
+  ExportModelArgs::default_instance_->InitAsDefaultInstance();
+  ImportModelArgs::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fmessages_2eproto);
 }
 
@@ -21109,6 +21162,570 @@ void WaitIdleArgs::Swap(WaitIdleArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = WaitIdleArgs_descriptor_;
   metadata.reflection = WaitIdleArgs_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int ExportModelArgs::kFileNameFieldNumber;
+const int ExportModelArgs::kModelNameFieldNumber;
+#endif  // !_MSC_VER
+
+ExportModelArgs::ExportModelArgs()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void ExportModelArgs::InitAsDefaultInstance() {
+}
+
+ExportModelArgs::ExportModelArgs(const ExportModelArgs& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void ExportModelArgs::SharedCtor() {
+  _cached_size_ = 0;
+  file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ExportModelArgs::~ExportModelArgs() {
+  SharedDtor();
+}
+
+void ExportModelArgs::SharedDtor() {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete file_name_;
+  }
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void ExportModelArgs::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ExportModelArgs::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ExportModelArgs_descriptor_;
+}
+
+const ExportModelArgs& ExportModelArgs::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
+  return *default_instance_;
+}
+
+ExportModelArgs* ExportModelArgs::default_instance_ = NULL;
+
+ExportModelArgs* ExportModelArgs::New() const {
+  return new ExportModelArgs;
+}
+
+void ExportModelArgs::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_file_name()) {
+      if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        file_name_->clear();
+      }
+    }
+    if (has_model_name()) {
+      if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        model_name_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool ExportModelArgs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string file_name = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_file_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->file_name().data(), this->file_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_model_name;
+        break;
+      }
+
+      // optional string model_name = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_model_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_model_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->model_name().data(), this->model_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void ExportModelArgs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string file_name = 1;
+  if (has_file_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->file_name().data(), this->file_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->file_name(), output);
+  }
+
+  // optional string model_name = 2;
+  if (has_model_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->model_name().data(), this->model_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->model_name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* ExportModelArgs::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string file_name = 1;
+  if (has_file_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->file_name().data(), this->file_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->file_name(), target);
+  }
+
+  // optional string model_name = 2;
+  if (has_model_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->model_name().data(), this->model_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->model_name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int ExportModelArgs::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string file_name = 1;
+    if (has_file_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->file_name());
+    }
+
+    // optional string model_name = 2;
+    if (has_model_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->model_name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ExportModelArgs::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const ExportModelArgs* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ExportModelArgs*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void ExportModelArgs::MergeFrom(const ExportModelArgs& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_file_name()) {
+      set_file_name(from.file_name());
+    }
+    if (from.has_model_name()) {
+      set_model_name(from.model_name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void ExportModelArgs::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ExportModelArgs::CopyFrom(const ExportModelArgs& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ExportModelArgs::IsInitialized() const {
+
+  return true;
+}
+
+void ExportModelArgs::Swap(ExportModelArgs* other) {
+  if (other != this) {
+    std::swap(file_name_, other->file_name_);
+    std::swap(model_name_, other->model_name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata ExportModelArgs::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ExportModelArgs_descriptor_;
+  metadata.reflection = ExportModelArgs_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int ImportModelArgs::kFileNameFieldNumber;
+const int ImportModelArgs::kModelNameFieldNumber;
+#endif  // !_MSC_VER
+
+ImportModelArgs::ImportModelArgs()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void ImportModelArgs::InitAsDefaultInstance() {
+}
+
+ImportModelArgs::ImportModelArgs(const ImportModelArgs& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void ImportModelArgs::SharedCtor() {
+  _cached_size_ = 0;
+  file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ImportModelArgs::~ImportModelArgs() {
+  SharedDtor();
+}
+
+void ImportModelArgs::SharedDtor() {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete file_name_;
+  }
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void ImportModelArgs::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ImportModelArgs::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ImportModelArgs_descriptor_;
+}
+
+const ImportModelArgs& ImportModelArgs::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
+  return *default_instance_;
+}
+
+ImportModelArgs* ImportModelArgs::default_instance_ = NULL;
+
+ImportModelArgs* ImportModelArgs::New() const {
+  return new ImportModelArgs;
+}
+
+void ImportModelArgs::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_file_name()) {
+      if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        file_name_->clear();
+      }
+    }
+    if (has_model_name()) {
+      if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        model_name_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool ImportModelArgs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string file_name = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_file_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->file_name().data(), this->file_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_model_name;
+        break;
+      }
+
+      // optional string model_name = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_model_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_model_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->model_name().data(), this->model_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void ImportModelArgs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string file_name = 1;
+  if (has_file_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->file_name().data(), this->file_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->file_name(), output);
+  }
+
+  // optional string model_name = 2;
+  if (has_model_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->model_name().data(), this->model_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->model_name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* ImportModelArgs::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string file_name = 1;
+  if (has_file_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->file_name().data(), this->file_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->file_name(), target);
+  }
+
+  // optional string model_name = 2;
+  if (has_model_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->model_name().data(), this->model_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->model_name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int ImportModelArgs::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string file_name = 1;
+    if (has_file_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->file_name());
+    }
+
+    // optional string model_name = 2;
+    if (has_model_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->model_name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ImportModelArgs::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const ImportModelArgs* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ImportModelArgs*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void ImportModelArgs::MergeFrom(const ImportModelArgs& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_file_name()) {
+      set_file_name(from.file_name());
+    }
+    if (from.has_model_name()) {
+      set_model_name(from.model_name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void ImportModelArgs::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ImportModelArgs::CopyFrom(const ImportModelArgs& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ImportModelArgs::IsInitialized() const {
+
+  return true;
+}
+
+void ImportModelArgs::Swap(ImportModelArgs* other) {
+  if (other != this) {
+    std::swap(file_name_, other->file_name_);
+    std::swap(model_name_, other->model_name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata ImportModelArgs::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ImportModelArgs_descriptor_;
+  metadata.reflection = ImportModelArgs_reflection_;
   return metadata;
 }
 

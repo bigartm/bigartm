@@ -78,6 +78,8 @@ class MasterComponent : boost::noncopyable {
   bool WaitIdle(const WaitIdleArgs& args);
   void InvokeIteration(const InvokeIterationArgs& args);
   void SynchronizeModel(const SynchronizeModelArgs& args);
+  void ExportModel(const ExportModelArgs& args);
+  void ImportModel(const ImportModelArgs& args);
   void InitializeModel(const InitializeModelArgs& args);
   bool AddBatch(const AddBatchArgs& args);
 

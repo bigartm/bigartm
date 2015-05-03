@@ -86,6 +86,8 @@ class GetScoreValueArgs;
 class AddBatchArgs;
 class InvokeIterationArgs;
 class WaitIdleArgs;
+class ExportModelArgs;
+class ImportModelArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -7244,6 +7246,210 @@ class WaitIdleArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static WaitIdleArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ExportModelArgs : public ::google::protobuf::Message {
+ public:
+  ExportModelArgs();
+  virtual ~ExportModelArgs();
+
+  ExportModelArgs(const ExportModelArgs& from);
+
+  inline ExportModelArgs& operator=(const ExportModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ExportModelArgs& default_instance();
+
+  void Swap(ExportModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ExportModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ExportModelArgs& from);
+  void MergeFrom(const ExportModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string file_name = 1;
+  inline bool has_file_name() const;
+  inline void clear_file_name();
+  static const int kFileNameFieldNumber = 1;
+  inline const ::std::string& file_name() const;
+  inline void set_file_name(const ::std::string& value);
+  inline void set_file_name(const char* value);
+  inline void set_file_name(const char* value, size_t size);
+  inline ::std::string* mutable_file_name();
+  inline ::std::string* release_file_name();
+  inline void set_allocated_file_name(::std::string* file_name);
+
+  // optional string model_name = 2;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 2;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // @@protoc_insertion_point(class_scope:artm.ExportModelArgs)
+ private:
+  inline void set_has_file_name();
+  inline void clear_has_file_name();
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* file_name_;
+  ::std::string* model_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ExportModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ImportModelArgs : public ::google::protobuf::Message {
+ public:
+  ImportModelArgs();
+  virtual ~ImportModelArgs();
+
+  ImportModelArgs(const ImportModelArgs& from);
+
+  inline ImportModelArgs& operator=(const ImportModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ImportModelArgs& default_instance();
+
+  void Swap(ImportModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ImportModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ImportModelArgs& from);
+  void MergeFrom(const ImportModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string file_name = 1;
+  inline bool has_file_name() const;
+  inline void clear_file_name();
+  static const int kFileNameFieldNumber = 1;
+  inline const ::std::string& file_name() const;
+  inline void set_file_name(const ::std::string& value);
+  inline void set_file_name(const char* value);
+  inline void set_file_name(const char* value, size_t size);
+  inline ::std::string* mutable_file_name();
+  inline ::std::string* release_file_name();
+  inline void set_allocated_file_name(::std::string* file_name);
+
+  // optional string model_name = 2;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 2;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // @@protoc_insertion_point(class_scope:artm.ImportModelArgs)
+ private:
+  inline void set_has_file_name();
+  inline void clear_has_file_name();
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* file_name_;
+  ::std::string* model_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ImportModelArgs* default_instance_;
 };
 // ===================================================================
 
@@ -16233,6 +16439,294 @@ inline ::google::protobuf::int32 WaitIdleArgs::timeout_milliseconds() const {
 inline void WaitIdleArgs::set_timeout_milliseconds(::google::protobuf::int32 value) {
   set_has_timeout_milliseconds();
   timeout_milliseconds_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// ExportModelArgs
+
+// optional string file_name = 1;
+inline bool ExportModelArgs::has_file_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ExportModelArgs::set_has_file_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ExportModelArgs::clear_has_file_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ExportModelArgs::clear_file_name() {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    file_name_->clear();
+  }
+  clear_has_file_name();
+}
+inline const ::std::string& ExportModelArgs::file_name() const {
+  return *file_name_;
+}
+inline void ExportModelArgs::set_file_name(const ::std::string& value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ExportModelArgs::set_file_name(const char* value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ExportModelArgs::set_file_name(const char* value, size_t size) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ExportModelArgs::mutable_file_name() {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  return file_name_;
+}
+inline ::std::string* ExportModelArgs::release_file_name() {
+  clear_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = file_name_;
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ExportModelArgs::set_allocated_file_name(::std::string* file_name) {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete file_name_;
+  }
+  if (file_name) {
+    set_has_file_name();
+    file_name_ = file_name;
+  } else {
+    clear_has_file_name();
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string model_name = 2;
+inline bool ExportModelArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ExportModelArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ExportModelArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ExportModelArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& ExportModelArgs::model_name() const {
+  return *model_name_;
+}
+inline void ExportModelArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ExportModelArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ExportModelArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ExportModelArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* ExportModelArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ExportModelArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// ImportModelArgs
+
+// optional string file_name = 1;
+inline bool ImportModelArgs::has_file_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ImportModelArgs::set_has_file_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ImportModelArgs::clear_has_file_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ImportModelArgs::clear_file_name() {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    file_name_->clear();
+  }
+  clear_has_file_name();
+}
+inline const ::std::string& ImportModelArgs::file_name() const {
+  return *file_name_;
+}
+inline void ImportModelArgs::set_file_name(const ::std::string& value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ImportModelArgs::set_file_name(const char* value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ImportModelArgs::set_file_name(const char* value, size_t size) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportModelArgs::mutable_file_name() {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  return file_name_;
+}
+inline ::std::string* ImportModelArgs::release_file_name() {
+  clear_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = file_name_;
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImportModelArgs::set_allocated_file_name(::std::string* file_name) {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete file_name_;
+  }
+  if (file_name) {
+    set_has_file_name();
+    file_name_ = file_name;
+  } else {
+    clear_has_file_name();
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string model_name = 2;
+inline bool ImportModelArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ImportModelArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ImportModelArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ImportModelArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& ImportModelArgs::model_name() const {
+  return *model_name_;
+}
+inline void ImportModelArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ImportModelArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ImportModelArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportModelArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* ImportModelArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImportModelArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 

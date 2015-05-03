@@ -125,6 +125,14 @@ Model
      Initialize topic model based on the :cpp:class:`Dictionary`.
      Each token from the dictionary will be included in the model with randomly generated weight.
 
+  .. cpp:function:: void Export(const string& file_name)
+
+     Exports topic model into a file.
+
+  .. cpp:function:: void Import(const string& file_name)
+
+     Imports topic model from a file.
+
   .. cpp:function:: void Synchronize(double decay_weight, double apply_weight, bool invoke_regularizers)
 
      Synchronize the model.

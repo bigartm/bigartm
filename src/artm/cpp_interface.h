@@ -123,6 +123,8 @@ class Model {
   void Overwrite(const TopicModel& topic_model);
   void Overwrite(const TopicModel& topic_model, bool commit);
   void Initialize(const Dictionary& dictionary);
+  void Export(const std::string& file_name);
+  void Import(const std::string& file_name);
   void Enable();
   void Disable();
   void Synchronize(double decay);
@@ -134,6 +136,7 @@ class Model {
 
   const ModelConfig& config() const { return config_; }
   ModelConfig* mutable_config() { return &config_; }
+
  private:
   int master_id_;
   ModelConfig config_;

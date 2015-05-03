@@ -654,6 +654,24 @@ class Model:
             self.master_component.WaitIdle()
             self.Synchronize(decay_weight=0.0, apply_weight=1.0, invoke_regularizers=False)
 
+    def Export(self, filename):
+        args = messages_pb2.ExportModelArgs()
+        args.model_name = self.name()
+        args.file_name = filename
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmExportModel(self.master_id_, len(blob), blob_p))
+
+    def Import(self, filename):
+        args = messages_pb2.ImportModelArgs()
+        args.model_name = self.name()
+        args.file_name = filename
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmImportModel(self.master_id_, len(blob), blob_p))
+
     def Enable(self):
         config_copy_ = messages_pb2.ModelConfig()
         config_copy_.CopyFrom(self.config_)

@@ -391,6 +391,45 @@ ArtmInitializeModel
             otherwise returns one of the :ref:`error codes <error-codes>`.
 
 
+ArtmExportModel
+---------------
+
+.. c:function::  int ArtmExportModel(int master_id, int length, const char* export_model_args)
+
+   Exports phi matrix into a file.
+
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
+
+   :param const_char* export_model_args:
+      Serialized :ref:`ExportModelArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the *export_model_args* message.
+
+   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
+            otherwise returns one of the :ref:`error codes <error-codes>`.
+
+
+ArtmImportModel
+---------------
+
+.. c:function::  int ArtmImportModel(int master_id, int length, const char* import_model_args)
+
+   Import phi matrix from a file.
+
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
+
+   :param const_char* import_model_args:
+      Serialized :ref:`ImportModelArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the *import_model_args* message.
+
+   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
+            otherwise returns one of the :ref:`error codes <error-codes>`.
+
 ArtmWaitIdle
 ------------
 

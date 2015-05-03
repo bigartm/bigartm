@@ -320,6 +320,14 @@ Model
       
       For more settings use *args* parameter (see :ref:`InitializeModelArgs` for all available options).
 
+   .. py:method:: Export(filename)
+
+      Exports topic model into a file.
+
+   .. py:method:: Import(filename)
+
+      Imports topic model from a file.
+
    .. py:method:: Overwrite(topic_model, commit = True)
 
       Updates the model with new Phi matrix, defined by *topic_model* (:ref:`TopicModel`).

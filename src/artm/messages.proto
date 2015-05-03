@@ -495,3 +495,13 @@ message InvokeIterationArgs {
 message WaitIdleArgs {
   optional int32 timeout_milliseconds = 1 [default = -1];
 }
+
+message ExportModelArgs {
+  optional string file_name = 1;
+  optional string model_name = 2;
+}
+
+message ImportModelArgs {
+  optional string file_name = 1;
+  optional string model_name = 2;
+}

@@ -2203,3 +2203,51 @@ Represents an argument of :c:func:`ArtmWaitIdle` operation.
 .. attribute:: WaitIdleArgs.timeout_milliseconds
 
   Timeout in milliseconds for this operation.
+
+
+.. _ExportModelArgs:
+
+ExportModelArgs
+===============
+
+Represents an argument of :c:func:`ArtmExportModel` operation.
+
+.. code-block:: bash
+
+   message ExportModelArgs {
+     optional string file_name = 1;
+     optional string model_name = 2;
+   }
+
+.. attribute:: ExportModelArgs.file_name
+
+   A target file name where to store topic model.
+
+.. attribute:: ExportModelArgs.model_name
+
+   A value that describes the name of the topic model.
+   This name will match the name of the corresponding model config.
+
+
+.. _ImportModelArgs:
+
+ImportModelArgs
+===============
+
+Represents an argument of :c:func:`ArtmImportModel` operation.
+
+.. code-block:: bash
+
+   message ImportModelArgs {
+     optional string file_name = 1;
+     optional string model_name = 2;
+   }
+
+.. attribute:: ImportModelArgs.file_name
+
+   A target file name from where to load topic model.
+
+.. attribute:: ImportModelArgs.model_name
+
+   A value that describes the name of the topic model.
+   This name will match the name of the corresponding model config.

@@ -257,6 +257,26 @@ int ArtmInitializeModel(int master_id, int length, const char* init_model_args) 
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmExportModel(int master_id, int length, const char* export_model_args) {
+  try {
+    artm::ExportModelArgs args;
+    ParseFromArray(export_model_args, length, &args);
+    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
+    master_component(master_id)->ExportModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmImportModel(int master_id, int length, const char* init_model_args) {
+  try {
+    artm::ImportModelArgs args;
+    ParseFromArray(init_model_args, length, &args);
+    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
+    master_component(master_id)->ImportModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmDisposeMasterComponent(int master_id) {
   try {
     artm::core::MasterComponentManager::singleton().Erase(master_id);
