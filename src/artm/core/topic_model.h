@@ -169,10 +169,11 @@ class TopicModel : public Regularizable {
   int token_id(const Token& token) const { return token_collection_.token_id(token); }
   const Token& token(int index) const { return token_collection_.token(index); }
 
-  std::map<ClassId, std::vector<float> > FindNormalizers() const;
+  std::map<ClassId, std::vector<float> > FindNormalizers(const TokenCollectionWeights& r_wt) const;
+  std::map<ClassId, std::vector<float> > FindNormalizers() const { return FindNormalizers(TokenCollectionWeights(0)); }
 
   // find p_wt matrix without regularization
-  virtual void FindPwt(TokenCollectionWeights* p_wt) const;
+  virtual void FindPwt(TokenCollectionWeights* p_wt) const { return FindPwt(TokenCollectionWeights(0), p_wt); }
   // find p_wt matrix with regularization additions r_wt
   virtual void FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeights* p_wt) const;
 
