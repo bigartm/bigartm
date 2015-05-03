@@ -31,6 +31,8 @@ class SmoothSparseTheta : public RegularizerInterface {
   virtual std::shared_ptr<RegularizeThetaAgent>
   CreateRegularizeThetaAgent(const Batch& batch, const ModelConfig& model_config, double tau);
 
+  virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
+
   virtual bool Reconfigure(const RegularizerConfig& config);
 
  private:

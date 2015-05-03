@@ -47,6 +47,7 @@ class MasterComponentConfig;
 class NodeControllerConfig;
 class MasterProxyConfig;
 class ModelConfig;
+class ModelConfig_RegularizerSettings;
 class RegularizerConfig;
 class SmoothSparseThetaConfig;
 class SmoothSparsePhiConfig;
@@ -1873,6 +1874,123 @@ class MasterProxyConfig : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class ModelConfig_RegularizerSettings : public ::google::protobuf::Message {
+ public:
+  ModelConfig_RegularizerSettings();
+  virtual ~ModelConfig_RegularizerSettings();
+
+  ModelConfig_RegularizerSettings(const ModelConfig_RegularizerSettings& from);
+
+  inline ModelConfig_RegularizerSettings& operator=(const ModelConfig_RegularizerSettings& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ModelConfig_RegularizerSettings& default_instance();
+
+  void Swap(ModelConfig_RegularizerSettings* other);
+
+  // implements Message ----------------------------------------------
+
+  ModelConfig_RegularizerSettings* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ModelConfig_RegularizerSettings& from);
+  void MergeFrom(const ModelConfig_RegularizerSettings& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // optional double tau = 2;
+  inline bool has_tau() const;
+  inline void clear_tau();
+  static const int kTauFieldNumber = 2;
+  inline double tau() const;
+  inline void set_tau(double value);
+
+  // optional bool use_relative_regularization = 3;
+  inline bool has_use_relative_regularization() const;
+  inline void clear_use_relative_regularization();
+  static const int kUseRelativeRegularizationFieldNumber = 3;
+  inline bool use_relative_regularization() const;
+  inline void set_use_relative_regularization(bool value);
+
+  // optional double gamma = 4;
+  inline bool has_gamma() const;
+  inline void clear_gamma();
+  static const int kGammaFieldNumber = 4;
+  inline double gamma() const;
+  inline void set_gamma(double value);
+
+  // @@protoc_insertion_point(class_scope:artm.ModelConfig.RegularizerSettings)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_tau();
+  inline void clear_has_tau();
+  inline void set_has_use_relative_regularization();
+  inline void clear_has_use_relative_regularization();
+  inline void set_has_gamma();
+  inline void clear_has_gamma();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  double tau_;
+  double gamma_;
+  bool use_relative_regularization_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ModelConfig_RegularizerSettings* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class ModelConfig : public ::google::protobuf::Message {
  public:
   ModelConfig();
@@ -1924,6 +2042,8 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
+
+  typedef ModelConfig_RegularizerSettings RegularizerSettings;
 
   // accessors -------------------------------------------------------
 
@@ -2107,6 +2227,18 @@ class ModelConfig : public ::google::protobuf::Message {
   inline bool opt_for_avx() const;
   inline void set_opt_for_avx(bool value);
 
+  // repeated .artm.ModelConfig.RegularizerSettings regularizer_settings = 18;
+  inline int regularizer_settings_size() const;
+  inline void clear_regularizer_settings();
+  static const int kRegularizerSettingsFieldNumber = 18;
+  inline const ::artm::ModelConfig_RegularizerSettings& regularizer_settings(int index) const;
+  inline ::artm::ModelConfig_RegularizerSettings* mutable_regularizer_settings(int index);
+  inline ::artm::ModelConfig_RegularizerSettings* add_regularizer_settings();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::ModelConfig_RegularizerSettings >&
+      regularizer_settings() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::ModelConfig_RegularizerSettings >*
+      mutable_regularizer_settings();
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2154,9 +2286,10 @@ class ModelConfig : public ::google::protobuf::Message {
   bool use_new_tokens_;
   bool opt_for_avx_;
   ::google::protobuf::RepeatedField< float > class_weight_;
+  ::google::protobuf::RepeatedPtrField< ::artm::ModelConfig_RegularizerSettings > regularizer_settings_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5392,28 +5525,15 @@ class TopicModel_TopicModelInternals : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
       mutable_n_wt();
 
-  // repeated .artm.FloatArray r_wt = 2;
-  inline int r_wt_size() const;
-  inline void clear_r_wt();
-  static const int kRWtFieldNumber = 2;
-  inline const ::artm::FloatArray& r_wt(int index) const;
-  inline ::artm::FloatArray* mutable_r_wt(int index);
-  inline ::artm::FloatArray* add_r_wt();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-      r_wt() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-      mutable_r_wt();
-
   // @@protoc_insertion_point(class_scope:artm.TopicModel.TopicModelInternals)
  private:
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > n_wt_;
-  ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > r_wt_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9192,6 +9312,146 @@ inline void MasterProxyConfig::set_polling_frequency(::google::protobuf::int32 v
 
 // -------------------------------------------------------------------
 
+// ModelConfig_RegularizerSettings
+
+// optional string name = 1;
+inline bool ModelConfig_RegularizerSettings::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ModelConfig_RegularizerSettings::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ModelConfig_RegularizerSettings::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ModelConfig_RegularizerSettings::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& ModelConfig_RegularizerSettings::name() const {
+  return *name_;
+}
+inline void ModelConfig_RegularizerSettings::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void ModelConfig_RegularizerSettings::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void ModelConfig_RegularizerSettings::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ModelConfig_RegularizerSettings::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* ModelConfig_RegularizerSettings::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ModelConfig_RegularizerSettings::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional double tau = 2;
+inline bool ModelConfig_RegularizerSettings::has_tau() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ModelConfig_RegularizerSettings::set_has_tau() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ModelConfig_RegularizerSettings::clear_has_tau() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ModelConfig_RegularizerSettings::clear_tau() {
+  tau_ = 0;
+  clear_has_tau();
+}
+inline double ModelConfig_RegularizerSettings::tau() const {
+  return tau_;
+}
+inline void ModelConfig_RegularizerSettings::set_tau(double value) {
+  set_has_tau();
+  tau_ = value;
+}
+
+// optional bool use_relative_regularization = 3;
+inline bool ModelConfig_RegularizerSettings::has_use_relative_regularization() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ModelConfig_RegularizerSettings::set_has_use_relative_regularization() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ModelConfig_RegularizerSettings::clear_has_use_relative_regularization() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ModelConfig_RegularizerSettings::clear_use_relative_regularization() {
+  use_relative_regularization_ = false;
+  clear_has_use_relative_regularization();
+}
+inline bool ModelConfig_RegularizerSettings::use_relative_regularization() const {
+  return use_relative_regularization_;
+}
+inline void ModelConfig_RegularizerSettings::set_use_relative_regularization(bool value) {
+  set_has_use_relative_regularization();
+  use_relative_regularization_ = value;
+}
+
+// optional double gamma = 4;
+inline bool ModelConfig_RegularizerSettings::has_gamma() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ModelConfig_RegularizerSettings::set_has_gamma() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ModelConfig_RegularizerSettings::clear_has_gamma() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ModelConfig_RegularizerSettings::clear_gamma() {
+  gamma_ = 0;
+  clear_has_gamma();
+}
+inline double ModelConfig_RegularizerSettings::gamma() const {
+  return gamma_;
+}
+inline void ModelConfig_RegularizerSettings::set_gamma(double value) {
+  set_has_gamma();
+  gamma_ = value;
+}
+
+// -------------------------------------------------------------------
+
 // ModelConfig
 
 // optional string name = 1 [default = "@model"];
@@ -9804,6 +10064,31 @@ inline bool ModelConfig::opt_for_avx() const {
 inline void ModelConfig::set_opt_for_avx(bool value) {
   set_has_opt_for_avx();
   opt_for_avx_ = value;
+}
+
+// repeated .artm.ModelConfig.RegularizerSettings regularizer_settings = 18;
+inline int ModelConfig::regularizer_settings_size() const {
+  return regularizer_settings_.size();
+}
+inline void ModelConfig::clear_regularizer_settings() {
+  regularizer_settings_.Clear();
+}
+inline const ::artm::ModelConfig_RegularizerSettings& ModelConfig::regularizer_settings(int index) const {
+  return regularizer_settings_.Get(index);
+}
+inline ::artm::ModelConfig_RegularizerSettings* ModelConfig::mutable_regularizer_settings(int index) {
+  return regularizer_settings_.Mutable(index);
+}
+inline ::artm::ModelConfig_RegularizerSettings* ModelConfig::add_regularizer_settings() {
+  return regularizer_settings_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::ModelConfig_RegularizerSettings >&
+ModelConfig::regularizer_settings() const {
+  return regularizer_settings_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::ModelConfig_RegularizerSettings >*
+ModelConfig::mutable_regularizer_settings() {
+  return &regularizer_settings_;
 }
 
 // -------------------------------------------------------------------
@@ -13515,31 +13800,6 @@ TopicModel_TopicModelInternals::n_wt() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
 TopicModel_TopicModelInternals::mutable_n_wt() {
   return &n_wt_;
-}
-
-// repeated .artm.FloatArray r_wt = 2;
-inline int TopicModel_TopicModelInternals::r_wt_size() const {
-  return r_wt_.size();
-}
-inline void TopicModel_TopicModelInternals::clear_r_wt() {
-  r_wt_.Clear();
-}
-inline const ::artm::FloatArray& TopicModel_TopicModelInternals::r_wt(int index) const {
-  return r_wt_.Get(index);
-}
-inline ::artm::FloatArray* TopicModel_TopicModelInternals::mutable_r_wt(int index) {
-  return r_wt_.Mutable(index);
-}
-inline ::artm::FloatArray* TopicModel_TopicModelInternals::add_r_wt() {
-  return r_wt_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >&
-TopicModel_TopicModelInternals::r_wt() const {
-  return r_wt_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::FloatArray >*
-TopicModel_TopicModelInternals::mutable_r_wt() {
-  return &r_wt_;
 }
 
 // -------------------------------------------------------------------

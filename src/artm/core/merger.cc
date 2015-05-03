@@ -10,6 +10,8 @@
 
 #include "boost/lexical_cast.hpp"
 #include "boost/exception/diagnostic_information.hpp"
+#include "boost/range/adaptor/map.hpp"
+#include "boost/range/algorithm/copy.hpp"
 
 #include "glog/logging.h"
 
@@ -21,6 +23,7 @@
 #include "artm/core/helpers.h"
 #include "artm/core/topic_model.h"
 #include "artm/core/instance_schema.h"
+#include "artm/core/protobuf_helpers.h"
 
 using ::artm::core::MasterComponentService_Stub;
 
@@ -117,30 +120,120 @@ Merger::GetLatestTopicModel(ModelName model_name) const {
   return topic_model_.get(model_name);
 }
 
-void Merger::InvokePhiRegularizers(::artm::core::TopicModel* topic_model) {
+void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
+                                   ::artm::core::TokenCollectionWeights* global_r_wt) {
   auto schema = schema_->get();
-  auto& model = schema->model_config(topic_model->model_name());
-  auto& reg_names = model.regularizer_name();
-  auto& reg_tau = model.regularizer_tau();
+  auto& model = schema->model_config(topic_model.model_name());
+  auto& reg_settings = model.regularizer_settings();
 
-  for (auto reg_name_iterator = reg_names.begin();
-       reg_name_iterator != reg_names.end();
-       reg_name_iterator++) {
-    auto regularizer = schema->regularizer(reg_name_iterator->c_str());
+  int topic_size = topic_model.topic_size();
+  int token_size = topic_model.token_size();
+
+  ::artm::core::TokenCollectionWeights local_r_wt(token_size, topic_size);
+
+  auto n_t_all = topic_model.FindNormalizers();
+
+  for (auto reg_iterator = reg_settings.begin();
+       reg_iterator != reg_settings.end();
+       reg_iterator++) {
+    auto regularizer = schema->regularizer(reg_iterator->name().c_str());
 
     if (regularizer != nullptr) {
-      auto tau_index = reg_name_iterator - reg_names.begin();
-      double tau = reg_tau.Get(tau_index);
+      double tau = reg_iterator->tau();
+      bool relative_reg = reg_iterator->use_relative_regularization();
 
-      bool retval = regularizer->RegularizePhi(topic_model, tau);
+      bool retval = regularizer->RegularizePhi(topic_model, &local_r_wt);
+
+      // count n and r_i for relative regularization, if necessary
+      // prepare next structure with parameters:
+      // pair of pairs, first pair --- n and n_t, second one --- r_i and r_it
+      std::unordered_map<core::ClassId, std::pair<std::pair<double, std::vector<float> >,
+                                                  std::pair<double, std::vector<float> > > > parameters;
+      std::vector<bool> topics_to_regularize;
+
+      if (relative_reg) {
+        std::vector<core::ClassId> class_ids;
+        if (regularizer->class_ids_to_regularize().size() > 0) {
+          auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
+          for (auto class_id : class_ids_to_regularize) class_ids.push_back(class_id);
+        } else {
+          boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
+        }
+
+        if (regularizer->topics_to_regularize().size() > 0)
+          topics_to_regularize.assign(topic_size, true);
+        else
+          topics_to_regularize = core::is_member(topic_model.topic_name(), regularizer->topics_to_regularize());
+
+        for (auto class_id : class_ids) {
+          auto iter = n_t_all.find(class_id);
+          if (iter != n_t_all.end()) {
+            double n = 0.0;
+            double r_i = 0.0;
+            std::vector<float> r_it;
+            std::vector<float> n_t = iter->second;
+
+            for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+              if (!topics_to_regularize[topic_id]) {
+                r_it.push_back(-1.0f);
+                continue;
+              }
+              n += n_t[topic_id];
+
+              float r_it_current = 0.0f;
+              for (int token_id = 0; token_id < token_size; ++token_id) {
+                if (topic_model.token(token_id).class_id != iter->first) continue;
+
+                r_it_current += local_r_wt[token_id][topic_id];
+              }
+
+              r_it.push_back(r_it_current);
+              r_i += r_it_current;
+            }
+
+            auto pair_n = std::pair<double, std::vector<float> >(n, n_t);
+            auto pair_r = std::pair<double, std::vector<float> >(r_i, r_it);
+            auto pair_data = std::pair<std::pair<double, std::vector<float> >,
+                                       std::pair<double, std::vector<float> > >(pair_n, pair_r);
+            auto pair_last = std::pair<core::ClassId,
+                                    std::pair<std::pair<double, std::vector<float> >,
+                                    std::pair<double, std::vector<float> > > >(iter->first, pair_data);
+            parameters.insert(pair_last);
+          }
+        }
+      }
+
+      for (int token_id = 0; token_id < token_size; ++token_id) {
+        auto iter = parameters.find(topic_model.token(token_id).class_id);
+        if (relative_reg) {
+          if (iter == parameters.end()) continue;
+        }
+        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+          float coefficient = 1.0f;
+          if (relative_reg) {
+            if (!topics_to_regularize[topic_id]) continue;
+
+            double gamma = reg_iterator->gamma();
+            float n_t = iter->second.first.second[topic_id];
+            float n = iter->second.first.first;
+            float r_it = iter->second.second.second[topic_id];
+            float r_i = iter->second.second.first;
+            coefficient = static_cast<float>(gamma) * (n_t / r_it) * static_cast<float>(1 - gamma) * (n / r_i);
+          }
+          // update global r_wt using coefficient and tau
+          (*global_r_wt)[token_id][topic_id] += coefficient * tau * local_r_wt[token_id][topic_id];
+        }
+      }
+      local_r_wt.Reset();
+
       if (!retval) {
         LOG(ERROR) << "Problems with type or number of parameters in Phi regularizer <" <<
-          reg_name_iterator->c_str() <<
+          reg_iterator->name().c_str() <<
           ">. On this iteration this regularizer was turned off.\n";
       }
     } else {
       LOG(ERROR) << "Phi Regularizer with name <" <<
-        reg_name_iterator->c_str() << "> does not exist.\n";
+        reg_iterator->name().c_str() << "> does not exist.\n";
     }
   }
 }
@@ -491,13 +584,20 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       new_ttm->ApplyTopicModelOperation(topic_model, apply_weight);
     }
 
-    if (invoke_regularizers && (current_config.regularizer_name_size() > 0)) {
+    if (invoke_regularizers && (current_config.regularizer_settings_size() > 0)) {
       CuckooWatch cuckoo2("InvokePhiRegularizers, ", &cuckoo);
-      new_ttm->InitializeRwt();
-      InvokePhiRegularizers(new_ttm.get());
+
+      // call CalcPwt() to allow regularizers GetPwt() usage
+      new_ttm->CalcPwt();
+
+      ::artm::core::TokenCollectionWeights global_r_wt(new_ttm->token_size(), new_ttm->topic_size());
+      InvokePhiRegularizers(*new_ttm, &global_r_wt);
+
+      // merge final r_wt with n_wt in p_wt (n_wt is const)
+      new_ttm->CalcPwt(global_r_wt);
 
       // Verify if model became overregularized
-      std::map<ClassId, std::vector<float>> new_ttm_normalizers = new_ttm->FindNormalizers();
+      std::map<ClassId, std::vector<float>> new_ttm_normalizers = new_ttm->FindNormalizers(global_r_wt);
       for (auto iter : new_ttm_normalizers) {
         int bad_topics = 0;
         for (int topic_index = 0; topic_index < iter.second.size(); ++topic_index) {
@@ -510,14 +610,12 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
           << bad_topics << " of " << new_ttm->topic_size()
           << " topics have zero probability mass."
           << " Consider reducing values of ModelConfig.regularizer_tau"
+          << " (or ModelConfig.regularizer_settings.tau)"
           << " for model '" << model_name << "', class_id=" << iter.first;
       }
-    }
-
-    {
+    } else {
       CuckooWatch cuckoo2("CalcPwt", &cuckoo);
       new_ttm->CalcPwt();   // calculate pwt matrix
-      new_ttm->ClearRwt();
     }
 
     topic_model_.set(name, new_ttm);
