@@ -53,36 +53,6 @@ ArtmCreateMasterComponent
    and thus they are completely independent from each other.
 
 
-ArtmCreateMasterProxy
----------------------
-
-.. c:function::  int ArtmCreateMasterProxy(int length, const char* master_proxy_config)
-
-   Creates a proxy-object, connected to a remote master component.
-
-   :param const_char* master_proxy_config:
-      Serialized :ref:`MasterProxyConfig` message,
-      describing the configuration of the master proxy.
-
-   :param int length: The length in bytes of the *master_proxy_config* message.
-
-   :return: In case of success, a non-negative ID of the proxy object,
-            otherwise one of the :ref:`error codes <error-codes>`.
-
-   Prior to calling this method you must ensure that the remote host is running an instance
-   of Node Controller component. The endpoint of the remote Node Controller
-   should be specified in the *master_proxy_config* message.
-
-   The effect of this method is as follows:
-
-   * a new Master Component is started on the remote Node Controller,
-
-   * a proxy object to the remote Master Component is created withing current process.
-
-   The ID, returned by this operation, can be used in all methods that require *master_id* parameter.
-   All API calls will be redirected to the remote Master Component.
-
-
 ArtmReconfigureMasterComponent
 ------------------------------
 
@@ -91,7 +61,7 @@ ArtmReconfigureMasterComponent
    Changes the configuration of the master component.
 
    :param int master_id: The ID of a master component
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* master_component_config:
       Serialized :ref:`MasterComponentConfig` message,
@@ -109,10 +79,8 @@ ArtmDisposeMasterComponent
 
    Disposes master component together with all its models, regularizers and dictionaries.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
-      If *master_id* represents a master proxy, then
-      this operation will dispose both remote master component and local proxy object.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :return: This operation always returns :c:macro:`ARTM_SUCCESS`.
 
@@ -120,8 +88,6 @@ ArtmDisposeMasterComponent
    If the master component had been launched in the network modus operandi,
    then this operation also releases resources on the remote nodes
    and closes all network connections.
-   If the *master_id* parameter represents a proxy-object to a remote master component,
-   then both the remote master component and the local proxy are disposed.
 
    After this operation the *master_id* value becames invalid and must not be used in other operations.
 
@@ -163,8 +129,8 @@ ArtmCreateModel
 
    Defines a new topic model.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* model_config:
       Serialized :ref:`ModelConfig` message,
@@ -191,8 +157,8 @@ ArtmReconfigureModel
 
    Updates the configuration of topic model.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* model_config:
       Serialized :ref:`ModelConfig` message,
@@ -216,8 +182,8 @@ ArtmDisposeModel
    :c:func:`ArtmRequestScore`, :c:func:`ArtmRequestTopicModel`, :c:func:`ArtmRequestThetaMatrix`
    or any other method (or protobuf message) that require *model_name*.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* model_name:  A string identified of the model that should be deleted.
 
@@ -231,8 +197,8 @@ ArtmCreateRegularizer
 
    Creates a new regularizer.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* regularizer_config:
       Serialized :ref:`RegularizerConfig` message,
@@ -255,8 +221,8 @@ ArtmReconfigureRegularizer
 
    Updates the configuration of the regularizer.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* regularizer_config:
       Serialized :ref:`RegularizerConfig` message,
@@ -275,8 +241,8 @@ ArtmDisposeRegularizer
    Explicitly delete a specific regularizer.
    All regularizers within specific master component are also deleted automatically by :c:func:`ArtmDisposeMasterComponent`.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
    
    :param const_char* regularizer_name:  A string identified of the regularizer that should be deleted.
 
@@ -290,8 +256,8 @@ ArtmCreateDictionary
 
    Creates a new dictionary.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* dictionary_config:
       Serialized :ref:`DictionaryConfig` message,
@@ -309,8 +275,8 @@ ArtmReconfigureDictionary
 
    Updates the dictionary.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* dictionary_config:
       Serialized :ref:`DictionaryConfig` message,
@@ -329,8 +295,8 @@ ArtmDisposeDictionary
    Explicitly delete a specific dictionary.
    All dictionaries within specific master component are also deleted automatically by :c:func:`ArtmDisposeMasterComponent`.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* dictionary_name:  A string identified of the dictionary that should be deleted.
 
@@ -344,8 +310,8 @@ ArtmAddBatch
 
    Adds batch for processing.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* add_batch_args:
       Serialized :ref:`AddBatchArgs` message,
@@ -367,8 +333,8 @@ ArtmInvokeIteration
 
    Invokes several iterations over the collection. 
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const char* invoke_iteration_args:
       Serialized :ref:`InvokeIterationArgs` message,
@@ -388,8 +354,8 @@ ArtmSynchronizeModel
 
    Synchronizes topic model.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* sync_model_args:
       Serialized :ref:`SynchronizeModelArgs` message,
@@ -412,8 +378,8 @@ ArtmInitializeModel
 
    Initializes the phi matrix of a topic model with some random initial approximation.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* init_model_args:
       Serialized :ref:`InitializeModelArgs` message,
@@ -425,6 +391,45 @@ ArtmInitializeModel
             otherwise returns one of the :ref:`error codes <error-codes>`.
 
 
+ArtmExportModel
+---------------
+
+.. c:function::  int ArtmExportModel(int master_id, int length, const char* export_model_args)
+
+   Exports phi matrix into a file.
+
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
+
+   :param const_char* export_model_args:
+      Serialized :ref:`ExportModelArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the *export_model_args* message.
+
+   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
+            otherwise returns one of the :ref:`error codes <error-codes>`.
+
+
+ArtmImportModel
+---------------
+
+.. c:function::  int ArtmImportModel(int master_id, int length, const char* import_model_args)
+
+   Import phi matrix from a file.
+
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
+
+   :param const_char* import_model_args:
+      Serialized :ref:`ImportModelArgs` message,
+      describing the arguments of this operation.
+
+   :param int length: The length in bytes of the *import_model_args* message.
+
+   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
+            otherwise returns one of the :ref:`error codes <error-codes>`.
+
 ArtmWaitIdle
 ------------
 
@@ -432,8 +437,8 @@ ArtmWaitIdle
 
    Awaits for ongoing iterations. 
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* wait_idle_args:
       Serialized :ref:`WaitIdleArgs` message,
@@ -451,8 +456,8 @@ ArtmOverwriteTopicModel
 
    This operation schedules an update of an entire topic model or of it subpart.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* topic_model:
       Serialized :ref:`TopicModel` message,
@@ -478,8 +483,8 @@ ArtmRequestThetaMatrix
 
    Requests theta matrix. Use :cpp:func:`ArtmCopyRequestResult` to copy the resulting message.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* get_theta_args:
       Serialized :ref:`GetThetaMatrixArgs` message,
@@ -499,8 +504,8 @@ ArtmRequestTopicModel
 
    Requests topic model.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* get_model_args:
       Serialized :ref:`GetTopicModelArgs` message,
@@ -520,8 +525,8 @@ ArtmRequestRegularizerState
 
    Requests state of a specific regularizer.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char* regularizer_name:  A string identified of the regularizer.
 
@@ -537,8 +542,8 @@ ArtmRequestScore
 
    Request the result of score calculation.
 
-   :param int master_id: The ID of a master component or a master proxy,
-      returned by either :c:func:`ArtmCreateMasterComponent` or :c:func:`ArtmCreateMasterProxy` method.
+   :param int master_id: The ID of a master component,
+      returned by :c:func:`ArtmCreateMasterComponent` method.
 
    :param const_char*: get_score_args:
       Serialized :ref:`GetScoreValueArgs` message,
@@ -710,7 +715,7 @@ Error codes
 .. c:macro:: ARTM_INVALID_MASTER_ID
 
    An API call that require *master_id* parameter failed because
-   neither MasterComponent nor MasterProxy exist with given ID.
+   MasterComponent with given ID does not exist.
 
 .. c:macro:: ARTM_CORRUPTED_MESSAGE
 

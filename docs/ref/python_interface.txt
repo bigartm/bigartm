@@ -67,7 +67,7 @@ Library
 MasterComponent
 ===============
 
-.. py:class:: MasterComponent(config = None, lib = None, disk_path = None, proxy_endpoint = None)
+.. py:class:: MasterComponent(config = None, lib = None, disk_path = None)
 
    Creates a master component.
    
@@ -81,10 +81,6 @@ MasterComponent
    Changing *disk_path* is not supported (you must recreate a new instance MasterComponent to do so).
    Use :py:meth:`InvokeIteration` will process all batches, located under *disk_path*.
    Alternatively use :py:meth:`AddBatch` to add a specific batch into processor queue.
-
-   *proxy_endpoint* is an optional string value that provides connect endpoint of a remote node controller.
-   When specified, the master component will operate in a proxy mode (that is, it will redirect all commands
-   to the remote master component instantiated in the remote node controller).
 
    .. py:method:: Dispose()
 
@@ -323,6 +319,14 @@ Model
       *dictionary* must be an instance of :py:class:`Dictionary` class.
       
       For more settings use *args* parameter (see :ref:`InitializeModelArgs` for all available options).
+
+   .. py:method:: Export(filename)
+
+      Exports topic model into a file.
+
+   .. py:method:: Import(filename)
+
+      Imports topic model from a file.
 
    .. py:method:: Overwrite(topic_model, commit = True)
 

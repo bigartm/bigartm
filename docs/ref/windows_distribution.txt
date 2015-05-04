@@ -50,8 +50,6 @@ This chapter describes content of BigARTM distribution package for Windows, avai
 
                             * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
 
-                            * `example07_master_component_proxy.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example07_master_component_proxy.py>`_
-
                             * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
 
                             * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example09_regularizers.py>`_

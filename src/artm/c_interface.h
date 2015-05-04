@@ -18,7 +18,6 @@
 
 extern "C" {
   DLL_PUBLIC int ArtmCreateMasterComponent(int length, const char* master_component_config);
-  DLL_PUBLIC int ArtmCreateMasterProxy(int length, const char* master_proxy_config);
   DLL_PUBLIC int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config);
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);
 
@@ -44,6 +43,8 @@ extern "C" {
 
   DLL_PUBLIC int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model);
   DLL_PUBLIC int ArtmInitializeModel(int master_id, int length, const char* init_model_args);
+  DLL_PUBLIC int ArtmExportModel(int master_id, int length, const char* export_model_args);
+  DLL_PUBLIC int ArtmImportModel(int master_id, int length, const char* import_model_args);
 
   DLL_PUBLIC int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);

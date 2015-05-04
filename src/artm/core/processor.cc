@@ -319,11 +319,8 @@ InferThetaSparse(const ModelConfig& model_config, const Batch& batch, const Inst
           ntd_ptr[k] += alpha * phi_ptr[k];
       }
 
-      float sum = 0.0f;
-      for (int k = 0; k < topics_count; ++k) {
+      for (int k = 0; k < topics_count; ++k)
         theta_ptr[k] *= ntd_ptr[k];
-        sum += theta_ptr[k];
-      }
 
       agents->Apply(d, inner_iter, model_config.topics_count(), theta_ptr);
     }

@@ -91,7 +91,6 @@ You may also apply the following optimizations that should not change the result
       --localhost arg (=localhost)         DNS name or the IP address of the
                                            localhost
       --port arg (=5550)                   port to use for master node
-      --proxy arg                          proxy endpoint
       --timeout arg (=1000)                network communication timeout in
                                            milliseconds
 

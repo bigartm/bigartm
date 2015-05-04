@@ -428,6 +428,34 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
   return false;
 }
 
+bool Helpers::Validate(const ::artm::ExportModelArgs& message, bool throw_error) {
+  std::stringstream ss;
+  if (!message.has_file_name()) ss << "ExportModelArgs.file_name is not defined; ";
+  if (!message.has_model_name()) ss << "ExportModelArgs.model_name is not defined; ";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::Validate(const ::artm::ImportModelArgs& message, bool throw_error) {
+  std::stringstream ss;
+  if (!message.has_file_name()) ss << "ImportModelArgs.file_name is not defined; ";
+  if (!message.has_model_name()) ss << "ImportModelArgs.model_name is not defined; ";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
 std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   std::stringstream ss;
   ss << "ModelConfig";
