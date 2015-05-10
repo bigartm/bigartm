@@ -70,7 +70,6 @@ class Merger : boost::noncopyable {
                 const std::string& score_blob);
 
     void ResetScores(const ModelName& model_name);
-    void RetrieveModelIncrement(const ModelName& model_name, ModelIncrement* model_increment);
     bool RequestScore(const GetScoreValueArgs& get_score_args,
                       ScoreData *score_data) const;
 

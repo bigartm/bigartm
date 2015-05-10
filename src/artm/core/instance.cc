@@ -70,7 +70,7 @@ Instance::Instance(const MasterComponentConfig& config)
       processor_queue_(),
       merger_queue_(),
       batch_manager_(),
-      local_data_loader_(nullptr),
+      data_loader_(nullptr),
       merger_(),
       processors_() {
   Reconfigure(config);
@@ -78,27 +78,15 @@ Instance::Instance(const MasterComponentConfig& config)
 
 Instance::~Instance() {}
 
-LocalDataLoader* Instance::local_data_loader() {
-  if (!has_local_data_loader()) {
-    LOG(ERROR) << "Illegal access to local_data_loader()";
-  }
-
-  return local_data_loader_.get();
+DataLoader* Instance::data_loader() {
+  return data_loader_.get();
 }
 
 BatchManager* Instance::batch_manager() {
-  if (!has_batch_manager()) {
-    LOG(ERROR) << "Illegal access to batch_manager()";
-  }
-
   return batch_manager_.get();
 }
 
 Merger* Instance::merger() {
-  if (!has_merger()) {
-    LOG(ERROR) << "Illegal access to merger()()";
-  }
-
   return merger_.get();
 }
 
@@ -298,9 +286,9 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
   if (!is_configured_) {
     // First reconfiguration.
     batch_manager_.reset(new BatchManager(&schema_));
-    local_data_loader_.reset(new LocalDataLoader(this));
+    data_loader_.reset(new DataLoader(this));
     merger_.reset(new Merger(&merger_queue_, &schema_,
-                             &dictionaries_, local_data_loader_.get()));
+                             &dictionaries_, data_loader_.get()));
 
     is_configured_  = true;
   }

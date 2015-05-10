@@ -387,21 +387,6 @@ void Merger::ScoresMerger::ResetScores(const ModelName& model_name) {
   }
 }
 
-void Merger::ScoresMerger::RetrieveModelIncrement(const ModelName& model_name,
-                                                  ModelIncrement* model_increment) {
-  auto keys = score_map_.keys();
-  for (auto &key : keys) {
-    if (key.first == model_name) {
-      auto score = score_map_.get(key);
-      if (score == nullptr)
-        continue;
-
-      model_increment->add_score_name(key.second);
-      model_increment->add_score(score->SerializeAsString());
-    }
-  }
-}
-
 bool Merger::ScoresMerger::RequestScore(const GetScoreValueArgs& get_score_args,
                                         ScoreData *score_data) const {
   auto score_calculator = schema_->get()->score_calculator(get_score_args.score_name());

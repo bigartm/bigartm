@@ -225,7 +225,7 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model)
 bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
   if (!get_theta_args.has_batch()) {
-    return instance_->local_data_loader()->RequestThetaMatrix(get_theta_args, theta_matrix);
+    return instance_->data_loader()->RequestThetaMatrix(get_theta_args, theta_matrix);
   } else {
     if (instance_->processor_size() == 0)
       BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
@@ -242,7 +242,7 @@ bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
   new_args.CopyFrom(args);
   auto time_start = boost::posix_time::microsec_clock::local_time();
 
-  bool retval = instance_->local_data_loader()->WaitIdle(args);
+  bool retval = instance_->data_loader()->WaitIdle(args);
   if (!retval) return false;
 
   auto time_end = boost::posix_time::microsec_clock::local_time();
@@ -258,7 +258,7 @@ void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
   if (args.reset_scores())
     instance_->merger()->ForceResetScores(ModelName());
 
-  instance_->local_data_loader()->InvokeIteration(args);
+  instance_->data_loader()->InvokeIteration(args);
 }
 
 bool MasterComponent::AddBatch(const AddBatchArgs& args) {
@@ -267,7 +267,7 @@ bool MasterComponent::AddBatch(const AddBatchArgs& args) {
   if (args.reset_scores())
     instance_->merger()->ForceResetScores(ModelName());
 
-  return instance_->local_data_loader()->AddBatch(args);
+  return instance_->data_loader()->AddBatch(args);
 }
 
 void MasterComponent::ValidateConfig(const MasterComponentConfig& config) {

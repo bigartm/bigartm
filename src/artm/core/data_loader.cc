@@ -27,9 +27,6 @@ namespace fs = boost::filesystem;
 namespace artm {
 namespace core {
 
-DataLoader::DataLoader(Instance* instance)
-    : instance_(instance) { }
-
 Instance* DataLoader::instance() {
   return instance_;
 }
@@ -66,8 +63,8 @@ void DataLoader::PopulateDataStreams(const Batch& batch, ProcessorInput* pi) {
   }
 }
 
-LocalDataLoader::LocalDataLoader(Instance* instance)
-    : DataLoader(instance),
+DataLoader::DataLoader(Instance* instance)
+    : instance_(instance),
       generation_(nullptr),
       cache_(),
       is_stopping(false),
@@ -79,11 +76,11 @@ LocalDataLoader::LocalDataLoader(Instance* instance)
 
   // Keep this at the last action in constructor.
   // http://stackoverflow.com/questions/15751618/initialize-boost-thread-in-object-constructor
-  boost::thread t(&LocalDataLoader::ThreadFunction, this);
+  boost::thread t(&DataLoader::ThreadFunction, this);
   thread_.swap(t);
 }
 
-LocalDataLoader::~LocalDataLoader() {
+DataLoader::~DataLoader() {
   auto keys = cache_.keys();
   for (auto &key : keys) {
     auto cache_entry = cache_.get(key);
@@ -97,7 +94,7 @@ LocalDataLoader::~LocalDataLoader() {
   }
 }
 
-bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
+bool DataLoader::AddBatch(const AddBatchArgs& args) {
   if (!args.has_batch() && !args.has_batch_file_name()) {
     std::string message = "AddBatchArgs.batch or AddBatchArgs.batch_file_name must be specified";
     BOOST_THROW_EXCEPTION(InvalidOperation(message));
@@ -140,7 +137,7 @@ bool LocalDataLoader::AddBatch(const AddBatchArgs& args) {
   return true;
 }
 
-void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
+void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
   int iterations_count = args.iterations_count();
   if (iterations_count <= 0) {
     LOG(WARNING) << "DataLoader::InvokeIteration() was called with argument '"
@@ -171,7 +168,7 @@ void LocalDataLoader::InvokeIteration(const InvokeIterationArgs& args) {
   }
 }
 
-bool LocalDataLoader::WaitIdle(const WaitIdleArgs& args) {
+bool DataLoader::WaitIdle(const WaitIdleArgs& args) {
   int timeout = args.timeout_milliseconds();
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
@@ -189,7 +186,7 @@ bool LocalDataLoader::WaitIdle(const WaitIdleArgs& args) {
   return true;
 }
 
-void LocalDataLoader::DisposeModel(ModelName model_name) {
+void DataLoader::DisposeModel(ModelName model_name) {
   auto keys = cache_.keys();
   for (auto &key : keys) {
     auto cache_entry = cache_.get(key);
@@ -205,7 +202,7 @@ void LocalDataLoader::DisposeModel(ModelName model_name) {
   }
 }
 
-bool LocalDataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
+bool DataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                          ::artm::ThetaMatrix* theta_matrix) {
   std::string model_name = get_theta_args.model_name();
   std::vector<CacheKey> keys = cache_.keys();
@@ -234,7 +231,7 @@ bool LocalDataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_arg
   return true;
 }
 
-void LocalDataLoader::Callback(ModelIncrement* model_increment) {
+void DataLoader::Callback(ModelIncrement* model_increment) {
   instance_->batch_manager()->Callback(model_increment);
 
   if (instance()->schema()->config().cache_theta()) {
@@ -255,7 +252,7 @@ void LocalDataLoader::Callback(ModelIncrement* model_increment) {
   }
 }
 
-void LocalDataLoader::ThreadFunction() {
+void DataLoader::ThreadFunction() {
   try {
     Helpers::SetThreadName(-1, "DataLoader thread");
     LOG(INFO) << "DataLoader thread started";

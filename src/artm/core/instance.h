@@ -23,7 +23,7 @@
 namespace artm {
 namespace core {
 
-class LocalDataLoader;
+class DataLoader;
 class BatchManager;
 class Processor;
 class Merger;
@@ -35,7 +35,6 @@ typedef ThreadSafeQueue<std::shared_ptr<ModelIncrement>> MergerQueue;
 
 // Class Instance is respondible for joint hosting of many other components
 // (processors, merger, data loader) and data structures (schema, queues, etc).
-// The set of objects, hosted in the Instance, depends on instance_type.
 class Instance : boost::noncopyable {
  public:
   explicit Instance(const MasterComponentConfig& config);
@@ -45,14 +44,9 @@ class Instance : boost::noncopyable {
   ProcessorQueue* processor_queue() { return &processor_queue_; }
   MergerQueue* merger_queue() { return &merger_queue_; }
 
-  LocalDataLoader* local_data_loader();
-  bool has_local_data_loader() { return local_data_loader_ != nullptr; }
-
+  DataLoader* data_loader();
   BatchManager* batch_manager();
-  bool has_batch_manager() { return batch_manager_ != nullptr; }
-
   Merger* merger();
-  bool has_merger() { return merger_ != nullptr; }
 
   int processor_size() { return processors_.size(); }
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
@@ -86,9 +80,9 @@ class Instance : boost::noncopyable {
   std::shared_ptr<BatchManager> batch_manager_;
 
   // Depends on schema_, processor_queue_, batch_manager_
-  std::shared_ptr<LocalDataLoader> local_data_loader_;
+  std::shared_ptr<DataLoader> data_loader_;
 
-  // Depends on schema_, merger_queue_, local_data_loader_
+  // Depends on schema_, merger_queue_, data_loader_
   std::shared_ptr<Merger> merger_;
 
   // Depends on schema_, processor_queue_, merger_queue_, and merger_

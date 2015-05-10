@@ -27,25 +27,11 @@ class DiskGeneration;
 class DataLoader : boost::noncopyable, public Notifiable {
  public:
   explicit DataLoader(Instance* instance);
-  virtual ~DataLoader() {}
-
-  virtual void Callback(ModelIncrement* model_increment) = 0;
-  Instance* instance();
-
- protected:
-  void PopulateDataStreams(const Batch& batch, ProcessorInput* pi);
-
-  Instance* instance_;
-};
-
-class LocalDataLoader : public DataLoader {
- public:
-  explicit LocalDataLoader(Instance* instance);
-  virtual ~LocalDataLoader();
+  virtual ~DataLoader();
 
   bool AddBatch(const AddBatchArgs& args);
   virtual void Callback(ModelIncrement* model_increment);
-
+  Instance* instance();
   void InvokeIteration(const InvokeIterationArgs& args);
 
   // Returns false if BigARTM is still processing the collection, otherwise true.
@@ -55,6 +41,7 @@ class LocalDataLoader : public DataLoader {
                           ::artm::ThetaMatrix* theta_matrix);
 
  private:
+  Instance* instance_;
   std::unique_ptr<DiskGeneration> generation_;
 
   typedef std::pair<boost::uuids::uuid, ModelName> CacheKey;
@@ -68,6 +55,7 @@ class LocalDataLoader : public DataLoader {
   boost::thread thread_;
 
   void ThreadFunction();
+  void PopulateDataStreams(const Batch& batch, ProcessorInput* pi);
 };
 
 }  // namespace core

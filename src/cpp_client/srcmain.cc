@@ -59,7 +59,6 @@ struct artm_options {
   std::string vocab;
   std::string batch_folder;
   std::string disk_cache_folder;
-  std::string localhost;
   std::string dictionary_file;
   int num_topics;
   int num_processors;
