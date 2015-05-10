@@ -15,8 +15,6 @@
 
 #include "glog/logging.h"
 
-#include "rpcz/rpc.hpp"
-
 #include "artm/regularizer_interface.h"
 #include "artm/core/call_on_destruction.h"
 #include "artm/core/exceptions.h"
@@ -25,21 +23,17 @@
 #include "artm/core/instance_schema.h"
 #include "artm/core/protobuf_helpers.h"
 
-using ::artm::core::MasterComponentService_Stub;
-
 namespace artm {
 namespace core {
 
 Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
-               artm::core::MasterComponentService_Stub* master_component_service,
                const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
                Notifiable* notifiable)
     : topic_model_(),
       topic_model_inc_(),
       schema_(schema),
       target_model_config_(),
-      master_component_service_(master_component_service),
       scores_merger_(schema, &topic_model_),
       is_idle_(true),
       merger_queue_(merger_queue),
@@ -100,18 +94,6 @@ void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {
 void Merger::ForceResetScores(ModelName model_name) {
   rpcz::sync_event sync_event;
   internal_task_queue_.push(MergerTask(kForceResetScores, model_name, 0.0f, 0.0f, false, &sync_event));
-  sync_event.wait();
-}
-
-void Merger::ForcePullTopicModel() {
-  rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForcePullTopicModel, ModelName(), 0.0f, 0.0f, false, &sync_event));
-  sync_event.wait();
-}
-
-void Merger::ForcePushTopicModelIncrement() {
-  rpcz::sync_event sync_event;
-  internal_task_queue_.push(MergerTask(kForcePushTopicModelIncrement, ModelName(), 0.0f, 0.0f, false, &sync_event));
   sync_event.wait();
 }
 
@@ -262,12 +244,6 @@ void Merger::ThreadFunction() {
             case kDisposeModel:
               topic_model_inc_.erase(merger_task.model_name);
               break;
-            case kForcePullTopicModel:
-              PullTopicModel();
-              break;
-            case kForcePushTopicModelIncrement:
-              PushTopicModelIncrement();
-              break;
             case kForceSynchronizeTopicModel:
               SynchronizeModel(merger_task.model_name, merger_task.decay_weight,
                                merger_task.apply_weight, merger_task.invoke_regularizers);
@@ -328,67 +304,6 @@ void Merger::ThreadFunction() {
   }
   catch(...) {
     LOG(FATAL) << boost::current_exception_diagnostic_information();
-  }
-}
-
-void Merger::PullTopicModel() {
-  if (master_component_service_ == nullptr) {
-    return;  // no-op in local modus operandi
-  }
-
-  int timeout = schema_->get()->config().communication_timeout();
-
-  auto model_names = topic_model_.keys();
-  for (auto &model_name : model_names) {
-    auto old_ttm = topic_model_.get(model_name);
-    if (old_ttm.get() == nullptr)
-      return;  // model had been disposed during ongoing processing;
-
-    ::artm::GetTopicModelArgs request;
-    request.set_model_name(model_name);
-    request.set_request_type(GetTopicModelArgs_RequestType_Pwt);
-    make_rpcz_call_no_throw([&]() {
-      ::artm::TopicModel reply;
-      master_component_service_->RetrieveModel(request, &reply, timeout);
-      std::shared_ptr< ::artm::core::TopicModel> new_global_ttm(
-        new ::artm::core::TopicModel(reply.name(), reply.topic_name()));
-      new_global_ttm->ApplyTopicModelOperation(reply, 1.0f);
-      new_global_ttm->CalcPwt();
-
-      topic_model_.set(model_name, new_global_ttm);
-    }, "Merger::PullTopicModel");
-  }
-}
-
-void Merger::PushTopicModelIncrement() {
-  if (master_component_service_ == nullptr) {
-    return;  // no-op in local modus operandi
-  }
-
-  std::vector<ModelName> model_names;
-  for (auto iter = topic_model_inc_.begin(); iter != topic_model_inc_.end(); ++iter) {
-    model_names.push_back(iter->first);
-  }
-
-  for (auto &model_name : model_names) {
-    auto inc_ttm = topic_model_inc_.find(model_name);
-    if (inc_ttm == topic_model_inc_.end())
-      return;  // model had been disposed during ongoing processing;
-
-    ModelIncrement model_increment;
-
-    ::artm::GetTopicModelArgs get_topic_model_args;
-    get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
-    inc_ttm->second->RetrieveExternalTopicModel(get_topic_model_args, model_increment.mutable_topic_model());
-    scores_merger_.RetrieveModelIncrement(model_name, &model_increment);
-
-    make_rpcz_call_no_throw([&]() {
-      ::artm::core::Void reply;
-      int timeout = schema_->get()->config().communication_timeout();
-      master_component_service_->UpdateModel(model_increment, &reply, timeout);
-      topic_model_inc_.erase(model_name);
-      scores_merger_.ResetScores(model_name);
-    }, "Merger::PushTopicModelIncrement");
   }
 }
 
@@ -520,10 +435,6 @@ bool Merger::RequestScore(const GetScoreValueArgs& get_score_args,
 
 void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
                               float apply_weight, bool invoke_regularizers) {
-  if (master_component_service_ != nullptr) {
-    return;  // no-op in network modus operandi
-  }
-
   std::stringstream ss;
   ss << "Merger::SynchronizeModel (" << model_name
      << ", decay_weight=" << decay_weight
@@ -632,10 +543,6 @@ struct TokenInfo {
 };
 
 void Merger::InitializeModel(const InitializeModelArgs& args) {
-  if (master_component_service_ != nullptr) {
-    return;  // no-op in network modus operandi
-  }
-
   int token_duplicates = 0;
 
   auto schema = schema_->get();

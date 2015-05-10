@@ -371,9 +371,6 @@ bool Helpers::FixAndValidate(::artm::GetScoreValueArgs* message, bool throw_erro
 bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_error) {
   std::stringstream ss;
 
-  if (!MasterComponentConfig_ModusOperandi_IsValid(message.modus_operandi()))
-    ss << "MasterComponentConfig.modus_operandi == " << message.modus_operandi() << " is invalid; ";
-
   if (message.processors_count() <= 0)
     ss << "MasterComponentConfig.processors_count == " << message.processors_count() << " is invalid; ";
 
@@ -384,15 +381,6 @@ bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_
   if (message.processor_queue_max_size() <= 0)
     ss << "MasterComponentConfig.merger_queue_max_size == "
        << message.merger_queue_max_size() << " is invalid; ";
-
-  if (message.modus_operandi() == MasterComponentConfig_ModusOperandi_Network) {
-    if (!message.has_connect_endpoint())
-      ss << "MasterComponentConfig.connect_endpoint is required in modus_operandi==Network; ";
-    if (!message.has_create_endpoint())
-      ss << "MasterComponentConfig.create_endpoint is required in modus_operandi==Network; ";
-    if (message.node_connect_endpoint_size() == 0)
-      ss << "MasterComponentConfig.node_connect_endpoint must not be empty in modus_operandi==Network; ";
-  }
 
   if (ss.str().empty())
     return true;
@@ -515,7 +503,6 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
 std::string Helpers::Describe(const ::artm::MasterComponentConfig& message) {
   std::stringstream ss;
   ss << "MasterComponentConfig";
-  ss << ": modus_operandi=" << message.modus_operandi();
   ss << ", disk_path=" << message.disk_path();
   ss << ", stream_size=" << message.stream_size();
   ss << ", compact_batches=" << (message.compact_batches() ? "yes" : "no");
@@ -524,13 +511,6 @@ std::string Helpers::Describe(const ::artm::MasterComponentConfig& message) {
   ss << ", processor_queue_max_size=" << message.processor_queue_max_size();
   ss << ", merger_queue_max_size=" << message.merger_queue_max_size();
   ss << ", score_config_size=" << message.score_config_size();
-  if (message.modus_operandi() == MasterComponentConfig_ModusOperandi_Network) {
-    ss << ", create_endpoint=" << message.create_endpoint();
-    ss << ", connect_endpoint=" << message.connect_endpoint();
-    ss << ", node_connect_endpoint_size=" << message.node_connect_endpoint_size();
-    ss << ", communication_timeout=" << message.communication_timeout();
-  }
-
   ss << ", disk_cache_path" << message.disk_cache_path();
   return ss.str();
 }

@@ -21,9 +21,6 @@ extern "C" {
   DLL_PUBLIC int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config);
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);
 
-  DLL_PUBLIC int ArtmCreateNodeController(int length, const char* node_controller_config);
-  DLL_PUBLIC int ArtmDisposeNodeController(int node_controller_id);
-
   DLL_PUBLIC int ArtmCreateModel(int master_id, int length, const char* model_config);
   DLL_PUBLIC int ArtmReconfigureModel(int master_id, int length, const char* model_config);
   DLL_PUBLIC int ArtmDisposeModel(int master_id, const char* model_name);

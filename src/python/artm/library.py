@@ -20,7 +20,6 @@ ARTM_CORRUPTED_MESSAGE = -5
 ARTM_INVALID_OPERATION = -6
 ARTM_DISK_READ_ERROR = -7
 ARTM_DISK_WRITE_ERROR = -8
-ARTM_NETWORK_ERROR = -9
 
 Stream_Type_Global = 0
 Stream_Type_ItemIdModulus = 1
@@ -49,8 +48,6 @@ PerplexityScoreConfig_Type_UnigramCollectionModel = 1
 CollectionParserConfig_Format_BagOfWordsUci = 0
 CollectionParserConfig_Format_MatrixMarket = 1
 CollectionParserConfig_Format_VowpalWabbit = 2
-MasterComponentConfig_ModusOperandi_Local = 0
-MasterComponentConfig_ModusOperandi_Network = 1
 GetTopicModelArgs_RequestType_Pwt = 0
 GetTopicModelArgs_RequestType_Nwt = 1
 InitializeModelArgs_SourceType_Dictionary = 0
@@ -67,7 +64,6 @@ class CorruptedMessageException(BaseException): pass
 class InvalidOperationException(BaseException): pass
 class DiskReadException(BaseException): pass
 class DiskWriteException(BaseException): pass
-class NetworkException(BaseException): pass
 
 
 def GetLastErrorMessage(lib):
@@ -92,8 +88,6 @@ def HandleErrorCode(lib, artm_error_code):
         raise DiskReadException(GetLastErrorMessage(lib))
     elif artm_error_code == ARTM_DISK_WRITE_ERROR:
         raise DiskWriteException(GetLastErrorMessage(lib))
-    elif artm_error_code == ARTM_NETWORK_ERROR:
-        raise NetworkException(GetLastErrorMessage(lib))
     else:
         raise InternalError("Unknown error code: " + str(artm_error_code))
 
@@ -131,9 +125,6 @@ class Library:
         if config is None:
             config = messages_pb2.MasterComponentConfig()
         return MasterComponent(config, self.lib_)
-
-    def CreateNodeController(self, endpoint):
-        return NodeController(endpoint, self.lib_)
 
     def SaveBatch(self, batch, disk_path):
         batch_blob = batch.SerializeToString()
@@ -582,33 +573,6 @@ class MasterComponent:
         theta_matrix = messages_pb2.ThetaMatrix()
         theta_matrix.ParseFromString(blob)
         return theta_matrix
-
-#################################################################################
-
-class NodeController:
-    def __init__(self, endpoint, lib=None):
-        config = messages_pb2.NodeControllerConfig()
-        config.create_endpoint = endpoint
-
-        if lib is None:
-            lib = Library().lib_
-
-        self.lib_ = lib
-        config_blob = config.SerializeToString()
-        config_blob_p = ctypes.create_string_buffer(config_blob)
-
-        self.id_ = HandleErrorCode(self.lib_, self.lib_.ArtmCreateNodeController(
-            len(config_blob), config_blob_p))
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.Dispose()
-
-    def Dispose(self):
-        self.lib_.ArtmDisposeNodeController(self.id_)
-        self.id_ = -1
 
 #################################################################################
 

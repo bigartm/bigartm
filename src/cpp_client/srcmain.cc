@@ -66,8 +66,6 @@ struct artm_options {
   int num_iters;
   int num_inner_iters;
   int items_per_batch;
-  int communication_timeout;
-  int port;
   int update_every;
   int parsing_format;
   int merger_queue_size;
@@ -78,7 +76,6 @@ struct artm_options {
   bool b_no_scores;
   bool b_reuse_theta;
   bool b_disable_avx_opt;
-  std::vector<std::string> nodes;
   std::vector<std::string> class_id;
 };
 
@@ -235,7 +232,6 @@ void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class
 }
 
 int execute(const artm_options& options) {
-  bool is_network_mode = (options.nodes.size() > 0);
   bool online = (options.update_every > 0);
 
   if (options.b_paused) {
@@ -280,17 +276,6 @@ int execute(const artm_options& options) {
     configureScores(&master_config, &model_config, options);
 
   configureItemsProcessedScore(&master_config, &model_config);
-
-  if (is_network_mode) {
-    master_config.set_modus_operandi(MasterComponentConfig_ModusOperandi_Network);
-    master_config.set_create_endpoint("tcp://*:" + boost::lexical_cast<std::string>(options.port));
-    master_config.set_connect_endpoint("tcp://" + options.localhost + ":" + boost::lexical_cast<std::string>(options.port));
-    master_config.set_communication_timeout(options.communication_timeout);
-    for (auto& node : options.nodes)
-      master_config.add_node_connect_endpoint(node);
-  } else {
-    master_config.set_modus_operandi(MasterComponentConfig_ModusOperandi_Local);
-  }
 
   // Step 2. Collection parsing
 
@@ -516,15 +501,6 @@ int main(int argc, char * argv[]) {
       ("disable_avx_opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
     ;
     all_options.add(basic_options);
-
-    po::options_description networking_options("Networking options");
-    networking_options.add_options()
-      ("nodes", po::value< std::vector<std::string> >(&options.nodes)->multitoken(), "endpoints of the remote nodes (enables network modus operandi)")
-      ("localhost", po::value(&options.localhost)->default_value("localhost"), "DNS name or the IP address of the localhost")
-      ("port", po::value(&options.port)->default_value(5550), "port to use for master node")
-      ("timeout", po::value(&options.communication_timeout)->default_value(1000), "network communication timeout in milliseconds")
-    ;
-    all_options.add(networking_options);
 
     po::variables_map vm;
     store(po::command_line_parser(argc, argv).options(all_options).run(), vm);

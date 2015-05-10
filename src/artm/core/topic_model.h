@@ -125,8 +125,8 @@ class TokenCollectionWeights : boost::noncopyable {
 };
 
 // A class representing a topic model.
-// - ::artm::core::TopicModel is an internal representation, used in Processor, Merger,
-//   and in Memcached service. It supports efficient lookup of words in the matrix.
+// - ::artm::core::TopicModel is an internal representation, used in Processor and Merger.
+//   It supports efficient lookup of words in the matrix.
 // - ::artm::TopicModel is an external representation, implemented as protobuf message.
 //   It is used to transfer model back to the user.
 class TopicModel : public Regularizable {

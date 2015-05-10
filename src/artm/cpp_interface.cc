@@ -39,8 +39,6 @@ inline int HandleErrorCode(int artm_error_code) {
       throw DiskReadException(GetLastErrorMessage());
     case ARTM_DISK_WRITE_ERROR:
       throw DiskWriteException(GetLastErrorMessage());
-    case ARTM_NETWORK_ERROR:
-      throw NetworkException(GetLastErrorMessage());
     default:
       throw InternalError("Unknown error code");
   }
@@ -180,16 +178,6 @@ std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& ar
   std::shared_ptr<ScoreData> score_data(new ScoreData());
   score_data->ParseFromString(blob);
   return score_data;
-}
-
-NodeController::NodeController(const NodeControllerConfig& config) : id_(0), config_(config) {
-  std::string config_blob;
-  config.SerializeToString(&config_blob);
-  id_ = HandleErrorCode(ArtmCreateNodeController(config_blob.size(), StringAsArray(&config_blob)));
-}
-
-NodeController::~NodeController() {
-  ArtmDisposeNodeController(id());
 }
 
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)

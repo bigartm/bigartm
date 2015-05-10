@@ -20,8 +20,7 @@ class InstanceTest : boost::noncopyable {
   std::shared_ptr<artm::core::Instance> instance() { return instance_; }
 
   InstanceTest() : instance_(nullptr) {
-    instance_.reset(new ::artm::core::Instance(
-      ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal));
+    instance_.reset(new ::artm::core::Instance(::artm::MasterComponentConfig()));
   }
 
   ~InstanceTest() {}
@@ -70,8 +69,7 @@ class InstanceTest : boost::noncopyable {
 
 // artm_tests.exe --gtest_filter=Instance.Basic
 TEST(Instance, Basic) {
-  auto instance = std::make_shared< ::artm::core::Instance>(
-    ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal);
+  auto instance = std::make_shared< ::artm::core::Instance>(::artm::MasterComponentConfig());
 
   artm::Batch batch1;
   batch1.set_id("c722e9bd-28f8-4af0-a4fe-790681982a87");

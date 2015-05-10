@@ -9,15 +9,12 @@
 
 #include "glog/logging.h"
 
-#include "rpcz/rpc.hpp"
-
 #include "artm/messages.pb.h"
 #include "artm/score_calculator_interface.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/master_component.h"
-#include "artm/core/node_controller.h"
 #include "artm/core/collection_parser.h"
 
 // Never use the following variables explicitly (only through the corresponding methods).
@@ -280,26 +277,6 @@ int ArtmImportModel(int master_id, int length, const char* init_model_args) {
 int ArtmDisposeMasterComponent(int master_id) {
   try {
     artm::core::MasterComponentManager::singleton().Erase(master_id);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmCreateNodeController(int length, const char* node_controller_config) {
-  try {
-    EnableLogging();
-
-    artm::NodeControllerConfig config;
-    ParseFromArray(node_controller_config, length, &config);
-    auto& ncm = artm::core::NodeControllerManager::singleton();
-    int retval = ncm.Create< ::artm::core::NodeController, ::artm::NodeControllerConfig>(config);
-    assert(retval > 0);
-    return retval;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmDisposeNodeController(int node_controller_id) {
-  try {
-    artm::core::NodeControllerManager::singleton().Erase(node_controller_id);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }

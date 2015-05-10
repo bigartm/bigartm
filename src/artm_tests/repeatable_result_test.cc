@@ -25,10 +25,6 @@ void CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm::ThetaMat
 std::string runOfflineTest() {
   const int nTopics = 5;
 
-  // Endpoints:
-  // 5555 - master component (network_mode)
-  // 5556 - node controller for workers (network_mode)
-
   ::artm::MasterComponentConfig master_config;
   master_config.set_cache_theta(true);
   master_config.set_processors_count(1);

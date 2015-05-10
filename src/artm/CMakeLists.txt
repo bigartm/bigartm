@@ -30,18 +30,10 @@ set(SRC_LIST
 	core/instance_schema.h
 	core/internals.pb.cc
 	core/internals.pb.h
-	core/internals.rpcz.cc
-	core/internals.rpcz.h
 	core/master_component.cc
 	core/master_component.h
-	core/master_component_service_impl.cc
-	core/master_component_service_impl.h
 	core/merger.cc
 	core/merger.h
-	core/node_controller.cc
-	core/node_controller.h
-	core/node_controller_service_impl.cc
-	core/node_controller_service_impl.h
 	core/processor.cc
 	core/processor.h
 	core/protobuf_helpers.h
@@ -50,7 +42,6 @@ set(SRC_LIST
 	core/thread_safe_holder.h
 	core/topic_model.cc
 	core/topic_model.h
-	core/zmq_context.h
 	regularizer/decorrelator_phi.cc
 	regularizer/decorrelator_phi.h
 	regularizer/multilanguage_phi.cc

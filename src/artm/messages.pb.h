@@ -44,7 +44,6 @@ class Field;
 class Batch;
 class Stream;
 class MasterComponentConfig;
-class NodeControllerConfig;
 class ModelConfig;
 class ModelConfig_RegularizerSettings;
 class RegularizerConfig;
@@ -110,25 +109,6 @@ inline bool Stream_Type_Parse(
     const ::std::string& name, Stream_Type* value) {
   return ::google::protobuf::internal::ParseNamedEnum<Stream_Type>(
     Stream_Type_descriptor(), name, value);
-}
-enum MasterComponentConfig_ModusOperandi {
-  MasterComponentConfig_ModusOperandi_Local = 0,
-  MasterComponentConfig_ModusOperandi_Network = 1
-};
-bool MasterComponentConfig_ModusOperandi_IsValid(int value);
-const MasterComponentConfig_ModusOperandi MasterComponentConfig_ModusOperandi_ModusOperandi_MIN = MasterComponentConfig_ModusOperandi_Local;
-const MasterComponentConfig_ModusOperandi MasterComponentConfig_ModusOperandi_ModusOperandi_MAX = MasterComponentConfig_ModusOperandi_Network;
-const int MasterComponentConfig_ModusOperandi_ModusOperandi_ARRAYSIZE = MasterComponentConfig_ModusOperandi_ModusOperandi_MAX + 1;
-
-const ::google::protobuf::EnumDescriptor* MasterComponentConfig_ModusOperandi_descriptor();
-inline const ::std::string& MasterComponentConfig_ModusOperandi_Name(MasterComponentConfig_ModusOperandi value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    MasterComponentConfig_ModusOperandi_descriptor(), value);
-}
-inline bool MasterComponentConfig_ModusOperandi_Parse(
-    const ::std::string& name, MasterComponentConfig_ModusOperandi* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<MasterComponentConfig_ModusOperandi>(
-    MasterComponentConfig_ModusOperandi_descriptor(), name, value);
 }
 enum RegularizerConfig_Type {
   RegularizerConfig_Type_SmoothSparseTheta = 0,
@@ -1466,38 +1446,7 @@ class MasterComponentConfig : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
-  typedef MasterComponentConfig_ModusOperandi ModusOperandi;
-  static const ModusOperandi Local = MasterComponentConfig_ModusOperandi_Local;
-  static const ModusOperandi Network = MasterComponentConfig_ModusOperandi_Network;
-  static inline bool ModusOperandi_IsValid(int value) {
-    return MasterComponentConfig_ModusOperandi_IsValid(value);
-  }
-  static const ModusOperandi ModusOperandi_MIN =
-    MasterComponentConfig_ModusOperandi_ModusOperandi_MIN;
-  static const ModusOperandi ModusOperandi_MAX =
-    MasterComponentConfig_ModusOperandi_ModusOperandi_MAX;
-  static const int ModusOperandi_ARRAYSIZE =
-    MasterComponentConfig_ModusOperandi_ModusOperandi_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  ModusOperandi_descriptor() {
-    return MasterComponentConfig_ModusOperandi_descriptor();
-  }
-  static inline const ::std::string& ModusOperandi_Name(ModusOperandi value) {
-    return MasterComponentConfig_ModusOperandi_Name(value);
-  }
-  static inline bool ModusOperandi_Parse(const ::std::string& name,
-      ModusOperandi* value) {
-    return MasterComponentConfig_ModusOperandi_Parse(name, value);
-  }
-
   // accessors -------------------------------------------------------
-
-  // optional .artm.MasterComponentConfig.ModusOperandi modus_operandi = 1 [default = Local];
-  inline bool has_modus_operandi() const;
-  inline void clear_modus_operandi();
-  static const int kModusOperandiFieldNumber = 1;
-  inline ::artm::MasterComponentConfig_ModusOperandi modus_operandi() const;
-  inline void set_modus_operandi(::artm::MasterComponentConfig_ModusOperandi value);
 
   // optional string disk_path = 2;
   inline bool has_disk_path() const;
@@ -1570,59 +1519,12 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >*
       mutable_score_config();
 
-  // optional string create_endpoint = 10;
-  inline bool has_create_endpoint() const;
-  inline void clear_create_endpoint();
-  static const int kCreateEndpointFieldNumber = 10;
-  inline const ::std::string& create_endpoint() const;
-  inline void set_create_endpoint(const ::std::string& value);
-  inline void set_create_endpoint(const char* value);
-  inline void set_create_endpoint(const char* value, size_t size);
-  inline ::std::string* mutable_create_endpoint();
-  inline ::std::string* release_create_endpoint();
-  inline void set_allocated_create_endpoint(::std::string* create_endpoint);
-
-  // optional string connect_endpoint = 11;
-  inline bool has_connect_endpoint() const;
-  inline void clear_connect_endpoint();
-  static const int kConnectEndpointFieldNumber = 11;
-  inline const ::std::string& connect_endpoint() const;
-  inline void set_connect_endpoint(const ::std::string& value);
-  inline void set_connect_endpoint(const char* value);
-  inline void set_connect_endpoint(const char* value, size_t size);
-  inline ::std::string* mutable_connect_endpoint();
-  inline ::std::string* release_connect_endpoint();
-  inline void set_allocated_connect_endpoint(::std::string* connect_endpoint);
-
-  // repeated string node_connect_endpoint = 12;
-  inline int node_connect_endpoint_size() const;
-  inline void clear_node_connect_endpoint();
-  static const int kNodeConnectEndpointFieldNumber = 12;
-  inline const ::std::string& node_connect_endpoint(int index) const;
-  inline ::std::string* mutable_node_connect_endpoint(int index);
-  inline void set_node_connect_endpoint(int index, const ::std::string& value);
-  inline void set_node_connect_endpoint(int index, const char* value);
-  inline void set_node_connect_endpoint(int index, const char* value, size_t size);
-  inline ::std::string* add_node_connect_endpoint();
-  inline void add_node_connect_endpoint(const ::std::string& value);
-  inline void add_node_connect_endpoint(const char* value);
-  inline void add_node_connect_endpoint(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& node_connect_endpoint() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_node_connect_endpoint();
-
   // optional bool online_batch_processing = 13 [default = false];
   inline bool has_online_batch_processing() const;
   inline void clear_online_batch_processing();
   static const int kOnlineBatchProcessingFieldNumber = 13;
   inline bool online_batch_processing() const;
   inline void set_online_batch_processing(bool value);
-
-  // optional int32 communication_timeout = 14 [default = 1000];
-  inline bool has_communication_timeout() const;
-  inline void clear_communication_timeout();
-  static const int kCommunicationTimeoutFieldNumber = 14;
-  inline ::google::protobuf::int32 communication_timeout() const;
-  inline void set_communication_timeout(::google::protobuf::int32 value);
 
   // optional string disk_cache_path = 15;
   inline bool has_disk_cache_path() const;
@@ -1638,8 +1540,6 @@ class MasterComponentConfig : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.MasterComponentConfig)
  private:
-  inline void set_has_modus_operandi();
-  inline void clear_has_modus_operandi();
   inline void set_has_disk_path();
   inline void clear_has_disk_path();
   inline void set_has_compact_batches();
@@ -1652,14 +1552,8 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline void clear_has_processor_queue_max_size();
   inline void set_has_merger_queue_max_size();
   inline void clear_has_merger_queue_max_size();
-  inline void set_has_create_endpoint();
-  inline void clear_has_create_endpoint();
-  inline void set_has_connect_endpoint();
-  inline void clear_has_connect_endpoint();
   inline void set_has_online_batch_processing();
   inline void clear_has_online_batch_processing();
-  inline void set_has_communication_timeout();
-  inline void clear_has_communication_timeout();
   inline void set_has_disk_cache_path();
   inline void clear_has_disk_cache_path();
 
@@ -1667,22 +1561,17 @@ class MasterComponentConfig : public ::google::protobuf::Message {
 
   ::std::string* disk_path_;
   ::google::protobuf::RepeatedPtrField< ::artm::Stream > stream_;
-  int modus_operandi_;
   ::google::protobuf::int32 processors_count_;
-  ::google::protobuf::int32 processor_queue_max_size_;
   bool compact_batches_;
   bool cache_theta_;
   bool online_batch_processing_;
-  ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
-  ::std::string* create_endpoint_;
-  ::std::string* connect_endpoint_;
+  ::google::protobuf::int32 processor_queue_max_size_;
   ::google::protobuf::int32 merger_queue_max_size_;
-  ::google::protobuf::int32 communication_timeout_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> node_connect_endpoint_;
+  ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
   ::std::string* disk_cache_path_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -1690,93 +1579,6 @@ class MasterComponentConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static MasterComponentConfig* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class NodeControllerConfig : public ::google::protobuf::Message {
- public:
-  NodeControllerConfig();
-  virtual ~NodeControllerConfig();
-
-  NodeControllerConfig(const NodeControllerConfig& from);
-
-  inline NodeControllerConfig& operator=(const NodeControllerConfig& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const NodeControllerConfig& default_instance();
-
-  void Swap(NodeControllerConfig* other);
-
-  // implements Message ----------------------------------------------
-
-  NodeControllerConfig* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const NodeControllerConfig& from);
-  void MergeFrom(const NodeControllerConfig& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string create_endpoint = 1;
-  inline bool has_create_endpoint() const;
-  inline void clear_create_endpoint();
-  static const int kCreateEndpointFieldNumber = 1;
-  inline const ::std::string& create_endpoint() const;
-  inline void set_create_endpoint(const ::std::string& value);
-  inline void set_create_endpoint(const char* value);
-  inline void set_create_endpoint(const char* value, size_t size);
-  inline ::std::string* mutable_create_endpoint();
-  inline ::std::string* release_create_endpoint();
-  inline void set_allocated_create_endpoint(::std::string* create_endpoint);
-
-  // @@protoc_insertion_point(class_scope:artm.NodeControllerConfig)
- private:
-  inline void set_has_create_endpoint();
-  inline void clear_has_create_endpoint();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* create_endpoint_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static NodeControllerConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -9129,38 +8931,15 @@ Stream::mutable_residuals() {
 
 // MasterComponentConfig
 
-// optional .artm.MasterComponentConfig.ModusOperandi modus_operandi = 1 [default = Local];
-inline bool MasterComponentConfig::has_modus_operandi() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void MasterComponentConfig::set_has_modus_operandi() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void MasterComponentConfig::clear_has_modus_operandi() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void MasterComponentConfig::clear_modus_operandi() {
-  modus_operandi_ = 0;
-  clear_has_modus_operandi();
-}
-inline ::artm::MasterComponentConfig_ModusOperandi MasterComponentConfig::modus_operandi() const {
-  return static_cast< ::artm::MasterComponentConfig_ModusOperandi >(modus_operandi_);
-}
-inline void MasterComponentConfig::set_modus_operandi(::artm::MasterComponentConfig_ModusOperandi value) {
-  assert(::artm::MasterComponentConfig_ModusOperandi_IsValid(value));
-  set_has_modus_operandi();
-  modus_operandi_ = value;
-}
-
 // optional string disk_path = 2;
 inline bool MasterComponentConfig::has_disk_path() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void MasterComponentConfig::set_has_disk_path() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void MasterComponentConfig::clear_has_disk_path() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void MasterComponentConfig::clear_disk_path() {
   if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -9249,13 +9028,13 @@ MasterComponentConfig::mutable_stream() {
 
 // optional bool compact_batches = 4 [default = true];
 inline bool MasterComponentConfig::has_compact_batches() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void MasterComponentConfig::set_has_compact_batches() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void MasterComponentConfig::clear_has_compact_batches() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void MasterComponentConfig::clear_compact_batches() {
   compact_batches_ = true;
@@ -9271,13 +9050,13 @@ inline void MasterComponentConfig::set_compact_batches(bool value) {
 
 // optional bool cache_theta = 5 [default = false];
 inline bool MasterComponentConfig::has_cache_theta() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void MasterComponentConfig::set_has_cache_theta() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void MasterComponentConfig::clear_has_cache_theta() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void MasterComponentConfig::clear_cache_theta() {
   cache_theta_ = false;
@@ -9293,13 +9072,13 @@ inline void MasterComponentConfig::set_cache_theta(bool value) {
 
 // optional int32 processors_count = 6 [default = 1];
 inline bool MasterComponentConfig::has_processors_count() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void MasterComponentConfig::set_has_processors_count() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void MasterComponentConfig::clear_has_processors_count() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void MasterComponentConfig::clear_processors_count() {
   processors_count_ = 1;
@@ -9315,13 +9094,13 @@ inline void MasterComponentConfig::set_processors_count(::google::protobuf::int3
 
 // optional int32 processor_queue_max_size = 7 [default = 10];
 inline bool MasterComponentConfig::has_processor_queue_max_size() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void MasterComponentConfig::set_has_processor_queue_max_size() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void MasterComponentConfig::clear_has_processor_queue_max_size() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void MasterComponentConfig::clear_processor_queue_max_size() {
   processor_queue_max_size_ = 10;
@@ -9337,13 +9116,13 @@ inline void MasterComponentConfig::set_processor_queue_max_size(::google::protob
 
 // optional int32 merger_queue_max_size = 8 [default = 10];
 inline bool MasterComponentConfig::has_merger_queue_max_size() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void MasterComponentConfig::set_has_merger_queue_max_size() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void MasterComponentConfig::clear_has_merger_queue_max_size() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void MasterComponentConfig::clear_merger_queue_max_size() {
   merger_queue_max_size_ = 10;
@@ -9382,199 +9161,15 @@ MasterComponentConfig::mutable_score_config() {
   return &score_config_;
 }
 
-// optional string create_endpoint = 10;
-inline bool MasterComponentConfig::has_create_endpoint() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
-}
-inline void MasterComponentConfig::set_has_create_endpoint() {
-  _has_bits_[0] |= 0x00000200u;
-}
-inline void MasterComponentConfig::clear_has_create_endpoint() {
-  _has_bits_[0] &= ~0x00000200u;
-}
-inline void MasterComponentConfig::clear_create_endpoint() {
-  if (create_endpoint_ != &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_->clear();
-  }
-  clear_has_create_endpoint();
-}
-inline const ::std::string& MasterComponentConfig::create_endpoint() const {
-  return *create_endpoint_;
-}
-inline void MasterComponentConfig::set_create_endpoint(const ::std::string& value) {
-  set_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_ = new ::std::string;
-  }
-  create_endpoint_->assign(value);
-}
-inline void MasterComponentConfig::set_create_endpoint(const char* value) {
-  set_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_ = new ::std::string;
-  }
-  create_endpoint_->assign(value);
-}
-inline void MasterComponentConfig::set_create_endpoint(const char* value, size_t size) {
-  set_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_ = new ::std::string;
-  }
-  create_endpoint_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* MasterComponentConfig::mutable_create_endpoint() {
-  set_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_ = new ::std::string;
-  }
-  return create_endpoint_;
-}
-inline ::std::string* MasterComponentConfig::release_create_endpoint() {
-  clear_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = create_endpoint_;
-    create_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void MasterComponentConfig::set_allocated_create_endpoint(::std::string* create_endpoint) {
-  if (create_endpoint_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete create_endpoint_;
-  }
-  if (create_endpoint) {
-    set_has_create_endpoint();
-    create_endpoint_ = create_endpoint;
-  } else {
-    clear_has_create_endpoint();
-    create_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// optional string connect_endpoint = 11;
-inline bool MasterComponentConfig::has_connect_endpoint() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
-}
-inline void MasterComponentConfig::set_has_connect_endpoint() {
-  _has_bits_[0] |= 0x00000400u;
-}
-inline void MasterComponentConfig::clear_has_connect_endpoint() {
-  _has_bits_[0] &= ~0x00000400u;
-}
-inline void MasterComponentConfig::clear_connect_endpoint() {
-  if (connect_endpoint_ != &::google::protobuf::internal::GetEmptyString()) {
-    connect_endpoint_->clear();
-  }
-  clear_has_connect_endpoint();
-}
-inline const ::std::string& MasterComponentConfig::connect_endpoint() const {
-  return *connect_endpoint_;
-}
-inline void MasterComponentConfig::set_connect_endpoint(const ::std::string& value) {
-  set_has_connect_endpoint();
-  if (connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    connect_endpoint_ = new ::std::string;
-  }
-  connect_endpoint_->assign(value);
-}
-inline void MasterComponentConfig::set_connect_endpoint(const char* value) {
-  set_has_connect_endpoint();
-  if (connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    connect_endpoint_ = new ::std::string;
-  }
-  connect_endpoint_->assign(value);
-}
-inline void MasterComponentConfig::set_connect_endpoint(const char* value, size_t size) {
-  set_has_connect_endpoint();
-  if (connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    connect_endpoint_ = new ::std::string;
-  }
-  connect_endpoint_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* MasterComponentConfig::mutable_connect_endpoint() {
-  set_has_connect_endpoint();
-  if (connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    connect_endpoint_ = new ::std::string;
-  }
-  return connect_endpoint_;
-}
-inline ::std::string* MasterComponentConfig::release_connect_endpoint() {
-  clear_has_connect_endpoint();
-  if (connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = connect_endpoint_;
-    connect_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void MasterComponentConfig::set_allocated_connect_endpoint(::std::string* connect_endpoint) {
-  if (connect_endpoint_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete connect_endpoint_;
-  }
-  if (connect_endpoint) {
-    set_has_connect_endpoint();
-    connect_endpoint_ = connect_endpoint;
-  } else {
-    clear_has_connect_endpoint();
-    connect_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// repeated string node_connect_endpoint = 12;
-inline int MasterComponentConfig::node_connect_endpoint_size() const {
-  return node_connect_endpoint_.size();
-}
-inline void MasterComponentConfig::clear_node_connect_endpoint() {
-  node_connect_endpoint_.Clear();
-}
-inline const ::std::string& MasterComponentConfig::node_connect_endpoint(int index) const {
-  return node_connect_endpoint_.Get(index);
-}
-inline ::std::string* MasterComponentConfig::mutable_node_connect_endpoint(int index) {
-  return node_connect_endpoint_.Mutable(index);
-}
-inline void MasterComponentConfig::set_node_connect_endpoint(int index, const ::std::string& value) {
-  node_connect_endpoint_.Mutable(index)->assign(value);
-}
-inline void MasterComponentConfig::set_node_connect_endpoint(int index, const char* value) {
-  node_connect_endpoint_.Mutable(index)->assign(value);
-}
-inline void MasterComponentConfig::set_node_connect_endpoint(int index, const char* value, size_t size) {
-  node_connect_endpoint_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* MasterComponentConfig::add_node_connect_endpoint() {
-  return node_connect_endpoint_.Add();
-}
-inline void MasterComponentConfig::add_node_connect_endpoint(const ::std::string& value) {
-  node_connect_endpoint_.Add()->assign(value);
-}
-inline void MasterComponentConfig::add_node_connect_endpoint(const char* value) {
-  node_connect_endpoint_.Add()->assign(value);
-}
-inline void MasterComponentConfig::add_node_connect_endpoint(const char* value, size_t size) {
-  node_connect_endpoint_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-MasterComponentConfig::node_connect_endpoint() const {
-  return node_connect_endpoint_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-MasterComponentConfig::mutable_node_connect_endpoint() {
-  return &node_connect_endpoint_;
-}
-
 // optional bool online_batch_processing = 13 [default = false];
 inline bool MasterComponentConfig::has_online_batch_processing() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void MasterComponentConfig::set_has_online_batch_processing() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void MasterComponentConfig::clear_has_online_batch_processing() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void MasterComponentConfig::clear_online_batch_processing() {
   online_batch_processing_ = false;
@@ -9588,37 +9183,15 @@ inline void MasterComponentConfig::set_online_batch_processing(bool value) {
   online_batch_processing_ = value;
 }
 
-// optional int32 communication_timeout = 14 [default = 1000];
-inline bool MasterComponentConfig::has_communication_timeout() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
-}
-inline void MasterComponentConfig::set_has_communication_timeout() {
-  _has_bits_[0] |= 0x00002000u;
-}
-inline void MasterComponentConfig::clear_has_communication_timeout() {
-  _has_bits_[0] &= ~0x00002000u;
-}
-inline void MasterComponentConfig::clear_communication_timeout() {
-  communication_timeout_ = 1000;
-  clear_has_communication_timeout();
-}
-inline ::google::protobuf::int32 MasterComponentConfig::communication_timeout() const {
-  return communication_timeout_;
-}
-inline void MasterComponentConfig::set_communication_timeout(::google::protobuf::int32 value) {
-  set_has_communication_timeout();
-  communication_timeout_ = value;
-}
-
 // optional string disk_cache_path = 15;
 inline bool MasterComponentConfig::has_disk_cache_path() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void MasterComponentConfig::set_has_disk_cache_path() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void MasterComponentConfig::clear_has_disk_cache_path() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void MasterComponentConfig::clear_disk_cache_path() {
   if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -9677,80 +9250,6 @@ inline void MasterComponentConfig::set_allocated_disk_cache_path(::std::string* 
   } else {
     clear_has_disk_cache_path();
     disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// -------------------------------------------------------------------
-
-// NodeControllerConfig
-
-// optional string create_endpoint = 1;
-inline bool NodeControllerConfig::has_create_endpoint() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void NodeControllerConfig::set_has_create_endpoint() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void NodeControllerConfig::clear_has_create_endpoint() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void NodeControllerConfig::clear_create_endpoint() {
-  if (create_endpoint_ != &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_->clear();
-  }
-  clear_has_create_endpoint();
-}
-inline const ::std::string& NodeControllerConfig::create_endpoint() const {
-  return *create_endpoint_;
-}
-inline void NodeControllerConfig::set_create_endpoint(const ::std::string& value) {
-  set_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_ = new ::std::string;
-  }
-  create_endpoint_->assign(value);
-}
-inline void NodeControllerConfig::set_create_endpoint(const char* value) {
-  set_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_ = new ::std::string;
-  }
-  create_endpoint_->assign(value);
-}
-inline void NodeControllerConfig::set_create_endpoint(const char* value, size_t size) {
-  set_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_ = new ::std::string;
-  }
-  create_endpoint_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* NodeControllerConfig::mutable_create_endpoint() {
-  set_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    create_endpoint_ = new ::std::string;
-  }
-  return create_endpoint_;
-}
-inline ::std::string* NodeControllerConfig::release_create_endpoint() {
-  clear_has_create_endpoint();
-  if (create_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = create_endpoint_;
-    create_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void NodeControllerConfig::set_allocated_create_endpoint(::std::string* create_endpoint) {
-  if (create_endpoint_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete create_endpoint_;
-  }
-  if (create_endpoint) {
-    set_has_create_endpoint();
-    create_endpoint_ = create_endpoint;
-  } else {
-    clear_has_create_endpoint();
-    create_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
@@ -17956,10 +17455,6 @@ namespace protobuf {
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::Stream_Type>() {
   return ::artm::Stream_Type_descriptor();
-}
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::artm::MasterComponentConfig_ModusOperandi>() {
-  return ::artm::MasterComponentConfig_ModusOperandi_descriptor();
 }
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerConfig_Type>() {

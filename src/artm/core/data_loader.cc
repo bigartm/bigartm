@@ -13,16 +13,12 @@
 
 #include "glog/logging.h"
 
-#include "rpcz/application.hpp"
-
 #include "artm/core/exceptions.h"
 #include "artm/core/instance.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/instance_schema.h"
-#include "artm/core/internals.rpcz.h"
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/helpers.h"
-#include "artm/core/zmq_context.h"
 #include "artm/core/generation.h"
 #include "artm/core/merger.h"
 
@@ -329,111 +325,6 @@ void LocalDataLoader::ThreadFunction() {
       instance()->processor_queue()->push(pi);
     }
   } catch(...) {
-    LOG(FATAL) << boost::current_exception_diagnostic_information();
-  }
-}
-
-RemoteDataLoader::RemoteDataLoader(Instance* instance)
-    : DataLoader(instance),
-      is_stopping(false),
-      thread_() {
-  // Keep this at the last action in constructor.
-  // http://stackoverflow.com/questions/15751618/initialize-boost-thread-in-object-constructor
-  boost::thread t(&RemoteDataLoader::ThreadFunction, this);
-  thread_.swap(t);
-}
-
-RemoteDataLoader::~RemoteDataLoader() {
-  is_stopping = true;
-  if (thread_.joinable()) {
-    thread_.join();
-  }
-}
-
-void RemoteDataLoader::Callback(ModelIncrement* model_increment) {
-  BatchIds processed_batches;
-  for (int batch_index = 0; batch_index < model_increment->batch_uuid_size(); ++batch_index) {
-    processed_batches.add_batch_id(model_increment->batch_uuid(batch_index));
-  }
-
-  int timeout = instance()->schema()->config().communication_timeout();
-  make_rpcz_call_no_throw([&]() {
-    Void response;
-    instance()->master_component_service_proxy()->ReportBatches(processed_batches, &response, timeout);
-  }, "RemoteDataLoader::Callback");
-}
-
-void RemoteDataLoader::ThreadFunction() {
-  try {
-    Helpers::SetThreadName(-1, "DataLoader thread");
-    LOG(INFO) << "DataLoader thread started";
-    for (;;) {
-      if (is_stopping) {
-        LOG(INFO) << "DataLoader thread stopped";
-        break;
-      }
-
-      MasterComponentConfig config = instance()->schema()->config();
-      int processor_queue_size = instance()->processor_queue()->size();
-      int max_queue_size = config.processor_queue_max_size();
-      if (processor_queue_size >= max_queue_size) {
-        boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-        continue;
-      }
-
-      Int request;  // desired number of batches
-      BatchIds response;
-      request.set_value(max_queue_size - processor_queue_size);
-      int timeout = config.communication_timeout();
-      bool ok = make_rpcz_call_no_throw([&]() {
-        instance()->master_component_service_proxy()->RequestBatches(request, &response, timeout);
-      }, "RemoteDataLoader::ThreadFunction");
-
-      if (!ok) continue;
-
-      if (response.batch_id_size() == 0) {
-        boost::this_thread::sleep(boost::posix_time::milliseconds(kNetworkPollingFrequency));
-        continue;
-      }
-
-      BatchIds failed_batches;
-      for (int batch_index = 0; batch_index < response.batch_id_size(); ++batch_index) {
-        std::string batch_id = response.batch_id(batch_index);
-        std::string batch_file_path = response.batch_file_path(batch_index);
-
-        auto batch = std::make_shared< ::artm::Batch>();
-        try {
-          ::artm::core::BatchHelpers::LoadMessage(batch_file_path, batch.get());
-        }
-        catch (std::exception& ex) {
-          LOG(ERROR) << ex.what() << ", the batch will be skipped";
-          batch = nullptr;
-        }
-
-        if (batch == nullptr) {
-          LOG(ERROR) << "Unable to load batch '" << batch_id << "' from " << config.disk_path();
-          failed_batches.add_batch_id(batch_id);
-          continue;
-        }
-
-        auto pi = std::make_shared<ProcessorInput>();
-        pi->mutable_batch()->CopyFrom(*batch);
-        pi->set_batch_uuid(batch_id);
-
-        // ToDo(alfrey): implement Theta-caching in network modus operandi
-        DataLoader::PopulateDataStreams(*batch, pi.get());
-        instance()->processor_queue()->push(pi);
-      }
-
-      if (failed_batches.batch_id_size() > 0) {
-        make_rpcz_call_no_throw([&]() {
-          Void response;
-          instance()->master_component_service_proxy()->ReportBatches(failed_batches, &response, timeout);
-        }, "RemoteDataLoader::ThreadFunction");
-      }
-    }
-  }
-  catch (...) {
     LOG(FATAL) << boost::current_exception_diagnostic_information();
   }
 }

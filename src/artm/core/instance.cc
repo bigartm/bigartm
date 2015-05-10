@@ -17,7 +17,6 @@
 #include "artm/core/merger.h"
 #include "artm/core/template_manager.h"
 #include "artm/core/topic_model.h"
-#include "artm/core/zmq_context.h"
 #include "artm/core/instance_schema.h"
 
 #include "artm/regularizer_interface.h"
@@ -64,18 +63,14 @@
 namespace artm {
 namespace core {
 
-Instance::Instance(const MasterComponentConfig& config, InstanceType instance_type)
+Instance::Instance(const MasterComponentConfig& config)
     : is_configured_(false),
-      instance_type_(instance_type),
       schema_(std::make_shared<InstanceSchema>(config)),
       dictionaries_(),
-      application_(nullptr),
-      master_component_service_proxy_(nullptr),
       processor_queue_(),
       merger_queue_(),
       batch_manager_(),
       local_data_loader_(nullptr),
-      remote_data_loader_(nullptr),
       merger_(),
       processors_() {
   Reconfigure(config);
@@ -91,28 +86,12 @@ LocalDataLoader* Instance::local_data_loader() {
   return local_data_loader_.get();
 }
 
-RemoteDataLoader* Instance::remote_data_loader() {
-  if (!has_remote_data_loader()) {
-    LOG(ERROR) << "Illegal access to remote_data_loader()";
-  }
-
-  return remote_data_loader_.get();
-}
-
 BatchManager* Instance::batch_manager() {
   if (!has_batch_manager()) {
     LOG(ERROR) << "Illegal access to batch_manager()";
   }
 
   return batch_manager_.get();
-}
-
-MasterComponentService_Stub* Instance::master_component_service_proxy() {
-  if (!has_master_component_service_proxy()) {
-    LOG(ERROR) << "Illegal access to master_component_service_proxy()";
-  }
-
-  return master_component_service_proxy_.get();
 }
 
 Merger* Instance::merger() {
@@ -318,62 +297,15 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
 
   if (!is_configured_) {
     // First reconfiguration.
-
-    // Recreate master_component_service_proxy_;
-    if (instance_type_ == NodeControllerInstance) {
-      rpcz::application::options options(3);
-      options.zeromq_context = ZmqContext::singleton().get();
-      application_.reset(new rpcz::application(options));
-
-      master_component_service_proxy_.reset(
-        new artm::core::MasterComponentService_Stub(
-          application_->create_rpc_channel(master_config.connect_endpoint()), true));
-    }
-
-    if (instance_type_ != NodeControllerInstance) {
-      batch_manager_.reset(new BatchManager(&schema_));
-    }
-
-    // Reconfigure local/remote data loader
-    if (instance_type_ == NodeControllerInstance) {
-      remote_data_loader_.reset(new RemoteDataLoader(this));
-    } else if (instance_type_ == MasterInstanceLocal) {
-      local_data_loader_.reset(new LocalDataLoader(this));
-    }
-
-    Notifiable* notifiable;
-    switch (instance_type_) {
-      case MasterInstanceLocal:
-        notifiable = local_data_loader_.get();
-        break;
-
-      case MasterInstanceNetwork:
-        notifiable = nullptr;
-        break;
-
-      case NodeControllerInstance:
-        notifiable = remote_data_loader_.get();
-        break;
-
-      default:
-        BOOST_THROW_EXCEPTION(InternalError(
-          "Instance::Reconfigure() failed because instance_type_ is out of range "));
-    }
-
+    batch_manager_.reset(new BatchManager(&schema_));
+    local_data_loader_.reset(new LocalDataLoader(this));
     merger_.reset(new Merger(&merger_queue_, &schema_,
-                             master_component_service_proxy_.get(),
-                             &dictionaries_, notifiable));
+                             &dictionaries_, local_data_loader_.get()));
 
     is_configured_  = true;
-  } else {
-    // Second and subsequent reconfiguration - some restrictions apply
-    if (old_config.connect_endpoint() !=
-        master_config.connect_endpoint()) {
-      BOOST_THROW_EXCEPTION(InvalidOperation("Changing master endpoint is not allowed"));
-    }
   }
 
-  if (instance_type_ != MasterInstanceNetwork) {
+  {
     // Adjust size of processors_; cast size to int to avoid compiler warning.
     while (static_cast<int>(processors_.size()) > master_config.processors_count()) {
       processors_.pop_back();

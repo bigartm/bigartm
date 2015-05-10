@@ -21,7 +21,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/dictionary.h"
-#include "artm/core/internals.rpcz.h"
 #include "artm/core/thread_safe_holder.h"
 #include "artm/score_calculator_interface.h"
 
@@ -37,7 +36,6 @@ class Merger : boost::noncopyable {
  public:
   Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
          ThreadSafeHolder<InstanceSchema>* schema,
-         MasterComponentService_Stub* master_component_service,
          const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
          Notifiable* notifiable);
 
@@ -50,8 +48,6 @@ class Merger : boost::noncopyable {
   // Returns false if BigARTM is still processing the collection, otherwise true.
   bool WaitIdle(const WaitIdleArgs& args);
   void ForceSynchronizeModel(const SynchronizeModelArgs& args);
-  void ForcePullTopicModel();
-  void ForcePushTopicModelIncrement();
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
   void InitializeModel(const InitializeModelArgs& args);
 
@@ -89,8 +85,6 @@ class Merger : boost::noncopyable {
 
   enum MergerTaskType {
     kDisposeModel,
-    kForcePullTopicModel,
-    kForcePushTopicModelIncrement,
     kForceSynchronizeTopicModel,
     kForceResetScores,
   };
@@ -116,7 +110,6 @@ class Merger : boost::noncopyable {
   std::map<ModelName, std::shared_ptr<TopicModel>> topic_model_inc_;
   ThreadSafeHolder<InstanceSchema>* schema_;
   ThreadSafeCollectionHolder<ModelName, artm::ModelConfig> target_model_config_;
-  artm::core::MasterComponentService_Stub* master_component_service_;
   ScoresMerger scores_merger_;
 
   mutable std::atomic<bool> is_idle_;
@@ -133,8 +126,6 @@ class Merger : boost::noncopyable {
 
   void SynchronizeModel(const ModelName& model_name, float decay_weight, float apply_weight,
                         bool invoke_regularizers);
-  void PullTopicModel();
-  void PushTopicModelIncrement();
   void InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
                              ::artm::core::TokenCollectionWeights* global_r_wt);
   void ResetScores(ModelName model_name);

@@ -75,12 +75,6 @@ message Stream {
 
 // Represents a configuration of a master component
 message MasterComponentConfig {
-  enum ModusOperandi {
-    Local = 0;
-    Network = 1;
-  }
-
-  optional ModusOperandi modus_operandi = 1 [default = Local];
   optional string disk_path = 2;
   repeated Stream stream = 3;
   optional bool compact_batches = 4 [default = true];
@@ -89,17 +83,8 @@ message MasterComponentConfig {
   optional int32 processor_queue_max_size = 7 [default = 10];
   optional int32 merger_queue_max_size = 8 [default = 10];
   repeated ScoreConfig score_config = 9;
-  optional string create_endpoint = 10;
-  optional string connect_endpoint = 11;
-  repeated string node_connect_endpoint = 12;
   optional bool online_batch_processing = 13 [default = false];  // obsolete in BigARTM v0.5.8
-  optional int32 communication_timeout = 14 [default = 1000];
   optional string disk_cache_path = 15;
-}
-
-// Represents a configuration of a NodeController
-message NodeControllerConfig {
-  optional string create_endpoint = 1;
 }
 
 // Represents a configuration of a topic model.

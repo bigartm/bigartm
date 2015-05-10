@@ -26,14 +26,12 @@ enum ArtmErrorCodes {
   ARTM_INVALID_OPERATION = -6,
   ARTM_DISK_READ_ERROR = -7,
   ARTM_DISK_WRITE_ERROR = -8,
-  ARTM_NETWORK_ERROR = -9,
 };
 #endif
 
 namespace artm {
 
 class MasterComponent;
-class NodeController;
 class Model;
 class Regularizer;
 class Dictionary;
@@ -52,7 +50,6 @@ DEFINE_EXCEPTION_TYPE(CorruptedMessageException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(InvalidOperationException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskReadException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
-DEFINE_EXCEPTION_TYPE(NetworkException, std::runtime_error);
 
 #undef DEFINE_EXCEPTION_TYPE
 
@@ -99,19 +96,6 @@ class MasterComponent {
   int id_;
   MasterComponentConfig config_;
   DISALLOW_COPY_AND_ASSIGN(MasterComponent);
-};
-
-class NodeController {
- public:
-  explicit NodeController(const NodeControllerConfig& config);
-  ~NodeController();
-
-  int id() const { return id_; }
-
- private:
-  int id_;
-  NodeControllerConfig config_;
-  DISALLOW_COPY_AND_ASSIGN(NodeController);
 };
 
 class Model {
