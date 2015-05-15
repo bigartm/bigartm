@@ -14,10 +14,6 @@ master_config.cache_theta = 1
 perplexity_config = messages_pb2.PerplexityScoreConfig()
 perplexity_config.stream_name = 'stream_0'
 
-master_proxy_config = messages_pb2.MasterProxyConfig()
-master_proxy_config.node_connect_endpoint = "tcp://localhost:5555"
-master_proxy_config.config.CopyFrom(master_config)
-
 stream_ = master_config.stream.add()
 stream_.name = ('stream_0')
 stream_.type = Stream_Type_Global
@@ -114,9 +110,5 @@ with MasterComponent() as master_component:
     master_config_new.processor_queue_max_size = 2
     master_component.Reconfigure(master_config_new)
     master_component.RemoveDictionary(dictionary)
-
-with NodeController("tcp://*:5555") as node_controller:
-    with MasterComponent(master_proxy_config) as master_component:
-        master_component.Reconfigure(master_config)
 
 print 'All tests have been successfully passed!'

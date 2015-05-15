@@ -45,7 +45,6 @@ class Batch;
 class Stream;
 class MasterComponentConfig;
 class NodeControllerConfig;
-class MasterProxyConfig;
 class ModelConfig;
 class ModelConfig_RegularizerSettings;
 class RegularizerConfig;
@@ -87,6 +86,8 @@ class GetScoreValueArgs;
 class AddBatchArgs;
 class InvokeIterationArgs;
 class WaitIdleArgs;
+class ExportModelArgs;
+class ImportModelArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -1752,125 +1753,6 @@ class NodeControllerConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static NodeControllerConfig* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class MasterProxyConfig : public ::google::protobuf::Message {
- public:
-  MasterProxyConfig();
-  virtual ~MasterProxyConfig();
-
-  MasterProxyConfig(const MasterProxyConfig& from);
-
-  inline MasterProxyConfig& operator=(const MasterProxyConfig& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const MasterProxyConfig& default_instance();
-
-  void Swap(MasterProxyConfig* other);
-
-  // implements Message ----------------------------------------------
-
-  MasterProxyConfig* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const MasterProxyConfig& from);
-  void MergeFrom(const MasterProxyConfig& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string node_connect_endpoint = 1;
-  inline bool has_node_connect_endpoint() const;
-  inline void clear_node_connect_endpoint();
-  static const int kNodeConnectEndpointFieldNumber = 1;
-  inline const ::std::string& node_connect_endpoint() const;
-  inline void set_node_connect_endpoint(const ::std::string& value);
-  inline void set_node_connect_endpoint(const char* value);
-  inline void set_node_connect_endpoint(const char* value, size_t size);
-  inline ::std::string* mutable_node_connect_endpoint();
-  inline ::std::string* release_node_connect_endpoint();
-  inline void set_allocated_node_connect_endpoint(::std::string* node_connect_endpoint);
-
-  // optional .artm.MasterComponentConfig config = 2;
-  inline bool has_config() const;
-  inline void clear_config();
-  static const int kConfigFieldNumber = 2;
-  inline const ::artm::MasterComponentConfig& config() const;
-  inline ::artm::MasterComponentConfig* mutable_config();
-  inline ::artm::MasterComponentConfig* release_config();
-  inline void set_allocated_config(::artm::MasterComponentConfig* config);
-
-  // optional int32 communication_timeout = 3 [default = 1000];
-  inline bool has_communication_timeout() const;
-  inline void clear_communication_timeout();
-  static const int kCommunicationTimeoutFieldNumber = 3;
-  inline ::google::protobuf::int32 communication_timeout() const;
-  inline void set_communication_timeout(::google::protobuf::int32 value);
-
-  // optional int32 polling_frequency = 4 [default = 50];
-  inline bool has_polling_frequency() const;
-  inline void clear_polling_frequency();
-  static const int kPollingFrequencyFieldNumber = 4;
-  inline ::google::protobuf::int32 polling_frequency() const;
-  inline void set_polling_frequency(::google::protobuf::int32 value);
-
-  // @@protoc_insertion_point(class_scope:artm.MasterProxyConfig)
- private:
-  inline void set_has_node_connect_endpoint();
-  inline void clear_has_node_connect_endpoint();
-  inline void set_has_config();
-  inline void clear_has_config();
-  inline void set_has_communication_timeout();
-  inline void clear_has_communication_timeout();
-  inline void set_has_polling_frequency();
-  inline void clear_has_polling_frequency();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* node_connect_endpoint_;
-  ::artm::MasterComponentConfig* config_;
-  ::google::protobuf::int32 communication_timeout_;
-  ::google::protobuf::int32 polling_frequency_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static MasterProxyConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -7365,6 +7247,210 @@ class WaitIdleArgs : public ::google::protobuf::Message {
   void InitAsDefaultInstance();
   static WaitIdleArgs* default_instance_;
 };
+// -------------------------------------------------------------------
+
+class ExportModelArgs : public ::google::protobuf::Message {
+ public:
+  ExportModelArgs();
+  virtual ~ExportModelArgs();
+
+  ExportModelArgs(const ExportModelArgs& from);
+
+  inline ExportModelArgs& operator=(const ExportModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ExportModelArgs& default_instance();
+
+  void Swap(ExportModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ExportModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ExportModelArgs& from);
+  void MergeFrom(const ExportModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string file_name = 1;
+  inline bool has_file_name() const;
+  inline void clear_file_name();
+  static const int kFileNameFieldNumber = 1;
+  inline const ::std::string& file_name() const;
+  inline void set_file_name(const ::std::string& value);
+  inline void set_file_name(const char* value);
+  inline void set_file_name(const char* value, size_t size);
+  inline ::std::string* mutable_file_name();
+  inline ::std::string* release_file_name();
+  inline void set_allocated_file_name(::std::string* file_name);
+
+  // optional string model_name = 2;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 2;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // @@protoc_insertion_point(class_scope:artm.ExportModelArgs)
+ private:
+  inline void set_has_file_name();
+  inline void clear_has_file_name();
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* file_name_;
+  ::std::string* model_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ExportModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ImportModelArgs : public ::google::protobuf::Message {
+ public:
+  ImportModelArgs();
+  virtual ~ImportModelArgs();
+
+  ImportModelArgs(const ImportModelArgs& from);
+
+  inline ImportModelArgs& operator=(const ImportModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ImportModelArgs& default_instance();
+
+  void Swap(ImportModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ImportModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ImportModelArgs& from);
+  void MergeFrom(const ImportModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string file_name = 1;
+  inline bool has_file_name() const;
+  inline void clear_file_name();
+  static const int kFileNameFieldNumber = 1;
+  inline const ::std::string& file_name() const;
+  inline void set_file_name(const ::std::string& value);
+  inline void set_file_name(const char* value);
+  inline void set_file_name(const char* value, size_t size);
+  inline ::std::string* mutable_file_name();
+  inline ::std::string* release_file_name();
+  inline void set_allocated_file_name(::std::string* file_name);
+
+  // optional string model_name = 2;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 2;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // @@protoc_insertion_point(class_scope:artm.ImportModelArgs)
+ private:
+  inline void set_has_file_name();
+  inline void clear_has_file_name();
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* file_name_;
+  ::std::string* model_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ImportModelArgs* default_instance_;
+};
 // ===================================================================
 
 
@@ -9152,162 +9238,6 @@ inline void NodeControllerConfig::set_allocated_create_endpoint(::std::string* c
     clear_has_create_endpoint();
     create_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
-}
-
-// -------------------------------------------------------------------
-
-// MasterProxyConfig
-
-// optional string node_connect_endpoint = 1;
-inline bool MasterProxyConfig::has_node_connect_endpoint() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void MasterProxyConfig::set_has_node_connect_endpoint() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void MasterProxyConfig::clear_has_node_connect_endpoint() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void MasterProxyConfig::clear_node_connect_endpoint() {
-  if (node_connect_endpoint_ != &::google::protobuf::internal::GetEmptyString()) {
-    node_connect_endpoint_->clear();
-  }
-  clear_has_node_connect_endpoint();
-}
-inline const ::std::string& MasterProxyConfig::node_connect_endpoint() const {
-  return *node_connect_endpoint_;
-}
-inline void MasterProxyConfig::set_node_connect_endpoint(const ::std::string& value) {
-  set_has_node_connect_endpoint();
-  if (node_connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    node_connect_endpoint_ = new ::std::string;
-  }
-  node_connect_endpoint_->assign(value);
-}
-inline void MasterProxyConfig::set_node_connect_endpoint(const char* value) {
-  set_has_node_connect_endpoint();
-  if (node_connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    node_connect_endpoint_ = new ::std::string;
-  }
-  node_connect_endpoint_->assign(value);
-}
-inline void MasterProxyConfig::set_node_connect_endpoint(const char* value, size_t size) {
-  set_has_node_connect_endpoint();
-  if (node_connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    node_connect_endpoint_ = new ::std::string;
-  }
-  node_connect_endpoint_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* MasterProxyConfig::mutable_node_connect_endpoint() {
-  set_has_node_connect_endpoint();
-  if (node_connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    node_connect_endpoint_ = new ::std::string;
-  }
-  return node_connect_endpoint_;
-}
-inline ::std::string* MasterProxyConfig::release_node_connect_endpoint() {
-  clear_has_node_connect_endpoint();
-  if (node_connect_endpoint_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = node_connect_endpoint_;
-    node_connect_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void MasterProxyConfig::set_allocated_node_connect_endpoint(::std::string* node_connect_endpoint) {
-  if (node_connect_endpoint_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete node_connect_endpoint_;
-  }
-  if (node_connect_endpoint) {
-    set_has_node_connect_endpoint();
-    node_connect_endpoint_ = node_connect_endpoint;
-  } else {
-    clear_has_node_connect_endpoint();
-    node_connect_endpoint_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// optional .artm.MasterComponentConfig config = 2;
-inline bool MasterProxyConfig::has_config() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void MasterProxyConfig::set_has_config() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void MasterProxyConfig::clear_has_config() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void MasterProxyConfig::clear_config() {
-  if (config_ != NULL) config_->::artm::MasterComponentConfig::Clear();
-  clear_has_config();
-}
-inline const ::artm::MasterComponentConfig& MasterProxyConfig::config() const {
-  return config_ != NULL ? *config_ : *default_instance_->config_;
-}
-inline ::artm::MasterComponentConfig* MasterProxyConfig::mutable_config() {
-  set_has_config();
-  if (config_ == NULL) config_ = new ::artm::MasterComponentConfig;
-  return config_;
-}
-inline ::artm::MasterComponentConfig* MasterProxyConfig::release_config() {
-  clear_has_config();
-  ::artm::MasterComponentConfig* temp = config_;
-  config_ = NULL;
-  return temp;
-}
-inline void MasterProxyConfig::set_allocated_config(::artm::MasterComponentConfig* config) {
-  delete config_;
-  config_ = config;
-  if (config) {
-    set_has_config();
-  } else {
-    clear_has_config();
-  }
-}
-
-// optional int32 communication_timeout = 3 [default = 1000];
-inline bool MasterProxyConfig::has_communication_timeout() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void MasterProxyConfig::set_has_communication_timeout() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void MasterProxyConfig::clear_has_communication_timeout() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void MasterProxyConfig::clear_communication_timeout() {
-  communication_timeout_ = 1000;
-  clear_has_communication_timeout();
-}
-inline ::google::protobuf::int32 MasterProxyConfig::communication_timeout() const {
-  return communication_timeout_;
-}
-inline void MasterProxyConfig::set_communication_timeout(::google::protobuf::int32 value) {
-  set_has_communication_timeout();
-  communication_timeout_ = value;
-}
-
-// optional int32 polling_frequency = 4 [default = 50];
-inline bool MasterProxyConfig::has_polling_frequency() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void MasterProxyConfig::set_has_polling_frequency() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void MasterProxyConfig::clear_has_polling_frequency() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void MasterProxyConfig::clear_polling_frequency() {
-  polling_frequency_ = 50;
-  clear_has_polling_frequency();
-}
-inline ::google::protobuf::int32 MasterProxyConfig::polling_frequency() const {
-  return polling_frequency_;
-}
-inline void MasterProxyConfig::set_polling_frequency(::google::protobuf::int32 value) {
-  set_has_polling_frequency();
-  polling_frequency_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -16509,6 +16439,294 @@ inline ::google::protobuf::int32 WaitIdleArgs::timeout_milliseconds() const {
 inline void WaitIdleArgs::set_timeout_milliseconds(::google::protobuf::int32 value) {
   set_has_timeout_milliseconds();
   timeout_milliseconds_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// ExportModelArgs
+
+// optional string file_name = 1;
+inline bool ExportModelArgs::has_file_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ExportModelArgs::set_has_file_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ExportModelArgs::clear_has_file_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ExportModelArgs::clear_file_name() {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    file_name_->clear();
+  }
+  clear_has_file_name();
+}
+inline const ::std::string& ExportModelArgs::file_name() const {
+  return *file_name_;
+}
+inline void ExportModelArgs::set_file_name(const ::std::string& value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ExportModelArgs::set_file_name(const char* value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ExportModelArgs::set_file_name(const char* value, size_t size) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ExportModelArgs::mutable_file_name() {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  return file_name_;
+}
+inline ::std::string* ExportModelArgs::release_file_name() {
+  clear_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = file_name_;
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ExportModelArgs::set_allocated_file_name(::std::string* file_name) {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete file_name_;
+  }
+  if (file_name) {
+    set_has_file_name();
+    file_name_ = file_name;
+  } else {
+    clear_has_file_name();
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string model_name = 2;
+inline bool ExportModelArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ExportModelArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ExportModelArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ExportModelArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& ExportModelArgs::model_name() const {
+  return *model_name_;
+}
+inline void ExportModelArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ExportModelArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ExportModelArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ExportModelArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* ExportModelArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ExportModelArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// ImportModelArgs
+
+// optional string file_name = 1;
+inline bool ImportModelArgs::has_file_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ImportModelArgs::set_has_file_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ImportModelArgs::clear_has_file_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ImportModelArgs::clear_file_name() {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    file_name_->clear();
+  }
+  clear_has_file_name();
+}
+inline const ::std::string& ImportModelArgs::file_name() const {
+  return *file_name_;
+}
+inline void ImportModelArgs::set_file_name(const ::std::string& value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ImportModelArgs::set_file_name(const char* value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ImportModelArgs::set_file_name(const char* value, size_t size) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportModelArgs::mutable_file_name() {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  return file_name_;
+}
+inline ::std::string* ImportModelArgs::release_file_name() {
+  clear_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = file_name_;
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImportModelArgs::set_allocated_file_name(::std::string* file_name) {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete file_name_;
+  }
+  if (file_name) {
+    set_has_file_name();
+    file_name_ = file_name;
+  } else {
+    clear_has_file_name();
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string model_name = 2;
+inline bool ImportModelArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ImportModelArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ImportModelArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ImportModelArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& ImportModelArgs::model_name() const {
+  return *model_name_;
+}
+inline void ImportModelArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ImportModelArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ImportModelArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportModelArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* ImportModelArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImportModelArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 

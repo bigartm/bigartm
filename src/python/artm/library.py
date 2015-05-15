@@ -194,7 +194,7 @@ class Library:
 
 
 class MasterComponent:
-    def __init__(self, config=None, lib=None, disk_path=None, proxy_endpoint=None):
+    def __init__(self, config=None, lib=None, disk_path=None):
         if lib is None:
             lib = Library().lib_
 
@@ -213,13 +213,7 @@ class MasterComponent:
                 len(master_config_blob), master_config_blob_p))
             return
 
-        if isinstance(config, messages_pb2.MasterProxyConfig):
-            self.config_ = config.config
-            self.id_ = HandleErrorCode(self.lib_, self.lib_.ArtmCreateMasterProxy(
-                len(master_config_blob), master_config_blob_p))
-            return
-
-        raise ArgumentOutOfRangeException("config is neither MasterComponentConfig nor MasterProxyConfig")
+        raise ArgumentOutOfRangeException("config must be MasterComponentConfig")
 
     def __enter__(self):
         return self
@@ -659,6 +653,24 @@ class Model:
         if commit:
             self.master_component.WaitIdle()
             self.Synchronize(decay_weight=0.0, apply_weight=1.0, invoke_regularizers=False)
+
+    def Export(self, filename):
+        args = messages_pb2.ExportModelArgs()
+        args.model_name = self.name()
+        args.file_name = filename
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmExportModel(self.master_id_, len(blob), blob_p))
+
+    def Import(self, filename):
+        args = messages_pb2.ImportModelArgs()
+        args.model_name = self.name()
+        args.file_name = filename
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmImportModel(self.master_id_, len(blob), blob_p))
 
     def Enable(self):
         config_copy_ = messages_pb2.ModelConfig()

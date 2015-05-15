@@ -123,10 +123,6 @@ class NodeControllerService : public rpcz::service {
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void DisposeInstance(const ::artm::core::Void& request,
                        ::rpcz::reply< ::artm::core::Void> response);
-  virtual void CreateOrReconfigureMasterComponent(const ::artm::MasterComponentConfig& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void DisposeMasterComponent(const ::artm::core::Void& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
   virtual void CreateOrReconfigureModel(const ::artm::core::CreateOrReconfigureModelArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void DisposeModel(const ::artm::core::DisposeModelArgs& request,
@@ -142,26 +138,6 @@ class NodeControllerService : public rpcz::service {
   virtual void ForcePullTopicModel(const ::artm::core::Void& request,
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void ForcePushTopicModelIncrement(const ::artm::core::Void& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void OverwriteTopicModel(const ::artm::TopicModel& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void RequestTopicModel(const ::artm::GetTopicModelArgs& request,
-                       ::rpcz::reply< ::artm::TopicModel> response);
-  virtual void RequestRegularizerState(const ::artm::core::String& request,
-                       ::rpcz::reply< ::artm::RegularizerInternalState> response);
-  virtual void RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& request,
-                       ::rpcz::reply< ::artm::ThetaMatrix> response);
-  virtual void RequestScore(const ::artm::GetScoreValueArgs& request,
-                       ::rpcz::reply< ::artm::ScoreData> response);
-  virtual void AddBatch(const ::artm::AddBatchArgs& request,
-                       ::rpcz::reply< ::artm::core::Int> response);
-  virtual void InvokeIteration(const ::artm::InvokeIterationArgs& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void WaitIdle(const ::artm::WaitIdleArgs& request,
-                       ::rpcz::reply< ::artm::core::Int> response);
-  virtual void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void InitializeModel(const ::artm::InitializeModelArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
 
   // implements Service ----------------------------------------------
@@ -203,18 +179,6 @@ class NodeControllerService_Stub {
   void DisposeInstance(const ::artm::core::Void& request,
                        ::artm::core::Void* response,
                        long deadline_ms = -1);
-  void CreateOrReconfigureMasterComponent(const ::artm::MasterComponentConfig& request,
-                       ::artm::core::Void* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void CreateOrReconfigureMasterComponent(const ::artm::MasterComponentConfig& request,
-                       ::artm::core::Void* response,
-                       long deadline_ms = -1);
-  void DisposeMasterComponent(const ::artm::core::Void& request,
-                       ::artm::core::Void* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void DisposeMasterComponent(const ::artm::core::Void& request,
-                       ::artm::core::Void* response,
-                       long deadline_ms = -1);
   void CreateOrReconfigureModel(const ::artm::core::CreateOrReconfigureModelArgs& request,
                        ::artm::core::Void* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
@@ -261,66 +225,6 @@ class NodeControllerService_Stub {
                        ::artm::core::Void* response,
                        ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
   void ForcePushTopicModelIncrement(const ::artm::core::Void& request,
-                       ::artm::core::Void* response,
-                       long deadline_ms = -1);
-  void OverwriteTopicModel(const ::artm::TopicModel& request,
-                       ::artm::core::Void* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void OverwriteTopicModel(const ::artm::TopicModel& request,
-                       ::artm::core::Void* response,
-                       long deadline_ms = -1);
-  void RequestTopicModel(const ::artm::GetTopicModelArgs& request,
-                       ::artm::TopicModel* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void RequestTopicModel(const ::artm::GetTopicModelArgs& request,
-                       ::artm::TopicModel* response,
-                       long deadline_ms = -1);
-  void RequestRegularizerState(const ::artm::core::String& request,
-                       ::artm::RegularizerInternalState* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void RequestRegularizerState(const ::artm::core::String& request,
-                       ::artm::RegularizerInternalState* response,
-                       long deadline_ms = -1);
-  void RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& request,
-                       ::artm::ThetaMatrix* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& request,
-                       ::artm::ThetaMatrix* response,
-                       long deadline_ms = -1);
-  void RequestScore(const ::artm::GetScoreValueArgs& request,
-                       ::artm::ScoreData* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void RequestScore(const ::artm::GetScoreValueArgs& request,
-                       ::artm::ScoreData* response,
-                       long deadline_ms = -1);
-  void AddBatch(const ::artm::AddBatchArgs& request,
-                       ::artm::core::Int* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void AddBatch(const ::artm::AddBatchArgs& request,
-                       ::artm::core::Int* response,
-                       long deadline_ms = -1);
-  void InvokeIteration(const ::artm::InvokeIterationArgs& request,
-                       ::artm::core::Void* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void InvokeIteration(const ::artm::InvokeIterationArgs& request,
-                       ::artm::core::Void* response,
-                       long deadline_ms = -1);
-  void WaitIdle(const ::artm::WaitIdleArgs& request,
-                       ::artm::core::Int* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void WaitIdle(const ::artm::WaitIdleArgs& request,
-                       ::artm::core::Int* response,
-                       long deadline_ms = -1);
-  void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
-                       ::artm::core::Void* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
-                       ::artm::core::Void* response,
-                       long deadline_ms = -1);
-  void InitializeModel(const ::artm::InitializeModelArgs& request,
-                       ::artm::core::Void* response,
-                       ::rpcz::rpc* rpc,                     ::rpcz::closure* done);
-  void InitializeModel(const ::artm::InitializeModelArgs& request,
                        ::artm::core::Void* response,
                        long deadline_ms = -1);
  private:

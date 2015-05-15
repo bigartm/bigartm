@@ -16,7 +16,6 @@ namespace artm {
 namespace core {
 
 class Instance;
-class MasterInterface;
 
 class NodeControllerServiceImpl : public NodeControllerService {
  public:
@@ -24,7 +23,6 @@ class NodeControllerServiceImpl : public NodeControllerService {
   ~NodeControllerServiceImpl();
   Instance* instance();
 
-  // The following methods talks to instance_
   virtual void CreateOrReconfigureInstance(const ::artm::MasterComponentConfig& request,
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void DisposeInstance(const ::artm::core::Void& request,
@@ -33,34 +31,6 @@ class NodeControllerServiceImpl : public NodeControllerService {
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void ForcePushTopicModelIncrement(const ::artm::core::Void& request,
                        ::rpcz::reply< ::artm::core::Void> response);
-
-  // The following methods talks to master_
-  virtual void CreateOrReconfigureMasterComponent(const ::artm::MasterComponentConfig& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void DisposeMasterComponent(const ::artm::core::Void& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void OverwriteTopicModel(const ::artm::TopicModel& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void RequestTopicModel(const ::artm::GetTopicModelArgs& request,
-                       ::rpcz::reply< ::artm::TopicModel> response);
-  virtual void RequestRegularizerState(const ::artm::core::String& request,
-                       ::rpcz::reply< ::artm::RegularizerInternalState> response);
-  virtual void RequestThetaMatrix(const ::artm::GetThetaMatrixArgs& request,
-                       ::rpcz::reply< ::artm::ThetaMatrix> response);
-  virtual void RequestScore(const ::artm::GetScoreValueArgs& request,
-                       ::rpcz::reply< ::artm::ScoreData> response);
-  virtual void AddBatch(const ::artm::AddBatchArgs& request,
-                       ::rpcz::reply< ::artm::core::Int> response);
-  virtual void InvokeIteration(const ::artm::InvokeIterationArgs& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void WaitIdle(const ::artm::WaitIdleArgs& request,
-                       ::rpcz::reply< ::artm::core::Int> response);
-  virtual void SynchronizeModel(const ::artm::SynchronizeModelArgs& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-  virtual void InitializeModel(const ::artm::InitializeModelArgs& request,
-                       ::rpcz::reply< ::artm::core::Void> response);
-
-  // The following methods talks to instance_ or master_
   virtual void CreateOrReconfigureModel(const ::artm::core::CreateOrReconfigureModelArgs& request,
                        ::rpcz::reply< ::artm::core::Void> response);
   virtual void DisposeModel(const ::artm::core::DisposeModelArgs& request,
@@ -79,9 +49,8 @@ class NodeControllerServiceImpl : public NodeControllerService {
 
   mutable boost::mutex lock_;
 
-  // Currently node controller supports only one Instance or MasterComponent per node.
+  // Currently node controller supports only one Instance per node.
   std::shared_ptr<Instance> instance_;
-  std::shared_ptr<MasterInterface> master_;
 };
 
 }  // namespace core

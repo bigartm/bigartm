@@ -9,16 +9,8 @@ message Mask {
   repeated bool value = 1 [packed = true];
 }
 
-message Bool {
-  optional bool value = 1;
-}
-
 message Int {
   optional int32 value = 1;
-}
-
-message String {
-  optional string value = 1;
 }
 
 message Void {
@@ -119,9 +111,6 @@ service NodeControllerService {
   rpc CreateOrReconfigureInstance(MasterComponentConfig) returns (Void);
   rpc DisposeInstance(Void) returns (Void);
 
-  rpc CreateOrReconfigureMasterComponent(MasterComponentConfig) returns (Void);
-  rpc DisposeMasterComponent(Void) returns (Void);
-
   rpc CreateOrReconfigureModel(CreateOrReconfigureModelArgs) returns (Void);
   rpc DisposeModel(DisposeModelArgs) returns (Void);
 
@@ -133,16 +122,4 @@ service NodeControllerService {
 
   rpc ForcePullTopicModel(Void) returns (Void);
   rpc ForcePushTopicModelIncrement(Void) returns (Void);
-
-  rpc OverwriteTopicModel(TopicModel) returns (Void);
-  rpc RequestTopicModel(GetTopicModelArgs) returns (TopicModel);
-  rpc RequestRegularizerState(String) returns (RegularizerInternalState);
-  rpc RequestThetaMatrix(GetThetaMatrixArgs) returns (ThetaMatrix);
-  rpc RequestScore(GetScoreValueArgs) returns (ScoreData);
-
-  rpc AddBatch(AddBatchArgs) returns (Int);
-  rpc InvokeIteration(InvokeIterationArgs) returns (Void);
-  rpc WaitIdle(WaitIdleArgs) returns (Int);
-  rpc SynchronizeModel(SynchronizeModelArgs) returns (Void);
-  rpc InitializeModel(InitializeModelArgs) returns (Void);
 }

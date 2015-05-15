@@ -129,7 +129,6 @@ Folder ``C:\BigARTM\python\examples`` contains several toy examples:
     * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example04_online_algorithm.py>`_
     * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example05_train_and_test_stream.py>`_
     * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
-    * `example07_master_component_proxy.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example07_master_component_proxy.py>`_
     * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
     * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example09_regularizers.py>`_
     * `example10_multimodal.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example10_multimodal.py>`_

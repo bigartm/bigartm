@@ -99,13 +99,6 @@ MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), 
     config_blob.size(), StringAsArray(&config_blob)));
 }
 
-MasterComponent::MasterComponent(const MasterProxyConfig& config)
-    : id_(0), config_(config.config()) {
-  std::string config_blob;
-  config.SerializeToString(&config_blob);
-  id_ = HandleErrorCode(ArtmCreateMasterProxy(config_blob.size(), StringAsArray(&config_blob)));
-}
-
 MasterComponent::~MasterComponent() {
   ArtmDisposeMasterComponent(id());
 }
@@ -264,6 +257,24 @@ void Model::Initialize(const Dictionary& dictionary) {
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmInitializeModel(master_id(), blob.size(), blob.c_str()));
+}
+
+void Model::Export(const std::string& file_name) {
+  ExportModelArgs args;
+  args.set_model_name(this->name());
+  args.set_file_name(file_name);
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmExportModel(master_id(), blob.size(), blob.c_str()));
+}
+
+void Model::Import(const std::string& file_name) {
+  ImportModelArgs args;
+  args.set_model_name(this->name());
+  args.set_file_name(file_name);
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmImportModel(master_id(), blob.size(), blob.c_str()));
 }
 
 void Model::Synchronize(double decay) {
