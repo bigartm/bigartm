@@ -18,6 +18,7 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::Regularizable& topic_mod
                                     ::artm::core::TokenCollectionWeights* result) {
   // read the parameters from config and control their correctness
   const int topic_size = topic_model.topic_size();
+  const int token_size = topic_model.token_size();
 
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0)
@@ -34,7 +35,7 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::Regularizable& topic_mod
   topic_model.FindPwt(&p_wt);
 
   // proceed the regularization
-  for (int token_id = 0; token_id < topic_model.token_size(); ++token_id) {
+  for (int token_id = 0; token_id < token_size; ++token_id) {
     if (use_all_classes ||
         core::is_member(topic_model.token(token_id).class_id, config_.class_id())) {
       // count sum of weights

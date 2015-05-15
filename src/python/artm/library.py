@@ -28,6 +28,7 @@ RegularizerConfig_Type_SmoothSparseTheta = 0
 RegularizerConfig_Type_SmoothSparsePhi = 1
 RegularizerConfig_Type_DecorrelatorPhi = 2
 RegularizerConfig_Type_LabelRegularizationPhi = 4
+RegularizerConfig_Type_SpecifiedSparsePhi = 5
 ScoreConfig_Type_Perplexity = 0
 ScoreData_Type_Perplexity = 0
 ScoreConfig_Type_SparsityTheta = 1

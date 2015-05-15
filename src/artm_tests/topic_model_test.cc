@@ -39,3 +39,4 @@ TEST(TopicModelTest, Basic) {
   float expected_normalizer = static_cast<float>(no_tokens * no_topics);
   EXPECT_TRUE(std::abs(real_normalizer - expected_normalizer) < kTolerance);
 }
+

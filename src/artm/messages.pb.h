@@ -53,6 +53,7 @@ class SmoothSparsePhiConfig;
 class DecorrelatorPhiConfig;
 class MultiLanguagePhiConfig;
 class LabelRegularizationPhiConfig;
+class SpecifiedSparsePhiConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class DictionaryConfig;
@@ -132,11 +133,12 @@ enum RegularizerConfig_Type {
   RegularizerConfig_Type_SmoothSparsePhi = 1,
   RegularizerConfig_Type_DecorrelatorPhi = 2,
   RegularizerConfig_Type_MultiLanguagePhi = 3,
-  RegularizerConfig_Type_LabelRegularizationPhi = 4
+  RegularizerConfig_Type_LabelRegularizationPhi = 4,
+  RegularizerConfig_Type_SpecifiedSparsePhi = 5
 };
 bool RegularizerConfig_Type_IsValid(int value);
 const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_SmoothSparseTheta;
-const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_LabelRegularizationPhi;
+const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_SpecifiedSparsePhi;
 const int RegularizerConfig_Type_Type_ARRAYSIZE = RegularizerConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* RegularizerConfig_Type_descriptor();
@@ -148,6 +150,25 @@ inline bool RegularizerConfig_Type_Parse(
     const ::std::string& name, RegularizerConfig_Type* value) {
   return ::google::protobuf::internal::ParseNamedEnum<RegularizerConfig_Type>(
     RegularizerConfig_Type_descriptor(), name, value);
+}
+enum SpecifiedSparsePhiConfig_Mode {
+  SpecifiedSparsePhiConfig_Mode_SparseTopics = 1,
+  SpecifiedSparsePhiConfig_Mode_SparseTokens = 2
+};
+bool SpecifiedSparsePhiConfig_Mode_IsValid(int value);
+const SpecifiedSparsePhiConfig_Mode SpecifiedSparsePhiConfig_Mode_Mode_MIN = SpecifiedSparsePhiConfig_Mode_SparseTopics;
+const SpecifiedSparsePhiConfig_Mode SpecifiedSparsePhiConfig_Mode_Mode_MAX = SpecifiedSparsePhiConfig_Mode_SparseTokens;
+const int SpecifiedSparsePhiConfig_Mode_Mode_ARRAYSIZE = SpecifiedSparsePhiConfig_Mode_Mode_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* SpecifiedSparsePhiConfig_Mode_descriptor();
+inline const ::std::string& SpecifiedSparsePhiConfig_Mode_Name(SpecifiedSparsePhiConfig_Mode value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    SpecifiedSparsePhiConfig_Mode_descriptor(), value);
+}
+inline bool SpecifiedSparsePhiConfig_Mode_Parse(
+    const ::std::string& name, SpecifiedSparsePhiConfig_Mode* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<SpecifiedSparsePhiConfig_Mode>(
+    SpecifiedSparsePhiConfig_Mode_descriptor(), name, value);
 }
 enum RegularizerInternalState_Type {
   RegularizerInternalState_Type_MultiLanguagePhi = 3
@@ -2240,6 +2261,7 @@ class RegularizerConfig : public ::google::protobuf::Message {
   static const Type DecorrelatorPhi = RegularizerConfig_Type_DecorrelatorPhi;
   static const Type MultiLanguagePhi = RegularizerConfig_Type_MultiLanguagePhi;
   static const Type LabelRegularizationPhi = RegularizerConfig_Type_LabelRegularizationPhi;
+  static const Type SpecifiedSparsePhi = RegularizerConfig_Type_SpecifiedSparsePhi;
   static inline bool Type_IsValid(int value) {
     return RegularizerConfig_Type_IsValid(value);
   }
@@ -2840,6 +2862,165 @@ class LabelRegularizationPhiConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static LabelRegularizationPhiConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class SpecifiedSparsePhiConfig : public ::google::protobuf::Message {
+ public:
+  SpecifiedSparsePhiConfig();
+  virtual ~SpecifiedSparsePhiConfig();
+
+  SpecifiedSparsePhiConfig(const SpecifiedSparsePhiConfig& from);
+
+  inline SpecifiedSparsePhiConfig& operator=(const SpecifiedSparsePhiConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SpecifiedSparsePhiConfig& default_instance();
+
+  void Swap(SpecifiedSparsePhiConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  SpecifiedSparsePhiConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SpecifiedSparsePhiConfig& from);
+  void MergeFrom(const SpecifiedSparsePhiConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef SpecifiedSparsePhiConfig_Mode Mode;
+  static const Mode SparseTopics = SpecifiedSparsePhiConfig_Mode_SparseTopics;
+  static const Mode SparseTokens = SpecifiedSparsePhiConfig_Mode_SparseTokens;
+  static inline bool Mode_IsValid(int value) {
+    return SpecifiedSparsePhiConfig_Mode_IsValid(value);
+  }
+  static const Mode Mode_MIN =
+    SpecifiedSparsePhiConfig_Mode_Mode_MIN;
+  static const Mode Mode_MAX =
+    SpecifiedSparsePhiConfig_Mode_Mode_MAX;
+  static const int Mode_ARRAYSIZE =
+    SpecifiedSparsePhiConfig_Mode_Mode_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  Mode_descriptor() {
+    return SpecifiedSparsePhiConfig_Mode_descriptor();
+  }
+  static inline const ::std::string& Mode_Name(Mode value) {
+    return SpecifiedSparsePhiConfig_Mode_Name(value);
+  }
+  static inline bool Mode_Parse(const ::std::string& name,
+      Mode* value) {
+    return SpecifiedSparsePhiConfig_Mode_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // repeated string topic_name = 1;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 1;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // optional string class_id = 2 [default = "@default_class"];
+  inline bool has_class_id() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id() const;
+  inline void set_class_id(const ::std::string& value);
+  inline void set_class_id(const char* value);
+  inline void set_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_class_id();
+  inline ::std::string* release_class_id();
+  inline void set_allocated_class_id(::std::string* class_id);
+
+  // optional int32 max_elements_count = 3 [default = 20];
+  inline bool has_max_elements_count() const;
+  inline void clear_max_elements_count();
+  static const int kMaxElementsCountFieldNumber = 3;
+  inline ::google::protobuf::int32 max_elements_count() const;
+  inline void set_max_elements_count(::google::protobuf::int32 value);
+
+  // optional float probability_threshold = 4 [default = 0.99];
+  inline bool has_probability_threshold() const;
+  inline void clear_probability_threshold();
+  static const int kProbabilityThresholdFieldNumber = 4;
+  inline float probability_threshold() const;
+  inline void set_probability_threshold(float value);
+
+  // optional .artm.SpecifiedSparsePhiConfig.Mode mode = 5 [default = SparseTopics];
+  inline bool has_mode() const;
+  inline void clear_mode();
+  static const int kModeFieldNumber = 5;
+  inline ::artm::SpecifiedSparsePhiConfig_Mode mode() const;
+  inline void set_mode(::artm::SpecifiedSparsePhiConfig_Mode value);
+
+  // @@protoc_insertion_point(class_scope:artm.SpecifiedSparsePhiConfig)
+ private:
+  inline void set_has_class_id();
+  inline void clear_has_class_id();
+  inline void set_has_max_elements_count();
+  inline void clear_has_max_elements_count();
+  inline void set_has_probability_threshold();
+  inline void clear_has_probability_threshold();
+  inline void set_has_mode();
+  inline void clear_has_mode();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::std::string* class_id_;
+  static ::std::string* _default_class_id_;
+  ::google::protobuf::int32 max_elements_count_;
+  float probability_threshold_;
+  int mode_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static SpecifiedSparsePhiConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -10683,6 +10864,191 @@ inline void LabelRegularizationPhiConfig::set_allocated_dictionary_name(::std::s
 
 // -------------------------------------------------------------------
 
+// SpecifiedSparsePhiConfig
+
+// repeated string topic_name = 1;
+inline int SpecifiedSparsePhiConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void SpecifiedSparsePhiConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& SpecifiedSparsePhiConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* SpecifiedSparsePhiConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void SpecifiedSparsePhiConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void SpecifiedSparsePhiConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void SpecifiedSparsePhiConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* SpecifiedSparsePhiConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void SpecifiedSparsePhiConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void SpecifiedSparsePhiConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void SpecifiedSparsePhiConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+SpecifiedSparsePhiConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+SpecifiedSparsePhiConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// optional string class_id = 2 [default = "@default_class"];
+inline bool SpecifiedSparsePhiConfig::has_class_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void SpecifiedSparsePhiConfig::set_has_class_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void SpecifiedSparsePhiConfig::clear_has_class_id() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void SpecifiedSparsePhiConfig::clear_class_id() {
+  if (class_id_ != _default_class_id_) {
+    class_id_->assign(*_default_class_id_);
+  }
+  clear_has_class_id();
+}
+inline const ::std::string& SpecifiedSparsePhiConfig::class_id() const {
+  return *class_id_;
+}
+inline void SpecifiedSparsePhiConfig::set_class_id(const ::std::string& value) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void SpecifiedSparsePhiConfig::set_class_id(const char* value) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void SpecifiedSparsePhiConfig::set_class_id(const char* value, size_t size) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* SpecifiedSparsePhiConfig::mutable_class_id() {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string(*_default_class_id_);
+  }
+  return class_id_;
+}
+inline ::std::string* SpecifiedSparsePhiConfig::release_class_id() {
+  clear_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    return NULL;
+  } else {
+    ::std::string* temp = class_id_;
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
+    return temp;
+  }
+}
+inline void SpecifiedSparsePhiConfig::set_allocated_class_id(::std::string* class_id) {
+  if (class_id_ != _default_class_id_) {
+    delete class_id_;
+  }
+  if (class_id) {
+    set_has_class_id();
+    class_id_ = class_id;
+  } else {
+    clear_has_class_id();
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
+  }
+}
+
+// optional int32 max_elements_count = 3 [default = 20];
+inline bool SpecifiedSparsePhiConfig::has_max_elements_count() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void SpecifiedSparsePhiConfig::set_has_max_elements_count() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void SpecifiedSparsePhiConfig::clear_has_max_elements_count() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void SpecifiedSparsePhiConfig::clear_max_elements_count() {
+  max_elements_count_ = 20;
+  clear_has_max_elements_count();
+}
+inline ::google::protobuf::int32 SpecifiedSparsePhiConfig::max_elements_count() const {
+  return max_elements_count_;
+}
+inline void SpecifiedSparsePhiConfig::set_max_elements_count(::google::protobuf::int32 value) {
+  set_has_max_elements_count();
+  max_elements_count_ = value;
+}
+
+// optional float probability_threshold = 4 [default = 0.99];
+inline bool SpecifiedSparsePhiConfig::has_probability_threshold() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void SpecifiedSparsePhiConfig::set_has_probability_threshold() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void SpecifiedSparsePhiConfig::clear_has_probability_threshold() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void SpecifiedSparsePhiConfig::clear_probability_threshold() {
+  probability_threshold_ = 0.99f;
+  clear_has_probability_threshold();
+}
+inline float SpecifiedSparsePhiConfig::probability_threshold() const {
+  return probability_threshold_;
+}
+inline void SpecifiedSparsePhiConfig::set_probability_threshold(float value) {
+  set_has_probability_threshold();
+  probability_threshold_ = value;
+}
+
+// optional .artm.SpecifiedSparsePhiConfig.Mode mode = 5 [default = SparseTopics];
+inline bool SpecifiedSparsePhiConfig::has_mode() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void SpecifiedSparsePhiConfig::set_has_mode() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void SpecifiedSparsePhiConfig::clear_has_mode() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void SpecifiedSparsePhiConfig::clear_mode() {
+  mode_ = 1;
+  clear_has_mode();
+}
+inline ::artm::SpecifiedSparsePhiConfig_Mode SpecifiedSparsePhiConfig::mode() const {
+  return static_cast< ::artm::SpecifiedSparsePhiConfig_Mode >(mode_);
+}
+inline void SpecifiedSparsePhiConfig::set_mode(::artm::SpecifiedSparsePhiConfig_Mode value) {
+  assert(::artm::SpecifiedSparsePhiConfig_Mode_IsValid(value));
+  set_has_mode();
+  mode_ = value;
+}
+
+// -------------------------------------------------------------------
+
 // RegularizerInternalState
 
 // optional string name = 1;
@@ -16749,6 +17115,10 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::MasterComponentConfig_Mo
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerConfig_Type>() {
   return ::artm::RegularizerConfig_Type_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::SpecifiedSparsePhiConfig_Mode>() {
+  return ::artm::SpecifiedSparsePhiConfig_Mode_descriptor();
 }
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerInternalState_Type>() {
