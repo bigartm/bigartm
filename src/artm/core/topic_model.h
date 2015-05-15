@@ -177,6 +177,8 @@ class TopicModel : public Regularizable {
   // find p_wt matrix with regularization additions r_wt
   virtual void FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeights* p_wt) const;
 
+  const TokenCollectionWeights& Nwt () const { return n_wt_; }
+
  private:
   ModelName model_name_;
 

@@ -20,6 +20,7 @@
 ../src/artm/regularizer_sandbox/smooth_sparse_phi.cc
 ../src/artm/regularizer_sandbox/label_regularization_phi.cc
 ../src/artm/regularizer_sandbox/smooth_sparse_theta.cc
+../src/artm/regularizer_sandbox/specified_sparse_phi.cc
 ../src/artm/score_sandbox/perplexity.cc
 ../src/artm/score_sandbox/sparsity_theta.cc
 ../src/artm/score_sandbox/sparsity_phi.cc
@@ -74,6 +75,7 @@
 ../src/artm/regularizer_sandbox/smooth_sparse_phi.h
 ../src/artm/regularizer_sandbox/label_regularization_phi.h
 ../src/artm/regularizer_sandbox/smooth_sparse_theta.h
+../src/artm/regularizer_sandbox/specified_sparse_phi.h
 ../src/artm/score_sandbox/perplexity.h
 ../src/artm/score_sandbox/sparsity_theta.h
 ../src/artm/score_sandbox/sparsity_phi.h
