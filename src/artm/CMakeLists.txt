@@ -63,6 +63,8 @@ set(SRC_LIST
 	regularizer_sandbox/label_regularization_phi.h
 	regularizer_sandbox/smooth_sparse_theta.cc
 	regularizer_sandbox/smooth_sparse_theta.h
+	regularizer_sandbox/specified_sparse_phi.cc
+	regularizer_sandbox/specified_sparse_phi.h
 	score_sandbox/items_processed.cc
 	score_sandbox/items_processed.h
 	score_sandbox/perplexity.cc
