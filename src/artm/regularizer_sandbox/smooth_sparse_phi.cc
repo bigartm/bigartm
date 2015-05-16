@@ -41,7 +41,7 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::Regularizable& topic_mod
   }
 
   // proceed the regularization
-  for (int token_id = 0; token_id < topic_model.token_size(); ++token_id) {
+  for (int token_id = 0; token_id < token_size; ++token_id) {
     float coefficient = 1.0f;
     auto token = topic_model.token(token_id);
     if (has_dictionary) {

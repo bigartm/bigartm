@@ -27,6 +27,7 @@ class Regularizable {
 
   virtual void FindPwt(TokenCollectionWeights* p_wt) const = 0;
   virtual std::map<ClassId, std::vector<float> > FindNormalizers() const = 0;
+  virtual const TokenCollectionWeights& Nwt () const = 0;
 
   virtual ~Regularizable() {}
 };
