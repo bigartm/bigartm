@@ -42,7 +42,7 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::Regularizable& topic_mod
       float weights_sum = 0.0f;
       for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
         if (topics_to_regularize[topic_id])
-          weights_sum += p_wt[token_id][topic_id];
+          weights_sum += p_wt.get(token_id, topic_id);
       }
 
       // form the value
@@ -50,7 +50,7 @@ bool DecorrelatorPhi::RegularizePhi(const ::artm::core::Regularizable& topic_mod
         if (topics_to_regularize[topic_id]) {
           float weight = p_wt[token_id][topic_id];
           float value = static_cast<float>(- weight * (weights_sum - weight));
-          (*result)[token_id][topic_id] = value;
+          result->set(token_id, topic_id, value);
         }
       }
     }
