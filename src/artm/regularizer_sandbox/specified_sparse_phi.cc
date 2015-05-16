@@ -60,7 +60,7 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::Regularizable& topic_
         if (!topics_to_regularize[local_index]) continue;
 
       auto value = std::pair<int, float>(local_index,
-          mode_topics ? n_wt[local_index][global_index] : n_wt[global_index][local_index]);
+          mode_topics ? n_wt.get(local_index, global_index) : n_wt.get(global_index, local_index));
       normalizer += value.second;
 
       if (max_queue.size() < config_.max_elements_count()) {
@@ -104,9 +104,11 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::Regularizable& topic_
     auto saved_indices = artm::core::is_member(all_indices, indices_of_max);
     for (int local_index = 0; local_index < local_end; ++local_index) {
       if (mode_topics) {
-        (*result)[local_index][global_index] = saved_indices[local_index] ? 0.0f : -n_wt[local_index][global_index];
+        result->set(local_index, global_index,
+                    saved_indices[local_index] ? 0.0f : -n_wt.get(local_index, global_index));
       } else {
-        (*result)[global_index][local_index] = saved_indices[local_index] ? 0.0f : -n_wt[global_index][local_index];
+        result->set(global_index, local_index,
+                    saved_indices[local_index] ? 0.0f : -n_wt.get(global_index, local_index));
       }
     }
   }
