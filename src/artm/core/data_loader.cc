@@ -31,38 +31,6 @@ Instance* DataLoader::instance() {
   return instance_;
 }
 
-void DataLoader::PopulateDataStreams(const Batch& batch, ProcessorInput* pi) {
-  // loop through all streams
-  MasterComponentConfig config = instance()->schema()->config();
-  for (int stream_index = 0; stream_index < config.stream_size(); ++stream_index) {
-    const Stream& stream = config.stream(stream_index);
-    pi->add_stream_name(stream.name());
-
-    Mask* mask = pi->add_stream_mask();
-    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-      // verify if item is part of the stream
-      bool value = false;
-      switch (stream.type()) {
-        case Stream_Type_Global: {
-          value = true;
-          break;  // Stream_Type_Global
-        }
-
-        case Stream_Type_ItemIdModulus: {
-          int id_mod = batch.item(item_index).id() % stream.modulus();
-          value = repeated_field_contains(stream.residuals(), id_mod);
-          break;  // Stream_Type_ItemIdModulus
-        }
-
-        default:
-          BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("stream.type", stream.type()));
-      }
-
-      mask->add_value(value);
-    }
-  }
-}
-
 DataLoader::DataLoader(Instance* instance)
     : instance_(instance),
       generation_(nullptr),
@@ -226,7 +194,6 @@ void DataLoader::ThreadFunction() {
         continue;
       }
 
-      DataLoader::PopulateDataStreams(pi->batch(), pi.get());
       instance()->processor_queue()->push(pi);
     }
   } catch(...) {

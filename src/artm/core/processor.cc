@@ -104,6 +104,38 @@ InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_co
   return model_increment;
 }
 
+static void PopulateDataStreams(const MasterComponentConfig& config, const Batch& batch,
+                                ::artm::core::StreamMasks* pi) {
+  // loop through all streams
+  for (int stream_index = 0; stream_index < config.stream_size(); ++stream_index) {
+    const Stream& stream = config.stream(stream_index);
+    pi->add_stream_name(stream.name());
+
+    Mask* mask = pi->add_stream_mask();
+    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+      // verify if item is part of the stream
+      bool value = false;
+      switch (stream.type()) {
+        case Stream_Type_Global: {
+          value = true;
+          break;  // Stream_Type_Global
+        }
+
+        case Stream_Type_ItemIdModulus: {
+          int id_mod = batch.item(item_index).id() % stream.modulus();
+          value = repeated_field_contains(stream.residuals(), id_mod);
+          break;  // Stream_Type_ItemIdModulus
+        }
+
+        default:
+          BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("stream.type", stream.type()));
+      }
+
+      mask->add_value(value);
+    }
+  }
+}
+
 static std::shared_ptr<DenseMatrix<float>>
 InitializeTheta(const Batch& batch, const ModelConfig& model_config, const DataLoaderCacheEntry* cache) {
   int topic_size = model_config.topics_count();
@@ -531,7 +563,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
 static std::shared_ptr<Score>
 CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, const Batch& batch,
            const TopicModel& topic_model, const ModelConfig& model_config, const DenseMatrix<float>& theta_matrix,
-           const ProcessorInput* part) {
+           const StreamMasks* stream_masks) {
   if (!score_calc->is_cumulative())
     return nullptr;
 
@@ -544,9 +576,9 @@ CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, c
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     const Item& item = batch.item(item_index);
 
-    if (part != nullptr) {
-      int index_of_stream = repeated_field_index_of(part->stream_name(), score_calc->stream_name());
-      if ((index_of_stream != -1) && !part->stream_mask(index_of_stream).value(item_index))
+    if (stream_masks != nullptr) {
+      int index_of_stream = repeated_field_index_of(stream_masks->stream_name(), score_calc->stream_name());
+      if ((index_of_stream != -1) && !stream_masks->stream_mask(index_of_stream).value(item_index))
         continue;
     }
 
@@ -687,6 +719,9 @@ void Processor::ThreadFunction() {
       std::vector<ModelName> model_names = schema->GetModelNames();
       const MasterComponentConfig& master_config = schema->config();
 
+      StreamMasks stream_masks;
+      PopulateDataStreams(master_config, batch, &stream_masks);
+
       std::shared_ptr<CsrMatrix<float>> sparse_ndw;
       std::shared_ptr<DenseMatrix<float>> dense_ndw;
 
@@ -732,8 +767,8 @@ void Processor::ThreadFunction() {
         }
 
         // Find and save to the variable the index of model stream in the part->stream_name() list.
-        int model_stream_index = repeated_field_index_of(part->stream_name(), model_config.stream_name());
-        const Mask* stream_mask = (model_stream_index != -1) ? &part->stream_mask(model_stream_index) : nullptr;
+        int model_stream_index = repeated_field_index_of(stream_masks.stream_name(), model_config.stream_name());
+        const Mask* stream_mask = (model_stream_index != -1) ? &stream_masks.stream_mask(model_stream_index) : nullptr;
 
         if (model_config.use_sparse_bow()) {
           InferThetaSparse(model_config, batch, *schema, *sparse_ndw, *topic_model, theta_matrix.get(), blas);
@@ -787,7 +822,7 @@ void Processor::ThreadFunction() {
           }
 
           auto score_value = CalcScores(score_calc.get(), *schema, batch, *topic_model, model_config,
-                                        *theta_matrix, part.get());
+                                        *theta_matrix, &stream_masks);
           if (score_value == nullptr)
             continue;
           model_increment->add_score_name(score_name);

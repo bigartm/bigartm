@@ -28,7 +28,9 @@ message ProcessorInput
 
   // Identificator of the batch
   required string batch_uuid = 2;
+}
 
+message StreamMasks {
   // Information about streams (for example, training and testing items).
   // Withing each stream the length of flags vector
   // is the same as number of items in the batch.

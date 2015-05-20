@@ -38,6 +38,7 @@ void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
 class Mask;
 class DataLoaderCacheEntry;
 class ProcessorInput;
+class StreamMasks;
 class ModelIncrement;
 
 // ===================================================================
@@ -380,6 +381,84 @@ class ProcessorInput : public ::google::protobuf::Message {
   inline ::std::string* release_batch_uuid();
   inline void set_allocated_batch_uuid(::std::string* batch_uuid);
 
+  // @@protoc_insertion_point(class_scope:artm.core.ProcessorInput)
+ private:
+  inline void set_has_batch();
+  inline void clear_has_batch();
+  inline void set_has_batch_uuid();
+  inline void clear_has_batch_uuid();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::artm::Batch* batch_;
+  ::std::string* batch_uuid_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
+  friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
+
+  void InitAsDefaultInstance();
+  static ProcessorInput* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class StreamMasks : public ::google::protobuf::Message {
+ public:
+  StreamMasks();
+  virtual ~StreamMasks();
+
+  StreamMasks(const StreamMasks& from);
+
+  inline StreamMasks& operator=(const StreamMasks& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const StreamMasks& default_instance();
+
+  void Swap(StreamMasks* other);
+
+  // implements Message ----------------------------------------------
+
+  StreamMasks* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const StreamMasks& from);
+  void MergeFrom(const StreamMasks& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
   // repeated .artm.core.Mask stream_mask = 4;
   inline int stream_mask_size() const;
   inline void clear_stream_mask();
@@ -408,29 +487,23 @@ class ProcessorInput : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& stream_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_stream_name();
 
-  // @@protoc_insertion_point(class_scope:artm.core.ProcessorInput)
+  // @@protoc_insertion_point(class_scope:artm.core.StreamMasks)
  private:
-  inline void set_has_batch();
-  inline void clear_has_batch();
-  inline void set_has_batch_uuid();
-  inline void clear_has_batch_uuid();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::artm::Batch* batch_;
-  ::std::string* batch_uuid_;
   ::google::protobuf::RepeatedPtrField< ::artm::core::Mask > stream_mask_;
   ::google::protobuf::RepeatedPtrField< ::std::string> stream_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
 
   void InitAsDefaultInstance();
-  static ProcessorInput* default_instance_;
+  static StreamMasks* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -1063,72 +1136,76 @@ inline void ProcessorInput::set_allocated_batch_uuid(::std::string* batch_uuid) 
   }
 }
 
+// -------------------------------------------------------------------
+
+// StreamMasks
+
 // repeated .artm.core.Mask stream_mask = 4;
-inline int ProcessorInput::stream_mask_size() const {
+inline int StreamMasks::stream_mask_size() const {
   return stream_mask_.size();
 }
-inline void ProcessorInput::clear_stream_mask() {
+inline void StreamMasks::clear_stream_mask() {
   stream_mask_.Clear();
 }
-inline const ::artm::core::Mask& ProcessorInput::stream_mask(int index) const {
+inline const ::artm::core::Mask& StreamMasks::stream_mask(int index) const {
   return stream_mask_.Get(index);
 }
-inline ::artm::core::Mask* ProcessorInput::mutable_stream_mask(int index) {
+inline ::artm::core::Mask* StreamMasks::mutable_stream_mask(int index) {
   return stream_mask_.Mutable(index);
 }
-inline ::artm::core::Mask* ProcessorInput::add_stream_mask() {
+inline ::artm::core::Mask* StreamMasks::add_stream_mask() {
   return stream_mask_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::artm::core::Mask >&
-ProcessorInput::stream_mask() const {
+StreamMasks::stream_mask() const {
   return stream_mask_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::artm::core::Mask >*
-ProcessorInput::mutable_stream_mask() {
+StreamMasks::mutable_stream_mask() {
   return &stream_mask_;
 }
 
 // repeated string stream_name = 5;
-inline int ProcessorInput::stream_name_size() const {
+inline int StreamMasks::stream_name_size() const {
   return stream_name_.size();
 }
-inline void ProcessorInput::clear_stream_name() {
+inline void StreamMasks::clear_stream_name() {
   stream_name_.Clear();
 }
-inline const ::std::string& ProcessorInput::stream_name(int index) const {
+inline const ::std::string& StreamMasks::stream_name(int index) const {
   return stream_name_.Get(index);
 }
-inline ::std::string* ProcessorInput::mutable_stream_name(int index) {
+inline ::std::string* StreamMasks::mutable_stream_name(int index) {
   return stream_name_.Mutable(index);
 }
-inline void ProcessorInput::set_stream_name(int index, const ::std::string& value) {
+inline void StreamMasks::set_stream_name(int index, const ::std::string& value) {
   stream_name_.Mutable(index)->assign(value);
 }
-inline void ProcessorInput::set_stream_name(int index, const char* value) {
+inline void StreamMasks::set_stream_name(int index, const char* value) {
   stream_name_.Mutable(index)->assign(value);
 }
-inline void ProcessorInput::set_stream_name(int index, const char* value, size_t size) {
+inline void StreamMasks::set_stream_name(int index, const char* value, size_t size) {
   stream_name_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ProcessorInput::add_stream_name() {
+inline ::std::string* StreamMasks::add_stream_name() {
   return stream_name_.Add();
 }
-inline void ProcessorInput::add_stream_name(const ::std::string& value) {
+inline void StreamMasks::add_stream_name(const ::std::string& value) {
   stream_name_.Add()->assign(value);
 }
-inline void ProcessorInput::add_stream_name(const char* value) {
+inline void StreamMasks::add_stream_name(const char* value) {
   stream_name_.Add()->assign(value);
 }
-inline void ProcessorInput::add_stream_name(const char* value, size_t size) {
+inline void StreamMasks::add_stream_name(const char* value, size_t size) {
   stream_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ProcessorInput::stream_name() const {
+StreamMasks::stream_name() const {
   return stream_name_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ProcessorInput::mutable_stream_name() {
+StreamMasks::mutable_stream_name() {
   return &stream_name_;
 }
 

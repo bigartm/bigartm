@@ -49,7 +49,6 @@ class DataLoader : boost::noncopyable, public Notifiable {
   boost::thread thread_;
 
   void ThreadFunction();
-  void PopulateDataStreams(const Batch& batch, ProcessorInput* pi);
 };
 
 }  // namespace core
