@@ -408,18 +408,6 @@ class ProcessorInput : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& stream_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_stream_name();
 
-  // repeated .artm.core.DataLoaderCacheEntry cached_theta = 6;
-  inline int cached_theta_size() const;
-  inline void clear_cached_theta();
-  static const int kCachedThetaFieldNumber = 6;
-  inline const ::artm::core::DataLoaderCacheEntry& cached_theta(int index) const;
-  inline ::artm::core::DataLoaderCacheEntry* mutable_cached_theta(int index);
-  inline ::artm::core::DataLoaderCacheEntry* add_cached_theta();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >&
-      cached_theta() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >*
-      mutable_cached_theta();
-
   // @@protoc_insertion_point(class_scope:artm.core.ProcessorInput)
  private:
   inline void set_has_batch();
@@ -433,10 +421,9 @@ class ProcessorInput : public ::google::protobuf::Message {
   ::std::string* batch_uuid_;
   ::google::protobuf::RepeatedPtrField< ::artm::core::Mask > stream_mask_;
   ::google::protobuf::RepeatedPtrField< ::std::string> stream_name_;
-  ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry > cached_theta_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -542,18 +529,6 @@ class ModelIncrement : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& score() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_score();
 
-  // repeated .artm.core.DataLoaderCacheEntry cache = 10;
-  inline int cache_size() const;
-  inline void clear_cache();
-  static const int kCacheFieldNumber = 10;
-  inline const ::artm::core::DataLoaderCacheEntry& cache(int index) const;
-  inline ::artm::core::DataLoaderCacheEntry* mutable_cache(int index);
-  inline ::artm::core::DataLoaderCacheEntry* add_cache();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >&
-      cache() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >*
-      mutable_cache();
-
   // repeated string batch_uuid = 11;
   inline int batch_uuid_size() const;
   inline void clear_batch_uuid();
@@ -580,11 +555,10 @@ class ModelIncrement : public ::google::protobuf::Message {
   ::artm::TopicModel* topic_model_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_;
-  ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry > cache_;
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_uuid_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -1158,31 +1132,6 @@ ProcessorInput::mutable_stream_name() {
   return &stream_name_;
 }
 
-// repeated .artm.core.DataLoaderCacheEntry cached_theta = 6;
-inline int ProcessorInput::cached_theta_size() const {
-  return cached_theta_.size();
-}
-inline void ProcessorInput::clear_cached_theta() {
-  cached_theta_.Clear();
-}
-inline const ::artm::core::DataLoaderCacheEntry& ProcessorInput::cached_theta(int index) const {
-  return cached_theta_.Get(index);
-}
-inline ::artm::core::DataLoaderCacheEntry* ProcessorInput::mutable_cached_theta(int index) {
-  return cached_theta_.Mutable(index);
-}
-inline ::artm::core::DataLoaderCacheEntry* ProcessorInput::add_cached_theta() {
-  return cached_theta_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >&
-ProcessorInput::cached_theta() const {
-  return cached_theta_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >*
-ProcessorInput::mutable_cached_theta() {
-  return &cached_theta_;
-}
-
 // -------------------------------------------------------------------
 
 // ModelIncrement
@@ -1311,31 +1260,6 @@ ModelIncrement::score() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 ModelIncrement::mutable_score() {
   return &score_;
-}
-
-// repeated .artm.core.DataLoaderCacheEntry cache = 10;
-inline int ModelIncrement::cache_size() const {
-  return cache_.size();
-}
-inline void ModelIncrement::clear_cache() {
-  cache_.Clear();
-}
-inline const ::artm::core::DataLoaderCacheEntry& ModelIncrement::cache(int index) const {
-  return cache_.Get(index);
-}
-inline ::artm::core::DataLoaderCacheEntry* ModelIncrement::mutable_cache(int index) {
-  return cache_.Mutable(index);
-}
-inline ::artm::core::DataLoaderCacheEntry* ModelIncrement::add_cache() {
-  return cache_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >&
-ModelIncrement::cache() const {
-  return cache_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::core::DataLoaderCacheEntry >*
-ModelIncrement::mutable_cache() {
-  return &cache_;
 }
 
 // repeated string batch_uuid = 11;

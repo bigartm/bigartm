@@ -11,6 +11,8 @@ set(SRC_LIST
 	score_calculator_interface.h
 	core/batch_manager.cc
 	core/batch_manager.h
+	core/cache_manager.cc
+	core/cache_manager.h
 	core/call_on_destruction.h
 	core/collection_parser.cc
 	core/collection_parser.h

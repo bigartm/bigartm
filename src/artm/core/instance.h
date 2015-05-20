@@ -25,6 +25,7 @@ namespace core {
 
 class DataLoader;
 class BatchManager;
+class CacheManager;
 class Processor;
 class Merger;
 class InstanceSchema;
@@ -46,6 +47,7 @@ class Instance : boost::noncopyable {
 
   DataLoader* data_loader();
   BatchManager* batch_manager();
+  CacheManager* cache_manager();
   Merger* merger();
 
   int processor_size() { return processors_.size(); }
@@ -75,6 +77,9 @@ class Instance : boost::noncopyable {
   ProcessorQueue processor_queue_;
 
   MergerQueue merger_queue_;
+
+  // Depends on schema_
+  std::shared_ptr<CacheManager> cache_manager_;
 
   // Depends on schema_
   std::shared_ptr<BatchManager> batch_manager_;

@@ -11,6 +11,7 @@
 #include "artm/core/helpers.h"
 #include "artm/core/data_loader.h"
 #include "artm/core/batch_manager.h"
+#include "artm/core/cache_manager.h"
 #include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/processor.h"
@@ -69,6 +70,7 @@ Instance::Instance(const MasterComponentConfig& config)
       dictionaries_(),
       processor_queue_(),
       merger_queue_(),
+      cache_manager_(),
       batch_manager_(),
       data_loader_(nullptr),
       merger_(),
@@ -84,6 +86,10 @@ DataLoader* Instance::data_loader() {
 
 BatchManager* Instance::batch_manager() {
   return batch_manager_.get();
+}
+
+CacheManager* Instance::cache_manager() {
+  return cache_manager_.get();
 }
 
 Merger* Instance::merger() {
@@ -114,6 +120,10 @@ void Instance::DisposeModel(ModelName model_name) {
 
   if (batch_manager_ != nullptr) {
     batch_manager_->DisposeModel(model_name);
+  }
+
+  if (cache_manager_ != nullptr) {
+    cache_manager_->DisposeModel(model_name);
   }
 }
 
@@ -285,6 +295,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
 
   if (!is_configured_) {
     // First reconfiguration.
+    cache_manager_.reset(new CacheManager(schema_));
     batch_manager_.reset(new BatchManager(&schema_));
     data_loader_.reset(new DataLoader(this));
     merger_.reset(new Merger(&merger_queue_, &schema_,
@@ -305,6 +316,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
           &processor_queue_,
           &merger_queue_,
           *merger_,
+          *cache_manager_,
           schema_)));
     }
   }

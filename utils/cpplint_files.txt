@@ -2,6 +2,7 @@
 ../src/artm/cpp_interface.cc
 ../src/artm/c_interface.cc
 ../src/artm/core/batch_manager.cc
+../src/artm/core/cache_manager.cc
 ../src/artm/core/collection_parser.cc
 ../src/artm/core/data_loader.cc
 ../src/artm/core/dictionary.cc
@@ -46,6 +47,7 @@
 ../src/artm/cpp_interface.h
 ../src/artm/c_interface.h
 ../src/artm/core/batch_manager.h
+../src/artm/core/cache_manager.h
 ../src/artm/core/call_on_destruction.h
 ../src/artm/core/collection_parser.h
 ../src/artm/core/common.h

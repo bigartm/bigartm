@@ -34,9 +34,6 @@ message ProcessorInput
   // is the same as number of items in the batch.
   repeated Mask stream_mask = 4;
   repeated string stream_name = 5;
-
-  // Contains information about theta matrix on previous iteration.
-  repeated DataLoaderCacheEntry cached_theta = 6;
 }
 
 // All information, gathered by Processor for a particular batch and model.
@@ -45,9 +42,6 @@ message ModelIncrement {
 
   repeated string score_name = 8;
   repeated bytes score = 9;
-
-  // Cached thetas from previous iteration
-  repeated DataLoaderCacheEntry cache = 10;
 
   // Identificators of all batches, contributing to this model increment.
   repeated string batch_uuid = 11;

@@ -66,7 +66,6 @@ void DataLoader::PopulateDataStreams(const Batch& batch, ProcessorInput* pi) {
 DataLoader::DataLoader(Instance* instance)
     : instance_(instance),
       generation_(nullptr),
-      cache_(),
       is_stopping(false),
       thread_() {
   std::string disk_path = instance->schema()->config().disk_path();
@@ -81,13 +80,6 @@ DataLoader::DataLoader(Instance* instance)
 }
 
 DataLoader::~DataLoader() {
-  auto keys = cache_.keys();
-  for (auto &key : keys) {
-    auto cache_entry = cache_.get(key);
-    if (cache_entry != nullptr && cache_entry->has_filename())
-      try { fs::remove(fs::path(cache_entry->filename())); } catch(...) {}
-  }
-
   is_stopping = true;
   if (thread_.joinable()) {
     thread_.join();
@@ -186,70 +178,8 @@ bool DataLoader::WaitIdle(const WaitIdleArgs& args) {
   return true;
 }
 
-void DataLoader::DisposeModel(ModelName model_name) {
-  auto keys = cache_.keys();
-  for (auto &key : keys) {
-    auto cache_entry = cache_.get(key);
-    if (cache_entry == nullptr) {
-      continue;
-    }
-
-    if (cache_entry->model_name() == model_name) {
-      if (cache_entry->has_filename())
-        try { fs::remove(fs::path(cache_entry->filename())); } catch(...) {}
-      cache_.erase(key);
-    }
-  }
-}
-
-bool DataLoader::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
-                                         ::artm::ThetaMatrix* theta_matrix) {
-  std::string model_name = get_theta_args.model_name();
-  std::vector<CacheKey> keys = cache_.keys();
-
-  for (auto &key : keys) {
-    if (key.second != model_name)
-      continue;
-
-    std::shared_ptr<DataLoaderCacheEntry> cache = cache_.get(key);
-    if (cache == nullptr)
-      continue;
-
-    if (cache->has_filename()) {
-      DataLoaderCacheEntry cache_reloaded;
-      BatchHelpers::LoadMessage(cache->filename(), &cache_reloaded);
-      BatchHelpers::PopulateThetaMatrixFromCacheEntry(cache_reloaded, get_theta_args, theta_matrix);
-    } else {
-      BatchHelpers::PopulateThetaMatrixFromCacheEntry(*cache, get_theta_args, theta_matrix);
-    }
-
-    if (get_theta_args.clean_cache()) {
-      cache_.erase(key);
-    }
-  }
-
-  return true;
-}
-
 void DataLoader::Callback(ModelIncrement* model_increment) {
   instance_->batch_manager()->Callback(model_increment);
-
-  if (instance()->schema()->config().cache_theta()) {
-    for (int cache_index = 0; cache_index < model_increment->cache_size(); ++cache_index) {
-      DataLoaderCacheEntry* cache = model_increment->mutable_cache(cache_index);
-      std::string uuid_str = cache->batch_uuid();
-      boost::uuids::uuid uuid(boost::uuids::string_generator()(uuid_str.c_str()));
-      ModelName model_name = cache->model_name();
-      CacheKey cache_key(uuid, model_name);
-      std::shared_ptr<DataLoaderCacheEntry> cache_entry(new DataLoaderCacheEntry());
-      cache_entry->Swap(cache);
-
-      std::shared_ptr<DataLoaderCacheEntry> old_entry = cache_.get(cache_key);
-      cache_.set(cache_key, cache_entry);
-      if (old_entry != nullptr && old_entry->has_filename())
-        try { fs::remove(fs::path(old_entry->filename())); } catch(...) {}
-    }
-  }
 }
 
 void DataLoader::ThreadFunction() {
@@ -294,28 +224,6 @@ void DataLoader::ThreadFunction() {
       if (pi == nullptr) {
         instance_->batch_manager()->Done(next_task.uuid, ModelName());
         continue;
-      }
-
-      auto keys = cache_.keys();
-      for (auto &key : keys) {
-        auto cache_entry = cache_.get(key);
-        if (cache_entry == nullptr) {
-          continue;
-        }
-
-        if (cache_entry->batch_uuid() == pi->batch_uuid()) {
-          if (cache_entry->has_filename()) {
-            try {
-              DataLoaderCacheEntry new_entry;
-              BatchHelpers::LoadMessage(cache_entry->filename(), &new_entry);
-              pi->add_cached_theta()->CopyFrom(new_entry);
-            } catch (...) {
-              LOG(ERROR) << "Unable to reload cache for " << cache_entry->filename();
-            }
-          } else {
-            pi->add_cached_theta()->CopyFrom(*cache_entry);
-          }
-        }
       }
 
       DataLoader::PopulateDataStreams(pi->batch(), pi.get());

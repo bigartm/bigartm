@@ -36,16 +36,10 @@ class DataLoader : boost::noncopyable, public Notifiable {
 
   // Returns false if BigARTM is still processing the collection, otherwise true.
   bool WaitIdle(const WaitIdleArgs& args);
-  void DisposeModel(ModelName model_name);
-  bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
-                          ::artm::ThetaMatrix* theta_matrix);
 
  private:
   Instance* instance_;
   std::unique_ptr<DiskGeneration> generation_;
-
-  typedef std::pair<boost::uuids::uuid, ModelName> CacheKey;
-  ThreadSafeCollectionHolder<CacheKey, DataLoaderCacheEntry> cache_;
 
   mutable std::atomic<bool> is_stopping;
 

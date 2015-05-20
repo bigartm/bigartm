@@ -24,6 +24,7 @@
 #include "artm/core/helpers.h"
 #include "artm/core/instance_schema.h"
 #include "artm/core/merger.h"
+#include "artm/core/cache_manager.h"
 #include "artm/core/topic_model.h"
 
 #include "artm/utility/blas.h"
@@ -41,10 +42,12 @@ namespace core {
 Processor::Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >*  processor_queue,
                      ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                      const Merger& merger,
+                     const CacheManager& cache_manager,
                      const ThreadSafeHolder<InstanceSchema>& schema)
     : processor_queue_(processor_queue),
       merger_queue_(merger_queue),
       merger_(merger),
+      cache_manager_(cache_manager),
       schema_(schema),
       is_stopping(false),
       thread_() {
@@ -525,16 +528,6 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
   }
 }
 
-static const DataLoaderCacheEntry* FindCacheEntry(const ProcessorInput& part, const ModelConfig& model_config) {
-  for (int i = 0; i < part.cached_theta_size(); ++i) {
-    if ((part.cached_theta(i).batch_uuid() == part.batch_uuid()) &&
-        (part.cached_theta(i).model_name() == model_config.name())) {
-      return &part.cached_theta(i);
-    }
-  }
-  return nullptr;
-}
-
 static std::shared_ptr<Score>
 CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, const Batch& batch,
            const TopicModel& topic_model, const ModelConfig& model_config, const DenseMatrix<float>& theta_matrix,
@@ -723,8 +716,11 @@ void Processor::ThreadFunction() {
           dense_ndw = InitializeDenseNdw(batch);
         }
 
-        const DataLoaderCacheEntry* cache = FindCacheEntry(*part, model_config);
-        std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache);
+
+        std::shared_ptr<DataLoaderCacheEntry> cache;
+        boost::uuids::uuid batch_uuid = boost::lexical_cast<boost::uuids::uuid>(batch.id());
+        cache = cache_manager_.FindCacheEntry(batch_uuid, model_config.name());
+        std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache.get());
 
         std::shared_ptr<ModelIncrement> model_increment = InitializeModelIncrement(*part, model_config, *topic_model);
         call_on_destruction c([&]() { merger_queue_->push(model_increment); });
@@ -748,7 +744,8 @@ void Processor::ThreadFunction() {
 
         if (schema->config().cache_theta()) {
           // Update theta cache
-          DataLoaderCacheEntry new_cache_entry;
+          std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(new DataLoaderCacheEntry());
+          DataLoaderCacheEntry& new_cache_entry = *new_cache_entry_ptr;
           new_cache_entry.set_batch_uuid(part->batch_uuid());
           new_cache_entry.set_model_name(model_name);
           new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
@@ -776,7 +773,7 @@ void Processor::ThreadFunction() {
             }
           }
 
-          model_increment->add_cache()->CopyFrom(new_cache_entry);
+          cache_manager_.UpdateCacheEntry(new_cache_entry_ptr);
         }
 
         for (int score_index = 0; score_index < master_config.score_config_size(); ++score_index) {
