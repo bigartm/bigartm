@@ -33,6 +33,7 @@
 ../src/artm/utility/blas.cc
 ../src/artm_tests/boost_thread_test.cc
 ../src/artm_tests/blas_test.cc
+../src/artm_tests/cache_manager_test.cc
 ../src/artm_tests/collection_parser_test.cc
 ../src/artm_tests/cpp_interface_test.cc
 ../src/artm_tests/template_manager_test.cc

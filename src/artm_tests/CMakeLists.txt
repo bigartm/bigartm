@@ -7,6 +7,7 @@ set(SRC_LIST
 	batch_manager_test.cc
 	blas_test.cc
 	boost_thread_test.cc
+	cache_manager_test.cc
 	collection_parser_test.cc
 	cpp_interface_test.cc
 	instance_test.cc
