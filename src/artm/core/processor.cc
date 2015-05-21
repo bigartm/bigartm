@@ -68,9 +68,9 @@ static std::shared_ptr<ModelIncrement>
 InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_config,
                          const ::artm::core::TopicModel& topic_model) {
   std::shared_ptr<ModelIncrement> model_increment = std::make_shared<ModelIncrement>();
-  model_increment->add_batch_uuid(part.batch_uuid());
-
   const Batch& batch = part.batch();
+  model_increment->add_batch_uuid(batch.id());
+
   int topic_size = model_config.topics_count();
 
   // process part and store result in merger queue
@@ -758,7 +758,12 @@ void Processor::ThreadFunction() {
         std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache.get());
 
         std::shared_ptr<ModelIncrement> model_increment = InitializeModelIncrement(*part, model_config, *topic_model);
-        call_on_destruction c([&]() { merger_queue_->push(model_increment); });
+        call_on_destruction c([&]() {
+          merger_queue_->push(model_increment);
+          if (part->notifiable() != nullptr) {
+            part->notifiable()->Callback(batch_uuid, model_config.name());
+          }
+        });
 
         if (topic_model->token_size() == 0) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
@@ -781,7 +786,7 @@ void Processor::ThreadFunction() {
           // Update theta cache
           std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(new DataLoaderCacheEntry());
           DataLoaderCacheEntry& new_cache_entry = *new_cache_entry_ptr;
-          new_cache_entry.set_batch_uuid(part->batch_uuid());
+          new_cache_entry.set_batch_uuid(batch.id());
           new_cache_entry.set_model_name(model_name);
           new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
           for (int item_index = 0; item_index < batch.item_size(); ++item_index) {

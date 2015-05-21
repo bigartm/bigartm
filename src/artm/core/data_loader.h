@@ -24,13 +24,12 @@ namespace core {
 class Instance;
 class DiskGeneration;
 
-class DataLoader : boost::noncopyable, public Notifiable {
+class DataLoader : boost::noncopyable {
  public:
   explicit DataLoader(Instance* instance);
   virtual ~DataLoader();
 
   bool AddBatch(const AddBatchArgs& args);
-  virtual void Callback(ModelIncrement* model_increment);
   Instance* instance();
   void InvokeIteration(const InvokeIterationArgs& args);
 

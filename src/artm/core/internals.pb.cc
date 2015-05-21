@@ -27,9 +27,6 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* DataLoaderCacheEntry_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   DataLoaderCacheEntry_reflection_ = NULL;
-const ::google::protobuf::Descriptor* ProcessorInput_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  ProcessorInput_reflection_ = NULL;
 const ::google::protobuf::Descriptor* StreamMasks_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   StreamMasks_reflection_ = NULL;
@@ -82,23 +79,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DataLoaderCacheEntry));
-  ProcessorInput_descriptor_ = file->message_type(2);
-  static const int ProcessorInput_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessorInput, batch_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessorInput, batch_uuid_),
-  };
-  ProcessorInput_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      ProcessorInput_descriptor_,
-      ProcessorInput::default_instance_,
-      ProcessorInput_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessorInput, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessorInput, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(ProcessorInput));
-  StreamMasks_descriptor_ = file->message_type(3);
+  StreamMasks_descriptor_ = file->message_type(2);
   static const int StreamMasks_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StreamMasks, stream_mask_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StreamMasks, stream_name_),
@@ -114,7 +95,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(StreamMasks));
-  ModelIncrement_descriptor_ = file->message_type(4);
+  ModelIncrement_descriptor_ = file->message_type(3);
   static const int ModelIncrement_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, topic_model_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, score_name_),
@@ -149,8 +130,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     DataLoaderCacheEntry_descriptor_, &DataLoaderCacheEntry::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    ProcessorInput_descriptor_, &ProcessorInput::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     StreamMasks_descriptor_, &StreamMasks::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ModelIncrement_descriptor_, &ModelIncrement::default_instance());
@@ -163,8 +142,6 @@ void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto() {
   delete Mask_reflection_;
   delete DataLoaderCacheEntry::default_instance_;
   delete DataLoaderCacheEntry_reflection_;
-  delete ProcessorInput::default_instance_;
-  delete ProcessorInput_reflection_;
   delete StreamMasks::default_instance_;
   delete StreamMasks_reflection_;
   delete ModelIncrement::default_instance_;
@@ -185,23 +162,20 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "_name\030\001 \001(\t\022\022\n\nbatch_uuid\030\002 \001(\t\022\017\n\007item_"
     "id\030\003 \003(\005\022\037\n\005theta\030\004 \003(\0132\020.artm.FloatArra"
     "y\022\022\n\ntopic_name\030\005 \003(\t\022\020\n\010filename\030\006 \001(\t\022"
-    "\022\n\nitem_title\030\007 \003(\t\"@\n\016ProcessorInput\022\032\n"
-    "\005batch\030\001 \002(\0132\013.artm.Batch\022\022\n\nbatch_uuid\030"
-    "\002 \002(\t\"H\n\013StreamMasks\022$\n\013stream_mask\030\004 \003("
-    "\0132\017.artm.core.Mask\022\023\n\013stream_name\030\005 \003(\t\""
-    "n\n\016ModelIncrement\022%\n\013topic_model\030\001 \001(\0132\020"
-    ".artm.TopicModel\022\022\n\nscore_name\030\010 \003(\t\022\r\n\005"
-    "score\030\t \003(\014\022\022\n\nbatch_uuid\030\013 \003(\t", 511);
+    "\022\n\nitem_title\030\007 \003(\t\"H\n\013StreamMasks\022$\n\013st"
+    "ream_mask\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stre"
+    "am_name\030\005 \003(\t\"n\n\016ModelIncrement\022%\n\013topic"
+    "_model\030\001 \001(\0132\020.artm.TopicModel\022\022\n\nscore_"
+    "name\030\010 \003(\t\022\r\n\005score\030\t \003(\014\022\022\n\nbatch_uuid\030"
+    "\013 \003(\t", 445);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
   DataLoaderCacheEntry::default_instance_ = new DataLoaderCacheEntry();
-  ProcessorInput::default_instance_ = new ProcessorInput();
   StreamMasks::default_instance_ = new StreamMasks();
   ModelIncrement::default_instance_ = new ModelIncrement();
   Mask::default_instance_->InitAsDefaultInstance();
   DataLoaderCacheEntry::default_instance_->InitAsDefaultInstance();
-  ProcessorInput::default_instance_->InitAsDefaultInstance();
   StreamMasks::default_instance_->InitAsDefaultInstance();
   ModelIncrement::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto);
@@ -958,277 +932,6 @@ void DataLoaderCacheEntry::Swap(DataLoaderCacheEntry* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = DataLoaderCacheEntry_descriptor_;
   metadata.reflection = DataLoaderCacheEntry_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int ProcessorInput::kBatchFieldNumber;
-const int ProcessorInput::kBatchUuidFieldNumber;
-#endif  // !_MSC_VER
-
-ProcessorInput::ProcessorInput()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void ProcessorInput::InitAsDefaultInstance() {
-  batch_ = const_cast< ::artm::Batch*>(&::artm::Batch::default_instance());
-}
-
-ProcessorInput::ProcessorInput(const ProcessorInput& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void ProcessorInput::SharedCtor() {
-  _cached_size_ = 0;
-  batch_ = NULL;
-  batch_uuid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-ProcessorInput::~ProcessorInput() {
-  SharedDtor();
-}
-
-void ProcessorInput::SharedDtor() {
-  if (batch_uuid_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete batch_uuid_;
-  }
-  if (this != default_instance_) {
-    delete batch_;
-  }
-}
-
-void ProcessorInput::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* ProcessorInput::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return ProcessorInput_descriptor_;
-}
-
-const ProcessorInput& ProcessorInput::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
-  return *default_instance_;
-}
-
-ProcessorInput* ProcessorInput::default_instance_ = NULL;
-
-ProcessorInput* ProcessorInput::New() const {
-  return new ProcessorInput;
-}
-
-void ProcessorInput::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_batch()) {
-      if (batch_ != NULL) batch_->::artm::Batch::Clear();
-    }
-    if (has_batch_uuid()) {
-      if (batch_uuid_ != &::google::protobuf::internal::GetEmptyString()) {
-        batch_uuid_->clear();
-      }
-    }
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool ProcessorInput::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required .artm.Batch batch = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_batch()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(18)) goto parse_batch_uuid;
-        break;
-      }
-
-      // required string batch_uuid = 2;
-      case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch_uuid:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_batch_uuid()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->batch_uuid().data(), this->batch_uuid().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void ProcessorInput::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // required .artm.Batch batch = 1;
-  if (has_batch()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->batch(), output);
-  }
-
-  // required string batch_uuid = 2;
-  if (has_batch_uuid()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->batch_uuid().data(), this->batch_uuid().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->batch_uuid(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* ProcessorInput::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required .artm.Batch batch = 1;
-  if (has_batch()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        1, this->batch(), target);
-  }
-
-  // required string batch_uuid = 2;
-  if (has_batch_uuid()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->batch_uuid().data(), this->batch_uuid().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->batch_uuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int ProcessorInput::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required .artm.Batch batch = 1;
-    if (has_batch()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->batch());
-    }
-
-    // required string batch_uuid = 2;
-    if (has_batch_uuid()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->batch_uuid());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void ProcessorInput::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const ProcessorInput* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const ProcessorInput*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void ProcessorInput::MergeFrom(const ProcessorInput& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_batch()) {
-      mutable_batch()->::artm::Batch::MergeFrom(from.batch());
-    }
-    if (from.has_batch_uuid()) {
-      set_batch_uuid(from.batch_uuid());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void ProcessorInput::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void ProcessorInput::CopyFrom(const ProcessorInput& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool ProcessorInput::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000003) != 0x00000003) return false;
-
-  return true;
-}
-
-void ProcessorInput::Swap(ProcessorInput* other) {
-  if (other != this) {
-    std::swap(batch_, other->batch_);
-    std::swap(batch_uuid_, other->batch_uuid_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata ProcessorInput::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = ProcessorInput_descriptor_;
-  metadata.reflection = ProcessorInput_reflection_;
   return metadata;
 }
 

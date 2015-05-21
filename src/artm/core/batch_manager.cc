@@ -2,8 +2,6 @@
 
 #include "artm/core/batch_manager.h"
 
-#include "boost/uuid/string_generator.hpp"
-
 #include "artm/core/instance_schema.h"
 #include "artm/core/thread_safe_holder.h"
 
@@ -109,14 +107,8 @@ bool BatchManager::IsEverythingProcessed() const {
   return true;
 }
 
-void BatchManager::Callback(ModelIncrement* model_increment) {
-  for (int batch_index = 0; batch_index < model_increment->batch_uuid_size(); ++batch_index) {
-    std::string uuid_str = model_increment->batch_uuid(batch_index);
-    boost::uuids::uuid uuid(boost::uuids::string_generator()(uuid_str.c_str()));
-
-    ModelName model_name = model_increment->topic_model().name();
-    Done(uuid, model_name);
-  }
+void BatchManager::Callback(const boost::uuids::uuid& id, const ModelName& model_name) {
+  Done(id, model_name);
 }
 
 }  // namespace core

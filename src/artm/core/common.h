@@ -96,12 +96,6 @@ const std::string kBatchExtension = ".batch";
 
 const int kIdleLoopFrequency = 1;  // 1 ms
 
-class Notifiable {
- public:
-  virtual ~Notifiable() {}
-  virtual void Callback(ModelIncrement* model_increment) = 0;
-};
-
 class CuckooWatch {
  public:
   explicit CuckooWatch(std::string message)

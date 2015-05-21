@@ -15,6 +15,7 @@
 #include "boost/uuid/uuid.hpp"
 
 #include "artm/core/common.h"
+#include "artm/core/processor_input.h"
 
 namespace artm {
 namespace core {
@@ -58,7 +59,7 @@ class BatchManager : boost::noncopyable, public Notifiable {
   // Checks if all added tasks were processed (and marked as "Done").
   bool IsEverythingProcessed() const;
 
-  virtual void Callback(ModelIncrement* model_increment);
+  virtual void Callback(const boost::uuids::uuid& id, const ModelName& model_name);
 
  private:
   mutable boost::mutex lock_;

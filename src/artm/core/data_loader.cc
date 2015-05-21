@@ -18,6 +18,7 @@
 #include "artm/core/batch_manager.h"
 #include "artm/core/instance_schema.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/processor_input.h"
 #include "artm/core/helpers.h"
 #include "artm/core/generation.h"
 #include "artm/core/merger.h"
@@ -88,8 +89,8 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
     }
   }
   auto pi = std::make_shared<ProcessorInput>();
+  pi->set_notifiable(instance_->batch_manager());
   pi->mutable_batch()->CopyFrom(*batch);
-  pi->set_batch_uuid(batch->id());
   boost::uuids::uuid uuid = boost::lexical_cast<boost::uuids::uuid>(batch->id());
   instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
   instance_->processor_queue()->push(pi);
@@ -146,10 +147,6 @@ bool DataLoader::WaitIdle(const WaitIdleArgs& args) {
   return true;
 }
 
-void DataLoader::Callback(ModelIncrement* model_increment) {
-  instance_->batch_manager()->Callback(model_increment);
-}
-
 void DataLoader::ThreadFunction() {
   try {
     Helpers::SetThreadName(-1, "DataLoader thread");
@@ -177,12 +174,12 @@ void DataLoader::ThreadFunction() {
       }
 
       std::shared_ptr<ProcessorInput> pi = std::make_shared<ProcessorInput>();
+      pi->set_notifiable(instance()->batch_manager());
       try {
         CuckooWatch cuckoo2(std::string("LoadMessage(") + next_task.file_path + ")", &cuckoo);
         ::artm::core::BatchHelpers::LoadMessage(next_task.file_path, pi->mutable_batch());
 
         // keep batch.id and task.uuid in sync
-        pi->set_batch_uuid(boost::lexical_cast<std::string>(next_task.uuid));
         pi->mutable_batch()->set_id(boost::lexical_cast<std::string>(next_task.uuid));
       } catch (std::exception& ex) {
         LOG(ERROR) << ex.what() << ", the batch will be skipped.";

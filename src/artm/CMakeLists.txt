@@ -38,6 +38,8 @@ set(SRC_LIST
 	core/merger.h
 	core/processor.cc
 	core/processor.h
+	core/processor_input.cc
+	core/processor_input.h
 	core/protobuf_helpers.h
 	core/regularizable.h
 	core/template_manager.h

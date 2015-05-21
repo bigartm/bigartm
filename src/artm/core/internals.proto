@@ -21,15 +21,6 @@ message DataLoaderCacheEntry {
   repeated string item_title = 7;
 }
 
-// A message containing all data to transfer from DataLoader to Processor
-message ProcessorInput
-{
-  required Batch batch = 1;
-
-  // Identificator of the batch
-  required string batch_uuid = 2;
-}
-
 message StreamMasks {
   // Information about streams (for example, training and testing items).
   // Withing each stream the length of flags vector

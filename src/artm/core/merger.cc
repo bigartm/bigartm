@@ -12,6 +12,7 @@
 #include "boost/exception/diagnostic_information.hpp"
 #include "boost/range/adaptor/map.hpp"
 #include "boost/range/algorithm/copy.hpp"
+#include "boost/uuid/string_generator.hpp"
 
 #include "glog/logging.h"
 
@@ -28,8 +29,7 @@ namespace core {
 
 Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
-               const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
-               Notifiable* notifiable)
+               const ::artm::core::ThreadSafeDictionaryCollection* dictionaries)
     : topic_model_(),
       topic_model_inc_(),
       schema_(schema),
@@ -38,7 +38,6 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
       is_idle_(true),
       merger_queue_(merger_queue),
       dictionaries_(dictionaries),
-      notifiable_(notifiable),
       is_stopping(false),
       thread_() {
   // Keep this at the last action in constructor.
@@ -264,12 +263,6 @@ void Merger::ThreadFunction() {
         if (!merger_queue_->try_pop(&model_increment)) {
           break;  // MAIN FOR LOOP
         }
-
-        call_on_destruction c([&]() {
-          if (notifiable_ != nullptr) {
-            notifiable_->Callback(model_increment.get());
-          }
-        });
 
         ModelName model_name = model_increment->topic_model().name();
         auto cur_ttm = topic_model_.get(model_name);

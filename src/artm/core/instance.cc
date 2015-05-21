@@ -298,8 +298,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     cache_manager_.reset(new CacheManager(schema_));
     batch_manager_.reset(new BatchManager(&schema_));
     data_loader_.reset(new DataLoader(this));
-    merger_.reset(new Merger(&merger_queue_, &schema_,
-                             &dictionaries_, data_loader_.get()));
+    merger_.reset(new Merger(&merger_queue_, &schema_, &dictionaries_));
 
     is_configured_  = true;
   }
