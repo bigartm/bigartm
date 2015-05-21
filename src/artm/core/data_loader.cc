@@ -62,7 +62,8 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
   }
 
   int timeout = args.timeout_milliseconds();
-  MasterComponentConfig config = instance()->schema()->config();
+  std::shared_ptr<InstanceSchema> schema = instance()->schema();
+  const MasterComponentConfig& config = schema->config();
 
   std::shared_ptr<Batch> batch = std::make_shared< ::artm::Batch>();
   if (args.has_batch_file_name()) {
@@ -88,12 +89,18 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
       if ((time_end - time_start).total_milliseconds() >= timeout) return false;
     }
   }
-  auto pi = std::make_shared<ProcessorInput>();
-  pi->set_notifiable(instance_->batch_manager());
-  pi->mutable_batch()->CopyFrom(*batch);
-  boost::uuids::uuid uuid = boost::lexical_cast<boost::uuids::uuid>(batch->id());
+
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
   instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
-  instance_->processor_queue()->push(pi);
+  std::vector<ModelName> model_names = schema->GetModelNames();
+  std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+    auto pi = std::make_shared<ProcessorInput>();
+    pi->set_notifiable(instance_->batch_manager());
+    pi->set_model_name(model_name);
+    pi->mutable_batch()->CopyFrom(*batch);
+    pi->set_task_id(uuid);
+    instance_->processor_queue()->push(pi);
+  });
 
   return true;
 }
@@ -157,15 +164,13 @@ void DataLoader::ThreadFunction() {
         break;
       }
 
-      auto schema = instance()->schema();
-      auto config = schema->config();
+      std::shared_ptr<InstanceSchema> schema = instance()->schema();
+      const MasterComponentConfig& config = schema->config();
 
       if (instance()->processor_queue()->size() >= config.processor_queue_max_size()) {
         boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
         continue;
       }
-
-      CuckooWatch cuckoo("LoadBatch", 2);
 
       BatchManagerTask next_task = instance_->batch_manager()->Next();
       if (next_task.uuid.is_nil()) {
@@ -173,25 +178,15 @@ void DataLoader::ThreadFunction() {
         continue;
       }
 
-      std::shared_ptr<ProcessorInput> pi = std::make_shared<ProcessorInput>();
-      pi->set_notifiable(instance()->batch_manager());
-      try {
-        CuckooWatch cuckoo2(std::string("LoadMessage(") + next_task.file_path + ")", &cuckoo);
-        ::artm::core::BatchHelpers::LoadMessage(next_task.file_path, pi->mutable_batch());
-
-        // keep batch.id and task.uuid in sync
-        pi->mutable_batch()->set_id(boost::lexical_cast<std::string>(next_task.uuid));
-      } catch (std::exception& ex) {
-        LOG(ERROR) << ex.what() << ", the batch will be skipped.";
-        pi = nullptr;
-      }
-
-      if (pi == nullptr) {
-        instance_->batch_manager()->Done(next_task.uuid, ModelName());
-        continue;
-      }
-
-      instance()->processor_queue()->push(pi);
+      std::vector<ModelName> model_names = schema->GetModelNames();
+      std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+        std::shared_ptr<ProcessorInput> pi = std::make_shared<ProcessorInput>();
+        pi->set_notifiable(instance()->batch_manager());
+        pi->set_task_id(next_task.uuid);
+        pi->set_batch_filename(next_task.file_path);
+        pi->set_model_name(model_name);
+        instance()->processor_queue()->push(pi);
+      });
     }
   } catch(...) {
     LOG(FATAL) << boost::current_exception_diagnostic_information();

@@ -65,20 +65,18 @@ Processor::~Processor() {
 }
 
 static std::shared_ptr<ModelIncrement>
-InitializeModelIncrement(const ProcessorInput& part, const ModelConfig& model_config,
+InitializeModelIncrement(const Batch& batch, const ModelConfig& model_config,
                          const ::artm::core::TopicModel& topic_model) {
   std::shared_ptr<ModelIncrement> model_increment = std::make_shared<ModelIncrement>();
-  const Batch& batch = part.batch();
   model_increment->add_batch_uuid(batch.id());
 
   int topic_size = model_config.topics_count();
 
-  // process part and store result in merger queue
   ::artm::TopicModel* topic_model_inc = model_increment->mutable_topic_model();
   topic_model_inc->set_name(model_config.name());
   topic_model_inc->mutable_topic_name()->CopyFrom(topic_model.topic_name());
   topic_model_inc->set_topics_count(topic_model.topic_size());
-  for (int token_index = 0; token_index < part.batch().token_size(); ++token_index) {
+  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
     Token token = Token(batch.class_id(token_index), batch.token(token_index));
     topic_model_inc->add_token(token.keyword);
     topic_model_inc->add_class_id(token.class_id);
@@ -704,12 +702,29 @@ void Processor::ThreadFunction() {
       LOG_IF(INFO, pop_retries >= pop_retries_max) << "Processing queue has data, processing started";
       pop_retries = 0;
 
-
       // CuckooWatch logs time from now to destruction
-      CuckooWatch cuckoo(std::string("ProcessBatch(") + part->batch().id() + std::string(")"));
+      const std::string batch_name = part->has_batch_filename() ? part->batch_filename() : part->batch().id();
+      CuckooWatch cuckoo(std::string("ProcessBatch(") + batch_name + std::string(")"));
       total_processed_batches++;
 
-      const Batch& batch = part->batch();
+      call_on_destruction c([&]() {
+        if (part->notifiable() != nullptr) {
+          part->notifiable()->Callback(part->task_id(), part->model_name());
+        }
+      });
+
+      std::shared_ptr<Batch> batch_ptr;
+      if (part->has_batch_filename()) {
+        try {
+          CuckooWatch cuckoo2("LoadMessage", &cuckoo);
+          ::artm::core::BatchHelpers::LoadMessage(part->batch_filename(), batch_ptr.get());
+        } catch (std::exception& ex) {
+          LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+          continue;
+        }
+      }
+
+      const Batch& batch = batch_ptr != nullptr ? *batch_ptr : part->batch();
 
       if (batch.class_id_size() != batch.token_size())
         BOOST_THROW_EXCEPTION(InternalError(
@@ -725,11 +740,12 @@ void Processor::ThreadFunction() {
       std::shared_ptr<CsrMatrix<float>> sparse_ndw;
       std::shared_ptr<DenseMatrix<float>> dense_ndw;
 
-      std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+      const ModelName& model_name = part->model_name();
+      {
         const ModelConfig& model_config = schema->model_config(model_name);
 
         // do not process disabled models.
-        if (!model_config.enabled()) return;  // return from lambda; goes to next step of std::for_each
+        if (!model_config.enabled()) continue;
 
         if (model_config.class_id_size() != model_config.class_weight_size())
           BOOST_THROW_EXCEPTION(InternalError(
@@ -757,18 +773,13 @@ void Processor::ThreadFunction() {
         cache = cache_manager_.FindCacheEntry(batch_uuid, model_config.name());
         std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache.get());
 
-        std::shared_ptr<ModelIncrement> model_increment = InitializeModelIncrement(*part, model_config, *topic_model);
-        call_on_destruction c([&]() {
-          merger_queue_->push(model_increment);
-          if (part->notifiable() != nullptr) {
-            part->notifiable()->Callback(batch_uuid, model_config.name());
-          }
-        });
+        std::shared_ptr<ModelIncrement> model_increment = InitializeModelIncrement(batch, model_config, *topic_model);
 
         if (topic_model->token_size() == 0) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
             "would not be processed on this iteration";
-          return;  // return from lambda; goes to next step of std::for_each
+          merger_queue_->push(model_increment);
+          continue;
         }
 
         // Find and save to the variable the index of model stream in the part->stream_name() list.
@@ -854,8 +865,8 @@ void Processor::ThreadFunction() {
             *theta_matrix, model_increment.get(), blas);
         }
         merger_queue_->release();
-        // Here call_in_destruction will enqueue processor output into the merger queue.
-      });
+        merger_queue_->push(model_increment);
+      }
     }
   }
   catch (...) {
