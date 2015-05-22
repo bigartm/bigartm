@@ -34,26 +34,14 @@ Instance* DataLoader::instance() {
 
 DataLoader::DataLoader(Instance* instance)
     : instance_(instance),
-      generation_(nullptr),
-      is_stopping(false),
-      thread_() {
+      generation_(nullptr) {
   std::string disk_path = instance->schema()->config().disk_path();
   if (!disk_path.empty()) {
     generation_.reset(new DiskGeneration(disk_path));
   }
-
-  // Keep this at the last action in constructor.
-  // http://stackoverflow.com/questions/15751618/initialize-boost-thread-in-object-constructor
-  boost::thread t(&DataLoader::ThreadFunction, this);
-  thread_.swap(t);
 }
 
-DataLoader::~DataLoader() {
-  is_stopping = true;
-  if (thread_.joinable()) {
-    thread_.join();
-  }
-}
+DataLoader::~DataLoader() {}
 
 bool DataLoader::AddBatch(const AddBatchArgs& args) {
   if (!args.has_batch() && !args.has_batch_file_name()) {
@@ -90,15 +78,16 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
     }
   }
 
-  boost::uuids::uuid uuid = boost::uuids::random_generator()();
-  instance_->batch_manager()->AddAndNext(BatchManagerTask(uuid, std::string()));
   std::vector<ModelName> model_names = schema->GetModelNames();
   std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+    boost::uuids::uuid task_id = boost::uuids::random_generator()();
+    instance_->batch_manager()->Add(task_id, std::string(), model_name);
+
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(instance_->batch_manager());
     pi->set_model_name(model_name);
     pi->mutable_batch()->CopyFrom(*batch);
-    pi->set_task_id(uuid);
+    pi->set_task_id(task_id);
     instance_->processor_queue()->push(pi);
   });
 
@@ -129,9 +118,22 @@ void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
   }
 
   std::vector<BatchManagerTask> tasks = generation->batch_uuids();
+  std::shared_ptr<InstanceSchema> schema = instance()->schema();
+  std::vector<ModelName> model_names = schema->GetModelNames();
+
   for (int iter = 0; iter < iterations_count; ++iter) {
-    for (auto &task : tasks) {
-      instance_->batch_manager()->Add(task);
+    for (const BatchManagerTask& task : tasks) {
+      std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+        boost::uuids::uuid task_id = boost::uuids::random_generator()();
+        instance_->batch_manager()->Add(task_id, task.file_path, model_name);
+
+        std::shared_ptr<ProcessorInput> pi = std::make_shared<ProcessorInput>();
+        pi->set_notifiable(instance()->batch_manager());
+        pi->set_task_id(task_id);
+        pi->set_batch_filename(task.file_path);
+        pi->set_model_name(model_name);
+        instance()->processor_queue()->push(pi);
+      });
     }
   }
 }
@@ -152,45 +154,6 @@ bool DataLoader::WaitIdle(const WaitIdleArgs& args) {
   }
 
   return true;
-}
-
-void DataLoader::ThreadFunction() {
-  try {
-    Helpers::SetThreadName(-1, "DataLoader thread");
-    LOG(INFO) << "DataLoader thread started";
-    for (;;) {
-      if (is_stopping) {
-        LOG(INFO) << "DataLoader thread stopped";
-        break;
-      }
-
-      std::shared_ptr<InstanceSchema> schema = instance()->schema();
-      const MasterComponentConfig& config = schema->config();
-
-      if (instance()->processor_queue()->size() >= config.processor_queue_max_size()) {
-        boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-        continue;
-      }
-
-      BatchManagerTask next_task = instance_->batch_manager()->Next();
-      if (next_task.uuid.is_nil()) {
-        boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-        continue;
-      }
-
-      std::vector<ModelName> model_names = schema->GetModelNames();
-      std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
-        std::shared_ptr<ProcessorInput> pi = std::make_shared<ProcessorInput>();
-        pi->set_notifiable(instance()->batch_manager());
-        pi->set_task_id(next_task.uuid);
-        pi->set_batch_filename(next_task.file_path);
-        pi->set_model_name(model_name);
-        instance()->processor_queue()->push(pi);
-      });
-    }
-  } catch(...) {
-    LOG(FATAL) << boost::current_exception_diagnostic_information();
-  }
 }
 
 }  // namespace core

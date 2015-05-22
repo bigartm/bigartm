@@ -23,50 +23,26 @@ namespace core {
 template<typename T> class ThreadSafeHolder;
 class InstanceSchema;
 
-// Each batch should be processed by at max one processor at a time.
-// Consider a scenario when there is a very slow processor,
-// and it keeps processing the batch when DataLoader starts the next iteration.
-// In such situation BatchManager will ensure that no other processors will receive the
-// batch until slow processor is done.
 class BatchManager : boost::noncopyable, public Notifiable {
  public:
-  explicit BatchManager(ThreadSafeHolder<InstanceSchema>* schema);
+  explicit BatchManager();
   virtual ~BatchManager() {}
 
-  // Add() adds the a passive task to the queue
-  // Next() finds some passive task and moves it to the active queue (for each model)
-  // AddAndNext() puts the task directly to the active queue (for each model)
-  // Done() marks an active task as "done" (for a given model)
-
-  // OK to add the same uuid multiple times.
-  void Add(const BatchManagerTask& task);
-  void Add(boost::uuids::uuid uuid, std::string file_path) { Add(BatchManagerTask(uuid, file_path));  }
+  void Add(const boost::uuids::uuid& task_id, const std::string& file_path,
+           const ModelName& model_name);
 
   // Remove all pending batches related to the model.
   void DisposeModel(const ModelName& model_name);
 
-  // Select next available batch, and excludes it from task queue.
-  // This operation skips all "in progress" batches.
-  // The batch return by this operation will stay in "in progress" list
-  // until it is marked as processed by Done().
-  BatchManagerTask Next();
-
-  void AddAndNext(const BatchManagerTask& task);
-
-  // Eliminates uuid from "in progress" set.
-  void Done(const boost::uuids::uuid& id, const ModelName& model_name);
-
   // Checks if all added tasks were processed (and marked as "Done").
   bool IsEverythingProcessed() const;
 
-  virtual void Callback(const boost::uuids::uuid& id, const ModelName& model_name);
+  virtual void Callback(const boost::uuids::uuid& task_id, const ModelName& model_name);
 
  private:
   mutable boost::mutex lock_;
 
-  std::list<BatchManagerTask> tasks_;
   std::map<ModelName, std::shared_ptr<std::map<boost::uuids::uuid, std::string>>> in_progress_;
-  ThreadSafeHolder<InstanceSchema>* schema_;
 };
 
 }  // namespace core

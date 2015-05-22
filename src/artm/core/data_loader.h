@@ -39,15 +39,6 @@ class DataLoader : boost::noncopyable {
  private:
   Instance* instance_;
   std::unique_ptr<DiskGeneration> generation_;
-
-  mutable std::atomic<bool> is_stopping;
-
-  // Keep all threads at the end of class members
-  // (because the order of class members defines initialization order;
-  // everything else should be initialized before creating threads).
-  boost::thread thread_;
-
-  void ThreadFunction();
 };
 
 }  // namespace core

@@ -752,6 +752,11 @@ void Processor::ThreadFunction() {
               "model.class_id_size() != model.class_weight_size()"));
 
         std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
+        if (topic_model == nullptr) {
+          LOG(ERROR) << "Model " << model_name << " does not exist.";
+          continue;
+        }
+
         assert(topic_model.get() != nullptr);
 
         int topic_size = topic_model->topic_size();
