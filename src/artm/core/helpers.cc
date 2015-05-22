@@ -545,28 +545,20 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
 
 // Return the filenames of all files that have the specified extension
 // in the specified directory.
-std::vector<BatchManagerTask> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
-  std::vector<BatchManagerTask> uuids;
+std::vector<std::string> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
+  std::vector<std::string> batches;
 
   if (boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
     boost::filesystem::recursive_directory_iterator it(root);
     boost::filesystem::recursive_directory_iterator endit;
     while (it != endit) {
       if (boost::filesystem::is_regular_file(*it) && it->path().extension() == kBatchExtension) {
-        std::string filename = it->path().filename().stem().string();
-        boost::uuids::uuid uuid = boost::uuids::nil_uuid();
-        try { uuid = boost::lexical_cast<boost::uuids::uuid>(filename); } catch (...) {}
-        if (uuid.is_nil()) {
-          uuid = boost::uuids::random_generator()();
-          LOG(INFO) << "Use " << uuid << " as uuid for batch " << it->path().string();
-        }
-
-        uuids.push_back(BatchManagerTask(uuid, it->path().string()));
+        batches.push_back(it->path().string());
       }
       ++it;
     }
   }
-  return uuids;
+  return batches;
 }
 
 boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,

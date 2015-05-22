@@ -22,8 +22,6 @@ set(SRC_LIST
 	core/dictionary.cc
 	core/dictionary.h
 	core/exceptions.h
-	core/generation.cc
-	core/generation.h
 	core/helpers.cc
 	core/helpers.h
 	core/instance.cc

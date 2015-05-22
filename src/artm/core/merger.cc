@@ -547,13 +547,13 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   } else if (args.source_type() == InitializeModelArgs_SourceType_Batches) {
     std::unordered_map<Token, TokenInfo, TokenHasher> token_freq_map;
     size_t total_items_count = 0, total_token_count = 0;
-    std::vector<BatchManagerTask> batches = BatchHelpers::ListAllBatches(args.disk_path());
+    std::vector<std::string> batches = BatchHelpers::ListAllBatches(args.disk_path());
     LOG(INFO) << "Found " << batches.size() << " batches in '" << args.disk_path() << "' folder";
 
-    for (const BatchManagerTask& batch_file : batches) {
+    for (const std::string& batch_file : batches) {
       Batch batch;
       try {
-        ::artm::core::BatchHelpers::LoadMessage(batch_file.file_path, &batch);
+        ::artm::core::BatchHelpers::LoadMessage(batch_file, &batch);
       }
       catch (std::exception& ex) {
         LOG(ERROR) << ex.what() << ", the batch will be skipped.";

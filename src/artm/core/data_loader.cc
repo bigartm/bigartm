@@ -20,7 +20,6 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/processor_input.h"
 #include "artm/core/helpers.h"
-#include "artm/core/generation.h"
 #include "artm/core/merger.h"
 
 namespace fs = boost::filesystem;
@@ -32,14 +31,7 @@ Instance* DataLoader::instance() {
   return instance_;
 }
 
-DataLoader::DataLoader(Instance* instance)
-    : instance_(instance),
-      generation_(nullptr) {
-  std::string disk_path = instance->schema()->config().disk_path();
-  if (!disk_path.empty()) {
-    generation_.reset(new DiskGeneration(disk_path));
-  }
-}
+DataLoader::DataLoader(Instance* instance) : instance_(instance) {}
 
 DataLoader::~DataLoader() {}
 
@@ -102,35 +94,28 @@ void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
     return;
   }
 
-  DiskGeneration* generation;
-  std::unique_ptr<DiskGeneration> args_generation;
-  if (args.has_disk_path()) {
-    args_generation.reset(new DiskGeneration(args.disk_path()));
-    generation = args_generation.get();
-  } else {
-    generation = generation_.get();
-  }
+  std::string disk_path = args.has_disk_path() ? args.disk_path() : instance()->schema()->config().disk_path();
+  std::vector<std::string> tasks = BatchHelpers::ListAllBatches(disk_path);
 
-  if (generation == nullptr || generation->empty()) {
-    LOG(WARNING) << "DataLoader::InvokeIteration() - current generation is empty, "
+  if (tasks.empty()) {
+    LOG(WARNING) << "DataLoader::InvokeIteration() - no batches found, "
                  << "please populate DataLoader data with some data";
     return;
   }
 
-  std::vector<BatchManagerTask> tasks = generation->batch_uuids();
   std::shared_ptr<InstanceSchema> schema = instance()->schema();
   std::vector<ModelName> model_names = schema->GetModelNames();
 
   for (int iter = 0; iter < iterations_count; ++iter) {
-    for (const BatchManagerTask& task : tasks) {
+    for (const std::string& task : tasks) {
       std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
         boost::uuids::uuid task_id = boost::uuids::random_generator()();
-        instance_->batch_manager()->Add(task_id, task.file_path, model_name);
+        instance_->batch_manager()->Add(task_id, task, model_name);
 
         std::shared_ptr<ProcessorInput> pi = std::make_shared<ProcessorInput>();
         pi->set_notifiable(instance()->batch_manager());
         pi->set_task_id(task_id);
-        pi->set_batch_filename(task.file_path);
+        pi->set_batch_filename(task);
         pi->set_model_name(model_name);
         instance()->processor_queue()->push(pi);
       });

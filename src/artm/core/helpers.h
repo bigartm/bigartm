@@ -61,7 +61,7 @@ class Helpers {
 class BatchHelpers {
  public:
   static void CompactBatch(const Batch& batch, Batch* compacted_batch);
-  static std::vector<BatchManagerTask> ListAllBatches(const boost::filesystem::path& root);
+  static std::vector<std::string> ListAllBatches(const boost::filesystem::path& root);
   static boost::uuids::uuid SaveBatch(const Batch& batch, const std::string& disk_path);
 
   static void LoadMessage(const std::string& full_filename,

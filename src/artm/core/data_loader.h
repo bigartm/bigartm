@@ -22,7 +22,6 @@ namespace artm {
 namespace core {
 
 class Instance;
-class DiskGeneration;
 
 class DataLoader : boost::noncopyable {
  public:
@@ -38,7 +37,6 @@ class DataLoader : boost::noncopyable {
 
  private:
   Instance* instance_;
-  std::unique_ptr<DiskGeneration> generation_;
 };
 
 }  // namespace core
