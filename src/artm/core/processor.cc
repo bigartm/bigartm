@@ -731,7 +731,6 @@ void Processor::ThreadFunction() {
             "batch.class_id_size() != batch.token_size()"));
 
       std::shared_ptr<InstanceSchema> schema = schema_.get();
-      std::vector<ModelName> model_names = schema->GetModelNames();
       const MasterComponentConfig& master_config = schema->config();
 
       StreamMasks stream_masks;
