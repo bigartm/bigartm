@@ -72,15 +72,15 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::Regularizable& to
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
         // token_class_id is anyway presented in n_t
-        weights_sum += p_wt[token_id][topic_id] * class_iter->second[topic_id];
+        weights_sum += p_wt.get(token_id, topic_id) * class_iter->second[topic_id];
       }
     }
     // form the value
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
-        float weight = p_wt[token_id][topic_id] * class_iter->second[topic_id];
+        float weight = p_wt.get(token_id, topic_id) * class_iter->second[topic_id];
         float value = static_cast<float>(coefficient * weight / weights_sum);
-        (*result)[token_id][topic_id] = value;
+        result->set(token_id, topic_id, value);
       }
     }
   }

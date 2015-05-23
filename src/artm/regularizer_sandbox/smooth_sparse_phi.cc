@@ -59,7 +59,7 @@ bool SmoothSparsePhi::RegularizePhi(const ::artm::core::Regularizable& topic_mod
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id])
-        (*result)[token_id][topic_id] = coefficient;
+        result->set(token_id, topic_id, coefficient);
     }
   }
 
