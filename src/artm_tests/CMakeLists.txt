@@ -27,9 +27,7 @@ set(SRC_LIST
 add_definitions("-Dartm_EXPORTS")
 add_executable(artm_tests ${SRC_LIST})
 target_link_libraries(artm_tests artm-static
-                                 rpcz_static
                                  ${LINK_DL}
                                  ${Boost_LIBRARIES}
                                  ${PROTOBUF_LIBRARIES}
-                                 ${GLOG_LIBRARIES}
-                                 ${ZeroMQ_LIBRARIES})
+                                 ${GLOG_LIBRARIES})

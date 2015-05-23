@@ -112,12 +112,10 @@ source_group("" FILES c_interface.cc c_interface.h)
 
 set(ARTM_LIB_DEPS  artm-static
 		   gflags-static
-                   rpcz_static
                    ${LINK_DL}
                    ${Boost_LIBRARIES}
                    ${PROTOBUF_LIBRARIES}
-                   ${GLOG_LIBRARIES}
-                   ${ZEROMQ_LIBRARIES})
+                   ${GLOG_LIBRARIES})
 
 add_library(artm SHARED ${SRC_LIST})
 

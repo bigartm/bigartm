@@ -18,25 +18,12 @@ else()
   include_directories(${GLOG_INCLUDE_DIRS})
 endif()
 
-# find ZEROMQ
-find_package(ZeroMQ REQUIRED)
-if(NOT ZeroMQ_FOUND)
-  message(SEND_ERROR "Failed to find zeromq.")
-  return()
-else()
-  include_directories(${ZEROMQ_INCLUDE_DIRS})
-endif()
-
 # can it be avoided?
-include_directories(${3RD_PARTY_DIR}/rpcz/include)
-include_directories(${CMAKE_BINARY_DIR}/3rdparty/rpcz/src)
 include_directories(${GFLAGS_INCLUDE_DIRS})
 
 add_subdirectory(artm)
 add_subdirectory(artm_tests)
 add_subdirectory(cpp_client)
-
-add_dependencies(artm-static rpcz)
 
 install(FILES python/artm/library.py python/artm/messages_pb2.py python/artm/__init__.py DESTINATION python/artm)
 install(FILES ../datasets/docword.kos.txt ../datasets/vocab.kos.txt DESTINATION python/examples)
