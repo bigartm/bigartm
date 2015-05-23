@@ -40,6 +40,8 @@ set(SRC_LIST
 	core/processor_input.h
 	core/protobuf_helpers.h
 	core/regularizable.h
+	core/sync_event.cc
+	core/sync_event.h
 	core/template_manager.h
 	core/thread_safe_holder.h
 	core/topic_model.cc

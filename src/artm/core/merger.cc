@@ -83,7 +83,7 @@ void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
 }
 
 void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {
-  rpcz::sync_event sync_event;
+  SyncEvent sync_event;
   internal_task_queue_.push(MergerTask(kForceSynchronizeTopicModel, args.model_name(),
                             args.decay_weight(), args.apply_weight(), args.invoke_regularizers(),
                             &sync_event));
@@ -91,7 +91,7 @@ void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {
 }
 
 void Merger::ForceResetScores(ModelName model_name) {
-  rpcz::sync_event sync_event;
+  SyncEvent sync_event;
   internal_task_queue_.push(MergerTask(kForceResetScores, model_name, 0.0f, 0.0f, false, &sync_event));
   sync_event.wait();
 }
