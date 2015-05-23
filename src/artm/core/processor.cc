@@ -717,6 +717,7 @@ void Processor::ThreadFunction() {
       if (part->has_batch_filename()) {
         try {
           CuckooWatch cuckoo2("LoadMessage", &cuckoo);
+          batch_ptr.reset(new Batch());
           ::artm::core::BatchHelpers::LoadMessage(part->batch_filename(), batch_ptr.get());
         } catch (std::exception& ex) {
           LOG(ERROR) << ex.what() << ", the batch will be skipped.";
