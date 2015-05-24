@@ -140,6 +140,7 @@ message RegularizerConfig {
     MultiLanguagePhi = 3;
     LabelRegularizationPhi = 4;
     SpecifiedSparsePhi = 5;
+    ImproveCoherencePhi = 6;
   }
 
   optional string name = 1;
@@ -178,8 +179,8 @@ message LabelRegularizationPhiConfig {
 
 message SpecifiedSparsePhiConfig {
   enum Mode {
-    SparseTopics = 1;
-    SparseTokens = 2;
+    SparseTopics = 0;
+    SparseTokens = 1;
   }
 
   repeated string topic_name = 1;
@@ -187,6 +188,13 @@ message SpecifiedSparsePhiConfig {
   optional int32 max_elements_count = 3 [default = 20];
   optional float probability_threshold = 4 [default = 0.99];
   optional Mode mode = 5 [default = SparseTopics];
+}
+
+// Represents a configuration of a ImproveCoherence Phi regularizer
+message ImproveCoherencePhiConfig {
+  repeated string topic_name = 1;
+  repeated string class_id = 2;
+  optional string dictionary_name = 3;
 }
 
 // Represents an internal state of a general regularizer
@@ -211,6 +219,7 @@ message DictionaryConfig {
   repeated DictionaryEntry entry = 2;
   optional int32 total_token_count = 3;
   optional int32 total_items_count = 4;
+  optional DictionaryCoocurenceEntries cooc_entries = 5;
 }
 
 // Represents one entry in a static dictionary
@@ -222,6 +231,13 @@ message DictionaryEntry {
   optional FloatArray values = 5;
   optional int32 token_count = 6;
   optional int32 items_count = 7;
+}
+
+// Represents the info about co-occurrence between one pair of tokens in a static dictionary
+message DictionaryCoocurenceEntries {
+  repeated int32 first_index = 1;  // index of token in entry field
+  repeated int32 second_index = 2; // index of token in entry field
+  repeated float items_count = 3;
 }
 
 // Represents a configuration of a general score
@@ -302,7 +318,7 @@ message SparsityThetaScore {
 // Represents a configuration of a sparsity phi score
 message SparsityPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2;
+  optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
 }
 
@@ -327,8 +343,9 @@ message ItemsProcessedScore {
 // Represents a configuration of a top tokens score
 message TopTokensScoreConfig {
   optional int32 num_tokens = 1 [default = 10];
-  optional string class_id = 2;
+  optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
+  optional string cooccurrence_dictionary_name = 4;
 }
 
 // Represents a result of calculation of a top tokens score
@@ -338,6 +355,8 @@ message TopTokensScore {
   repeated int32 topic_index = 3;
   repeated string token = 4;
   repeated float weight = 5;
+  optional FloatArray coherence = 6;
+  optional float average_coherence = 7;
 }
 
 // Represents a configuration of a theta snippet score
@@ -358,9 +377,10 @@ message ThetaSnippetScore {
 // Represents a configuration of a topic kernel score
 message TopicKernelScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2;
+  optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
   optional double probability_mass_threshold = 4 [default = 0.1];
+  optional string cooccurrence_dictionary_name = 5;
 }
 
 // Represents a result of calculation of a topic kernel score
@@ -371,6 +391,9 @@ message TopicKernelScore {
   optional double average_kernel_size = 4;
   optional double average_kernel_purity = 5;
   optional double average_kernel_contrast = 6;
+  optional DoubleArray coherence = 7;
+  optional float average_coherence = 8;
+  repeated StringArray kernel_tokens = 9;
 }
 
 // Represents a topic model (or an operation on topic model)
@@ -424,9 +447,9 @@ message CollectionParserConfig {
   optional string target_folder = 4;
   optional string dictionary_file_name = 5;
   optional int32 num_items_per_batch = 6 [default = 1000];
-  optional string cooccurrence_file_name = 7;
-  repeated string cooccurrence_token = 8;
-  optional bool use_unity_based_indices = 9 [default = true];
+  repeated string cooccurrence_token = 7;
+  optional bool use_unity_based_indices = 8 [default = true];
+  optional bool gather_cooc = 9 [default = false];
 }
 
 // Represents an argument of 'synchronize model' operation
