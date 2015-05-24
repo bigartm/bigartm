@@ -1,5 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+// Author: Murat Apishev (great-mel@yandex.ru)
+
 #ifndef SRC_ARTM_SCORE_SANDBOX_TOPIC_KERNEL_H_
 #define SRC_ARTM_SCORE_SANDBOX_TOPIC_KERNEL_H_
 

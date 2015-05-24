@@ -103,15 +103,10 @@ void Perplexity::AppendScore(
   double normalizer = 0;
   double raw = 0;
 
-  bool has_dictionary = true;
-  if (!config_.has_dictionary_name()) {
-    has_dictionary = false;
-  }
-
-  auto dictionary_ptr = dictionary(config_.dictionary_name());
-  if (has_dictionary && dictionary_ptr == nullptr) {
-    has_dictionary = false;
-  }
+  std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
+  if (!config_.has_dictionary_name())
+    dictionary_ptr = dictionary(config_.dictionary_name());
+  bool has_dictionary = dictionary_ptr != nullptr;
 
   bool use_document_unigram_model = true;
   if (config_.has_model_type()) {
@@ -154,11 +149,16 @@ void Perplexity::AppendScore(
         if (use_document_unigram_model) {
           sum = token_count / n_d;
         } else {
-          auto iter = dictionary_ptr->find(token);
-          if (iter != dictionary_ptr->end() && iter->second.has_value()) {
-            float n_w = iter->second.value();
-            sum = n_w / dictionary_ptr->size();
-          } else {
+          auto entry_ptr = dictionary_ptr->entry(token);
+          bool failed = true;
+          if (entry_ptr != nullptr) {
+            if (entry_ptr->has_value()) {
+              float n_w = entry_ptr->value();
+              sum = n_w / dictionary_ptr->size();
+              failed = false;
+            }
+          }
+          if (failed) {
             LOG(INFO) << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
                       << ". Verify that the token exists in the dictionary and contains DictionaryEntry.value field. "
                       << "Document unigram model will be used for this token.";
