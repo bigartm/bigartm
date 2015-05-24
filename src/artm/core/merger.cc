@@ -644,7 +644,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
       model.name(), model.topic_name());
 
   if (args.source_type() == InitializeModelArgs_SourceType_Dictionary) {
-    std::shared_ptr<DictionaryMap> dict = dictionaries_->get(args.dictionary_name());
+    std::shared_ptr<Dictionary> dict = dictionaries_->get(args.dictionary_name());
     if (dict == nullptr) {
       std::stringstream ss;
       ss << "Dictionary " << args.dictionary_name() << " does not exist";
@@ -655,9 +655,9 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
       << model.topics_count() << " topics and "
       << dict->size() << " tokens";
 
-    for (auto iter = dict->begin(); iter != dict->end(); ++iter) {
-      ClassId class_id = iter->second.has_class_id() ? iter->second.class_id() : DefaultClass;
-      new_ttm->AddToken(Token(class_id, iter->second.key_token()), true);
+    for (int index = 0; index < dict->size(); ++index) {
+      ClassId class_id = dict->entry(index)->has_class_id() ? dict->entry(index)->class_id() : DefaultClass;
+      new_ttm->AddToken(Token(class_id, dict->entry(index)->key_token()), true);
     }
   } else if (args.source_type() == InitializeModelArgs_SourceType_Batches) {
     std::unordered_map<Token, TokenInfo, TokenHasher> token_freq_map;

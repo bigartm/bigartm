@@ -27,6 +27,7 @@
 #include "artm/regularizer_sandbox/smooth_sparse_phi.h"
 #include "artm/regularizer_sandbox/label_regularization_phi.h"
 #include "artm/regularizer_sandbox/specified_sparse_phi.h"
+#include "artm/regularizer_sandbox/improve_coherency_phi.h"
 
 #include "artm/score_sandbox/items_processed.h"
 #include "artm/score_sandbox/sparsity_theta.h"
@@ -204,6 +205,12 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
       break;
     }
 
+    case artm::RegularizerConfig_Type_ImproveCoherencyPhi: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::ImproveCoherencyPhiConfig,
+                                        ::artm::regularizer_sandbox::ImproveCoherencyPhi);
+      break;
+    }
+
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
         "RegularizerConfig.type", regularizer_type));
@@ -284,18 +291,7 @@ void Instance::DisposeRegularizer(const std::string& name) {
 }
 
 void Instance::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
-  auto dictionary = std::make_shared<DictionaryMap>();
-  for (int index = 0; index < config.entry_size(); ++index) {
-    const ::artm::DictionaryEntry& entry = config.entry(index);
-    ClassId class_id;
-    if (entry.has_class_id()) {
-      class_id = entry.class_id();
-    } else {
-      class_id = DefaultClass;
-    }
-    dictionary->insert(std::make_pair(Token(class_id, entry.key_token()), entry));
-  }
-
+  auto dictionary = std::make_shared<Dictionary>(Dictionary(config));
   dictionaries_.set(config.name(), dictionary);
 }
 
