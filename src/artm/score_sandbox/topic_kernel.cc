@@ -1,13 +1,16 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
-#include "artm/score_sandbox/topic_kernel.h"
+// Author: Murat Apishev (great-mel@yandex.ru)
 
-#include <algorithm>
 #include <cmath>
+#include <algorithm>
 
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/topic_model.h"
+
+#include "artm/score_sandbox/coherency_plugin.h"
+#include "artm/score_sandbox/topic_kernel.h"
 
 namespace artm {
 namespace score_sandbox {
@@ -17,6 +20,12 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
   int tokens_count = topic_model.token_size();
 
   // parameters preparation
+  std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
+  if (config_.has_dictionary_name())
+    dictionary_ptr = dictionary(config_.dictionary_name());
+  bool has_dictionary = dictionary_ptr != nullptr;
+  bool count_coherency = has_dictionary && config_.count_coherency();
+
   auto topic_name = topic_model.topic_name();
   std::vector<bool> topics_to_score;
   if (config_.topic_name_size() > 0) {
@@ -54,17 +63,26 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
   auto kernel_size = topic_kernel_score->mutable_kernel_size();
   auto kernel_purity = topic_kernel_score->mutable_kernel_purity();
   auto kernel_contrast = topic_kernel_score->mutable_kernel_contrast();
+  auto kernel_coherency = topic_kernel_score->mutable_coherency();
+  float average_kernel_coherency = 0.0f;
 
   for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
     if (topics_to_score[topic_index]) {
         kernel_size->add_value(0.0);
         kernel_purity->add_value(0.0);
         kernel_contrast->add_value(0.0);
+        kernel_coherency->add_value(0.0);
     } else {
         kernel_size->add_value(-1);
         kernel_purity->add_value(-1);
         kernel_contrast->add_value(-1);
+        kernel_coherency->add_value(-1);
     }
+  }
+
+  std::vector<std::vector<core::Token> > topic_kernel_tokens;
+  for (bool flag : topics_to_score) {
+    if (flag) topic_kernel_tokens.push_back(std::vector<core::Token>());
   }
 
   for (int token_index = 0; token_index < tokens_count; token_index++) {
@@ -81,6 +99,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
       topic_iter.Reset();
       while (topic_iter.NextTopic() < topics_count) {
         int topic_index = topic_iter.TopicIndex();
+        int current_topic_index = -1;
         if (topics_to_score[topic_index]) {
           double p_tw = (normalizer > 0.0) ? (topic_iter.Weight() / normalizer) : 0.0;
 
@@ -89,6 +108,8 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
             artm::core::repeated_field_append(kernel_purity->mutable_value(), topic_index,
                                               topic_iter.Weight());
             artm::core::repeated_field_append(kernel_contrast->mutable_value(), topic_index, p_tw);
+            if (count_coherency)
+              topic_kernel_tokens[++current_topic_index].push_back(topic_model.token(token_index));
           }
         }
       }
@@ -102,6 +123,18 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
       value = kernel_contrast->value(topic_index) / kernel_size->value(topic_index);
     }
     kernel_contrast->set_value(topic_index, value);
+  }
+
+  if (count_coherency) {
+    int current_topic_index = -1;
+    for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+      if (topics_to_score[topic_index]) {
+        float value = CountTopicCoherency(dictionary_ptr, topic_kernel_tokens[++current_topic_index]);
+        artm::core::repeated_field_append(kernel_coherency->mutable_value(), topic_index, value);
+        average_kernel_coherency += value;
+      }
+    }
+    average_kernel_coherency /= (current_topic_index + 1);
   }
 
   double average_kernel_size = 0.0;
@@ -125,6 +158,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
   topic_kernel_score->set_average_kernel_size(average_kernel_size);
   topic_kernel_score->set_average_kernel_purity(average_kernel_purity);
   topic_kernel_score->set_average_kernel_contrast(average_kernel_contrast);
+  topic_kernel_score->set_average_coherency(average_kernel_coherency);
 
   return retval;
 }
