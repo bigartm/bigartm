@@ -31,6 +31,7 @@ namespace core {
 class TopicModel;
 class TokenCollectionWeights;
 class InstanceSchema;
+class Dictionary;
 
 class Merger : boost::noncopyable {
  public:

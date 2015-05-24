@@ -7,7 +7,7 @@
 
 namespace artm {
 
-std::shared_ptr< ::artm::core::DictionaryMap> RegularizerInterface::dictionary(
+std::shared_ptr< ::artm::core::Dictionary> RegularizerInterface::dictionary(
     const std::string& dictionary_name) {
   if (dictionaries_ == nullptr) {
       return nullptr;
