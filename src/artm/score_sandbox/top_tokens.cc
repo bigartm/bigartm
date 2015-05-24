@@ -1,13 +1,14 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
-#include "artm/score_sandbox/top_tokens.h"
-
-#include <utility>
 #include <algorithm>
+#include <utility>
 
 #include "artm/core/exceptions.h"
 #include "artm/core/topic_model.h"
 #include "artm/core/protobuf_helpers.h"
+
+#include "artm/score_sandbox/coherency_plugin.h"
+#include "artm/score_sandbox/top_tokens.h"
 
 namespace artm {
 namespace score_sandbox {
@@ -15,6 +16,12 @@ namespace score_sandbox {
 std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& topic_model) {
   int topics_size = topic_model.topic_size();
   int tokens_size = topic_model.token_size();
+
+  std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
+  if (config_.has_dictionary_name())
+    dictionary_ptr = dictionary(config_.dictionary_name());
+  bool has_dictionary = dictionary_ptr != nullptr;
+  bool count_coherency = has_dictionary && config_.count_coherency();
 
   std::vector<int> topic_ids;
   google::protobuf::RepeatedPtrField<std::string> topic_name = topic_model.topic_name();
@@ -48,6 +55,8 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
   std::shared_ptr<Score> retval(top_tokens_score);
   int num_entries = 0;
 
+  float average_coherency = 0.0f;
+  auto coherency = top_tokens_score->mutable_coherency();
   for (int i = 0; i < topic_ids.size(); ++i) {
     std::vector<std::pair<float, int>> p_wt;
     p_wt.reserve(tokens.size());
@@ -68,6 +77,8 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
     int first_index = p_wt.size() - 1;
     int last_index = (p_wt.size() - config_.num_tokens());
     if (last_index < 0) last_index = 0;
+
+    std::vector<core::Token> tokens_for_coherency;
     for (int token_index = first_index; token_index >= last_index; token_index--) {
       ::artm::core::Token token = tokens[p_wt[token_index].second];
       float weight = p_wt[token_index].first;
@@ -76,8 +87,18 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
       top_tokens_score->add_topic_index(topic_ids[i]);
       top_tokens_score->add_topic_name(topic_name.Get(topic_ids[i]));
       num_entries++;
+
+      if (count_coherency) tokens_for_coherency.push_back(token);
+    }
+
+    if (count_coherency) {
+      float topic_coherency = CountTopicCoherency(dictionary_ptr, tokens_for_coherency);
+      average_coherency += topic_coherency;
+      coherency->add_value(topic_coherency);
     }
   }
+  if (count_coherency)
+    top_tokens_score->set_average_coherency(average_coherency > 0.0f ? average_coherency / topic_ids.size() : 0.0f);
 
   top_tokens_score->set_num_entries(num_entries);
   return retval;

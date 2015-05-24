@@ -32,15 +32,10 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::Regularizable& to
     use_all_classes = true;
   }
 
-  bool has_dictionary = true;
-  if (!config_.has_dictionary_name()) {
-    has_dictionary = false;
-  }
-
-  auto dictionary_ptr = dictionary(config_.dictionary_name());
-  if (has_dictionary && dictionary_ptr == nullptr) {
-    has_dictionary = false;
-  }
+  std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
+  if (config_.has_dictionary_name())
+    dictionary_ptr = dictionary(config_.dictionary_name());
+  bool has_dictionary = dictionary_ptr != nullptr;
 
   core::TokenCollectionWeights p_wt(topic_model.topic_size());
   topic_model.FindPwt(&p_wt);
@@ -56,12 +51,14 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::Regularizable& to
     if (has_dictionary) {
       if (use_all_classes ||
           core::is_member(token.class_id, config_.class_id())) {
-        auto entry_iter = dictionary_ptr->find(token);
+        auto entry_ptr = dictionary_ptr->entry(token);
         // don't process tokens without value in the dictionary
-        if (entry_iter == dictionary_ptr->end())
+        if (entry_ptr == nullptr) {
           coefficient = 0.0f;
-        else
-          coefficient = entry_iter->second.value();
+        } else {
+          if (entry_ptr->has_value())
+            coefficient = entry_ptr->value();
+        }
       }
     }
 

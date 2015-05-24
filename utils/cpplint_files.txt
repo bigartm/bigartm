@@ -4,6 +4,7 @@
 ../src/artm/core/batch_manager.cc
 ../src/artm/core/collection_parser.cc
 ../src/artm/core/data_loader.cc
+../src/artm/core/dictionary.cc
 ../src/artm/core/generation.cc
 ../src/artm/core/helpers.cc
 ../src/artm/core/instance.cc
@@ -21,6 +22,7 @@
 ../src/artm/regularizer_sandbox/label_regularization_phi.cc
 ../src/artm/regularizer_sandbox/smooth_sparse_theta.cc
 ../src/artm/regularizer_sandbox/specified_sparse_phi.cc
+../src/artm/regularizer_sandbox/improve_coherency_phi.cc
 ../src/artm/score_sandbox/perplexity.cc
 ../src/artm/score_sandbox/sparsity_theta.cc
 ../src/artm/score_sandbox/sparsity_phi.cc
@@ -28,6 +30,7 @@
 ../src/artm/score_sandbox/top_tokens.cc
 ../src/artm/score_sandbox/theta_snippet.cc
 ../src/artm/score_sandbox/topic_kernel.cc
+../src/artm/score_sandbox/coherency_plugin.cc
 ../src/artm/utility/ice.cc
 ../src/artm/utility/blas.cc
 ../src/artm_tests/boost_thread_test.cc
@@ -76,6 +79,7 @@
 ../src/artm/regularizer_sandbox/label_regularization_phi.h
 ../src/artm/regularizer_sandbox/smooth_sparse_theta.h
 ../src/artm/regularizer_sandbox/specified_sparse_phi.h
+../src/artm/regularizer_sandbox/improve_coherency_phi.h
 ../src/artm/score_sandbox/perplexity.h
 ../src/artm/score_sandbox/sparsity_theta.h
 ../src/artm/score_sandbox/sparsity_phi.h
@@ -83,5 +87,6 @@
 ../src/artm/score_sandbox/top_tokens.h
 ../src/artm/score_sandbox/theta_snippet.h
 ../src/artm/score_sandbox/topic_kernel.h
+../src/artm/score_sandbox/coherency_plugin.h
 ../src/artm/utility/ice.h
 ../src/artm/utility/blas.h
