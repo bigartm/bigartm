@@ -131,7 +131,7 @@ bool SpecifiedSparsePhi::Reconfigure(const RegularizerConfig& config) {
   SpecifiedSparsePhiConfig regularizer_config;
   if (!regularizer_config.ParseFromArray(config_blob.c_str(), config_blob.length())) {
     BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
-      "Unable to parse SmoothSparsePhiConfig from RegularizerConfig.config"));
+      "Unable to parse SpecifiedSparsePhiConfig from RegularizerConfig.config"));
   }
 
   config_.CopyFrom(regularizer_config);

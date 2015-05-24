@@ -24,6 +24,7 @@ class Regularizable {
   virtual int topic_size() const = 0;
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const = 0;
   virtual const Token& token(int index) const = 0;
+  virtual int token_id(const Token& token) const = 0;
 
   virtual void FindPwt(TokenCollectionWeights* p_wt) const = 0;
   virtual std::map<ClassId, std::vector<float> > FindNormalizers() const = 0;

@@ -17,6 +17,7 @@ set(SRC_LIST
 	core/common.h
 	core/data_loader.cc
 	core/data_loader.h
+	core/dictionary.cc
 	core/dictionary.h
 	core/exceptions.h
 	core/generation.cc
@@ -62,6 +63,8 @@ set(SRC_LIST
 	regularizer_sandbox/smooth_sparse_theta.h
 	regularizer_sandbox/specified_sparse_phi.cc
 	regularizer_sandbox/specified_sparse_phi.h
+	regularizer_sandbox/improve_coherency_phi.cc
+	regularizer_sandbox/improve_coherency_phi.h	
 	score_sandbox/items_processed.cc
 	score_sandbox/items_processed.h
 	score_sandbox/perplexity.cc
@@ -76,6 +79,8 @@ set(SRC_LIST
 	score_sandbox/top_tokens.h
 	score_sandbox/topic_kernel.cc
 	score_sandbox/topic_kernel.h
+	score_sandbox/coherency_plugin.cc
+	score_sandbox/coherency_plugin.h
 	utility/ice.cc
 	utility/ice.h
 	utility/blas.cc
