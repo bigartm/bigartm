@@ -456,6 +456,35 @@ bool Helpers::Validate(const ::artm::ImportModelArgs& message, bool throw_error)
   return false;
 }
 
+bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error) {
+  std::stringstream ss;
+  if (!message.has_name()) ss << "DictionaryConfig.name is not defined; ";
+
+  if (message.has_cooc_entries())
+    if (message.cooc_entries().first_index_size() != message.cooc_entries().second_index_size() ||
+        message.cooc_entries().first_index_size() != message.cooc_entries().items_count_size() ||
+        message.cooc_entries().second_index_size() != message.cooc_entries().items_count_size()) {
+      ss << "DictionaryConfig.cooc_entries fields have inconsistent sizes; ";
+
+      for (int i = 0; i < message.cooc_entries().first_index_size(); ++i) {
+        if (message.cooc_entries().first_index(i) < 0 ||
+            message.cooc_entries().first_index(i) >= message.entry_size())
+          ss << "DictionaryConfig.cooc_entries.first_index contain index nt from [0, entry.size); ";
+        if (message.cooc_entries().second_index(i) < 0 ||
+            message.cooc_entries().second_index(i) >= message.entry_size())
+          ss << "DictionaryConfig.cooc_entries.first_index contain index nt from [0, entry.size); ";
+      }
+    }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
 std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   std::stringstream ss;
   ss << "ModelConfig";

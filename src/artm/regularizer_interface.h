@@ -13,6 +13,7 @@
 #include "artm/messages.pb.h"
 #include "artm/utility/blas.h"
 #include "artm/core/common.h"
+#include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/topic_model.h"
 
@@ -23,9 +24,9 @@ namespace artm {
 namespace core {
   // Forward declarations
   class Regularizable;
+  class Dictionary;
   template<typename K, typename T> class ThreadSafeCollectionHolder;
-  typedef std::map<artm::core::Token, ::artm::DictionaryEntry> DictionaryMap;
-  typedef ThreadSafeCollectionHolder<std::string, DictionaryMap> ThreadSafeDictionaryCollection;
+  typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 }
 
 class RegularizeThetaAgent {
@@ -79,7 +80,7 @@ class RegularizerInterface {
       "This regularizer has no internal state that can be retrieved."));
   }
 
-  std::shared_ptr< ::artm::core::DictionaryMap> dictionary(const std::string& dictionary_name);
+  std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
   void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
  private:

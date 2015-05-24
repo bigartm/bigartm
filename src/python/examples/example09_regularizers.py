@@ -39,7 +39,7 @@ with artm.library.MasterComponent() as master:
     decorrelator_regularizer = master.CreateDecorrelatorPhiRegularizer(topic_names=objective_topics)
 
     # Configure the model
-    model = master.CreateModel(topics_count=10, inner_iterations_count=30, topic_names=all_topics)
+    model = master.CreateModel(topics_count=len(all_topics), inner_iterations_count=30, topic_names=all_topics)
     model.EnableRegularizer(theta_objective, -0.5)
     model.EnableRegularizer(theta_background, 0.5)
     model.EnableRegularizer(phi_objective, -0.5)
