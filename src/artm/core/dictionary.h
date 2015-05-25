@@ -26,7 +26,7 @@ class Dictionary {
   int cooc_value(const Token& token_1, const Token& token_2) const;
 
   const DictionaryEntry* entry(const Token& token) const;
-  const DictionaryEntry* entry(int index) const { return &entries_[index]; }
+  const DictionaryEntry* entry(int index) const;
   inline int size() const { return entries_.size(); }
 
  private:

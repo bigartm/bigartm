@@ -25,18 +25,22 @@ Dictionary::Dictionary(const artm::DictionaryConfig& config) {
     for (int i = 0; i < config.cooc_entries().first_index_size(); ++i) {
       auto& first_entry = config.entry(config.cooc_entries().first_index(i));
       auto& second_entry = config.entry(config.cooc_entries().second_index(i));
-      auto first_index_iter = token_index_.find(Token(first_entry.key_token(), first_entry.class_id()));
-      auto second_index_iter = token_index_.find(Token(second_entry.key_token(), second_entry.class_id()));
+      auto first_index_iter = token_index_.find(Token(first_entry.class_id(), first_entry.key_token()));
+      auto second_index_iter = token_index_.find(Token(second_entry.class_id(), second_entry.key_token()));
 
       // ignore tokens, that are not represented in dictionary entries
       if (first_index_iter != token_index_.end() && second_index_iter != token_index_.end()) {
         auto first_cooc_iter = cooc_values_.find(first_index_iter->second);
-        if (first_cooc_iter == cooc_values_.end())
+        if (first_cooc_iter == cooc_values_.end()) {
           cooc_values_.insert(std::make_pair(first_index_iter->second, std::map<int, int>()));
+          first_cooc_iter = cooc_values_.find(first_index_iter->second);
+        }
 
         auto second_cooc_iter = cooc_values_.find(second_index_iter->second);
-        if (second_cooc_iter == cooc_values_.end())
+        if (second_cooc_iter == cooc_values_.end()) {
           cooc_values_.insert(std::make_pair(second_index_iter->second, std::map<int, int>()));
+          second_cooc_iter = cooc_values_.find(second_index_iter->second);
+        }
 
         // std::map::insert() ignores attempts to write multiply pairs with same key
         // the data representation is symmetric for both first and second tokens in cooc pair
@@ -107,6 +111,11 @@ const DictionaryEntry* Dictionary::entry(const Token& token) const {
     return &entries_[find_iter->second];
   else
     return nullptr;
+}
+
+const DictionaryEntry* Dictionary::entry(int index) const {
+  if (index < 0 || index >= entries_.size()) return nullptr;
+  return &entries_[index];
 }
 
 }  // namespace core

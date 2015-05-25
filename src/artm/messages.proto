@@ -179,8 +179,8 @@ message LabelRegularizationPhiConfig {
 
 message SpecifiedSparsePhiConfig {
   enum Mode {
-    SparseTopics = 1;
-    SparseTokens = 2;
+    SparseTopics = 0;
+    SparseTokens = 1;
   }
 
   repeated string topic_name = 1;
@@ -195,7 +195,6 @@ message ImproveCoherencyPhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
-  optional int32 top_tokens_count = 4 [default = 10];
 }
 
 // Represents an internal state of a general regularizer
@@ -238,7 +237,7 @@ message DictionaryEntry {
 message DictionaryCoocurenceEntries {
   repeated int32 first_index = 1;  // index of token in entry field
   repeated int32 second_index = 2; // index of token in entry field
-  repeated int32 items_count = 3;
+  repeated float items_count = 3;
 }
 
 // Represents a configuration of a general score
@@ -319,7 +318,7 @@ message SparsityThetaScore {
 // Represents a configuration of a sparsity phi score
 message SparsityPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2;
+  optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
 }
 
@@ -344,10 +343,9 @@ message ItemsProcessedScore {
 // Represents a configuration of a top tokens score
 message TopTokensScoreConfig {
   optional int32 num_tokens = 1 [default = 10];
-  optional string class_id = 2;
+  optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
-  optional bool count_coherency = 4 [default = true];
-  optional string dictionary_name = 5;
+  optional string cooccurrence_dictionary_name = 4;
 }
 
 // Represents a result of calculation of a top tokens score
@@ -379,11 +377,10 @@ message ThetaSnippetScore {
 // Represents a configuration of a topic kernel score
 message TopicKernelScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2;
+  optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
   optional double probability_mass_threshold = 4 [default = 0.1];
-  optional bool count_coherency = 5 [default = true];
-  optional string dictionary_name = 6;
+  optional string cooccurrence_dictionary_name = 5;
 }
 
 // Represents a result of calculation of a topic kernel score
@@ -394,7 +391,7 @@ message TopicKernelScore {
   optional double average_kernel_size = 4;
   optional double average_kernel_purity = 5;
   optional double average_kernel_contrast = 6;
-  optional FloatArray coherency = 7;
+  optional DoubleArray coherency = 7;
   optional float average_coherency = 8;
 }
 
@@ -449,9 +446,9 @@ message CollectionParserConfig {
   optional string target_folder = 4;
   optional string dictionary_file_name = 5;
   optional int32 num_items_per_batch = 6 [default = 1000];
-  optional string cooccurrence_file_name = 7;
-  repeated string cooccurrence_token = 8;
-  optional bool use_unity_based_indices = 9 [default = true];
+  repeated string cooccurrence_token = 7;
+  optional bool use_unity_based_indices = 8 [default = true];
+  optional bool gather_cooc = 9 [default = false];
 }
 
 // Represents an argument of 'synchronize model' operation
