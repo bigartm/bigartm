@@ -456,6 +456,26 @@ bool Helpers::Validate(const ::artm::ImportModelArgs& message, bool throw_error)
   return false;
 }
 
+bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error) {
+  std::stringstream ss;
+  if (!message.has_name()) ss << "DictionaryConfig.name is not defined; ";
+
+  if (message.has_cooc_entries())
+    if (message.cooc_entries().first_index_size() != message.cooc_entries().second_index_size() ||
+        message.cooc_entries().first_index_size() != message.cooc_entries().items_count_size() ||
+        message.cooc_entries().second_index_size() != message.cooc_entries().items_count_size()) {
+      ss << "DictionaryConfig.cooc_entries fields have inconsistent sizes; ";
+    }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
 std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   std::stringstream ss;
   ss << "ModelConfig";

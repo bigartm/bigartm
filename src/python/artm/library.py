@@ -55,6 +55,8 @@ GetTopicModelArgs_RequestType_Pwt = 0
 GetTopicModelArgs_RequestType_Nwt = 1
 InitializeModelArgs_SourceType_Dictionary = 0
 InitializeModelArgs_SourceType_Batches = 1
+SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
+SpecifiedSparsePhiConfig_Mode_SparseTokens = 1
 
 #################################################################################
 
@@ -320,6 +322,39 @@ class MasterComponent:
             for class_id in class_ids:
                 config.class_id.append(class_id)
         return self.CreateRegularizer(name, RegularizerConfig_Type_LabelRegularizationPhi, config)
+
+    def CreateSpecifiedSparsePhiRegularizer(self, name=None, config=None, topic_names=None, class_id=None, mode=None):
+        if name is None:
+            name = "SpecifiedSparsePhiRegularizer:" + uuid.uuid1().urn
+        if config is None:
+            config = messages_pb2.SpecifiedSparsePhiConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
+        if class_id is not None:
+            config.class_id = class_id
+        if mode is not None:
+            config.mode = mode
+        return self.CreateRegularizer(name, RegularizerConfig_Type_SpecifiedSparsePhi, config)
+
+    def CreateImproveCoherencyPhiRegularizer(self, name=None, config=None, topic_names=None,
+                                             class_ids=None, dictionary_name=None):
+        if name is None:
+            name = "ImproveCoherencyPhiRegularizer:" + uuid.uuid1().urn
+        if config is None:
+            config = messages_pb2.ImproveCoherencyPhiConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
+        if class_ids is not None:
+            config.ClearField('class_id')
+            for class_id in class_ids:
+                config.class_id.append(class_id)
+        if dictionary_name is not None:
+            config.dictionary_name = dictionary_name
+        return self.CreateRegularizer(name, RegularizerConfig_Type_ImproveCoherencyPhi, config)
 
     def CreateScore(self, name, type, config):
         master_config = messages_pb2.MasterComponentConfig()

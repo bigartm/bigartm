@@ -25,6 +25,15 @@ if batches_found == 0:
     collection_parser_config.vocab_file_path = data_folder + 'vocab.' + collection_name + '.txt'
     collection_parser_config.target_folder = target_folder
     collection_parser_config.dictionary_file_name = 'dictionary'
+    
+    with open(collection_parser_config.vocab_file_path) as f:
+        index = 0
+        for line in f:
+          if (index < 1000):
+              collection_parser_config.cooccurrence_token.append(line.rstrip())
+              index += 1
+    collection_parser_config.gather_cooc = True
+    
     unique_tokens = artm.library.Library().ParseCollection(collection_parser_config)
     print " OK."
 else:
@@ -57,8 +66,8 @@ with artm.library.MasterComponent() as master:
 
     for iteration in range(0, 8):
         master.InvokeIteration(disk_path=target_folder)  # Invoke one scan over all batches,
-        master.WaitIdle()                               # and wait until it completes.
-        model.Synchronize()                             # Synchronize topic model.
+        master.WaitIdle()                                # and wait until it completes.
+        model.Synchronize()                              # Synchronize topic model.
         print "Iter#" + str(iteration),
         print ": Perplexity = %.3f" % perplexity_score.GetValue(model).value,
         print ", Phi sparsity = %.3f" % sparsity_phi_score.GetValue(model).value,
