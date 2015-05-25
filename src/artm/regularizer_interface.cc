@@ -3,7 +3,6 @@
 #include "artm/regularizer_interface.h"
 
 #include "artm/core/dictionary.h"
-#include "artm/core/topic_model.h"
 
 namespace artm {
 

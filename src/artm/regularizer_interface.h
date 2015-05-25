@@ -15,7 +15,6 @@
 #include "artm/core/common.h"
 #include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 
 #include "glog/logging.h"
 
@@ -23,8 +22,8 @@ namespace artm {
 
 namespace core {
   // Forward declarations
-  class Regularizable;
   class Dictionary;
+  class PhiMatrix;
   template<typename K, typename T> class ThreadSafeCollectionHolder;
   typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 }
@@ -59,8 +58,9 @@ class RegularizerInterface {
     return nullptr;
   }
 
-  virtual bool RegularizePhi(const ::artm::core::Regularizable& topic_model,
-                             ::artm::core::TokenCollectionWeights* result) { return true; }
+  virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
+                             const ::artm::core::PhiMatrix& n_wt,
+                             ::artm::core::PhiMatrix* result) { return true; }
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize() {
     return google::protobuf::RepeatedPtrField<std::string>();

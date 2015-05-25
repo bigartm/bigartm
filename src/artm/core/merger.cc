@@ -110,7 +110,7 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
   int topic_size = topic_model.topic_size();
   int token_size = topic_model.token_size();
 
-  ::artm::core::TokenCollectionWeights local_r_wt(token_size, topic_size);
+  ::artm::core::TokenCollectionWeights local_r_wt(token_size, topic_size, topic_model);
 
   auto n_t_all = topic_model.FindNormalizers();
 
@@ -123,7 +123,18 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
       double tau = reg_iterator->tau();
       bool relative_reg = reg_iterator->use_relative_regularization();
 
-      bool retval = regularizer->RegularizePhi(topic_model, &local_r_wt);
+      const PhiMatrix& pwt_matrix = topic_model.GetPwt();
+      const PhiMatrix& nwt_matrix = topic_model.Nwt();
+      if (pwt_matrix.token_size() != nwt_matrix.token_size() || pwt_matrix.topic_size() != nwt_matrix.topic_size() ||
+          local_r_wt.token_size() != nwt_matrix.token_size() || local_r_wt.topic_size() != nwt_matrix.topic_size()) {
+        LOG(ERROR) << "Inconsistent matrix size: Pwt( "
+                    << pwt_matrix.token_size() << ", " << pwt_matrix.topic_size() << ") vs Nwt("
+                    << nwt_matrix.token_size() << ", " << nwt_matrix.topic_size() << ") vs Rwt("
+                    << local_r_wt.token_size() << ", " << local_r_wt.topic_size() << ")";
+        continue;
+      }
+
+      bool retval = regularizer->RegularizePhi(topic_model.GetPwt(), topic_model.Nwt(), &local_r_wt);
 
       // count n and r_i for relative regularization, if necessary
       // prepare next structure with parameters:
@@ -479,7 +490,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       // call CalcPwt() to allow regularizers GetPwt() usage
       new_ttm->CalcPwt();
 
-      ::artm::core::TokenCollectionWeights global_r_wt(new_ttm->token_size(), new_ttm->topic_size());
+      ::artm::core::TokenCollectionWeights global_r_wt(new_ttm->token_size(), new_ttm->topic_size(), *new_ttm);
       InvokePhiRegularizers(*new_ttm, &global_r_wt);
 
       // merge final r_wt with n_wt in p_wt (n_wt is const)

@@ -67,8 +67,8 @@ int TokenCollection::token_size() const {
   return token_to_token_id_.size();
 }
 
-TokenCollectionWeights::TokenCollectionWeights(int token_size, int topic_size)
-  : topic_size_(topic_size) {
+TokenCollectionWeights::TokenCollectionWeights(int token_size, int topic_size, const ::artm::core::TopicModel& parent)
+    : topic_size_(topic_size), parent_(parent) {
   for (int i = 0; i < token_size; ++i) {
     float* values = new float[topic_size];
     values_.push_back(values);
@@ -120,13 +120,21 @@ void TokenCollectionWeights::RemoveToken(int token_id) {
   values_.erase(values_.begin() + token_id);
 }
 
+const Token& TokenCollectionWeights::token(int index) const {
+  return parent_.token(index);
+}
+
+google::protobuf::RepeatedPtrField<std::string> TokenCollectionWeights::topic_name() const {
+  return parent_.topic_name();
+}
+
 TopicModel::TopicModel(const ModelName& model_name,
     const google::protobuf::RepeatedPtrField<std::string>& topic_name)
     : model_name_(model_name),
       token_collection_(),
       topic_name_(),
-      n_wt_(topic_name.size()),
-      p_wt_(topic_name.size()) {
+      n_wt_(topic_name.size(), *this),
+      p_wt_(topic_name.size(), *this) {
   for (auto iter = topic_name.begin(); iter != topic_name.end(); ++iter) {
     topic_name_.push_back(*iter);
   }

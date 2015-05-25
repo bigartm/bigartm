@@ -2,16 +2,16 @@
 
 #include <string>
 
-#include "artm/core/regularizable.h"
-#include "artm/core/topic_model.h"
+#include "artm/core/phi_matrix.h"
 
 #include "artm/regularizer/multilanguage_phi.h"
 
 namespace artm {
 namespace regularizer {
 
-bool MultiLanguagePhi::RegularizePhi(const ::artm::core::Regularizable& topic_model,
-                                     ::artm::core::TokenCollectionWeights* result) {
+bool MultiLanguagePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
+                                     const ::artm::core::PhiMatrix& n_wt,
+                                     ::artm::core::PhiMatrix* result) {
   // the body of this method will be defined later
 
   ++no_regularization_calls_;

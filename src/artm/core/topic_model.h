@@ -19,7 +19,7 @@
 
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
-#include "artm/core/regularizable.h"
+#include "artm/core/phi_matrix.h"
 #include "artm/utility/blas.h"
 
 namespace artm {
@@ -74,7 +74,7 @@ class TopicWeightIterator {
       : p_w_(p_w), topics_count_(topics_count), current_topic_(-1) {}
 
   friend class ::artm::core::TopicModel;
-  friend class ::artm::core::Regularizable;
+  friend class ::artm::core::PhiMatrix;
 };
 
 class TokenCollection {
@@ -93,14 +93,16 @@ class TokenCollection {
   std::vector<Token> token_id_to_token_;
 };
 
-class TokenCollectionWeights : boost::noncopyable {
+class TokenCollectionWeights : boost::noncopyable, public PhiMatrix {
  public:
-  explicit TokenCollectionWeights(int topic_size) : topic_size_(topic_size) {}
-  TokenCollectionWeights(int token_size, int topic_size);
-  ~TokenCollectionWeights() { Clear(); }
+  explicit TokenCollectionWeights(int topic_size, const ::artm::core::TopicModel& parent)
+      : topic_size_(topic_size), parent_(parent) {}
 
-  float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
-  void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
+  TokenCollectionWeights(int token_size, int topic_size, const ::artm::core::TopicModel& parent);
+  virtual ~TokenCollectionWeights() { Clear(); }
+
+  virtual float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
+  virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
 
   const float* operator[](int token_id) const { return values_[token_id]; }
   float* operator[](int token_id) { return values_[token_id]; }
@@ -111,7 +113,10 @@ class TokenCollectionWeights : boost::noncopyable {
   size_t size() const { return values_.size(); }
   bool empty() const { return values_.empty(); }
 
-  inline int topic_size() const { return topic_size_; }
+  virtual int topic_size() const { return topic_size_; }
+  virtual int token_size() const { return values_.size(); }
+  virtual const Token& token(int index) const;
+  virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const;
 
   void Reset();
   void Clear();
@@ -122,6 +127,7 @@ class TokenCollectionWeights : boost::noncopyable {
  private:
   int topic_size_;
   std::vector<float*> values_;
+  const ::artm::core::TopicModel& parent_;
 };
 
 // A class representing a topic model.
@@ -129,7 +135,7 @@ class TokenCollectionWeights : boost::noncopyable {
 //   It supports efficient lookup of words in the matrix.
 // - ::artm::TopicModel is an external representation, implemented as protobuf message.
 //   It is used to transfer model back to the user.
-class TopicModel : public Regularizable {
+class TopicModel {
  public:
   explicit TopicModel(const ModelName& model_name,
                       const google::protobuf::RepeatedPtrField<std::string>& topic_name);
@@ -170,10 +176,12 @@ class TopicModel : public Regularizable {
   const Token& token(int index) const { return token_collection_.token(index); }
 
   std::map<ClassId, std::vector<float> > FindNormalizers(const TokenCollectionWeights& r_wt) const;
-  std::map<ClassId, std::vector<float> > FindNormalizers() const { return FindNormalizers(TokenCollectionWeights(0)); }
+  std::map<ClassId, std::vector<float> > FindNormalizers() const {
+    return FindNormalizers(TokenCollectionWeights(0, *this));
+  }
 
   // find p_wt matrix without regularization
-  virtual void FindPwt(TokenCollectionWeights* p_wt) const { return FindPwt(TokenCollectionWeights(0), p_wt); }
+  virtual void FindPwt(TokenCollectionWeights* p_wt) const { return FindPwt(TokenCollectionWeights(0, *this), p_wt); }
   // find p_wt matrix with regularization additions r_wt
   virtual void FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeights* p_wt) const;
 

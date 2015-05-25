@@ -39,7 +39,7 @@ set(SRC_LIST
 	core/processor_input.cc
 	core/processor_input.h
 	core/protobuf_helpers.h
-	core/regularizable.h
+	core/phi_matrix.h
 	core/sync_event.cc
 	core/sync_event.h
 	core/template_manager.h
