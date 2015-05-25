@@ -3,7 +3,7 @@
 #include "artm/score_calculator_interface.h"
 
 #include "artm/core/dictionary.h"
-#include "artm/core/topic_model.h"
+#include "artm/core/phi_matrix.h"
 
 namespace artm {
 

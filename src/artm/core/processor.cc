@@ -586,7 +586,7 @@ CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, c
       theta_vec.push_back(theta_matrix(topic_index, item_index));
     }
 
-    score_calc->AppendScore(item, token_dict, topic_model, model_config, theta_vec, score.get());
+    score_calc->AppendScore(item, token_dict, topic_model.GetPwt(), model_config, theta_vec, score.get());
   }
 
   return score;

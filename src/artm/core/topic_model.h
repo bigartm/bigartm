@@ -116,6 +116,8 @@ class TokenCollectionWeights : boost::noncopyable, public PhiMatrix {
   virtual int topic_size() const { return topic_size_; }
   virtual int token_size() const { return values_.size(); }
   virtual const Token& token(int index) const;
+  virtual bool has_token(const Token& token) const;
+  virtual int token_index(const Token& token) const;
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const;
 
   void Reset();

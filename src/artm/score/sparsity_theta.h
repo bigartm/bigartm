@@ -28,7 +28,7 @@ class SparsityTheta : public ScoreCalculatorInterface {
   virtual void AppendScore(
       const Item& item,
       const std::vector<artm::core::Token>& token_dict,
-      const artm::core::TopicModel& topic_model,
+      const artm::core::PhiMatrix& p_wt,
       const artm::ModelConfig& model_config,
       const std::vector<float>& theta,
       Score* score);

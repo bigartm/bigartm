@@ -3,21 +3,20 @@
 #include <cmath>
 
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 
 #include "artm/score/sparsity_phi.h"
 
 namespace artm {
 namespace score {
 
-std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::TopicModel& topic_model) {
-  int topics_count = topic_model.topic_size();
-  int tokens_count = topic_model.token_size();
+std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::PhiMatrix& p_wt) {
+  int topics_count = p_wt.topic_size();
+  int tokens_count = p_wt.token_size();
   int zero_tokens_count = 0;
   int topics_to_score_size = 0;
 
   // parameters preparation
-  auto topic_name = topic_model.topic_name();
+  auto topic_name = p_wt.topic_name();
   std::vector<bool> topics_to_score;
   if (config_.topic_name_size() > 0) {
     for (int i = 0; i < topics_count; ++i)
@@ -44,14 +43,11 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::TopicModel&
 
   int class_tokens_count = 0;
   for (int token_index = 0; token_index < tokens_count; token_index++) {
-    if (topic_model.token(token_index).class_id == class_id) {
+    if (p_wt.token(token_index).class_id == class_id) {
       class_tokens_count++;
-      ::artm::core::TopicWeightIterator topic_iter =
-          topic_model.GetTopicWeightIterator(token_index);
-
-      while (topic_iter.NextTopic() < topics_count) {
-        if ((fabs(topic_iter.Weight()) < config_.eps()) &&
-            topics_to_score[topic_iter.TopicIndex()]) {
+      for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+        if ((fabs(p_wt.get(token_index, topic_index)) < config_.eps()) &&
+            topics_to_score[topic_index]) {
           ++zero_tokens_count;
         }
       }

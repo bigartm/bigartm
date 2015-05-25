@@ -1,7 +1,6 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 
 #include "artm/score/items_processed.h"
 
@@ -11,7 +10,7 @@ namespace score {
 void ItemsProcessed::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
-    const artm::core::TopicModel& topic_model,
+    const artm::core::PhiMatrix& p_wt,
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {

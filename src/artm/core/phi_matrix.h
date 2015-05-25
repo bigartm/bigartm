@@ -20,10 +20,15 @@ class TokenCollectionWeights;
 
 class PhiMatrix {
  public:
+  static const int kUndefIndex = -1;
+
   virtual int token_size() const = 0;
   virtual int topic_size() const = 0;
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const = 0;
+
   virtual const Token& token(int index) const = 0;
+  virtual bool has_token(const Token& token) const = 0;
+  virtual int token_index(const Token& token) const = 0;
 
   virtual float get(int token_id, int topic_id) const = 0;
   virtual void set(int token_id, int topic_id, float value) = 0;

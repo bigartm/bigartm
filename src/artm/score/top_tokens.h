@@ -17,7 +17,7 @@ class TopTokens : public ScoreCalculatorInterface {
   explicit TopTokens(const TopTokensScoreConfig& config)
     : config_(config) {}
 
-  virtual std::shared_ptr<Score> CalculateScore(const artm::core::TopicModel& topic_model);
+  virtual std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt);
 
   virtual bool is_cumulative() const { return false; }
 

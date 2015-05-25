@@ -407,7 +407,7 @@ bool Merger::ScoresMerger::RequestScore(const GetScoreValueArgs& get_score_args,
     }
   } else {
     std::shared_ptr< ::artm::core::TopicModel> model = topic_model_->get(get_score_args.model_name());
-    std::shared_ptr<Score> score = score_calculator->CalculateScore(*model);
+    std::shared_ptr<Score> score = score_calculator->CalculateScore(model->GetPwt());
     score_data->set_data(score->SerializeAsString());
   }
 

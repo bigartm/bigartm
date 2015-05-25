@@ -128,6 +128,14 @@ google::protobuf::RepeatedPtrField<std::string> TokenCollectionWeights::topic_na
   return parent_.topic_name();
 }
 
+bool TokenCollectionWeights::has_token(const Token& token) const {
+  return parent_.has_token(token);
+}
+
+int TokenCollectionWeights::token_index(const Token& token) const {
+  return parent_.token_id(token);
+}
+
 TopicModel::TopicModel(const ModelName& model_name,
     const google::protobuf::RepeatedPtrField<std::string>& topic_name)
     : model_name_(model_name),

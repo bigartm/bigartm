@@ -10,15 +10,12 @@
 
 #include "artm/core/dictionary.h"
 #include "artm/core/common.h"
+#include "artm/core/phi_matrix.h"
 #include "artm/messages.pb.h"
 
 namespace artm {
 
 typedef ::google::protobuf::Message Score;
-
-namespace core {
-  class TopicModel;
-}
 
 class ScoreCalculatorInterface {
  public:
@@ -28,8 +25,7 @@ class ScoreCalculatorInterface {
   virtual ScoreData_Type score_type() const = 0;
 
   // Non-cumulative calculation (based on Phi matrix)
-  virtual std::shared_ptr<Score> CalculateScore(
-      const artm::core::TopicModel& topic_model) { return nullptr; }
+  virtual std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt) { return nullptr; }
 
   // Cumulative calculation (such as perplexity, or sparsity of Theta matrix)
   virtual bool is_cumulative() const { return false; }
@@ -42,7 +38,7 @@ class ScoreCalculatorInterface {
   virtual void AppendScore(
       const Item& item,
       const std::vector<artm::core::Token>& token_dict_,
-      const artm::core::TopicModel& topic_model,
+      const artm::core::PhiMatrix& p_wt,
       const artm::ModelConfig& model_config,
       const std::vector<float>& theta,
       Score* score) { }
