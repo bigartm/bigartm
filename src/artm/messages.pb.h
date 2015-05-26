@@ -54,7 +54,7 @@ class DecorrelatorPhiConfig;
 class MultiLanguagePhiConfig;
 class LabelRegularizationPhiConfig;
 class SpecifiedSparsePhiConfig;
-class ImproveCoherencyPhiConfig;
+class ImproveCoherencePhiConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class DictionaryConfig;
@@ -137,11 +137,11 @@ enum RegularizerConfig_Type {
   RegularizerConfig_Type_MultiLanguagePhi = 3,
   RegularizerConfig_Type_LabelRegularizationPhi = 4,
   RegularizerConfig_Type_SpecifiedSparsePhi = 5,
-  RegularizerConfig_Type_ImproveCoherencyPhi = 6
+  RegularizerConfig_Type_ImproveCoherencePhi = 6
 };
 bool RegularizerConfig_Type_IsValid(int value);
 const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_SmoothSparseTheta;
-const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_ImproveCoherencyPhi;
+const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_ImproveCoherencePhi;
 const int RegularizerConfig_Type_Type_ARRAYSIZE = RegularizerConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* RegularizerConfig_Type_descriptor();
@@ -2265,7 +2265,7 @@ class RegularizerConfig : public ::google::protobuf::Message {
   static const Type MultiLanguagePhi = RegularizerConfig_Type_MultiLanguagePhi;
   static const Type LabelRegularizationPhi = RegularizerConfig_Type_LabelRegularizationPhi;
   static const Type SpecifiedSparsePhi = RegularizerConfig_Type_SpecifiedSparsePhi;
-  static const Type ImproveCoherencyPhi = RegularizerConfig_Type_ImproveCoherencyPhi;
+  static const Type ImproveCoherencePhi = RegularizerConfig_Type_ImproveCoherencePhi;
   static inline bool Type_IsValid(int value) {
     return RegularizerConfig_Type_IsValid(value);
   }
@@ -3028,14 +3028,14 @@ class SpecifiedSparsePhiConfig : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class ImproveCoherencyPhiConfig : public ::google::protobuf::Message {
+class ImproveCoherencePhiConfig : public ::google::protobuf::Message {
  public:
-  ImproveCoherencyPhiConfig();
-  virtual ~ImproveCoherencyPhiConfig();
+  ImproveCoherencePhiConfig();
+  virtual ~ImproveCoherencePhiConfig();
 
-  ImproveCoherencyPhiConfig(const ImproveCoherencyPhiConfig& from);
+  ImproveCoherencePhiConfig(const ImproveCoherencePhiConfig& from);
 
-  inline ImproveCoherencyPhiConfig& operator=(const ImproveCoherencyPhiConfig& from) {
+  inline ImproveCoherencePhiConfig& operator=(const ImproveCoherencePhiConfig& from) {
     CopyFrom(from);
     return *this;
   }
@@ -3049,17 +3049,17 @@ class ImproveCoherencyPhiConfig : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const ImproveCoherencyPhiConfig& default_instance();
+  static const ImproveCoherencePhiConfig& default_instance();
 
-  void Swap(ImproveCoherencyPhiConfig* other);
+  void Swap(ImproveCoherencePhiConfig* other);
 
   // implements Message ----------------------------------------------
 
-  ImproveCoherencyPhiConfig* New() const;
+  ImproveCoherencePhiConfig* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const ImproveCoherencyPhiConfig& from);
-  void MergeFrom(const ImproveCoherencyPhiConfig& from);
+  void CopyFrom(const ImproveCoherencePhiConfig& from);
+  void MergeFrom(const ImproveCoherencePhiConfig& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -3126,7 +3126,7 @@ class ImproveCoherencyPhiConfig : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
-  // @@protoc_insertion_point(class_scope:artm.ImproveCoherencyPhiConfig)
+  // @@protoc_insertion_point(class_scope:artm.ImproveCoherencePhiConfig)
  private:
   inline void set_has_dictionary_name();
   inline void clear_has_dictionary_name();
@@ -3145,7 +3145,7 @@ class ImproveCoherencyPhiConfig : public ::google::protobuf::Message {
   friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
 
   void InitAsDefaultInstance();
-  static ImproveCoherencyPhiConfig* default_instance_;
+  static ImproveCoherencePhiConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -5274,30 +5274,30 @@ class TopTokensScore : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_weight();
 
-  // optional .artm.FloatArray coherency = 6;
-  inline bool has_coherency() const;
-  inline void clear_coherency();
-  static const int kCoherencyFieldNumber = 6;
-  inline const ::artm::FloatArray& coherency() const;
-  inline ::artm::FloatArray* mutable_coherency();
-  inline ::artm::FloatArray* release_coherency();
-  inline void set_allocated_coherency(::artm::FloatArray* coherency);
+  // optional .artm.FloatArray coherence = 6;
+  inline bool has_coherence() const;
+  inline void clear_coherence();
+  static const int kCoherenceFieldNumber = 6;
+  inline const ::artm::FloatArray& coherence() const;
+  inline ::artm::FloatArray* mutable_coherence();
+  inline ::artm::FloatArray* release_coherence();
+  inline void set_allocated_coherence(::artm::FloatArray* coherence);
 
-  // optional float average_coherency = 7;
-  inline bool has_average_coherency() const;
-  inline void clear_average_coherency();
-  static const int kAverageCoherencyFieldNumber = 7;
-  inline float average_coherency() const;
-  inline void set_average_coherency(float value);
+  // optional float average_coherence = 7;
+  inline bool has_average_coherence() const;
+  inline void clear_average_coherence();
+  static const int kAverageCoherenceFieldNumber = 7;
+  inline float average_coherence() const;
+  inline void set_average_coherence(float value);
 
   // @@protoc_insertion_point(class_scope:artm.TopTokensScore)
  private:
   inline void set_has_num_entries();
   inline void clear_has_num_entries();
-  inline void set_has_coherency();
-  inline void clear_has_coherency();
-  inline void set_has_average_coherency();
-  inline void clear_has_average_coherency();
+  inline void set_has_coherence();
+  inline void clear_has_coherence();
+  inline void set_has_average_coherence();
+  inline void clear_has_average_coherence();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5305,9 +5305,9 @@ class TopTokensScore : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
   ::google::protobuf::RepeatedPtrField< ::std::string> token_;
   ::google::protobuf::int32 num_entries_;
-  float average_coherency_;
+  float average_coherence_;
   ::google::protobuf::RepeatedField< float > weight_;
-  ::artm::FloatArray* coherency_;
+  ::artm::FloatArray* coherence_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
@@ -5789,21 +5789,21 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline double average_kernel_contrast() const;
   inline void set_average_kernel_contrast(double value);
 
-  // optional .artm.DoubleArray coherency = 7;
-  inline bool has_coherency() const;
-  inline void clear_coherency();
-  static const int kCoherencyFieldNumber = 7;
-  inline const ::artm::DoubleArray& coherency() const;
-  inline ::artm::DoubleArray* mutable_coherency();
-  inline ::artm::DoubleArray* release_coherency();
-  inline void set_allocated_coherency(::artm::DoubleArray* coherency);
+  // optional .artm.DoubleArray coherence = 7;
+  inline bool has_coherence() const;
+  inline void clear_coherence();
+  static const int kCoherenceFieldNumber = 7;
+  inline const ::artm::DoubleArray& coherence() const;
+  inline ::artm::DoubleArray* mutable_coherence();
+  inline ::artm::DoubleArray* release_coherence();
+  inline void set_allocated_coherence(::artm::DoubleArray* coherence);
 
-  // optional float average_coherency = 8;
-  inline bool has_average_coherency() const;
-  inline void clear_average_coherency();
-  static const int kAverageCoherencyFieldNumber = 8;
-  inline float average_coherency() const;
-  inline void set_average_coherency(float value);
+  // optional float average_coherence = 8;
+  inline bool has_average_coherence() const;
+  inline void clear_average_coherence();
+  static const int kAverageCoherenceFieldNumber = 8;
+  inline float average_coherence() const;
+  inline void set_average_coherence(float value);
 
   // @@protoc_insertion_point(class_scope:artm.TopicKernelScore)
  private:
@@ -5819,10 +5819,10 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline void clear_has_average_kernel_purity();
   inline void set_has_average_kernel_contrast();
   inline void clear_has_average_kernel_contrast();
-  inline void set_has_coherency();
-  inline void clear_has_coherency();
-  inline void set_has_average_coherency();
-  inline void clear_has_average_coherency();
+  inline void set_has_coherence();
+  inline void clear_has_coherence();
+  inline void set_has_average_coherence();
+  inline void clear_has_average_coherence();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5832,8 +5832,8 @@ class TopicKernelScore : public ::google::protobuf::Message {
   double average_kernel_size_;
   double average_kernel_purity_;
   double average_kernel_contrast_;
-  ::artm::DoubleArray* coherency_;
-  float average_coherency_;
+  ::artm::DoubleArray* coherence_;
+  float average_coherence_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
@@ -11369,144 +11369,144 @@ inline void SpecifiedSparsePhiConfig::set_mode(::artm::SpecifiedSparsePhiConfig_
 
 // -------------------------------------------------------------------
 
-// ImproveCoherencyPhiConfig
+// ImproveCoherencePhiConfig
 
 // repeated string topic_name = 1;
-inline int ImproveCoherencyPhiConfig::topic_name_size() const {
+inline int ImproveCoherencePhiConfig::topic_name_size() const {
   return topic_name_.size();
 }
-inline void ImproveCoherencyPhiConfig::clear_topic_name() {
+inline void ImproveCoherencePhiConfig::clear_topic_name() {
   topic_name_.Clear();
 }
-inline const ::std::string& ImproveCoherencyPhiConfig::topic_name(int index) const {
+inline const ::std::string& ImproveCoherencePhiConfig::topic_name(int index) const {
   return topic_name_.Get(index);
 }
-inline ::std::string* ImproveCoherencyPhiConfig::mutable_topic_name(int index) {
+inline ::std::string* ImproveCoherencePhiConfig::mutable_topic_name(int index) {
   return topic_name_.Mutable(index);
 }
-inline void ImproveCoherencyPhiConfig::set_topic_name(int index, const ::std::string& value) {
+inline void ImproveCoherencePhiConfig::set_topic_name(int index, const ::std::string& value) {
   topic_name_.Mutable(index)->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::set_topic_name(int index, const char* value) {
+inline void ImproveCoherencePhiConfig::set_topic_name(int index, const char* value) {
   topic_name_.Mutable(index)->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::set_topic_name(int index, const char* value, size_t size) {
+inline void ImproveCoherencePhiConfig::set_topic_name(int index, const char* value, size_t size) {
   topic_name_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ImproveCoherencyPhiConfig::add_topic_name() {
+inline ::std::string* ImproveCoherencePhiConfig::add_topic_name() {
   return topic_name_.Add();
 }
-inline void ImproveCoherencyPhiConfig::add_topic_name(const ::std::string& value) {
+inline void ImproveCoherencePhiConfig::add_topic_name(const ::std::string& value) {
   topic_name_.Add()->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::add_topic_name(const char* value) {
+inline void ImproveCoherencePhiConfig::add_topic_name(const char* value) {
   topic_name_.Add()->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::add_topic_name(const char* value, size_t size) {
+inline void ImproveCoherencePhiConfig::add_topic_name(const char* value, size_t size) {
   topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ImproveCoherencyPhiConfig::topic_name() const {
+ImproveCoherencePhiConfig::topic_name() const {
   return topic_name_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ImproveCoherencyPhiConfig::mutable_topic_name() {
+ImproveCoherencePhiConfig::mutable_topic_name() {
   return &topic_name_;
 }
 
 // repeated string class_id = 2;
-inline int ImproveCoherencyPhiConfig::class_id_size() const {
+inline int ImproveCoherencePhiConfig::class_id_size() const {
   return class_id_.size();
 }
-inline void ImproveCoherencyPhiConfig::clear_class_id() {
+inline void ImproveCoherencePhiConfig::clear_class_id() {
   class_id_.Clear();
 }
-inline const ::std::string& ImproveCoherencyPhiConfig::class_id(int index) const {
+inline const ::std::string& ImproveCoherencePhiConfig::class_id(int index) const {
   return class_id_.Get(index);
 }
-inline ::std::string* ImproveCoherencyPhiConfig::mutable_class_id(int index) {
+inline ::std::string* ImproveCoherencePhiConfig::mutable_class_id(int index) {
   return class_id_.Mutable(index);
 }
-inline void ImproveCoherencyPhiConfig::set_class_id(int index, const ::std::string& value) {
+inline void ImproveCoherencePhiConfig::set_class_id(int index, const ::std::string& value) {
   class_id_.Mutable(index)->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::set_class_id(int index, const char* value) {
+inline void ImproveCoherencePhiConfig::set_class_id(int index, const char* value) {
   class_id_.Mutable(index)->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::set_class_id(int index, const char* value, size_t size) {
+inline void ImproveCoherencePhiConfig::set_class_id(int index, const char* value, size_t size) {
   class_id_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ImproveCoherencyPhiConfig::add_class_id() {
+inline ::std::string* ImproveCoherencePhiConfig::add_class_id() {
   return class_id_.Add();
 }
-inline void ImproveCoherencyPhiConfig::add_class_id(const ::std::string& value) {
+inline void ImproveCoherencePhiConfig::add_class_id(const ::std::string& value) {
   class_id_.Add()->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::add_class_id(const char* value) {
+inline void ImproveCoherencePhiConfig::add_class_id(const char* value) {
   class_id_.Add()->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::add_class_id(const char* value, size_t size) {
+inline void ImproveCoherencePhiConfig::add_class_id(const char* value, size_t size) {
   class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ImproveCoherencyPhiConfig::class_id() const {
+ImproveCoherencePhiConfig::class_id() const {
   return class_id_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ImproveCoherencyPhiConfig::mutable_class_id() {
+ImproveCoherencePhiConfig::mutable_class_id() {
   return &class_id_;
 }
 
 // optional string dictionary_name = 3;
-inline bool ImproveCoherencyPhiConfig::has_dictionary_name() const {
+inline bool ImproveCoherencePhiConfig::has_dictionary_name() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void ImproveCoherencyPhiConfig::set_has_dictionary_name() {
+inline void ImproveCoherencePhiConfig::set_has_dictionary_name() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void ImproveCoherencyPhiConfig::clear_has_dictionary_name() {
+inline void ImproveCoherencePhiConfig::clear_has_dictionary_name() {
   _has_bits_[0] &= ~0x00000004u;
 }
-inline void ImproveCoherencyPhiConfig::clear_dictionary_name() {
+inline void ImproveCoherencePhiConfig::clear_dictionary_name() {
   if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_->clear();
   }
   clear_has_dictionary_name();
 }
-inline const ::std::string& ImproveCoherencyPhiConfig::dictionary_name() const {
+inline const ::std::string& ImproveCoherencePhiConfig::dictionary_name() const {
   return *dictionary_name_;
 }
-inline void ImproveCoherencyPhiConfig::set_dictionary_name(const ::std::string& value) {
+inline void ImproveCoherencePhiConfig::set_dictionary_name(const ::std::string& value) {
   set_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_ = new ::std::string;
   }
   dictionary_name_->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::set_dictionary_name(const char* value) {
+inline void ImproveCoherencePhiConfig::set_dictionary_name(const char* value) {
   set_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_ = new ::std::string;
   }
   dictionary_name_->assign(value);
 }
-inline void ImproveCoherencyPhiConfig::set_dictionary_name(const char* value, size_t size) {
+inline void ImproveCoherencePhiConfig::set_dictionary_name(const char* value, size_t size) {
   set_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_ = new ::std::string;
   }
   dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* ImproveCoherencyPhiConfig::mutable_dictionary_name() {
+inline ::std::string* ImproveCoherencePhiConfig::mutable_dictionary_name() {
   set_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_ = new ::std::string;
   }
   return dictionary_name_;
 }
-inline ::std::string* ImproveCoherencyPhiConfig::release_dictionary_name() {
+inline ::std::string* ImproveCoherencePhiConfig::release_dictionary_name() {
   clear_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     return NULL;
@@ -11516,7 +11516,7 @@ inline ::std::string* ImproveCoherencyPhiConfig::release_dictionary_name() {
     return temp;
   }
 }
-inline void ImproveCoherencyPhiConfig::set_allocated_dictionary_name(::std::string* dictionary_name) {
+inline void ImproveCoherencePhiConfig::set_allocated_dictionary_name(::std::string* dictionary_name) {
   if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete dictionary_name_;
   }
@@ -14147,64 +14147,64 @@ TopTokensScore::mutable_weight() {
   return &weight_;
 }
 
-// optional .artm.FloatArray coherency = 6;
-inline bool TopTokensScore::has_coherency() const {
+// optional .artm.FloatArray coherence = 6;
+inline bool TopTokensScore::has_coherence() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void TopTokensScore::set_has_coherency() {
+inline void TopTokensScore::set_has_coherence() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void TopTokensScore::clear_has_coherency() {
+inline void TopTokensScore::clear_has_coherence() {
   _has_bits_[0] &= ~0x00000020u;
 }
-inline void TopTokensScore::clear_coherency() {
-  if (coherency_ != NULL) coherency_->::artm::FloatArray::Clear();
-  clear_has_coherency();
+inline void TopTokensScore::clear_coherence() {
+  if (coherence_ != NULL) coherence_->::artm::FloatArray::Clear();
+  clear_has_coherence();
 }
-inline const ::artm::FloatArray& TopTokensScore::coherency() const {
-  return coherency_ != NULL ? *coherency_ : *default_instance_->coherency_;
+inline const ::artm::FloatArray& TopTokensScore::coherence() const {
+  return coherence_ != NULL ? *coherence_ : *default_instance_->coherence_;
 }
-inline ::artm::FloatArray* TopTokensScore::mutable_coherency() {
-  set_has_coherency();
-  if (coherency_ == NULL) coherency_ = new ::artm::FloatArray;
-  return coherency_;
+inline ::artm::FloatArray* TopTokensScore::mutable_coherence() {
+  set_has_coherence();
+  if (coherence_ == NULL) coherence_ = new ::artm::FloatArray;
+  return coherence_;
 }
-inline ::artm::FloatArray* TopTokensScore::release_coherency() {
-  clear_has_coherency();
-  ::artm::FloatArray* temp = coherency_;
-  coherency_ = NULL;
+inline ::artm::FloatArray* TopTokensScore::release_coherence() {
+  clear_has_coherence();
+  ::artm::FloatArray* temp = coherence_;
+  coherence_ = NULL;
   return temp;
 }
-inline void TopTokensScore::set_allocated_coherency(::artm::FloatArray* coherency) {
-  delete coherency_;
-  coherency_ = coherency;
-  if (coherency) {
-    set_has_coherency();
+inline void TopTokensScore::set_allocated_coherence(::artm::FloatArray* coherence) {
+  delete coherence_;
+  coherence_ = coherence;
+  if (coherence) {
+    set_has_coherence();
   } else {
-    clear_has_coherency();
+    clear_has_coherence();
   }
 }
 
-// optional float average_coherency = 7;
-inline bool TopTokensScore::has_average_coherency() const {
+// optional float average_coherence = 7;
+inline bool TopTokensScore::has_average_coherence() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void TopTokensScore::set_has_average_coherency() {
+inline void TopTokensScore::set_has_average_coherence() {
   _has_bits_[0] |= 0x00000040u;
 }
-inline void TopTokensScore::clear_has_average_coherency() {
+inline void TopTokensScore::clear_has_average_coherence() {
   _has_bits_[0] &= ~0x00000040u;
 }
-inline void TopTokensScore::clear_average_coherency() {
-  average_coherency_ = 0;
-  clear_has_average_coherency();
+inline void TopTokensScore::clear_average_coherence() {
+  average_coherence_ = 0;
+  clear_has_average_coherence();
 }
-inline float TopTokensScore::average_coherency() const {
-  return average_coherency_;
+inline float TopTokensScore::average_coherence() const {
+  return average_coherence_;
 }
-inline void TopTokensScore::set_average_coherency(float value) {
-  set_has_average_coherency();
-  average_coherency_ = value;
+inline void TopTokensScore::set_average_coherence(float value) {
+  set_has_average_coherence();
+  average_coherence_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -14868,64 +14868,64 @@ inline void TopicKernelScore::set_average_kernel_contrast(double value) {
   average_kernel_contrast_ = value;
 }
 
-// optional .artm.DoubleArray coherency = 7;
-inline bool TopicKernelScore::has_coherency() const {
+// optional .artm.DoubleArray coherence = 7;
+inline bool TopicKernelScore::has_coherence() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void TopicKernelScore::set_has_coherency() {
+inline void TopicKernelScore::set_has_coherence() {
   _has_bits_[0] |= 0x00000040u;
 }
-inline void TopicKernelScore::clear_has_coherency() {
+inline void TopicKernelScore::clear_has_coherence() {
   _has_bits_[0] &= ~0x00000040u;
 }
-inline void TopicKernelScore::clear_coherency() {
-  if (coherency_ != NULL) coherency_->::artm::DoubleArray::Clear();
-  clear_has_coherency();
+inline void TopicKernelScore::clear_coherence() {
+  if (coherence_ != NULL) coherence_->::artm::DoubleArray::Clear();
+  clear_has_coherence();
 }
-inline const ::artm::DoubleArray& TopicKernelScore::coherency() const {
-  return coherency_ != NULL ? *coherency_ : *default_instance_->coherency_;
+inline const ::artm::DoubleArray& TopicKernelScore::coherence() const {
+  return coherence_ != NULL ? *coherence_ : *default_instance_->coherence_;
 }
-inline ::artm::DoubleArray* TopicKernelScore::mutable_coherency() {
-  set_has_coherency();
-  if (coherency_ == NULL) coherency_ = new ::artm::DoubleArray;
-  return coherency_;
+inline ::artm::DoubleArray* TopicKernelScore::mutable_coherence() {
+  set_has_coherence();
+  if (coherence_ == NULL) coherence_ = new ::artm::DoubleArray;
+  return coherence_;
 }
-inline ::artm::DoubleArray* TopicKernelScore::release_coherency() {
-  clear_has_coherency();
-  ::artm::DoubleArray* temp = coherency_;
-  coherency_ = NULL;
+inline ::artm::DoubleArray* TopicKernelScore::release_coherence() {
+  clear_has_coherence();
+  ::artm::DoubleArray* temp = coherence_;
+  coherence_ = NULL;
   return temp;
 }
-inline void TopicKernelScore::set_allocated_coherency(::artm::DoubleArray* coherency) {
-  delete coherency_;
-  coherency_ = coherency;
-  if (coherency) {
-    set_has_coherency();
+inline void TopicKernelScore::set_allocated_coherence(::artm::DoubleArray* coherence) {
+  delete coherence_;
+  coherence_ = coherence;
+  if (coherence) {
+    set_has_coherence();
   } else {
-    clear_has_coherency();
+    clear_has_coherence();
   }
 }
 
-// optional float average_coherency = 8;
-inline bool TopicKernelScore::has_average_coherency() const {
+// optional float average_coherence = 8;
+inline bool TopicKernelScore::has_average_coherence() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
-inline void TopicKernelScore::set_has_average_coherency() {
+inline void TopicKernelScore::set_has_average_coherence() {
   _has_bits_[0] |= 0x00000080u;
 }
-inline void TopicKernelScore::clear_has_average_coherency() {
+inline void TopicKernelScore::clear_has_average_coherence() {
   _has_bits_[0] &= ~0x00000080u;
 }
-inline void TopicKernelScore::clear_average_coherency() {
-  average_coherency_ = 0;
-  clear_has_average_coherency();
+inline void TopicKernelScore::clear_average_coherence() {
+  average_coherence_ = 0;
+  clear_has_average_coherence();
 }
-inline float TopicKernelScore::average_coherency() const {
-  return average_coherency_;
+inline float TopicKernelScore::average_coherence() const {
+  return average_coherence_;
 }
-inline void TopicKernelScore::set_average_coherency(float value) {
-  set_has_average_coherency();
-  average_coherency_ = value;
+inline void TopicKernelScore::set_average_coherence(float value) {
+  set_has_average_coherence();
+  average_coherence_ = value;
 }
 
 // -------------------------------------------------------------------

@@ -227,6 +227,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
   // Craft the dictionary
   auto retval = std::make_shared<DictionaryConfig>();
+  retval->set_name(config_.dictionary_file_name());
   retval->set_total_items_count(total_items_count);
   retval->set_total_token_count(total_token_count);
 
@@ -493,6 +494,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
       config_.target_folder(), *retval);
   }
 
+  retval->set_name(config_.dictionary_file_name());
   return retval;
 }
 

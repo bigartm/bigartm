@@ -63,8 +63,8 @@ set(SRC_LIST
 	regularizer/smooth_sparse_theta.h
 	regularizer/specified_sparse_phi.cc
 	regularizer/specified_sparse_phi.h
-	regularizer/improve_coherency_phi.cc
-	regularizer/improve_coherency_phi.h	
+	regularizer/improve_coherence_phi.cc
+	regularizer/improve_coherence_phi.h	
 	score/items_processed.cc
 	score/items_processed.h
 	score/perplexity.cc
@@ -79,8 +79,8 @@ set(SRC_LIST
 	score/top_tokens.h
 	score/topic_kernel.cc
 	score/topic_kernel.h
-	score/coherency_plugin.cc
-	score/coherency_plugin.h
+	score/coherence_plugin.cc
+	score/coherence_plugin.h
 	utility/ice.cc
 	utility/ice.h
 	utility/blas.cc

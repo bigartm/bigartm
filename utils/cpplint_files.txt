@@ -22,7 +22,7 @@
 ../src/artm/regularizer/label_regularization_phi.cc
 ../src/artm/regularizer/smooth_sparse_theta.cc
 ../src/artm/regularizer/specified_sparse_phi.cc
-../src/artm/regularizer/improve_coherency_phi.cc
+../src/artm/regularizer/improve_coherence_phi.cc
 ../src/artm/score/perplexity.cc
 ../src/artm/score/sparsity_theta.cc
 ../src/artm/score/sparsity_phi.cc
@@ -30,7 +30,7 @@
 ../src/artm/score/top_tokens.cc
 ../src/artm/score/theta_snippet.cc
 ../src/artm/score/topic_kernel.cc
-../src/artm/score/coherency_plugin.cc
+../src/artm/score/coherence_plugin.cc
 ../src/artm/utility/ice.cc
 ../src/artm/utility/blas.cc
 ../src/artm_tests/boost_thread_test.cc
@@ -79,7 +79,7 @@
 ../src/artm/regularizer/label_regularization_phi.h
 ../src/artm/regularizer/smooth_sparse_theta.h
 ../src/artm/regularizer/specified_sparse_phi.h
-../src/artm/regularizer/improve_coherency_phi.h
+../src/artm/regularizer/improve_coherence_phi.h
 ../src/artm/score/perplexity.h
 ../src/artm/score/sparsity_theta.h
 ../src/artm/score/sparsity_phi.h
@@ -87,6 +87,6 @@
 ../src/artm/score/top_tokens.h
 ../src/artm/score/theta_snippet.h
 ../src/artm/score/topic_kernel.h
-../src/artm/score/coherency_plugin.h
+../src/artm/score/coherence_plugin.h
 ../src/artm/utility/ice.h
 ../src/artm/utility/blas.h

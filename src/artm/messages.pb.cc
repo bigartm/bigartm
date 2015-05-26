@@ -84,9 +84,9 @@ const ::google::protobuf::Descriptor* SpecifiedSparsePhiConfig_descriptor_ = NUL
 const ::google::protobuf::internal::GeneratedMessageReflection*
   SpecifiedSparsePhiConfig_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* SpecifiedSparsePhiConfig_Mode_descriptor_ = NULL;
-const ::google::protobuf::Descriptor* ImproveCoherencyPhiConfig_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* ImproveCoherencePhiConfig_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
-  ImproveCoherencyPhiConfig_reflection_ = NULL;
+  ImproveCoherencePhiConfig_reflection_ = NULL;
 const ::google::protobuf::Descriptor* RegularizerInternalState_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   RegularizerInternalState_reflection_ = NULL;
@@ -582,23 +582,23 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SpecifiedSparsePhiConfig));
   SpecifiedSparsePhiConfig_Mode_descriptor_ = SpecifiedSparsePhiConfig_descriptor_->enum_type(0);
-  ImproveCoherencyPhiConfig_descriptor_ = file->message_type(19);
-  static const int ImproveCoherencyPhiConfig_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencyPhiConfig, topic_name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencyPhiConfig, class_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencyPhiConfig, dictionary_name_),
+  ImproveCoherencePhiConfig_descriptor_ = file->message_type(19);
+  static const int ImproveCoherencePhiConfig_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencePhiConfig, topic_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencePhiConfig, class_id_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencePhiConfig, dictionary_name_),
   };
-  ImproveCoherencyPhiConfig_reflection_ =
+  ImproveCoherencePhiConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
-      ImproveCoherencyPhiConfig_descriptor_,
-      ImproveCoherencyPhiConfig::default_instance_,
-      ImproveCoherencyPhiConfig_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencyPhiConfig, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencyPhiConfig, _unknown_fields_),
+      ImproveCoherencePhiConfig_descriptor_,
+      ImproveCoherencePhiConfig::default_instance_,
+      ImproveCoherencePhiConfig_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencePhiConfig, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImproveCoherencePhiConfig, _unknown_fields_),
       -1,
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(ImproveCoherencyPhiConfig));
+      sizeof(ImproveCoherencePhiConfig));
   RegularizerInternalState_descriptor_ = file->message_type(20);
   static const int RegularizerInternalState_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizerInternalState, name_),
@@ -893,8 +893,8 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, topic_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, token_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, weight_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, coherency_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, average_coherency_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, coherence_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, average_coherence_),
   };
   TopTokensScore_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -968,8 +968,8 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, average_kernel_size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, average_kernel_purity_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, average_kernel_contrast_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, coherency_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, average_coherency_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, coherence_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, average_coherence_),
   };
   TopicKernelScore_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1320,7 +1320,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     SpecifiedSparsePhiConfig_descriptor_, &SpecifiedSparsePhiConfig::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    ImproveCoherencyPhiConfig_descriptor_, &ImproveCoherencyPhiConfig::default_instance());
+    ImproveCoherencePhiConfig_descriptor_, &ImproveCoherencePhiConfig::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     RegularizerInternalState_descriptor_, &RegularizerInternalState::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -1444,8 +1444,8 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete SpecifiedSparsePhiConfig::default_instance_;
   delete SpecifiedSparsePhiConfig_reflection_;
   delete SpecifiedSparsePhiConfig::_default_class_id_;
-  delete ImproveCoherencyPhiConfig::default_instance_;
-  delete ImproveCoherencyPhiConfig_reflection_;
+  delete ImproveCoherencePhiConfig::default_instance_;
+  delete ImproveCoherencePhiConfig_reflection_;
   delete RegularizerInternalState::default_instance_;
   delete RegularizerInternalState_reflection_;
   delete MultiLanguagePhiInternalState::default_instance_;
@@ -1596,7 +1596,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\025\n\021SmoothSparseTheta\020\000\022\023\n\017SmoothSparsePh"
     "i\020\001\022\023\n\017DecorrelatorPhi\020\002\022\024\n\020MultiLanguag"
     "ePhi\020\003\022\032\n\026LabelRegularizationPhi\020\004\022\026\n\022Sp"
-    "ecifiedSparsePhi\020\005\022\027\n\023ImproveCoherencyPh"
+    "ecifiedSparsePhi\020\005\022\027\n\023ImproveCoherencePh"
     "i\020\006\"A\n\027SmoothSparseThetaConfig\022\022\n\ntopic_"
     "name\030\001 \003(\t\022\022\n\nalpha_iter\030\002 \003(\002\"V\n\025Smooth"
     "SparsePhiConfig\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010c"
@@ -1612,7 +1612,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "ld\030\004 \001(\002:\0040.99\022\?\n\004mode\030\005 \001(\0162#.artm.Spec"
     "ifiedSparsePhiConfig.Mode:\014SparseTopics\""
     "*\n\004Mode\022\020\n\014SparseTopics\020\000\022\020\n\014SparseToken"
-    "s\020\001\"Z\n\031ImproveCoherencyPhiConfig\022\022\n\ntopi"
+    "s\020\001\"Z\n\031ImproveCoherencePhiConfig\022\022\n\ntopi"
     "c_name\030\001 \003(\t\022\020\n\010class_id\030\002 \003(\t\022\027\n\017dictio"
     "nary_name\030\003 \001(\t\"\207\001\n\030RegularizerInternalS"
     "tate\022\014\n\004name\030\001 \001(\t\0221\n\004type\030\002 \001(\0162#.artm."
@@ -1673,9 +1673,9 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "ccurrence_dictionary_name\030\004 \001(\t\"\255\001\n\016TopT"
     "okensScore\022\023\n\013num_entries\030\001 \001(\005\022\022\n\ntopic"
     "_name\030\002 \003(\t\022\023\n\013topic_index\030\003 \003(\005\022\r\n\005toke"
-    "n\030\004 \003(\t\022\016\n\006weight\030\005 \003(\002\022#\n\tcoherency\030\006 \001"
+    "n\030\004 \003(\t\022\016\n\006weight\030\005 \003(\002\022#\n\tcoherence\030\006 \001"
     "(\0132\020.artm.FloatArray\022\031\n\021average_coherenc"
-    "y\030\007 \001(\002\"\177\n\027ThetaSnippetScoreConfig\022\031\n\nfi"
+    "e\030\007 \001(\002\"\177\n\027ThetaSnippetScoreConfig\022\031\n\nfi"
     "eld_name\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001"
     "(\t:\007@global\022\023\n\007item_id\030\003 \003(\005B\002\020\001\022\026\n\nitem"
     "_count\030\004 \001(\005:\00210\"F\n\021ThetaSnippetScore\022\017\n"
@@ -1691,8 +1691,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "artm.DoubleArray\022\033\n\023average_kernel_size\030"
     "\004 \001(\001\022\035\n\025average_kernel_purity\030\005 \001(\001\022\037\n\027"
     "average_kernel_contrast\030\006 \001(\001\022$\n\tcoheren"
-    "cy\030\007 \001(\0132\021.artm.DoubleArray\022\031\n\021average_c"
-    "oherency\030\010 \001(\002\"\224\003\n\nTopicModel\022\024\n\004name\030\001 "
+    "ce\030\007 \001(\0132\021.artm.DoubleArray\022\031\n\021average_c"
+    "oherence\030\010 \001(\002\"\224\003\n\nTopicModel\022\024\n\004name\030\001 "
     "\001(\t:\006@model\022\024\n\014topics_count\030\002 \001(\005\022\022\n\ntop"
     "ic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rtoken_we"
     "ights\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010class_i"
@@ -1788,7 +1788,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   SpecifiedSparsePhiConfig::_default_class_id_ =
       new ::std::string("@default_class", 14);
   SpecifiedSparsePhiConfig::default_instance_ = new SpecifiedSparsePhiConfig();
-  ImproveCoherencyPhiConfig::default_instance_ = new ImproveCoherencyPhiConfig();
+  ImproveCoherencePhiConfig::default_instance_ = new ImproveCoherencePhiConfig();
   RegularizerInternalState::default_instance_ = new RegularizerInternalState();
   MultiLanguagePhiInternalState::default_instance_ = new MultiLanguagePhiInternalState();
   DictionaryConfig::default_instance_ = new DictionaryConfig();
@@ -1871,7 +1871,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   MultiLanguagePhiConfig::default_instance_->InitAsDefaultInstance();
   LabelRegularizationPhiConfig::default_instance_->InitAsDefaultInstance();
   SpecifiedSparsePhiConfig::default_instance_->InitAsDefaultInstance();
-  ImproveCoherencyPhiConfig::default_instance_->InitAsDefaultInstance();
+  ImproveCoherencePhiConfig::default_instance_->InitAsDefaultInstance();
   RegularizerInternalState::default_instance_->InitAsDefaultInstance();
   MultiLanguagePhiInternalState::default_instance_->InitAsDefaultInstance();
   DictionaryConfig::default_instance_->InitAsDefaultInstance();
@@ -7335,7 +7335,7 @@ const RegularizerConfig_Type RegularizerConfig::DecorrelatorPhi;
 const RegularizerConfig_Type RegularizerConfig::MultiLanguagePhi;
 const RegularizerConfig_Type RegularizerConfig::LabelRegularizationPhi;
 const RegularizerConfig_Type RegularizerConfig::SpecifiedSparsePhi;
-const RegularizerConfig_Type RegularizerConfig::ImproveCoherencyPhi;
+const RegularizerConfig_Type RegularizerConfig::ImproveCoherencePhi;
 const RegularizerConfig_Type RegularizerConfig::Type_MIN;
 const RegularizerConfig_Type RegularizerConfig::Type_MAX;
 const int RegularizerConfig::Type_ARRAYSIZE;
@@ -9395,36 +9395,36 @@ void SpecifiedSparsePhiConfig::Swap(SpecifiedSparsePhiConfig* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int ImproveCoherencyPhiConfig::kTopicNameFieldNumber;
-const int ImproveCoherencyPhiConfig::kClassIdFieldNumber;
-const int ImproveCoherencyPhiConfig::kDictionaryNameFieldNumber;
+const int ImproveCoherencePhiConfig::kTopicNameFieldNumber;
+const int ImproveCoherencePhiConfig::kClassIdFieldNumber;
+const int ImproveCoherencePhiConfig::kDictionaryNameFieldNumber;
 #endif  // !_MSC_VER
 
-ImproveCoherencyPhiConfig::ImproveCoherencyPhiConfig()
+ImproveCoherencePhiConfig::ImproveCoherencePhiConfig()
   : ::google::protobuf::Message() {
   SharedCtor();
 }
 
-void ImproveCoherencyPhiConfig::InitAsDefaultInstance() {
+void ImproveCoherencePhiConfig::InitAsDefaultInstance() {
 }
 
-ImproveCoherencyPhiConfig::ImproveCoherencyPhiConfig(const ImproveCoherencyPhiConfig& from)
+ImproveCoherencePhiConfig::ImproveCoherencePhiConfig(const ImproveCoherencePhiConfig& from)
   : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
 
-void ImproveCoherencyPhiConfig::SharedCtor() {
+void ImproveCoherencePhiConfig::SharedCtor() {
   _cached_size_ = 0;
   dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
-ImproveCoherencyPhiConfig::~ImproveCoherencyPhiConfig() {
+ImproveCoherencePhiConfig::~ImproveCoherencePhiConfig() {
   SharedDtor();
 }
 
-void ImproveCoherencyPhiConfig::SharedDtor() {
+void ImproveCoherencePhiConfig::SharedDtor() {
   if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete dictionary_name_;
   }
@@ -9432,28 +9432,28 @@ void ImproveCoherencyPhiConfig::SharedDtor() {
   }
 }
 
-void ImproveCoherencyPhiConfig::SetCachedSize(int size) const {
+void ImproveCoherencePhiConfig::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* ImproveCoherencyPhiConfig::descriptor() {
+const ::google::protobuf::Descriptor* ImproveCoherencePhiConfig::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return ImproveCoherencyPhiConfig_descriptor_;
+  return ImproveCoherencePhiConfig_descriptor_;
 }
 
-const ImproveCoherencyPhiConfig& ImproveCoherencyPhiConfig::default_instance() {
+const ImproveCoherencePhiConfig& ImproveCoherencePhiConfig::default_instance() {
   if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
   return *default_instance_;
 }
 
-ImproveCoherencyPhiConfig* ImproveCoherencyPhiConfig::default_instance_ = NULL;
+ImproveCoherencePhiConfig* ImproveCoherencePhiConfig::default_instance_ = NULL;
 
-ImproveCoherencyPhiConfig* ImproveCoherencyPhiConfig::New() const {
-  return new ImproveCoherencyPhiConfig;
+ImproveCoherencePhiConfig* ImproveCoherencePhiConfig::New() const {
+  return new ImproveCoherencePhiConfig;
 }
 
-void ImproveCoherencyPhiConfig::Clear() {
+void ImproveCoherencePhiConfig::Clear() {
   if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
     if (has_dictionary_name()) {
       if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -9467,7 +9467,7 @@ void ImproveCoherencyPhiConfig::Clear() {
   mutable_unknown_fields()->Clear();
 }
 
-bool ImproveCoherencyPhiConfig::MergePartialFromCodedStream(
+bool ImproveCoherencePhiConfig::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   ::google::protobuf::uint32 tag;
@@ -9544,7 +9544,7 @@ bool ImproveCoherencyPhiConfig::MergePartialFromCodedStream(
 #undef DO_
 }
 
-void ImproveCoherencyPhiConfig::SerializeWithCachedSizes(
+void ImproveCoherencePhiConfig::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // repeated string topic_name = 1;
   for (int i = 0; i < this->topic_name_size(); i++) {
@@ -9579,7 +9579,7 @@ void ImproveCoherencyPhiConfig::SerializeWithCachedSizes(
   }
 }
 
-::google::protobuf::uint8* ImproveCoherencyPhiConfig::SerializeWithCachedSizesToArray(
+::google::protobuf::uint8* ImproveCoherencePhiConfig::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // repeated string topic_name = 1;
   for (int i = 0; i < this->topic_name_size(); i++) {
@@ -9616,7 +9616,7 @@ void ImproveCoherencyPhiConfig::SerializeWithCachedSizes(
   return target;
 }
 
-int ImproveCoherencyPhiConfig::ByteSize() const {
+int ImproveCoherencePhiConfig::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
@@ -9653,10 +9653,10 @@ int ImproveCoherencyPhiConfig::ByteSize() const {
   return total_size;
 }
 
-void ImproveCoherencyPhiConfig::MergeFrom(const ::google::protobuf::Message& from) {
+void ImproveCoherencePhiConfig::MergeFrom(const ::google::protobuf::Message& from) {
   GOOGLE_CHECK_NE(&from, this);
-  const ImproveCoherencyPhiConfig* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const ImproveCoherencyPhiConfig*>(
+  const ImproveCoherencePhiConfig* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ImproveCoherencePhiConfig*>(
       &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
@@ -9665,7 +9665,7 @@ void ImproveCoherencyPhiConfig::MergeFrom(const ::google::protobuf::Message& fro
   }
 }
 
-void ImproveCoherencyPhiConfig::MergeFrom(const ImproveCoherencyPhiConfig& from) {
+void ImproveCoherencePhiConfig::MergeFrom(const ImproveCoherencePhiConfig& from) {
   GOOGLE_CHECK_NE(&from, this);
   topic_name_.MergeFrom(from.topic_name_);
   class_id_.MergeFrom(from.class_id_);
@@ -9677,24 +9677,24 @@ void ImproveCoherencyPhiConfig::MergeFrom(const ImproveCoherencyPhiConfig& from)
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
-void ImproveCoherencyPhiConfig::CopyFrom(const ::google::protobuf::Message& from) {
+void ImproveCoherencePhiConfig::CopyFrom(const ::google::protobuf::Message& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void ImproveCoherencyPhiConfig::CopyFrom(const ImproveCoherencyPhiConfig& from) {
+void ImproveCoherencePhiConfig::CopyFrom(const ImproveCoherencePhiConfig& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool ImproveCoherencyPhiConfig::IsInitialized() const {
+bool ImproveCoherencePhiConfig::IsInitialized() const {
 
   return true;
 }
 
-void ImproveCoherencyPhiConfig::Swap(ImproveCoherencyPhiConfig* other) {
+void ImproveCoherencePhiConfig::Swap(ImproveCoherencePhiConfig* other) {
   if (other != this) {
     topic_name_.Swap(&other->topic_name_);
     class_id_.Swap(&other->class_id_);
@@ -9705,11 +9705,11 @@ void ImproveCoherencyPhiConfig::Swap(ImproveCoherencyPhiConfig* other) {
   }
 }
 
-::google::protobuf::Metadata ImproveCoherencyPhiConfig::GetMetadata() const {
+::google::protobuf::Metadata ImproveCoherencePhiConfig::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::Metadata metadata;
-  metadata.descriptor = ImproveCoherencyPhiConfig_descriptor_;
-  metadata.reflection = ImproveCoherencyPhiConfig_reflection_;
+  metadata.descriptor = ImproveCoherencePhiConfig_descriptor_;
+  metadata.reflection = ImproveCoherencePhiConfig_reflection_;
   return metadata;
 }
 
@@ -15254,8 +15254,8 @@ const int TopTokensScore::kTopicNameFieldNumber;
 const int TopTokensScore::kTopicIndexFieldNumber;
 const int TopTokensScore::kTokenFieldNumber;
 const int TopTokensScore::kWeightFieldNumber;
-const int TopTokensScore::kCoherencyFieldNumber;
-const int TopTokensScore::kAverageCoherencyFieldNumber;
+const int TopTokensScore::kCoherenceFieldNumber;
+const int TopTokensScore::kAverageCoherenceFieldNumber;
 #endif  // !_MSC_VER
 
 TopTokensScore::TopTokensScore()
@@ -15264,7 +15264,7 @@ TopTokensScore::TopTokensScore()
 }
 
 void TopTokensScore::InitAsDefaultInstance() {
-  coherency_ = const_cast< ::artm::FloatArray*>(&::artm::FloatArray::default_instance());
+  coherence_ = const_cast< ::artm::FloatArray*>(&::artm::FloatArray::default_instance());
 }
 
 TopTokensScore::TopTokensScore(const TopTokensScore& from)
@@ -15276,8 +15276,8 @@ TopTokensScore::TopTokensScore(const TopTokensScore& from)
 void TopTokensScore::SharedCtor() {
   _cached_size_ = 0;
   num_entries_ = 0;
-  coherency_ = NULL;
-  average_coherency_ = 0;
+  coherence_ = NULL;
+  average_coherence_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -15287,7 +15287,7 @@ TopTokensScore::~TopTokensScore() {
 
 void TopTokensScore::SharedDtor() {
   if (this != default_instance_) {
-    delete coherency_;
+    delete coherence_;
   }
 }
 
@@ -15315,10 +15315,10 @@ TopTokensScore* TopTokensScore::New() const {
 void TopTokensScore::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     num_entries_ = 0;
-    if (has_coherency()) {
-      if (coherency_ != NULL) coherency_->::artm::FloatArray::Clear();
+    if (has_coherence()) {
+      if (coherence_ != NULL) coherence_->::artm::FloatArray::Clear();
     }
-    average_coherency_ = 0;
+    average_coherence_ = 0;
   }
   topic_name_.Clear();
   topic_index_.Clear();
@@ -15427,33 +15427,33 @@ bool TopTokensScore::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(45)) goto parse_weight;
-        if (input->ExpectTag(50)) goto parse_coherency;
+        if (input->ExpectTag(50)) goto parse_coherence;
         break;
       }
 
-      // optional .artm.FloatArray coherency = 6;
+      // optional .artm.FloatArray coherence = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_coherency:
+         parse_coherence:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_coherency()));
+               input, mutable_coherence()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(61)) goto parse_average_coherency;
+        if (input->ExpectTag(61)) goto parse_average_coherence;
         break;
       }
 
-      // optional float average_coherency = 7;
+      // optional float average_coherence = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
-         parse_average_coherency:
+         parse_average_coherence:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
-                 input, &average_coherency_)));
-          set_has_average_coherency();
+                 input, &average_coherence_)));
+          set_has_average_coherence();
         } else {
           goto handle_uninterpreted;
         }
@@ -15514,15 +15514,15 @@ void TopTokensScore::SerializeWithCachedSizes(
       5, this->weight(i), output);
   }
 
-  // optional .artm.FloatArray coherency = 6;
-  if (has_coherency()) {
+  // optional .artm.FloatArray coherence = 6;
+  if (has_coherence()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      6, this->coherency(), output);
+      6, this->coherence(), output);
   }
 
-  // optional float average_coherency = 7;
-  if (has_average_coherency()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(7, this->average_coherency(), output);
+  // optional float average_coherence = 7;
+  if (has_average_coherence()) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(7, this->average_coherence(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -15568,16 +15568,16 @@ void TopTokensScore::SerializeWithCachedSizes(
       WriteFloatToArray(5, this->weight(i), target);
   }
 
-  // optional .artm.FloatArray coherency = 6;
-  if (has_coherency()) {
+  // optional .artm.FloatArray coherence = 6;
+  if (has_coherence()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        6, this->coherency(), target);
+        6, this->coherence(), target);
   }
 
-  // optional float average_coherency = 7;
-  if (has_average_coherency()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(7, this->average_coherency(), target);
+  // optional float average_coherence = 7;
+  if (has_average_coherence()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(7, this->average_coherence(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -15598,15 +15598,15 @@ int TopTokensScore::ByteSize() const {
           this->num_entries());
     }
 
-    // optional .artm.FloatArray coherency = 6;
-    if (has_coherency()) {
+    // optional .artm.FloatArray coherence = 6;
+    if (has_coherence()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->coherency());
+          this->coherence());
     }
 
-    // optional float average_coherency = 7;
-    if (has_average_coherency()) {
+    // optional float average_coherence = 7;
+    if (has_average_coherence()) {
       total_size += 1 + 4;
     }
 
@@ -15675,11 +15675,11 @@ void TopTokensScore::MergeFrom(const TopTokensScore& from) {
     if (from.has_num_entries()) {
       set_num_entries(from.num_entries());
     }
-    if (from.has_coherency()) {
-      mutable_coherency()->::artm::FloatArray::MergeFrom(from.coherency());
+    if (from.has_coherence()) {
+      mutable_coherence()->::artm::FloatArray::MergeFrom(from.coherence());
     }
-    if (from.has_average_coherency()) {
-      set_average_coherency(from.average_coherency());
+    if (from.has_average_coherence()) {
+      set_average_coherence(from.average_coherence());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -15709,8 +15709,8 @@ void TopTokensScore::Swap(TopTokensScore* other) {
     topic_index_.Swap(&other->topic_index_);
     token_.Swap(&other->token_);
     weight_.Swap(&other->weight_);
-    std::swap(coherency_, other->coherency_);
-    std::swap(average_coherency_, other->average_coherency_);
+    std::swap(coherence_, other->coherence_);
+    std::swap(average_coherence_, other->average_coherence_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -16783,8 +16783,8 @@ const int TopicKernelScore::kKernelContrastFieldNumber;
 const int TopicKernelScore::kAverageKernelSizeFieldNumber;
 const int TopicKernelScore::kAverageKernelPurityFieldNumber;
 const int TopicKernelScore::kAverageKernelContrastFieldNumber;
-const int TopicKernelScore::kCoherencyFieldNumber;
-const int TopicKernelScore::kAverageCoherencyFieldNumber;
+const int TopicKernelScore::kCoherenceFieldNumber;
+const int TopicKernelScore::kAverageCoherenceFieldNumber;
 #endif  // !_MSC_VER
 
 TopicKernelScore::TopicKernelScore()
@@ -16796,7 +16796,7 @@ void TopicKernelScore::InitAsDefaultInstance() {
   kernel_size_ = const_cast< ::artm::DoubleArray*>(&::artm::DoubleArray::default_instance());
   kernel_purity_ = const_cast< ::artm::DoubleArray*>(&::artm::DoubleArray::default_instance());
   kernel_contrast_ = const_cast< ::artm::DoubleArray*>(&::artm::DoubleArray::default_instance());
-  coherency_ = const_cast< ::artm::DoubleArray*>(&::artm::DoubleArray::default_instance());
+  coherence_ = const_cast< ::artm::DoubleArray*>(&::artm::DoubleArray::default_instance());
 }
 
 TopicKernelScore::TopicKernelScore(const TopicKernelScore& from)
@@ -16813,8 +16813,8 @@ void TopicKernelScore::SharedCtor() {
   average_kernel_size_ = 0;
   average_kernel_purity_ = 0;
   average_kernel_contrast_ = 0;
-  coherency_ = NULL;
-  average_coherency_ = 0;
+  coherence_ = NULL;
+  average_coherence_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -16827,7 +16827,7 @@ void TopicKernelScore::SharedDtor() {
     delete kernel_size_;
     delete kernel_purity_;
     delete kernel_contrast_;
-    delete coherency_;
+    delete coherence_;
   }
 }
 
@@ -16866,10 +16866,10 @@ void TopicKernelScore::Clear() {
     average_kernel_size_ = 0;
     average_kernel_purity_ = 0;
     average_kernel_contrast_ = 0;
-    if (has_coherency()) {
-      if (coherency_ != NULL) coherency_->::artm::DoubleArray::Clear();
+    if (has_coherence()) {
+      if (coherence_ != NULL) coherence_->::artm::DoubleArray::Clear();
     }
-    average_coherency_ = 0;
+    average_coherence_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -16966,33 +16966,33 @@ bool TopicKernelScore::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(58)) goto parse_coherency;
+        if (input->ExpectTag(58)) goto parse_coherence;
         break;
       }
 
-      // optional .artm.DoubleArray coherency = 7;
+      // optional .artm.DoubleArray coherence = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_coherency:
+         parse_coherence:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_coherency()));
+               input, mutable_coherence()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(69)) goto parse_average_coherency;
+        if (input->ExpectTag(69)) goto parse_average_coherence;
         break;
       }
 
-      // optional float average_coherency = 8;
+      // optional float average_coherence = 8;
       case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
-         parse_average_coherency:
+         parse_average_coherence:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
-                 input, &average_coherency_)));
-          set_has_average_coherency();
+                 input, &average_coherence_)));
+          set_has_average_coherence();
         } else {
           goto handle_uninterpreted;
         }
@@ -17051,15 +17051,15 @@ void TopicKernelScore::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->average_kernel_contrast(), output);
   }
 
-  // optional .artm.DoubleArray coherency = 7;
-  if (has_coherency()) {
+  // optional .artm.DoubleArray coherence = 7;
+  if (has_coherence()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      7, this->coherency(), output);
+      7, this->coherence(), output);
   }
 
-  // optional float average_coherency = 8;
-  if (has_average_coherency()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(8, this->average_coherency(), output);
+  // optional float average_coherence = 8;
+  if (has_average_coherence()) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(8, this->average_coherence(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -17106,16 +17106,16 @@ void TopicKernelScore::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->average_kernel_contrast(), target);
   }
 
-  // optional .artm.DoubleArray coherency = 7;
-  if (has_coherency()) {
+  // optional .artm.DoubleArray coherence = 7;
+  if (has_coherence()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        7, this->coherency(), target);
+        7, this->coherence(), target);
   }
 
-  // optional float average_coherency = 8;
-  if (has_average_coherency()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(8, this->average_coherency(), target);
+  // optional float average_coherence = 8;
+  if (has_average_coherence()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(8, this->average_coherence(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -17165,15 +17165,15 @@ int TopicKernelScore::ByteSize() const {
       total_size += 1 + 8;
     }
 
-    // optional .artm.DoubleArray coherency = 7;
-    if (has_coherency()) {
+    // optional .artm.DoubleArray coherence = 7;
+    if (has_coherence()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->coherency());
+          this->coherence());
     }
 
-    // optional float average_coherency = 8;
-    if (has_average_coherency()) {
+    // optional float average_coherence = 8;
+    if (has_average_coherence()) {
       total_size += 1 + 4;
     }
 
@@ -17222,11 +17222,11 @@ void TopicKernelScore::MergeFrom(const TopicKernelScore& from) {
     if (from.has_average_kernel_contrast()) {
       set_average_kernel_contrast(from.average_kernel_contrast());
     }
-    if (from.has_coherency()) {
-      mutable_coherency()->::artm::DoubleArray::MergeFrom(from.coherency());
+    if (from.has_coherence()) {
+      mutable_coherence()->::artm::DoubleArray::MergeFrom(from.coherence());
     }
-    if (from.has_average_coherency()) {
-      set_average_coherency(from.average_coherency());
+    if (from.has_average_coherence()) {
+      set_average_coherence(from.average_coherence());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -17257,8 +17257,8 @@ void TopicKernelScore::Swap(TopicKernelScore* other) {
     std::swap(average_kernel_size_, other->average_kernel_size_);
     std::swap(average_kernel_purity_, other->average_kernel_purity_);
     std::swap(average_kernel_contrast_, other->average_kernel_contrast_);
-    std::swap(coherency_, other->coherency_);
-    std::swap(average_coherency_, other->average_coherency_);
+    std::swap(coherence_, other->coherence_);
+    std::swap(average_coherence_, other->average_coherence_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

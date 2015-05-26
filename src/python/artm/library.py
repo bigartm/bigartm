@@ -29,7 +29,7 @@ RegularizerConfig_Type_SmoothSparsePhi = 1
 RegularizerConfig_Type_DecorrelatorPhi = 2
 RegularizerConfig_Type_LabelRegularizationPhi = 4
 RegularizerConfig_Type_SpecifiedSparsePhi = 5
-RegularizerConfig_Type_ImproveCoherencyPhi = 6
+RegularizerConfig_Type_ImproveCoherencePhi = 6
 ScoreConfig_Type_Perplexity = 0
 ScoreData_Type_Perplexity = 0
 ScoreConfig_Type_SparsityTheta = 1
@@ -338,12 +338,12 @@ class MasterComponent:
             config.mode = mode
         return self.CreateRegularizer(name, RegularizerConfig_Type_SpecifiedSparsePhi, config)
 
-    def CreateImproveCoherencyPhiRegularizer(self, name=None, config=None, topic_names=None,
+    def CreateImproveCoherencePhiRegularizer(self, name=None, config=None, topic_names=None,
                                              class_ids=None, dictionary_name=None):
         if name is None:
-            name = "ImproveCoherencyPhiRegularizer:" + uuid.uuid1().urn
+            name = "ImproveCoherencePhiRegularizer:" + uuid.uuid1().urn
         if config is None:
-            config = messages_pb2.ImproveCoherencyPhiConfig()
+            config = messages_pb2.ImproveCoherencePhiConfig()
         if topic_names is not None:
             config.ClearField('topic_name')
             for topic_name in topic_names:
@@ -354,7 +354,7 @@ class MasterComponent:
                 config.class_id.append(class_id)
         if dictionary_name is not None:
             config.dictionary_name = dictionary_name
-        return self.CreateRegularizer(name, RegularizerConfig_Type_ImproveCoherencyPhi, config)
+        return self.CreateRegularizer(name, RegularizerConfig_Type_ImproveCoherencePhi, config)
 
     def CreateScore(self, name, type, config):
         master_config = messages_pb2.MasterComponentConfig()

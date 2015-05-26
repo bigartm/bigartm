@@ -7,7 +7,7 @@
 #include "artm/core/topic_model.h"
 #include "artm/core/protobuf_helpers.h"
 
-#include "artm/score/coherency_plugin.h"
+#include "artm/score/coherence_plugin.h"
 #include "artm/score/top_tokens.h"
 
 namespace artm {
@@ -20,7 +20,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
   if (config_.has_cooccurrence_dictionary_name())
     dictionary_ptr = dictionary(config_.cooccurrence_dictionary_name());
-  bool count_coherency = dictionary_ptr != nullptr;
+  bool count_coherence = dictionary_ptr != nullptr;
 
   std::vector<int> topic_ids;
   google::protobuf::RepeatedPtrField<std::string> topic_name = topic_model.topic_name();
@@ -54,8 +54,8 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
   std::shared_ptr<Score> retval(top_tokens_score);
   int num_entries = 0;
 
-  float average_coherency = 0.0f;
-  auto coherency = top_tokens_score->mutable_coherency();
+  float average_coherence = 0.0f;
+  auto coherence = top_tokens_score->mutable_coherence();
   for (int i = 0; i < topic_ids.size(); ++i) {
     std::vector<std::pair<float, int>> p_wt;
     p_wt.reserve(tokens.size());
@@ -77,7 +77,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
     int last_index = (p_wt.size() - config_.num_tokens());
     if (last_index < 0) last_index = 0;
 
-    std::vector<core::Token> tokens_for_coherency;
+    std::vector<core::Token> tokens_for_coherence;
     for (int token_index = first_index; token_index >= last_index; token_index--) {
       ::artm::core::Token token = tokens[p_wt[token_index].second];
       float weight = p_wt[token_index].first;
@@ -87,18 +87,18 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
       top_tokens_score->add_topic_name(topic_name.Get(topic_ids[i]));
       num_entries++;
 
-      if (count_coherency) tokens_for_coherency.push_back(token);
+      if (count_coherence) tokens_for_coherence.push_back(token);
     }
 
-    if (count_coherency) {
-      float topic_coherency = CountTopicCoherency(dictionary_ptr, tokens_for_coherency);
-      average_coherency += topic_coherency;
-      coherency->add_value(topic_coherency);
+    if (count_coherence) {
+      float topic_coherence = CountTopicCoherence(dictionary_ptr, tokens_for_coherence);
+      average_coherence += topic_coherence;
+      coherence->add_value(topic_coherence);
     }
   }
 
-  top_tokens_score->set_average_coherency(
-    average_coherency > 0.0f ? average_coherency / topic_ids.size() : average_coherency);
+  top_tokens_score->set_average_coherence(
+    average_coherence > 0.0f ? average_coherence / topic_ids.size() : average_coherence);
 
   top_tokens_score->set_num_entries(num_entries);
   return retval;

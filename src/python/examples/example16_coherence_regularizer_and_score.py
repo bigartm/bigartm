@@ -1,4 +1,4 @@
-# This example demonstrates the usage of coherency regularizer and coherenct score option in
+# This example demonstrates the usage of coherence regularizer and coherenct score option in
 # TopTokens and TopicKernel scores. Note, that you need kos collection dictionary with
 # tokens co-occurences info to launch this script correctly (see examle02_parse_collection.py).
 
@@ -15,25 +15,25 @@ with artm.library.MasterComponent() as master:
     master.Reconfigure()
     dictionary = master.CreateDictionary(unique_tokens)
 
-    # configure TopTokens score to count coherency
+    # configure TopTokens score to count coherence
     top_tokens_score_config = artm.messages_pb2.TopTokensScoreConfig()
     top_tokens_score_config.cooccurrence_dictionary_name = dictionary.name()
-    top_tokens_coherency_score = master.CreateTopTokensScore(config=top_tokens_score_config)
+    top_tokens_coherence_score = master.CreateTopTokensScore(config=top_tokens_score_config)
 
-    # configure TopicKernel score to count coherency
+    # configure TopicKernel score to count coherence
     topic_kernel_score_config = artm.messages_pb2.TopicKernelScoreConfig()
     topic_kernel_score_config.probability_mass_threshold = 0.2
     topic_kernel_score_config.cooccurrence_dictionary_name = dictionary.name()
-    topic_kernel_coherency_score = master.CreateTopicKernelScore(config=topic_kernel_score_config)
+    topic_kernel_coherence_score = master.CreateTopicKernelScore(config=topic_kernel_score_config)
 
-    # configure ImproveCoherency regularizer
-    improve_coherency = master.CreateImproveCoherencyPhiRegularizer(dictionary_name=dictionary.name())
+    # configure ImproveCoherence regularizer
+    improve_coherence = master.CreateImproveCoherencePhiRegularizer(dictionary_name=dictionary.name())
 
     # Configure the model
     model = master.CreateModel(topics_count=15,
                                inner_iterations_count=30,
                                topic_names=["topic" + str(i) for i in range(0, 16)])
-    model.EnableRegularizer(improve_coherency, 0.0001)
+    model.EnableRegularizer(improve_coherence, 0.0001)
 
     model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
 
@@ -47,7 +47,7 @@ with artm.library.MasterComponent() as master:
             if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):
                 master.WaitIdle()  # wait for all batches are processed
                 model.Synchronize(decay_weight=0.9, apply_weight=0.1)  # synchronize model
-                print "Top tokens average coherency = %.3f" %\
-                  top_tokens_coherency_score.GetValue(model).average_coherency
-                print "Topic kernels average coherency = %.3f" %\
-                  topic_kernel_coherency_score.GetValue(model).average_coherency
+                print "Top tokens average coherence = %.3f" %\
+                  top_tokens_coherence_score.GetValue(model).average_coherence
+                print "Topic kernels average coherence = %.3f" %\
+                  topic_kernel_coherence_score.GetValue(model).average_coherence

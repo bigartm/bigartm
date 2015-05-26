@@ -27,7 +27,7 @@
 #include "artm/regularizer/smooth_sparse_phi.h"
 #include "artm/regularizer/label_regularization_phi.h"
 #include "artm/regularizer/specified_sparse_phi.h"
-#include "artm/regularizer/improve_coherency_phi.h"
+#include "artm/regularizer/improve_coherence_phi.h"
 
 #include "artm/score/items_processed.h"
 #include "artm/score/sparsity_theta.h"
@@ -205,9 +205,9 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
       break;
     }
 
-    case artm::RegularizerConfig_Type_ImproveCoherencyPhi: {
-      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::ImproveCoherencyPhiConfig,
-                                        ::artm::regularizer::ImproveCoherencyPhi);
+    case artm::RegularizerConfig_Type_ImproveCoherencePhi: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::ImproveCoherencePhiConfig,
+                                        ::artm::regularizer::ImproveCoherencePhi);
       break;
     }
 
