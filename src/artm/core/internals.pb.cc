@@ -96,11 +96,10 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(StreamMasks));
   ModelIncrement_descriptor_ = file->message_type(3);
-  static const int ModelIncrement_offsets_[4] = {
+  static const int ModelIncrement_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, topic_model_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, score_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, score_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, batch_uuid_),
   };
   ModelIncrement_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -164,10 +163,9 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "y\022\022\n\ntopic_name\030\005 \003(\t\022\020\n\010filename\030\006 \001(\t\022"
     "\022\n\nitem_title\030\007 \003(\t\"H\n\013StreamMasks\022$\n\013st"
     "ream_mask\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stre"
-    "am_name\030\005 \003(\t\"n\n\016ModelIncrement\022%\n\013topic"
+    "am_name\030\005 \003(\t\"Z\n\016ModelIncrement\022%\n\013topic"
     "_model\030\001 \001(\0132\020.artm.TopicModel\022\022\n\nscore_"
-    "name\030\010 \003(\t\022\r\n\005score\030\t \003(\014\022\022\n\nbatch_uuid\030"
-    "\013 \003(\t", 445);
+    "name\030\010 \003(\t\022\r\n\005score\030\t \003(\014", 425);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
@@ -1193,7 +1191,6 @@ void StreamMasks::Swap(StreamMasks* other) {
 const int ModelIncrement::kTopicModelFieldNumber;
 const int ModelIncrement::kScoreNameFieldNumber;
 const int ModelIncrement::kScoreFieldNumber;
-const int ModelIncrement::kBatchUuidFieldNumber;
 #endif  // !_MSC_VER
 
 ModelIncrement::ModelIncrement()
@@ -1256,7 +1253,6 @@ void ModelIncrement::Clear() {
   }
   score_name_.Clear();
   score_.Clear();
-  batch_uuid_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -1310,25 +1306,6 @@ bool ModelIncrement::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(74)) goto parse_score;
-        if (input->ExpectTag(90)) goto parse_batch_uuid;
-        break;
-      }
-
-      // repeated string batch_uuid = 11;
-      case 11: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch_uuid:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->add_batch_uuid()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->batch_uuid(this->batch_uuid_size() - 1).data(),
-            this->batch_uuid(this->batch_uuid_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(90)) goto parse_batch_uuid;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -1372,15 +1349,6 @@ void ModelIncrement::SerializeWithCachedSizes(
       9, this->score(i), output);
   }
 
-  // repeated string batch_uuid = 11;
-  for (int i = 0; i < this->batch_uuid_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-    this->batch_uuid(i).data(), this->batch_uuid(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      11, this->batch_uuid(i), output);
-  }
-
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -1409,15 +1377,6 @@ void ModelIncrement::SerializeWithCachedSizes(
   for (int i = 0; i < this->score_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteBytesToArray(9, this->score(i), target);
-  }
-
-  // repeated string batch_uuid = 11;
-  for (int i = 0; i < this->batch_uuid_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->batch_uuid(i).data(), this->batch_uuid(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(11, this->batch_uuid(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -1453,13 +1412,6 @@ int ModelIncrement::ByteSize() const {
       this->score(i));
   }
 
-  // repeated string batch_uuid = 11;
-  total_size += 1 * this->batch_uuid_size();
-  for (int i = 0; i < this->batch_uuid_size(); i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-      this->batch_uuid(i));
-  }
-
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -1487,7 +1439,6 @@ void ModelIncrement::MergeFrom(const ModelIncrement& from) {
   GOOGLE_CHECK_NE(&from, this);
   score_name_.MergeFrom(from.score_name_);
   score_.MergeFrom(from.score_);
-  batch_uuid_.MergeFrom(from.batch_uuid_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_topic_model()) {
       mutable_topic_model()->::artm::TopicModel::MergeFrom(from.topic_model());
@@ -1518,7 +1469,6 @@ void ModelIncrement::Swap(ModelIncrement* other) {
     std::swap(topic_model_, other->topic_model_);
     score_name_.Swap(&other->score_name_);
     score_.Swap(&other->score_);
-    batch_uuid_.Swap(&other->batch_uuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -291,8 +291,7 @@ void Merger::ThreadFunction() {
         }
 
         {
-          CuckooWatch cuckoo2("ApplyTopicModelOperation(" +
-            ((model_increment->batch_uuid_size() == 1) ? model_increment->batch_uuid(0) : "") + "), ", &cuckoo);
+          CuckooWatch cuckoo2("ApplyTopicModelOperation()", &cuckoo);
           iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
         }
 

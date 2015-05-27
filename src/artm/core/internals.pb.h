@@ -502,22 +502,6 @@ class ModelIncrement : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& score() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_score();
 
-  // repeated string batch_uuid = 11;
-  inline int batch_uuid_size() const;
-  inline void clear_batch_uuid();
-  static const int kBatchUuidFieldNumber = 11;
-  inline const ::std::string& batch_uuid(int index) const;
-  inline ::std::string* mutable_batch_uuid(int index);
-  inline void set_batch_uuid(int index, const ::std::string& value);
-  inline void set_batch_uuid(int index, const char* value);
-  inline void set_batch_uuid(int index, const char* value, size_t size);
-  inline ::std::string* add_batch_uuid();
-  inline void add_batch_uuid(const ::std::string& value);
-  inline void add_batch_uuid(const char* value);
-  inline void add_batch_uuid(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_uuid() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_uuid();
-
   // @@protoc_insertion_point(class_scope:artm.core.ModelIncrement)
  private:
   inline void set_has_topic_model();
@@ -528,10 +512,9 @@ class ModelIncrement : public ::google::protobuf::Message {
   ::artm::TopicModel* topic_model_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> batch_uuid_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -1125,50 +1108,6 @@ ModelIncrement::score() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 ModelIncrement::mutable_score() {
   return &score_;
-}
-
-// repeated string batch_uuid = 11;
-inline int ModelIncrement::batch_uuid_size() const {
-  return batch_uuid_.size();
-}
-inline void ModelIncrement::clear_batch_uuid() {
-  batch_uuid_.Clear();
-}
-inline const ::std::string& ModelIncrement::batch_uuid(int index) const {
-  return batch_uuid_.Get(index);
-}
-inline ::std::string* ModelIncrement::mutable_batch_uuid(int index) {
-  return batch_uuid_.Mutable(index);
-}
-inline void ModelIncrement::set_batch_uuid(int index, const ::std::string& value) {
-  batch_uuid_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_batch_uuid(int index, const char* value) {
-  batch_uuid_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_batch_uuid(int index, const char* value, size_t size) {
-  batch_uuid_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelIncrement::add_batch_uuid() {
-  return batch_uuid_.Add();
-}
-inline void ModelIncrement::add_batch_uuid(const ::std::string& value) {
-  batch_uuid_.Add()->assign(value);
-}
-inline void ModelIncrement::add_batch_uuid(const char* value) {
-  batch_uuid_.Add()->assign(value);
-}
-inline void ModelIncrement::add_batch_uuid(const char* value, size_t size) {
-  batch_uuid_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelIncrement::batch_uuid() const {
-  return batch_uuid_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelIncrement::mutable_batch_uuid() {
-  return &batch_uuid_;
 }
 
 

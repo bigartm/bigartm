@@ -390,7 +390,7 @@ TEST(CppInterface, WaitIdleTimeout) {
   ::artm::MasterComponent master(master_config);
   ::artm::ModelConfig model_config;
   model_config.set_name("model_config1");
-  model_config.set_inner_iterations_count(10000);
+  model_config.set_inner_iterations_count(100000);
 
   ::artm::Model model(master, model_config);
   ::artm::Batch batch;

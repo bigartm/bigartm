@@ -69,8 +69,6 @@ static std::shared_ptr<ModelIncrement>
 InitializeModelIncrement(const Batch& batch, const ModelConfig& model_config,
                          const ::artm::core::PhiMatrix& p_wt) {
   std::shared_ptr<ModelIncrement> model_increment = std::make_shared<ModelIncrement>();
-  model_increment->add_batch_uuid(batch.id());
-
   int topic_size = model_config.topics_count();
 
   ::artm::TopicModel* topic_model_inc = model_increment->mutable_topic_model();

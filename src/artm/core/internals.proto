@@ -35,7 +35,4 @@ message ModelIncrement {
 
   repeated string score_name = 8;
   repeated bytes score = 9;
-
-  // Identificators of all batches, contributing to this model increment.
-  repeated string batch_uuid = 11;
 }
