@@ -15,9 +15,6 @@
 namespace artm {
 namespace core {
 
-class TopicWeightIterator;
-class TokenCollectionWeights;
-
 class PhiMatrix {
  public:
   static const int kUndefIndex = -1;

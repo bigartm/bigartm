@@ -30,7 +30,6 @@ class InstanceSchema;
 class Merger;
 class CacheManager;
 class TopicModel;
-class TopicWeightIterator;
 
 class Processor : boost::noncopyable {
  public:

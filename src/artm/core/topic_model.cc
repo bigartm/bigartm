@@ -501,16 +501,5 @@ void TopicModel::FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeig
   }
 }
 
-TopicWeightIterator TopicModel::GetTopicWeightIterator(const Token& token) const {
-  return GetTopicWeightIterator(token_collection_.token_id(token));
-}
-
-TopicWeightIterator TopicModel::GetTopicWeightIterator(int token_id) const {
-  assert(token_id >= 0);
-  assert(token_id < token_size());
-  assert(p_wt_.size() == token_size());
-  return TopicWeightIterator(p_wt_[token_id], topic_size());
-}
-
 }  // namespace core
 }  // namespace artm

@@ -27,56 +27,6 @@ namespace core {
 
 class TopicModel;
 
-// A class representing an iterator over one row from Phi matrix
-// (a vector of topic weights for a particular token of the topic model).
-// Remark: currently this method iterates over a dense array, but all methods of this iterator can
-// be rewritten to handle sparse token-topic matrices.
-// Typical usage is as follows:
-// ===============================================================
-// TopicWeightIterator iter = topic_model->GetTopicWeightIterator(token);
-// while (iter.NextTopic() < topic_model->topic_size()) {
-//   values[iter.TopicIndex()] = iter.Weight();
-// }
-// ===============================================================
-class TopicWeightIterator {
- public:
-  // Moves the iterator to the next non-zero topic, and return the index of that topic.
-  inline int NextNonZeroTopic() { return ++current_topic_; }
-
-  // Moves the iterator to the next topic.
-  inline int NextTopic() { return ++current_topic_; }
-
-  // Returns the current position of the iterator.
-  inline int TopicIndex() {return current_topic_; }
-
-  // Returns the weight of current topic.
-  // This method must not be called if TopicIndex() returns an index exceeding the number of topics.
-  // It is caller responsibility to verify this condition.
-  inline float Weight() {
-    assert(current_topic_ < topics_count_);
-    return p_w_[current_topic_];
-  }
-
-  float operator[] (int index) {
-    assert(index < topics_count_);
-    return p_w_[index];
-  }
-
-  // Resets the iterator to the initial state.
-  inline void Reset() { current_topic_ = -1; }
-
- private:
-  const float* p_w_;
-  int topics_count_;
-  mutable int current_topic_;
-
-  TopicWeightIterator(const float* p_w, int topics_count)
-      : p_w_(p_w), topics_count_(topics_count), current_topic_(-1) {}
-
-  friend class ::artm::core::TopicModel;
-  friend class ::artm::core::PhiMatrix;
-};
-
 class TokenCollection {
  public:
   void Clear();
@@ -163,8 +113,6 @@ class TopicModel {
   void CalcPwt(const TokenCollectionWeights& r_wt) { FindPwt(r_wt, &p_wt_); }
   const TokenCollectionWeights& GetPwt() const { return p_wt_; }
 
-  TopicWeightIterator GetTopicWeightIterator(const Token& token) const;
-  TopicWeightIterator GetTopicWeightIterator(int token_id) const;
   const float* GetPwt(int token_id) const { return p_wt_.at(token_id); }
 
   ModelName model_name() const;
