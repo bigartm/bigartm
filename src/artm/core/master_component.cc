@@ -219,6 +219,19 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
   return true;
 }
 
+void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                                            ProcessBatchesResult* process_batches_result) {
+}
+
+void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
+}
+
+void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_model_args) {
+}
+
+void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_args) {
+}
+
 void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
   instance_->merger()->OverwriteTopicModel(topic_model);
 }

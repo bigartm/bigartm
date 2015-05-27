@@ -87,15 +87,15 @@ message MasterComponentConfig {
   optional string disk_cache_path = 15;
 }
 
+message RegularizerSettings {
+  optional string name = 1;
+  optional double tau = 2;
+  optional bool use_relative_regularization = 3;
+  optional double gamma = 4;
+}
+
 // Represents a configuration of a topic model.
 message ModelConfig {
-  message RegularizerSettings {
-    optional string name = 1;
-    optional double tau = 2;
-    optional bool use_relative_regularization = 3;
-    optional double gamma = 4;
-  }
-
   optional string name = 1 [default = "@model"];
   optional int32 topics_count = 2 [default = 32];
   repeated string topic_name = 3;
@@ -468,6 +468,10 @@ message InitializeModelArgs {
 
   optional string disk_path = 4;
   repeated Filter filter = 5;
+
+  optional string pwt_target_name = 6;
+  optional int32 topics_count = 7;
+  repeated string topic_name = 8;
 }
 
 message GetTopicModelArgs {
@@ -526,4 +530,47 @@ message ExportModelArgs {
 message ImportModelArgs {
   optional string file_name = 1;
   optional string model_name = 2;
+}
+
+message ProcessBatchesArgs {
+  enum ThetaMatrixType {
+    None = 0;
+    Dense = 1;
+    Sparse = 2;
+  }
+
+  optional string nwt_target_name = 1;
+
+  repeated string batch_filename = 2;
+  optional string pwt_source_name = 3;
+  optional int32 inner_iterations_count = 4 [default = 10];
+  optional string stream_name = 5 [default = "@global"];
+  repeated string regularizer_name = 6;
+  repeated double regularizer_tau = 7;
+  repeated string class_id = 8;
+  repeated float class_weight = 9;
+  optional ThetaMatrixType get_theta_matrix_type = 10 [default = None];
+}
+
+message ProcessBatchesResult {
+  repeated ScoreData score_data = 1;
+  repeated ThetaMatrix theta_matrix = 2;
+}
+
+message MergeModelArgs {
+  optional string nwt_target_name = 1;
+  repeated string nwt_source_name = 2;
+  repeated float source_weight = 3;
+  repeated string topic_name = 4;
+}
+
+message RegularizeModelArgs {
+  optional string rwt_target_name = 1;
+  repeated RegularizerSettings regularizer_settings = 2;
+}
+
+message NormalizeModelArgs {
+  optional string pwt_target_name = 1;
+  optional string nwt_source_name = 2;
+  optional string rwt_source_name = 3;
 }

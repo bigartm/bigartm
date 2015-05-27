@@ -46,6 +46,12 @@ class MasterComponent : boost::noncopyable {
   bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData* score_data);
 
+  void RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                             ProcessBatchesResult* process_batches_result);
+  void MergeModel(const MergeModelArgs& merge_model_args);
+  void RegularizeModel(const RegularizeModelArgs& regularize_model_args);
+  void NormalizeModel(const NormalizeModelArgs& normalize_model_args);
+
   // Reconfigures topic model if already exists, otherwise creates a new model.
   void CreateOrReconfigureModel(const ModelConfig& config);
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);

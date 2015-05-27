@@ -43,6 +43,11 @@ extern "C" {
   DLL_PUBLIC int ArtmExportModel(int master_id, int length, const char* export_model_args);
   DLL_PUBLIC int ArtmImportModel(int master_id, int length, const char* import_model_args);
 
+  DLL_PUBLIC int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args);
+  DLL_PUBLIC int ArtmMergeModel(int master_id, int length, const char* merge_model_args);
+  DLL_PUBLIC int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args);
+  DLL_PUBLIC int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args);
+
   DLL_PUBLIC int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
   DLL_PUBLIC int ArtmRequestRegularizerState(int master_id, const char* regularizer_name);

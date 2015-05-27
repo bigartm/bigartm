@@ -188,6 +188,44 @@ int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args) {
+  try {
+    artm::ProcessBatchesArgs args;
+    ParseFromArray(process_batches_args, length, &args);
+    artm::ProcessBatchesResult result;
+    master_component(master_id)->RequestProcessBatches(args, &result);
+    result.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmMergeModel(int master_id, int length, const char* merge_model_args) {
+  try {
+    artm::MergeModelArgs args;
+    ParseFromArray(merge_model_args, length, &args);
+    master_component(master_id)->MergeModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args) {
+  try {
+    artm::RegularizeModelArgs args;
+    ParseFromArray(regularize_model_args, length, &args);
+    master_component(master_id)->RegularizeModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args) {
+  try {
+    artm::NormalizeModelArgs args;
+    ParseFromArray(normalize_model_args, length, &args);
+    master_component(master_id)->NormalizeModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args) {
   try {
     artm::ThetaMatrix theta_matrix;
