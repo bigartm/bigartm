@@ -21,10 +21,14 @@ class Notifiable {
 
 class ProcessorInput {
  public:
-  ProcessorInput() : batch_(), model_name_(), batch_filename_(), task_id_(), notifiable_(nullptr) {}
+  ProcessorInput() : batch_(), model_config_(), model_name_(), batch_filename_(), task_id_(),
+                     notifiable_(nullptr) {}
 
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
+
+  ModelConfig* mutable_model_config() { return &model_config_; }
+  const ModelConfig& model_config() const { return model_config_; }
 
   Notifiable* notifiable() const { return notifiable_; }
   void set_notifiable(Notifiable* notifiable) { notifiable_ = notifiable; }
@@ -41,6 +45,7 @@ class ProcessorInput {
 
  private:
   Batch batch_;
+  ModelConfig model_config_;
   ModelName model_name_;
   std::string batch_filename_;  // if this is set batch_ is ignored;
   boost::uuids::uuid task_id_;

@@ -34,7 +34,7 @@ class TopicWeightIterator;
 
 class Processor : boost::noncopyable {
  public:
-  Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >*  processor_queue,
+  Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
             ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
             const Merger& merger,
             const CacheManager& cache_manager,

@@ -72,6 +72,9 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
 
   std::vector<ModelName> model_names = schema->GetModelNames();
   std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+    if (!schema->has_model_config(model_name))
+      return;  // return from lambda and continues for_each
+
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
     instance_->batch_manager()->Add(task_id, std::string(), model_name);
 
@@ -79,6 +82,7 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
     pi->set_notifiable(instance_->batch_manager());
     pi->set_model_name(model_name);
     pi->mutable_batch()->CopyFrom(*batch);
+    pi->mutable_model_config()->CopyFrom(schema->model_config(model_name));
     pi->set_task_id(task_id);
     instance_->processor_queue()->push(pi);
   });
@@ -109,6 +113,9 @@ void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
   for (int iter = 0; iter < iterations_count; ++iter) {
     for (const std::string& task : tasks) {
       std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+        if (!schema->has_model_config(model_name))
+          return;  // return from lambda and continues for_each
+
         boost::uuids::uuid task_id = boost::uuids::random_generator()();
         instance_->batch_manager()->Add(task_id, task, model_name);
 
@@ -117,6 +124,7 @@ void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
         pi->set_task_id(task_id);
         pi->set_batch_filename(task);
         pi->set_model_name(model_name);
+        pi->mutable_model_config()->CopyFrom(schema->model_config(model_name));
         instance()->processor_queue()->push(pi);
       });
     }

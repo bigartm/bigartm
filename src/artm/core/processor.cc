@@ -384,7 +384,7 @@ InferThetaSparse(const ModelConfig& model_config, const Batch& batch, const Inst
 }
 
 static void
-UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask* mask, const InstanceSchema& schema,
+UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask* mask,
                 const CsrMatrix<float>& sparse_ndw, const ::artm::core::PhiMatrix& p_wt,
                 const DenseMatrix<float>& theta_matrix, ModelIncrement* model_increment, util::Blas* blas) {
   const int topics_count = model_config.topics_count();
@@ -558,7 +558,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
 }
 
 static std::shared_ptr<Score>
-CalcScores(ScoreCalculatorInterface* score_calc, const InstanceSchema& schema, const Batch& batch,
+CalcScores(ScoreCalculatorInterface* score_calc, const Batch& batch,
            const PhiMatrix& p_wt, const ModelConfig& model_config, const DenseMatrix<float>& theta_matrix,
            const StreamMasks* stream_masks) {
   if (!score_calc->is_cumulative())
@@ -658,7 +658,7 @@ void Processor::FindThetaMatrix(const Batch& batch,
     if (score_calc == nullptr)
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find score calculator ", score_args.score_name()));
 
-    auto score_value = CalcScores(score_calc.get(), *schema, batch, p_wt, model_config, *theta_matrix, nullptr);
+    auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config, *theta_matrix, nullptr);
     score_result->set_data(score_value->SerializeAsString());
     score_result->set_type(score_calc->score_type());
     score_result->set_name(score_args.score_name());
@@ -741,9 +741,8 @@ void Processor::ThreadFunction() {
       std::shared_ptr<DenseMatrix<float>> dense_ndw;
 
       const ModelName& model_name = part->model_name();
+      const ModelConfig& model_config = part->model_config();
       {
-        const ModelConfig& model_config = schema->model_config(model_name);
-
         // do not process disabled models.
         if (!model_config.enabled()) continue;
 
@@ -798,7 +797,7 @@ void Processor::ThreadFunction() {
                                       theta_matrix.get(), model_increment.get(), blas);
         }
 
-        if (schema->config().cache_theta()) {
+        if (master_config.cache_theta()) {
           // Update theta cache
           std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(new DataLoaderCacheEntry());
           DataLoaderCacheEntry& new_cache_entry = *new_cache_entry_ptr;
@@ -815,8 +814,8 @@ void Processor::ThreadFunction() {
             }
           }
 
-          if (schema->config().has_disk_cache_path()) {
-            std::string disk_cache_path = schema->config().disk_cache_path();
+          if (master_config.has_disk_cache_path()) {
+            std::string disk_cache_path = master_config.disk_cache_path();
             boost::uuids::uuid uuid = boost::uuids::random_generator()();
             fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
             try {
@@ -825,7 +824,7 @@ void Processor::ThreadFunction() {
               new_cache_entry.clear_theta();
               new_cache_entry.clear_item_id();
             } catch (...) {
-              LOG(ERROR) << "Unable to save cache entry to " << schema->config().disk_cache_path();
+              LOG(ERROR) << "Unable to save cache entry to " << master_config.disk_cache_path();
             }
           }
 
@@ -842,7 +841,7 @@ void Processor::ThreadFunction() {
             continue;
           }
 
-          auto score_value = CalcScores(score_calc.get(), *schema, batch, p_wt, model_config,
+          auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config,
                                         *theta_matrix, &stream_masks);
           if (score_value == nullptr)
             continue;
@@ -853,7 +852,7 @@ void Processor::ThreadFunction() {
         {
           CuckooWatch cuckoo2("await merger queue", &cuckoo);
           // Wait until merger queue has space for a new element
-          int merger_queue_max_size = schema_.get()->config().merger_queue_max_size();
+          int merger_queue_max_size = master_config.merger_queue_max_size();
           for (;;) {
             if (merger_queue_->size() < merger_queue_max_size)
               break;
@@ -866,7 +865,7 @@ void Processor::ThreadFunction() {
         if (model_config.use_sparse_bow()) {
           // Keep UpdateNwtSparse as further down in the code as possible,
           // because it consumes a lot of memory to transfer increments to merger.
-          UpdateNwtSparse(model_config, batch, stream_mask, *schema, *sparse_ndw, p_wt,
+          UpdateNwtSparse(model_config, batch, stream_mask, *sparse_ndw, p_wt,
             *theta_matrix, model_increment.get(), blas);
         }
         merger_queue_->release();
