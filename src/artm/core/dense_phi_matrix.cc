@@ -50,14 +50,35 @@ int TokenCollection::token_size() const {
   return token_to_token_id_.size();
 }
 
+void SpinLock::Lock() {
+  while (state_.exchange(kLocked, std::memory_order_acquire) == kLocked) {
+    /* busy-wait */
+  }
+}
+
+void SpinLock::Unlock() {
+  state_.store(kUnlocked, std::memory_order_release);
+}
+
 DensePhiMatrix::DensePhiMatrix(const ModelName& model_name,
                                const google::protobuf::RepeatedPtrField<std::string>& topic_name)
-    : model_name_(model_name), topic_name_(), token_collection_(), values_() {
+    : model_name_(model_name), topic_name_(), token_collection_(), values_(), spin_locks_() {
   for (auto iter = topic_name.begin(); iter != topic_name.end(); ++iter) {
     topic_name_.push_back(*iter);
   }
 }
 
+void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment) {
+  const int topic_size = this->topic_size();
+  assert(increment.size() == topic_size);
+  float* values = values_[token_id];
+  SpinLock& spin_lock = *spin_locks_[token_id];
+
+  spin_lock.Lock();
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+    values[topic_index] += increment[topic_index];
+  spin_lock.Unlock();
+}
 
 void DensePhiMatrix::Reset() {
   std::for_each(values_.begin(), values_.end(), [&](float* value) {
@@ -71,6 +92,7 @@ void DensePhiMatrix::Clear() {
   });
   values_.clear();
   token_collection_.Clear();
+  spin_locks_.clear();
 }
 
 int DensePhiMatrix::AddToken(const Token& token, bool random_init) {
@@ -82,6 +104,7 @@ int DensePhiMatrix::AddToken(const Token& token, bool random_init) {
 
   float* values = new float[topic_size()];
   values_.push_back(values);
+  spin_locks_.push_back(std::make_shared<SpinLock>());
 
   if (random_init) {
     std::vector<float> vec = Helpers::GenerateRandomVector(topic_size(), TokenHasher()(token));
@@ -107,6 +130,7 @@ void DensePhiMatrix::RemoveToken(const Token& token) {
 
   delete[] values_[token_id];
   values_.erase(values_.begin() + token_id);
+  spin_locks_.erase(spin_locks_.begin() + token_id);
 }
 
 const Token& DensePhiMatrix::token(int index) const {
