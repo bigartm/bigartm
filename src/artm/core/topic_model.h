@@ -5,15 +5,9 @@
 
 #include <assert.h>
 
-#include <algorithm>
-#include <map>
-#include <unordered_map>
-#include <vector>
-#include <set>
 #include <string>
 
 #include "boost/utility.hpp"
-#include "boost/uuid/uuid.hpp"
 
 #include "artm/messages.pb.h"
 
@@ -21,25 +15,16 @@
 #include "artm/core/internals.pb.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/dense_phi_matrix.h"
-#include "artm/utility/blas.h"
 
 namespace artm {
 namespace core {
 
-class TopicModel;
-
-// A class representing a topic model.
-// - ::artm::core::TopicModel is an internal representation, used in Processor and Merger.
-//   It supports efficient lookup of words in the matrix.
-// - ::artm::TopicModel is an external representation, implemented as protobuf message.
-//   It is used to transfer model back to the user.
+// A strange wrapper for (nwt, pwt) pair.
+// nwt is always present; pwt can be absent.
 class TopicModel {
  public:
   explicit TopicModel(const ModelName& model_name,
                       const google::protobuf::RepeatedPtrField<std::string>& topic_name);
-
-  void Clear();
-  virtual ~TopicModel();
 
   void RetrieveExternalTopicModel(
     const ::artm::GetTopicModelArgs& get_model_args,
@@ -53,21 +38,19 @@ class TopicModel {
   void CalcPwt();
   void CalcPwt(const PhiMatrix& r_wt);
   const PhiMatrix& GetPwt() const { return p_wt_; }
+  const PhiMatrix& GetNwt () const { return n_wt_; }
 
-  ModelName model_name() const;
-
+  ModelName model_name() const { return n_wt_.model_name(); }
   int token_size() const { return n_wt_.token_size(); }
-  int topic_size() const;
-  google::protobuf::RepeatedPtrField<std::string> topic_name() const;
+  int topic_size() const { return n_wt_.topic_size(); }
+  google::protobuf::RepeatedPtrField<std::string> topic_name() const { return n_wt_.topic_name(); }
 
   bool has_token(const Token& token) const { return n_wt_.has_token(token); }
   int token_id(const Token& token) const { return n_wt_.token_index(token); }
   const Token& token(int index) const { return n_wt_.token(index); }
 
-  const PhiMatrix& Nwt () const { return n_wt_; }
-
  private:
-  DensePhiMatrix n_wt_;  // vector of length tokens_count
+  DensePhiMatrix n_wt_;
   DensePhiMatrix p_wt_;  // normalized matrix
 };
 

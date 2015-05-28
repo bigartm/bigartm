@@ -36,20 +36,11 @@ class DensePhiMatrix : boost::noncopyable, public PhiMatrix {
   explicit DensePhiMatrix(const ModelName& model_name,
                           const google::protobuf::RepeatedPtrField<std::string>& topic_name);
 
-  DensePhiMatrix(int token_size, int topic_size);
   virtual ~DensePhiMatrix() { Clear(); }
 
   virtual float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
   virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
-
-  const float* operator[](int token_id) const { return values_[token_id]; }
-  float* operator[](int token_id) { return values_[token_id]; }
-
-  const float* at(int token_id) const { return values_[token_id]; }
-  float* at(int token_id) { return values_[token_id]; }
-
-  size_t size() const { return values_.size(); }
-  bool empty() const { return values_.empty(); }
+  virtual void increase(int token_id, int topic_id, float increment) { values_[token_id][topic_id] += increment; }
 
   virtual int topic_size() const { return topic_name_.size(); }
   virtual int token_size() const { return values_.size(); }
@@ -60,12 +51,13 @@ class DensePhiMatrix : boost::noncopyable, public PhiMatrix {
   virtual ModelName model_name() const;
 
   void Reset();
-  void Clear();
   int AddToken(const Token& token, bool random_init);
   void RemoveToken(const Token& token);
   void Reshape(const PhiMatrix& phi_matrix);
 
  private:
+  void Clear();
+
   ModelName model_name_;
   std::vector<std::string> topic_name_;
 

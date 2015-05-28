@@ -27,7 +27,6 @@ namespace artm {
 namespace core {
 
 class TopicModel;
-class DensePhiMatrix;
 class InstanceSchema;
 class Dictionary;
 
@@ -122,7 +121,7 @@ class Merger : boost::noncopyable {
   void SynchronizeModel(const ModelName& model_name, float decay_weight, float apply_weight,
                         bool invoke_regularizers);
   void InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
-                             ::artm::core::DensePhiMatrix* global_r_wt);
+                             ::artm::core::PhiMatrix* global_r_wt);
   void ResetScores(ModelName model_name);
 };
 

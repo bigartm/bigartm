@@ -30,15 +30,6 @@ TopicModel::TopicModel(const ModelName& model_name,
       p_wt_(model_name, topic_name) {
 }
 
-TopicModel::~TopicModel() {
-  Clear();
-}
-
-void TopicModel::Clear() {
-  n_wt_.Clear();
-  p_wt_.Clear();
-}
-
 void TopicModel::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model, float apply_weight) {
   if (!Helpers::Validate(topic_model, /* throw_error=*/ false)) return;
 
@@ -95,11 +86,10 @@ void TopicModel::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model,
       case TopicModel_OperationType_Increment:
         if (current_token_id == -1)
           current_token_id = this->AddToken(token, false);
-        target = n_wt_[current_token_id];
 
         if (optimized_execution && !use_sparse_format_local && (counters.value_size() == this_topic_size)) {
           for (int topic_index = 0; topic_index < this_topic_size; ++topic_index)
-            target[topic_index] += counters.value(topic_index);
+            n_wt_.increase(current_token_id, topic_index, counters.value(topic_index));
           break;
         }
 
@@ -108,20 +98,19 @@ void TopicModel::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model,
           assert(topic_index < target_topic_index.size());
           if (target_topic_index[topic_index] == -1)
             continue;
-          target[target_topic_index[topic_index]] += apply_weight * counters.value(i);
+          n_wt_.increase(current_token_id, target_topic_index[topic_index], apply_weight * counters.value(i));
         }
         break;
 
       case TopicModel_OperationType_Overwrite:
         if (current_token_id == -1)
           current_token_id = this->AddToken(token, false);
-        target = n_wt_[current_token_id];
         for (int i = 0; i < counters.value_size(); ++i) {
           int topic_index = use_sparse_format_local ? sparse_topic_index->value(i) : i;
           assert(topic_index < target_topic_index.size());
           if (target_topic_index[topic_index] == -1)
             continue;
-          target[target_topic_index[topic_index]] = counters.value(i);
+          n_wt_.set(current_token_id, target_topic_index[topic_index], counters.value(i));
         }
         break;
 
@@ -149,10 +138,8 @@ void TopicModel::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get
   const bool use_nwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Nwt);
   if (!use_pwt && !use_nwt)
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("Invalid GetTopicModelArgs_RequestType"));
-  if (use_pwt && p_wt_.empty())
-    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("pwt is not available in this TopicModel"));
-  if (use_nwt && n_wt_.empty())
-    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("nwt is not available in this TopicModel"));
+  if (use_pwt && (p_wt_.token_size() == 0))
+    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("pwt is not calculated for this TopicModel"));
 
   PhiMatrixOperations::RetrieveExternalTopicModel(use_pwt ? p_wt_ : n_wt_, get_model_args, topic_model);
 }
@@ -163,18 +150,6 @@ int TopicModel::AddToken(const Token& token, bool random_init) {
 
 void TopicModel::RemoveToken(const Token& token) {
   n_wt_.RemoveToken(token);
-}
-
-int TopicModel::topic_size() const {
-  return n_wt_.topic_size();
-}
-
-google::protobuf::RepeatedPtrField<std::string> TopicModel::topic_name() const {
-  return n_wt_.topic_name();
-}
-
-ModelName TopicModel::model_name() const {
-  return n_wt_.model_name();
 }
 
 void TopicModel::CalcPwt() {

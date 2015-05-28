@@ -104,7 +104,7 @@ Merger::GetLatestTopicModel(ModelName model_name) const {
 }
 
 void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
-                                   ::artm::core::DensePhiMatrix* global_r_wt) {
+                                   ::artm::core::PhiMatrix* global_r_wt) {
   auto schema = schema_->get();
   auto& model = schema->model_config(topic_model.model_name());
   auto& reg_settings = model.regularizer_settings();
@@ -113,9 +113,9 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
   int token_size = topic_model.token_size();
 
   ::artm::core::DensePhiMatrix local_r_wt(topic_model.model_name(), topic_model.topic_name());
-  local_r_wt.Reshape(topic_model.Nwt());
+  local_r_wt.Reshape(topic_model.GetNwt());
 
-  auto n_t_all = PhiMatrixOperations::FindNormalizers(topic_model.Nwt());
+  auto n_t_all = PhiMatrixOperations::FindNormalizers(topic_model.GetNwt());
 
   for (auto reg_iterator = reg_settings.begin();
        reg_iterator != reg_settings.end();
@@ -127,7 +127,7 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
       bool relative_reg = reg_iterator->use_relative_regularization();
 
       const PhiMatrix& pwt_matrix = topic_model.GetPwt();
-      const PhiMatrix& nwt_matrix = topic_model.Nwt();
+      const PhiMatrix& nwt_matrix = topic_model.GetNwt();
       if (pwt_matrix.token_size() != nwt_matrix.token_size() || pwt_matrix.topic_size() != nwt_matrix.topic_size() ||
           local_r_wt.token_size() != nwt_matrix.token_size() || local_r_wt.topic_size() != nwt_matrix.topic_size()) {
         LOG(ERROR) << "Inconsistent matrix size: Pwt( "
@@ -137,7 +137,7 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
         continue;
       }
 
-      bool retval = regularizer->RegularizePhi(topic_model.GetPwt(), topic_model.Nwt(), &local_r_wt);
+      bool retval = regularizer->RegularizePhi(topic_model.GetPwt(), topic_model.GetNwt(), &local_r_wt);
 
       // count n and r_i for relative regularization, if necessary
       // prepare next structure with parameters:
@@ -179,7 +179,7 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
               for (int token_id = 0; token_id < token_size; ++token_id) {
                 if (topic_model.token(token_id).class_id != iter->first) continue;
 
-                r_it_current += local_r_wt[token_id][topic_id];
+                r_it_current += local_r_wt.get(token_id, topic_id);
               }
 
               r_it.push_back(r_it_current);
@@ -216,7 +216,8 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
             coefficient = static_cast<float>(gamma) * (n_t / r_it) * static_cast<float>(1 - gamma) * (n / r_i);
           }
           // update global r_wt using coefficient and tau
-          (*global_r_wt)[token_id][topic_id] += coefficient * tau * local_r_wt[token_id][topic_id];
+          float increment = coefficient * tau * local_r_wt.get(token_id, topic_id);
+          global_r_wt->increase(token_id, topic_id, increment);
         }
       }
       local_r_wt.Reset();
@@ -493,7 +494,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       new_ttm->CalcPwt();
 
       ::artm::core::DensePhiMatrix global_r_wt(new_ttm->model_name(), new_ttm->topic_name());
-      global_r_wt.Reshape(new_ttm->Nwt());
+      global_r_wt.Reshape(new_ttm->GetNwt());
       InvokePhiRegularizers(*new_ttm, &global_r_wt);
 
       // merge final r_wt with n_wt in p_wt (n_wt is const)
@@ -501,7 +502,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
 
       // Verify if model became overregularized
       std::map<ClassId, std::vector<float>> new_ttm_normalizers =
-        PhiMatrixOperations::FindNormalizers(new_ttm->Nwt(), global_r_wt);
+        PhiMatrixOperations::FindNormalizers(new_ttm->GetNwt(), global_r_wt);
       for (auto iter : new_ttm_normalizers) {
         int bad_topics = 0;
         for (int topic_index = 0; topic_index < iter.second.size(); ++topic_index) {

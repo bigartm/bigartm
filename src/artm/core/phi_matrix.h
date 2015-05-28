@@ -30,6 +30,7 @@ class PhiMatrix {
 
   virtual float get(int token_id, int topic_id) const = 0;
   virtual void set(int token_id, int topic_id, float value) = 0;
+  virtual void increase(int token_id, int topic_id, float increment) = 0;
 
   virtual ~PhiMatrix() {}
 };
