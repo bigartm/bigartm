@@ -19,6 +19,8 @@ set(SRC_LIST
 	core/common.h
 	core/data_loader.cc
 	core/data_loader.h
+	core/dense_phi_matrix.cc
+	core/dense_phi_matrix.h
 	core/dictionary.cc
 	core/dictionary.h
 	core/exceptions.h

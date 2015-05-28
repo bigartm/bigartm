@@ -6,6 +6,7 @@
 ../src/artm/core/collection_parser.cc
 ../src/artm/core/data_loader.cc
 ../src/artm/core/dictionary.cc
+../src/artm/core/dense_phi_matrix.cc
 ../src/artm/core/helpers.cc
 ../src/artm/core/instance.cc
 ../src/artm/core/instance_schema.cc
@@ -53,6 +54,7 @@
 ../src/artm/core/collection_parser.h
 ../src/artm/core/common.h
 ../src/artm/core/data_loader.h
+../src/artm/core/dense_phi_matrix.h
 ../src/artm/core/dictionary.h
 ../src/artm/core/exceptions.h
 ../src/artm/core/helpers.h

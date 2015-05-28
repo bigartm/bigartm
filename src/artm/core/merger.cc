@@ -21,6 +21,7 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/topic_model.h"
+#include "artm/core/dense_phi_matrix.h"
 #include "artm/core/phi_matrix_operations.h"
 #include "artm/core/instance_schema.h"
 #include "artm/core/protobuf_helpers.h"
@@ -103,7 +104,7 @@ Merger::GetLatestTopicModel(ModelName model_name) const {
 }
 
 void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
-                                   ::artm::core::TokenCollectionWeights* global_r_wt) {
+                                   ::artm::core::DensePhiMatrix* global_r_wt) {
   auto schema = schema_->get();
   auto& model = schema->model_config(topic_model.model_name());
   auto& reg_settings = model.regularizer_settings();
@@ -111,7 +112,8 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
   int topic_size = topic_model.topic_size();
   int token_size = topic_model.token_size();
 
-  ::artm::core::TokenCollectionWeights local_r_wt(token_size, topic_size, topic_model);
+  ::artm::core::DensePhiMatrix local_r_wt(topic_model.model_name(), topic_model.topic_name());
+  local_r_wt.Reshape(topic_model.Nwt());
 
   auto n_t_all = PhiMatrixOperations::FindNormalizers(topic_model.Nwt());
 
@@ -490,7 +492,8 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       // call CalcPwt() to allow regularizers GetPwt() usage
       new_ttm->CalcPwt();
 
-      ::artm::core::TokenCollectionWeights global_r_wt(new_ttm->token_size(), new_ttm->topic_size(), *new_ttm);
+      ::artm::core::DensePhiMatrix global_r_wt(new_ttm->model_name(), new_ttm->topic_name());
+      global_r_wt.Reshape(new_ttm->Nwt());
       InvokePhiRegularizers(*new_ttm, &global_r_wt);
 
       // merge final r_wt with n_wt in p_wt (n_wt is const)
