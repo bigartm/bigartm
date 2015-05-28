@@ -69,12 +69,14 @@ class TokenCollectionWeights : boost::noncopyable, public PhiMatrix {
   virtual bool has_token(const Token& token) const;
   virtual int token_index(const Token& token) const;
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const;
+  virtual ModelName model_name() const;
 
   void Reset();
   void Clear();
   int AddToken();
   int AddToken(const Token& token, bool random_init);
   void RemoveToken(int token_id);
+  void Reshape(const PhiMatrix& phi_matrix);
 
  private:
   int topic_size_;
@@ -104,11 +106,9 @@ class TopicModel {
   void RemoveToken(const Token& token);
   int  AddToken(const Token& token, bool random_init = true);
 
-  void CalcPwt() { FindPwt(&p_wt_); }
-  void CalcPwt(const TokenCollectionWeights& r_wt) { FindPwt(r_wt, &p_wt_); }
+  void CalcPwt();
+  void CalcPwt(const TokenCollectionWeights& r_wt);
   const TokenCollectionWeights& GetPwt() const { return p_wt_; }
-
-  const float* GetPwt(int token_id) const { return p_wt_.at(token_id); }
 
   ModelName model_name() const;
 
@@ -119,16 +119,6 @@ class TopicModel {
   bool has_token(const Token& token) const { return token_collection_.has_token(token); }
   int token_id(const Token& token) const { return token_collection_.token_id(token); }
   const Token& token(int index) const { return token_collection_.token(index); }
-
-  std::map<ClassId, std::vector<float> > FindNormalizers(const TokenCollectionWeights& r_wt) const;
-  std::map<ClassId, std::vector<float> > FindNormalizers() const {
-    return FindNormalizers(TokenCollectionWeights(0, *this));
-  }
-
-  // find p_wt matrix without regularization
-  virtual void FindPwt(TokenCollectionWeights* p_wt) const { return FindPwt(TokenCollectionWeights(0, *this), p_wt); }
-  // find p_wt matrix with regularization additions r_wt
-  virtual void FindPwt(const TokenCollectionWeights& r_wt, TokenCollectionWeights* p_wt) const;
 
   const TokenCollectionWeights& Nwt () const { return n_wt_; }
 

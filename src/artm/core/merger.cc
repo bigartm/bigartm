@@ -21,6 +21,7 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/topic_model.h"
+#include "artm/core/phi_matrix_operations.h"
 #include "artm/core/instance_schema.h"
 #include "artm/core/protobuf_helpers.h"
 
@@ -112,7 +113,7 @@ void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
 
   ::artm::core::TokenCollectionWeights local_r_wt(token_size, topic_size, topic_model);
 
-  auto n_t_all = topic_model.FindNormalizers();
+  auto n_t_all = PhiMatrixOperations::FindNormalizers(topic_model.Nwt());
 
   for (auto reg_iterator = reg_settings.begin();
        reg_iterator != reg_settings.end();
@@ -496,7 +497,8 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       new_ttm->CalcPwt(global_r_wt);
 
       // Verify if model became overregularized
-      std::map<ClassId, std::vector<float>> new_ttm_normalizers = new_ttm->FindNormalizers(global_r_wt);
+      std::map<ClassId, std::vector<float>> new_ttm_normalizers =
+        PhiMatrixOperations::FindNormalizers(new_ttm->Nwt(), global_r_wt);
       for (auto iter : new_ttm_normalizers) {
         int bad_topics = 0;
         for (int topic_index = 0; topic_index < iter.second.size(); ++topic_index) {

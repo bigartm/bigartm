@@ -40,6 +40,8 @@ set(SRC_LIST
 	core/processor_input.h
 	core/protobuf_helpers.h
 	core/phi_matrix.h
+	core/phi_matrix_operations.cc
+	core/phi_matrix_operations.h
 	core/sync_event.cc
 	core/sync_event.h
 	core/template_manager.h

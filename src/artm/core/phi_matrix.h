@@ -1,7 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_REGULARIZABLE_H_
-#define SRC_ARTM_CORE_REGULARIZABLE_H_
+#ifndef SRC_ARTM_CORE_PHI_MATRIX_H_
+#define SRC_ARTM_CORE_PHI_MATRIX_H_
 
 
 #include <string>
@@ -22,6 +22,7 @@ class PhiMatrix {
   virtual int token_size() const = 0;
   virtual int topic_size() const = 0;
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const = 0;
+  virtual ModelName model_name() const = 0;
 
   virtual const Token& token(int index) const = 0;
   virtual bool has_token(const Token& token) const = 0;
@@ -38,4 +39,4 @@ class PhiMatrix {
 }  // namespace artm
 
 
-#endif  // SRC_ARTM_CORE_REGULARIZABLE_H_
+#endif  // SRC_ARTM_CORE_PHI_MATRIX_H_

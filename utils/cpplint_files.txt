@@ -11,6 +11,7 @@
 ../src/artm/core/instance_schema.cc
 ../src/artm/core/master_component.cc
 ../src/artm/core/merger.cc
+../src/artm/core/phi_matrix_operations.cc
 ../src/artm/core/processor.cc
 ../src/artm/core/processor_input.cc
 ../src/artm/core/topic_model.cc
@@ -42,7 +43,6 @@
 ../src/artm_tests/multiple_classes_test.cc
 ../src/artm_tests/test_mother.cc
 ../src/artm_tests/thread_safe_holder_test.cc
-../src/artm_tests/topic_model_test.cc
 ../src/artm/regularizer_interface.h
 ../src/artm/score_calculator_interface.h
 ../src/artm/cpp_interface.h
@@ -60,6 +60,8 @@
 ../src/artm/core/instance_schema.h
 ../src/artm/core/master_component.h
 ../src/artm/core/merger.h
+../src/artm/core/phi_matrix.h
+../src/artm/core/phi_matrix_operations.h
 ../src/artm/core/processor.h
 ../src/artm/core/processor_input.h
 ../src/artm/core/protobuf_helpers.h
