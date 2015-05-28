@@ -16,7 +16,6 @@ set(SRC_LIST
 	template_manager_test.cc
 	test_mother.cc
 	thread_safe_holder_test.cc
-	topic_model_test.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest_main.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest-all.cc
 	${CMAKE_SOURCE_DIR}/src/artm/c_interface.cc

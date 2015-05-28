@@ -394,36 +394,6 @@ void TopicModel::RemoveToken(const Token& token) {
   token_collection_.RemoveToken(token);
 }
 
-void TopicModel::IncreaseTokenWeight(const Token& token, int topic_id, float value) {
-  if (!has_token(token)) {
-    if (value != 0.0f) {
-      LOG(ERROR) << "Token (" << token.class_id << ", " << token.keyword <<
-        ") not found in the model";
-    }
-
-    return;
-  }
-
-  IncreaseTokenWeight(token_id(token), topic_id, value);
-}
-
-void TopicModel::IncreaseTokenWeight(int token_id, int topic_id, float value) {
-  n_wt_[token_id][topic_id] += value;
-}
-
-void TopicModel::SetTokenWeight(const Token& token, int topic_id, float value) {
-  if (!has_token(token)) {
-    LOG(ERROR) << "Token '" << token.keyword << "' not found in the model";
-    return;
-  }
-
-  SetTokenWeight(token_id(token), topic_id, value);
-}
-
-void TopicModel::SetTokenWeight(int token_id, int topic_id, float value) {
-  n_wt_[token_id][topic_id] = value;
-}
-
 int TopicModel::topic_size() const {
   return topic_name_.size();
 }

@@ -104,11 +104,6 @@ class TopicModel {
   void RemoveToken(const Token& token);
   int  AddToken(const Token& token, bool random_init = true);
 
-  void IncreaseTokenWeight(const Token& token, int topic_id, float value);
-  void IncreaseTokenWeight(int token_id, int topic_id, float value);
-  void SetTokenWeight(const Token& token, int topic_id, float value);
-  void SetTokenWeight(int token_id, int topic_id, float value);
-
   void CalcPwt() { FindPwt(&p_wt_); }
   void CalcPwt(const TokenCollectionWeights& r_wt) { FindPwt(r_wt, &p_wt_); }
   const TokenCollectionWeights& GetPwt() const { return p_wt_; }
