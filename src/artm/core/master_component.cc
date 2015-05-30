@@ -8,6 +8,9 @@
 #include <set>
 #include <sstream>
 
+#include "boost/uuid/uuid_generators.hpp"
+#include "boost/thread.hpp"
+
 #include "glog/logging.h"
 
 #include "artm/regularizer_interface.h"
@@ -221,6 +224,49 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
 
 void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                             ProcessBatchesResult* process_batches_result) {
+  ModelName model_name = process_batches_args.pwt_source_name();
+  ModelConfig model_config;
+  model_config.set_name(model_name);
+  model_config.set_inner_iterations_count(process_batches_args.inner_iterations_count());
+  model_config.set_stream_name(process_batches_args.stream_name());
+  model_config.mutable_regularizer_name()->CopyFrom(process_batches_args.regularizer_name());
+  model_config.mutable_regularizer_tau()->CopyFrom(process_batches_args.regularizer_tau());
+  model_config.mutable_class_id()->CopyFrom(process_batches_args.class_id());
+  model_config.mutable_class_weight()->CopyFrom(process_batches_args.class_weight());
+
+  std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
+  if (topic_model == nullptr && phi_matrix == nullptr) {
+    LOG(ERROR) << "Model " << model_name << " does not exist.";
+    return;
+  }
+
+  const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
+  auto nwt_target(std::make_shared<DensePhiMatrix>(p_wt.model_name(), p_wt.topic_name()));
+  nwt_target->Reshape(p_wt);
+  instance_->merger()->SetPhiMatrix(process_batches_args.nwt_target_name(), nwt_target);
+
+  BatchManager batch_manager;
+  for (int batch_index = 0; batch_index < process_batches_args.batch_filename_size(); ++batch_index) {
+    boost::uuids::uuid task_id = boost::uuids::random_generator()();
+    batch_manager.Add(task_id, std::string(), model_name);
+
+    auto pi = std::make_shared<ProcessorInput>();
+    pi->set_notifiable(&batch_manager);
+    pi->set_model_name(model_name);
+    pi->set_nwt_target_name(process_batches_args.nwt_target_name());
+    pi->set_batch_filename(process_batches_args.batch_filename(batch_index));
+    pi->mutable_model_config()->CopyFrom(model_config);
+    pi->set_task_id(task_id);
+    instance_->processor_queue()->push(pi);
+  }
+
+  // ToDo - extract Theta Matrix and clear the cache
+  // ToDo - merge and extract ScoreData (require some refactoring)
+
+  while (!batch_manager.IsEverythingProcessed()) {
+    boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+  }
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {

@@ -384,7 +384,8 @@ InferThetaSparse(const ModelConfig& model_config, const Batch& batch, const Inst
 static void
 UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask* mask,
                 const CsrMatrix<float>& sparse_ndw, const ::artm::core::PhiMatrix& p_wt,
-                const DenseMatrix<float>& theta_matrix, ModelIncrement* model_increment, util::Blas* blas) {
+                const DenseMatrix<float>& theta_matrix,
+                ModelIncrement* model_increment, PhiMatrix* nwt_target, util::Blas* blas) {
   const int topics_count = model_config.topics_count();
   const int docs_count = theta_matrix.no_columns();
   const int tokens_count = batch.token_size();
@@ -424,6 +425,12 @@ UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask*
       values[topic_index] = p_wt_local[topic_index] * n_wt_local[topic_index];
       n_wt_local[topic_index] = 0.0f;
       if (values[topic_index] >= kProcessorEps) nnz_values++;  // Find nnz_values
+    }
+
+    if (nwt_target != nullptr) {
+      assert(nwt_target->token(token_id[w]) == p_wt.token(token_id[w]));
+      nwt_target->increase(token_id[w], values);
+      continue;
     }
 
     if (nnz_values < (topics_count / 2)) {
@@ -754,7 +761,19 @@ void Processor::ThreadFunction() {
           continue;
         }
 
-        const PhiMatrix& p_wt = topic_model->GetPwt();
+        std::shared_ptr<const PhiMatrix> nwt_target;
+        if (part->has_nwt_target_name()) {
+          nwt_target = merger_.GetPhiMatrix(part->nwt_target_name());
+          if (nwt_target == nullptr) {
+            LOG(ERROR) << "Model " << part->nwt_target_name() << " does not exist.";
+            continue;
+          }
+
+          if (!model_config.use_sparse_bow())
+            BOOST_THROW_EXCEPTION(InternalError("ArtmProcessBatches requires use_sparse_bow=true switch"));
+        }
+
+        const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
 
         int topic_size = p_wt.topic_size();
         if (topic_size != model_config.topics_count())
@@ -780,7 +799,7 @@ void Processor::ThreadFunction() {
         if (p_wt.token_size() == 0) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
             "would not be processed on this iteration";
-          merger_queue_->push(model_increment);
+          if (nwt_target == nullptr) merger_queue_->push(model_increment);
           continue;
         }
 
@@ -864,10 +883,10 @@ void Processor::ThreadFunction() {
           // Keep UpdateNwtSparse as further down in the code as possible,
           // because it consumes a lot of memory to transfer increments to merger.
           UpdateNwtSparse(model_config, batch, stream_mask, *sparse_ndw, p_wt,
-            *theta_matrix, model_increment.get(), blas);
+            *theta_matrix, model_increment.get(), const_cast<PhiMatrix*>(nwt_target.get()), blas);
         }
         merger_queue_->release();
-        merger_queue_->push(model_increment);
+        if (nwt_target == nullptr) merger_queue_->push(model_increment);
       }
     }
   }

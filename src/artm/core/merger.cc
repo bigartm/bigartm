@@ -36,7 +36,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
       topic_model_inc_(),
       schema_(schema),
       target_model_config_(),
-      scores_merger_(schema, &topic_model_),
+      scores_merger_(schema, &topic_model_, &phi_matrix_),
       is_idle_(true),
       merger_queue_(merger_queue),
       dictionaries_(dictionaries),
@@ -71,7 +71,7 @@ void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
 }
 
 void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
-  auto ttm = topic_model_.get(topic_model.name());
+  auto ttm = this->GetLatestTopicModel(topic_model.name());
   if (ttm == nullptr) {
     std::stringstream ss;
     ss << "Model '" << topic_model.name();
@@ -409,8 +409,12 @@ bool Merger::ScoresMerger::RequestScore(const GetScoreValueArgs& get_score_args,
       score_data->set_data(score->SerializeAsString());
     }
   } else {
-    std::shared_ptr< ::artm::core::TopicModel> model = topic_model_->get(get_score_args.model_name());
-    std::shared_ptr<Score> score = score_calculator->CalculateScore(model->GetPwt());
+    std::shared_ptr< ::artm::core::TopicModel> topic_model = topic_model_->get(get_score_args.model_name());
+    std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix = phi_matrix_->get(get_score_args.model_name());
+    if (topic_model == nullptr && phi_matrix == nullptr)
+      return false;
+    const PhiMatrix& pwt = topic_model != nullptr ? topic_model->GetPwt() : *phi_matrix;
+    std::shared_ptr<Score> score = score_calculator->CalculateScore(pwt);
     score_data->set_data(score->SerializeAsString());
   }
 
