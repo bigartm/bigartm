@@ -51,11 +51,11 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::Regularizable& topic
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       float value = 0.0f;
+      auto& cooc_tokens_info = dictionary_ptr->cooc_info(token);
       for (int cooc_token_id = 0; cooc_token_id < dictionary_ptr->cooc_size(token); ++cooc_token_id) {
-        auto cooc_token = dictionary_ptr->cooc_token(token, cooc_token_id);
-        if (cooc_token == nullptr) continue;
-        if (cooc_token->class_id != token.class_id) continue;
-        value += n_wt.get(topic_model.token_id(*cooc_token), topic_id) *
+        if (cooc_tokens_info[cooc_token_id].token.class_id != token.class_id) continue;
+
+        value += n_wt.get(topic_model.token_id(cooc_tokens_info[cooc_token_id].token), topic_id) *
                  dictionary_ptr->cooc_value(token, cooc_token_id);
       }
       result->set(token_id, topic_id, value);

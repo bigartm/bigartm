@@ -393,6 +393,7 @@ message TopicKernelScore {
   optional double average_kernel_contrast = 6;
   optional DoubleArray coherence = 7;
   optional float average_coherence = 8;
+  repeated StringArray kernel_tokens = 9;
 }
 
 // Represents a topic model (or an operation on topic model)

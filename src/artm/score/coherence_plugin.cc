@@ -54,7 +54,8 @@ float CountTopicCoherence(const std::shared_ptr<core::Dictionary>& dictionary,
       }
 
       float numerator = static_cast<float>(dictionary->cooc_value(tokens_to_score[i], tokens_to_score[j]));
-      coherence_value += denominator == 0 || std::fabs(numerator) < 1e-37 ? 0.0 : std::log(numerator / denominator);
+      coherence_value += denominator == 0 || std::fabs(numerator) < 1e-37 ? 0.0 :
+        std::log(numerator / denominator * dictionary->total_items_count());
     }
   }
 

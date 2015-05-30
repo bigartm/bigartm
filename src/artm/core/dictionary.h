@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "artm/messages.pb.h"
 #include "artm/core/common.h"
@@ -14,10 +15,17 @@
 namespace artm {
 namespace core {
 
+struct TokenCoocInfo {
+  TokenCoocInfo(const Token& _token, int _value) : token(_token), value(_value) { }
+  const Token& token;
+  int value;
+};
+
 class Dictionary {
  public:
   explicit Dictionary(const artm::DictionaryConfig& config);
 
+  inline int total_items_count() const { return total_items_count_; }
   int cooc_size(const Token& token) const;
   const Token* cooc_token(const Token& token, int index) const;
 
@@ -25,11 +33,15 @@ class Dictionary {
   int cooc_value(const Token& token, int index) const;
   int cooc_value(const Token& token_1, const Token& token_2) const;
 
+  // general method to return all cooc tokens with their values for given token
+  const std::vector<TokenCoocInfo> cooc_info(const Token& token) const;
+
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;
   inline int size() const { return entries_.size(); }
 
  private:
+  int total_items_count_;
   std::vector<DictionaryEntry> entries_;
   std::map<Token, int> token_index_;
   std::map<int, Token> index_token_;

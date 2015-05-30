@@ -5805,6 +5805,18 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline float average_coherence() const;
   inline void set_average_coherence(float value);
 
+  // repeated .artm.StringArray kernel_tokens = 9;
+  inline int kernel_tokens_size() const;
+  inline void clear_kernel_tokens();
+  static const int kKernelTokensFieldNumber = 9;
+  inline const ::artm::StringArray& kernel_tokens(int index) const;
+  inline ::artm::StringArray* mutable_kernel_tokens(int index);
+  inline ::artm::StringArray* add_kernel_tokens();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::StringArray >&
+      kernel_tokens() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
+      mutable_kernel_tokens();
+
   // @@protoc_insertion_point(class_scope:artm.TopicKernelScore)
  private:
   inline void set_has_kernel_size();
@@ -5833,10 +5845,11 @@ class TopicKernelScore : public ::google::protobuf::Message {
   double average_kernel_purity_;
   double average_kernel_contrast_;
   ::artm::DoubleArray* coherence_;
+  ::google::protobuf::RepeatedPtrField< ::artm::StringArray > kernel_tokens_;
   float average_coherence_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -14926,6 +14939,31 @@ inline float TopicKernelScore::average_coherence() const {
 inline void TopicKernelScore::set_average_coherence(float value) {
   set_has_average_coherence();
   average_coherence_ = value;
+}
+
+// repeated .artm.StringArray kernel_tokens = 9;
+inline int TopicKernelScore::kernel_tokens_size() const {
+  return kernel_tokens_.size();
+}
+inline void TopicKernelScore::clear_kernel_tokens() {
+  kernel_tokens_.Clear();
+}
+inline const ::artm::StringArray& TopicKernelScore::kernel_tokens(int index) const {
+  return kernel_tokens_.Get(index);
+}
+inline ::artm::StringArray* TopicKernelScore::mutable_kernel_tokens(int index) {
+  return kernel_tokens_.Mutable(index);
+}
+inline ::artm::StringArray* TopicKernelScore::add_kernel_tokens() {
+  return kernel_tokens_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::StringArray >&
+TopicKernelScore::kernel_tokens() const {
+  return kernel_tokens_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
+TopicKernelScore::mutable_kernel_tokens() {
+  return &kernel_tokens_;
 }
 
 // -------------------------------------------------------------------

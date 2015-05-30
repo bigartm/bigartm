@@ -139,6 +139,8 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
   double average_kernel_purity = 0.0;
   double average_kernel_contrast = 0.0;
   double useful_topics_count = 0.0;
+  auto kernel_tokens = topic_kernel_score->mutable_kernel_tokens();
+
   for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
     double current_kernel_size = kernel_size->value(topic_index);
     bool useful_topic = (current_kernel_size != -1);
@@ -148,6 +150,9 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
       average_kernel_purity += kernel_purity->value(topic_index);
       average_kernel_contrast += kernel_contrast->value(topic_index);
     }
+    StringArray* tokens = kernel_tokens->Add();
+    for (int token_id = 0; token_id < topic_kernel_tokens[topic_index].size(); ++token_id)
+      tokens->add_value(topic_kernel_tokens[topic_index][token_id].keyword);
   }
   average_kernel_size /= useful_topics_count;
   average_kernel_purity /= useful_topics_count;

@@ -11,6 +11,7 @@ namespace artm {
 namespace core {
 
 Dictionary::Dictionary(const artm::DictionaryConfig& config) {
+  total_items_count_ = config.total_items_count();
   for (int index = 0; index < config.entry_size(); ++index) {
     const ::artm::DictionaryEntry& entry = config.entry(index);
     ClassId class_id;
@@ -103,6 +104,21 @@ int Dictionary::cooc_value(const Token& token_1, const Token& token_2) const {
   if (cooc_map_iter_2 == cooc_map_iter_1->second.end()) return 0;
 
   return cooc_map_iter_2->second;
+}
+
+const std::vector<TokenCoocInfo> Dictionary::cooc_info(const Token& token) const {
+  auto retval = std::vector<TokenCoocInfo>();
+
+  auto index_iter = token_index_.find(token);
+  if (index_iter == token_index_.end()) return retval;
+
+  auto cooc_map_iter = cooc_values_.find(index_iter->second);
+  if (cooc_map_iter == cooc_values_.end()) return retval;
+
+  for (auto iter = cooc_map_iter->second.begin(); iter != cooc_map_iter->second.end(); ++iter) {
+    TokenCoocInfo token_cooc_info = TokenCoocInfo(index_token_.find(iter->first)->second, iter->second);
+    retval.push_back(token_cooc_info);
+  }
 }
 
 const DictionaryEntry* Dictionary::entry(const Token& token) const {
