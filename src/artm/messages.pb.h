@@ -8140,28 +8140,15 @@ class ProcessBatchesResult : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
       mutable_score_data();
 
-  // repeated .artm.ThetaMatrix theta_matrix = 2;
-  inline int theta_matrix_size() const;
-  inline void clear_theta_matrix();
-  static const int kThetaMatrixFieldNumber = 2;
-  inline const ::artm::ThetaMatrix& theta_matrix(int index) const;
-  inline ::artm::ThetaMatrix* mutable_theta_matrix(int index);
-  inline ::artm::ThetaMatrix* add_theta_matrix();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::ThetaMatrix >&
-      theta_matrix() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::ThetaMatrix >*
-      mutable_theta_matrix();
-
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesResult)
  private:
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::artm::ScoreData > score_data_;
-  ::google::protobuf::RepeatedPtrField< ::artm::ThetaMatrix > theta_matrix_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -18801,31 +18788,6 @@ ProcessBatchesResult::score_data() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
 ProcessBatchesResult::mutable_score_data() {
   return &score_data_;
-}
-
-// repeated .artm.ThetaMatrix theta_matrix = 2;
-inline int ProcessBatchesResult::theta_matrix_size() const {
-  return theta_matrix_.size();
-}
-inline void ProcessBatchesResult::clear_theta_matrix() {
-  theta_matrix_.Clear();
-}
-inline const ::artm::ThetaMatrix& ProcessBatchesResult::theta_matrix(int index) const {
-  return theta_matrix_.Get(index);
-}
-inline ::artm::ThetaMatrix* ProcessBatchesResult::mutable_theta_matrix(int index) {
-  return theta_matrix_.Mutable(index);
-}
-inline ::artm::ThetaMatrix* ProcessBatchesResult::add_theta_matrix() {
-  return theta_matrix_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::ThetaMatrix >&
-ProcessBatchesResult::theta_matrix() const {
-  return theta_matrix_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::ThetaMatrix >*
-ProcessBatchesResult::mutable_theta_matrix() {
-  return &theta_matrix_;
 }
 
 // -------------------------------------------------------------------

@@ -103,6 +103,17 @@ Merger::GetLatestTopicModel(ModelName model_name) const {
   return topic_model_.get(model_name);
 }
 
+std::shared_ptr<const ::artm::core::PhiMatrix>
+Merger::GetPhiMatrix(ModelName model_name) const {
+  return phi_matrix_.get(model_name);
+}
+
+void
+Merger::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
+  this->DisposeModel(model_name);
+  return phi_matrix_.set(model_name, phi_matrix);
+}
+
 void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
                                    ::artm::core::PhiMatrix* global_r_wt) {
   auto schema = schema_->get();

@@ -1288,9 +1288,8 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(ProcessBatchesArgs));
   ProcessBatchesArgs_ThetaMatrixType_descriptor_ = ProcessBatchesArgs_descriptor_->enum_type(0);
   ProcessBatchesResult_descriptor_ = file->message_type(55);
-  static const int ProcessBatchesResult_offsets_[2] = {
+  static const int ProcessBatchesResult_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesResult, score_data_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesResult, theta_matrix_),
   };
   ProcessBatchesResult_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1863,17 +1862,16 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "a_matrix_type\030\n \001(\0162(.artm.ProcessBatche"
     "sArgs.ThetaMatrixType:\004None\"2\n\017ThetaMatr"
     "ixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\""
-    "d\n\024ProcessBatchesResult\022#\n\nscore_data\030\001 "
-    "\003(\0132\017.artm.ScoreData\022\'\n\014theta_matrix\030\002 \003"
-    "(\0132\021.artm.ThetaMatrix\"m\n\016MergeModelArgs\022"
-    "\027\n\017nwt_target_name\030\001 \001(\t\022\027\n\017nwt_source_n"
-    "ame\030\002 \003(\t\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\ntopi"
-    "c_name\030\004 \003(\t\"g\n\023RegularizeModelArgs\022\027\n\017r"
-    "wt_target_name\030\001 \001(\t\0227\n\024regularizer_sett"
-    "ings\030\002 \003(\0132\031.artm.RegularizerSettings\"_\n"
-    "\022NormalizeModelArgs\022\027\n\017pwt_target_name\030\001"
-    " \001(\t\022\027\n\017nwt_source_name\030\002 \001(\t\022\027\n\017rwt_sou"
-    "rce_name\030\003 \001(\t", 9174);
+    ";\n\024ProcessBatchesResult\022#\n\nscore_data\030\001 "
+    "\003(\0132\017.artm.ScoreData\"m\n\016MergeModelArgs\022\027"
+    "\n\017nwt_target_name\030\001 \001(\t\022\027\n\017nwt_source_na"
+    "me\030\002 \003(\t\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\ntopic"
+    "_name\030\004 \003(\t\"g\n\023RegularizeModelArgs\022\027\n\017rw"
+    "t_target_name\030\001 \001(\t\0227\n\024regularizer_setti"
+    "ngs\030\002 \003(\0132\031.artm.RegularizerSettings\"_\n\022"
+    "NormalizeModelArgs\022\027\n\017pwt_target_name\030\001 "
+    "\001(\t\022\027\n\017nwt_source_name\030\002 \001(\t\022\027\n\017rwt_sour"
+    "ce_name\030\003 \001(\t", 9133);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -23724,7 +23722,6 @@ void ProcessBatchesArgs::Swap(ProcessBatchesArgs* other) {
 
 #ifndef _MSC_VER
 const int ProcessBatchesResult::kScoreDataFieldNumber;
-const int ProcessBatchesResult::kThetaMatrixFieldNumber;
 #endif  // !_MSC_VER
 
 ProcessBatchesResult::ProcessBatchesResult()
@@ -23778,7 +23775,6 @@ ProcessBatchesResult* ProcessBatchesResult::New() const {
 
 void ProcessBatchesResult::Clear() {
   score_data_.Clear();
-  theta_matrix_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -23800,21 +23796,6 @@ bool ProcessBatchesResult::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(10)) goto parse_score_data;
-        if (input->ExpectTag(18)) goto parse_theta_matrix;
-        break;
-      }
-
-      // repeated .artm.ThetaMatrix theta_matrix = 2;
-      case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_theta_matrix:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_theta_matrix()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(18)) goto parse_theta_matrix;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -23843,12 +23824,6 @@ void ProcessBatchesResult::SerializeWithCachedSizes(
       1, this->score_data(i), output);
   }
 
-  // repeated .artm.ThetaMatrix theta_matrix = 2;
-  for (int i = 0; i < this->theta_matrix_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->theta_matrix(i), output);
-  }
-
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -23862,13 +23837,6 @@ void ProcessBatchesResult::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         1, this->score_data(i), target);
-  }
-
-  // repeated .artm.ThetaMatrix theta_matrix = 2;
-  for (int i = 0; i < this->theta_matrix_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, this->theta_matrix(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -23887,14 +23855,6 @@ int ProcessBatchesResult::ByteSize() const {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
         this->score_data(i));
-  }
-
-  // repeated .artm.ThetaMatrix theta_matrix = 2;
-  total_size += 1 * this->theta_matrix_size();
-  for (int i = 0; i < this->theta_matrix_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->theta_matrix(i));
   }
 
   if (!unknown_fields().empty()) {
@@ -23923,7 +23883,6 @@ void ProcessBatchesResult::MergeFrom(const ::google::protobuf::Message& from) {
 void ProcessBatchesResult::MergeFrom(const ProcessBatchesResult& from) {
   GOOGLE_CHECK_NE(&from, this);
   score_data_.MergeFrom(from.score_data_);
-  theta_matrix_.MergeFrom(from.theta_matrix_);
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -23947,7 +23906,6 @@ bool ProcessBatchesResult::IsInitialized() const {
 void ProcessBatchesResult::Swap(ProcessBatchesResult* other) {
   if (other != this) {
     score_data_.Swap(&other->score_data_);
-    theta_matrix_.Swap(&other->theta_matrix_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -554,7 +554,6 @@ message ProcessBatchesArgs {
 
 message ProcessBatchesResult {
   repeated ScoreData score_data = 1;
-  repeated ThetaMatrix theta_matrix = 2;
 }
 
 message MergeModelArgs {

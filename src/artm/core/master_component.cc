@@ -23,6 +23,7 @@
 #include "artm/core/cache_manager.h"
 #include "artm/core/instance.h"
 #include "artm/core/processor.h"
+#include "artm/core/phi_matrix_operations.h"
 #include "artm/core/topic_model.h"
 #include "artm/core/merger.h"
 
@@ -236,13 +237,11 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 
   std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
-  if (topic_model == nullptr && phi_matrix == nullptr) {
-    LOG(ERROR) << "Model " << model_name << " does not exist.";
-    return;
-  }
+  if (topic_model == nullptr && phi_matrix == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
 
   const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
-  auto nwt_target(std::make_shared<DensePhiMatrix>(p_wt.model_name(), p_wt.topic_name()));
+  auto nwt_target(std::make_shared<DensePhiMatrix>(process_batches_args.nwt_target_name(), p_wt.topic_name()));
   nwt_target->Reshape(p_wt);
   instance_->merger()->SetPhiMatrix(process_batches_args.nwt_target_name(), nwt_target);
 
@@ -261,7 +260,6 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     instance_->processor_queue()->push(pi);
   }
 
-  // ToDo - extract Theta Matrix and clear the cache
   // ToDo - merge and extract ScoreData (require some refactoring)
 
   while (!batch_manager.IsEverythingProcessed()) {
@@ -276,6 +274,35 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
 }
 
 void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_args) {
+  const std::string& pwt_target_name = normalize_model_args.pwt_target_name();
+  const std::string& nwt_source_name = normalize_model_args.nwt_source_name();
+  const std::string& rwt_source_name = normalize_model_args.rwt_source_name();
+
+  if (!normalize_model_args.has_pwt_target_name())
+    BOOST_THROW_EXCEPTION(InvalidOperation("NormalizeModelArgs.pwt_target_name is missing"));
+  if (!normalize_model_args.has_nwt_source_name())
+    BOOST_THROW_EXCEPTION(InvalidOperation("NormalizeModelArgs.pwt_target_name is missing"));
+
+  std::shared_ptr<const TopicModel> nwt_topic_model = instance_->merger()->GetLatestTopicModel(nwt_source_name);
+  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrix(nwt_source_name);
+  if ((nwt_topic_model == nullptr) && (nwt_phi_matrix = nullptr))
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + nwt_source_name + " does not exist"));
+  const PhiMatrix& n_wt = (nwt_topic_model != nullptr) ? nwt_topic_model->GetPwt() : *nwt_phi_matrix;
+
+  const PhiMatrix* r_wt = nullptr;
+  std::shared_ptr<const TopicModel> rwt_topic_model = instance_->merger()->GetLatestTopicModel(rwt_source_name);
+  std::shared_ptr<const PhiMatrix> rwt_phi_matrix = instance_->merger()->GetPhiMatrix(rwt_source_name);
+  if (normalize_model_args.has_rwt_source_name()) {
+    if ((rwt_topic_model == nullptr) && (rwt_phi_matrix = nullptr))
+      BOOST_THROW_EXCEPTION(InvalidOperation("Model " + rwt_source_name + " does not exist"));
+    r_wt = (rwt_topic_model != nullptr) ? &rwt_topic_model->GetPwt() : rwt_phi_matrix.get();
+  }
+
+  auto pwt_target(std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name()));
+  pwt_target->Reshape(n_wt);
+  if (r_wt == nullptr) PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
+  else                 PhiMatrixOperations::FindPwt(n_wt, *r_wt, pwt_target.get());
+  instance_->merger()->SetPhiMatrix(pwt_target_name, pwt_target);
 }
 
 void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
