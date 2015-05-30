@@ -54,10 +54,12 @@ class DecorrelatorPhiConfig;
 class MultiLanguagePhiConfig;
 class LabelRegularizationPhiConfig;
 class SpecifiedSparsePhiConfig;
+class ImproveCoherencePhiConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class DictionaryConfig;
 class DictionaryEntry;
+class DictionaryCoocurenceEntries;
 class ScoreConfig;
 class ScoreData;
 class PerplexityScoreConfig;
@@ -134,11 +136,12 @@ enum RegularizerConfig_Type {
   RegularizerConfig_Type_DecorrelatorPhi = 2,
   RegularizerConfig_Type_MultiLanguagePhi = 3,
   RegularizerConfig_Type_LabelRegularizationPhi = 4,
-  RegularizerConfig_Type_SpecifiedSparsePhi = 5
+  RegularizerConfig_Type_SpecifiedSparsePhi = 5,
+  RegularizerConfig_Type_ImproveCoherencePhi = 6
 };
 bool RegularizerConfig_Type_IsValid(int value);
 const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_SmoothSparseTheta;
-const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_SpecifiedSparsePhi;
+const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_ImproveCoherencePhi;
 const int RegularizerConfig_Type_Type_ARRAYSIZE = RegularizerConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* RegularizerConfig_Type_descriptor();
@@ -152,8 +155,8 @@ inline bool RegularizerConfig_Type_Parse(
     RegularizerConfig_Type_descriptor(), name, value);
 }
 enum SpecifiedSparsePhiConfig_Mode {
-  SpecifiedSparsePhiConfig_Mode_SparseTopics = 1,
-  SpecifiedSparsePhiConfig_Mode_SparseTokens = 2
+  SpecifiedSparsePhiConfig_Mode_SparseTopics = 0,
+  SpecifiedSparsePhiConfig_Mode_SparseTokens = 1
 };
 bool SpecifiedSparsePhiConfig_Mode_IsValid(int value);
 const SpecifiedSparsePhiConfig_Mode SpecifiedSparsePhiConfig_Mode_Mode_MIN = SpecifiedSparsePhiConfig_Mode_SparseTopics;
@@ -2262,6 +2265,7 @@ class RegularizerConfig : public ::google::protobuf::Message {
   static const Type MultiLanguagePhi = RegularizerConfig_Type_MultiLanguagePhi;
   static const Type LabelRegularizationPhi = RegularizerConfig_Type_LabelRegularizationPhi;
   static const Type SpecifiedSparsePhi = RegularizerConfig_Type_SpecifiedSparsePhi;
+  static const Type ImproveCoherencePhi = RegularizerConfig_Type_ImproveCoherencePhi;
   static inline bool Type_IsValid(int value) {
     return RegularizerConfig_Type_IsValid(value);
   }
@@ -3024,6 +3028,127 @@ class SpecifiedSparsePhiConfig : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class ImproveCoherencePhiConfig : public ::google::protobuf::Message {
+ public:
+  ImproveCoherencePhiConfig();
+  virtual ~ImproveCoherencePhiConfig();
+
+  ImproveCoherencePhiConfig(const ImproveCoherencePhiConfig& from);
+
+  inline ImproveCoherencePhiConfig& operator=(const ImproveCoherencePhiConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ImproveCoherencePhiConfig& default_instance();
+
+  void Swap(ImproveCoherencePhiConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  ImproveCoherencePhiConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ImproveCoherencePhiConfig& from);
+  void MergeFrom(const ImproveCoherencePhiConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string topic_name = 1;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 1;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated string class_id = 2;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
+  // optional string dictionary_name = 3;
+  inline bool has_dictionary_name() const;
+  inline void clear_dictionary_name();
+  static const int kDictionaryNameFieldNumber = 3;
+  inline const ::std::string& dictionary_name() const;
+  inline void set_dictionary_name(const ::std::string& value);
+  inline void set_dictionary_name(const char* value);
+  inline void set_dictionary_name(const char* value, size_t size);
+  inline ::std::string* mutable_dictionary_name();
+  inline ::std::string* release_dictionary_name();
+  inline void set_allocated_dictionary_name(::std::string* dictionary_name);
+
+  // @@protoc_insertion_point(class_scope:artm.ImproveCoherencePhiConfig)
+ private:
+  inline void set_has_dictionary_name();
+  inline void clear_has_dictionary_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::std::string* dictionary_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ImproveCoherencePhiConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class RegularizerInternalState : public ::google::protobuf::Message {
  public:
   RegularizerInternalState();
@@ -3333,6 +3458,15 @@ class DictionaryConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 total_items_count() const;
   inline void set_total_items_count(::google::protobuf::int32 value);
 
+  // optional .artm.DictionaryCoocurenceEntries cooc_entries = 5;
+  inline bool has_cooc_entries() const;
+  inline void clear_cooc_entries();
+  static const int kCoocEntriesFieldNumber = 5;
+  inline const ::artm::DictionaryCoocurenceEntries& cooc_entries() const;
+  inline ::artm::DictionaryCoocurenceEntries* mutable_cooc_entries();
+  inline ::artm::DictionaryCoocurenceEntries* release_cooc_entries();
+  inline void set_allocated_cooc_entries(::artm::DictionaryCoocurenceEntries* cooc_entries);
+
   // @@protoc_insertion_point(class_scope:artm.DictionaryConfig)
  private:
   inline void set_has_name();
@@ -3341,6 +3475,8 @@ class DictionaryConfig : public ::google::protobuf::Message {
   inline void clear_has_total_token_count();
   inline void set_has_total_items_count();
   inline void clear_has_total_items_count();
+  inline void set_has_cooc_entries();
+  inline void clear_has_cooc_entries();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -3348,9 +3484,10 @@ class DictionaryConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::DictionaryEntry > entry_;
   ::google::protobuf::int32 total_token_count_;
   ::google::protobuf::int32 total_items_count_;
+  ::artm::DictionaryCoocurenceEntries* cooc_entries_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3519,6 +3656,117 @@ class DictionaryEntry : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static DictionaryEntry* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class DictionaryCoocurenceEntries : public ::google::protobuf::Message {
+ public:
+  DictionaryCoocurenceEntries();
+  virtual ~DictionaryCoocurenceEntries();
+
+  DictionaryCoocurenceEntries(const DictionaryCoocurenceEntries& from);
+
+  inline DictionaryCoocurenceEntries& operator=(const DictionaryCoocurenceEntries& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DictionaryCoocurenceEntries& default_instance();
+
+  void Swap(DictionaryCoocurenceEntries* other);
+
+  // implements Message ----------------------------------------------
+
+  DictionaryCoocurenceEntries* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DictionaryCoocurenceEntries& from);
+  void MergeFrom(const DictionaryCoocurenceEntries& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated int32 first_index = 1;
+  inline int first_index_size() const;
+  inline void clear_first_index();
+  static const int kFirstIndexFieldNumber = 1;
+  inline ::google::protobuf::int32 first_index(int index) const;
+  inline void set_first_index(int index, ::google::protobuf::int32 value);
+  inline void add_first_index(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      first_index() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_first_index();
+
+  // repeated int32 second_index = 2;
+  inline int second_index_size() const;
+  inline void clear_second_index();
+  static const int kSecondIndexFieldNumber = 2;
+  inline ::google::protobuf::int32 second_index(int index) const;
+  inline void set_second_index(int index, ::google::protobuf::int32 value);
+  inline void add_second_index(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      second_index() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_second_index();
+
+  // repeated float items_count = 3;
+  inline int items_count_size() const;
+  inline void clear_items_count();
+  static const int kItemsCountFieldNumber = 3;
+  inline float items_count(int index) const;
+  inline void set_items_count(int index, float value);
+  inline void add_items_count(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      items_count() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_items_count();
+
+  // @@protoc_insertion_point(class_scope:artm.DictionaryCoocurenceEntries)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > first_index_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > second_index_;
+  ::google::protobuf::RepeatedField< float > items_count_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static DictionaryCoocurenceEntries* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -4437,7 +4685,7 @@ class SparsityPhiScoreConfig : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
-  // optional string class_id = 2;
+  // optional string class_id = 2 [default = "@default_class"];
   inline bool has_class_id() const;
   inline void clear_class_id();
   static const int kClassIdFieldNumber = 2;
@@ -4475,6 +4723,7 @@ class SparsityPhiScoreConfig : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* class_id_;
+  static ::std::string* _default_class_id_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   float eps_;
 
@@ -4839,7 +5088,7 @@ class TopTokensScoreConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 num_tokens() const;
   inline void set_num_tokens(::google::protobuf::int32 value);
 
-  // optional string class_id = 2;
+  // optional string class_id = 2 [default = "@default_class"];
   inline bool has_class_id() const;
   inline void clear_class_id();
   static const int kClassIdFieldNumber = 2;
@@ -4867,21 +5116,37 @@ class TopTokensScoreConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
+  // optional string cooccurrence_dictionary_name = 4;
+  inline bool has_cooccurrence_dictionary_name() const;
+  inline void clear_cooccurrence_dictionary_name();
+  static const int kCooccurrenceDictionaryNameFieldNumber = 4;
+  inline const ::std::string& cooccurrence_dictionary_name() const;
+  inline void set_cooccurrence_dictionary_name(const ::std::string& value);
+  inline void set_cooccurrence_dictionary_name(const char* value);
+  inline void set_cooccurrence_dictionary_name(const char* value, size_t size);
+  inline ::std::string* mutable_cooccurrence_dictionary_name();
+  inline ::std::string* release_cooccurrence_dictionary_name();
+  inline void set_allocated_cooccurrence_dictionary_name(::std::string* cooccurrence_dictionary_name);
+
   // @@protoc_insertion_point(class_scope:artm.TopTokensScoreConfig)
  private:
   inline void set_has_num_tokens();
   inline void clear_has_num_tokens();
   inline void set_has_class_id();
   inline void clear_has_class_id();
+  inline void set_has_cooccurrence_dictionary_name();
+  inline void clear_has_cooccurrence_dictionary_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* class_id_;
+  static ::std::string* _default_class_id_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::std::string* cooccurrence_dictionary_name_;
   ::google::protobuf::int32 num_tokens_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5009,21 +5274,43 @@ class TopTokensScore : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_weight();
 
+  // optional .artm.FloatArray coherence = 6;
+  inline bool has_coherence() const;
+  inline void clear_coherence();
+  static const int kCoherenceFieldNumber = 6;
+  inline const ::artm::FloatArray& coherence() const;
+  inline ::artm::FloatArray* mutable_coherence();
+  inline ::artm::FloatArray* release_coherence();
+  inline void set_allocated_coherence(::artm::FloatArray* coherence);
+
+  // optional float average_coherence = 7;
+  inline bool has_average_coherence() const;
+  inline void clear_average_coherence();
+  static const int kAverageCoherenceFieldNumber = 7;
+  inline float average_coherence() const;
+  inline void set_average_coherence(float value);
+
   // @@protoc_insertion_point(class_scope:artm.TopTokensScore)
  private:
   inline void set_has_num_entries();
   inline void clear_has_num_entries();
+  inline void set_has_coherence();
+  inline void clear_has_coherence();
+  inline void set_has_average_coherence();
+  inline void clear_has_average_coherence();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
   ::google::protobuf::RepeatedPtrField< ::std::string> token_;
-  ::google::protobuf::RepeatedField< float > weight_;
   ::google::protobuf::int32 num_entries_;
+  float average_coherence_;
+  ::google::protobuf::RepeatedField< float > weight_;
+  ::artm::FloatArray* coherence_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5321,7 +5608,7 @@ class TopicKernelScoreConfig : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
-  // optional string class_id = 2;
+  // optional string class_id = 2 [default = "@default_class"];
   inline bool has_class_id() const;
   inline void clear_class_id();
   static const int kClassIdFieldNumber = 2;
@@ -5356,6 +5643,18 @@ class TopicKernelScoreConfig : public ::google::protobuf::Message {
   inline double probability_mass_threshold() const;
   inline void set_probability_mass_threshold(double value);
 
+  // optional string cooccurrence_dictionary_name = 5;
+  inline bool has_cooccurrence_dictionary_name() const;
+  inline void clear_cooccurrence_dictionary_name();
+  static const int kCooccurrenceDictionaryNameFieldNumber = 5;
+  inline const ::std::string& cooccurrence_dictionary_name() const;
+  inline void set_cooccurrence_dictionary_name(const ::std::string& value);
+  inline void set_cooccurrence_dictionary_name(const char* value);
+  inline void set_cooccurrence_dictionary_name(const char* value, size_t size);
+  inline ::std::string* mutable_cooccurrence_dictionary_name();
+  inline ::std::string* release_cooccurrence_dictionary_name();
+  inline void set_allocated_cooccurrence_dictionary_name(::std::string* cooccurrence_dictionary_name);
+
   // @@protoc_insertion_point(class_scope:artm.TopicKernelScoreConfig)
  private:
   inline void set_has_eps();
@@ -5364,16 +5663,20 @@ class TopicKernelScoreConfig : public ::google::protobuf::Message {
   inline void clear_has_class_id();
   inline void set_has_probability_mass_threshold();
   inline void clear_has_probability_mass_threshold();
+  inline void set_has_cooccurrence_dictionary_name();
+  inline void clear_has_cooccurrence_dictionary_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* class_id_;
+  static ::std::string* _default_class_id_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   double probability_mass_threshold_;
+  ::std::string* cooccurrence_dictionary_name_;
   float eps_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5486,6 +5789,34 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline double average_kernel_contrast() const;
   inline void set_average_kernel_contrast(double value);
 
+  // optional .artm.DoubleArray coherence = 7;
+  inline bool has_coherence() const;
+  inline void clear_coherence();
+  static const int kCoherenceFieldNumber = 7;
+  inline const ::artm::DoubleArray& coherence() const;
+  inline ::artm::DoubleArray* mutable_coherence();
+  inline ::artm::DoubleArray* release_coherence();
+  inline void set_allocated_coherence(::artm::DoubleArray* coherence);
+
+  // optional float average_coherence = 8;
+  inline bool has_average_coherence() const;
+  inline void clear_average_coherence();
+  static const int kAverageCoherenceFieldNumber = 8;
+  inline float average_coherence() const;
+  inline void set_average_coherence(float value);
+
+  // repeated .artm.StringArray kernel_tokens = 9;
+  inline int kernel_tokens_size() const;
+  inline void clear_kernel_tokens();
+  static const int kKernelTokensFieldNumber = 9;
+  inline const ::artm::StringArray& kernel_tokens(int index) const;
+  inline ::artm::StringArray* mutable_kernel_tokens(int index);
+  inline ::artm::StringArray* add_kernel_tokens();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::StringArray >&
+      kernel_tokens() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
+      mutable_kernel_tokens();
+
   // @@protoc_insertion_point(class_scope:artm.TopicKernelScore)
  private:
   inline void set_has_kernel_size();
@@ -5500,6 +5831,10 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline void clear_has_average_kernel_purity();
   inline void set_has_average_kernel_contrast();
   inline void clear_has_average_kernel_contrast();
+  inline void set_has_coherence();
+  inline void clear_has_coherence();
+  inline void set_has_average_coherence();
+  inline void clear_has_average_coherence();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5509,9 +5844,12 @@ class TopicKernelScore : public ::google::protobuf::Message {
   double average_kernel_size_;
   double average_kernel_purity_;
   double average_kernel_contrast_;
+  ::artm::DoubleArray* coherence_;
+  ::google::protobuf::RepeatedPtrField< ::artm::StringArray > kernel_tokens_;
+  float average_coherence_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6149,22 +6487,10 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 num_items_per_batch() const;
   inline void set_num_items_per_batch(::google::protobuf::int32 value);
 
-  // optional string cooccurrence_file_name = 7;
-  inline bool has_cooccurrence_file_name() const;
-  inline void clear_cooccurrence_file_name();
-  static const int kCooccurrenceFileNameFieldNumber = 7;
-  inline const ::std::string& cooccurrence_file_name() const;
-  inline void set_cooccurrence_file_name(const ::std::string& value);
-  inline void set_cooccurrence_file_name(const char* value);
-  inline void set_cooccurrence_file_name(const char* value, size_t size);
-  inline ::std::string* mutable_cooccurrence_file_name();
-  inline ::std::string* release_cooccurrence_file_name();
-  inline void set_allocated_cooccurrence_file_name(::std::string* cooccurrence_file_name);
-
-  // repeated string cooccurrence_token = 8;
+  // repeated string cooccurrence_token = 7;
   inline int cooccurrence_token_size() const;
   inline void clear_cooccurrence_token();
-  static const int kCooccurrenceTokenFieldNumber = 8;
+  static const int kCooccurrenceTokenFieldNumber = 7;
   inline const ::std::string& cooccurrence_token(int index) const;
   inline ::std::string* mutable_cooccurrence_token(int index);
   inline void set_cooccurrence_token(int index, const ::std::string& value);
@@ -6177,12 +6503,19 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_token() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_token();
 
-  // optional bool use_unity_based_indices = 9 [default = true];
+  // optional bool use_unity_based_indices = 8 [default = true];
   inline bool has_use_unity_based_indices() const;
   inline void clear_use_unity_based_indices();
-  static const int kUseUnityBasedIndicesFieldNumber = 9;
+  static const int kUseUnityBasedIndicesFieldNumber = 8;
   inline bool use_unity_based_indices() const;
   inline void set_use_unity_based_indices(bool value);
+
+  // optional bool gather_cooc = 9 [default = false];
+  inline bool has_gather_cooc() const;
+  inline void clear_gather_cooc();
+  static const int kGatherCoocFieldNumber = 9;
+  inline bool gather_cooc() const;
+  inline void set_gather_cooc(bool value);
 
   // @@protoc_insertion_point(class_scope:artm.CollectionParserConfig)
  private:
@@ -6198,10 +6531,10 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline void clear_has_dictionary_file_name();
   inline void set_has_num_items_per_batch();
   inline void clear_has_num_items_per_batch();
-  inline void set_has_cooccurrence_file_name();
-  inline void clear_has_cooccurrence_file_name();
   inline void set_has_use_unity_based_indices();
   inline void clear_has_use_unity_based_indices();
+  inline void set_has_gather_cooc();
+  inline void clear_has_gather_cooc();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6211,9 +6544,9 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 num_items_per_batch_;
   ::std::string* target_folder_;
   ::std::string* dictionary_file_name_;
-  ::std::string* cooccurrence_file_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_token_;
   bool use_unity_based_indices_;
+  bool gather_cooc_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
@@ -11035,7 +11368,7 @@ inline void SpecifiedSparsePhiConfig::clear_has_mode() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void SpecifiedSparsePhiConfig::clear_mode() {
-  mode_ = 1;
+  mode_ = 0;
   clear_has_mode();
 }
 inline ::artm::SpecifiedSparsePhiConfig_Mode SpecifiedSparsePhiConfig::mode() const {
@@ -11045,6 +11378,168 @@ inline void SpecifiedSparsePhiConfig::set_mode(::artm::SpecifiedSparsePhiConfig_
   assert(::artm::SpecifiedSparsePhiConfig_Mode_IsValid(value));
   set_has_mode();
   mode_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// ImproveCoherencePhiConfig
+
+// repeated string topic_name = 1;
+inline int ImproveCoherencePhiConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void ImproveCoherencePhiConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& ImproveCoherencePhiConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* ImproveCoherencePhiConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void ImproveCoherencePhiConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void ImproveCoherencePhiConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void ImproveCoherencePhiConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImproveCoherencePhiConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void ImproveCoherencePhiConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void ImproveCoherencePhiConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void ImproveCoherencePhiConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ImproveCoherencePhiConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ImproveCoherencePhiConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated string class_id = 2;
+inline int ImproveCoherencePhiConfig::class_id_size() const {
+  return class_id_.size();
+}
+inline void ImproveCoherencePhiConfig::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& ImproveCoherencePhiConfig::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* ImproveCoherencePhiConfig::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void ImproveCoherencePhiConfig::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void ImproveCoherencePhiConfig::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void ImproveCoherencePhiConfig::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImproveCoherencePhiConfig::add_class_id() {
+  return class_id_.Add();
+}
+inline void ImproveCoherencePhiConfig::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void ImproveCoherencePhiConfig::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void ImproveCoherencePhiConfig::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ImproveCoherencePhiConfig::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ImproveCoherencePhiConfig::mutable_class_id() {
+  return &class_id_;
+}
+
+// optional string dictionary_name = 3;
+inline bool ImproveCoherencePhiConfig::has_dictionary_name() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ImproveCoherencePhiConfig::set_has_dictionary_name() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ImproveCoherencePhiConfig::clear_has_dictionary_name() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ImproveCoherencePhiConfig::clear_dictionary_name() {
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_->clear();
+  }
+  clear_has_dictionary_name();
+}
+inline const ::std::string& ImproveCoherencePhiConfig::dictionary_name() const {
+  return *dictionary_name_;
+}
+inline void ImproveCoherencePhiConfig::set_dictionary_name(const ::std::string& value) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(value);
+}
+inline void ImproveCoherencePhiConfig::set_dictionary_name(const char* value) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(value);
+}
+inline void ImproveCoherencePhiConfig::set_dictionary_name(const char* value, size_t size) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImproveCoherencePhiConfig::mutable_dictionary_name() {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  return dictionary_name_;
+}
+inline ::std::string* ImproveCoherencePhiConfig::release_dictionary_name() {
+  clear_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = dictionary_name_;
+    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImproveCoherencePhiConfig::set_allocated_dictionary_name(::std::string* dictionary_name) {
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_name_;
+  }
+  if (dictionary_name) {
+    set_has_dictionary_name();
+    dictionary_name_ = dictionary_name;
+  } else {
+    clear_has_dictionary_name();
+    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -11383,6 +11878,44 @@ inline void DictionaryConfig::set_total_items_count(::google::protobuf::int32 va
   total_items_count_ = value;
 }
 
+// optional .artm.DictionaryCoocurenceEntries cooc_entries = 5;
+inline bool DictionaryConfig::has_cooc_entries() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void DictionaryConfig::set_has_cooc_entries() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void DictionaryConfig::clear_has_cooc_entries() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void DictionaryConfig::clear_cooc_entries() {
+  if (cooc_entries_ != NULL) cooc_entries_->::artm::DictionaryCoocurenceEntries::Clear();
+  clear_has_cooc_entries();
+}
+inline const ::artm::DictionaryCoocurenceEntries& DictionaryConfig::cooc_entries() const {
+  return cooc_entries_ != NULL ? *cooc_entries_ : *default_instance_->cooc_entries_;
+}
+inline ::artm::DictionaryCoocurenceEntries* DictionaryConfig::mutable_cooc_entries() {
+  set_has_cooc_entries();
+  if (cooc_entries_ == NULL) cooc_entries_ = new ::artm::DictionaryCoocurenceEntries;
+  return cooc_entries_;
+}
+inline ::artm::DictionaryCoocurenceEntries* DictionaryConfig::release_cooc_entries() {
+  clear_has_cooc_entries();
+  ::artm::DictionaryCoocurenceEntries* temp = cooc_entries_;
+  cooc_entries_ = NULL;
+  return temp;
+}
+inline void DictionaryConfig::set_allocated_cooc_entries(::artm::DictionaryCoocurenceEntries* cooc_entries) {
+  delete cooc_entries_;
+  cooc_entries_ = cooc_entries;
+  if (cooc_entries) {
+    set_has_cooc_entries();
+  } else {
+    clear_has_cooc_entries();
+  }
+}
+
 // -------------------------------------------------------------------
 
 // DictionaryEntry
@@ -11673,6 +12206,85 @@ inline ::google::protobuf::int32 DictionaryEntry::items_count() const {
 inline void DictionaryEntry::set_items_count(::google::protobuf::int32 value) {
   set_has_items_count();
   items_count_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// DictionaryCoocurenceEntries
+
+// repeated int32 first_index = 1;
+inline int DictionaryCoocurenceEntries::first_index_size() const {
+  return first_index_.size();
+}
+inline void DictionaryCoocurenceEntries::clear_first_index() {
+  first_index_.Clear();
+}
+inline ::google::protobuf::int32 DictionaryCoocurenceEntries::first_index(int index) const {
+  return first_index_.Get(index);
+}
+inline void DictionaryCoocurenceEntries::set_first_index(int index, ::google::protobuf::int32 value) {
+  first_index_.Set(index, value);
+}
+inline void DictionaryCoocurenceEntries::add_first_index(::google::protobuf::int32 value) {
+  first_index_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+DictionaryCoocurenceEntries::first_index() const {
+  return first_index_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+DictionaryCoocurenceEntries::mutable_first_index() {
+  return &first_index_;
+}
+
+// repeated int32 second_index = 2;
+inline int DictionaryCoocurenceEntries::second_index_size() const {
+  return second_index_.size();
+}
+inline void DictionaryCoocurenceEntries::clear_second_index() {
+  second_index_.Clear();
+}
+inline ::google::protobuf::int32 DictionaryCoocurenceEntries::second_index(int index) const {
+  return second_index_.Get(index);
+}
+inline void DictionaryCoocurenceEntries::set_second_index(int index, ::google::protobuf::int32 value) {
+  second_index_.Set(index, value);
+}
+inline void DictionaryCoocurenceEntries::add_second_index(::google::protobuf::int32 value) {
+  second_index_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+DictionaryCoocurenceEntries::second_index() const {
+  return second_index_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+DictionaryCoocurenceEntries::mutable_second_index() {
+  return &second_index_;
+}
+
+// repeated float items_count = 3;
+inline int DictionaryCoocurenceEntries::items_count_size() const {
+  return items_count_.size();
+}
+inline void DictionaryCoocurenceEntries::clear_items_count() {
+  items_count_.Clear();
+}
+inline float DictionaryCoocurenceEntries::items_count(int index) const {
+  return items_count_.Get(index);
+}
+inline void DictionaryCoocurenceEntries::set_items_count(int index, float value) {
+  items_count_.Set(index, value);
+}
+inline void DictionaryCoocurenceEntries::add_items_count(float value) {
+  items_count_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DictionaryCoocurenceEntries::items_count() const {
+  return items_count_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DictionaryCoocurenceEntries::mutable_items_count() {
+  return &items_count_;
 }
 
 // -------------------------------------------------------------------
@@ -12820,7 +13432,7 @@ inline void SparsityPhiScoreConfig::set_eps(float value) {
   eps_ = value;
 }
 
-// optional string class_id = 2;
+// optional string class_id = 2 [default = "@default_class"];
 inline bool SparsityPhiScoreConfig::has_class_id() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -12831,8 +13443,8 @@ inline void SparsityPhiScoreConfig::clear_has_class_id() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void SparsityPhiScoreConfig::clear_class_id() {
-  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
-    class_id_->clear();
+  if (class_id_ != _default_class_id_) {
+    class_id_->assign(*_default_class_id_);
   }
   clear_has_class_id();
 }
@@ -12841,44 +13453,44 @@ inline const ::std::string& SparsityPhiScoreConfig::class_id() const {
 }
 inline void SparsityPhiScoreConfig::set_class_id(const ::std::string& value) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(value);
 }
 inline void SparsityPhiScoreConfig::set_class_id(const char* value) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(value);
 }
 inline void SparsityPhiScoreConfig::set_class_id(const char* value, size_t size) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* SparsityPhiScoreConfig::mutable_class_id() {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
-    class_id_ = new ::std::string;
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string(*_default_class_id_);
   }
   return class_id_;
 }
 inline ::std::string* SparsityPhiScoreConfig::release_class_id() {
   clear_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     return NULL;
   } else {
     ::std::string* temp = class_id_;
-    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
     return temp;
   }
 }
 inline void SparsityPhiScoreConfig::set_allocated_class_id(::std::string* class_id) {
-  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ != _default_class_id_) {
     delete class_id_;
   }
   if (class_id) {
@@ -12886,7 +13498,7 @@ inline void SparsityPhiScoreConfig::set_allocated_class_id(::std::string* class_
     class_id_ = class_id;
   } else {
     clear_has_class_id();
-    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
   }
 }
 
@@ -13200,7 +13812,7 @@ inline void TopTokensScoreConfig::set_num_tokens(::google::protobuf::int32 value
   num_tokens_ = value;
 }
 
-// optional string class_id = 2;
+// optional string class_id = 2 [default = "@default_class"];
 inline bool TopTokensScoreConfig::has_class_id() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -13211,8 +13823,8 @@ inline void TopTokensScoreConfig::clear_has_class_id() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void TopTokensScoreConfig::clear_class_id() {
-  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
-    class_id_->clear();
+  if (class_id_ != _default_class_id_) {
+    class_id_->assign(*_default_class_id_);
   }
   clear_has_class_id();
 }
@@ -13221,44 +13833,44 @@ inline const ::std::string& TopTokensScoreConfig::class_id() const {
 }
 inline void TopTokensScoreConfig::set_class_id(const ::std::string& value) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(value);
 }
 inline void TopTokensScoreConfig::set_class_id(const char* value) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(value);
 }
 inline void TopTokensScoreConfig::set_class_id(const char* value, size_t size) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* TopTokensScoreConfig::mutable_class_id() {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
-    class_id_ = new ::std::string;
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string(*_default_class_id_);
   }
   return class_id_;
 }
 inline ::std::string* TopTokensScoreConfig::release_class_id() {
   clear_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     return NULL;
   } else {
     ::std::string* temp = class_id_;
-    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
     return temp;
   }
 }
 inline void TopTokensScoreConfig::set_allocated_class_id(::std::string* class_id) {
-  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ != _default_class_id_) {
     delete class_id_;
   }
   if (class_id) {
@@ -13266,7 +13878,7 @@ inline void TopTokensScoreConfig::set_allocated_class_id(::std::string* class_id
     class_id_ = class_id;
   } else {
     clear_has_class_id();
-    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
   }
 }
 
@@ -13312,6 +13924,76 @@ TopTokensScoreConfig::topic_name() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 TopTokensScoreConfig::mutable_topic_name() {
   return &topic_name_;
+}
+
+// optional string cooccurrence_dictionary_name = 4;
+inline bool TopTokensScoreConfig::has_cooccurrence_dictionary_name() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void TopTokensScoreConfig::set_has_cooccurrence_dictionary_name() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void TopTokensScoreConfig::clear_has_cooccurrence_dictionary_name() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void TopTokensScoreConfig::clear_cooccurrence_dictionary_name() {
+  if (cooccurrence_dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_->clear();
+  }
+  clear_has_cooccurrence_dictionary_name();
+}
+inline const ::std::string& TopTokensScoreConfig::cooccurrence_dictionary_name() const {
+  return *cooccurrence_dictionary_name_;
+}
+inline void TopTokensScoreConfig::set_cooccurrence_dictionary_name(const ::std::string& value) {
+  set_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_ = new ::std::string;
+  }
+  cooccurrence_dictionary_name_->assign(value);
+}
+inline void TopTokensScoreConfig::set_cooccurrence_dictionary_name(const char* value) {
+  set_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_ = new ::std::string;
+  }
+  cooccurrence_dictionary_name_->assign(value);
+}
+inline void TopTokensScoreConfig::set_cooccurrence_dictionary_name(const char* value, size_t size) {
+  set_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_ = new ::std::string;
+  }
+  cooccurrence_dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopTokensScoreConfig::mutable_cooccurrence_dictionary_name() {
+  set_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_ = new ::std::string;
+  }
+  return cooccurrence_dictionary_name_;
+}
+inline ::std::string* TopTokensScoreConfig::release_cooccurrence_dictionary_name() {
+  clear_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = cooccurrence_dictionary_name_;
+    cooccurrence_dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void TopTokensScoreConfig::set_allocated_cooccurrence_dictionary_name(::std::string* cooccurrence_dictionary_name) {
+  if (cooccurrence_dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete cooccurrence_dictionary_name_;
+  }
+  if (cooccurrence_dictionary_name) {
+    set_has_cooccurrence_dictionary_name();
+    cooccurrence_dictionary_name_ = cooccurrence_dictionary_name;
+  } else {
+    clear_has_cooccurrence_dictionary_name();
+    cooccurrence_dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -13476,6 +14158,66 @@ TopTokensScore::weight() const {
 inline ::google::protobuf::RepeatedField< float >*
 TopTokensScore::mutable_weight() {
   return &weight_;
+}
+
+// optional .artm.FloatArray coherence = 6;
+inline bool TopTokensScore::has_coherence() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void TopTokensScore::set_has_coherence() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void TopTokensScore::clear_has_coherence() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void TopTokensScore::clear_coherence() {
+  if (coherence_ != NULL) coherence_->::artm::FloatArray::Clear();
+  clear_has_coherence();
+}
+inline const ::artm::FloatArray& TopTokensScore::coherence() const {
+  return coherence_ != NULL ? *coherence_ : *default_instance_->coherence_;
+}
+inline ::artm::FloatArray* TopTokensScore::mutable_coherence() {
+  set_has_coherence();
+  if (coherence_ == NULL) coherence_ = new ::artm::FloatArray;
+  return coherence_;
+}
+inline ::artm::FloatArray* TopTokensScore::release_coherence() {
+  clear_has_coherence();
+  ::artm::FloatArray* temp = coherence_;
+  coherence_ = NULL;
+  return temp;
+}
+inline void TopTokensScore::set_allocated_coherence(::artm::FloatArray* coherence) {
+  delete coherence_;
+  coherence_ = coherence;
+  if (coherence) {
+    set_has_coherence();
+  } else {
+    clear_has_coherence();
+  }
+}
+
+// optional float average_coherence = 7;
+inline bool TopTokensScore::has_average_coherence() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void TopTokensScore::set_has_average_coherence() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void TopTokensScore::clear_has_average_coherence() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void TopTokensScore::clear_average_coherence() {
+  average_coherence_ = 0;
+  clear_has_average_coherence();
+}
+inline float TopTokensScore::average_coherence() const {
+  return average_coherence_;
+}
+inline void TopTokensScore::set_average_coherence(float value) {
+  set_has_average_coherence();
+  average_coherence_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -13749,7 +14491,7 @@ inline void TopicKernelScoreConfig::set_eps(float value) {
   eps_ = value;
 }
 
-// optional string class_id = 2;
+// optional string class_id = 2 [default = "@default_class"];
 inline bool TopicKernelScoreConfig::has_class_id() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -13760,8 +14502,8 @@ inline void TopicKernelScoreConfig::clear_has_class_id() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void TopicKernelScoreConfig::clear_class_id() {
-  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
-    class_id_->clear();
+  if (class_id_ != _default_class_id_) {
+    class_id_->assign(*_default_class_id_);
   }
   clear_has_class_id();
 }
@@ -13770,44 +14512,44 @@ inline const ::std::string& TopicKernelScoreConfig::class_id() const {
 }
 inline void TopicKernelScoreConfig::set_class_id(const ::std::string& value) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(value);
 }
 inline void TopicKernelScoreConfig::set_class_id(const char* value) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(value);
 }
 inline void TopicKernelScoreConfig::set_class_id(const char* value, size_t size) {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     class_id_ = new ::std::string;
   }
   class_id_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* TopicKernelScoreConfig::mutable_class_id() {
   set_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
-    class_id_ = new ::std::string;
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string(*_default_class_id_);
   }
   return class_id_;
 }
 inline ::std::string* TopicKernelScoreConfig::release_class_id() {
   clear_has_class_id();
-  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ == _default_class_id_) {
     return NULL;
   } else {
     ::std::string* temp = class_id_;
-    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
     return temp;
   }
 }
 inline void TopicKernelScoreConfig::set_allocated_class_id(::std::string* class_id) {
-  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+  if (class_id_ != _default_class_id_) {
     delete class_id_;
   }
   if (class_id) {
@@ -13815,7 +14557,7 @@ inline void TopicKernelScoreConfig::set_allocated_class_id(::std::string* class_
     class_id_ = class_id;
   } else {
     clear_has_class_id();
-    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
   }
 }
 
@@ -13883,6 +14625,76 @@ inline double TopicKernelScoreConfig::probability_mass_threshold() const {
 inline void TopicKernelScoreConfig::set_probability_mass_threshold(double value) {
   set_has_probability_mass_threshold();
   probability_mass_threshold_ = value;
+}
+
+// optional string cooccurrence_dictionary_name = 5;
+inline bool TopicKernelScoreConfig::has_cooccurrence_dictionary_name() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void TopicKernelScoreConfig::set_has_cooccurrence_dictionary_name() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void TopicKernelScoreConfig::clear_has_cooccurrence_dictionary_name() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void TopicKernelScoreConfig::clear_cooccurrence_dictionary_name() {
+  if (cooccurrence_dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_->clear();
+  }
+  clear_has_cooccurrence_dictionary_name();
+}
+inline const ::std::string& TopicKernelScoreConfig::cooccurrence_dictionary_name() const {
+  return *cooccurrence_dictionary_name_;
+}
+inline void TopicKernelScoreConfig::set_cooccurrence_dictionary_name(const ::std::string& value) {
+  set_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_ = new ::std::string;
+  }
+  cooccurrence_dictionary_name_->assign(value);
+}
+inline void TopicKernelScoreConfig::set_cooccurrence_dictionary_name(const char* value) {
+  set_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_ = new ::std::string;
+  }
+  cooccurrence_dictionary_name_->assign(value);
+}
+inline void TopicKernelScoreConfig::set_cooccurrence_dictionary_name(const char* value, size_t size) {
+  set_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_ = new ::std::string;
+  }
+  cooccurrence_dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicKernelScoreConfig::mutable_cooccurrence_dictionary_name() {
+  set_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    cooccurrence_dictionary_name_ = new ::std::string;
+  }
+  return cooccurrence_dictionary_name_;
+}
+inline ::std::string* TopicKernelScoreConfig::release_cooccurrence_dictionary_name() {
+  clear_has_cooccurrence_dictionary_name();
+  if (cooccurrence_dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = cooccurrence_dictionary_name_;
+    cooccurrence_dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void TopicKernelScoreConfig::set_allocated_cooccurrence_dictionary_name(::std::string* cooccurrence_dictionary_name) {
+  if (cooccurrence_dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete cooccurrence_dictionary_name_;
+  }
+  if (cooccurrence_dictionary_name) {
+    set_has_cooccurrence_dictionary_name();
+    cooccurrence_dictionary_name_ = cooccurrence_dictionary_name;
+  } else {
+    clear_has_cooccurrence_dictionary_name();
+    cooccurrence_dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -14067,6 +14879,91 @@ inline double TopicKernelScore::average_kernel_contrast() const {
 inline void TopicKernelScore::set_average_kernel_contrast(double value) {
   set_has_average_kernel_contrast();
   average_kernel_contrast_ = value;
+}
+
+// optional .artm.DoubleArray coherence = 7;
+inline bool TopicKernelScore::has_coherence() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void TopicKernelScore::set_has_coherence() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void TopicKernelScore::clear_has_coherence() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void TopicKernelScore::clear_coherence() {
+  if (coherence_ != NULL) coherence_->::artm::DoubleArray::Clear();
+  clear_has_coherence();
+}
+inline const ::artm::DoubleArray& TopicKernelScore::coherence() const {
+  return coherence_ != NULL ? *coherence_ : *default_instance_->coherence_;
+}
+inline ::artm::DoubleArray* TopicKernelScore::mutable_coherence() {
+  set_has_coherence();
+  if (coherence_ == NULL) coherence_ = new ::artm::DoubleArray;
+  return coherence_;
+}
+inline ::artm::DoubleArray* TopicKernelScore::release_coherence() {
+  clear_has_coherence();
+  ::artm::DoubleArray* temp = coherence_;
+  coherence_ = NULL;
+  return temp;
+}
+inline void TopicKernelScore::set_allocated_coherence(::artm::DoubleArray* coherence) {
+  delete coherence_;
+  coherence_ = coherence;
+  if (coherence) {
+    set_has_coherence();
+  } else {
+    clear_has_coherence();
+  }
+}
+
+// optional float average_coherence = 8;
+inline bool TopicKernelScore::has_average_coherence() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void TopicKernelScore::set_has_average_coherence() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void TopicKernelScore::clear_has_average_coherence() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void TopicKernelScore::clear_average_coherence() {
+  average_coherence_ = 0;
+  clear_has_average_coherence();
+}
+inline float TopicKernelScore::average_coherence() const {
+  return average_coherence_;
+}
+inline void TopicKernelScore::set_average_coherence(float value) {
+  set_has_average_coherence();
+  average_coherence_ = value;
+}
+
+// repeated .artm.StringArray kernel_tokens = 9;
+inline int TopicKernelScore::kernel_tokens_size() const {
+  return kernel_tokens_.size();
+}
+inline void TopicKernelScore::clear_kernel_tokens() {
+  kernel_tokens_.Clear();
+}
+inline const ::artm::StringArray& TopicKernelScore::kernel_tokens(int index) const {
+  return kernel_tokens_.Get(index);
+}
+inline ::artm::StringArray* TopicKernelScore::mutable_kernel_tokens(int index) {
+  return kernel_tokens_.Mutable(index);
+}
+inline ::artm::StringArray* TopicKernelScore::add_kernel_tokens() {
+  return kernel_tokens_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::StringArray >&
+TopicKernelScore::kernel_tokens() const {
+  return kernel_tokens_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
+TopicKernelScore::mutable_kernel_tokens() {
+  return &kernel_tokens_;
 }
 
 // -------------------------------------------------------------------
@@ -15061,77 +15958,7 @@ inline void CollectionParserConfig::set_num_items_per_batch(::google::protobuf::
   num_items_per_batch_ = value;
 }
 
-// optional string cooccurrence_file_name = 7;
-inline bool CollectionParserConfig::has_cooccurrence_file_name() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void CollectionParserConfig::set_has_cooccurrence_file_name() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void CollectionParserConfig::clear_has_cooccurrence_file_name() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void CollectionParserConfig::clear_cooccurrence_file_name() {
-  if (cooccurrence_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    cooccurrence_file_name_->clear();
-  }
-  clear_has_cooccurrence_file_name();
-}
-inline const ::std::string& CollectionParserConfig::cooccurrence_file_name() const {
-  return *cooccurrence_file_name_;
-}
-inline void CollectionParserConfig::set_cooccurrence_file_name(const ::std::string& value) {
-  set_has_cooccurrence_file_name();
-  if (cooccurrence_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    cooccurrence_file_name_ = new ::std::string;
-  }
-  cooccurrence_file_name_->assign(value);
-}
-inline void CollectionParserConfig::set_cooccurrence_file_name(const char* value) {
-  set_has_cooccurrence_file_name();
-  if (cooccurrence_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    cooccurrence_file_name_ = new ::std::string;
-  }
-  cooccurrence_file_name_->assign(value);
-}
-inline void CollectionParserConfig::set_cooccurrence_file_name(const char* value, size_t size) {
-  set_has_cooccurrence_file_name();
-  if (cooccurrence_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    cooccurrence_file_name_ = new ::std::string;
-  }
-  cooccurrence_file_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* CollectionParserConfig::mutable_cooccurrence_file_name() {
-  set_has_cooccurrence_file_name();
-  if (cooccurrence_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    cooccurrence_file_name_ = new ::std::string;
-  }
-  return cooccurrence_file_name_;
-}
-inline ::std::string* CollectionParserConfig::release_cooccurrence_file_name() {
-  clear_has_cooccurrence_file_name();
-  if (cooccurrence_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = cooccurrence_file_name_;
-    cooccurrence_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void CollectionParserConfig::set_allocated_cooccurrence_file_name(::std::string* cooccurrence_file_name) {
-  if (cooccurrence_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete cooccurrence_file_name_;
-  }
-  if (cooccurrence_file_name) {
-    set_has_cooccurrence_file_name();
-    cooccurrence_file_name_ = cooccurrence_file_name;
-  } else {
-    clear_has_cooccurrence_file_name();
-    cooccurrence_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// repeated string cooccurrence_token = 8;
+// repeated string cooccurrence_token = 7;
 inline int CollectionParserConfig::cooccurrence_token_size() const {
   return cooccurrence_token_.size();
 }
@@ -15175,15 +16002,15 @@ CollectionParserConfig::mutable_cooccurrence_token() {
   return &cooccurrence_token_;
 }
 
-// optional bool use_unity_based_indices = 9 [default = true];
+// optional bool use_unity_based_indices = 8 [default = true];
 inline bool CollectionParserConfig::has_use_unity_based_indices() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void CollectionParserConfig::set_has_use_unity_based_indices() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void CollectionParserConfig::clear_has_use_unity_based_indices() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void CollectionParserConfig::clear_use_unity_based_indices() {
   use_unity_based_indices_ = true;
@@ -15195,6 +16022,28 @@ inline bool CollectionParserConfig::use_unity_based_indices() const {
 inline void CollectionParserConfig::set_use_unity_based_indices(bool value) {
   set_has_use_unity_based_indices();
   use_unity_based_indices_ = value;
+}
+
+// optional bool gather_cooc = 9 [default = false];
+inline bool CollectionParserConfig::has_gather_cooc() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void CollectionParserConfig::set_has_gather_cooc() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void CollectionParserConfig::clear_has_gather_cooc() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void CollectionParserConfig::clear_gather_cooc() {
+  gather_cooc_ = false;
+  clear_has_gather_cooc();
+}
+inline bool CollectionParserConfig::gather_cooc() const {
+  return gather_cooc_;
+}
+inline void CollectionParserConfig::set_gather_cooc(bool value) {
+  set_has_gather_cooc();
+  gather_cooc_ = value;
 }
 
 // -------------------------------------------------------------------

@@ -21,20 +21,21 @@
 #include "artm/core/instance_schema.h"
 
 #include "artm/regularizer_interface.h"
-#include "artm/regularizer_sandbox/decorrelator_phi.h"
-#include "artm/regularizer_sandbox/multilanguage_phi.h"
-#include "artm/regularizer_sandbox/smooth_sparse_theta.h"
-#include "artm/regularizer_sandbox/smooth_sparse_phi.h"
-#include "artm/regularizer_sandbox/label_regularization_phi.h"
-#include "artm/regularizer_sandbox/specified_sparse_phi.h"
+#include "artm/regularizer/decorrelator_phi.h"
+#include "artm/regularizer/multilanguage_phi.h"
+#include "artm/regularizer/smooth_sparse_theta.h"
+#include "artm/regularizer/smooth_sparse_phi.h"
+#include "artm/regularizer/label_regularization_phi.h"
+#include "artm/regularizer/specified_sparse_phi.h"
+#include "artm/regularizer/improve_coherence_phi.h"
 
-#include "artm/score_sandbox/items_processed.h"
-#include "artm/score_sandbox/sparsity_theta.h"
-#include "artm/score_sandbox/sparsity_phi.h"
-#include "artm/score_sandbox/top_tokens.h"
-#include "artm/score_sandbox/topic_kernel.h"
-#include "artm/score_sandbox/theta_snippet.h"
-#include "artm/score_sandbox/perplexity.h"
+#include "artm/score/items_processed.h"
+#include "artm/score/sparsity_theta.h"
+#include "artm/score/sparsity_phi.h"
+#include "artm/score/top_tokens.h"
+#include "artm/score/topic_kernel.h"
+#include "artm/score/theta_snippet.h"
+#include "artm/score/perplexity.h"
 
 #define CREATE_OR_RECONFIGURE_REGULARIZER(ConfigType, RegularizerType) {                      \
   ConfigType regularizer_config;                                                              \
@@ -170,37 +171,43 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
   switch (regularizer_type) {
     case artm::RegularizerConfig_Type_SmoothSparseTheta: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothSparseThetaConfig,
-                                        ::artm::regularizer_sandbox::SmoothSparseTheta);
+                                        ::artm::regularizer::SmoothSparseTheta);
       break;
     }
 
     case artm::RegularizerConfig_Type_SmoothSparsePhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothSparsePhiConfig,
-                                        ::artm::regularizer_sandbox::SmoothSparsePhi);
+                                        ::artm::regularizer::SmoothSparsePhi);
       break;
     }
 
     case artm::RegularizerConfig_Type_LabelRegularizationPhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::LabelRegularizationPhiConfig,
-                                        ::artm::regularizer_sandbox::LabelRegularizationPhi);
+                                        ::artm::regularizer::LabelRegularizationPhi);
       break;
     }
 
     case artm::RegularizerConfig_Type_DecorrelatorPhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::DecorrelatorPhiConfig,
-                                        ::artm::regularizer_sandbox::DecorrelatorPhi);
+                                        ::artm::regularizer::DecorrelatorPhi);
       break;
     }
 
     case artm::RegularizerConfig_Type_MultiLanguagePhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::MultiLanguagePhiConfig,
-                                        ::artm::regularizer_sandbox::MultiLanguagePhi);
+                                        ::artm::regularizer::MultiLanguagePhi);
       break;
     }
 
     case artm::RegularizerConfig_Type_SpecifiedSparsePhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SpecifiedSparsePhiConfig,
-                                        ::artm::regularizer_sandbox::SpecifiedSparsePhi);
+                                        ::artm::regularizer::SpecifiedSparsePhi);
+      break;
+    }
+
+    case artm::RegularizerConfig_Type_ImproveCoherencePhi: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::ImproveCoherencePhiConfig,
+                                        ::artm::regularizer::ImproveCoherencePhi);
       break;
     }
 
@@ -230,43 +237,43 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
   switch (score_type) {
     case artm::ScoreConfig_Type_Perplexity: {
       CREATE_SCORE_CALCULATOR(::artm::PerplexityScoreConfig,
-                              ::artm::score_sandbox::Perplexity);
+                              ::artm::score::Perplexity);
       break;
     }
 
     case artm::ScoreConfig_Type_SparsityTheta: {
       CREATE_SCORE_CALCULATOR(::artm::SparsityThetaScoreConfig,
-                              ::artm::score_sandbox::SparsityTheta);
+                              ::artm::score::SparsityTheta);
       break;
     }
 
     case artm::ScoreConfig_Type_SparsityPhi: {
       CREATE_SCORE_CALCULATOR(::artm::SparsityPhiScoreConfig,
-                              ::artm::score_sandbox::SparsityPhi);
+                              ::artm::score::SparsityPhi);
       break;
     }
 
     case artm::ScoreConfig_Type_ItemsProcessed: {
       CREATE_SCORE_CALCULATOR(::artm::ItemsProcessedScoreConfig,
-                              ::artm::score_sandbox::ItemsProcessed);
+                              ::artm::score::ItemsProcessed);
       break;
     }
 
     case artm::ScoreConfig_Type_TopTokens: {
       CREATE_SCORE_CALCULATOR(::artm::TopTokensScoreConfig,
-                              ::artm::score_sandbox::TopTokens);
+                              ::artm::score::TopTokens);
       break;
     }
 
     case artm::ScoreConfig_Type_ThetaSnippet: {
       CREATE_SCORE_CALCULATOR(::artm::ThetaSnippetScoreConfig,
-                              ::artm::score_sandbox::ThetaSnippet);
+                              ::artm::score::ThetaSnippet);
       break;
     }
 
     case artm::ScoreConfig_Type_TopicKernel: {
       CREATE_SCORE_CALCULATOR(::artm::TopicKernelScoreConfig,
-                              ::artm::score_sandbox::TopicKernel);
+                              ::artm::score::TopicKernel);
       break;
     }
 
@@ -284,18 +291,7 @@ void Instance::DisposeRegularizer(const std::string& name) {
 }
 
 void Instance::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
-  auto dictionary = std::make_shared<DictionaryMap>();
-  for (int index = 0; index < config.entry_size(); ++index) {
-    const ::artm::DictionaryEntry& entry = config.entry(index);
-    ClassId class_id;
-    if (entry.has_class_id()) {
-      class_id = entry.class_id();
-    } else {
-      class_id = DefaultClass;
-    }
-    dictionary->insert(std::make_pair(Token(class_id, entry.key_token()), entry));
-  }
-
+  auto dictionary = std::make_shared<Dictionary>(Dictionary(config));
   dictionaries_.set(config.name(), dictionary);
 }
 
