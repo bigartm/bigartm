@@ -42,8 +42,10 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::TopicModel&
   if (config_.has_class_id())
     class_id = config_.class_id();
 
+  int class_tokens_count = 0;
   for (int token_index = 0; token_index < tokens_count; token_index++) {
     if (topic_model.token(token_index).class_id == class_id) {
+      class_tokens_count++;
       ::artm::core::TopicWeightIterator topic_iter =
           topic_model.GetTopicWeightIterator(token_index);
 
@@ -60,7 +62,7 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::TopicModel&
   std::shared_ptr<Score> retval(sparsity_phi_score);
 
   sparsity_phi_score->set_zero_tokens(zero_tokens_count);
-  sparsity_phi_score->set_total_tokens(tokens_count * topics_to_score_size);
+  sparsity_phi_score->set_total_tokens(class_tokens_count * topics_to_score_size);
   sparsity_phi_score->set_value(static_cast<double>(sparsity_phi_score->zero_tokens()) /
                                 static_cast<double>(sparsity_phi_score->total_tokens()));
 
