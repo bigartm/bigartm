@@ -57,6 +57,11 @@ InitializeModelArgs_SourceType_Dictionary = 0
 InitializeModelArgs_SourceType_Batches = 1
 SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
 SpecifiedSparsePhiConfig_Mode_SparseTokens = 1
+TopicModel_OperationType_Initialize = 0
+TopicModel_OperationType_Increment = 1
+TopicModel_OperationType_Overwrite = 2
+TopicModel_OperationType_Remove = 3
+TopicModel_OperationType_Ignore = 4
 
 #################################################################################
 
