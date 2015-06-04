@@ -5,6 +5,7 @@
 
 import artm.messages_pb2, artm.library, random, uuid
 
+
 # Generate small collection of random items
 num_tokens = 60
 num_items = 100
