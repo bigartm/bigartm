@@ -18,6 +18,7 @@
 #include "boost/utility.hpp"
 
 #include "artm/core/common.h"
+#include "artm/core/phi_matrix.h"
 #include "artm/core/dictionary.h"
 #include "artm/core/sync_event.h"
 #include "artm/core/thread_safe_holder.h"
@@ -49,6 +50,9 @@ class Merger : boost::noncopyable {
   void InitializeModel(const InitializeModelArgs& args);
 
   std::shared_ptr<const ::artm::core::TopicModel> GetLatestTopicModel(ModelName model_name) const;
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(ModelName model_name) const;
+  void SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix);
+
   bool RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                   ::artm::TopicModel* topic_model) const;
   void RequestRegularizerState(RegularizerName regularizer_name,
@@ -106,6 +110,7 @@ class Merger : boost::noncopyable {
 
   ThreadSafeCollectionHolder<ModelName, TopicModel> topic_model_;
   std::map<ModelName, std::shared_ptr<TopicModel>> topic_model_inc_;
+  ThreadSafeCollectionHolder<ModelName, PhiMatrix> phi_matrix_;
   ThreadSafeHolder<InstanceSchema>* schema_;
   ThreadSafeCollectionHolder<ModelName, artm::ModelConfig> target_model_config_;
   ScoresMerger scores_merger_;

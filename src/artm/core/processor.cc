@@ -605,9 +605,10 @@ void Processor::FindThetaMatrix(const Batch& batch,
 
   std::string model_name = args.has_model_name() ? args.model_name() : score_args.model_name();
   std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
-  if (topic_model == nullptr)
+  std::shared_ptr<const PhiMatrix> phi_matrix = merger_.GetPhiMatrix(model_name);
+  if (topic_model == nullptr && phi_matrix == nullptr)
     BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find topic model", model_name));
-  const PhiMatrix& p_wt = topic_model->GetPwt();
+  const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
 
   std::shared_ptr<InstanceSchema> schema = schema_.get();
   const ModelConfig& model_config = schema->model_config(model_name);
@@ -756,7 +757,8 @@ void Processor::ThreadFunction() {
               "model.class_id_size() != model.class_weight_size()"));
 
         std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
-        if (topic_model == nullptr) {
+        std::shared_ptr<const PhiMatrix> phi_matrix = merger_.GetPhiMatrix(model_name);
+        if (topic_model == nullptr && phi_matrix == nullptr) {
           LOG(ERROR) << "Model " << model_name << " does not exist.";
           continue;
         }

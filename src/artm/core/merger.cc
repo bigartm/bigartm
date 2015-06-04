@@ -34,6 +34,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                const ::artm::core::ThreadSafeDictionaryCollection* dictionaries)
     : topic_model_(),
       topic_model_inc_(),
+      phi_matrix_(),
       schema_(schema),
       target_model_config_(),
       scores_merger_(schema, &topic_model_, &phi_matrix_),
@@ -57,6 +58,7 @@ Merger::~Merger() {
 
 void Merger::DisposeModel(ModelName model_name) {
   topic_model_.erase(model_name);
+  phi_matrix_.erase(model_name);
   internal_task_queue_.push(MergerTask(kDisposeModel, model_name, 0.0f, 0.0f, false, nullptr));
 }
 
@@ -333,9 +335,18 @@ void Merger::ResetScores(ModelName model_name) {
 bool Merger::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                         ::artm::TopicModel* topic_model) const {
   auto ttm = this->GetLatestTopicModel(get_model_args.model_name());
-  if (ttm == nullptr) return false;
-  ttm->RetrieveExternalTopicModel(get_model_args, topic_model);
-  return true;
+  if (ttm != nullptr) {
+    ttm->RetrieveExternalTopicModel(get_model_args, topic_model);
+    return true;
+  }
+
+  auto phi_matrix = this->GetPhiMatrix(get_model_args.model_name());
+  if (phi_matrix != nullptr) {
+    PhiMatrixOperations::RetrieveExternalTopicModel(*phi_matrix, get_model_args, topic_model);
+    return true;
+  }
+
+  return false;
 }
 
 void Merger::RequestRegularizerState(RegularizerName regularizer_name,
@@ -555,9 +566,12 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   int token_duplicates = 0;
 
   auto schema = schema_->get();
-  const ModelConfig& model = schema->model_config(args.model_name());
+  const ModelConfig* model_config = nullptr;
+  if (schema->has_model_config(args.model_name()))
+    model_config = &schema->model_config(args.model_name());
+
   auto new_ttm = std::make_shared< ::artm::core::TopicModel>(
-      model.name(), model.topic_name());
+    args.model_name(), (model_config != nullptr) ? model_config->topic_name() : args.topic_name());
 
   if (args.source_type() == InitializeModelArgs_SourceType_Dictionary) {
     std::shared_ptr<Dictionary> dict = dictionaries_->get(args.dictionary_name());
@@ -568,7 +582,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     }
 
     LOG(INFO) << "InitializeModel() with "
-      << model.topics_count() << " topics and "
+      << new_ttm->topic_size() << " topics and "
       << dict->size() << " tokens";
 
     for (int index = 0; index < dict->size(); ++index) {

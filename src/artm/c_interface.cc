@@ -286,7 +286,7 @@ int ArtmInitializeModel(int master_id, int length, const char* init_model_args) 
   try {
     artm::InitializeModelArgs args;
     ParseFromArray(init_model_args, length, &args);
-    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
     master_component(master_id)->InitializeModel(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;

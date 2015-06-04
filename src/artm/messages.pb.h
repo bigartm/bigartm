@@ -6784,29 +6784,17 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >*
       mutable_filter();
 
-  // optional string pwt_target_name = 6;
-  inline bool has_pwt_target_name() const;
-  inline void clear_pwt_target_name();
-  static const int kPwtTargetNameFieldNumber = 6;
-  inline const ::std::string& pwt_target_name() const;
-  inline void set_pwt_target_name(const ::std::string& value);
-  inline void set_pwt_target_name(const char* value);
-  inline void set_pwt_target_name(const char* value, size_t size);
-  inline ::std::string* mutable_pwt_target_name();
-  inline ::std::string* release_pwt_target_name();
-  inline void set_allocated_pwt_target_name(::std::string* pwt_target_name);
-
-  // optional int32 topics_count = 7;
+  // optional int32 topics_count = 6;
   inline bool has_topics_count() const;
   inline void clear_topics_count();
-  static const int kTopicsCountFieldNumber = 7;
+  static const int kTopicsCountFieldNumber = 6;
   inline ::google::protobuf::int32 topics_count() const;
   inline void set_topics_count(::google::protobuf::int32 value);
 
-  // repeated string topic_name = 8;
+  // repeated string topic_name = 7;
   inline int topic_name_size() const;
   inline void clear_topic_name();
-  static const int kTopicNameFieldNumber = 8;
+  static const int kTopicNameFieldNumber = 7;
   inline const ::std::string& topic_name(int index) const;
   inline ::std::string* mutable_topic_name(int index);
   inline void set_topic_name(int index, const ::std::string& value);
@@ -6829,8 +6817,6 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline void clear_has_source_type();
   inline void set_has_disk_path();
   inline void clear_has_disk_path();
-  inline void set_has_pwt_target_name();
-  inline void clear_has_pwt_target_name();
   inline void set_has_topics_count();
   inline void clear_has_topics_count();
 
@@ -6839,14 +6825,13 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   ::std::string* model_name_;
   ::std::string* dictionary_name_;
   ::std::string* disk_path_;
-  ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter > filter_;
   int source_type_;
   ::google::protobuf::int32 topics_count_;
-  ::std::string* pwt_target_name_;
+  ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter > filter_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -16894,85 +16879,15 @@ InitializeModelArgs::mutable_filter() {
   return &filter_;
 }
 
-// optional string pwt_target_name = 6;
-inline bool InitializeModelArgs::has_pwt_target_name() const {
+// optional int32 topics_count = 6;
+inline bool InitializeModelArgs::has_topics_count() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void InitializeModelArgs::set_has_pwt_target_name() {
+inline void InitializeModelArgs::set_has_topics_count() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void InitializeModelArgs::clear_has_pwt_target_name() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void InitializeModelArgs::clear_pwt_target_name() {
-  if (pwt_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    pwt_target_name_->clear();
-  }
-  clear_has_pwt_target_name();
-}
-inline const ::std::string& InitializeModelArgs::pwt_target_name() const {
-  return *pwt_target_name_;
-}
-inline void InitializeModelArgs::set_pwt_target_name(const ::std::string& value) {
-  set_has_pwt_target_name();
-  if (pwt_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    pwt_target_name_ = new ::std::string;
-  }
-  pwt_target_name_->assign(value);
-}
-inline void InitializeModelArgs::set_pwt_target_name(const char* value) {
-  set_has_pwt_target_name();
-  if (pwt_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    pwt_target_name_ = new ::std::string;
-  }
-  pwt_target_name_->assign(value);
-}
-inline void InitializeModelArgs::set_pwt_target_name(const char* value, size_t size) {
-  set_has_pwt_target_name();
-  if (pwt_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    pwt_target_name_ = new ::std::string;
-  }
-  pwt_target_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* InitializeModelArgs::mutable_pwt_target_name() {
-  set_has_pwt_target_name();
-  if (pwt_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    pwt_target_name_ = new ::std::string;
-  }
-  return pwt_target_name_;
-}
-inline ::std::string* InitializeModelArgs::release_pwt_target_name() {
-  clear_has_pwt_target_name();
-  if (pwt_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = pwt_target_name_;
-    pwt_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void InitializeModelArgs::set_allocated_pwt_target_name(::std::string* pwt_target_name) {
-  if (pwt_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete pwt_target_name_;
-  }
-  if (pwt_target_name) {
-    set_has_pwt_target_name();
-    pwt_target_name_ = pwt_target_name;
-  } else {
-    clear_has_pwt_target_name();
-    pwt_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// optional int32 topics_count = 7;
-inline bool InitializeModelArgs::has_topics_count() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void InitializeModelArgs::set_has_topics_count() {
-  _has_bits_[0] |= 0x00000040u;
-}
 inline void InitializeModelArgs::clear_has_topics_count() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void InitializeModelArgs::clear_topics_count() {
   topics_count_ = 0;
@@ -16986,7 +16901,7 @@ inline void InitializeModelArgs::set_topics_count(::google::protobuf::int32 valu
   topics_count_ = value;
 }
 
-// repeated string topic_name = 8;
+// repeated string topic_name = 7;
 inline int InitializeModelArgs::topic_name_size() const {
   return topic_name_.size();
 }

@@ -391,8 +391,24 @@ bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_
   return false;
 }
 
+void Helpers::Fix(::artm::InitializeModelArgs* message) {
+  if (message->topic_name_size() == 0) {
+    for (int i = 0; i < message->topics_count(); ++i) {
+      message->add_topic_name("@topic_" + std::to_string(i));
+    }
+  } else {
+    message->set_topics_count(message->topic_name_size());
+  }
+}
+
 bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_error) {
   std::stringstream ss;
+
+  if (message.topics_count() != 0 || message.topic_name_size() != 0) {
+    if (message.topics_count() != message.topic_name_size())
+      ss << "Length mismatch in fields InitializeModelArgs.topics_count and InitializeModelArgs.topic_name";
+  }
+
   if (!message.has_model_name()) {
     ss << "InitializeModelArgs.model_name is not defined; ";
   }
@@ -414,6 +430,11 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
+}
+
+bool Helpers::FixAndValidate(::artm::InitializeModelArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
 }
 
 bool Helpers::Validate(const ::artm::ExportModelArgs& message, bool throw_error) {

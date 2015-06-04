@@ -49,7 +49,11 @@ class Helpers {
   static bool FixAndValidate(::artm::GetScoreValueArgs* message, bool throw_error = true);
 
   static bool Validate(const ::artm::MasterComponentConfig& message, bool throw_error = true);
+
+  static void Fix(::artm::InitializeModelArgs* message);
   static bool Validate(const ::artm::InitializeModelArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::InitializeModelArgs* message, bool throw_error = true);
+
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::DictionaryConfig& message, bool throw_error = true);

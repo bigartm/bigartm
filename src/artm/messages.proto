@@ -469,9 +469,8 @@ message InitializeModelArgs {
   optional string disk_path = 4;
   repeated Filter filter = 5;
 
-  optional string pwt_target_name = 6;
-  optional int32 topics_count = 7;
-  repeated string topic_name = 8;
+  optional int32 topics_count = 6;
+  repeated string topic_name = 7;
 }
 
 message GetTopicModelArgs {
