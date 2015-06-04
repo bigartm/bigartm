@@ -27,6 +27,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../examples/example_artm_model.py" />
     <Compile Include="../examples/example01_synthetic_collection.py" />
     <Compile Include="../examples/example02_parse_collection.py" />
     <Compile Include="../examples/example03_concurrency.py" />
