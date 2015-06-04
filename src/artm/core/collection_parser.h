@@ -51,7 +51,7 @@ class CollectionParser : boost::noncopyable {
 
     void AppendTokenId(int token_id);
     void FlushNewItem();
-    void Export(DictionaryConfig* dictionary);
+    void Export(std::shared_ptr<DictionaryConfig> dictionary);
 
    private:
     const TokenMap& token_info_;

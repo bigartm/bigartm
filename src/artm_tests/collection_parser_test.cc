@@ -20,7 +20,7 @@ TEST(CollectionParser, UciBagOfWords) {
   config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
   config.set_target_folder(target_folder);
   config.set_dictionary_file_name("test_parser.dictionary");
-  config.set_cooccurrence_file_name("test_parser.cooc.dictionary");
+  config.set_gather_cooc(true);
   config.add_cooccurrence_token("token1");
   config.add_cooccurrence_token("token2");
   config.add_cooccurrence_token("token3");
@@ -52,15 +52,18 @@ TEST(CollectionParser, UciBagOfWords) {
   ASSERT_EQ(dictionary_loaded->entry(2).items_count(), 2);
   ASSERT_EQ(dictionary_loaded->entry(2).token_count(), 9);
 
-  std::shared_ptr< ::artm::DictionaryConfig> cooc_dictionary_loaded = ::artm::LoadDictionary(
-    (fs::path(target_folder) / fs::path("test_parser.cooc.dictionary")).string());
-  ASSERT_EQ(cooc_dictionary_loaded->entry_size(), 3);
-  ASSERT_EQ(cooc_dictionary_loaded->entry(0).key_token(), "token1~token2");
-  ASSERT_EQ(cooc_dictionary_loaded->entry(0).items_count(), 1);
-  ASSERT_EQ(cooc_dictionary_loaded->entry(1).key_token(), "token1~token3");
-  ASSERT_EQ(cooc_dictionary_loaded->entry(1).items_count(), 1);
-  ASSERT_EQ(cooc_dictionary_loaded->entry(2).key_token(), "token2~token3");
-  ASSERT_EQ(cooc_dictionary_loaded->entry(2).items_count(), 2);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index_size(), 3);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index_size(), 3);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().items_count_size(), 3);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(0), 0);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(1), 0);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(2), 1);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(0), 1);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(1), 2);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(2), 2);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().items_count(0), 1);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().items_count(1), 1);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().items_count(2), 2);
 
   boost::filesystem::recursive_directory_iterator it(target_folder);
   boost::filesystem::recursive_directory_iterator endit;

@@ -17,6 +17,7 @@ set(SRC_LIST
 	core/common.h
 	core/data_loader.cc
 	core/data_loader.h
+	core/dictionary.cc
 	core/dictionary.h
 	core/exceptions.h
 	core/generation.cc
@@ -50,32 +51,36 @@ set(SRC_LIST
 	core/topic_model.cc
 	core/topic_model.h
 	core/zmq_context.h
-	regularizer_sandbox/decorrelator_phi.cc
-	regularizer_sandbox/decorrelator_phi.h
-	regularizer_sandbox/multilanguage_phi.cc
-	regularizer_sandbox/multilanguage_phi.h
-	regularizer_sandbox/smooth_sparse_phi.cc
-	regularizer_sandbox/smooth_sparse_phi.h
-	regularizer_sandbox/label_regularization_phi.cc
-	regularizer_sandbox/label_regularization_phi.h
-	regularizer_sandbox/smooth_sparse_theta.cc
-	regularizer_sandbox/smooth_sparse_theta.h
-	regularizer_sandbox/specified_sparse_phi.cc
-	regularizer_sandbox/specified_sparse_phi.h
-	score_sandbox/items_processed.cc
-	score_sandbox/items_processed.h
-	score_sandbox/perplexity.cc
-	score_sandbox/perplexity.h
-	score_sandbox/sparsity_phi.cc
-	score_sandbox/sparsity_phi.h
-	score_sandbox/sparsity_theta.cc
-	score_sandbox/sparsity_theta.h
-	score_sandbox/theta_snippet.cc
-	score_sandbox/theta_snippet.h
-	score_sandbox/top_tokens.cc
-	score_sandbox/top_tokens.h
-	score_sandbox/topic_kernel.cc
-	score_sandbox/topic_kernel.h
+	regularizer/decorrelator_phi.cc
+	regularizer/decorrelator_phi.h
+	regularizer/multilanguage_phi.cc
+	regularizer/multilanguage_phi.h
+	regularizer/smooth_sparse_phi.cc
+	regularizer/smooth_sparse_phi.h
+	regularizer/label_regularization_phi.cc
+	regularizer/label_regularization_phi.h
+	regularizer/smooth_sparse_theta.cc
+	regularizer/smooth_sparse_theta.h
+	regularizer/specified_sparse_phi.cc
+	regularizer/specified_sparse_phi.h
+	regularizer/improve_coherence_phi.cc
+	regularizer/improve_coherence_phi.h	
+	score/items_processed.cc
+	score/items_processed.h
+	score/perplexity.cc
+	score/perplexity.h
+	score/sparsity_phi.cc
+	score/sparsity_phi.h
+	score/sparsity_theta.cc
+	score/sparsity_theta.h
+	score/theta_snippet.cc
+	score/theta_snippet.h
+	score/top_tokens.cc
+	score/top_tokens.h
+	score/topic_kernel.cc
+	score/topic_kernel.h
+	score/coherence_plugin.cc
+	score/coherence_plugin.h
 	utility/ice.cc
 	utility/ice.h
 	utility/blas.cc
@@ -93,16 +98,12 @@ FILE(GLOB_RECURSE SRC_LIST_OTHER
 
 FILE(GLOB_RECURSE SRC_LIST_CORE                core/*.cc                core/*.h                )
 FILE(GLOB_RECURSE SRC_LIST_REGULARIZER         regularizer/*.cc         regularizer/*.h         )
-FILE(GLOB_RECURSE SRC_LIST_REGULARIZER_SANDBOX regularizer_sandbox/*.cc regularizer_sandbox/*.h )
 FILE(GLOB_RECURSE SRC_LIST_SCORE               score/*.cc               score/*.h               )
-FILE(GLOB_RECURSE SRC_LIST_SCORE_SANDBOX       score_sandbox/*.cc       score_sandbox/*.h       )
 FILE(GLOB_RECURSE SRC_LIST_UTILITY             utility/*.cc             utility/*.h             )
 
 source_group("core"                FILES ${SRC_LIST_CORE}                )
 source_group("regularizer"         FILES ${SRC_LIST_REGULARIZER}         )
-source_group("regularizer_sandbox" FILES ${SRC_LIST_REGULARIZER_SANDBOX} )
 source_group("score"               FILES ${SRC_LIST_SCORE}               )
-source_group("score_sandbox"       FILES ${SRC_LIST_SCORE_SANDBOX}       )
 source_group("utility"             FILES ${SRC_LIST_UTILITY}             )
 source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
