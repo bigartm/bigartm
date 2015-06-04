@@ -101,7 +101,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
             artm::core::repeated_field_append(kernel_purity->mutable_value(), topic_index, value);
             artm::core::repeated_field_append(kernel_contrast->mutable_value(), topic_index, p_tw);
             if (count_coherence)
-              topic_kernel_tokens[topic_index].push_back(topic_model.token(token_index));
+              topic_kernel_tokens[topic_index].push_back(p_wt.token(token_index));
           }
         }
       }

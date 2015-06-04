@@ -14,17 +14,17 @@
 namespace artm {
 namespace regularizer {
 
-bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::Regularizable& topic_model,
-                                    ::artm::core::TokenCollectionWeights* result) {
-  // read the parameters from config and control their correctness
-  const int topic_size = topic_model.topic_size();
-  const int token_size = topic_model.token_size();
+bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
+                                        const ::artm::core::PhiMatrix& n_wt,
+                                        ::artm::core::PhiMatrix* result) {
+  const int topic_size = n_wt.topic_size();
+  const int token_size = n_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0)
     topics_to_regularize.assign(topic_size, true);
   else
-    topics_to_regularize = core::is_member(topic_model.topic_name(), config_.topic_name());
+    topics_to_regularize = core::is_member(n_wt.topic_name(), config_.topic_name());
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
@@ -42,11 +42,9 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::Regularizable& topic
     return false;
   }
 
-  auto& n_wt = topic_model.Nwt();
-
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    auto token = topic_model.token(token_id);
+    auto token = n_wt.token(token_id);
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
@@ -55,7 +53,7 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::Regularizable& topic
       for (int cooc_token_id = 0; cooc_token_id < dictionary_ptr->cooc_size(token); ++cooc_token_id) {
         if (cooc_tokens_info[cooc_token_id].token.class_id != token.class_id) continue;
 
-        value += n_wt.get(topic_model.token_id(cooc_tokens_info[cooc_token_id].token), topic_id) *
+        value += n_wt.get(n_wt.token_index(cooc_tokens_info[cooc_token_id].token), topic_id) *
                  dictionary_ptr->cooc_value(token, cooc_token_id);
       }
       result->set(token_id, topic_id, value);
