@@ -379,6 +379,7 @@ message TopicKernelScore {
   optional DoubleArray coherence = 7;
   optional float average_coherence = 8;
   repeated StringArray kernel_tokens = 9;
+  optional StringArray topic_name = 10;
 }
 
 // Represents a topic model (or an operation on topic model)
@@ -477,6 +478,7 @@ message GetTopicModelArgs {
   enum RequestType {
     Pwt = 0;
     Nwt = 1;
+    TopicNames = 2;
   }
 
   optional string model_name = 1;

@@ -36,7 +36,7 @@ with artm.library.MasterComponent() as master:
             batches_to_process.append(batch_filename)
             if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):
                 master.ProcessBatches(pwt_model, batches_to_process, "nwt_hat")
-                master.MergeModel({("nwt", 0.7), ("nwt_hat", 0.3)}, target_nwt="nwt")
+                master.MergeModel({"nwt" : 0.7, "nwt_hat" : 0.3}, target_nwt="nwt")
                 master.NormalizeModel("nwt", pwt_model)
                 print "Iteration = %i," % iteration,
                 print "Perplexity", batches_to_process, "= %.3f" % perplexity_score.GetValue(pwt_model).value

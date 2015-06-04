@@ -22,6 +22,12 @@ namespace core {
 void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix,
                                                      const ::artm::GetTopicModelArgs& get_model_args,
                                                      ::artm::TopicModel* topic_model) {
+  if (get_model_args.request_type() == GetTopicModelArgs_RequestType_TopicNames) {
+    for (auto& topic_name : phi_matrix.topic_name())
+      topic_model->add_topic_name(topic_name);
+    topic_model->set_topics_count(phi_matrix.topic_size());
+    return;
+  }
   const bool use_sparse_format = get_model_args.use_sparse_format();
 
   std::vector<int> tokens_to_use;
