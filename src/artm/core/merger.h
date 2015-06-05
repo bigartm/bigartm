@@ -21,6 +21,7 @@
 #include "artm/core/phi_matrix.h"
 #include "artm/core/dictionary.h"
 #include "artm/core/sync_event.h"
+#include "artm/core/scores_merger.h"
 #include "artm/core/thread_safe_holder.h"
 #include "artm/score_calculator_interface.h"
 
@@ -48,6 +49,7 @@ class Merger : boost::noncopyable {
   void ForceSynchronizeModel(const SynchronizeModelArgs& args);
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
   void InitializeModel(const InitializeModelArgs& args);
+  ScoresMerger* scores_merger() { return &scores_merger_; }
 
   std::shared_ptr<const ::artm::core::TopicModel> GetLatestTopicModel(ModelName model_name) const;
   std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(ModelName model_name) const;
@@ -61,30 +63,6 @@ class Merger : boost::noncopyable {
                     ScoreData *score_data) const;
 
  private:
-  class ScoresMerger {
-   public:
-    explicit ScoresMerger(ThreadSafeHolder<InstanceSchema>* schema,
-                          ThreadSafeCollectionHolder<ModelName, TopicModel>* topic_model,
-                          ThreadSafeCollectionHolder<ModelName, PhiMatrix>* phi_matrix)
-        : schema_(schema), topic_model_(topic_model), phi_matrix_(phi_matrix), score_map_() {}
-
-    void Append(const ModelName& model_name, const ScoreName& score_name,
-                const std::string& score_blob);
-
-    void ResetScores(const ModelName& model_name);
-    bool RequestScore(const GetScoreValueArgs& get_score_args,
-                      ScoreData *score_data) const;
-
-   private:
-    ThreadSafeHolder<InstanceSchema>* schema_;
-    ThreadSafeCollectionHolder<ModelName, TopicModel>* topic_model_;
-    ThreadSafeCollectionHolder<ModelName, PhiMatrix>* phi_matrix_;
-
-    // Map from model name and score name to the score
-    typedef std::pair<ModelName, ScoreName> ScoreKey;
-    ThreadSafeCollectionHolder<ScoreKey, Score> score_map_;
-  };
-
   enum MergerTaskType {
     kDisposeModel,
     kForceSynchronizeTopicModel,

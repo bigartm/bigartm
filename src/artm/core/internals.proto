@@ -32,7 +32,4 @@ message StreamMasks {
 // All information, gathered by Processor for a particular batch and model.
 message ModelIncrement {
   optional TopicModel topic_model = 1;
-
-  repeated string score_name = 8;
-  repeated bytes score = 9;
 }

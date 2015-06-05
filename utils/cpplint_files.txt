@@ -15,6 +15,7 @@
 ../src/artm/core/phi_matrix_operations.cc
 ../src/artm/core/processor.cc
 ../src/artm/core/processor_input.cc
+../src/artm/core/scores_merger.cc
 ../src/artm/core/topic_model.cc
 ../src/artm/regularizer/decorrelator_phi.cc
 ../src/artm/regularizer/multilanguage_phi.cc
@@ -67,6 +68,7 @@
 ../src/artm/core/processor.h
 ../src/artm/core/processor_input.h
 ../src/artm/core/protobuf_helpers.h
+../src/artm/core/scores_merger.h
 ../src/artm/core/template_manager.h
 ../src/artm/core/thread_safe_holder.h
 ../src/artm/core/topic_model.h

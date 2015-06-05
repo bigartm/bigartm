@@ -470,38 +470,6 @@ class ModelIncrement : public ::google::protobuf::Message {
   inline ::artm::TopicModel* release_topic_model();
   inline void set_allocated_topic_model(::artm::TopicModel* topic_model);
 
-  // repeated string score_name = 8;
-  inline int score_name_size() const;
-  inline void clear_score_name();
-  static const int kScoreNameFieldNumber = 8;
-  inline const ::std::string& score_name(int index) const;
-  inline ::std::string* mutable_score_name(int index);
-  inline void set_score_name(int index, const ::std::string& value);
-  inline void set_score_name(int index, const char* value);
-  inline void set_score_name(int index, const char* value, size_t size);
-  inline ::std::string* add_score_name();
-  inline void add_score_name(const ::std::string& value);
-  inline void add_score_name(const char* value);
-  inline void add_score_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& score_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_score_name();
-
-  // repeated bytes score = 9;
-  inline int score_size() const;
-  inline void clear_score();
-  static const int kScoreFieldNumber = 9;
-  inline const ::std::string& score(int index) const;
-  inline ::std::string* mutable_score(int index);
-  inline void set_score(int index, const ::std::string& value);
-  inline void set_score(int index, const char* value);
-  inline void set_score(int index, const void* value, size_t size);
-  inline ::std::string* add_score();
-  inline void add_score(const ::std::string& value);
-  inline void add_score(const char* value);
-  inline void add_score(const void* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& score() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_score();
-
   // @@protoc_insertion_point(class_scope:artm.core.ModelIncrement)
  private:
   inline void set_has_topic_model();
@@ -510,11 +478,9 @@ class ModelIncrement : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::artm::TopicModel* topic_model_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> score_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -1020,94 +986,6 @@ inline void ModelIncrement::set_allocated_topic_model(::artm::TopicModel* topic_
   } else {
     clear_has_topic_model();
   }
-}
-
-// repeated string score_name = 8;
-inline int ModelIncrement::score_name_size() const {
-  return score_name_.size();
-}
-inline void ModelIncrement::clear_score_name() {
-  score_name_.Clear();
-}
-inline const ::std::string& ModelIncrement::score_name(int index) const {
-  return score_name_.Get(index);
-}
-inline ::std::string* ModelIncrement::mutable_score_name(int index) {
-  return score_name_.Mutable(index);
-}
-inline void ModelIncrement::set_score_name(int index, const ::std::string& value) {
-  score_name_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_score_name(int index, const char* value) {
-  score_name_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_score_name(int index, const char* value, size_t size) {
-  score_name_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelIncrement::add_score_name() {
-  return score_name_.Add();
-}
-inline void ModelIncrement::add_score_name(const ::std::string& value) {
-  score_name_.Add()->assign(value);
-}
-inline void ModelIncrement::add_score_name(const char* value) {
-  score_name_.Add()->assign(value);
-}
-inline void ModelIncrement::add_score_name(const char* value, size_t size) {
-  score_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelIncrement::score_name() const {
-  return score_name_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelIncrement::mutable_score_name() {
-  return &score_name_;
-}
-
-// repeated bytes score = 9;
-inline int ModelIncrement::score_size() const {
-  return score_.size();
-}
-inline void ModelIncrement::clear_score() {
-  score_.Clear();
-}
-inline const ::std::string& ModelIncrement::score(int index) const {
-  return score_.Get(index);
-}
-inline ::std::string* ModelIncrement::mutable_score(int index) {
-  return score_.Mutable(index);
-}
-inline void ModelIncrement::set_score(int index, const ::std::string& value) {
-  score_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_score(int index, const char* value) {
-  score_.Mutable(index)->assign(value);
-}
-inline void ModelIncrement::set_score(int index, const void* value, size_t size) {
-  score_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelIncrement::add_score() {
-  return score_.Add();
-}
-inline void ModelIncrement::add_score(const ::std::string& value) {
-  score_.Add()->assign(value);
-}
-inline void ModelIncrement::add_score(const char* value) {
-  score_.Add()->assign(value);
-}
-inline void ModelIncrement::add_score(const void* value, size_t size) {
-  score_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelIncrement::score() const {
-  return score_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelIncrement::mutable_score() {
-  return &score_;
 }
 
 

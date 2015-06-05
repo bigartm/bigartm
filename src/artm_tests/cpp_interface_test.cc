@@ -479,6 +479,11 @@ TEST(CppInterface, ProcessBatchesApi) {
 
   artm::MasterComponentConfig master_config;
   master_config.set_disk_path(target_folder);
+  artm::ScoreConfig* score_config = master_config.add_score_config();
+  score_config->set_name("Perplexity");
+  score_config->set_type(artm::ScoreConfig_Type_Perplexity);
+  ::artm::PerplexityScoreConfig perplexity_score_config;
+  score_config->set_config(perplexity_score_config.SerializeAsString());
   artm::MasterComponent master(master_config);
 
   ::artm::ModelConfig model_config;
@@ -508,17 +513,26 @@ TEST(CppInterface, ProcessBatchesApi) {
   normalize_model_args.set_pwt_target_name("pwt");
   normalize_model_args.set_nwt_source_name("nwt_hat");
 
+  std::shared_ptr< ::artm::PerplexityScore> perplexity_score;
   for (int i = 0; i < 10; ++i) {  // 10 iterations
     process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
     std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
+    perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
     master.NormalizeModel(normalize_model_args);
   }
+
+  EXPECT_NE(perplexity_score, nullptr);
+  EXPECT_NE(perplexity_score->value(), 0.0);
 
   for (int i = 0; i < 10; ++i) {
     master.InvokeIteration();
     master.WaitIdle();
     model.Synchronize(0.0);
   }
+
+  auto perplexity_score2 = master.GetScoreAs< ::artm::PerplexityScore>(model, "Perplexity");
+  EXPECT_NE(perplexity_score2, nullptr);
+  ASSERT_APPROX_EQ(perplexity_score2->value(), perplexity_score->value());
 
   bool ok = false;
   ::artm::test::Helpers::CompareTopicModels(*master.GetTopicModel("pwt"), *master.GetTopicModel("pwt0"), &ok);

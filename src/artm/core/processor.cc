@@ -862,10 +862,8 @@ void Processor::ThreadFunction() {
 
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config,
                                         *theta_matrix, &stream_masks);
-          if (score_value == nullptr)
-            continue;
-          model_increment->add_score_name(score_name);
-          model_increment->add_score(score_value->SerializeAsString());
+          if (score_value != nullptr)
+            part->scores_merger()->Append(schema, model_name, score_name, score_value->SerializeAsString());
         }
 
         {

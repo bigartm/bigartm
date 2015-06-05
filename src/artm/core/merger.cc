@@ -37,7 +37,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
       phi_matrix_(),
       schema_(schema),
       target_model_config_(),
-      scores_merger_(schema, &topic_model_, &phi_matrix_),
+      scores_merger_(),
       is_idle_(true),
       merger_queue_(merger_queue),
       dictionaries_(dictionaries),
@@ -311,14 +311,6 @@ void Merger::ThreadFunction() {
           CuckooWatch cuckoo2("ApplyTopicModelOperation()", &cuckoo);
           iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
         }
-
-        for (int score_index = 0;
-             score_index < model_increment->score_name_size();
-             ++score_index) {
-          CuckooWatch cuckoo2(std::string("AppendScore") + model_increment->score_name(score_index) + "), ", &cuckoo);
-          scores_merger_.Append(model_name, model_increment->score_name(score_index),
-                                model_increment->score(score_index));
-        }
       }  // MAIN FOR LOOP
     }
   }
@@ -379,76 +371,31 @@ bool Merger::WaitIdle(const WaitIdleArgs& args) {
   return true;
 }
 
-void Merger::ScoresMerger::Append(const ModelName& model_name, const ScoreName& score_name,
-                                  const std::string& score_blob) {
-  auto key = std::make_pair(model_name, score_name);
-  auto score_calculator = schema_->get()->score_calculator(score_name);
-  if (score_calculator == nullptr) {
-    LOG(ERROR) << "Unable to find score calculator: " << score_name;
-    return;
-  }
-
-  auto score_inc = score_calculator->CreateScore();
-  if (!score_inc->ParseFromString(score_blob)) {
-    LOG(ERROR) << "Merger was unable to parse score blob. The scores might be inacurate.";
-    return;
-  }
-
-  auto score = score_map_.get(key);
-  if (score != nullptr) {
-    score_calculator->AppendScore(*score, score_inc.get());
-  }
-
-  score_map_.set(key, score_inc);
-}
-
-void Merger::ScoresMerger::ResetScores(const ModelName& model_name) {
-  if (model_name.empty()) {
-    score_map_.clear();
-    return;
-  }
-
-  auto keys = score_map_.keys();
-  for (auto &key : keys) {
-    if (key.first == model_name) {
-      score_map_.erase(key);
-    }
-  }
-}
-
-bool Merger::ScoresMerger::RequestScore(const GetScoreValueArgs& get_score_args,
-                                        ScoreData *score_data) const {
-  auto score_calculator = schema_->get()->score_calculator(get_score_args.score_name());
-  if (score_calculator == nullptr) {
-    BOOST_THROW_EXCEPTION(InvalidOperation("Attempt to request non-existing score"));
-  }
-
-  if (score_calculator->is_cumulative()) {
-    auto score = score_map_.get(ScoreKey(get_score_args.model_name(), get_score_args.score_name()));
-    if (score == nullptr) {
-      score_data->set_data(score_calculator->CreateScore()->SerializeAsString());
-    } else {
-      score_data->set_data(score->SerializeAsString());
-    }
-  } else {
-    std::shared_ptr< ::artm::core::TopicModel> topic_model = topic_model_->get(get_score_args.model_name());
-    std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix = phi_matrix_->get(get_score_args.model_name());
-    if (topic_model == nullptr && phi_matrix == nullptr)
-      return false;
-    const PhiMatrix& pwt = topic_model != nullptr ? topic_model->GetPwt() : *phi_matrix;
-    std::shared_ptr<Score> score = score_calculator->CalculateScore(pwt);
-    score_data->set_data(score->SerializeAsString());
-  }
-
-  score_data->set_type(score_calculator->score_type());
-  score_data->set_name(get_score_args.score_name());
-  return true;
-}
-
-bool Merger::RequestScore(const GetScoreValueArgs& get_score_args,
+bool Merger::RequestScore(const GetScoreValueArgs& args,
                           ScoreData *score_data) const {
-  LOG(INFO) << "Merger::RequestScore(score_name=" << get_score_args.score_name() << ")";
-  return scores_merger_.RequestScore(get_score_args, score_data);
+  LOG(INFO) << "Merger::RequestScore(score_name=" << args.score_name() << ")";
+  std::shared_ptr<InstanceSchema> schema = schema_->get();
+  if (scores_merger_.RequestScore(schema, args.model_name(), args.score_name(), score_data))
+    return true;
+
+  std::shared_ptr< ::artm::core::TopicModel> topic_model = topic_model_.get(args.model_name());
+  std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix = phi_matrix_.get(args.model_name());
+  if (topic_model == nullptr && phi_matrix == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + args.model_name() + " does not exist"));
+  const PhiMatrix& pwt = topic_model != nullptr ? topic_model->GetPwt() : *phi_matrix;
+
+  auto score_calculator = schema->score_calculator(args.score_name());
+  if (score_calculator == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Attempt to request non-existing score"));
+
+  if (score_calculator->is_cumulative())
+    return false;
+
+  std::shared_ptr<Score> score = score_calculator->CalculateScore(pwt);
+  score_data->set_data(score->SerializeAsString());
+  score_data->set_type(score_calculator->score_type());
+  score_data->set_name(args.score_name());
+  return true;
 }
 
 void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,

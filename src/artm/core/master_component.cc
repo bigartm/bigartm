@@ -25,6 +25,7 @@
 #include "artm/core/processor.h"
 #include "artm/core/phi_matrix_operations.h"
 #include "artm/core/topic_model.h"
+#include "artm/core/scores_merger.h"
 #include "artm/core/merger.h"
 
 namespace artm {
@@ -249,12 +250,14 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
 
   BatchManager batch_manager;
+  ScoresMerger scores_merger;
   for (int batch_index = 0; batch_index < process_batches_args.batch_filename_size(); ++batch_index) {
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
     batch_manager.Add(task_id, std::string(), model_name);
 
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(&batch_manager);
+    pi->set_scores_merger(&scores_merger);
     pi->set_model_name(model_name);
     pi->set_nwt_target_name(process_batches_args.nwt_target_name());
     pi->set_batch_filename(process_batches_args.batch_filename(batch_index));
@@ -267,6 +270,16 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 
   while (!batch_manager.IsEverythingProcessed()) {
     boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+  }
+
+  process_batches_result->Clear();
+  std::shared_ptr<MasterComponentConfig> config = config_.get();
+  std::shared_ptr<InstanceSchema> schema = instance_->schema();
+  for (int score_index = 0; score_index < config->score_config_size(); ++score_index) {
+    ScoreName score_name = config->score_config(score_index).name();
+    ScoreData score_data;
+    if (scores_merger.RequestScore(schema, model_name, score_name, &score_data))
+      process_batches_result->add_score_data()->Swap(&score_data);
   }
 }
 

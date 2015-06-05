@@ -19,10 +19,12 @@ class Notifiable {
   virtual void Callback(const boost::uuids::uuid& id, const ModelName& model_name) = 0;
 };
 
+class ScoresMerger;
+
 class ProcessorInput {
  public:
   ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
-                     batch_filename_(), task_id_(), notifiable_(nullptr) {}
+                     batch_filename_(), task_id_(), notifiable_(nullptr), scores_merger_(nullptr) {}
 
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
@@ -32,6 +34,9 @@ class ProcessorInput {
 
   Notifiable* notifiable() const { return notifiable_; }
   void set_notifiable(Notifiable* notifiable) { notifiable_ = notifiable; }
+
+  ScoresMerger* scores_merger() const { return scores_merger_; }
+  void set_scores_merger(ScoresMerger* scores_merger) { scores_merger_ = scores_merger; }
 
   const ModelName& model_name() const { return model_name_; }
   void set_model_name(const ModelName& model_name) { model_name_ = model_name; }
@@ -55,6 +60,7 @@ class ProcessorInput {
   std::string batch_filename_;  // if this is set batch_ is ignored;
   boost::uuids::uuid task_id_;
   Notifiable* notifiable_;
+  ScoresMerger* scores_merger_;
 };
 
 }  // namespace core
