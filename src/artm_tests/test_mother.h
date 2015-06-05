@@ -38,6 +38,7 @@ class TestMother {
   RegularizerConfig GenerateRegularizerConfig() const;
   static void GenerateBatches(int batches_size, int nTokens,
                               std::vector<std::shared_ptr< ::artm::Batch>>* batches);
+  static void GenerateBatches(int batches_size, int nTokens, const std::string& target_folder);
 
  private:
   const int nTopics;

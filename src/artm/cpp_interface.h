@@ -35,6 +35,7 @@ class MasterComponent;
 class Model;
 class Regularizer;
 class Dictionary;
+class ProcessBatchesResultObject;
 
 // Exception handling in cpp_interface
 #define DEFINE_EXCEPTION_TYPE(Type, BaseType)                  \
@@ -75,6 +76,12 @@ class MasterComponent {
 
   template <typename T>
   std::shared_ptr<T> GetScoreAs(const Model& model, const std::string& score_name);
+
+  std::shared_ptr<ProcessBatchesResultObject> ProcessBatches(const ProcessBatchesArgs& args);
+  void MergeModel(const MergeModelArgs& args);
+  void NormalizeModel(const NormalizeModelArgs& args);
+  void RegularizeModel(const RegularizeModelArgs& args);
+  void InitializeModel(const InitializeModelArgs& args);
 
   void Reconfigure(const MasterComponentConfig& config);
   bool AddBatch(const Batch& batch);
@@ -171,6 +178,30 @@ std::shared_ptr<T> MasterComponent::GetScoreAs(const Model& model,
   auto score = std::make_shared<T>();
   score->ParseFromString(score_data->data());
   return score;
+}
+
+class ProcessBatchesResultObject {
+ public:
+  explicit ProcessBatchesResultObject(ProcessBatchesResult message) : message_(message) {}
+
+  template <typename T>
+  std::shared_ptr<T> GetScoreAs(const std::string& score_name);
+
+ private:
+  ProcessBatchesResult message_;
+};
+
+template <typename T>
+std::shared_ptr<T> ProcessBatchesResultObject::GetScoreAs(const std::string& score_name) {
+  for (int i = 0; i < message_.score_data_size(); ++i) {
+    if (message_.score_data(i).name() == score_name) {
+      auto score = std::make_shared<T>();
+      score->ParseFromString(message_.score_data(i).data());
+      return score;
+    }
+  }
+
+  return nullptr;
 }
 
 }  // namespace artm

@@ -6,6 +6,8 @@
 
 #include "gtest/gtest.h"
 
+#include "artm/cpp_interface.h"
+
 namespace artm {
 namespace test {
 
@@ -98,8 +100,13 @@ void Helpers::CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::To
   for (int i = 0; i < tm1.token_size(); ++i) {
     ASSERT_EQ(tm1.token(i), tm2.token(i));
     ASSERT_EQ(tm1.token_weights(i).value_size(), tm2.token_weights(i).value_size());
-    for (int j = 0; j < tm1.token_weights(i).value_size(); ++j)
-      ASSERT_APPROX_EQ(tm1.token_weights(i).value(j), tm2.token_weights(i).value(j));
+    for (int j = 0; j < tm1.token_weights(i).value_size(); ++j) {
+      float tm1_value = tm1.token_weights(i).value(j);
+      float tm2_value = tm2.token_weights(i).value(j);
+      if (fabs(tm1_value) < 1e-12) tm1_value = 0.0f;
+      if (fabs(tm2_value) < 1e-12) tm2_value = 0.0f;
+      ASSERT_APPROX_EQ(tm1_value, tm2_value);
+    }
     if (tm1.topic_index_size() > 0) {
       ASSERT_EQ(tm1.topic_index(i).value_size(), tm2.topic_index(i).value_size());
       for (int j = 0; j < tm1.topic_index(i).value_size(); ++j) {
@@ -131,6 +138,13 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
     }
   }
   *ok = true;
+}
+
+void TestMother::GenerateBatches(int batches_size, int nTokens, const std::string& target_folder) {
+  std::vector<std::shared_ptr< ::artm::Batch>> batches;
+  GenerateBatches(batches_size, nTokens, &batches);
+  for (int i = 0; i < batches.size(); ++i)
+    artm::SaveBatch(*batches[i], target_folder);
 }
 
 }  // namespace test

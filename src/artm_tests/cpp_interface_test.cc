@@ -10,6 +10,7 @@
 #include "artm/messages.pb.h"
 
 #include "artm/core/internals.pb.h"
+#include "artm/core/helpers.h"
 
 #include "artm_tests/test_mother.h"
 
@@ -466,4 +467,69 @@ TEST(CppInterface, GatherNewTokens) {
   ASSERT_EQ(tm3->token_size(), 2);  // now new token is picked up
   ASSERT_TRUE((tm3->token(0) == token1 && tm3->token(1) == token2) ||
               (tm3->token(0) == token2 && tm3->token(1) == token1));
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.ProcessBatchesApi
+TEST(CppInterface, ProcessBatchesApi) {
+  int nTopics = 17;
+  int nBatches = 5;
+
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+  ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
+
+  artm::MasterComponentConfig master_config;
+  master_config.set_disk_path(target_folder);
+  artm::MasterComponent master(master_config);
+
+  ::artm::ModelConfig model_config;
+  model_config.set_name("pwt0");
+  model_config.set_topics_count(nTopics);
+  ::artm::Model model(master, model_config);
+
+  artm::InitializeModelArgs initialize_model_args;
+  initialize_model_args.set_disk_path(target_folder);
+  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_topics_count(nTopics);
+  initialize_model_args.set_model_name("pwt0");
+  master.InitializeModel(initialize_model_args);
+
+  std::shared_ptr< ::artm::TopicModel> pwt_model = master.GetTopicModel("pwt0");
+  ASSERT_NE(pwt_model, nullptr);
+  ASSERT_EQ(pwt_model->topics_count(), nTopics);
+
+  std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
+  ASSERT_EQ(all_batches.size(), nBatches);
+  artm::ProcessBatchesArgs process_batches_args;
+  for (std::string& batch_name : all_batches)
+    process_batches_args.add_batch_filename(batch_name);
+  process_batches_args.set_nwt_target_name("nwt_hat");
+
+  artm::NormalizeModelArgs normalize_model_args;
+  normalize_model_args.set_pwt_target_name("pwt");
+  normalize_model_args.set_nwt_source_name("nwt_hat");
+
+  for (int i = 0; i < 10; ++i) {  // 10 iterations
+    process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
+    std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
+    master.NormalizeModel(normalize_model_args);
+  }
+
+  for (int i = 0; i < 10; ++i) {
+    master.InvokeIteration();
+    master.WaitIdle();
+    model.Synchronize(0.0);
+  }
+
+  bool ok = false;
+  ::artm::test::Helpers::CompareTopicModels(*master.GetTopicModel("pwt"), *master.GetTopicModel("pwt0"), &ok);
+
+  if (!ok) {
+    std::cout << "New-tuned topic model:\n"
+      << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt"));
+    std::cout << "Old-tuned topic model:\n"
+      << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
+  }
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
 }

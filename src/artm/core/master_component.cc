@@ -245,6 +245,9 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   nwt_target->Reshape(p_wt);
   instance_->merger()->SetPhiMatrix(process_batches_args.nwt_target_name(), nwt_target);
 
+  model_config.set_topics_count(p_wt.topic_size());
+  model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
+
   BatchManager batch_manager;
   for (int batch_index = 0; batch_index < process_batches_args.batch_filename_size(); ++batch_index) {
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
@@ -285,7 +288,7 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
 
   std::shared_ptr<const TopicModel> nwt_topic_model = instance_->merger()->GetLatestTopicModel(nwt_source_name);
   std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrix(nwt_source_name);
-  if ((nwt_topic_model == nullptr) && (nwt_phi_matrix = nullptr))
+  if ((nwt_topic_model == nullptr) && (nwt_phi_matrix == nullptr))
     BOOST_THROW_EXCEPTION(InvalidOperation("Model " + nwt_source_name + " does not exist"));
   const PhiMatrix& n_wt = (nwt_topic_model != nullptr) ? nwt_topic_model->GetPwt() : *nwt_phi_matrix;
 
@@ -293,7 +296,7 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
   std::shared_ptr<const TopicModel> rwt_topic_model = instance_->merger()->GetLatestTopicModel(rwt_source_name);
   std::shared_ptr<const PhiMatrix> rwt_phi_matrix = instance_->merger()->GetPhiMatrix(rwt_source_name);
   if (normalize_model_args.has_rwt_source_name()) {
-    if ((rwt_topic_model == nullptr) && (rwt_phi_matrix = nullptr))
+    if ((rwt_topic_model == nullptr) && (rwt_phi_matrix == nullptr))
       BOOST_THROW_EXCEPTION(InvalidOperation("Model " + rwt_source_name + " does not exist"));
     r_wt = (rwt_topic_model != nullptr) ? &rwt_topic_model->GetPwt() : rwt_phi_matrix.get();
   }

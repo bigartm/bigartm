@@ -532,12 +532,6 @@ message ImportModelArgs {
 }
 
 message ProcessBatchesArgs {
-  enum ThetaMatrixType {
-    None = 0;
-    Dense = 1;
-    Sparse = 2;
-  }
-
   optional string nwt_target_name = 1;
 
   repeated string batch_filename = 2;
@@ -548,7 +542,6 @@ message ProcessBatchesArgs {
   repeated double regularizer_tau = 7;
   repeated string class_id = 8;
   repeated float class_weight = 9;
-  optional ThetaMatrixType get_theta_matrix_type = 10 [default = None];
 }
 
 message ProcessBatchesResult {
