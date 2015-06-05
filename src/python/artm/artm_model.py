@@ -1764,15 +1764,160 @@ class SparsityPhiScoreInfo(object):
   def name(self): return self._name
   @property
   def value(self):
-    """ value of perplexity on syncronizations (list) """  
+    """ value of Phi sparsity on syncronizations (list of scalars) """  
     return self._value  
   @property
   def zero_tokens(self):
-    """ number of tokens with zero counters on syncronizations (list) """  
+    """ number of zero rows in Phi on syncronizations (list of scalars) """  
     return self._zero_tokens
   @property
   def total_tokens(self):
-    """ total number of tokens on syncronizations (list) """ 
+    """ total number of rows in Phi on syncronizations (list of scalars) """ 
     return self._total_tokens
  
+#######################################################################################################################
+class SparsityThetaScoreInfo(object):
+  """ SparsityThetaScoreInfo represents a result of counting SparsityThetaScore (private class).
+  Args:
+  - score --- reference to score object, no default
+  """
+  def __init__(self, score):   
+    self._name = score.name
+    self._value = []
+    self._zero_topics = []
+    self._total_topics = []
+
+  def add(self, score=None):
+    """ SparsityThetaScoreInfo.add() --- add info about score after syncronization.
+    Args:
+    - score --- reference to score object, default = None (means "Add None values")
+    """
+    if not score is None:
+      _data = artm.messages_pb2.SparsityThetaScore()
+      _data = score.score.GetValue(score._model)
+    
+      self._value.append(_data.value)
+      self._zero_topics.append(_data.zero_topics)
+      self._total_topics.append(_data.total_topics)
+    else:
+      self._value.append(None)
+      self._zero_topics.append(None)
+      self._total_topics.append(None)
+
+  @property
+  def name(self): return self._name
+  @property
+  def value(self):
+    """ value of Theta sparsity on syncronizations (list of scalars) """  
+    return self._value  
+  @property
+  def zero_topics(self):
+    """ number of zero rows in Theta on syncronizations (list of scalars) """  
+    return self._zero_topics
+  @property
+  def total_topics(self):
+    """ total number of rows in Theta on syncronizations (list of scalars) """ 
+    return self._total_topics
+ 
+#######################################################################################################################
+class PerplexityScoreInfo(object):
+  """ PerplexityScoreInfo represents a result of counting PerplexityScore (private class).
+  Args:
+  - score --- reference to score object, no default
+  """
+  def __init__(self, score):   
+    self._name = score.name
+    self._value = []
+    self._raw = []
+    self._normalizer = []
+    self._zero_tokens = []
+    self._theta_sparsity_value = []
+    self._theta_sparsity_zero_topics = []
+    self._theta_sparsity_total_topics = []
+
+  def add(self, score=None):
+    """ PerplexityScoreInfo.add() --- add info about score after syncronization.
+    Args:
+    - score --- reference to score object, default = None (means "Add None values")
+    """
+    if not score is None:
+      _data = artm.messages_pb2.PerplexityScore()
+      _data = score.score.GetValue(score._model)
+    
+      self._value.append(_data.value)
+      self._raw.append(_data.raw)
+      self._normalizer.append(_data.normalizer)
+      self._zero_tokens.append(_data.zero_words)
+      self._theta_sparsity_value.append(_data.theta_sparsity_value)
+      self._theta_sparsity_zero_topics.append(_data.theta_sparsity_zero_topics)
+      self._theta_sparsity_total_topics.append(_data.theta_sparsity_total_topics)
+    else:
+      self._value.append(None)
+      self._raw.append(None)
+      self._normalizer.append(None)
+      self._zero_tokens.append(None)
+      self._theta_sparsity_value.append(None)
+      self._theta_sparsity_zero_topics.append(None)
+      self._theta_sparsity_total_topics.append(None)
+
+  @property
+  def name(self): return self._name
+  @property
+  def value(self):
+    """ value of perplexity on syncronizations (list of scalars) """  
+    return self._value  
+  @property
+  def raw(self):
+    """ raw value in formula of perplexity on syncronizations (list of scalars) """  
+    return self._raw
+  @property  
+  def normalizer(self):
+    """ normalizer value in formula of perplexity on syncronizations (list of scalars) """  
+    return self._normalizer  
+  @property
+  def zero_tokens(self):
+    """ number of tokens with zero counters on syncronizations (list of scalars) """  
+    return self._zero_tokens
+  @property
+  def theta_sparsity_value(self):
+    """ Theta sparsity value on syncronizations (list of scalars) """ 
+    return self._theta_sparsity_value
+  @property
+  def theta_sparsity_zero_topics(self):
+    """ number of zero rows in Theta on syncronizations (list of scalars) """ 
+    return self._theta_sparsity_zero_topics 
+  @property
+  def theta_sparsity_total_topics(self):
+    """ total number of rows in Theta on syncronizations (list of scalars) """ 
+    return self._theta_sparsity_total_topics
+
+#######################################################################################################################
+class ItemsProcessedScoreInfo(object):
+  """ ItemsProcessedScoreInfo represents a result of counting ItemsProcessedScore (private class).
+  Args:
+  - score --- reference to score object, no default
+  """
+  def __init__(self, score):   
+    self._name = score.name
+    self._value = []
+
+  def add(self, score=None):
+    """ ItemsProcessedScoreInfo.add() --- add info about score after syncronization.
+    Args:
+    - score --- reference to score object, default = None (means "Add None values")
+    """
+    if not score is None:
+      _data = artm.messages_pb2.ItemsProcessedScore()
+      _data = score.score.GetValue(score._model)
+      self._value.append(_data.value)
+    else:
+      self._value.append(None)
+
+  @property
+  def name(self): return self._name
+  @property
+  def value(self):
+    """ total number of processed documents on syncronizations (list of scalars) """  
+    return self._value  
+
 #######################################################################################################################
