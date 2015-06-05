@@ -544,6 +544,13 @@ TEST(CppInterface, ProcessBatchesApi) {
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
   }
 
+  // Verify that we may call ProcessBatches without nwt_target
+  process_batches_args.clear_nwt_target_name();
+  std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
+  perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
+  EXPECT_NE(perplexity_score, nullptr);
+  EXPECT_NE(perplexity_score->value(), 0.0);
+
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }

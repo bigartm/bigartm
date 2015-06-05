@@ -23,8 +23,16 @@ class ScoresMerger;
 
 class ProcessorInput {
  public:
+  enum Caller {
+    Unknown,
+    InvokeIteration,
+    AddBatch,
+    ProcessBatches,
+  };
+
   ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
-                     batch_filename_(), task_id_(), notifiable_(nullptr), scores_merger_(nullptr) {}
+                     batch_filename_(), task_id_(), notifiable_(nullptr), scores_merger_(nullptr),
+                     caller_(Caller::Unknown) {}
 
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
@@ -52,6 +60,9 @@ class ProcessorInput {
   const boost::uuids::uuid& task_id() const { return task_id_; }
   void set_task_id(const boost::uuids::uuid& task_id) { task_id_ = task_id; }
 
+  Caller caller() const { return caller_; }
+  void set_caller(const Caller caller) { caller_ = caller; }
+
  private:
   Batch batch_;
   ModelConfig model_config_;
@@ -61,6 +72,7 @@ class ProcessorInput {
   boost::uuids::uuid task_id_;
   Notifiable* notifiable_;
   ScoresMerger* scores_merger_;
+  Caller caller_;
 };
 
 }  // namespace core

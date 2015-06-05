@@ -240,11 +240,13 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
   if (topic_model == nullptr && phi_matrix == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
-
   const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
-  auto nwt_target(std::make_shared<DensePhiMatrix>(process_batches_args.nwt_target_name(), p_wt.topic_name()));
-  nwt_target->Reshape(p_wt);
-  instance_->merger()->SetPhiMatrix(process_batches_args.nwt_target_name(), nwt_target);
+
+  if (process_batches_args.has_nwt_target_name()) {
+    auto nwt_target(std::make_shared<DensePhiMatrix>(process_batches_args.nwt_target_name(), p_wt.topic_name()));
+    nwt_target->Reshape(p_wt);
+    instance_->merger()->SetPhiMatrix(process_batches_args.nwt_target_name(), nwt_target);
+  }
 
   model_config.set_topics_count(p_wt.topic_size());
   model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
@@ -259,10 +261,14 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     pi->set_notifiable(&batch_manager);
     pi->set_scores_merger(&scores_merger);
     pi->set_model_name(model_name);
-    pi->set_nwt_target_name(process_batches_args.nwt_target_name());
     pi->set_batch_filename(process_batches_args.batch_filename(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
+    pi->set_caller(ProcessorInput::Caller::ProcessBatches);
+
+    if (process_batches_args.has_nwt_target_name())
+      pi->set_nwt_target_name(process_batches_args.nwt_target_name());
+
     instance_->processor_queue()->push(pi);
   }
 

@@ -801,7 +801,7 @@ void Processor::ThreadFunction() {
         if (p_wt.token_size() == 0) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
             "would not be processed on this iteration";
-          if (nwt_target == nullptr) merger_queue_->push(model_increment);
+          if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
           continue;
         }
 
@@ -886,7 +886,7 @@ void Processor::ThreadFunction() {
             *theta_matrix, model_increment.get(), const_cast<PhiMatrix*>(nwt_target.get()), blas);
         }
         merger_queue_->release();
-        if (nwt_target == nullptr) merger_queue_->push(model_increment);
+        if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
       }
     }
   }

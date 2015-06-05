@@ -85,6 +85,7 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
     pi->mutable_batch()->CopyFrom(*batch);
     pi->mutable_model_config()->CopyFrom(schema->model_config(model_name));
     pi->set_task_id(task_id);
+    pi->set_caller(ProcessorInput::Caller::AddBatch);
     instance_->processor_queue()->push(pi);
   });
 
@@ -127,6 +128,7 @@ void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
         pi->set_batch_filename(task);
         pi->set_model_name(model_name);
         pi->mutable_model_config()->CopyFrom(schema->model_config(model_name));
+        pi->set_caller(ProcessorInput::Caller::InvokeIteration);
         instance()->processor_queue()->push(pi);
       });
     }
