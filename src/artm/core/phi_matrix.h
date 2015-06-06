@@ -33,6 +33,9 @@ class PhiMatrix {
   virtual void increase(int token_id, int topic_id, float increment) = 0;
   virtual void increase(int token_id, const std::vector<float>& increment) = 0;  // must be thread-safe
 
+  virtual int AddToken(const Token& token) = 0;
+  virtual void RemoveTokens(const std::vector<Token>& tokens) = 0;
+
   virtual ~PhiMatrix() {}
 };
 

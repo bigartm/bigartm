@@ -66,8 +66,8 @@ class DensePhiMatrix : boost::noncopyable, public PhiMatrix {
   virtual ModelName model_name() const;
 
   void Reset();
-  int AddToken(const Token& token, bool random_init);
-  void RemoveToken(const Token& token);
+  virtual int AddToken(const Token& token);
+  virtual void RemoveTokens(const std::vector<Token>& tokens);
   void Reshape(const PhiMatrix& phi_matrix);
 
  private:

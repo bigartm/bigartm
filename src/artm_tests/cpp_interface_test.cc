@@ -551,6 +551,16 @@ TEST(CppInterface, ProcessBatchesApi) {
   EXPECT_NE(perplexity_score, nullptr);
   EXPECT_NE(perplexity_score->value(), 0.0);
 
+  // Dummy test to verify we can merge models
+  ::artm::MergeModelArgs merge_model_args;
+  merge_model_args.add_nwt_source_name("pwt"); merge_model_args.add_source_weight(1.0f);
+  merge_model_args.add_nwt_source_name("pwt0"); merge_model_args.add_source_weight(1.0f);
+  merge_model_args.set_nwt_target_name("nwt_merge");
+  master.MergeModel(merge_model_args);
+  std::shared_ptr< ::artm::TopicModel> nwt_merge = master.GetTopicModel("nwt_merge");
+  ASSERT_NE(pwt_model, nullptr);
+  ASSERT_EQ(pwt_model->topics_count(), nTopics);
+
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }

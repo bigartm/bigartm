@@ -19,6 +19,9 @@ class PhiMatrixOperations {
     const PhiMatrix& phi_matrix, const ::artm::GetTopicModelArgs& get_model_args,
     ::artm::TopicModel* topic_model);
 
+  static void ApplyTopicModelOperation(
+    const ::artm::TopicModel& topic_model, float apply_weight, PhiMatrix* phi_matrix);
+
   static std::map<ClassId, std::vector<float> > FindNormalizers(const PhiMatrix& n_wt);
   static std::map<ClassId, std::vector<float> > FindNormalizers(const PhiMatrix& n_wt, const PhiMatrix& r_wt);
 

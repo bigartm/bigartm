@@ -95,7 +95,7 @@ void DensePhiMatrix::Clear() {
   spin_locks_.clear();
 }
 
-int DensePhiMatrix::AddToken(const Token& token, bool random_init) {
+int DensePhiMatrix::AddToken(const Token& token) {
   int token_id = token_collection_.token_id(token);
   if (token_id != -1)
     return token_id;
@@ -106,31 +106,26 @@ int DensePhiMatrix::AddToken(const Token& token, bool random_init) {
   values_.push_back(values);
   spin_locks_.push_back(std::make_shared<SpinLock>());
 
-  if (random_init) {
-    std::vector<float> vec = Helpers::GenerateRandomVector(topic_size(), TokenHasher()(token));
-    for (int i = 0; i < topic_size(); ++i) {
-      values[i] = vec[i];
-    }
-  } else {
-    memset(values, 0, sizeof(float)* topic_size());
-  }
+  memset(values, 0, sizeof(float)* topic_size());
 
   return values_.size() - 1;
 }
 
-void DensePhiMatrix::RemoveToken(const Token& token) {
-  int token_id = token_collection_.token_id(token);
-  if (token_id == -1)
-    return;
+void DensePhiMatrix::RemoveTokens(const std::vector<Token>& tokens) {
+  for (const Token& token : tokens) {
+    int token_id = token_collection_.token_id(token);
+    if (token_id == -1)
+      return;
 
-  token_collection_.RemoveToken(token);
+    token_collection_.RemoveToken(token);
 
-  if (token_id < 0 || token_id >= values_.size())
-    return;
+    if (token_id < 0 || token_id >= values_.size())
+      return;
 
-  delete[] values_[token_id];
-  values_.erase(values_.begin() + token_id);
-  spin_locks_.erase(spin_locks_.begin() + token_id);
+    delete[] values_[token_id];
+    values_.erase(values_.begin() + token_id);
+    spin_locks_.erase(spin_locks_.begin() + token_id);
+  }
 }
 
 const Token& DensePhiMatrix::token(int index) const {
@@ -161,7 +156,7 @@ int DensePhiMatrix::token_index(const Token& token) const {
 void DensePhiMatrix::Reshape(const PhiMatrix& phi_matrix) {
   Clear();
   for (int token_id = 0; token_id < phi_matrix.token_size(); ++token_id) {
-    this->AddToken(phi_matrix.token(token_id), false);
+    this->AddToken(phi_matrix.token(token_id));
   }
 }
 

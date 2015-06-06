@@ -309,7 +309,8 @@ void Merger::ThreadFunction() {
 
         {
           CuckooWatch cuckoo2("ApplyTopicModelOperation()", &cuckoo);
-          iter->second->ApplyTopicModelOperation(model_increment->topic_model(), 1.0f);
+          PhiMatrixOperations::ApplyTopicModelOperation(
+            model_increment->topic_model(), 1.0f, iter->second->mutable_nwt());
         }
       }  // MAIN FOR LOOP
     }
@@ -446,7 +447,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
         GetTopicModelArgs get_topic_model_args;
         get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
         old_ttm->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
-        new_ttm->ApplyTopicModelOperation(topic_model, decay_weight);
+        PhiMatrixOperations::ApplyTopicModelOperation(topic_model, decay_weight, new_ttm->mutable_nwt());
       }
     }
     target_model_config_.set(name, nullptr);
@@ -457,7 +458,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       GetTopicModelArgs get_topic_model_args;
       get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
       inc_ttm->second->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
-      new_ttm->ApplyTopicModelOperation(topic_model, apply_weight);
+      PhiMatrixOperations::ApplyTopicModelOperation(topic_model, apply_weight, new_ttm->mutable_nwt());
     }
 
     if (invoke_regularizers && (current_config.regularizer_settings_size() > 0)) {
@@ -517,8 +518,10 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   if (schema->has_model_config(args.model_name()))
     model_config = &schema->model_config(args.model_name());
 
-  auto new_ttm = std::make_shared< ::artm::core::TopicModel>(
-    args.model_name(), (model_config != nullptr) ? model_config->topic_name() : args.topic_name());
+  artm::TopicModel topic_model;
+  topic_model.mutable_topic_name()->CopyFrom(
+    (model_config != nullptr) ? model_config->topic_name() : args.topic_name());
+  topic_model.set_topics_count(topic_model.topic_name_size());
 
   if (args.source_type() == InitializeModelArgs_SourceType_Dictionary) {
     std::shared_ptr<Dictionary> dict = dictionaries_->get(args.dictionary_name());
@@ -529,12 +532,15 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     }
 
     LOG(INFO) << "InitializeModel() with "
-      << new_ttm->topic_size() << " topics and "
+      << topic_model.topic_name_size() << " topics and "
       << dict->size() << " tokens";
 
     for (int index = 0; index < dict->size(); ++index) {
       ClassId class_id = dict->entry(index)->has_class_id() ? dict->entry(index)->class_id() : DefaultClass;
-      new_ttm->AddToken(Token(class_id, dict->entry(index)->key_token()), true);
+      topic_model.add_operation_type(TopicModel_OperationType_Initialize);
+      topic_model.add_class_id(class_id);
+      topic_model.add_token(dict->entry(index)->key_token());
+      topic_model.add_token_weights();
     }
   } else if (args.source_type() == InitializeModelArgs_SourceType_Batches) {
     std::unordered_map<Token, TokenInfo, TokenHasher> token_freq_map;
@@ -618,13 +624,21 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     }
     LOG(INFO) << "All filters applied, " << unique_tokens_left << " unique tokens left.";
 
-    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
-      if (iter->second.num_items != -1)
-        new_ttm->AddToken(iter->first, true);
+    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
+      if (iter->second.num_items != -1) {
+        topic_model.add_operation_type(TopicModel_OperationType_Initialize);
+        topic_model.add_class_id(iter->first.class_id);
+        topic_model.add_token(iter->first.keyword);
+        topic_model.add_token_weights();
+      }
+    }
   } else {
     BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
       "InitializeModelArgs.source_type", args.source_type()));
   }
+
+  auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
+  PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
 
   new_ttm->CalcPwt();   // calculate pwt matrix
   topic_model_.set(args.model_name(), new_ttm);

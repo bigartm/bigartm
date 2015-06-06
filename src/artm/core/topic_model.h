@@ -30,15 +30,13 @@ class TopicModel {
     const ::artm::GetTopicModelArgs& get_model_args,
     ::artm::TopicModel* topic_model) const;
 
-  void ApplyTopicModelOperation(const ::artm::TopicModel& topic_model, float apply_weight);
-
-  void RemoveToken(const Token& token);
-  int  AddToken(const Token& token, bool random_init = true);
-
   void CalcPwt();
   void CalcPwt(const PhiMatrix& r_wt);
   const PhiMatrix& GetPwt() const { return p_wt_; }
   const PhiMatrix& GetNwt () const { return n_wt_; }
+
+  PhiMatrix* mutable_pwt() { return &p_wt_; }
+  PhiMatrix* mutable_nwt() { return &n_wt_; }
 
   ModelName model_name() const { return n_wt_.model_name(); }
   int token_size() const { return n_wt_.token_size(); }

@@ -290,6 +290,37 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
+  if (merge_model_args.nwt_source_name_size() == 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation("MergeModelArgs.nwt_source_name must not be empty"));
+  if (merge_model_args.nwt_source_name_size() != merge_model_args.source_weight_size())
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "MergeModelArgs.nwt_source_name_size() != MergeModelArgs.source_weight_size()"));
+
+  std::shared_ptr<DensePhiMatrix> nwt_target;
+  for (int i = 0; i < merge_model_args.nwt_source_name_size(); ++i) {
+    ModelName model_name = merge_model_args.nwt_source_name(i);
+    float weight = merge_model_args.source_weight(i);
+
+    std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
+    std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
+    if (topic_model == nullptr && phi_matrix == nullptr)
+      BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
+    const PhiMatrix& n_wt = (topic_model != nullptr) ? topic_model->GetNwt() : *phi_matrix;
+
+    if (i == 0) {
+      nwt_target = std::make_shared<DensePhiMatrix>(
+        merge_model_args.nwt_target_name(),
+        merge_model_args.topic_name_size() != 0 ? merge_model_args.topic_name() : n_wt.topic_name());
+
+      instance_->merger()->SetPhiMatrix(merge_model_args.nwt_target_name(), nwt_target);
+    }
+
+    if (n_wt.token_size() > 0) {
+      ::artm::TopicModel topic_model;
+      PhiMatrixOperations::RetrieveExternalTopicModel(n_wt, GetTopicModelArgs(), &topic_model);
+      PhiMatrixOperations::ApplyTopicModelOperation(topic_model, weight, nwt_target.get());
+    }
+  }
 }
 
 void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_model_args) {
