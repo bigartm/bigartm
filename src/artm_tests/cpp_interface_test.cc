@@ -558,8 +558,27 @@ TEST(CppInterface, ProcessBatchesApi) {
   merge_model_args.set_nwt_target_name("nwt_merge");
   master.MergeModel(merge_model_args);
   std::shared_ptr< ::artm::TopicModel> nwt_merge = master.GetTopicModel("nwt_merge");
-  ASSERT_NE(pwt_model, nullptr);
-  ASSERT_EQ(pwt_model->topics_count(), nTopics);
+  ASSERT_NE(nwt_merge, nullptr);
+  ASSERT_EQ(nwt_merge->topics_count(), nTopics);
+
+  // Dummy test to verify we can regularize models
+  ::artm::RegularizerConfig sparse_phi_config;
+  sparse_phi_config.set_name("sparse_phi");
+  sparse_phi_config.set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+  sparse_phi_config.set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
+  ::artm::Regularizer sparse_phi(master, sparse_phi_config);
+
+  ::artm::RegularizeModelArgs regularize_model_args;
+  regularize_model_args.set_rwt_target_name("rwt");
+  regularize_model_args.set_pwt_source_name("pwt");
+  regularize_model_args.set_nwt_source_name("nwt_hat");
+  ::artm::RegularizerSettings* regularizer_settings = regularize_model_args.add_regularizer_settings();
+  regularizer_settings->set_name("sparse_phi");
+  regularizer_settings->set_tau(-0.5);
+  master.RegularizeModel(regularize_model_args);
+  std::shared_ptr< ::artm::TopicModel> rwt = master.GetTopicModel("rwt");
+  ASSERT_NE(rwt, nullptr);
+  ASSERT_EQ(rwt->topics_count(), nTopics);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

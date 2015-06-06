@@ -1317,8 +1317,10 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MergeModelArgs));
   RegularizeModelArgs_descriptor_ = file->message_type(57);
-  static const int RegularizeModelArgs_offsets_[2] = {
+  static const int RegularizeModelArgs_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizeModelArgs, rwt_target_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizeModelArgs, pwt_source_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizeModelArgs, nwt_source_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizeModelArgs, regularizer_settings_),
   };
   RegularizeModelArgs_reflection_ =
@@ -1858,12 +1860,13 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "a\030\001 \003(\0132\017.artm.ScoreData\"m\n\016MergeModelAr"
     "gs\022\027\n\017nwt_target_name\030\001 \001(\t\022\027\n\017nwt_sourc"
     "e_name\030\002 \003(\t\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\nt"
-    "opic_name\030\004 \003(\t\"g\n\023RegularizeModelArgs\022\027"
-    "\n\017rwt_target_name\030\001 \001(\t\0227\n\024regularizer_s"
-    "ettings\030\002 \003(\0132\031.artm.RegularizerSettings"
-    "\"_\n\022NormalizeModelArgs\022\027\n\017pwt_target_nam"
-    "e\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 \001(\t\022\027\n\017rwt_"
-    "source_name\030\003 \001(\t", 8977);
+    "opic_name\030\004 \003(\t\"\231\001\n\023RegularizeModelArgs\022"
+    "\027\n\017rwt_target_name\030\001 \001(\t\022\027\n\017pwt_source_n"
+    "ame\030\002 \001(\t\022\027\n\017nwt_source_name\030\003 \001(\t\0227\n\024re"
+    "gularizer_settings\030\004 \003(\0132\031.artm.Regulari"
+    "zerSettings\"_\n\022NormalizeModelArgs\022\027\n\017pwt"
+    "_target_name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 "
+    "\001(\t\022\027\n\017rwt_source_name\030\003 \001(\t", 9028);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -24151,6 +24154,8 @@ void MergeModelArgs::Swap(MergeModelArgs* other) {
 
 #ifndef _MSC_VER
 const int RegularizeModelArgs::kRwtTargetNameFieldNumber;
+const int RegularizeModelArgs::kPwtSourceNameFieldNumber;
+const int RegularizeModelArgs::kNwtSourceNameFieldNumber;
 const int RegularizeModelArgs::kRegularizerSettingsFieldNumber;
 #endif  // !_MSC_VER
 
@@ -24171,6 +24176,8 @@ RegularizeModelArgs::RegularizeModelArgs(const RegularizeModelArgs& from)
 void RegularizeModelArgs::SharedCtor() {
   _cached_size_ = 0;
   rwt_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  pwt_source_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  nwt_source_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -24181,6 +24188,12 @@ RegularizeModelArgs::~RegularizeModelArgs() {
 void RegularizeModelArgs::SharedDtor() {
   if (rwt_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete rwt_target_name_;
+  }
+  if (pwt_source_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete pwt_source_name_;
+  }
+  if (nwt_source_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete nwt_source_name_;
   }
   if (this != default_instance_) {
   }
@@ -24214,6 +24227,16 @@ void RegularizeModelArgs::Clear() {
         rwt_target_name_->clear();
       }
     }
+    if (has_pwt_source_name()) {
+      if (pwt_source_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        pwt_source_name_->clear();
+      }
+    }
+    if (has_nwt_source_name()) {
+      if (nwt_source_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        nwt_source_name_->clear();
+      }
+    }
   }
   regularizer_settings_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -24238,12 +24261,46 @@ bool RegularizeModelArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_regularizer_settings;
+        if (input->ExpectTag(18)) goto parse_pwt_source_name;
         break;
       }
 
-      // repeated .artm.RegularizerSettings regularizer_settings = 2;
+      // optional string pwt_source_name = 2;
       case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_pwt_source_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_pwt_source_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->pwt_source_name().data(), this->pwt_source_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_nwt_source_name;
+        break;
+      }
+
+      // optional string nwt_source_name = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_nwt_source_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_nwt_source_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->nwt_source_name().data(), this->nwt_source_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_regularizer_settings;
+        break;
+      }
+
+      // repeated .artm.RegularizerSettings regularizer_settings = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_regularizer_settings:
@@ -24252,7 +24309,7 @@ bool RegularizeModelArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_regularizer_settings;
+        if (input->ExpectTag(34)) goto parse_regularizer_settings;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -24284,10 +24341,28 @@ void RegularizeModelArgs::SerializeWithCachedSizes(
       1, this->rwt_target_name(), output);
   }
 
-  // repeated .artm.RegularizerSettings regularizer_settings = 2;
+  // optional string pwt_source_name = 2;
+  if (has_pwt_source_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->pwt_source_name().data(), this->pwt_source_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->pwt_source_name(), output);
+  }
+
+  // optional string nwt_source_name = 3;
+  if (has_nwt_source_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->nwt_source_name().data(), this->nwt_source_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      3, this->nwt_source_name(), output);
+  }
+
+  // repeated .artm.RegularizerSettings regularizer_settings = 4;
   for (int i = 0; i < this->regularizer_settings_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->regularizer_settings(i), output);
+      4, this->regularizer_settings(i), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -24308,11 +24383,31 @@ void RegularizeModelArgs::SerializeWithCachedSizes(
         1, this->rwt_target_name(), target);
   }
 
-  // repeated .artm.RegularizerSettings regularizer_settings = 2;
+  // optional string pwt_source_name = 2;
+  if (has_pwt_source_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->pwt_source_name().data(), this->pwt_source_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->pwt_source_name(), target);
+  }
+
+  // optional string nwt_source_name = 3;
+  if (has_nwt_source_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->nwt_source_name().data(), this->nwt_source_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->nwt_source_name(), target);
+  }
+
+  // repeated .artm.RegularizerSettings regularizer_settings = 4;
   for (int i = 0; i < this->regularizer_settings_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        2, this->regularizer_settings(i), target);
+        4, this->regularizer_settings(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -24333,8 +24428,22 @@ int RegularizeModelArgs::ByteSize() const {
           this->rwt_target_name());
     }
 
+    // optional string pwt_source_name = 2;
+    if (has_pwt_source_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->pwt_source_name());
+    }
+
+    // optional string nwt_source_name = 3;
+    if (has_nwt_source_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->nwt_source_name());
+    }
+
   }
-  // repeated .artm.RegularizerSettings regularizer_settings = 2;
+  // repeated .artm.RegularizerSettings regularizer_settings = 4;
   total_size += 1 * this->regularizer_settings_size();
   for (int i = 0; i < this->regularizer_settings_size(); i++) {
     total_size +=
@@ -24372,6 +24481,12 @@ void RegularizeModelArgs::MergeFrom(const RegularizeModelArgs& from) {
     if (from.has_rwt_target_name()) {
       set_rwt_target_name(from.rwt_target_name());
     }
+    if (from.has_pwt_source_name()) {
+      set_pwt_source_name(from.pwt_source_name());
+    }
+    if (from.has_nwt_source_name()) {
+      set_nwt_source_name(from.nwt_source_name());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -24396,6 +24511,8 @@ bool RegularizeModelArgs::IsInitialized() const {
 void RegularizeModelArgs::Swap(RegularizeModelArgs* other) {
   if (other != this) {
     std::swap(rwt_target_name_, other->rwt_target_name_);
+    std::swap(pwt_source_name_, other->pwt_source_name_);
+    std::swap(nwt_source_name_, other->nwt_source_name_);
     regularizer_settings_.Swap(&other->regularizer_settings_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);

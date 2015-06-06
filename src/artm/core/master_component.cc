@@ -324,6 +324,30 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
 }
 
 void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_model_args) {
+  const std::string& pwt_source_name = regularize_model_args.pwt_source_name();
+  const std::string& nwt_source_name = regularize_model_args.nwt_source_name();
+  const std::string& rwt_target_name = regularize_model_args.rwt_target_name();
+
+  if (!regularize_model_args.has_pwt_source_name())
+    BOOST_THROW_EXCEPTION(InvalidOperation("RegularizeModelArgs.pwt_source_name is missing"));
+  if (!regularize_model_args.has_nwt_source_name())
+    BOOST_THROW_EXCEPTION(InvalidOperation("RegularizeModelArgs.nwt_source_name is missing"));
+  if (!regularize_model_args.has_rwt_target_name())
+    BOOST_THROW_EXCEPTION(InvalidOperation("RegularizeModelArgs.rwt_target_name is missing"));
+
+  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrix(nwt_source_name);
+  std::shared_ptr<const PhiMatrix> pwt_phi_matrix = instance_->merger()->GetPhiMatrix(pwt_source_name);
+  if (nwt_phi_matrix == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + nwt_source_name + " does not exist"));
+  if (pwt_phi_matrix == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + pwt_source_name + " does not exist"));
+
+  auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name, nwt_phi_matrix->topic_name()));
+  rwt_target->Reshape(*nwt_phi_matrix);
+  instance_->merger()->SetPhiMatrix(rwt_target_name, rwt_target);
+
+  PhiMatrixOperations::InvokePhiRegularizers(instance_->schema(), regularize_model_args.regularizer_settings(),
+                                             *pwt_phi_matrix, *nwt_phi_matrix, rwt_target.get());
 }
 
 void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_args) {

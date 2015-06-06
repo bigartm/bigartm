@@ -116,137 +116,6 @@ Merger::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMat
   return phi_matrix_.set(model_name, phi_matrix);
 }
 
-void Merger::InvokePhiRegularizers(const ::artm::core::TopicModel& topic_model,
-                                   ::artm::core::PhiMatrix* global_r_wt) {
-  auto schema = schema_->get();
-  auto& model = schema->model_config(topic_model.model_name());
-  auto& reg_settings = model.regularizer_settings();
-
-  int topic_size = topic_model.topic_size();
-  int token_size = topic_model.token_size();
-
-  ::artm::core::DensePhiMatrix local_r_wt(topic_model.model_name(), topic_model.topic_name());
-  local_r_wt.Reshape(topic_model.GetNwt());
-
-  auto n_t_all = PhiMatrixOperations::FindNormalizers(topic_model.GetNwt());
-
-  for (auto reg_iterator = reg_settings.begin();
-       reg_iterator != reg_settings.end();
-       reg_iterator++) {
-    auto regularizer = schema->regularizer(reg_iterator->name().c_str());
-
-    if (regularizer != nullptr) {
-      double tau = reg_iterator->tau();
-      bool relative_reg = reg_iterator->use_relative_regularization();
-
-      const PhiMatrix& pwt_matrix = topic_model.GetPwt();
-      const PhiMatrix& nwt_matrix = topic_model.GetNwt();
-      if (pwt_matrix.token_size() != nwt_matrix.token_size() || pwt_matrix.topic_size() != nwt_matrix.topic_size() ||
-          local_r_wt.token_size() != nwt_matrix.token_size() || local_r_wt.topic_size() != nwt_matrix.topic_size()) {
-        LOG(ERROR) << "Inconsistent matrix size: Pwt( "
-                    << pwt_matrix.token_size() << ", " << pwt_matrix.topic_size() << ") vs Nwt("
-                    << nwt_matrix.token_size() << ", " << nwt_matrix.topic_size() << ") vs Rwt("
-                    << local_r_wt.token_size() << ", " << local_r_wt.topic_size() << ")";
-        continue;
-      }
-
-      bool retval = regularizer->RegularizePhi(topic_model.GetPwt(), topic_model.GetNwt(), &local_r_wt);
-
-      // count n and r_i for relative regularization, if necessary
-      // prepare next structure with parameters:
-      // pair of pairs, first pair --- n and n_t, second one --- r_i and r_it
-      std::unordered_map<core::ClassId, std::pair<std::pair<double, std::vector<float> >,
-                                                  std::pair<double, std::vector<float> > > > parameters;
-      std::vector<bool> topics_to_regularize;
-
-      if (relative_reg) {
-        std::vector<core::ClassId> class_ids;
-        if (regularizer->class_ids_to_regularize().size() > 0) {
-          auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
-          for (auto class_id : class_ids_to_regularize) class_ids.push_back(class_id);
-        } else {
-          boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
-        }
-
-        if (regularizer->topics_to_regularize().size() > 0)
-          topics_to_regularize.assign(topic_size, true);
-        else
-          topics_to_regularize = core::is_member(topic_model.topic_name(), regularizer->topics_to_regularize());
-
-        for (auto class_id : class_ids) {
-          auto iter = n_t_all.find(class_id);
-          if (iter != n_t_all.end()) {
-            double n = 0.0;
-            double r_i = 0.0;
-            std::vector<float> r_it;
-            std::vector<float> n_t = iter->second;
-
-            for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-              if (!topics_to_regularize[topic_id]) {
-                r_it.push_back(-1.0f);
-                continue;
-              }
-              n += n_t[topic_id];
-
-              float r_it_current = 0.0f;
-              for (int token_id = 0; token_id < token_size; ++token_id) {
-                if (topic_model.token(token_id).class_id != iter->first) continue;
-
-                r_it_current += local_r_wt.get(token_id, topic_id);
-              }
-
-              r_it.push_back(r_it_current);
-              r_i += r_it_current;
-            }
-
-            auto pair_n = std::pair<double, std::vector<float> >(n, n_t);
-            auto pair_r = std::pair<double, std::vector<float> >(r_i, r_it);
-            auto pair_data = std::pair<std::pair<double, std::vector<float> >,
-                                       std::pair<double, std::vector<float> > >(pair_n, pair_r);
-            auto pair_last = std::pair<core::ClassId,
-                                    std::pair<std::pair<double, std::vector<float> >,
-                                    std::pair<double, std::vector<float> > > >(iter->first, pair_data);
-            parameters.insert(pair_last);
-          }
-        }
-      }
-
-      for (int token_id = 0; token_id < token_size; ++token_id) {
-        auto iter = parameters.find(topic_model.token(token_id).class_id);
-        if (relative_reg) {
-          if (iter == parameters.end()) continue;
-        }
-        for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-          float coefficient = 1.0f;
-          if (relative_reg) {
-            if (!topics_to_regularize[topic_id]) continue;
-
-            double gamma = reg_iterator->gamma();
-            float n_t = iter->second.first.second[topic_id];
-            float n = iter->second.first.first;
-            float r_it = iter->second.second.second[topic_id];
-            float r_i = iter->second.second.first;
-            coefficient = static_cast<float>(gamma) * (n_t / r_it) * static_cast<float>(1 - gamma) * (n / r_i);
-          }
-          // update global r_wt using coefficient and tau
-          float increment = coefficient * tau * local_r_wt.get(token_id, topic_id);
-          global_r_wt->increase(token_id, topic_id, increment);
-        }
-      }
-      local_r_wt.Reset();
-
-      if (!retval) {
-        LOG(ERROR) << "Problems with type or number of parameters in Phi regularizer <" <<
-          reg_iterator->name().c_str() <<
-          ">. On this iteration this regularizer was turned off.\n";
-      }
-    } else {
-      LOG(ERROR) << "Phi Regularizer with name <" <<
-        reg_iterator->name().c_str() << "> does not exist.\n";
-    }
-  }
-}
-
 void Merger::ThreadFunction() {
   try {
     Helpers::SetThreadName(-1, "Merger thread");
@@ -469,7 +338,8 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
 
       ::artm::core::DensePhiMatrix global_r_wt(new_ttm->model_name(), new_ttm->topic_name());
       global_r_wt.Reshape(new_ttm->GetNwt());
-      InvokePhiRegularizers(*new_ttm, &global_r_wt);
+      PhiMatrixOperations::InvokePhiRegularizers(schema_->get(), current_config.regularizer_settings(),
+                                                 new_ttm->GetPwt(), new_ttm->GetNwt(), &global_r_wt);
 
       // merge final r_wt with n_wt in p_wt (n_wt is const)
       new_ttm->CalcPwt(global_r_wt);
