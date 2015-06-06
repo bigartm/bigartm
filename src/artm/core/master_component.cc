@@ -92,15 +92,16 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   if (!fout.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + args.file_name()));
 
-  std::shared_ptr<const ::artm::core::TopicModel> topic_model =
-    instance_->merger()->GetLatestTopicModel(args.model_name());
-  if (topic_model == nullptr)
+  std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(args.model_name());
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(args.model_name());
+  if (topic_model == nullptr && phi_matrix == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Model " + args.model_name() + " does not exist"));
+  const PhiMatrix& n_wt = (topic_model != nullptr) ? topic_model->GetNwt() : *phi_matrix;
 
   LOG(INFO) << "Exporting model " << args.model_name() << " to " << args.file_name();
 
-  const int token_size = topic_model->token_size();
-  int tokens_per_chunk = std::min<int>(token_size, 100 * 1024 * 1024 / topic_model->topic_size());
+  const int token_size = n_wt.token_size();
+  int tokens_per_chunk = std::min<int>(token_size, 100 * 1024 * 1024 / n_wt.topic_size());
 
   ::artm::GetTopicModelArgs get_topic_model_args;
   get_topic_model_args.set_model_name(args.model_name());
@@ -109,13 +110,13 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   get_topic_model_args.mutable_token()->Reserve(tokens_per_chunk);
   get_topic_model_args.mutable_class_id()->Reserve(tokens_per_chunk);
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    Token token = topic_model->token(token_id);
+    Token token = n_wt.token(token_id);
     get_topic_model_args.add_token(token.keyword);
     get_topic_model_args.add_class_id(token.class_id);
 
     if (((token_id + 1) == token_size) || (get_topic_model_args.token_size() >= tokens_per_chunk)) {
       ::artm::TopicModel external_topic_model;
-      topic_model->RetrieveExternalTopicModel(get_topic_model_args, &external_topic_model);
+      PhiMatrixOperations::RetrieveExternalTopicModel(n_wt, get_topic_model_args, &external_topic_model);
       std::string str = external_topic_model.SerializeAsString();
       fout << str.size();
       fout << str;
@@ -125,8 +126,8 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   }
 
   fout.close();
-  LOG(INFO) << "Export completed, token_size = " << topic_model->token_size()
-            << ", topic_size = " << topic_model->topic_size();
+  LOG(INFO) << "Export completed, token_size = " << n_wt.token_size()
+            << ", topic_size = " << n_wt.topic_size();
 }
 
 void MasterComponent::ImportModel(const ImportModelArgs& args) {
