@@ -961,7 +961,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopicKernelScoreConfig));
   TopicKernelScore_descriptor_ = file->message_type(40);
-  static const int TopicKernelScore_offsets_[9] = {
+  static const int TopicKernelScore_offsets_[10] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, kernel_size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, kernel_purity_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, kernel_contrast_),
@@ -971,6 +971,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, coherence_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, average_coherence_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, kernel_tokens_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, topic_name_),
   };
   TopicKernelScore_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1685,7 +1686,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "ps\030\001 \001(\002:\0061e-037\022 \n\010class_id\030\002 \001(\t:\016@def"
     "ault_class\022\022\n\ntopic_name\030\003 \003(\t\022\'\n\032probab"
     "ility_mass_threshold\030\004 \001(\001:\0030.1\022$\n\034coocc"
-    "urrence_dictionary_name\030\005 \001(\t\"\330\002\n\020TopicK"
+    "urrence_dictionary_name\030\005 \001(\t\"\377\002\n\020TopicK"
     "ernelScore\022&\n\013kernel_size\030\001 \001(\0132\021.artm.D"
     "oubleArray\022(\n\rkernel_purity\030\002 \001(\0132\021.artm"
     ".DoubleArray\022*\n\017kernel_contrast\030\003 \001(\0132\021."
@@ -1694,69 +1695,70 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "average_kernel_contrast\030\006 \001(\001\022$\n\tcoheren"
     "ce\030\007 \001(\0132\021.artm.DoubleArray\022\031\n\021average_c"
     "oherence\030\010 \001(\002\022(\n\rkernel_tokens\030\t \003(\0132\021."
-    "artm.StringArray\"\224\003\n\nTopicModel\022\024\n\004name\030"
-    "\001 \001(\t:\006@model\022\024\n\014topics_count\030\002 \001(\005\022\022\n\nt"
-    "opic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rtoken_"
-    "weights\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010class"
-    "_id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\022#\n\013topic_in"
-    "dex\030\010 \003(\0132\016.artm.IntArray\0226\n\016operation_t"
-    "ype\030\t \003(\0162\036.artm.TopicModel.OperationTyp"
-    "e\0325\n\023TopicModelInternals\022\036\n\004n_wt\030\001 \003(\0132\020"
-    ".artm.FloatArray\"U\n\rOperationType\022\016\n\nIni"
-    "tialize\020\000\022\r\n\tIncrement\020\001\022\r\n\tOverwrite\020\002\022"
-    "\n\n\006Remove\020\003\022\n\n\006Ignore\020\004\"\305\001\n\013ThetaMatrix\022"
-    "\032\n\nmodel_name\030\001 \001(\t:\006@model\022\017\n\007item_id\030\002"
-    " \003(\005\022&\n\014item_weights\030\003 \003(\0132\020.artm.FloatA"
-    "rray\022\022\n\ntopic_name\030\004 \003(\t\022\024\n\014topics_count"
-    "\030\005 \001(\005\022\022\n\nitem_title\030\006 \003(\t\022#\n\013topic_inde"
-    "x\030\007 \003(\0132\016.artm.IntArray\"\210\003\n\026CollectionPa"
-    "rserConfig\022B\n\006format\030\001 \001(\0162#.artm.Collec"
-    "tionParserConfig.Format:\rBagOfWordsUci\022\031"
-    "\n\021docword_file_path\030\002 \001(\t\022\027\n\017vocab_file_"
-    "path\030\003 \001(\t\022\025\n\rtarget_folder\030\004 \001(\t\022\034\n\024dic"
-    "tionary_file_name\030\005 \001(\t\022!\n\023num_items_per"
-    "_batch\030\006 \001(\005:\0041000\022\032\n\022cooccurrence_token"
-    "\030\007 \003(\t\022%\n\027use_unity_based_indices\030\010 \001(\010:"
-    "\004true\022\032\n\013gather_cooc\030\t \001(\010:\005false\"\?\n\006For"
-    "mat\022\021\n\rBagOfWordsUci\020\000\022\020\n\014MatrixMarket\020\001"
-    "\022\020\n\014VowpalWabbit\020\002\"\177\n\024SynchronizeModelAr"
-    "gs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014decay_weight\030\002"
-    " \001(\002:\0010\022!\n\023invoke_regularizers\030\003 \001(\010:\004tr"
-    "ue\022\027\n\014apply_weight\030\004 \001(\002:\0011\"\241\003\n\023Initiali"
-    "zeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dicti"
-    "onary_name\030\002 \001(\t\022E\n\013source_type\030\003 \001(\0162$."
-    "artm.InitializeModelArgs.SourceType:\nDic"
-    "tionary\022\021\n\tdisk_path\030\004 \001(\t\0220\n\006filter\030\005 \003"
-    "(\0132 .artm.InitializeModelArgs.Filter\032\245\001\n"
-    "\006Filter\022\020\n\010class_id\030\001 \001(\t\022\026\n\016min_percent"
-    "age\030\002 \001(\002\022\026\n\016max_percentage\030\003 \001(\002\022\021\n\tmin"
-    "_items\030\004 \001(\005\022\021\n\tmax_items\030\005 \001(\005\022\027\n\017min_t"
-    "otal_count\030\006 \001(\005\022\032\n\022min_one_item_count\030\007"
-    " \001(\005\")\n\nSourceType\022\016\n\nDictionary\020\000\022\013\n\007Ba"
-    "tches\020\001\"\355\001\n\021GetTopicModelArgs\022\022\n\nmodel_n"
-    "ame\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003"
-    " \003(\t\022\020\n\010class_id\030\004 \003(\t\022\031\n\021use_sparse_for"
-    "mat\030\005 \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n\014reques"
-    "t_type\030\007 \001(\0162#.artm.GetTopicModelArgs.Re"
-    "questType:\003Pwt\"\037\n\013RequestType\022\007\n\003Pwt\020\000\022\007"
-    "\n\003Nwt\020\001\"\271\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_"
-    "name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022"
-    "\n\ntopic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022"
-    "\032\n\013clean_cache\030\005 \001(\010:\005false\022\031\n\021use_spars"
-    "e_format\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\"W\n\021G"
-    "etScoreValueArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\n"
-    "score_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.B"
-    "atch\"\202\001\n\014AddBatchArgs\022\032\n\005batch\030\001 \001(\0132\013.a"
-    "rtm.Batch\022 \n\024timeout_milliseconds\030\002 \001(\005:"
-    "\002-1\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027\n\017batc"
-    "h_file_name\030\004 \001(\t\"a\n\023InvokeIterationArgs"
-    "\022\033\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014reset_s"
-    "cores\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014"
-    "WaitIdleArgs\022 \n\024timeout_milliseconds\030\001 \001"
-    "(\005:\002-1\"8\n\017ExportModelArgs\022\021\n\tfile_name\030\001"
-    " \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"8\n\017ImportModelA"
-    "rgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001"
-    "(\t", 8602);
+    "artm.StringArray\022%\n\ntopic_name\030\n \001(\0132\021.a"
+    "rtm.StringArray\"\224\003\n\nTopicModel\022\024\n\004name\030\001"
+    " \001(\t:\006@model\022\024\n\014topics_count\030\002 \001(\005\022\022\n\nto"
+    "pic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rtoken_w"
+    "eights\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010class_"
+    "id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\022#\n\013topic_ind"
+    "ex\030\010 \003(\0132\016.artm.IntArray\0226\n\016operation_ty"
+    "pe\030\t \003(\0162\036.artm.TopicModel.OperationType"
+    "\0325\n\023TopicModelInternals\022\036\n\004n_wt\030\001 \003(\0132\020."
+    "artm.FloatArray\"U\n\rOperationType\022\016\n\nInit"
+    "ialize\020\000\022\r\n\tIncrement\020\001\022\r\n\tOverwrite\020\002\022\n"
+    "\n\006Remove\020\003\022\n\n\006Ignore\020\004\"\305\001\n\013ThetaMatrix\022\032"
+    "\n\nmodel_name\030\001 \001(\t:\006@model\022\017\n\007item_id\030\002 "
+    "\003(\005\022&\n\014item_weights\030\003 \003(\0132\020.artm.FloatAr"
+    "ray\022\022\n\ntopic_name\030\004 \003(\t\022\024\n\014topics_count\030"
+    "\005 \001(\005\022\022\n\nitem_title\030\006 \003(\t\022#\n\013topic_index"
+    "\030\007 \003(\0132\016.artm.IntArray\"\210\003\n\026CollectionPar"
+    "serConfig\022B\n\006format\030\001 \001(\0162#.artm.Collect"
+    "ionParserConfig.Format:\rBagOfWordsUci\022\031\n"
+    "\021docword_file_path\030\002 \001(\t\022\027\n\017vocab_file_p"
+    "ath\030\003 \001(\t\022\025\n\rtarget_folder\030\004 \001(\t\022\034\n\024dict"
+    "ionary_file_name\030\005 \001(\t\022!\n\023num_items_per_"
+    "batch\030\006 \001(\005:\0041000\022\032\n\022cooccurrence_token\030"
+    "\007 \003(\t\022%\n\027use_unity_based_indices\030\010 \001(\010:\004"
+    "true\022\032\n\013gather_cooc\030\t \001(\010:\005false\"\?\n\006Form"
+    "at\022\021\n\rBagOfWordsUci\020\000\022\020\n\014MatrixMarket\020\001\022"
+    "\020\n\014VowpalWabbit\020\002\"\177\n\024SynchronizeModelArg"
+    "s\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\014decay_weight\030\002 "
+    "\001(\002:\0010\022!\n\023invoke_regularizers\030\003 \001(\010:\004tru"
+    "e\022\027\n\014apply_weight\030\004 \001(\002:\0011\"\241\003\n\023Initializ"
+    "eModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017dictio"
+    "nary_name\030\002 \001(\t\022E\n\013source_type\030\003 \001(\0162$.a"
+    "rtm.InitializeModelArgs.SourceType:\nDict"
+    "ionary\022\021\n\tdisk_path\030\004 \001(\t\0220\n\006filter\030\005 \003("
+    "\0132 .artm.InitializeModelArgs.Filter\032\245\001\n\006"
+    "Filter\022\020\n\010class_id\030\001 \001(\t\022\026\n\016min_percenta"
+    "ge\030\002 \001(\002\022\026\n\016max_percentage\030\003 \001(\002\022\021\n\tmin_"
+    "items\030\004 \001(\005\022\021\n\tmax_items\030\005 \001(\005\022\027\n\017min_to"
+    "tal_count\030\006 \001(\005\022\032\n\022min_one_item_count\030\007 "
+    "\001(\005\")\n\nSourceType\022\016\n\nDictionary\020\000\022\013\n\007Bat"
+    "ches\020\001\"\355\001\n\021GetTopicModelArgs\022\022\n\nmodel_na"
+    "me\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 "
+    "\003(\t\022\020\n\010class_id\030\004 \003(\t\022\031\n\021use_sparse_form"
+    "at\030\005 \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n\014request"
+    "_type\030\007 \001(\0162#.artm.GetTopicModelArgs.Req"
+    "uestType:\003Pwt\"\037\n\013RequestType\022\007\n\003Pwt\020\000\022\007\n"
+    "\003Nwt\020\001\"\271\001\n\022GetThetaMatrixArgs\022\022\n\nmodel_n"
+    "ame\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n"
+    "\ntopic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032"
+    "\n\013clean_cache\030\005 \001(\010:\005false\022\031\n\021use_sparse"
+    "_format\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\"W\n\021Ge"
+    "tScoreValueArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ns"
+    "core_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Ba"
+    "tch\"\202\001\n\014AddBatchArgs\022\032\n\005batch\030\001 \001(\0132\013.ar"
+    "tm.Batch\022 \n\024timeout_milliseconds\030\002 \001(\005:\002"
+    "-1\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027\n\017batch"
+    "_file_name\030\004 \001(\t\"a\n\023InvokeIterationArgs\022"
+    "\033\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014reset_sc"
+    "ores\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014W"
+    "aitIdleArgs\022 \n\024timeout_milliseconds\030\001 \001("
+    "\005:\002-1\"8\n\017ExportModelArgs\022\021\n\tfile_name\030\001 "
+    "\001(\t\022\022\n\nmodel_name\030\002 \001(\t\"8\n\017ImportModelAr"
+    "gs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001("
+    "\t", 8641);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -16789,6 +16791,7 @@ const int TopicKernelScore::kAverageKernelContrastFieldNumber;
 const int TopicKernelScore::kCoherenceFieldNumber;
 const int TopicKernelScore::kAverageCoherenceFieldNumber;
 const int TopicKernelScore::kKernelTokensFieldNumber;
+const int TopicKernelScore::kTopicNameFieldNumber;
 #endif  // !_MSC_VER
 
 TopicKernelScore::TopicKernelScore()
@@ -16801,6 +16804,7 @@ void TopicKernelScore::InitAsDefaultInstance() {
   kernel_purity_ = const_cast< ::artm::DoubleArray*>(&::artm::DoubleArray::default_instance());
   kernel_contrast_ = const_cast< ::artm::DoubleArray*>(&::artm::DoubleArray::default_instance());
   coherence_ = const_cast< ::artm::DoubleArray*>(&::artm::DoubleArray::default_instance());
+  topic_name_ = const_cast< ::artm::StringArray*>(&::artm::StringArray::default_instance());
 }
 
 TopicKernelScore::TopicKernelScore(const TopicKernelScore& from)
@@ -16819,6 +16823,7 @@ void TopicKernelScore::SharedCtor() {
   average_kernel_contrast_ = 0;
   coherence_ = NULL;
   average_coherence_ = 0;
+  topic_name_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -16832,6 +16837,7 @@ void TopicKernelScore::SharedDtor() {
     delete kernel_purity_;
     delete kernel_contrast_;
     delete coherence_;
+    delete topic_name_;
   }
 }
 
@@ -16874,6 +16880,11 @@ void TopicKernelScore::Clear() {
       if (coherence_ != NULL) coherence_->::artm::DoubleArray::Clear();
     }
     average_coherence_ = 0;
+  }
+  if (_has_bits_[9 / 32] & (0xffu << (9 % 32))) {
+    if (has_topic_name()) {
+      if (topic_name_ != NULL) topic_name_->::artm::StringArray::Clear();
+    }
   }
   kernel_tokens_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -17016,6 +17027,20 @@ bool TopicKernelScore::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(74)) goto parse_kernel_tokens;
+        if (input->ExpectTag(82)) goto parse_topic_name;
+        break;
+      }
+
+      // optional .artm.StringArray topic_name = 10;
+      case 10: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_topic_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_topic_name()));
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -17088,6 +17113,12 @@ void TopicKernelScore::SerializeWithCachedSizes(
       9, this->kernel_tokens(i), output);
   }
 
+  // optional .artm.StringArray topic_name = 10;
+  if (has_topic_name()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      10, this->topic_name(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -17151,6 +17182,13 @@ void TopicKernelScore::SerializeWithCachedSizes(
         9, this->kernel_tokens(i), target);
   }
 
+  // optional .artm.StringArray topic_name = 10;
+  if (has_topic_name()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        10, this->topic_name(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -17208,6 +17246,15 @@ int TopicKernelScore::ByteSize() const {
     // optional float average_coherence = 8;
     if (has_average_coherence()) {
       total_size += 1 + 4;
+    }
+
+  }
+  if (_has_bits_[9 / 32] & (0xffu << (9 % 32))) {
+    // optional .artm.StringArray topic_name = 10;
+    if (has_topic_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->topic_name());
     }
 
   }
@@ -17271,6 +17318,11 @@ void TopicKernelScore::MergeFrom(const TopicKernelScore& from) {
       set_average_coherence(from.average_coherence());
     }
   }
+  if (from._has_bits_[9 / 32] & (0xffu << (9 % 32))) {
+    if (from.has_topic_name()) {
+      mutable_topic_name()->::artm::StringArray::MergeFrom(from.topic_name());
+    }
+  }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -17302,6 +17354,7 @@ void TopicKernelScore::Swap(TopicKernelScore* other) {
     std::swap(coherence_, other->coherence_);
     std::swap(average_coherence_, other->average_coherence_);
     kernel_tokens_.Swap(&other->kernel_tokens_);
+    std::swap(topic_name_, other->topic_name_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

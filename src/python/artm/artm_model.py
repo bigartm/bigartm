@@ -1,5 +1,7 @@
 import artm.messages_pb2
 import artm.library
+import collections
+from collections import OrderedDict
 import random
 import uuid
 import sys
@@ -1764,15 +1766,15 @@ class SparsityPhiScoreInfo(object):
   def name(self): return self._name
   @property
   def value(self):
-    """ value of Phi sparsity on syncronizations (list of scalars) """  
+    """ value of Phi sparsity on syncronizations. Is list of scalars """  
     return self._value  
   @property
   def zero_tokens(self):
-    """ number of zero rows in Phi on syncronizations (list of scalars) """  
+    """ number of zero rows in Phi on syncronizations. Is list of scalars """  
     return self._zero_tokens
   @property
   def total_tokens(self):
-    """ total number of rows in Phi on syncronizations (list of scalars) """ 
+    """ total number of rows in Phi on syncronizations. Is list of scalars """ 
     return self._total_tokens
  
 #######################################################################################################################
@@ -1808,15 +1810,15 @@ class SparsityThetaScoreInfo(object):
   def name(self): return self._name
   @property
   def value(self):
-    """ value of Theta sparsity on syncronizations (list of scalars) """  
+    """ value of Theta sparsity on syncronizations. Is list of scalars """  
     return self._value  
   @property
   def zero_topics(self):
-    """ number of zero rows in Theta on syncronizations (list of scalars) """  
+    """ number of zero rows in Theta on syncronizations. Is list of scalars """  
     return self._zero_topics
   @property
   def total_topics(self):
-    """ total number of rows in Theta on syncronizations (list of scalars) """ 
+    """ total number of rows in Theta on syncronizations. Is list of scalars """ 
     return self._total_topics
  
 #######################################################################################################################
@@ -1864,31 +1866,31 @@ class PerplexityScoreInfo(object):
   def name(self): return self._name
   @property
   def value(self):
-    """ value of perplexity on syncronizations (list of scalars) """  
+    """ value of perplexity on syncronizations. Is list of scalars """  
     return self._value  
   @property
   def raw(self):
-    """ raw value in formula of perplexity on syncronizations (list of scalars) """  
+    """ raw value in formula of perplexity on syncronizations. Is list of scalars """  
     return self._raw
   @property  
   def normalizer(self):
-    """ normalizer value in formula of perplexity on syncronizations (list of scalars) """  
+    """ normalizer value in formula of perplexity on syncronizations. Is list of scalars """  
     return self._normalizer  
   @property
   def zero_tokens(self):
-    """ number of tokens with zero counters on syncronizations (list of scalars) """  
+    """ number of tokens with zero counters on syncronizations. Is list of scalars """  
     return self._zero_tokens
   @property
   def theta_sparsity_value(self):
-    """ Theta sparsity value on syncronizations (list of scalars) """ 
+    """ Theta sparsity value on syncronizations. Is list of scalars """ 
     return self._theta_sparsity_value
   @property
   def theta_sparsity_zero_topics(self):
-    """ number of zero rows in Theta on syncronizations (list of scalars) """ 
+    """ number of zero rows in Theta on syncronizations. Is list of scalars """ 
     return self._theta_sparsity_zero_topics 
   @property
   def theta_sparsity_total_topics(self):
-    """ total number of rows in Theta on syncronizations (list of scalars) """ 
+    """ total number of rows in Theta on syncronizations. Is list of scalars """ 
     return self._theta_sparsity_total_topics
 
 #######################################################################################################################
@@ -1897,7 +1899,7 @@ class ItemsProcessedScoreInfo(object):
   Args:
   - score --- reference to score object, no default
   """
-  def __init__(self, score):   
+  def __init__(self, score):
     self._name = score.name
     self._value = []
 
@@ -1917,7 +1919,202 @@ class ItemsProcessedScoreInfo(object):
   def name(self): return self._name
   @property
   def value(self):
-    """ total number of processed documents on syncronizations (list of scalars) """  
+    """ total number of processed documents on syncronizations. Is list of scalars """  
     return self._value  
+
+#######################################################################################################################
+class TopTokensScoreInfo(object):
+  """ TopTokensScoreInfo represents a result of counting TopTokensScore (private class).
+  Args:
+  - score --- reference to score object, no default
+  """
+  def __init__(self, score):
+    self._name = score.name
+    self._num_tokens = []
+    self._topic_info = []
+    self._average_coherence = []
+
+  def add(self, score=None):
+    """ TopTokensScoreInfo.add() --- add info about score after syncronization.
+    Args:
+    - score --- reference to score object, default = None (means "Add None values")
+    """
+    if not score is None:
+      _data = artm.messages_pb2.TopTokensScore()
+      _data = score.score.GetValue(score._model)
+      
+      self._num_tokens.append(_data.num_entries)
+
+      self._topic_info.append({})
+      index = len(self._topic_info) - 1
+      topic_index = -1
+      for topic_name in list(OrderedDict.fromkeys(_data.topic_name)):
+        topic_index += 1
+        tokens = []
+        weights = []
+        for i in range(self._num_tokens):
+          if _data.topic_name[i] == topic_name:
+            tokens.append(_data.token[i])
+            weights.append(_data.weight[i]) 
+        self._topic_info[index][topic_name] = (tokens, topics, _data.coherence[topic_index])
+
+      self._average_coherence. append(_data.average_coherence)
+    else:
+      self._num_tokens.append(None)
+      self._topic_info.append(None)
+      self._average_coherence.append(None)
+
+  @property
+  def name(self): return self._name
+  @property
+  def num_tokens(self):
+    """ reqested number of top tokens in each topic on syncronizations. Is list of scalars """  
+    return self._num_tokens
+
+  @property
+  def topic_info(self):
+    """ information about top tokens per topic on syncrinazations. Is list of sets. Set contains 
+        information about topics, key --- name of topic, value --- triple:
+        - *.topic_info[topic_name][0] --- list of top tokens for this topic.
+        - *.topic_info[topic_name][1] --- list of weights (probabilities), corresponds the tokens.
+        - *.topic_info[topic_name][2] --- the coherency of topic due to it's top tokens.
+    """  
+    return self._topic_info
+
+  @property
+  def average_coherence(self):
+    """ average coherence of top tokens in all requested topics on syncronizations. Is list of scalars """  
+    return self._average_coherence
+
+#######################################################################################################################
+class TopicKernelScoreInfo(object):
+  """ TopicKernelScoreInfo represents a result of counting TopicKernelScore (private class).
+  Args:
+  - score --- reference to score object, no default
+  """
+  def __init__(self, score):
+    self._name = score.name
+    self._topic_info = []
+    self._average_coherence = []
+    self._average_kernel_size = []
+    self._average_kernel_contrast = []
+    self._average_kernel_purity = []
+
+  def add(self, score=None):
+    """ TopicKernelScoreInfo.add() --- add info about score after syncronization.
+    Args:
+    - score --- reference to score object, default = None (means "Add None values")
+    """
+    if not score is None:
+      _data = artm.messages_pb2.TopicKernelScore()
+      _data = score.score.GetValue(score._model)
+
+      self._topic_info.append({})
+      index = len(self._topic_info) - 1
+      topic_index = -1
+      for topic_name in _data.topic_name:
+        topic_index += 1
+        tokens = []
+        for token in _data.kernel_tokens[topic_index]: tokens.append(token)
+        self._topic_info[index][topic_name] = (tokens,
+                                               _data.kernel_size[topic_index],
+                                               _data.kernel_purity[topic_index],
+                                               _data.kernel_contrast[topic_index],
+                                               _data.coherence[topic_index])
+
+      self._average_coherence.append(_data.average_coherence)
+      self._average_kernel_size.append(_data.average_kernel_size)
+      self._average_kernel_contrast.append(_data.average_kernel_contrast)
+      self._average_kernel_purity.append(_data.average_kernel_purity)
+    else:
+      self._num_tokens.append(None)
+      self._topic_info.append(None)
+      self._average_coherence.append(None)
+      self._average_kernel_size.append(None)
+      self._average_kernel_contrast.append(None)
+      self._average_kernel_purity.append(None)
+
+  @property
+  def name(self): return self._name
+
+  @property
+  def topic_info(self):
+    """ information about kernel tokens per topic on syncrinazations. Is list of sets. Set contains 
+        information about topics, key --- name of topic, value --- quintuplet:
+        - *.topic_info[topic_name][0] --- list of kernel tokens for this topic.
+        - *.topic_info[topic_name][1] --- size of kernel for this topic.
+        - *.topic_info[topic_name][2] --- contrast of kernel for this topic.
+        - *.topic_info[topic_name][3] --- purity of kernel for this topic.
+        - *.topic_info[topic_name][4] --- the coherency of topic due to it's kernel.
+    """  
+    return self._topic_info
+
+  @property
+  def average_coherence(self):
+    """ average coherence of kernel tokens in all requested topics on syncronizations. Is list of scalars """  
+    return self._average_coherence
+  @property
+  def average_kernel_size(self):
+    """ average kernel size of all requested topics on syncronizations. Is list of scalars """  
+    return self._average_kernel_size
+  @property
+  def average_kernel_contrast(self):
+    """ average kernel contrast of all requested topics on syncronizations. Is list of scalars """  
+    return self._average_kernel_contrast
+  @property
+  def average_kernel_purity(self):
+    """ average kernel purity of all requested topics on syncronizations. Is list of scalars """  
+    return self._average_kernel_purity
+
+#######################################################################################################################
+class ThetaSnippetScoreInfo(object):
+  """ ThetaSnippetScoreInfo represents a result of counting ThetaSnippetScore (private class).
+  Args:
+  - score --- reference to score object, no default
+  """
+  def __init__(self, score):
+    self._name = score.name
+    self._document_ids = []
+    self._snippet = []
+
+  def add(self, score=None):
+    """ ThetaSnippetScoreInfo.add() --- add info about score after syncronization.
+    Args:
+    - score --- reference to score object, default = None (means "Add None values")
+    """
+    if not score is None:
+      _data = artm.messages_pb2.ThetaSnippetScore()
+      _data = score.score.GetValue(score._model)
+      
+      item_ids = []
+      for item_id in _data.item_id: item_ids.append(item_id)
+      self._document_ids.append(item_ids)
+
+      matrix = []
+      item_id = -1
+      for theta_d in _data.values:
+        item_id += 1
+        matrix.append([])
+        for theta_td in theta_d:
+          matrix[item_id].append(theta_td)
+      self._snippet.append(matrix)
+    else:
+      self._document_ids.append(None)
+      self._snippet.append(None)
+
+  @property
+  def name(self): return self._name
+
+  @property
+  def snippet(self):
+    """ the snippet (part) of Theta corresponds to documents from document_ids. Is list of lists of scalars, 
+        each internal list --- theta_d vector for document d, in direct order of document_ids
+    """  
+    return self._snippet
+
+  @property
+  def document_ids(self):
+    """ ids of documents in snippet on syncronizations. Is list of scalars """  
+    return self._document_ids
 
 #######################################################################################################################
