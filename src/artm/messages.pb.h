@@ -5817,6 +5817,15 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
       mutable_kernel_tokens();
 
+  // optional .artm.StringArray topic_name = 10;
+  inline bool has_topic_name() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 10;
+  inline const ::artm::StringArray& topic_name() const;
+  inline ::artm::StringArray* mutable_topic_name();
+  inline ::artm::StringArray* release_topic_name();
+  inline void set_allocated_topic_name(::artm::StringArray* topic_name);
+
   // @@protoc_insertion_point(class_scope:artm.TopicKernelScore)
  private:
   inline void set_has_kernel_size();
@@ -5835,6 +5844,8 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline void clear_has_coherence();
   inline void set_has_average_coherence();
   inline void clear_has_average_coherence();
+  inline void set_has_topic_name();
+  inline void clear_has_topic_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5846,10 +5857,11 @@ class TopicKernelScore : public ::google::protobuf::Message {
   double average_kernel_contrast_;
   ::artm::DoubleArray* coherence_;
   ::google::protobuf::RepeatedPtrField< ::artm::StringArray > kernel_tokens_;
+  ::artm::StringArray* topic_name_;
   float average_coherence_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -14964,6 +14976,44 @@ TopicKernelScore::kernel_tokens() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
 TopicKernelScore::mutable_kernel_tokens() {
   return &kernel_tokens_;
+}
+
+// optional .artm.StringArray topic_name = 10;
+inline bool TopicKernelScore::has_topic_name() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void TopicKernelScore::set_has_topic_name() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void TopicKernelScore::clear_has_topic_name() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void TopicKernelScore::clear_topic_name() {
+  if (topic_name_ != NULL) topic_name_->::artm::StringArray::Clear();
+  clear_has_topic_name();
+}
+inline const ::artm::StringArray& TopicKernelScore::topic_name() const {
+  return topic_name_ != NULL ? *topic_name_ : *default_instance_->topic_name_;
+}
+inline ::artm::StringArray* TopicKernelScore::mutable_topic_name() {
+  set_has_topic_name();
+  if (topic_name_ == NULL) topic_name_ = new ::artm::StringArray;
+  return topic_name_;
+}
+inline ::artm::StringArray* TopicKernelScore::release_topic_name() {
+  clear_has_topic_name();
+  ::artm::StringArray* temp = topic_name_;
+  topic_name_ = NULL;
+  return temp;
+}
+inline void TopicKernelScore::set_allocated_topic_name(::artm::StringArray* topic_name) {
+  delete topic_name_;
+  topic_name_ = topic_name;
+  if (topic_name) {
+    set_has_topic_name();
+  } else {
+    clear_has_topic_name();
+  }
 }
 
 // -------------------------------------------------------------------
