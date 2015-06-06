@@ -39,13 +39,8 @@ class TopicModel {
   PhiMatrix* mutable_nwt() { return &n_wt_; }
 
   ModelName model_name() const { return n_wt_.model_name(); }
-  int token_size() const { return n_wt_.token_size(); }
   int topic_size() const { return n_wt_.topic_size(); }
   google::protobuf::RepeatedPtrField<std::string> topic_name() const { return n_wt_.topic_name(); }
-
-  bool has_token(const Token& token) const { return n_wt_.has_token(token); }
-  int token_id(const Token& token) const { return n_wt_.token_index(token); }
-  const Token& token(int index) const { return n_wt_.token(index); }
 
  private:
   DensePhiMatrix n_wt_;

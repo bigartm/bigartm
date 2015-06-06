@@ -173,8 +173,9 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     return;
   }
 
-  LOG(INFO) << "Import completed, token_size = " << topic_model->token_size()
-            << ", topic_size = " << topic_model->topic_size();
+  const PhiMatrix& phi_matrix = topic_model->GetPwt();
+  LOG(INFO) << "Import completed, token_size = " << phi_matrix.token_size()
+    << ", topic_size = " << phi_matrix.topic_size();
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {

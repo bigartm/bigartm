@@ -311,13 +311,11 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       new_ttm = std::make_shared< ::artm::core::TopicModel>(
         name, target_config != nullptr ? target_config->topic_name() : current_config.topic_name());
 
-      if (old_ttm->token_size() > 0) {
-        ::artm::TopicModel topic_model;
-        GetTopicModelArgs get_topic_model_args;
-        get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
-        old_ttm->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
-        PhiMatrixOperations::ApplyTopicModelOperation(topic_model, decay_weight, new_ttm->mutable_nwt());
-      }
+      ::artm::TopicModel topic_model;
+      GetTopicModelArgs get_topic_model_args;
+      get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
+      old_ttm->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
+      PhiMatrixOperations::ApplyTopicModelOperation(topic_model, decay_weight, new_ttm->mutable_nwt());
     }
     target_model_config_.set(name, nullptr);
 

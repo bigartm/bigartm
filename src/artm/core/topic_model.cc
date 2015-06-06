@@ -32,9 +32,6 @@ TopicModel::TopicModel(const ModelName& model_name,
 
 void TopicModel::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                             ::artm::TopicModel* topic_model) const {
-  if (token_size() == 0)
-    return;
-
   const bool use_pwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Pwt);
   const bool use_nwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Nwt);
   if (!use_pwt && !use_nwt)
