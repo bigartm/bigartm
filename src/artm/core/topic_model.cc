@@ -49,7 +49,7 @@ void TopicModel::CalcPwt() {
 
 void TopicModel::CalcPwt(const PhiMatrix& r_wt) {
   p_wt_.Reshape(n_wt_);
-  PhiMatrixOperations::FindPwt(n_wt_, &p_wt_);
+  PhiMatrixOperations::FindPwt(n_wt_, r_wt, &p_wt_);
 }
 
 }  // namespace core
