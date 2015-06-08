@@ -10,7 +10,7 @@ We are happy to introduce BigARTM v0.7.0, which brings you the following changes
 New-style models
 ----------------
 
-BigARTM v0.7.0 exposes new APIs to give you with additional control over topic model inference:
+BigARTM v0.7.0 exposes new APIs to give you additional control over topic model inference:
 
 * ProcessBatches
 * MergeModel
@@ -92,7 +92,9 @@ The following flow chart gives a typical use-case on new APIs in online regulari
    Phi regularizers can be calculated at any moment based on the new-style model (same as for old-style models).
 
 4. Continue using GetThetaMatrix and GetTopicModel to retrieve results from the library.
-   For GetThetaMatrix to work you still need to enable cache_theta in master component. Remember to use the same model in GetThetaMatrix as you used as the input to ProcessBatches. You may also omit "target_nwt" argument in ProcessBatches if you are not interested in getting this output.
+   For GetThetaMatrix to work you still need to enable cache_theta in master component.
+   Remember to use the same model in GetThetaMatrix as you used as the input to ProcessBatches.
+   You may also omit "target_nwt" argument in ProcessBatches if you are not interested in getting this output.
 
    .. code-block:: bash
 
@@ -135,8 +137,8 @@ However, if none of the input models exist then MergeModel will thrown an error.
       master.NormalizeModel("nwt", "pwt", "rwt")
 
 2. You may use GetThetaMatrix(pwt) to retrieve Theta-matrix, previously calculated for new-style models inside ProcessBatches.
-   However, you can not use GetThetaMatrix(pwt, batch) to calculate 
-   will not work for new models. They do not have corresponding ModelConfig, and as a result you need to go through ProcessBatches to pass all parameters.
+   However, you can not use GetThetaMatrix(pwt, batch) for new models.
+   They do not have corresponding ModelConfig, and as a result you need to go through ProcessBatches to pass all parameters.
 
 Network modus operandi is removed
 ---------------------------------

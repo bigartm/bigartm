@@ -75,6 +75,8 @@ class MasterComponent {
   std::shared_ptr<ScoreData> GetScore(const GetScoreValueArgs& args);
 
   template <typename T>
+  std::shared_ptr<T> GetScoreAs(const std::string& model_name, const std::string& score_name);
+  template <typename T>
   std::shared_ptr<T> GetScoreAs(const Model& model, const std::string& score_name);
 
   std::shared_ptr<ProcessBatchesResultObject> ProcessBatches(const ProcessBatchesArgs& args);
@@ -169,10 +171,10 @@ class Dictionary {
 };
 
 template <typename T>
-std::shared_ptr<T> MasterComponent::GetScoreAs(const Model& model,
+std::shared_ptr<T> MasterComponent::GetScoreAs(const std::string& model_name,
                                                const std::string& score_name) {
   GetScoreValueArgs args;
-  args.set_model_name(model.name().c_str());
+  args.set_model_name(model_name.c_str());
   args.set_score_name(score_name.c_str());
   auto score_data = GetScore(args);
   auto score = std::make_shared<T>();
@@ -180,6 +182,11 @@ std::shared_ptr<T> MasterComponent::GetScoreAs(const Model& model,
   return score;
 }
 
+template <typename T>
+std::shared_ptr<T> MasterComponent::GetScoreAs(const Model& model,
+                                               const std::string& score_name) {
+  return GetScoreAs<T>(model.name(), score_name);
+}
 class ProcessBatchesResultObject {
  public:
   explicit ProcessBatchesResultObject(ProcessBatchesResult message) : message_(message) {}

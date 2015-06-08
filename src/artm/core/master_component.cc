@@ -259,14 +259,15 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   Helpers::FixAndValidate(&model_config, /* throw_error =*/ true);
 
   BatchManager batch_manager;
-  ScoresMerger scores_merger;
+  ScoresMerger* scores_merger = instance_->merger()->scores_merger();
+  scores_merger->ResetScores(model_name);
   for (int batch_index = 0; batch_index < process_batches_args.batch_filename_size(); ++batch_index) {
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
     batch_manager.Add(task_id, std::string(), model_name);
 
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(&batch_manager);
-    pi->set_scores_merger(&scores_merger);
+    pi->set_scores_merger(scores_merger);
     pi->set_model_name(model_name);
     pi->set_batch_filename(process_batches_args.batch_filename(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
@@ -291,7 +292,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   for (int score_index = 0; score_index < config->score_config_size(); ++score_index) {
     ScoreName score_name = config->score_config(score_index).name();
     ScoreData score_data;
-    if (scores_merger.RequestScore(schema, model_name, score_name, &score_data))
+    if (scores_merger->RequestScore(schema, model_name, score_name, &score_data))
       process_batches_result->add_score_data()->Swap(&score_data);
   }
 }

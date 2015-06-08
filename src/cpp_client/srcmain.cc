@@ -39,14 +39,14 @@ class CuckooWatch {
   std::chrono::time_point<std::chrono::system_clock> start_;
 };
 
-int countFilesInDirectory(std::string root, std::string ext) {
-  int retval = 0;
+std::vector<std::string> findFilesInDirectory(std::string root, std::string ext) {
+  std::vector<std::string> retval;
   if (boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
     boost::filesystem::recursive_directory_iterator it(root);
     boost::filesystem::recursive_directory_iterator endit;
     while (it != endit) {
       if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ext) {
-        retval++;
+        retval.push_back(it->path().string());
       }
       ++it;
     }
@@ -75,6 +75,7 @@ struct artm_options {
   bool b_no_scores;
   bool b_reuse_theta;
   bool b_disable_avx_opt;
+  bool b_use_new_models;
   std::vector<std::string> class_id;
 };
 
@@ -230,6 +231,17 @@ void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class
   }
 }
 
+::artm::ProcessBatchesArgs ExtractProcessBatchesArgs(const ModelConfig& model_config) {
+  ::artm::ProcessBatchesArgs args;
+  args.set_inner_iterations_count(model_config.inner_iterations_count());
+  args.set_stream_name(model_config.stream_name());
+  // args.set_opt_for_avx(model_config.opt_for_avx())
+  // if (model_config.has_reuse_theta()) args.set_reuse_theta(model_config.reuse_theta())
+  args.mutable_class_id()->CopyFrom(model_config.class_id());
+  args.mutable_class_weight()->CopyFrom(model_config.class_weight());
+  return args;
+}
+
 int execute(const artm_options& options) {
   bool online = (options.update_every > 0);
 
@@ -269,6 +281,10 @@ int execute(const artm_options& options) {
       model_config.add_class_weight(1.0f);
     }
   }
+
+  ProcessBatchesArgs process_batches_args = ExtractProcessBatchesArgs(model_config);
+  RegularizeModelArgs regularize_model_args;
+  NormalizeModelArgs normalize_model_args;
 
   configureStreams(&master_config);
   if (!options.b_no_scores)
@@ -324,7 +340,8 @@ int execute(const artm_options& options) {
       return 1;
     }
 
-    int batch_files_count = countFilesInDirectory(working_batch_folder, ".batch");
+
+    int batch_files_count = findFilesInDirectory(working_batch_folder, ".batch").size();
     if (batch_files_count == 0) {
       std::cerr << "No batches found in " << working_batch_folder;
       return 1;
@@ -351,65 +368,152 @@ int execute(const artm_options& options) {
 
   // Step 4. Configure regularizers.
   std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
-  if (options.tau_theta != 0)
+  if (options.tau_theta != 0) {
     regularizers.push_back(std::make_shared<artm::Regularizer>(
       *master_component, configureThetaRegularizer(options.tau_theta, &model_config)));
-  if (options.tau_phi != 0)
+    process_batches_args.add_regularizer_name(regularizers.back()->config().name());
+    process_batches_args.add_regularizer_tau(options.tau_theta);
+  }
+  if (options.tau_phi != 0) {
     regularizers.push_back(std::make_shared<artm::Regularizer>(
       *master_component, configurePhiRegularizer(options.tau_phi, &model_config)));
-  if (options.tau_decor != 0)
+    ::artm::RegularizerSettings* settings = regularize_model_args.add_regularizer_settings();
+    settings->set_name(regularizers.back()->config().name());
+    settings->set_tau(options.tau_phi);
+    settings->set_use_relative_regularization(false);
+  }
+  if (options.tau_decor != 0) {
     regularizers.push_back(std::make_shared<artm::Regularizer>(
       *master_component, configureDecorRegularizer(options.tau_decor, &model_config)));
+    ::artm::RegularizerSettings* settings = regularize_model_args.add_regularizer_settings();
+    settings->set_name(regularizers.back()->config().name());
+    settings->set_tau(options.tau_decor);
+    settings->set_use_relative_regularization(false);
+  }
 
   // Step 5. Create and initialize model.
-  Model model(*master_component, model_config);
-  if (dictionary != nullptr)
-    model.Initialize(*dictionary);
+  std::shared_ptr<Model> model;
+  if (!options.b_use_new_models) {
+    model = std::make_shared<Model>(*master_component, model_config);
+    if (dictionary != nullptr)
+      model->Initialize(*dictionary);
+  } else {
+    InitializeModelArgs initialize_model_args;
+    initialize_model_args.set_model_name("pwt");
+    initialize_model_args.set_topics_count(model_config.topics_count());
+    if (dictionary != nullptr) {
+      initialize_model_args.set_dictionary_name(dictionary->name());
+      initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Dictionary);
+    } else {
+      initialize_model_args.set_disk_path(working_batch_folder);
+      initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Batches);
+    }
+    master_component->InitializeModel(initialize_model_args);
+  }
+  std::string score_model_name = model != nullptr ? model->name() : "pwt";
 
+  std::vector<std::string> batch_file_names = findFilesInDirectory(working_batch_folder, ".batch");
+  int update_count = 0;
   for (int iter = 0; iter < options.num_iters; ++iter) {
     {
       CuckooWatch timer("Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
 
       master_component->InvokeIteration(1);
 
-      if (!online) {
-        master_component->WaitIdle();
-        model.Synchronize(0.0);
+      double kappa = 0.5;
+      double tau0 = 64;
+      if (model != nullptr) {
+        if (!online) {
+          master_component->WaitIdle();
+          model->Synchronize(0.0);
+        } else {
+          bool done = false;
+          bool first_sync = true;
+          int next_items_processed = options.update_every;
+          while (!done) {
+            done = master_component->WaitIdle(10);  // wait 10 ms
+            int current_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(*model, "items_processed")->value();
+            if (done || (current_items_processed >= next_items_processed)) {
+              update_count = current_items_processed / options.update_every;
+              next_items_processed = current_items_processed + options.update_every;
+              double rho = pow(tau0 + update_count, -kappa);
+              double decay_weight = first_sync ? 0.0 : 1.0 - rho;
+              model->Synchronize(decay_weight, rho, true);
+              first_sync = false;
+              std::cout << ".";
+            }
+          }
+
+          std::cout << " ";
+        }
       } else {
+        if (!online) {
+          process_batches_args.set_pwt_source_name("pwt");
+          process_batches_args.set_nwt_target_name("nwt_hat");
+          for (auto& batch_filename : batch_file_names)
+            process_batches_args.add_batch_filename(batch_filename);
+          master_component->ProcessBatches(process_batches_args);
+          process_batches_args.clear_batch_filename();
 
-        double kappa = 0.5;
-        double tau0 = 64;
+          if (regularize_model_args.regularizer_settings_size() > 0) {
+            regularize_model_args.set_nwt_source_name("nwt_hat");
+            regularize_model_args.set_pwt_source_name("pwt");
+            regularize_model_args.set_rwt_target_name("rwt");
+            master_component->RegularizeModel(regularize_model_args);
+            normalize_model_args.set_rwt_source_name("rwt");
+          }
 
-        bool done = false;
-        bool first_sync = true;
-        int next_items_processed = options.update_every;
-        while (!done) {
-          done = master_component->WaitIdle(10);  // wait 10 ms
-          int current_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(model, "items_processed")->value();
-          if (done || (current_items_processed >= next_items_processed)) {
-            int update_count = current_items_processed / options.update_every;
-            next_items_processed = current_items_processed + options.update_every;
-            double rho = pow(tau0 + update_count, -kappa);
-            double decay_weight = first_sync ? 0.0 : 1.0 - rho;
-            model.Synchronize(decay_weight, rho, true);
-            first_sync = false;
-            std::cout << ".";
+          normalize_model_args.set_nwt_source_name("nwt_hat");
+          normalize_model_args.set_pwt_target_name("pwt");
+          master_component->NormalizeModel(normalize_model_args);
+        } else {
+          for (int i = 0; i < batch_file_names.size(); ++i) {
+            process_batches_args.add_batch_filename(batch_file_names[i]);
+            int size = process_batches_args.batch_filename_size();
+            if (size >= options.update_every || (i + 1) == batch_file_names.size()) {
+              update_count++;
+              process_batches_args.set_pwt_source_name("pwt");
+              process_batches_args.set_nwt_target_name("nwt_hat");
+              master_component->ProcessBatches(process_batches_args);
+
+              double apply_weight = (update_count == 1) ? 1.0 : pow(tau0 + update_count, -kappa);
+              double decay_weight = 1.0 - apply_weight;
+
+              MergeModelArgs merge_model_args;
+              merge_model_args.add_nwt_source_name("nwt");
+              merge_model_args.add_source_weight(decay_weight);
+              merge_model_args.add_nwt_source_name("nwt_hat");
+              merge_model_args.add_source_weight(apply_weight);
+              merge_model_args.set_nwt_target_name("nwt");
+              master_component->MergeModel(merge_model_args);
+
+              if (regularize_model_args.regularizer_settings_size() > 0) {
+                regularize_model_args.set_nwt_source_name("nwt");
+                regularize_model_args.set_pwt_source_name("pwt");
+                regularize_model_args.set_rwt_target_name("rwt");
+                master_component->RegularizeModel(regularize_model_args);
+                normalize_model_args.set_rwt_source_name("rwt");
+              }
+
+              normalize_model_args.set_nwt_source_name("nwt");
+              normalize_model_args.set_pwt_target_name("pwt");
+              master_component->NormalizeModel(normalize_model_args);
+              process_batches_args.clear_batch_filename();
+            }
           }
         }
-
-        std::cout << " ";
       }
     }
 
     if (!options.b_no_scores) {
-      auto test_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(model, "test_perplexity");
-      auto train_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(model, "train_perplexity");
-      auto test_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(model, "test_sparsity_theta");
-      auto train_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(model, "train_sparsity_theta");
-      auto sparsity_phi = master_component->GetScoreAs< ::artm::SparsityPhiScore>(model, "sparsity_phi");
-      auto test_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(model, "test_items_processed");
-      auto train_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(model, "train_items_processed");
-      auto topic_kernel = master_component->GetScoreAs< ::artm::TopicKernelScore>(model, "topic_kernel");
+      auto test_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(score_model_name, "test_perplexity");
+      auto train_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(score_model_name, "train_perplexity");
+      auto test_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(score_model_name, "test_sparsity_theta");
+      auto train_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(score_model_name, "train_sparsity_theta");
+      auto sparsity_phi = master_component->GetScoreAs< ::artm::SparsityPhiScore>(score_model_name, "sparsity_phi");
+      auto test_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(score_model_name, "test_items_processed");
+      auto train_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(score_model_name, "train_items_processed");
+      auto topic_kernel = master_component->GetScoreAs< ::artm::TopicKernelScore>(score_model_name, "topic_kernel");
 
       std::cout
         <<   "\tTest perplexity = " << test_perplexity->value() << ", "
@@ -429,16 +533,16 @@ int execute(const artm_options& options) {
     std::cout << std::endl;
 
     if (options.class_id.empty()) {
-      auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, "top_tokens");
+      auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(score_model_name, "top_tokens");
       showTopTokenScore(*top_tokens, "@default_class");
     } else {
       for (const std::string& class_id : options.class_id) {
-        auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(model, class_id + "_top_tokens");
+        auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(score_model_name, class_id + "_top_tokens");
         showTopTokenScore(*top_tokens, class_id);
       }
     }
 
-    auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(model, "train_theta_snippet");
+    auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(score_model_name, "train_theta_snippet");
     int docs_to_show = train_theta_snippet.get()->values_size();
     std::cout << "\nThetaMatrix (last " << docs_to_show << " processed documents, ids = ";
     for (int item_index = 0; item_index < train_theta_snippet->item_id_size(); ++item_index) {
@@ -498,6 +602,7 @@ int main(int argc, char * argv[]) {
       ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
       ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
       ("disable_avx_opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
+      ("use_new_models", po::bool_switch(&options.b_use_new_models)->default_value(false), "alternative implementation based on ProcessBatches, MergeModel, RegularizeModel and NormalizeModel APIs")
     ;
     all_options.add(basic_options);
 
