@@ -135,6 +135,11 @@ Folder ``C:\BigARTM\python\examples`` contains several toy examples:
     * `example12_get_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example12_get_topic_model.py>`_
     * `example13_overwrite_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example13_overwrite_topic_model.py>`_
     * `example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example14_initialize_topic_model.py>`_
+    * `example15_import_export_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example15_import_export_topic_model.py>`_
+    * `example16_coherence_score.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example16_coherence_score.py>`_
+    * `example17_process_batches.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example17_process_batches.py>`_
+    * `example18_merge_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example18_merge_model.py>`_
+    * `example19_regularize_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example19_regularize_model.py>`_
 
 
 All examples does not have any parameters, and you may run them without arguments:

@@ -17,7 +17,7 @@ BigARTM v0.7.0 exposes new APIs to give you additional control over topic model 
 * RegularizeModel
 * NormalizeModel
 
-Besides being more flexible, new APIs gives many additional benefits:
+Besides being more flexible, new APIs bring many additional benefits:
 
 * Fully deterministic inference, no dependency on threads scheduling or random numbers generation
 * Less bottlenecks for performance (DataLoader and Merger threads are removed)
@@ -26,6 +26,14 @@ Besides being more flexible, new APIs gives many additional benefits:
 * Capability for store Phi matrices in sparse format (scheduled for BigARTM v0.7.3)
 * Capability for async ProcessBatches and non-blocking online algorithm (BigARTM v0.7.4)
 * Form solid foundation for high performance networking (BigARTM v0.8.X)
+
+The picture below illustrates scalability of BigARTM v0.7.0 vs v0.6.4.
+Top chart (in green) corresponds to CPU usage at 28 cores on machine with 32 virtual cores (16 physical cores + hyper threading).
+As you see, new version is much more stable.
+In addition, new version consumes less memory.
+
+.. image:: _images/v0.7.0_perf.png
+   :alt: BigARTM v0.7.0 vs v0.6.4
 
 Refer to the following examples that demonstrate usage of new APIs for offline, online and regularized topic modelling:
 
@@ -85,11 +93,37 @@ The following flow chart gives a typical use-case on new APIs in online regulari
                                          * SpecifiedSparsePhi
    ============ ======================== =======================
 
-   Theta regularizers needs to be enabled in ProcessBatchesArgs,
-   while Phi regularizers needs to be calculated explicitly in RegularizeModel. 
+   Phi regularizers needs to be calculated explicitly in RegularizeModel, and then applied in NormalizeModel (via optional *rwt* argument).
+   Theta regularizers needs to be enabled in ProcessBatchesArgs. Then they will be automatically calculated and applied during ProcessBatches.
    
-   Theta scores needs to be retrieved from the result of ProcessBatches method.
-   Phi regularizers can be calculated at any moment based on the new-style model (same as for old-style models).
+   Phi scores can be calculated at any moment based on the new-style model (same as for old-style models).
+   Theta scores can be retrieved in two equivalend ways:
+
+   .. code-block:: bash
+
+      pwt_model = "pwt"
+      master.ProcessBatches(pwt_model, batches, "nwt")
+      perplexity_score.GetValue(pwt_model).value
+
+   or
+
+   .. code-block:: bash
+
+      pwt_model = "pwt"
+      process_batches_result = master.ProcessBatches(pwt_model, batches, "nwt")
+      perplexity_score.GetValue(scores = process_batches_result).value
+
+   Second way is more explicit. However, the first way allows you to combine aggregate scores accross multiple ProcessBatches calls:
+
+   .. code-block:: bash
+
+      pwt_model = "pwt"
+      master.ProcessBatches(pwt_model, batches1, "nwt")
+      master.ProcessBatches(pwt_model, batches2, "nwt", reset_scores=False)
+      perplexity_score.GetValue(pwt_model).value
+
+   This works because BigARTM caches the result of ProcessBatches together (in association with pwt_model).
+   The *reset_scores* switch disables the default behaviour, which is to reset the cache for pwt_model at the beginning of each ProcessBatch call.
 
 4. Continue using GetThetaMatrix and GetTopicModel to retrieve results from the library.
    For GetThetaMatrix to work you still need to enable cache_theta in master component.
