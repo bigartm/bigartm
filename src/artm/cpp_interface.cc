@@ -39,8 +39,6 @@ inline int HandleErrorCode(int artm_error_code) {
       throw DiskReadException(GetLastErrorMessage());
     case ARTM_DISK_WRITE_ERROR:
       throw DiskWriteException(GetLastErrorMessage());
-    case ARTM_NETWORK_ERROR:
-      throw NetworkException(GetLastErrorMessage());
     default:
       throw InternalError("Unknown error code");
   }
@@ -180,16 +178,6 @@ std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& ar
   std::shared_ptr<ScoreData> score_data(new ScoreData());
   score_data->ParseFromString(blob);
   return score_data;
-}
-
-NodeController::NodeController(const NodeControllerConfig& config) : id_(0), config_(config) {
-  std::string config_blob;
-  config.SerializeToString(&config_blob);
-  id_ = HandleErrorCode(ArtmCreateNodeController(config_blob.size(), StringAsArray(&config_blob)));
-}
-
-NodeController::~NodeController() {
-  ArtmDisposeNodeController(id());
 }
 
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)
@@ -413,6 +401,45 @@ void MasterComponent::RemoveStream(std::string stream_name) {
   }
 
   Reconfigure(new_config);
+}
+
+std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int length = HandleErrorCode(ArtmRequestProcessBatches(id(), args_blob.size(), args_blob.c_str()));
+  std::string process_batches_result_blob;
+  process_batches_result_blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&process_batches_result_blob)));
+
+  ProcessBatchesResult process_batches_result;
+  process_batches_result.ParseFromString(process_batches_result_blob);
+
+  std::shared_ptr<ProcessBatchesResultObject> retval(new ProcessBatchesResultObject(process_batches_result));
+  return retval;
+}
+
+void MasterComponent::MergeModel(const MergeModelArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  HandleErrorCode(ArtmMergeModel(id(), args_blob.size(), StringAsArray(&args_blob)));
+}
+
+void MasterComponent::NormalizeModel(const NormalizeModelArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  HandleErrorCode(ArtmNormalizeModel(id(), args_blob.size(), StringAsArray(&args_blob)));
+}
+
+void MasterComponent::RegularizeModel(const RegularizeModelArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  HandleErrorCode(ArtmRegularizeModel(id(), args_blob.size(), StringAsArray(&args_blob)));
+}
+
+void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmInitializeModel(id(), blob.size(), blob.c_str()));
 }
 
 }  // namespace artm

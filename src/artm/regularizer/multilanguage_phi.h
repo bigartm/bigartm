@@ -15,8 +15,9 @@ class MultiLanguagePhi : public RegularizerInterface {
     : config_(config)
     , no_regularization_calls_(0) {}
 
-  virtual bool RegularizePhi(const ::artm::core::Regularizable& topic_model,
-                             ::artm::core::TokenCollectionWeights* result);
+  virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
+                             const ::artm::core::PhiMatrix& n_wt,
+                             ::artm::core::PhiMatrix* result);
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 

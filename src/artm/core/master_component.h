@@ -12,22 +12,12 @@
 #include "boost/thread/mutex.hpp"
 #include "boost/utility.hpp"
 
-#include "rpcz/application.hpp"
-#include "rpcz/rpc.hpp"
-#include "rpcz/server.hpp"
-#include "rpcz/service.hpp"
-
 #include "artm/messages.pb.h"
 
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
-#include "artm/core/master_component_service_impl.h"
 #include "artm/core/template_manager.h"
 #include "artm/core/thread_safe_holder.h"
-
-namespace zmq {
-class context_t;
-}  // namespace zmq
 
 namespace artm {
 
@@ -35,7 +25,6 @@ class RegularizerInterface;
 
 namespace core {
 
-class NetworkClientCollection;
 class Instance;
 class TopicModel;
 class Score;
@@ -45,10 +34,6 @@ class MasterComponent : boost::noncopyable {
   ~MasterComponent();
 
   int id() const;
-  bool isInLocalModusOperandi() const;
-  bool isInNetworkModusOperandi() const;
-
-  MasterComponentServiceImpl* impl() { return master_component_service_impl_.get(); }
 
   // Retrieves topic model.
   // Returns true if succeeded, and false if model_name hasn't been found.
@@ -60,6 +45,12 @@ class MasterComponent : boost::noncopyable {
                           ::artm::ThetaMatrix* theta_matrix);
   bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData* score_data);
+
+  void RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                             ProcessBatchesResult* process_batches_result);
+  void MergeModel(const MergeModelArgs& merge_model_args);
+  void RegularizeModel(const RegularizeModelArgs& regularize_model_args);
+  void NormalizeModel(const NormalizeModelArgs& normalize_model_args);
 
   // Reconfigures topic model if already exists, otherwise creates a new model.
   void CreateOrReconfigureModel(const ModelConfig& config);
@@ -87,25 +78,6 @@ class MasterComponent : boost::noncopyable {
   void ValidateConfig(const MasterComponentConfig& config);
 
  private:
-  class ServiceEndpoint : boost::noncopyable {
-   public:
-    ServiceEndpoint(const std::string& endpoint, MasterComponentServiceImpl* impl);
-    ~ServiceEndpoint();
-    std::string endpoint() const { return endpoint_; }
-
-   private:
-    std::string endpoint_;
-    std::unique_ptr<rpcz::application> application_;
-    MasterComponentServiceImpl* impl_;
-
-    // Keep all threads at the end of class members
-    // (because the order of class members defines initialization order;
-    // everything else should be initialized before creating threads).
-    boost::thread thread_;
-
-    void ThreadFunction();
-  };
-
   friend class TemplateManager<MasterComponent>;
 
   // All master components must be created via TemplateManager.
@@ -116,50 +88,7 @@ class MasterComponent : boost::noncopyable {
   int master_id_;
   ThreadSafeHolder<MasterComponentConfig> config_;
 
-  // Endpoint for clients to talk with master component
-  std::shared_ptr<MasterComponentServiceImpl> master_component_service_impl_;
-  std::shared_ptr<ServiceEndpoint> service_endpoint_;
-
   std::shared_ptr<Instance> instance_;
-  std::shared_ptr<NetworkClientCollection> network_client_interface_;
-};
-
-class NetworkClientCollection {
- public:
-  explicit NetworkClientCollection(int timeout)
-      : communication_timeout_(timeout), lock_(), application_(nullptr), clients_() {}
-
-  ~NetworkClientCollection();
-
-  void CreateOrReconfigureModel(const ModelConfig& config);
-  void DisposeModel(ModelName model_name);
-
-  void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
-  void DisposeRegularizer(const std::string& name);
-
-  void CreateOrReconfigureDictionary(const DictionaryConfig& config);
-  void DisposeDictionary(const std::string& name);
-
-  void Reconfigure(const MasterComponentConfig& config);
-
-  bool ConnectClient(std::string endpoint);
-  bool DisconnectClient(std::string endpoint);
-
-  void ForcePullTopicModel();
-  void ForcePushTopicModelIncrement();
-
-  std::vector<std::string> endpoints() const { return clients_.keys(); }
-  void for_each_client(std::function<void(artm::core::NodeControllerService_Stub&)> f);
-  void for_each_endpoint(std::function<void(std::string)> f);
-
-  int communication_timeout() const { return communication_timeout_; }
-  void set_communication_timeout(int timeout) { communication_timeout_ = timeout; }
-
- private:
-  int communication_timeout_;
-  mutable boost::mutex lock_;
-  std::unique_ptr<rpcz::application> application_;
-  ThreadSafeCollectionHolder<std::string, artm::core::NodeControllerService_Stub> clients_;
 };
 
 typedef TemplateManager<MasterComponent> MasterComponentManager;

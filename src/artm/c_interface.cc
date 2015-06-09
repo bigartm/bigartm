@@ -9,15 +9,12 @@
 
 #include "glog/logging.h"
 
-#include "rpcz/rpc.hpp"
-
 #include "artm/messages.pb.h"
 #include "artm/score_calculator_interface.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/master_component.h"
-#include "artm/core/node_controller.h"
 #include "artm/core/collection_parser.h"
 
 // Never use the following variables explicitly (only through the corresponding methods).
@@ -191,6 +188,44 @@ int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args) {
+  try {
+    artm::ProcessBatchesArgs args;
+    ParseFromArray(process_batches_args, length, &args);
+    artm::ProcessBatchesResult result;
+    master_component(master_id)->RequestProcessBatches(args, &result);
+    result.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmMergeModel(int master_id, int length, const char* merge_model_args) {
+  try {
+    artm::MergeModelArgs args;
+    ParseFromArray(merge_model_args, length, &args);
+    master_component(master_id)->MergeModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args) {
+  try {
+    artm::RegularizeModelArgs args;
+    ParseFromArray(regularize_model_args, length, &args);
+    master_component(master_id)->RegularizeModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args) {
+  try {
+    artm::NormalizeModelArgs args;
+    ParseFromArray(normalize_model_args, length, &args);
+    master_component(master_id)->NormalizeModel(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args) {
   try {
     artm::ThetaMatrix theta_matrix;
@@ -251,7 +286,7 @@ int ArtmInitializeModel(int master_id, int length, const char* init_model_args) 
   try {
     artm::InitializeModelArgs args;
     ParseFromArray(init_model_args, length, &args);
-    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
     master_component(master_id)->InitializeModel(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -280,26 +315,6 @@ int ArtmImportModel(int master_id, int length, const char* init_model_args) {
 int ArtmDisposeMasterComponent(int master_id) {
   try {
     artm::core::MasterComponentManager::singleton().Erase(master_id);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmCreateNodeController(int length, const char* node_controller_config) {
-  try {
-    EnableLogging();
-
-    artm::NodeControllerConfig config;
-    ParseFromArray(node_controller_config, length, &config);
-    auto& ncm = artm::core::NodeControllerManager::singleton();
-    int retval = ncm.Create< ::artm::core::NodeController, ::artm::NodeControllerConfig>(config);
-    assert(retval > 0);
-    return retval;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmDisposeNodeController(int node_controller_id) {
-  try {
-    artm::core::NodeControllerManager::singleton().Erase(node_controller_id);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }

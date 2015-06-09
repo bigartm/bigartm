@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 
 #include "artm/score/perplexity.h"
 
@@ -26,23 +25,23 @@ Perplexity::Perplexity(const PerplexityScoreConfig& config)
 void Perplexity::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
-    const artm::core::TopicModel& topic_model,
+    const artm::core::PhiMatrix& p_wt,
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_count = topic_model.topic_size();
+  int topics_size = p_wt.topic_size();
 
   // the following code counts sparsity of theta
-  auto topic_name = topic_model.topic_name();
+  auto topic_name = p_wt.topic_name();
   std::vector<bool> topics_to_score;
   int topics_to_score_size = 0;
 
   if (config_.theta_sparsity_topic_name_size() > 0) {
-    for (int i = 0; i < topics_count; ++i)
+    for (int i = 0; i < topics_size; ++i)
       topics_to_score.push_back(false);
 
     for (int topic_id = 0; topic_id < config_.theta_sparsity_topic_name_size(); ++topic_id) {
-      for (int real_topic_id = 0; real_topic_id < topics_count; ++real_topic_id) {
+      for (int real_topic_id = 0; real_topic_id < topics_size; ++real_topic_id) {
         if (topic_name.Get(real_topic_id) == config_.theta_sparsity_topic_name(topic_id)) {
           topics_to_score[real_topic_id] = true;
           topics_to_score_size++;
@@ -51,13 +50,13 @@ void Perplexity::AppendScore(
       }
     }
   } else {
-    topics_to_score_size = topics_count;
-    for (int i = 0; i < topics_count; ++i)
+    topics_to_score_size = topics_size;
+    for (int i = 0; i < topics_size; ++i)
       topics_to_score.push_back(true);
   }
 
   int zero_topics_count = 0;
-  for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+  for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
     if ((fabs(theta[topic_index]) < config_.theta_sparsity_eps()) &&
         topics_to_score[topic_index]) {
       ++zero_topics_count;
@@ -138,10 +137,10 @@ void Perplexity::AppendScore(
       if (token_count_int == 0) continue;
       double token_count = class_weight * static_cast<double>(token_count_int);
 
-      if (topic_model.has_token(token)) {
-        ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-        while (topic_iter.NextNonZeroTopic() < topics_count) {
-          sum += theta[topic_iter.TopicIndex()] * topic_iter.Weight();
+      int p_wt_token_index = p_wt.token_index(token);
+      if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
+        for (int topic_index = 0; topic_index < topics_size; topic_index++) {
+          sum += theta[topic_index] * p_wt.get(p_wt_token_index, topic_index);
         }
       }
       if (sum == 0.0) {

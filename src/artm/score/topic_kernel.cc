@@ -7,7 +7,6 @@
 
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
-#include "artm/core/topic_model.h"
 
 #include "artm/score/coherence_plugin.h"
 #include "artm/score/topic_kernel.h"
@@ -15,9 +14,9 @@
 namespace artm {
 namespace score {
 
-std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel& topic_model) {
-  int topics_count = topic_model.topic_size();
-  int tokens_count = topic_model.token_size();
+std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& p_wt) {
+  int topics_count = p_wt.topic_size();
+  int tokens_count = p_wt.token_size();
 
   // parameters preparation
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
@@ -25,7 +24,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
     dictionary_ptr = dictionary(config_.cooccurrence_dictionary_name());
   bool count_coherence = dictionary_ptr != nullptr;
 
-  auto topic_name = topic_model.topic_name();
+  auto topic_name = p_wt.topic_name();
   std::vector<bool> topics_to_score;
   if (config_.topic_name_size() > 0) {
     for (int i = 0; i < topics_count; ++i)
@@ -84,29 +83,25 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::TopicModel&
     topic_kernel_tokens.push_back(std::vector<core::Token>());
 
   for (int token_index = 0; token_index < tokens_count; token_index++) {
-    if (topic_model.token(token_index).class_id == class_id) {
-      ::artm::core::TopicWeightIterator topic_iter =
-          topic_model.GetTopicWeightIterator(token_index);
-
+    if (p_wt.token(token_index).class_id == class_id) {
       // calculate normalizer
       double normalizer = 0.0;
-      while (topic_iter.NextTopic() < topics_count) {
-        if (topics_to_score[topic_iter.TopicIndex()])
-          normalizer += static_cast<double>(topic_iter.Weight());
+      for (int topic_index = 0; topic_index < topics_count; topic_index++) {
+        if (topics_to_score[topic_index])
+          normalizer += static_cast<double>(p_wt.get(token_index, topic_index));
       }
-      topic_iter.Reset();
-      while (topic_iter.NextTopic() < topics_count) {
-        int topic_index = topic_iter.TopicIndex();
+
+      for (int topic_index = 0; topic_index < topics_count; topic_index++) {
         if (topics_to_score[topic_index]) {
-          double p_tw = (normalizer > 0.0) ? (topic_iter.Weight() / normalizer) : 0.0;
+          float value = p_wt.get(token_index, topic_index);
+          double p_tw = (normalizer > 0.0) ? (value / normalizer) : 0.0;
 
           if (p_tw >= probability_mass_threshold) {
             artm::core::repeated_field_append(kernel_size->mutable_value(), topic_index, 1.0);
-            artm::core::repeated_field_append(kernel_purity->mutable_value(), topic_index,
-                                              topic_iter.Weight());
+            artm::core::repeated_field_append(kernel_purity->mutable_value(), topic_index, value);
             artm::core::repeated_field_append(kernel_contrast->mutable_value(), topic_index, p_tw);
             if (count_coherence)
-              topic_kernel_tokens[topic_index].push_back(topic_model.token(token_index));
+              topic_kernel_tokens[topic_index].push_back(p_wt.token(token_index));
           }
         }
       }

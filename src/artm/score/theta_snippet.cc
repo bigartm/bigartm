@@ -1,7 +1,6 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 #include "artm/core/protobuf_helpers.h"
 
 #include "artm/score/theta_snippet.h"
@@ -12,11 +11,11 @@ namespace score {
 void ThetaSnippet::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
-    const artm::core::TopicModel& topic_model,
+    const artm::core::PhiMatrix& p_wt,
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_size = topic_model.topic_size();
+  int topics_size = p_wt.topic_size();
 
   ThetaSnippetScore theta_snippet_score;
   theta_snippet_score.add_item_id(item.id());

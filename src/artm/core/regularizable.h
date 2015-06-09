@@ -1,7 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_REGULARIZABLE_H_
-#define SRC_ARTM_CORE_REGULARIZABLE_H_
+#ifndef SRC_ARTM_CORE_PHI_MATRIX_H_
+#define SRC_ARTM_CORE_PHI_MATRIX_H_
 
 
 #include <string>
@@ -18,19 +18,18 @@ namespace core {
 class TopicWeightIterator;
 class TokenCollectionWeights;
 
-class Regularizable {
+class PhiMatrix {
  public:
   virtual int token_size() const = 0;
   virtual int topic_size() const = 0;
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const = 0;
   virtual const Token& token(int index) const = 0;
-  virtual int token_id(const Token& token) const = 0;
+  virtual int token_index(const Token& token) const = 0;
 
-  virtual void FindPwt(TokenCollectionWeights* p_wt) const = 0;
-  virtual std::map<ClassId, std::vector<float> > FindNormalizers() const = 0;
-  virtual const TokenCollectionWeights& Nwt () const = 0;
+  virtual float get(int token_id, int topic_id) const = 0;
+  virtual void set(int token_id, int topic_id, float value) = 0;
 
-  virtual ~Regularizable() {}
+  virtual ~PhiMatrix() {}
 };
 
 
@@ -38,4 +37,4 @@ class Regularizable {
 }  // namespace artm
 
 
-#endif  // SRC_ARTM_CORE_REGULARIZABLE_H_
+#endif  // SRC_ARTM_CORE_PHI_MATRIX_H_

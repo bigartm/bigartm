@@ -7,25 +7,25 @@
 #include <vector>
 
 #include "artm/core/protobuf_helpers.h"
-#include "artm/core/regularizable.h"
-#include "artm/core/topic_model.h"
+#include "artm/core/phi_matrix.h"
 
 #include "artm/regularizer/label_regularization_phi.h"
 
 namespace artm {
 namespace regularizer {
 
-bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::Regularizable& topic_model,
-                                           ::artm::core::TokenCollectionWeights* result) {
+bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
+                                           const ::artm::core::PhiMatrix& n_wt,
+                                           ::artm::core::PhiMatrix* result) {
   // read the parameters from config and control their correctness
-  const int topic_size = topic_model.topic_size();
-  const int token_size = topic_model.token_size();
+  const int topic_size = n_wt.topic_size();
+  const int token_size = n_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0)
     topics_to_regularize.assign(topic_size, true);
   else
-    topics_to_regularize = core::is_member(topic_model.topic_name(), config_.topic_name());
+    topics_to_regularize = core::is_member(n_wt.topic_name(), config_.topic_name());
 
   bool use_all_classes = false;
   if (config_.class_id_size() == 0) {
@@ -37,15 +37,9 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::Regularizable& to
     dictionary_ptr = dictionary(config_.dictionary_name());
   bool has_dictionary = dictionary_ptr != nullptr;
 
-  core::TokenCollectionWeights p_wt(topic_model.topic_size());
-  topic_model.FindPwt(&p_wt);
-  std::map<core::ClassId, std::vector<float> > n_t = topic_model.FindNormalizers();
-
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    auto token = topic_model.token(token_id);
-    auto class_iter = n_t.find(token.class_id);
-    assert(class_iter != n_t.end());
+    const ::artm::core::Token& token = n_wt.token(token_id);
 
     float coefficient = 1.0f;
     if (has_dictionary) {
@@ -69,13 +63,13 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::Regularizable& to
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
         // token_class_id is anyway presented in n_t
-        weights_sum += p_wt.get(token_id, topic_id) * class_iter->second[topic_id];
+        weights_sum += n_wt.get(token_id, topic_id);
       }
     }
     // form the value
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       if (topics_to_regularize[topic_id]) {
-        float weight = p_wt.get(token_id, topic_id) * class_iter->second[topic_id];
+        float weight = n_wt.get(token_id, topic_id);
         float value = static_cast<float>(coefficient * weight / weights_sum);
         result->set(token_id, topic_id, value);
       }

@@ -11,17 +11,19 @@ set(SRC_LIST
 	score_calculator_interface.h
 	core/batch_manager.cc
 	core/batch_manager.h
+	core/cache_manager.cc
+	core/cache_manager.h
 	core/call_on_destruction.h
 	core/collection_parser.cc
 	core/collection_parser.h
 	core/common.h
 	core/data_loader.cc
 	core/data_loader.h
+	core/dense_phi_matrix.cc
+	core/dense_phi_matrix.h
 	core/dictionary.cc
 	core/dictionary.h
 	core/exceptions.h
-	core/generation.cc
-	core/generation.h
 	core/helpers.cc
 	core/helpers.h
 	core/instance.cc
@@ -30,27 +32,26 @@ set(SRC_LIST
 	core/instance_schema.h
 	core/internals.pb.cc
 	core/internals.pb.h
-	core/internals.rpcz.cc
-	core/internals.rpcz.h
 	core/master_component.cc
 	core/master_component.h
-	core/master_component_service_impl.cc
-	core/master_component_service_impl.h
 	core/merger.cc
 	core/merger.h
-	core/node_controller.cc
-	core/node_controller.h
-	core/node_controller_service_impl.cc
-	core/node_controller_service_impl.h
 	core/processor.cc
 	core/processor.h
+	core/processor_input.cc
+	core/processor_input.h
 	core/protobuf_helpers.h
-	core/regularizable.h
+	core/phi_matrix.h
+	core/phi_matrix_operations.cc
+	core/phi_matrix_operations.h
+	core/scores_merger.cc
+	core/scores_merger.h
+	core/sync_event.cc
+	core/sync_event.h
 	core/template_manager.h
 	core/thread_safe_holder.h
 	core/topic_model.cc
 	core/topic_model.h
-	core/zmq_context.h
 	regularizer/decorrelator_phi.cc
 	regularizer/decorrelator_phi.h
 	regularizer/multilanguage_phi.cc
@@ -117,12 +118,10 @@ source_group("" FILES c_interface.cc c_interface.h)
 
 set(ARTM_LIB_DEPS  artm-static
 		   gflags-static
-                   rpcz_static
                    ${LINK_DL}
                    ${Boost_LIBRARIES}
                    ${PROTOBUF_LIBRARIES}
-                   ${GLOG_LIBRARIES}
-                   ${ZEROMQ_LIBRARIES})
+                   ${GLOG_LIBRARIES})
 
 add_library(artm SHARED ${SRC_LIST})
 

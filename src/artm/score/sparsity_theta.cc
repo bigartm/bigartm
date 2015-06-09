@@ -3,7 +3,6 @@
 #include <cmath>
 
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 
 #include "artm/score/sparsity_theta.h"
 
@@ -13,12 +12,12 @@ namespace score {
 void SparsityTheta::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
-    const artm::core::TopicModel& topic_model,
+    const artm::core::PhiMatrix& p_wt,
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_count = topic_model.topic_size();
-  auto topic_name = topic_model.topic_name();
+  int topics_count = p_wt.topic_size();
+  auto topic_name = p_wt.topic_name();
   std::vector<bool> topics_to_score;
   int topics_to_score_size = 0;
 

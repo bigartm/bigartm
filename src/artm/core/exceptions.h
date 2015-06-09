@@ -36,7 +36,6 @@ enum ArtmErrorCodes {
     ARTM_INVALID_OPERATION = -6,
     ARTM_DISK_READ_ERROR = -7,
     ARTM_DISK_WRITE_ERROR = -8,
-    ARTM_NETWORK_ERROR = -9,
 };
 #endif
 
@@ -66,7 +65,6 @@ DEFINE_EXCEPTION_TYPE(CorruptedMessageException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(InvalidOperation, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskReadException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
-DEFINE_EXCEPTION_TYPE(NetworkException, std::runtime_error);
 
 #undef DEFINE_EXCEPTION_TYPE
 
@@ -92,12 +90,6 @@ catch (const ::artm::core::InternalError& e) {                                 \
 } catch (const ::artm::core::DiskWriteException& e) {                          \
   set_last_error("DiskWriteException :  " + std::string(e.what()));            \
   return ARTM_DISK_WRITE_ERROR;                                                \
-} catch (const ::artm::core::NetworkException& e) {                            \
-  set_last_error("NetworkException :  " + std::string(e.what()));              \
-  return ARTM_NETWORK_ERROR;                                                   \
-} catch (const rpcz::rpc_error& e) {                                           \
-  set_last_error("rpc_error :  " + std::string(e.what()));                     \
-  return ARTM_NETWORK_ERROR;                                                   \
 } catch (...) {                                                                \
   LOG(ERROR) << boost::current_exception_diagnostic_information();             \
   set_last_error(boost::current_exception_diagnostic_information());           \
@@ -119,10 +111,6 @@ catch (const InternalError& e) {                                               \
   response.Error(ARTM_DISK_READ_ERROR, e.what());                              \
 } catch (const DiskWriteException& e) {                                        \
   response.Error(ARTM_DISK_WRITE_ERROR, e.what());                             \
-} catch (const NetworkException& e) {                                          \
-  response.Error(ARTM_NETWORK_ERROR, e.what());                                \
-} catch (const rpcz::rpc_error& e) {                                           \
-  response.Error(ARTM_NETWORK_ERROR, e.what());                                \
 } catch (const std::runtime_error& e) {                                        \
   response.Error(ARTM_INTERNAL_ERROR, e.what());                               \
 } catch (...) {                                                                \

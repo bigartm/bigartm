@@ -73,15 +73,6 @@ MasterComponent
      type of the score (for example, :ref:`PerplexityScore`).
 
 
-NodeController
-==============
-
-.. cpp:class:: NodeController
-
-  .. cpp:function:: NodeController(const NodeControllerConfig& config)
-
-     Creates a node controller with configuration defined by :ref:`NodeControllerConfig` message.
-
 Model
 =====
 

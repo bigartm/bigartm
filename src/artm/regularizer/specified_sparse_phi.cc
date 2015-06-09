@@ -8,9 +8,7 @@
 #include <utility>
 
 #include "artm/core/protobuf_helpers.h"
-#include "artm/core/regularizable.h"
-#include "artm/core/topic_model.h"
-
+#include "artm/core/phi_matrix.h"
 #include "artm/regularizer/specified_sparse_phi.h"
 
 namespace artm {
@@ -22,19 +20,18 @@ struct Comparator {
     }
 };
 
-bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::Regularizable& topic_model,
-                                    ::artm::core::TokenCollectionWeights* result) {
+bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
+                                       const ::artm::core::PhiMatrix& n_wt,
+                                       ::artm::core::PhiMatrix* result) {
   // read the parameters from config and control their correctness
-  const int topic_size = topic_model.topic_size();
-  const int token_size = topic_model.token_size();
+  const int topic_size = n_wt.topic_size();
+  const int token_size = n_wt.token_size();
 
   std::vector<bool> topics_to_regularize;
   if (config_.topic_name().size() == 0)
     topics_to_regularize.assign(topic_size, true);
   else
-    topics_to_regularize = core::is_member(topic_model.topic_name(), config_.topic_name());
-
-  auto& n_wt = topic_model.Nwt();
+    topics_to_regularize = core::is_member(n_wt.topic_name(), config_.topic_name());
 
   // proceed the regularization
   bool mode_topics = config_.mode() == artm::SpecifiedSparsePhiConfig_Mode_SparseTopics;
@@ -45,7 +42,7 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::Regularizable& topic_
     if (mode_topics)
       if (!topics_to_regularize[global_index]) continue;
     else
-      if (topic_model.token(global_index).class_id != config_.class_id()) continue;
+      if (n_wt.token(global_index).class_id != config_.class_id()) continue;
 
     google::protobuf::RepeatedField<int> indices_of_max;
     std::vector<std::pair<int, float> > max_and_indices;
@@ -56,7 +53,7 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::Regularizable& topic_
 
     for (int local_index = 0; local_index < local_end; ++local_index) {
       if (mode_topics)
-        if (topic_model.token(local_index).class_id != config_.class_id()) continue;
+        if (n_wt.token(local_index).class_id != config_.class_id()) continue;
       else
         if (!topics_to_regularize[local_index]) continue;
 

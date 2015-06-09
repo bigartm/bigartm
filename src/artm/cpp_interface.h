@@ -26,17 +26,16 @@ enum ArtmErrorCodes {
   ARTM_INVALID_OPERATION = -6,
   ARTM_DISK_READ_ERROR = -7,
   ARTM_DISK_WRITE_ERROR = -8,
-  ARTM_NETWORK_ERROR = -9,
 };
 #endif
 
 namespace artm {
 
 class MasterComponent;
-class NodeController;
 class Model;
 class Regularizer;
 class Dictionary;
+class ProcessBatchesResultObject;
 
 // Exception handling in cpp_interface
 #define DEFINE_EXCEPTION_TYPE(Type, BaseType)                  \
@@ -52,7 +51,6 @@ DEFINE_EXCEPTION_TYPE(CorruptedMessageException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(InvalidOperationException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskReadException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
-DEFINE_EXCEPTION_TYPE(NetworkException, std::runtime_error);
 
 #undef DEFINE_EXCEPTION_TYPE
 
@@ -77,7 +75,15 @@ class MasterComponent {
   std::shared_ptr<ScoreData> GetScore(const GetScoreValueArgs& args);
 
   template <typename T>
+  std::shared_ptr<T> GetScoreAs(const std::string& model_name, const std::string& score_name);
+  template <typename T>
   std::shared_ptr<T> GetScoreAs(const Model& model, const std::string& score_name);
+
+  std::shared_ptr<ProcessBatchesResultObject> ProcessBatches(const ProcessBatchesArgs& args);
+  void MergeModel(const MergeModelArgs& args);
+  void NormalizeModel(const NormalizeModelArgs& args);
+  void RegularizeModel(const RegularizeModelArgs& args);
+  void InitializeModel(const InitializeModelArgs& args);
 
   void Reconfigure(const MasterComponentConfig& config);
   bool AddBatch(const Batch& batch);
@@ -99,19 +105,6 @@ class MasterComponent {
   int id_;
   MasterComponentConfig config_;
   DISALLOW_COPY_AND_ASSIGN(MasterComponent);
-};
-
-class NodeController {
- public:
-  explicit NodeController(const NodeControllerConfig& config);
-  ~NodeController();
-
-  int id() const { return id_; }
-
- private:
-  int id_;
-  NodeControllerConfig config_;
-  DISALLOW_COPY_AND_ASSIGN(NodeController);
 };
 
 class Model {
@@ -178,15 +171,44 @@ class Dictionary {
 };
 
 template <typename T>
-std::shared_ptr<T> MasterComponent::GetScoreAs(const Model& model,
+std::shared_ptr<T> MasterComponent::GetScoreAs(const std::string& model_name,
                                                const std::string& score_name) {
   GetScoreValueArgs args;
-  args.set_model_name(model.name().c_str());
+  args.set_model_name(model_name.c_str());
   args.set_score_name(score_name.c_str());
   auto score_data = GetScore(args);
   auto score = std::make_shared<T>();
   score->ParseFromString(score_data->data());
   return score;
+}
+
+template <typename T>
+std::shared_ptr<T> MasterComponent::GetScoreAs(const Model& model,
+                                               const std::string& score_name) {
+  return GetScoreAs<T>(model.name(), score_name);
+}
+class ProcessBatchesResultObject {
+ public:
+  explicit ProcessBatchesResultObject(ProcessBatchesResult message) : message_(message) {}
+
+  template <typename T>
+  std::shared_ptr<T> GetScoreAs(const std::string& score_name);
+
+ private:
+  ProcessBatchesResult message_;
+};
+
+template <typename T>
+std::shared_ptr<T> ProcessBatchesResultObject::GetScoreAs(const std::string& score_name) {
+  for (int i = 0; i < message_.score_data_size(); ++i) {
+    if (message_.score_data(i).name() == score_name) {
+      auto score = std::make_shared<T>();
+      score->ParseFromString(message_.score_data(i).data());
+      return score;
+    }
+  }
+
+  return nullptr;
 }
 
 }  // namespace artm

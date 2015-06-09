@@ -20,8 +20,7 @@ class InstanceTest : boost::noncopyable {
   std::shared_ptr<artm::core::Instance> instance() { return instance_; }
 
   InstanceTest() : instance_(nullptr) {
-    instance_.reset(new ::artm::core::Instance(
-      ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal));
+    instance_.reset(new ::artm::core::Instance(::artm::MasterComponentConfig()));
   }
 
   ~InstanceTest() {}
@@ -70,8 +69,7 @@ class InstanceTest : boost::noncopyable {
 
 // artm_tests.exe --gtest_filter=Instance.Basic
 TEST(Instance, Basic) {
-  auto instance = std::make_shared< ::artm::core::Instance>(
-    ::artm::MasterComponentConfig(), ::artm::core::MasterInstanceLocal);
+  auto instance = std::make_shared< ::artm::core::Instance>(::artm::MasterComponentConfig());
 
   artm::Batch batch1;
   batch1.set_id("c722e9bd-28f8-4af0-a4fe-790681982a87");
@@ -113,11 +111,11 @@ TEST(Instance, Basic) {
   instance->CreateOrReconfigureModel(config);
 
   for (int i = 0; i < 20; ++i) {
-    instance->local_data_loader()->AddBatch(args1);
-    instance->local_data_loader()->AddBatch(args4);
+    instance->data_loader()->AddBatch(args1);
+    instance->data_loader()->AddBatch(args4);
 
     ::artm::WaitIdleArgs wait_args;
-    instance->local_data_loader()->WaitIdle(wait_args);
+    instance->data_loader()->WaitIdle(wait_args);
     ::artm::SynchronizeModelArgs sync_model_args;
     sync_model_args.set_model_name(model_name);
     sync_model_args.set_decay_weight(1.0);
@@ -203,8 +201,8 @@ TEST(Instance, MultipleStreamsAndModels) {
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 5; ++iter) {
-    test.instance()->local_data_loader()->AddBatch(add_args);
-    test.instance()->local_data_loader()->WaitIdle(artm::WaitIdleArgs());
+    test.instance()->data_loader()->AddBatch(add_args);
+    test.instance()->data_loader()->WaitIdle(artm::WaitIdleArgs());
     test.instance()->merger()->ForceSynchronizeModel(::artm::SynchronizeModelArgs());
   }
 

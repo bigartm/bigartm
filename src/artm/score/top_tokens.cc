@@ -4,7 +4,6 @@
 #include <utility>
 
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 #include "artm/core/protobuf_helpers.h"
 
 #include "artm/score/coherence_plugin.h"
@@ -13,9 +12,9 @@
 namespace artm {
 namespace score {
 
-std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& topic_model) {
-  int topics_size = topic_model.topic_size();
-  int tokens_size = topic_model.token_size();
+std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_wt) {
+  int topics_size = p_wt.topic_size();
+  int tokens_size = p_wt.token_size();
 
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
   if (config_.has_cooccurrence_dictionary_name())
@@ -23,7 +22,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
   bool count_coherence = dictionary_ptr != nullptr;
 
   std::vector<int> topic_ids;
-  google::protobuf::RepeatedPtrField<std::string> topic_name = topic_model.topic_name();
+  google::protobuf::RepeatedPtrField<std::string> topic_name = p_wt.topic_name();
   if (config_.topic_name_size() == 0) {
     for (int i = 0; i < topics_size; ++i) {
       topic_ids.push_back(i);
@@ -45,7 +44,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
 
   std::vector<artm::core::Token> tokens;
   for (int token_index = 0; token_index < tokens_size; token_index++) {
-    auto token = topic_model.token(token_index);
+    auto token = p_wt.token(token_index);
     if (token.class_id == class_id)
       tokens.push_back(token);
   }
@@ -57,30 +56,28 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::TopicModel& t
   float average_coherence = 0.0f;
   auto coherence = top_tokens_score->mutable_coherence();
   for (int i = 0; i < topic_ids.size(); ++i) {
-    std::vector<std::pair<float, int>> p_wt;
-    p_wt.reserve(tokens.size());
+    std::vector<std::pair<float, int>> p_wt_local;
+    p_wt_local.reserve(tokens.size());
 
     for (int token_index = 0; token_index < tokens_size; token_index++) {
-      auto token = topic_model.token(token_index);
+      auto token = p_wt.token(token_index);
       if (token.class_id != class_id)
         continue;
 
-      ::artm::core::TopicWeightIterator topic_iter = topic_model.GetTopicWeightIterator(token);
-      float weight = topic_iter[topic_ids[i]];
-
-      p_wt.push_back(std::pair<float, int>(weight, p_wt.size()));
+      float weight = p_wt.get(token_index, topic_ids[i]);
+      p_wt_local.push_back(std::pair<float, int>(weight, p_wt_local.size()));
     }
 
-    std::sort(p_wt.begin(), p_wt.end());
+    std::sort(p_wt_local.begin(), p_wt_local.end());
 
-    int first_index = p_wt.size() - 1;
-    int last_index = (p_wt.size() - config_.num_tokens());
+    int first_index = p_wt_local.size() - 1;
+    int last_index = (p_wt_local.size() - config_.num_tokens());
     if (last_index < 0) last_index = 0;
 
     std::vector<core::Token> tokens_for_coherence;
     for (int token_index = first_index; token_index >= last_index; token_index--) {
-      ::artm::core::Token token = tokens[p_wt[token_index].second];
-      float weight = p_wt[token_index].first;
+      ::artm::core::Token token = tokens[p_wt_local[token_index].second];
+      float weight = p_wt_local[token_index].first;
       top_tokens_score->add_token(token.keyword);
       top_tokens_score->add_weight(weight);
       top_tokens_score->add_topic_index(topic_ids[i]);
