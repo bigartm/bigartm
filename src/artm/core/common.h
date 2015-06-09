@@ -54,6 +54,10 @@ struct Token {
     return false;
   }
 
+  bool operator!=(const Token& token) const {
+    return !(*this == token);
+  }
+
   const std::string keyword;
   const ClassId class_id;
 
@@ -87,6 +91,9 @@ class CuckooWatch {
   CuckooWatch(std::string message, CuckooWatch* parent)
       : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent),
         threshold_ms_(1) {}
+  CuckooWatch(std::string message, CuckooWatch* parent, int threshold_ms)
+      : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent),
+        threshold_ms_(threshold_ms) {}
 
   ~CuckooWatch() {
     auto delta = (std::chrono::system_clock::now() - start_);
@@ -102,7 +109,7 @@ class CuckooWatch {
       LOG(INFO) << ss.str();
     } else {
       std::stringstream ss;
-      ss << delta_ms.count() << "ms in " << message_;
+      ss << delta_ms.count() << "ms in " << message_ << "; ";
       parent_->submessage_ += ss.str();
     }
   }

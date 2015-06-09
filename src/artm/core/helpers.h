@@ -60,6 +60,12 @@ class Helpers {
 
   static std::string Describe(const ::artm::ModelConfig& message);
   static std::string Describe(const ::artm::MasterComponentConfig& message);
+  static std::string Describe(const ::artm::InitializeModelArgs& message);
+  static std::string Describe(const ::artm::ProcessBatchesArgs& message);
+  static std::string Describe(const ::artm::NormalizeModelArgs& message);
+  static std::string Describe(const ::artm::MergeModelArgs& message);
+  static std::string Describe(const ::artm::RegularizeModelArgs& message);
+  static std::string Describe(const ::artm::RegularizerSettings& message);
 };
 
 class BatchHelpers {

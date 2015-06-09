@@ -542,6 +542,10 @@ message ProcessBatchesArgs {
   repeated double regularizer_tau = 7;
   repeated string class_id = 8;
   repeated float class_weight = 9;
+  optional bool reuse_theta = 10 [default = false];
+  optional bool opt_for_avx = 11 [default = true];
+  optional bool use_sparse_bow = 12 [default = true];
+  optional bool reset_scores = 13 [default = true];
 }
 
 message ProcessBatchesResult {

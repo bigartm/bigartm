@@ -25,13 +25,14 @@ with artm.library.MasterComponent() as master:
     top_tokens_score = master.CreateTopTokensScore()
 
     # Initialize model
-    master.InitializeModel(model_name="pwt", batch_folder=target_folder, topics_count=10)
+    pwt_model = "pwt"
+    master.InitializeModel(pwt_model, batch_folder=target_folder, topics_count=10)
 
     # Perform iterations
     for iteration in range(0, 5):
-        scores = master.ProcessBatches("pwt", batches, "nwt")
-        master.NormalizeModel("nwt", "pwt")
-        print "Iteration = %i," % iteration, "Perplexity = %.3f" % perplexity_score.GetValue(scores=scores).value
+        master.ProcessBatches(pwt_model, batches, "nwt")
+        master.NormalizeModel("nwt", pwt_model)
+        print "Iteration = %i," % iteration, "Perplexity = %.3f" % perplexity_score.GetValue(pwt_model).value
 
     # Visualize top token in each topic
-    artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue("pwt"))
+    artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue(pwt_model))

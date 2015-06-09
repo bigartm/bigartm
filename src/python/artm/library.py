@@ -603,7 +603,7 @@ class MasterComponent:
                         self.lib_.ArtmInitializeModel(self.id_, len(blob), blob_p))
 
     def ProcessBatches(self, pwt, batches, target_nwt=None, regularizers={}, inner_iterations_count=10, class_ids={},
-                       stream_name=None):
+                       stream_name=None, reset_scores=None):
         """ MasterComponent.ProcessBatches() --- process batches to calculate p(t|d), scores, and nwt-increments.
         Args:
         - pwt --- the name of input Phi matrix
@@ -615,6 +615,8 @@ class MasterComponent:
         - regularizers --- list of tau-regularizers and their weights. Is dict,
                            key --- regularizer_name, value --- regularizer_tau, default = {}
         - stream_name --- name of the data stream to use for calculation of nwt-increments.
+        - reset_scores --- flag indicating whether to reset scores. Default = True,
+                           meaning that scores be calculated only on input batches.
 
         NOTE:
         - This operation returns the list of theta-scores. The rest of the data can be accessed as follows:
@@ -639,6 +641,8 @@ class MasterComponent:
             args.nwt_target_name = target_nwt
         if stream_name is not None:
             args.stream_name = stream_name
+        if reset_scores is not None:
+            args.reset_scores = reset_scores
 
         args_blob = args.SerializeToString()
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestProcessBatches(self.id_, len(args_blob), args_blob))

@@ -1261,7 +1261,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ImportModelArgs));
   ProcessBatchesArgs_descriptor_ = file->message_type(54);
-  static const int ProcessBatchesArgs_offsets_[9] = {
+  static const int ProcessBatchesArgs_offsets_[13] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, nwt_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, batch_filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, pwt_source_name_),
@@ -1271,6 +1271,10 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, regularizer_tau_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, class_weight_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, reuse_theta_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, opt_for_avx_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, use_sparse_bow_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, reset_scores_),
   };
   ProcessBatchesArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1849,24 +1853,27 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     " \n\024timeout_milliseconds\030\001 \001(\005:\002-1\"8\n\017Exp"
     "ortModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel"
     "_name\030\002 \001(\t\"8\n\017ImportModelArgs\022\021\n\tfile_n"
-    "ame\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"\373\001\n\022Proces"
+    "ame\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"\354\002\n\022Proces"
     "sBatchesArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\026\n"
     "\016batch_filename\030\002 \003(\t\022\027\n\017pwt_source_name"
     "\030\003 \001(\t\022\"\n\026inner_iterations_count\030\004 \001(\005:\002"
     "10\022\034\n\013stream_name\030\005 \001(\t:\007@global\022\030\n\020regu"
     "larizer_name\030\006 \003(\t\022\027\n\017regularizer_tau\030\007 "
     "\003(\001\022\020\n\010class_id\030\010 \003(\t\022\024\n\014class_weight\030\t "
-    "\003(\002\";\n\024ProcessBatchesResult\022#\n\nscore_dat"
-    "a\030\001 \003(\0132\017.artm.ScoreData\"m\n\016MergeModelAr"
-    "gs\022\027\n\017nwt_target_name\030\001 \001(\t\022\027\n\017nwt_sourc"
-    "e_name\030\002 \003(\t\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\nt"
-    "opic_name\030\004 \003(\t\"\231\001\n\023RegularizeModelArgs\022"
-    "\027\n\017rwt_target_name\030\001 \001(\t\022\027\n\017pwt_source_n"
-    "ame\030\002 \001(\t\022\027\n\017nwt_source_name\030\003 \001(\t\0227\n\024re"
-    "gularizer_settings\030\004 \003(\0132\031.artm.Regulari"
-    "zerSettings\"_\n\022NormalizeModelArgs\022\027\n\017pwt"
-    "_target_name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 "
-    "\001(\t\022\027\n\017rwt_source_name\030\003 \001(\t", 9028);
+    "\003(\002\022\032\n\013reuse_theta\030\n \001(\010:\005false\022\031\n\013opt_f"
+    "or_avx\030\013 \001(\010:\004true\022\034\n\016use_sparse_bow\030\014 \001"
+    "(\010:\004true\022\032\n\014reset_scores\030\r \001(\010:\004true\";\n\024"
+    "ProcessBatchesResult\022#\n\nscore_data\030\001 \003(\013"
+    "2\017.artm.ScoreData\"m\n\016MergeModelArgs\022\027\n\017n"
+    "wt_target_name\030\001 \001(\t\022\027\n\017nwt_source_name\030"
+    "\002 \003(\t\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\ntopic_na"
+    "me\030\004 \003(\t\"\231\001\n\023RegularizeModelArgs\022\027\n\017rwt_"
+    "target_name\030\001 \001(\t\022\027\n\017pwt_source_name\030\002 \001"
+    "(\t\022\027\n\017nwt_source_name\030\003 \001(\t\0227\n\024regulariz"
+    "er_settings\030\004 \003(\0132\031.artm.RegularizerSett"
+    "ings\"_\n\022NormalizeModelArgs\022\027\n\017pwt_target"
+    "_name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 \001(\t\022\027\n\017"
+    "rwt_source_name\030\003 \001(\t", 9141);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -22980,6 +22987,10 @@ const int ProcessBatchesArgs::kRegularizerNameFieldNumber;
 const int ProcessBatchesArgs::kRegularizerTauFieldNumber;
 const int ProcessBatchesArgs::kClassIdFieldNumber;
 const int ProcessBatchesArgs::kClassWeightFieldNumber;
+const int ProcessBatchesArgs::kReuseThetaFieldNumber;
+const int ProcessBatchesArgs::kOptForAvxFieldNumber;
+const int ProcessBatchesArgs::kUseSparseBowFieldNumber;
+const int ProcessBatchesArgs::kResetScoresFieldNumber;
 #endif  // !_MSC_VER
 
 ProcessBatchesArgs::ProcessBatchesArgs()
@@ -23002,6 +23013,10 @@ void ProcessBatchesArgs::SharedCtor() {
   pwt_source_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   inner_iterations_count_ = 10;
   stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
+  reuse_theta_ = false;
+  opt_for_avx_ = true;
+  use_sparse_bow_ = true;
+  reset_scores_ = true;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -23062,6 +23077,12 @@ void ProcessBatchesArgs::Clear() {
         stream_name_->assign(*_default_stream_name_);
       }
     }
+  }
+  if (_has_bits_[9 / 32] & (0xffu << (9 % 32))) {
+    reuse_theta_ = false;
+    opt_for_avx_ = true;
+    use_sparse_bow_ = true;
+    reset_scores_ = true;
   }
   batch_filename_.Clear();
   regularizer_name_.Clear();
@@ -23241,6 +23262,70 @@ bool ProcessBatchesArgs::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(77)) goto parse_class_weight;
+        if (input->ExpectTag(80)) goto parse_reuse_theta;
+        break;
+      }
+
+      // optional bool reuse_theta = 10 [default = false];
+      case 10: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_reuse_theta:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &reuse_theta_)));
+          set_has_reuse_theta();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(88)) goto parse_opt_for_avx;
+        break;
+      }
+
+      // optional bool opt_for_avx = 11 [default = true];
+      case 11: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_opt_for_avx:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &opt_for_avx_)));
+          set_has_opt_for_avx();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(96)) goto parse_use_sparse_bow;
+        break;
+      }
+
+      // optional bool use_sparse_bow = 12 [default = true];
+      case 12: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_use_sparse_bow:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &use_sparse_bow_)));
+          set_has_use_sparse_bow();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(104)) goto parse_reset_scores;
+        break;
+      }
+
+      // optional bool reset_scores = 13 [default = true];
+      case 13: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_reset_scores:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &reset_scores_)));
+          set_has_reset_scores();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -23334,6 +23419,26 @@ void ProcessBatchesArgs::SerializeWithCachedSizes(
       9, this->class_weight(i), output);
   }
 
+  // optional bool reuse_theta = 10 [default = false];
+  if (has_reuse_theta()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(10, this->reuse_theta(), output);
+  }
+
+  // optional bool opt_for_avx = 11 [default = true];
+  if (has_opt_for_avx()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(11, this->opt_for_avx(), output);
+  }
+
+  // optional bool use_sparse_bow = 12 [default = true];
+  if (has_use_sparse_bow()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(12, this->use_sparse_bow(), output);
+  }
+
+  // optional bool reset_scores = 13 [default = true];
+  if (has_reset_scores()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(13, this->reset_scores(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -23416,6 +23521,26 @@ void ProcessBatchesArgs::SerializeWithCachedSizes(
       WriteFloatToArray(9, this->class_weight(i), target);
   }
 
+  // optional bool reuse_theta = 10 [default = false];
+  if (has_reuse_theta()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(10, this->reuse_theta(), target);
+  }
+
+  // optional bool opt_for_avx = 11 [default = true];
+  if (has_opt_for_avx()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(11, this->opt_for_avx(), target);
+  }
+
+  // optional bool use_sparse_bow = 12 [default = true];
+  if (has_use_sparse_bow()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(12, this->use_sparse_bow(), target);
+  }
+
+  // optional bool reset_scores = 13 [default = true];
+  if (has_reset_scores()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(13, this->reset_scores(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -23453,6 +23578,28 @@ int ProcessBatchesArgs::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->stream_name());
+    }
+
+  }
+  if (_has_bits_[9 / 32] & (0xffu << (9 % 32))) {
+    // optional bool reuse_theta = 10 [default = false];
+    if (has_reuse_theta()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool opt_for_avx = 11 [default = true];
+    if (has_opt_for_avx()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool use_sparse_bow = 12 [default = true];
+    if (has_use_sparse_bow()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool reset_scores = 13 [default = true];
+    if (has_reset_scores()) {
+      total_size += 1 + 1;
     }
 
   }
@@ -23535,6 +23682,20 @@ void ProcessBatchesArgs::MergeFrom(const ProcessBatchesArgs& from) {
       set_stream_name(from.stream_name());
     }
   }
+  if (from._has_bits_[9 / 32] & (0xffu << (9 % 32))) {
+    if (from.has_reuse_theta()) {
+      set_reuse_theta(from.reuse_theta());
+    }
+    if (from.has_opt_for_avx()) {
+      set_opt_for_avx(from.opt_for_avx());
+    }
+    if (from.has_use_sparse_bow()) {
+      set_use_sparse_bow(from.use_sparse_bow());
+    }
+    if (from.has_reset_scores()) {
+      set_reset_scores(from.reset_scores());
+    }
+  }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -23566,6 +23727,10 @@ void ProcessBatchesArgs::Swap(ProcessBatchesArgs* other) {
     regularizer_tau_.Swap(&other->regularizer_tau_);
     class_id_.Swap(&other->class_id_);
     class_weight_.Swap(&other->class_weight_);
+    std::swap(reuse_theta_, other->reuse_theta_);
+    std::swap(opt_for_avx_, other->opt_for_avx_);
+    std::swap(use_sparse_bow_, other->use_sparse_bow_);
+    std::swap(reset_scores_, other->reset_scores_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

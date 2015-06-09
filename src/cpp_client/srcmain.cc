@@ -75,7 +75,8 @@ struct artm_options {
   bool b_no_scores;
   bool b_reuse_theta;
   bool b_disable_avx_opt;
-  bool b_use_new_models;
+  bool b_use_old_models;
+  bool b_use_dense_bow;
   std::vector<std::string> class_id;
 };
 
@@ -235,8 +236,9 @@ void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class
   ::artm::ProcessBatchesArgs args;
   args.set_inner_iterations_count(model_config.inner_iterations_count());
   args.set_stream_name(model_config.stream_name());
-  // args.set_opt_for_avx(model_config.opt_for_avx())
-  // if (model_config.has_reuse_theta()) args.set_reuse_theta(model_config.reuse_theta())
+  if (model_config.has_opt_for_avx()) args.set_opt_for_avx(model_config.opt_for_avx());
+  if (model_config.has_reuse_theta()) args.set_reuse_theta(model_config.reuse_theta());
+  if (model_config.has_use_sparse_bow()) args.set_use_sparse_bow(model_config.use_sparse_bow());
   args.mutable_class_id()->CopyFrom(model_config.class_id());
   args.mutable_class_weight()->CopyFrom(model_config.class_weight());
   return args;
@@ -273,6 +275,7 @@ int execute(const artm_options& options) {
   model_config.set_inner_iterations_count(options.num_inner_iters);
   model_config.set_stream_name("train_stream");
   model_config.set_opt_for_avx(!options.b_disable_avx_opt);
+  model_config.set_use_sparse_bow(!options.b_use_dense_bow);
   if (options.b_reuse_theta) model_config.set_reuse_theta(true);
   model_config.set_name("15081980-90a7-4767-ab85-7cb551c39339");  // randomly generated GUID
   if (options.class_id.size() > 0) {
@@ -290,7 +293,8 @@ int execute(const artm_options& options) {
   if (!options.b_no_scores)
     configureScores(&master_config, &model_config, options);
 
-  configureItemsProcessedScore(&master_config, &model_config);
+  if (options.b_use_old_models && online)
+    configureItemsProcessedScore(&master_config, &model_config);
 
   // Step 2. Collection parsing
 
@@ -393,7 +397,7 @@ int execute(const artm_options& options) {
 
   // Step 5. Create and initialize model.
   std::shared_ptr<Model> model;
-  if (!options.b_use_new_models) {
+  if (options.b_use_old_models) {
     model = std::make_shared<Model>(*master_component, model_config);
     if (dictionary != nullptr)
       model->Initialize(*dictionary);
@@ -466,8 +470,9 @@ int execute(const artm_options& options) {
           normalize_model_args.set_nwt_source_name("nwt_hat");
           normalize_model_args.set_pwt_target_name("pwt");
           master_component->NormalizeModel(normalize_model_args);
-        } else {
+        } else {  // online
           for (int i = 0; i < batch_file_names.size(); ++i) {
+            process_batches_args.set_reset_scores(i == 0);  // reset scores at the beginning of each iteration
             process_batches_args.add_batch_filename(batch_file_names[i]);
             int size = process_batches_args.batch_filename_size();
             if (size >= options.update_every || (i + 1) == batch_file_names.size()) {
@@ -602,7 +607,8 @@ int main(int argc, char * argv[]) {
       ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
       ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
       ("disable_avx_opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
-      ("use_new_models", po::bool_switch(&options.b_use_new_models)->default_value(false), "alternative implementation based on ProcessBatches, MergeModel, RegularizeModel and NormalizeModel APIs")
+      ("use_old_models", po::bool_switch(&options.b_use_old_models)->default_value(false), "old implementation based on InvokeIteration, WaitIdle and SynchronizeModel")
+      ("use_dense_bow", po::bool_switch(&options.b_use_dense_bow)->default_value(false), "use dense representation of bag-of-words data in processors")
     ;
     all_options.add(basic_options);
 

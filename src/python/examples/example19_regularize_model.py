@@ -48,17 +48,18 @@ with artm.library.MasterComponent() as master:
     phi_regularizers = {(phi_objective.name(), -0.5), (phi_background.name(), 0.5), (decorrelator.name(), 100000)}
 
     # Initialize model
-    master.InitializeModel(model_name="pwt", batch_folder=target_folder, topic_names=all_topics)
+    pwt_model = "pwt"
+    master.InitializeModel(model_name=pwt_model, batch_folder=target_folder, topic_names=all_topics)
 
     # Perform iterations
     for iteration in range(0, 5):
-        scores = master.ProcessBatches("pwt", batches, "nwt", theta_regularizers, inner_iterations_count=30)
-        master.RegularizeModel("pwt", "nwt", "rwt", phi_regularizers)
-        master.NormalizeModel("nwt", "pwt", "rwt")
-        print "Perplexity = %.3f" % perplexity_score.GetValue(scores=scores).value,
-        print ", Phi objective sparsity = %.3f" % sparsity_phi_objective.GetValue("pwt").value,
-        print ", Theta objective sparsity = %.3f" % sparsity_theta_objective.GetValue(scores=scores).value
+        master.ProcessBatches(pwt_model, batches, "nwt", theta_regularizers, inner_iterations_count=30)
+        master.RegularizeModel(pwt_model, "nwt", "rwt", phi_regularizers)
+        master.NormalizeModel("nwt", pwt_model, "rwt")
+        print "Perplexity = %.3f" % perplexity_score.GetValue(pwt_model).value,
+        print ", Phi objective sparsity = %.3f" % sparsity_phi_objective.GetValue(pwt_model).value,
+        print ", Theta objective sparsity = %.3f" % sparsity_theta_objective.GetValue(pwt_model).value
 
     # Visualize top token in each topic and a snippet of theta matrix
-    artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue("pwt"))
-    artm.library.Visualizers.PrintThetaSnippetScore(theta_snippet_score.GetValue(scores=scores))
+    artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue(pwt_model))
+    artm.library.Visualizers.PrintThetaSnippetScore(theta_snippet_score.GetValue(pwt_model))

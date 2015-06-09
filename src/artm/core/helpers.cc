@@ -467,8 +467,6 @@ bool Helpers::Validate(const ::artm::ImportModelArgs& message, bool throw_error)
 
 bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error) {
   std::stringstream ss;
-  if (!message.has_name()) ss << "DictionaryConfig.name is not defined; ";
-
   if (message.has_cooc_entries())
     if (message.cooc_entries().first_index_size() != message.cooc_entries().second_index_size() ||
         message.cooc_entries().first_index_size() != message.cooc_entries().items_count_size() ||
@@ -505,14 +503,8 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   ss << ", field_name=" << message.field_name();
   ss << ", stream_name=" << message.stream_name();
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
-  for (int i = 0; i < message.regularizer_settings().size(); ++i) {
-    ss << ", regularizer=(name=" << message.regularizer_settings(i).name() <<
-      ", tau=" << message.regularizer_settings(i).tau();
-    if (message.regularizer_settings(i).use_relative_regularization())
-      ss << "relative_regularization=True, gamma=" << message.regularizer_settings(i).gamma() << ")";
-    else
-      ss << "relative_regularization=False" << ")";
-  }
+  for (int i = 0; i < message.regularizer_settings_size(); ++i)
+    Helpers::Describe(message.regularizer_settings(i));
   for (int i = 0; i < message.class_id_size(); ++i)
     ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
@@ -524,7 +516,7 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
 std::string Helpers::Describe(const ::artm::MasterComponentConfig& message) {
   std::stringstream ss;
   ss << "MasterComponentConfig";
-  ss << ", disk_path=" << message.disk_path();
+  ss << ": disk_path=" << message.disk_path();
   ss << ", stream_size=" << message.stream_size();
   ss << ", compact_batches=" << (message.compact_batches() ? "yes" : "no");
   ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
@@ -533,6 +525,84 @@ std::string Helpers::Describe(const ::artm::MasterComponentConfig& message) {
   ss << ", merger_queue_max_size=" << message.merger_queue_max_size();
   ss << ", score_config_size=" << message.score_config_size();
   ss << ", disk_cache_path" << message.disk_cache_path();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::InitializeModelArgs& message) {
+  std::stringstream ss;
+  ss << "InitializeModelArgs";
+  ss << ": model_name=" << message.model_name();
+  ss << ", source_type=" <<
+    (message.source_type() == InitializeModelArgs_SourceType_Batches) ? "Batches" :
+    (message.source_type() == InitializeModelArgs_SourceType_Dictionary) ? "Dictionary" : "Unknown";
+  if (message.has_disk_path())
+    ss << ", disk_path=" << message.disk_path();
+  if (message.has_dictionary_name())
+    ss << ", dictionary_name=" << message.dictionary_name();
+  ss << ", filter_size=" << message.filter_size();
+  if (message.has_topics_count())
+    ss << ", topics_count=" << message.topics_count();
+  ss << ", topic_name_size=" << message.topic_name_size();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::ProcessBatchesArgs& message) {
+  std::stringstream ss;
+  ss << "ProcessBatchesArgs";
+  ss << ": nwt_target_name=" << message.nwt_target_name();
+  ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", pwt_source_name=" << message.pwt_source_name();
+  ss << ", inner_iterations_count=" << message.inner_iterations_count();
+  ss << ", stream_name=" << message.stream_name();
+  for (int i = 0; i < message.regularizer_name_size(); ++i)
+    ss << ", regularizer=(name:" << message.regularizer_name(i) << ", tau:" << message.regularizer_tau(i) << ")";
+  for (int i = 0; i < message.class_id_size(); ++i)
+    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
+  ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
+  ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
+  ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
+  ss << ", reset_scores=" << (message.reset_scores() ? "yes" : "no");
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::NormalizeModelArgs& message) {
+  std::stringstream ss;
+  ss << "NormalizeModelArgs";
+  ss << ": pwt_target_name=" << message.pwt_target_name();
+  ss << ", nwt_source_name=" << message.nwt_source_name();
+  ss << ", rwt_source_name=" << message.rwt_source_name();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::MergeModelArgs& message) {
+  std::stringstream ss;
+  ss << "MergeModelArgs";
+  ss << ": nwt_target_name=" << message.nwt_target_name();
+  for (int i = 0; i < message.nwt_source_name_size(); ++i)
+    ss << ", class=(" << message.nwt_source_name(i) << ":" << message.source_weight(i) << ")";
+  ss << ", topic_name_size=" << message.topic_name_size();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::RegularizeModelArgs& message) {
+  std::stringstream ss;
+  ss << "RegularizeModelArgs";
+  ss << ": rwt_target_name=" << message.rwt_target_name();
+  ss << ", pwt_source_name=" << message.pwt_source_name();
+  ss << ", nwt_source_name=" << message.nwt_source_name();
+  for (int i = 0; i < message.regularizer_settings_size(); ++i)
+    Helpers::Describe(message.regularizer_settings(i));
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::RegularizerSettings& message) {
+  std::stringstream ss;
+  ss << ", regularizer=(name:" << message.name() <<
+        ", tau:" << message.tau();
+  if (message.use_relative_regularization())
+    ss << "relative_regularization:True, gamma:" << message.gamma() << ")";
+  else
+    ss << "relative_regularization:False" << ")";
   return ss.str();
 }
 

@@ -63,6 +63,7 @@ class DensePhiMatrix : boost::noncopyable, public PhiMatrix {
   virtual bool has_token(const Token& token) const;
   virtual int token_index(const Token& token) const;
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const;
+  virtual const std::string& topic_name(int topic_id) const;
   virtual ModelName model_name() const;
 
   void Reset();

@@ -56,7 +56,7 @@ void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  LOG(INFO) << "Merger::CreateOrReconfigureModel() with " << Helpers::Describe(config);
+  LOG(INFO) << "MasterComponent::CreateOrReconfigureModel() with " << Helpers::Describe(config);
   instance_->CreateOrReconfigureModel(config);
 }
 
@@ -179,6 +179,7 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
+  LOG(INFO) << "MasterComponent::InitializeModel() with " << Helpers::Describe(args);
   instance_->merger()->InitializeModel(args);
 }
 
@@ -228,15 +229,20 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
 
 void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                             ProcessBatchesResult* process_batches_result) {
-  ModelName model_name = process_batches_args.pwt_source_name();
+  LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
+  const ProcessBatchesArgs& args = process_batches_args;  // short notation
+  ModelName model_name = args.pwt_source_name();
   ModelConfig model_config;
   model_config.set_name(model_name);
-  model_config.set_inner_iterations_count(process_batches_args.inner_iterations_count());
-  model_config.set_stream_name(process_batches_args.stream_name());
-  model_config.mutable_regularizer_name()->CopyFrom(process_batches_args.regularizer_name());
-  model_config.mutable_regularizer_tau()->CopyFrom(process_batches_args.regularizer_tau());
-  model_config.mutable_class_id()->CopyFrom(process_batches_args.class_id());
-  model_config.mutable_class_weight()->CopyFrom(process_batches_args.class_weight());
+  if (args.has_inner_iterations_count()) model_config.set_inner_iterations_count(args.inner_iterations_count());
+  if (args.has_stream_name()) model_config.set_stream_name(args.stream_name());
+  model_config.mutable_regularizer_name()->CopyFrom(args.regularizer_name());
+  model_config.mutable_regularizer_tau()->CopyFrom(args.regularizer_tau());
+  model_config.mutable_class_id()->CopyFrom(args.class_id());
+  model_config.mutable_class_weight()->CopyFrom(args.class_weight());
+  if (args.has_reuse_theta()) model_config.set_reuse_theta(args.reuse_theta());
+  if (args.has_opt_for_avx()) model_config.set_opt_for_avx(args.opt_for_avx());
+  if (args.has_use_sparse_bow()) model_config.set_use_sparse_bow(args.use_sparse_bow());
 
   std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
@@ -244,14 +250,14 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
   const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
 
-  if (process_batches_args.has_nwt_target_name()) {
-    if (process_batches_args.nwt_target_name() == process_batches_args.pwt_source_name())
+  if (args.has_nwt_target_name()) {
+    if (args.nwt_target_name() == args.pwt_source_name())
       BOOST_THROW_EXCEPTION(InvalidOperation(
         "ProcessBatchesArgs.pwt_source_name == ProcessBatchesArgs.nwt_target_name"));
 
-    auto nwt_target(std::make_shared<DensePhiMatrix>(process_batches_args.nwt_target_name(), p_wt.topic_name()));
+    auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
     nwt_target->Reshape(p_wt);
-    instance_->merger()->SetPhiMatrix(process_batches_args.nwt_target_name(), nwt_target);
+    instance_->merger()->SetPhiMatrix(args.nwt_target_name(), nwt_target);
   }
 
   model_config.set_topics_count(p_wt.topic_size());
@@ -260,8 +266,9 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 
   BatchManager batch_manager;
   ScoresMerger* scores_merger = instance_->merger()->scores_merger();
-  scores_merger->ResetScores(model_name);
-  for (int batch_index = 0; batch_index < process_batches_args.batch_filename_size(); ++batch_index) {
+  if (args.reset_scores())
+    scores_merger->ResetScores(model_name);
+  for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
     batch_manager.Add(task_id, std::string(), model_name);
 
@@ -269,13 +276,13 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     pi->set_notifiable(&batch_manager);
     pi->set_scores_merger(scores_merger);
     pi->set_model_name(model_name);
-    pi->set_batch_filename(process_batches_args.batch_filename(batch_index));
+    pi->set_batch_filename(args.batch_filename(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);
 
-    if (process_batches_args.has_nwt_target_name())
-      pi->set_nwt_target_name(process_batches_args.nwt_target_name());
+    if (args.has_nwt_target_name())
+      pi->set_nwt_target_name(args.nwt_target_name());
 
     instance_->processor_queue()->push(pi);
   }
@@ -298,6 +305,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
+  LOG(INFO) << "MasterComponent::MergeModel() with " << Helpers::Describe(merge_model_args);
   if (merge_model_args.nwt_source_name_size() == 0)
     BOOST_THROW_EXCEPTION(InvalidOperation("MergeModelArgs.nwt_source_name must not be empty"));
   if (merge_model_args.nwt_source_name_size() != merge_model_args.source_weight_size())
@@ -341,6 +349,7 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
 }
 
 void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_model_args) {
+  LOG(INFO) << "MasterComponent::RegularizeModel() with " << Helpers::Describe(regularize_model_args);
   const std::string& pwt_source_name = regularize_model_args.pwt_source_name();
   const std::string& nwt_source_name = regularize_model_args.nwt_source_name();
   const std::string& rwt_target_name = regularize_model_args.rwt_target_name();
@@ -372,6 +381,7 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
 }
 
 void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_args) {
+  LOG(INFO) << "MasterComponent::NormalizeModel() with " << Helpers::Describe(normalize_model_args);
   const std::string& pwt_target_name = normalize_model_args.pwt_target_name();
   const std::string& nwt_source_name = normalize_model_args.nwt_source_name();
   const std::string& rwt_source_name = normalize_model_args.rwt_source_name();

@@ -25,7 +25,8 @@ with artm.library.MasterComponent() as master:
     top_tokens_score = master.CreateTopTokensScore()
 
     # Initialize model
-    master.InitializeModel(model_name="pwt", batch_folder=target_folder, topics_count=10)
+    pwt_model = "pwt"
+    master.InitializeModel(model_name=pwt_model, batch_folder=target_folder, topics_count=10)
 
     # Perform iterations
     update_every = master.config().processors_count
@@ -34,12 +35,12 @@ with artm.library.MasterComponent() as master:
         for batch_index, batch_filename in enumerate(batches):
             batches_to_process.append(batch_filename)
             if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):
-                scores = master.ProcessBatches("pwt", batches_to_process, "nwt_hat")
+                master.ProcessBatches(pwt_model, batches_to_process, "nwt_hat")
                 master.MergeModel({("nwt", 0.7), ("nwt_hat", 0.3)}, target_nwt="nwt")
-                master.NormalizeModel("nwt", "pwt")
+                master.NormalizeModel("nwt", pwt_model)
                 print "Iteration = %i," % iteration,
-                print "Perplexity", batches_to_process, "= %.3f" % perplexity_score.GetValue(scores=scores).value
+                print "Perplexity", batches_to_process, "= %.3f" % perplexity_score.GetValue(pwt_model).value
                 batches_to_process = []
 
     # Visualize top token in each topic
-    artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue("pwt"))
+    artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue(pwt_model))

@@ -141,6 +141,10 @@ google::protobuf::RepeatedPtrField<std::string> DensePhiMatrix::topic_name() con
   return topic_name;
 }
 
+const std::string& DensePhiMatrix::topic_name(int topic_id) const {
+  return topic_name_[topic_id];
+}
+
 std::string DensePhiMatrix::model_name() const {
   return model_name_;
 }

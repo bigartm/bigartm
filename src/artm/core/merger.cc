@@ -131,8 +131,6 @@ void Merger::ThreadFunction() {
       is_idle_ = false;
 
       for (;;) {  // MAIN FOR LOOP
-        CuckooWatch cuckoo("Merger::MainLoopIteration", 3);
-
         // First, handle priority tasks in the internal_task_queue.
         MergerTask merger_task;
         if (internal_task_queue_.try_pop(&merger_task)) {
@@ -177,7 +175,7 @@ void Merger::ThreadFunction() {
         }
 
         {
-          CuckooWatch cuckoo2("ApplyTopicModelOperation()", &cuckoo);
+          CuckooWatch cuckoo2("Merger::ApplyTopicModelOperation()");
           PhiMatrixOperations::ApplyTopicModelOperation(
             model_increment->topic_model(), 1.0f, iter->second->mutable_nwt());
         }

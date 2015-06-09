@@ -34,6 +34,8 @@ class PhiMatrixOperations {
 
   static void FindPwt(const PhiMatrix& n_wt, PhiMatrix* p_wt);
   static void FindPwt(const PhiMatrix& n_wt, const PhiMatrix& r_wt, PhiMatrix* p_wt);
+
+  static bool HasEqualShape(const PhiMatrix& first, const PhiMatrix& second);
 };
 
 }  // namespace core

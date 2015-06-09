@@ -430,5 +430,23 @@ void PhiMatrixOperations::FindPwt(const PhiMatrix& n_wt, const PhiMatrix& r_wt, 
   FindPwtImpl(n_wt, &r_wt, p_wt);
 }
 
+bool PhiMatrixOperations::HasEqualShape(const PhiMatrix& first, const PhiMatrix& second) {
+  if (first.topic_size() != second.topic_size())
+    return false;
+
+  for (int i = 0; i < first.topic_size(); ++i)
+    if (first.topic_name(i) != second.topic_name(i))
+      return false;
+
+  if (first.token_size() != second.token_size())
+    return false;
+
+  for (int i = 0; i < first.token_size(); ++i)
+    if (first.token(i) != second.token(i))
+      return false;
+
+  return true;
+}
+
 }  // namespace core
 }  // namespace artm

@@ -7968,6 +7968,34 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_class_weight();
 
+  // optional bool reuse_theta = 10 [default = false];
+  inline bool has_reuse_theta() const;
+  inline void clear_reuse_theta();
+  static const int kReuseThetaFieldNumber = 10;
+  inline bool reuse_theta() const;
+  inline void set_reuse_theta(bool value);
+
+  // optional bool opt_for_avx = 11 [default = true];
+  inline bool has_opt_for_avx() const;
+  inline void clear_opt_for_avx();
+  static const int kOptForAvxFieldNumber = 11;
+  inline bool opt_for_avx() const;
+  inline void set_opt_for_avx(bool value);
+
+  // optional bool use_sparse_bow = 12 [default = true];
+  inline bool has_use_sparse_bow() const;
+  inline void clear_use_sparse_bow();
+  static const int kUseSparseBowFieldNumber = 12;
+  inline bool use_sparse_bow() const;
+  inline void set_use_sparse_bow(bool value);
+
+  // optional bool reset_scores = 13 [default = true];
+  inline bool has_reset_scores() const;
+  inline void clear_reset_scores();
+  static const int kResetScoresFieldNumber = 13;
+  inline bool reset_scores() const;
+  inline void set_reset_scores(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -7978,6 +8006,14 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_inner_iterations_count();
   inline void set_has_stream_name();
   inline void clear_has_stream_name();
+  inline void set_has_reuse_theta();
+  inline void clear_has_reuse_theta();
+  inline void set_has_opt_for_avx();
+  inline void clear_has_opt_for_avx();
+  inline void set_has_use_sparse_bow();
+  inline void clear_has_use_sparse_bow();
+  inline void set_has_reset_scores();
+  inline void clear_has_reset_scores();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -7991,9 +8027,13 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::int32 inner_iterations_count_;
+  bool reuse_theta_;
+  bool opt_for_avx_;
+  bool use_sparse_bow_;
+  bool reset_scores_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -18626,6 +18666,94 @@ ProcessBatchesArgs::class_weight() const {
 inline ::google::protobuf::RepeatedField< float >*
 ProcessBatchesArgs::mutable_class_weight() {
   return &class_weight_;
+}
+
+// optional bool reuse_theta = 10 [default = false];
+inline bool ProcessBatchesArgs::has_reuse_theta() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_reuse_theta() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void ProcessBatchesArgs::clear_has_reuse_theta() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void ProcessBatchesArgs::clear_reuse_theta() {
+  reuse_theta_ = false;
+  clear_has_reuse_theta();
+}
+inline bool ProcessBatchesArgs::reuse_theta() const {
+  return reuse_theta_;
+}
+inline void ProcessBatchesArgs::set_reuse_theta(bool value) {
+  set_has_reuse_theta();
+  reuse_theta_ = value;
+}
+
+// optional bool opt_for_avx = 11 [default = true];
+inline bool ProcessBatchesArgs::has_opt_for_avx() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_opt_for_avx() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void ProcessBatchesArgs::clear_has_opt_for_avx() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void ProcessBatchesArgs::clear_opt_for_avx() {
+  opt_for_avx_ = true;
+  clear_has_opt_for_avx();
+}
+inline bool ProcessBatchesArgs::opt_for_avx() const {
+  return opt_for_avx_;
+}
+inline void ProcessBatchesArgs::set_opt_for_avx(bool value) {
+  set_has_opt_for_avx();
+  opt_for_avx_ = value;
+}
+
+// optional bool use_sparse_bow = 12 [default = true];
+inline bool ProcessBatchesArgs::has_use_sparse_bow() const {
+  return (_has_bits_[0] & 0x00000800u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_use_sparse_bow() {
+  _has_bits_[0] |= 0x00000800u;
+}
+inline void ProcessBatchesArgs::clear_has_use_sparse_bow() {
+  _has_bits_[0] &= ~0x00000800u;
+}
+inline void ProcessBatchesArgs::clear_use_sparse_bow() {
+  use_sparse_bow_ = true;
+  clear_has_use_sparse_bow();
+}
+inline bool ProcessBatchesArgs::use_sparse_bow() const {
+  return use_sparse_bow_;
+}
+inline void ProcessBatchesArgs::set_use_sparse_bow(bool value) {
+  set_has_use_sparse_bow();
+  use_sparse_bow_ = value;
+}
+
+// optional bool reset_scores = 13 [default = true];
+inline bool ProcessBatchesArgs::has_reset_scores() const {
+  return (_has_bits_[0] & 0x00001000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_reset_scores() {
+  _has_bits_[0] |= 0x00001000u;
+}
+inline void ProcessBatchesArgs::clear_has_reset_scores() {
+  _has_bits_[0] &= ~0x00001000u;
+}
+inline void ProcessBatchesArgs::clear_reset_scores() {
+  reset_scores_ = true;
+  clear_has_reset_scores();
+}
+inline bool ProcessBatchesArgs::reset_scores() const {
+  return reset_scores_;
+}
+inline void ProcessBatchesArgs::set_reset_scores(bool value) {
+  set_has_reset_scores();
+  reset_scores_ = value;
 }
 
 // -------------------------------------------------------------------
