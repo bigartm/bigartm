@@ -115,7 +115,7 @@ const std::vector<TokenCoocInfo> Dictionary::cooc_info(const Token& token) const
   if (cooc_map_iter == cooc_values_.end()) return retval;
 
   for (auto iter = cooc_map_iter->second.begin(); iter != cooc_map_iter->second.end(); ++iter) {
-    TokenCoocInfo token_cooc_info = TokenCoocInfo(index_token_.find(iter->first)->second, iter->second);
+    TokenCoocInfo token_cooc_info = TokenCoocInfo(&index_token_.find(iter->first)->second, iter->second);
     retval.push_back(token_cooc_info);
   }
 }
