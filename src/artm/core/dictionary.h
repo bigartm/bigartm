@@ -16,8 +16,9 @@ namespace artm {
 namespace core {
 
 struct TokenCoocInfo {
-  TokenCoocInfo(const Token& _token, int _value) : token(_token), value(_value) { }
-  const Token& token;
+  TokenCoocInfo() : token(nullptr), value(0) {}
+  TokenCoocInfo(const Token* _token, int _value) : token(_token), value(_value) { }
+  const Token* token;
   int value;
 };
 
