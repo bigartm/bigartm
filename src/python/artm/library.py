@@ -96,19 +96,21 @@ def HandleErrorCode(lib, artm_error_code):
 
 class Library:
     def __init__(self, artm_shared_library=""):
+        if sys.platform.count('linux') == 1:
+            default_artm_shared_library = 'libartm.so'
+        elif sys.platform.count('darwin') == 1:
+            default_artm_shared_library = 'libartm.dylib'
+        else:
+            default_artm_shared_library = 'artm.dll'
+
         if not artm_shared_library:
-            if sys.platform.count('linux') == 1:
-                artm_shared_library = 'libartm.so'
-            elif sys.platform.count('darwin') == 1:
-                artm_shared_library = 'libartm.dylib'
-            else:
-                artm_shared_library = 'artm.dll'
+            artm_shared_library = default_artm_shared_library
 
         try:
             self.lib_ = ctypes.CDLL(artm_shared_library)
             return
         except OSError as e:
-            print >> sys.stderr, str(e) + ", fall back to ARTM_SHARED_LIBRARY environment variable"
+            pass  # This is not an error, as below we try to load libartm from ARTM_SHARED_LIBRARY environment variable
 
         if "ARTM_SHARED_LIBRARY" in os.environ:
             try:
@@ -117,7 +119,10 @@ class Library:
             except OSError as e:
                 print >> sys.stderr, str(e)
 
-        print "Failed to load artm shared library, try to set ARTM_SHARED_LIBRARY environment variable"
+        print "Failed to load artm shared library. " \
+              "Try to add the location of '" + default_artm_shared_library + "' file into " \
+              "your PATH system variable, or to set ARTM_SHARED_LIBRARY - a specific system variable " \
+              "which may point to '" + default_artm_shared_library + "' file, including the full path."
         sys.exit(1)
 
 
