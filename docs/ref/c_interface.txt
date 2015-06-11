@@ -85,41 +85,8 @@ ArtmDisposeMasterComponent
    :return: This operation always returns :c:macro:`ARTM_SUCCESS`.
 
    This operation releases memory and other unmanaged resources, used by the master component.
-   If the master component had been launched in the network modus operandi,
-   then this operation also releases resources on the remote nodes
-   and closes all network connections.
 
    After this operation the *master_id* value becames invalid and must not be used in other operations.
-
-
-ArtmCreateNodeController
-------------------------
-
-.. c:function::  int ArtmCreateNodeController(int length, const char* node_controller_config)
-
-   Creates a node controller component.
-
-   :param const_char* node_controller_config:
-      Serialized :ref:`NodeControllerConfig` message,
-      describing the configuration of the node controller.
-
-   :param int length: The length in bytes of the *node_controller_config* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-
-ArtmDisposeNodeController
--------------------------
-
-.. c:function::  int ArtmDisposeNodeController(int node_controller_id)
-
-   Disposes node controller and releases all unmanaged resources.
-
-   :param int master_id: The ID of a node controller,
-      returned by :c:func:`ArtmCreateNodeController` method.
-
-   :return: This operation always returns :c:macro:`ARTM_SUCCESS`.
 
 
 ArtmCreateModel
@@ -322,9 +289,6 @@ ArtmAddBatch
    :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
             otherwise returns one of the :ref:`error codes <error-codes>`.
 
-   This operation is only allowed when
-   :attr:`MasterComponentConfig.online_batch_processing` is set to *True* and
-   :attr:`MasterComponentConfig.modus_operandi` is set to *Local*.
 
 ArtmInvokeIteration
 -------------------
@@ -690,7 +654,6 @@ Error codes
    #define ARTM_INVALID_OPERATION -6
    #define ARTM_DISK_READ_ERROR -7
    #define ARTM_DISK_WRITE_ERROR -8
-   #define ARTM_NETWORK_ERROR -9
 
 .. c:macro:: ARTM_SUCCESS
 
@@ -732,7 +695,3 @@ Error codes
 .. c:macro:: ARTM_DISK_WRITE_ERROR
 
    The required files could not be writtent to disk.
-
-.. c:macro:: ARTM_NETWORK_ERROR
-
-   Network call did not reply withing the specified timeout.

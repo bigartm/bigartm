@@ -247,12 +247,6 @@ Represents a configuration of a master component.
 .. code-block:: bash
 
   message MasterComponentConfig {
-    enum ModusOperandi {
-      Local = 0;
-      Network = 1;
-    }
-
-    optional ModusOperandi modus_operandi = 1 [default = Local];
     optional string disk_path = 2;
     repeated Stream stream = 3;
     optional bool compact_batches = 4 [default = true];
@@ -261,35 +255,13 @@ Represents a configuration of a master component.
     optional int32 processor_queue_max_size = 7 [default = 10];
     optional int32 merger_queue_max_size = 8 [default = 10];
     repeated ScoreConfig score_config = 9;
-    optional string create_endpoint = 10;
-    optional string connect_endpoint = 11;
-    repeated string node_connect_endpoint = 12;
     optional bool online_batch_processing = 13 [default = false];  // obsolete in BigARTM v0.5.8
-    optional int32 communication_timeout = 14 [default = 1000];
     optional string disk_cache_path = 15;
   }
-
-.. attribute:: MasterComponentConfig.modus_operandi
-
-  A value that defines the modus operandi of the master component.
-
-  ================= ================================================================
-  ``Local``         | Defines a master component that operates in the local mode.
-                    | In this mode master component is self-contained, and
-                    | does not require any external nodes to tune topic model.
-
-  ``Network``       | Defines a master component that operates in the network mode.
-                    | In this mode master component delegates all heavy processing
-                    | to externals nodes. The master component is then responsible
-                    | only for merging the results from external nodes into a single
-                    | topic model.
-  ================= ================================================================
 
 .. attribute:: MasterComponentConfig.disk_path
 
   A value that defines the disk location to store or load the collection.
-  In network modus operandi this field is required, and it must point to a network file share,
-  accessible by all nodes connected to the master component.
 
 .. attribute:: MasterComponentConfig.stream
 
@@ -310,28 +282,20 @@ Represents a configuration of a master component.
   'cache_theta' allows to cache this theta matrix and re-use theha values when the same
   document is processed on the next iteration. This option must be set to 'true' before
   calling method :c:func:`ArtmRequestThetaMatrix`.
-  This feature is currently not supported in network modus operandi.
 
 .. attribute:: MasterComponentConfig.processors_count
 
   A value that defines the number of concurrent processor components.
-  In network modus operandi this value defines the processors count
-  at every remote node controller, connected to the master component.
   The number of processors should normally not exceed the number of CPU cores.
 
 .. attribute:: MasterComponentConfig.processor_queue_max_size
 
   A value that defines the maximal size of the processor queue.
   Processor queue contains batches, prefetch from disk into memory.
-  In network modus operandi this value defines the maximal queue size
-  at every remote node controller, connected to the master component.
   Recommendations regarding the maximal queue size are as follows:
 
   * the queue size should be at least as large as the number of concurrent
     processors;
-
-  * the total size of the queues across all node controllers should not
-    exceed the number of batches in the collection.
 
 .. attribute:: MasterComponentConfig.merger_queue_max_size
 
@@ -344,38 +308,9 @@ Represents a configuration of a master component.
 
   A set of all scores, available for calculation.
 
-.. attribute:: MasterComponentConfig.create_endpoint
-
-  A value that defines ZeroMQ endpoint to expose the master component service
-  (example: ``tcp://*:5555``). For further details about the format of endpoint string refer to
-  ZeroMQ documentation (http://api.zeromq.org).
-  The value is used only in the network modus operandi.
-
-.. attribute:: MasterComponentConfig.connect_endpoint
-
-  A value that defines ZeroMQ endpoint to expose the master component service
-  (example: ``tcp://192.168.0.1:5555``). // For further details about the format of endpoint
-  string refer to ZeroMQ documentation (http://api.zeromq.org).
-  The value is used only in the network modus operandi.
-
-.. attribute:: MasterComponentConfig.node_connect_endpoint
-
-  A set containing all ZeroMQ endpoints of the external node controllers
-  (example: ``tcp://192.168.0.2:5556``). For further details about the format of endpoint string
-  refer to ZeroMQ documentation (http://api.zeromq.org).
-  The value is used only in the network modus operandi.
-  A node controller component at the remote machine must be created prior to configuring
-  master component with its endpoint.
-
 .. attribute:: MasterComponentConfig.online_batch_processing
 
   Obsolete in BigARTM v0.5.8.
-
-.. attribute:: MasterComponentConfig.communication_timeout
-
-  An communication timeout in milliseconds.
-  Any remote network call that exceeds communication timeout
-  will result in :c:macro:`ARTM_NETWORK_ERROR` error.
 
 .. attribute:: MasterComponentConfig.disk_cache_path
 
@@ -383,27 +318,6 @@ Represents a configuration of a master component.
   This can reduce memory usage, particularly when :attr:`cache_theta` option is enabled.
   Note that on clean shutdown master component will will be cleaned this folder automatically,
   but otherwise it is your responsibility to clean this folder to avoid running out of disk.
-
-.. _NodeControllerConfig:
-
-NodeControllerConfig
-====================
-
-.. class:: messages_pb2.NodeControllerConfig
-
-Represents a configuration of a NodeController
-
-.. code-block:: bash
-
-  message NodeControllerConfig {
-    optional string create_endpoint = 1;
-  }
-
-.. attribute:: NodeControllerConfig.create_endpoint
-
-  A value that defines ZeroMQ endpoint to expose the node component service
-  (example: ``tcp://*:5556``). For further details about the format of endpoint string refer to
-  ZeroMQ documentation (http://api.zeromq.org).
 
 
 .. _ModelConfig:

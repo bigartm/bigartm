@@ -15,19 +15,8 @@
 
 #include "artm_tests/test_mother.h"
 
-#define ASSERT_APPROX_EQ(a, b) ASSERT_NEAR(a, b, (a + b) / 1e5)
-void GenerateBatches(int batches_size, int nTokens, std::vector<std::shared_ptr< ::artm::Batch>>* batches);
-std::string DescribeTopicModel(const ::artm::TopicModel& topic_model);
-std::string DescribeThetaMatrix(const ::artm::ThetaMatrix& theta_matrix);
-void CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::TopicModel& tm2, bool* ok);
-void CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm::ThetaMatrix& tm2, bool *ok);
-
 std::string runOfflineTest() {
   const int nTopics = 5;
-
-  // Endpoints:
-  // 5555 - master component (network_mode)
-  // 5556 - node controller for workers (network_mode)
 
   ::artm::MasterComponentConfig master_config;
   master_config.set_cache_theta(true);
@@ -43,7 +32,7 @@ std::string runOfflineTest() {
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   int batches_size = 2;
   int nTokens = 10;
-  GenerateBatches(batches_size, nTokens, &batches);
+  ::artm::test::TestMother::GenerateBatches(batches_size, nTokens, &batches);
   for (int iter = 0; iter < 3; ++iter) {
     for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
       master_component.AddBatch(*batches[iBatch]);
@@ -55,14 +44,14 @@ std::string runOfflineTest() {
 
   std::shared_ptr< ::artm::TopicModel> topic_model = master_component.GetTopicModel(model.name());
   std::stringstream ss;
-  ss << "Topic model:\n" << DescribeTopicModel(*topic_model);
+  ss << "Topic model:\n" << ::artm::test::Helpers::DescribeTopicModel(*topic_model);
   ss << "Theta matrix:\n";
   for (int i = 0; i < batches.size(); ++i) {
     ::artm::GetThetaMatrixArgs args;
     args.set_model_name(model.name());
     args.mutable_batch()->CopyFrom(*batches[i]);
     std::shared_ptr< ::artm::ThetaMatrix> theta_matrix = master_component.GetThetaMatrix(args);
-    ss << DescribeThetaMatrix(*theta_matrix);
+    ss << ::artm::test::Helpers::DescribeThetaMatrix(*theta_matrix);
   }
 
   return ss.str();
@@ -122,7 +111,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
 
   int batches_size = 2;
   int nTokens = 10;
-  GenerateBatches(batches_size, nTokens, &batches);
+  ::artm::test::TestMother::GenerateBatches(batches_size, nTokens, &batches);
 
   for (int iter = 0; iter < 3; ++iter) {
     for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
@@ -174,24 +163,28 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
   model3.Import(file_name);
 
   bool ok = false, ok2 = false;
-  CompareTopicModels(*master2.GetTopicModel(model2.name()),
-                     *master_component.GetTopicModel(model.name()), &ok);
-  CompareTopicModels(*master3.GetTopicModel(model3.name()),
-                     *master_component.GetTopicModel(model.name()), &ok2);
+  ::artm::test::Helpers::CompareTopicModels(*master2.GetTopicModel(model2.name()),
+                                            *master_component.GetTopicModel(model.name()), &ok);
+  ::artm::test::Helpers::CompareTopicModels(*master3.GetTopicModel(model3.name()),
+                                            *master_component.GetTopicModel(model.name()), &ok2);
   if (!ok) {
-    std::cout << "New topic model:\n" << DescribeTopicModel(*master2.GetTopicModel(model2.name()));
-    std::cout << "Old topic model:\n" << DescribeTopicModel(*master_component.GetTopicModel(model.name()));
+    std::cout << "New topic model:\n"
+              << ::artm::test::Helpers::DescribeTopicModel(*master2.GetTopicModel(model2.name()));
+    std::cout << "Old topic model:\n"
+              << ::artm::test::Helpers::DescribeTopicModel(*master_component.GetTopicModel(model.name()));
   }
   if (!ok2) {
-    std::cout << "Imported topic model:\n" << DescribeTopicModel(*master3.GetTopicModel(model3.name()));
-    std::cout << "Exported topic model:\n" << DescribeTopicModel(*master_component.GetTopicModel(model.name()));
+    std::cout << "Imported topic model:\n"
+              << ::artm::test::Helpers::DescribeTopicModel(*master3.GetTopicModel(model3.name()));
+    std::cout << "Exported topic model:\n"
+              << ::artm::test::Helpers::DescribeTopicModel(*master_component.GetTopicModel(model.name()));
   }
   ASSERT_TRUE(ok && ok2);
   for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
-    CompareThetaMatrices(*master2.GetThetaMatrix(model.name(), *batches[iBatch]),
-                         *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok);
-    CompareThetaMatrices(*master3.GetThetaMatrix(model.name(), *batches[iBatch]),
-                         *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok2);
+    ::artm::test::Helpers::CompareThetaMatrices(*master2.GetThetaMatrix(model.name(), *batches[iBatch]),
+                                                *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok);
+    ::artm::test::Helpers::CompareThetaMatrices(*master3.GetThetaMatrix(model.name(), *batches[iBatch]),
+                                                *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok2);
   }
   ASSERT_TRUE(ok && ok2);
 
@@ -208,21 +201,22 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
   master_component.WaitIdle(); master2.WaitIdle(); master3.WaitIdle();
   model.Synchronize(0.5); model2.Synchronize(0.5); model3.Synchronize(0.5);
 
-  CompareTopicModels(*master2.GetTopicModel(model2.name()),
-                     *master_component.GetTopicModel(model.name()), &ok);
+  ::artm::test::Helpers::CompareTopicModels(*master2.GetTopicModel(model2.name()),
+                                            *master_component.GetTopicModel(model.name()), &ok);
   ASSERT_TRUE(ok);
 
-  CompareTopicModels(*master3.GetTopicModel(model3.name()),
-                     *master_component.GetTopicModel(model.name()), &ok2);
+  ::artm::test::Helpers::CompareTopicModels(*master3.GetTopicModel(model3.name()),
+                                            *master_component.GetTopicModel(model.name()), &ok2);
   ASSERT_TRUE(ok2);
 
   for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
-    CompareThetaMatrices(*master2.GetThetaMatrix(model.name(), *batches[iBatch]),
-                          *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok);
+    ::artm::test::Helpers::CompareThetaMatrices(*master2.GetThetaMatrix(model.name(), *batches[iBatch]),
+                                                *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok);
     ASSERT_TRUE(ok);
 
-    CompareThetaMatrices(*master3.GetThetaMatrix(model.name(), *batches[iBatch]),
-                         *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok2);
+    ::artm::test::Helpers::CompareThetaMatrices(*master3.GetThetaMatrix(model.name(), *batches[iBatch]),
+                                                *master_component.GetThetaMatrix(model.name(),
+                                                *batches[iBatch]), &ok2);
     ASSERT_TRUE(ok2);
   }
 }
@@ -245,103 +239,4 @@ TEST(RepeatableResult, OverwriteTopicModel_Nwt_dense) {
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Nwt_sparse
 TEST(RepeatableResult, OverwriteTopicModel_Nwt_sparse) {
   OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Nwt, true);
-}
-
-void GenerateBatches(int batches_size, int nTokens, std::vector<std::shared_ptr< ::artm::Batch>>* batches) {
-  srand(1);
-  for (int iBatch = 0; iBatch < batches_size; ++iBatch) {
-    ::artm::Batch batch;
-    batch.set_id(artm::test::Helpers::getUniqueString());
-
-    // Same dictionary across all batches
-    for (int i = 0; i < nTokens; i++) {
-      std::stringstream str;
-      str << "token" << i;
-      batch.add_token(str.str());
-    }
-
-    artm::Item* item = batch.add_item();
-    item->set_id(iBatch);  // one item per batch
-    artm::Field* field = item->add_field();
-    for (int iToken = 0; iToken < nTokens; ++iToken) {
-      if (iToken == 0 || rand() % 3 == 0) {  // NOLINT
-        field->add_token_id(iToken);
-        field->add_token_count(1);
-      }
-    }
-
-    batches->push_back(std::make_shared< ::artm::Batch>(batch));
-  }
-}
-
-std::string DescribeTopicModel(const ::artm::TopicModel& topic_model) {
-  std::stringstream ss;
-  for (int i = 0; i < topic_model.token_size(); ++i) {
-    ss << topic_model.token(i) << ": ";
-    for (int j = 0; j < topic_model.topic_name_size(); ++j) {
-      ss << topic_model.token_weights(i).value(j) << " ";
-    }
-    ss << std::endl;
-  }
-
-  return ss.str();
-}
-
-std::string DescribeThetaMatrix(const ::artm::ThetaMatrix& theta_matrix) {
-  std::stringstream ss;
-  for (int i = 0; i < theta_matrix.item_id_size(); ++i) {
-    ss << theta_matrix.item_id(i) << ": ";
-    for (int j = 0; j < theta_matrix.topics_count(); ++j) {
-      ss << theta_matrix.item_weights(i).value(j) << " ";
-    }
-    ss << std::endl;
-  }
-
-  return ss.str();
-}
-
-void CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::TopicModel& tm2, bool* ok) {
-  *ok = false;
-  ASSERT_EQ(tm1.token_size(), tm2.token_size());
-  ASSERT_EQ(tm1.token_weights_size(), tm2.token_weights_size());
-  ASSERT_EQ(tm1.topic_index_size(), tm2.topic_index_size());
-  if (tm1.topic_index_size() > 0)
-    ASSERT_EQ(tm1.topic_index_size(), tm1.token_size());
-
-  for (int i = 0; i < tm1.token_size(); ++i) {
-    ASSERT_EQ(tm1.token(i), tm2.token(i));
-    ASSERT_EQ(tm1.token_weights(i).value_size(), tm2.token_weights(i).value_size());
-    for (int j = 0; j < tm1.token_weights(i).value_size(); ++j)
-      ASSERT_APPROX_EQ(tm1.token_weights(i).value(j), tm2.token_weights(i).value(j));
-    if (tm1.topic_index_size() > 0) {
-      ASSERT_EQ(tm1.topic_index(i).value_size(), tm2.topic_index(i).value_size());
-      for (int j = 0; j < tm1.topic_index(i).value_size(); ++j) {
-        ASSERT_EQ(tm1.topic_index(i).value(j), tm2.topic_index(i).value(j));
-      }
-    }
-  }
-  *ok = true;
-}
-
-void CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm::ThetaMatrix& tm2, bool *ok) {
-  *ok = false;
-  ASSERT_EQ(tm1.item_id_size(), tm2.item_id_size());
-  ASSERT_EQ(tm1.item_weights_size(), tm2.item_weights_size());
-  ASSERT_EQ(tm1.topic_index_size(), tm2.topic_index_size());
-  if (tm1.topic_index_size() > 0)
-    ASSERT_EQ(tm1.topic_index_size(), tm1.item_id_size());
-
-  for (int i = 0; i < tm1.item_id_size(); ++i) {
-    ASSERT_EQ(tm1.item_id(i), tm2.item_id(i));
-    ASSERT_EQ(tm1.item_weights(i).value_size(), tm2.item_weights(i).value_size());
-    for (int j = 0; j < tm1.item_weights(i).value_size(); ++j)
-      ASSERT_APPROX_EQ(tm1.item_weights(i).value(j), tm2.item_weights(i).value(j));
-    if (tm1.topic_index_size() > 0) {
-      ASSERT_EQ(tm1.topic_index(i).value_size(), tm2.topic_index(i).value_size());
-      for (int j = 0; j < tm1.topic_index(i).value_size(); ++j) {
-        ASSERT_EQ(tm1.topic_index(i).value(j), tm2.topic_index(i).value(j));
-      }
-    }
-  }
-  *ok = true;
 }

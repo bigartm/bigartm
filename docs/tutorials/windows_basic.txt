@@ -129,13 +129,17 @@ Folder ``C:\BigARTM\python\examples`` contains several toy examples:
     * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example04_online_algorithm.py>`_
     * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example05_train_and_test_stream.py>`_
     * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
-    * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
     * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example09_regularizers.py>`_
     * `example10_multimodal.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example10_multimodal.py>`_
     * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example11_get_theta_matrix.py>`_
     * `example12_get_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example12_get_topic_model.py>`_
     * `example13_overwrite_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example13_overwrite_topic_model.py>`_
     * `example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example14_initialize_topic_model.py>`_
+    * `example15_import_export_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example15_import_export_topic_model.py>`_
+    * `example16_coherence_score.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example16_coherence_score.py>`_
+    * `example17_process_batches.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example17_process_batches.py>`_
+    * `example18_merge_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example18_merge_model.py>`_
+    * `example19_regularize_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example19_regularize_model.py>`_
 
 
 All examples does not have any parameters, and you may run them without arguments:

@@ -18,6 +18,7 @@
 
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
+#include "artm/core/processor_input.h"
 #include "artm/core/thread_safe_holder.h"
 
 #include "artm/utility/blas.h"
@@ -27,14 +28,15 @@ namespace core {
 
 class InstanceSchema;
 class Merger;
+class CacheManager;
 class TopicModel;
-class TopicWeightIterator;
 
 class Processor : boost::noncopyable {
  public:
-  Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >*  processor_queue,
+  Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
             ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
             const Merger& merger,
+            const CacheManager& cache_manager,
             const ThreadSafeHolder<InstanceSchema>& schema);
 
   ~Processor();
@@ -47,6 +49,7 @@ class Processor : boost::noncopyable {
   ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue_;
   ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
   const Merger& merger_;
+  const CacheManager& cache_manager_;
   const ThreadSafeHolder<InstanceSchema>& schema_;
 
   mutable std::atomic<bool> is_stopping;

@@ -49,18 +49,29 @@ class Helpers {
   static bool FixAndValidate(::artm::GetScoreValueArgs* message, bool throw_error = true);
 
   static bool Validate(const ::artm::MasterComponentConfig& message, bool throw_error = true);
+
+  static void Fix(::artm::InitializeModelArgs* message);
   static bool Validate(const ::artm::InitializeModelArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::InitializeModelArgs* message, bool throw_error = true);
+
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportModelArgs& message, bool throw_error = true);
+  static bool Validate(const ::artm::DictionaryConfig& message, bool throw_error = true);
 
   static std::string Describe(const ::artm::ModelConfig& message);
   static std::string Describe(const ::artm::MasterComponentConfig& message);
+  static std::string Describe(const ::artm::InitializeModelArgs& message);
+  static std::string Describe(const ::artm::ProcessBatchesArgs& message);
+  static std::string Describe(const ::artm::NormalizeModelArgs& message);
+  static std::string Describe(const ::artm::MergeModelArgs& message);
+  static std::string Describe(const ::artm::RegularizeModelArgs& message);
+  static std::string Describe(const ::artm::RegularizerSettings& message);
 };
 
 class BatchHelpers {
  public:
   static void CompactBatch(const Batch& batch, Batch* compacted_batch);
-  static std::vector<BatchManagerTask> ListAllBatches(const boost::filesystem::path& root);
+  static std::vector<std::string> ListAllBatches(const boost::filesystem::path& root);
   static boost::uuids::uuid SaveBatch(const Batch& batch, const std::string& disk_path);
 
   static void LoadMessage(const std::string& full_filename,

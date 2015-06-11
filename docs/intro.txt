@@ -51,12 +51,6 @@ on multi-core machines. The library hosts all computation
 in several threads withing a single process,
 which enables efficient usage of shared memory across application threads.
 
-**Distributed**.
-BigARTM is able to distribute all CPU-intensive
-processing onto several machines, interconnected by network.
-We aim to scale up to hundreds of machines,
-but the real scalability have not been fully tested yet.
-
 **Extensible API**.
 BigARTM comes with an API in Python,
 but can be easily extended for all other languages

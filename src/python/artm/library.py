@@ -20,7 +20,6 @@ ARTM_CORRUPTED_MESSAGE = -5
 ARTM_INVALID_OPERATION = -6
 ARTM_DISK_READ_ERROR = -7
 ARTM_DISK_WRITE_ERROR = -8
-ARTM_NETWORK_ERROR = -9
 
 Stream_Type_Global = 0
 Stream_Type_ItemIdModulus = 1
@@ -29,6 +28,7 @@ RegularizerConfig_Type_SmoothSparsePhi = 1
 RegularizerConfig_Type_DecorrelatorPhi = 2
 RegularizerConfig_Type_LabelRegularizationPhi = 4
 RegularizerConfig_Type_SpecifiedSparsePhi = 5
+RegularizerConfig_Type_ImproveCoherencePhi = 6
 ScoreConfig_Type_Perplexity = 0
 ScoreData_Type_Perplexity = 0
 ScoreConfig_Type_SparsityTheta = 1
@@ -48,12 +48,12 @@ PerplexityScoreConfig_Type_UnigramCollectionModel = 1
 CollectionParserConfig_Format_BagOfWordsUci = 0
 CollectionParserConfig_Format_MatrixMarket = 1
 CollectionParserConfig_Format_VowpalWabbit = 2
-MasterComponentConfig_ModusOperandi_Local = 0
-MasterComponentConfig_ModusOperandi_Network = 1
 GetTopicModelArgs_RequestType_Pwt = 0
 GetTopicModelArgs_RequestType_Nwt = 1
 InitializeModelArgs_SourceType_Dictionary = 0
 InitializeModelArgs_SourceType_Batches = 1
+SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
+SpecifiedSparsePhiConfig_Mode_SparseTokens = 1
 
 #################################################################################
 
@@ -64,7 +64,6 @@ class CorruptedMessageException(BaseException): pass
 class InvalidOperationException(BaseException): pass
 class DiskReadException(BaseException): pass
 class DiskWriteException(BaseException): pass
-class NetworkException(BaseException): pass
 
 
 def GetLastErrorMessage(lib):
@@ -89,8 +88,6 @@ def HandleErrorCode(lib, artm_error_code):
         raise DiskReadException(GetLastErrorMessage(lib))
     elif artm_error_code == ARTM_DISK_WRITE_ERROR:
         raise DiskWriteException(GetLastErrorMessage(lib))
-    elif artm_error_code == ARTM_NETWORK_ERROR:
-        raise NetworkException(GetLastErrorMessage(lib))
     else:
         raise InternalError("Unknown error code: " + str(artm_error_code))
 
@@ -128,9 +125,6 @@ class Library:
         if config is None:
             config = messages_pb2.MasterComponentConfig()
         return MasterComponent(config, self.lib_)
-
-    def CreateNodeController(self, endpoint):
-        return NodeController(endpoint, self.lib_)
 
     def SaveBatch(self, batch, disk_path):
         batch_blob = batch.SerializeToString()
@@ -320,6 +314,39 @@ class MasterComponent:
                 config.class_id.append(class_id)
         return self.CreateRegularizer(name, RegularizerConfig_Type_LabelRegularizationPhi, config)
 
+    def CreateSpecifiedSparsePhiRegularizer(self, name=None, config=None, topic_names=None, class_id=None, mode=None):
+        if name is None:
+            name = "SpecifiedSparsePhiRegularizer:" + uuid.uuid1().urn
+        if config is None:
+            config = messages_pb2.SpecifiedSparsePhiConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
+        if class_id is not None:
+            config.class_id = class_id
+        if mode is not None:
+            config.mode = mode
+        return self.CreateRegularizer(name, RegularizerConfig_Type_SpecifiedSparsePhi, config)
+
+    def CreateImproveCoherencePhiRegularizer(self, name=None, config=None, topic_names=None,
+                                             class_ids=None, dictionary_name=None):
+        if name is None:
+            name = "ImproveCoherencePhiRegularizer:" + uuid.uuid1().urn
+        if config is None:
+            config = messages_pb2.ImproveCoherencePhiConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
+        if class_ids is not None:
+            config.ClearField('class_id')
+            for class_id in class_ids:
+                config.class_id.append(class_id)
+        if dictionary_name is not None:
+            config.dictionary_name = dictionary_name
+        return self.CreateRegularizer(name, RegularizerConfig_Type_ImproveCoherencePhi, config)
+
     def CreateScore(self, name, type, config):
         master_config = messages_pb2.MasterComponentConfig()
         master_config.CopyFrom(self.config_)
@@ -491,7 +518,10 @@ class MasterComponent:
         if args is None:
             args = messages_pb2.GetTopicModelArgs()
         if model is not None:
-            args.model_name = model.name()
+            if isinstance(model, Model):
+                args.model_name = model.name()
+            else:
+                args.model_name = model
         if class_ids is not None:
             args.ClearField('class_id')
             for class_id in class_ids:
@@ -529,7 +559,10 @@ class MasterComponent:
         if args is None:
             args = messages_pb2.GetThetaMatrixArgs()
         if model is not None:
-            args.model_name = model.name()
+            if isinstance(model, Model):
+                args.model_name = model.name()
+            else:
+                args.model_name = model
         if batch is not None:
             args.batch.CopyFrom(batch)
         if clean_cache is not None:
@@ -547,32 +580,142 @@ class MasterComponent:
         theta_matrix.ParseFromString(blob)
         return theta_matrix
 
-#################################################################################
+    def InitializeModel(self, model_name, batch_folder=None, dictionary=None,
+                        topics_count=None, topic_names=[], args=None):
+        if (batch_folder is not None) and (dictionary is not None):
+            raise "Either batch_folder or dictionary argument needs to be specified, but not both at the same time"
+        if args is None:
+            args = messages_pb2.InitializeModelArgs()
+        args.model_name = model_name
+        if batch_folder is not None:
+            args.disk_path = batch_folder
+            args.source_type = InitializeModelArgs_SourceType_Batches
+        if dictionary is not None:
+            args.dictionary_name = dictionary.name()
+            args.source_type = InitializeModelArgs_SourceType_Dictionary
+        if topics_count is not None:
+            args.topics_count = topics_count
+        for topic_name in topic_names:
+            args.topic_name.append(topic_name)
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmInitializeModel(self.id_, len(blob), blob_p))
 
-class NodeController:
-    def __init__(self, endpoint, lib=None):
-        config = messages_pb2.NodeControllerConfig()
-        config.create_endpoint = endpoint
+    def ProcessBatches(self, pwt, batches, target_nwt=None, regularizers={}, inner_iterations_count=10, class_ids={},
+                       stream_name=None, reset_scores=None):
+        """ MasterComponent.ProcessBatches() --- process batches to calculate p(t|d), scores, and nwt-increments.
+        Args:
+        - pwt --- the name of input Phi matrix
+        - batches --- list of files containing batches to process
+        - target_nwt --- the name of target matrix to store nwt-increments. This matrix will be created.
+        - inner_iterations_count --- number of iterations over each document during processing. Is int, default = 1
+        - class_ids --- list of class_ids and their weights to be used in model. Is dict,
+                        key --- class_id, value --- weight, default = {}
+        - regularizers --- list of tau-regularizers and their weights. Is dict,
+                           key --- regularizer_name, value --- regularizer_tau, default = {}
+        - stream_name --- name of the data stream to use for calculation of nwt-increments.
+        - reset_scores --- flag indicating whether to reset scores. Default = True,
+                           meaning that scores be calculated only on input batches.
 
-        if lib is None:
-            lib = Library().lib_
+        NOTE:
+        - This operation returns the list of theta-scores. The rest of the data can be accessed as follows:
+        - nwt-increments can be retrieved via GetTopicModel, or used by MergeModel, RegularizeModel, NormalizeModel.
+        - theta-matrix can be retrieved via GetThetaMatrix(model_name=pwt).
+          Note that you need to set model_name to "pwt" in GetThetaMatrix call.
+          cache_theta should be enabled in MasterComponent, as usual for theta matrix retrieval.
+        """
 
-        self.lib_ = lib
-        config_blob = config.SerializeToString()
-        config_blob_p = ctypes.create_string_buffer(config_blob)
+        args = messages_pb2.ProcessBatchesArgs()
+        args.pwt_source_name = pwt
+        for batch in batches:
+            args.batch_filename.append(batch)
+        args.inner_iterations_count = inner_iterations_count
+        for (class_id, class_weight) in class_ids:
+            args.class_id.append(class_id)
+            args.class_weight.append(class_weight)
+        for (reg_name, reg_tau) in regularizers:
+            args.regularizer_name.append(reg_name)
+            args.regularizer_tau.append(reg_tau)
+        if target_nwt is not None:
+            args.nwt_target_name = target_nwt
+        if stream_name is not None:
+            args.stream_name = stream_name
+        if reset_scores is not None:
+            args.reset_scores = reset_scores
 
-        self.id_ = HandleErrorCode(self.lib_, self.lib_.ArtmCreateNodeController(
-            len(config_blob), config_blob_p))
+        args_blob = args.SerializeToString()
+        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestProcessBatches(self.id_, len(args_blob), args_blob))
+        blob = ctypes.create_string_buffer(length)
+        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
-    def __enter__(self):
-        return self
+        result = messages_pb2.ProcessBatchesResult()
+        result.ParseFromString(blob)
+        return result
 
-    def __exit__(self, type, value, traceback):
-        self.Dispose()
+    def MergeModel(self, models, target_nwt, topic_names=[]):
+        """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
+        Args:
+        - models --- list of models with nwt-increments and their weights. Is dict,
+                     key --- nwt_source_name, value --- source_weight.
+        - target_nwt --- the name of target matrix to store combined nwt. The matrix will be created by this operation.
+        - topic_names --- names of topics in the resulting model. Is list of strings, default = [].
+                          By default model names are taken from the first model in the list.
+        """
 
-    def Dispose(self):
-        self.lib_.ArtmDisposeNodeController(self.id_)
-        self.id_ = -1
+        args = messages_pb2.MergeModelArgs()
+        args.nwt_target_name = target_nwt
+        for topic_name in topic_names:
+            args.topic_name.append(topic_name)
+        for (nwt_source_name, source_weight) in models:
+            args.nwt_source_name.append(nwt_source_name)
+            args.source_weight.append(source_weight)
+
+        args_blob = args.SerializeToString()
+        HandleErrorCode(self.lib_, self.lib_.ArtmMergeModel(self.id_, len(args_blob), args_blob))
+
+    def RegularizeModel(self, pwt, nwt, target_rwt, regularizers={}, regularizer_settings=()):
+        """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
+        Args:
+        - pwt - the name of the input pwt-matrix.
+        - nwt - the name of the input nwt-matrix.
+        - rwt --- the name of the target matrix. The matrix will be created by this operation.
+        - regularizers --- list of phi-regularizers and their weights. Is dict,
+                           key --- regularizer_name, value --- regularizer_tau, default = {}
+        - regularizer_settings -- advanced regularization parameters (for example relative regularization coefficients)
+        """
+
+        args = messages_pb2.RegularizeModelArgs()
+        args.pwt_source_name = pwt
+        args.nwt_source_name = nwt
+        args.rwt_target_name = target_rwt
+        for reg_setting in regularizer_settings:
+            args.regularizer_settings.add().CopyFrom(reg_setting)
+        for (regularizer_name, regularizer_tau) in regularizers:
+            reg = args.regularizer_settings.add()
+            reg.name = regularizer_name
+            reg.tau = regularizer_tau
+            reg.use_relative_regularization = False
+
+        args_blob = args.SerializeToString()
+        HandleErrorCode(self.lib_, self.lib_.ArtmRegularizeModel(self.id_, len(args_blob), args_blob))
+
+    def NormalizeModel(self, nwt, target_pwt, rwt=None):
+        """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
+        Args:
+        - nwt - the name of the input nwt-matrix.
+        - rwt - the name of the input rwt-matrix. Optional.
+        - target_pwt --- the name of the target matrix. The matrix will be created by this operation.
+        """
+
+        args = messages_pb2.NormalizeModelArgs()
+        args.pwt_target_name = target_pwt
+        args.nwt_source_name = nwt
+        if rwt is not None:
+            args.rwt_source_name = rwt
+
+        args_blob = args.SerializeToString()
+        HandleErrorCode(self.lib_, self.lib_.ArtmNormalizeModel(self.id_, len(args_blob), args_blob))
 
 #################################################################################
 
@@ -631,16 +774,7 @@ class Model:
             self.master_id_, len(args_blob), args_blob_p))
 
     def Initialize(self, dictionary=None, args=None):
-        if args is None:
-            args = messages_pb2.InitializeModelArgs()
-        args.model_name = self.name()
-        if dictionary is not None:
-            args.dictionary_name = dictionary.name()
-            args.source_type = InitializeModelArgs_SourceType_Dictionary
-        blob = args.SerializeToString()
-        blob_p = ctypes.create_string_buffer(blob)
-        HandleErrorCode(self.lib_,
-                        self.lib_.ArtmInitializeModel(self.master_id_, len(blob), blob_p))
+        self.master_component.InitializeModel(model_name=self.name(), dictionary=dictionary, args=args)
 
     def Overwrite(self, topic_model, commit=True):
         copy_ = messages_pb2.TopicModel()
@@ -785,11 +919,20 @@ class Score:
     def name(self):
         return self.score_name_
 
-    def GetValue(self, model=None, batch=None):
+    def GetValue(self, model=None, batch=None, scores=None):
+        if scores is not None:
+            for score_data in scores.score_data:
+                if score_data.name == self.name():
+                    return Score.ParseMessage(score_data)
+            return
+
         args = messages_pb2.GetScoreValueArgs()
         args.score_name = self.score_name_
         if model is not None:
-            args.model_name = model.name()
+            if isinstance(model, Model):
+                args.model_name = model.name()
+            else:
+                args.model_name = model
         if batch is not None:
             args.batch.CopyFrom(batch)
         args_blob = args.SerializeToString()
@@ -800,7 +943,10 @@ class Score:
 
         score_data = messages_pb2.ScoreData()
         score_data.ParseFromString(blob)
+        return Score.ParseMessage(score_data)
 
+    @staticmethod
+    def ParseMessage(score_data):
         if score_data.type == ScoreData_Type_Perplexity:
             score = messages_pb2.PerplexityScore()
             score.ParseFromString(score_data.data)

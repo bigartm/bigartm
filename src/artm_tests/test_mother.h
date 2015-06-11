@@ -4,6 +4,7 @@
 #define SRC_ARTM_TESTS_TEST_MOTHER_H_
 
 #include <string>
+#include <vector>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid.hpp"
@@ -13,6 +14,8 @@
 #include "artm/core/common.h"
 #include "artm/messages.pb.h"
 
+#define ASSERT_APPROX_EQ(a, b) ASSERT_NEAR(a, b, (a + b) / 1e5)
+
 namespace artm {
 namespace test {
 
@@ -21,6 +24,11 @@ class Helpers {
   static std::string getUniqueString() {
     return boost::lexical_cast<std::string>(boost::uuids::random_generator()());
   }
+
+  static std::string DescribeTopicModel(const ::artm::TopicModel& topic_model);
+  static std::string DescribeThetaMatrix(const ::artm::ThetaMatrix& theta_matrix);
+  static void CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::TopicModel& tm2, bool* ok);
+  static void CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm::ThetaMatrix& tm2, bool *ok);
 };
 
 class TestMother {
@@ -28,6 +36,9 @@ class TestMother {
   TestMother() : nTopics(10), regularizer_name("regularizer1") {}
   ModelConfig GenerateModelConfig() const;
   RegularizerConfig GenerateRegularizerConfig() const;
+  static void GenerateBatches(int batches_size, int nTokens,
+                              std::vector<std::shared_ptr< ::artm::Batch>>* batches);
+  static void GenerateBatches(int batches_size, int nTokens, const std::string& target_folder);
 
  private:
   const int nTopics;

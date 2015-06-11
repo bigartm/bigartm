@@ -2,21 +2,10 @@ package artm.core;
 
 import "artm/messages.proto";
 
-// ======= General messages =========
-
 // Mask message is similar to std::vector<bool>
 message Mask {
   repeated bool value = 1 [packed = true];
 }
-
-message Int {
-  optional int32 value = 1;
-}
-
-message Void {
-}
-
-// ======= Specific messages =========
 
 message DataLoaderCacheEntry {
   optional string model_name = 1;
@@ -32,94 +21,15 @@ message DataLoaderCacheEntry {
   repeated string item_title = 7;
 }
 
-// A message containing all data to transfer from DataLoader to Processor
-message ProcessorInput
-{
-  required Batch batch = 1;
-
-  // Identificator of the batch
-  required string batch_uuid = 2;
-
+message StreamMasks {
   // Information about streams (for example, training and testing items).
   // Withing each stream the length of flags vector
   // is the same as number of items in the batch.
   repeated Mask stream_mask = 4;
   repeated string stream_name = 5;
-
-  // Contains information about theta matrix on previous iteration.
-  repeated DataLoaderCacheEntry cached_theta = 6;
 }
 
 // All information, gathered by Processor for a particular batch and model.
 message ModelIncrement {
   optional TopicModel topic_model = 1;
-
-  repeated string score_name = 8;
-  repeated bytes score = 9;
-
-  // Cached thetas from previous iteration
-  repeated DataLoaderCacheEntry cache = 10;
-
-  // Identificators of all batches, contributing to this model increment.
-  repeated string batch_uuid = 11;
-}
-
-// ======== MasterComponentService ========
-
-message BatchIds {
-  repeated string batch_id = 1;
-  repeated string batch_file_path = 2;
-}
-
-service MasterComponentService {
-  rpc UpdateModel(ModelIncrement) returns (Void);
-  rpc RetrieveModel(GetTopicModelArgs) returns (TopicModel);
-
-  rpc RequestBatches(Int) returns (BatchIds);
-  rpc ReportBatches(BatchIds) returns (Void);
-}
-
-// ===== NodeControllerService ======
-
-message CreateOrReconfigureModelArgs {
-  optional string model_name = 2;
-  optional ModelConfig config = 3;
-}
-
-message DisposeModelArgs {
-  optional string model_name = 2;
-}
-
-message CreateOrReconfigureRegularizerArgs {
-  optional string regularizer_name = 2;
-  optional RegularizerConfig config = 3;
-}
-
-message DisposeRegularizerArgs {
-  optional string regularizer_name = 2;
-}
-
-message CreateOrReconfigureDictionaryArgs {
-  optional DictionaryConfig dictionary = 2;
-}
-
-message DisposeDictionaryArgs {
-  optional string dictionary_name = 2;
-}
-
-service NodeControllerService {
-  rpc CreateOrReconfigureInstance(MasterComponentConfig) returns (Void);
-  rpc DisposeInstance(Void) returns (Void);
-
-  rpc CreateOrReconfigureModel(CreateOrReconfigureModelArgs) returns (Void);
-  rpc DisposeModel(DisposeModelArgs) returns (Void);
-
-  rpc CreateOrReconfigureRegularizer(CreateOrReconfigureRegularizerArgs) returns (Void);
-  rpc DisposeRegularizer(DisposeRegularizerArgs) returns (Void);
-
-  rpc CreateOrReconfigureDictionary(CreateOrReconfigureDictionaryArgs) returns (Void);
-  rpc DisposeDictionary(DisposeDictionaryArgs) returns (Void);
-
-  rpc ForcePullTopicModel(Void) returns (Void);
-  rpc ForcePushTopicModelIncrement(Void) returns (Void);
 }

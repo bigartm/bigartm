@@ -26,12 +26,6 @@ Library
       *config* defines an optional :ref:`MasterComponentConfig` parameter
       that may carry the configuration of the master component.
 
-   .. py:method:: CreateNodeController(endpoint)
-
-      Creates a node controller at a specific endpoint.
-
-      Returns an instance of :py:class:`NodeController` class.
-
    .. py:method:: SaveBatch(batch, disk_path)
 
       Saves a given :ref:`Batch` into a disk location specified by *disk_path*.
@@ -84,7 +78,7 @@ MasterComponent
 
    .. py:method:: Dispose()
 
-      Disposes the master component and releases all unmanaged resources (like memory, network connections, etc).
+      Disposes the master component and releases all unmanaged resources.
 
    .. py:method:: config()
 
@@ -252,23 +246,6 @@ MasterComponent
 
       When used without *batch*, this operation require :attr:`MasterComponentConfig.cache_theta` to be set to *True* before starting the last iteration.
       In this case the entire ThetaMatrix must fit into CPU memory, and for this reason :attr:`MasterComponentConfig.cache_theta` is turned off by default.
-
-      This operation is not supported when :attr:`MasterComponentConfig.modus_operandi` is set to *Network*.
-
-NodeController
-==============
-
-.. py:class:: NodeController(endpoint, lib = None)
-
-   Creates a node controller on a specific endpoint. See :ref:`NodeControllerConfig` for more details.
-
-   *lib* is an optional argument pointing to :py:class:`Library`.
-   When not specified, a default library will be used.
-   Check the constructor of :py:class:`Library` for more details.
-
-   .. py:method:: Dispose()
-
-      Disposes the node controller and releases all unmanaged resources (like memory, network connections, etc).
 
 Model
 =====
@@ -465,9 +442,6 @@ Exceptions
 
    An exception class corresponding to :c:macro:`ARTM_DISK_WRITE_ERROR` error code.
 
-.. py:exception:: NetworkException
-
-   An exception class corresponding to :c:macro:`ARTM_NETWORK_ERROR` error code.
 
 Constants
 =========
@@ -519,7 +493,3 @@ Constants
 .. py:data:: PerplexityScoreConfig_Type_UnigramCollectionModel
 
 .. py:data:: CollectionParserConfig_Format_BagOfWordsUci
-
-.. py:data:: MasterComponentConfig_ModusOperandi_Local
-
-.. py:data:: MasterComponentConfig_ModusOperandi_Network

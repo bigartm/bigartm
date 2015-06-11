@@ -30,8 +30,6 @@ There are three ways to retrieve such information from BigARTM, and the correct 
    Set :attr:`MasterComponentConfig.cache_theta` to *true* prior to the last iteration,
    and after the iteration use :cpp:func:`MasterComponent::GetThetaMatrix` (in C++) or
    :py:meth:`MasterComponent.GetThetaMatrix <artm.library.MasterComponent.GetThetaMatrix>` (in Python) to retrieve Theta matrix.
-   Note that *cach_theta* flag does not work together with network modus operandi.
-   Current workaround for the network modus operandi is to use the option no. 3 (described below).
 
 2. **You want to repeatedly monitor a small portion of the Theta matrix during ongoing iterations.**
 

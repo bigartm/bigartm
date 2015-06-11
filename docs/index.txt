@@ -23,6 +23,7 @@ Welcome to BigARTM's documentation!
    faq
    devguide
    ref/index
+   release_notes/index
    publications
    legacy_pages
 

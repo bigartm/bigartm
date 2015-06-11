@@ -3,11 +3,10 @@
 #include "artm/regularizer_interface.h"
 
 #include "artm/core/dictionary.h"
-#include "artm/core/topic_model.h"
 
 namespace artm {
 
-std::shared_ptr< ::artm::core::DictionaryMap> RegularizerInterface::dictionary(
+std::shared_ptr< ::artm::core::Dictionary> RegularizerInterface::dictionary(
     const std::string& dictionary_name) {
   if (dictionaries_ == nullptr) {
       return nullptr;

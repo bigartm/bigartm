@@ -10,9 +10,6 @@ This chapter describes content of BigARTM distribution package for Windows, avai
 
 ``bin/artm.dll``            | Core functionality of the BigARTM library.
 
-``bin/node_controller.exe`` | Executable that hosts BigARTM nodes in a distributed
-                            | setting.
-
 ``bin/cpp_client.exe``      | Command line utility allows to perform simple experiments
                             | with BigARTM. Remember that not all BigARTM features are
                             | available through cpp_client, but it can serve as a good
@@ -49,8 +46,6 @@ This chapter describes content of BigARTM distribution package for Windows, avai
                             * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example05_train_and_test_stream.py>`_
 
                             * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
-
-                            * `example08_network_modus_operandi.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example08_network_modus_operandi.py>`_
 
                             * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example09_regularizers.py>`_
 

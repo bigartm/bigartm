@@ -10,49 +10,19 @@
 #include "artm/messages.pb.h"
 
 #include "artm/core/internals.pb.h"
+#include "artm/core/helpers.h"
 
 #include "artm_tests/test_mother.h"
 
 TEST(CppInterface, Canary) {
 }
 
-void BasicTest(bool is_network_mode) {
+void BasicTest() {
   std::string target_path = artm::test::Helpers::getUniqueString();
   const int nTopics = 5;
 
-  // Endpoints:
-  // 5555 - master component (network_mode)
-  // 5556 - node controller for workers (network_mode)
-
-  std::shared_ptr< ::artm::NodeController> node_controller;
-  std::shared_ptr< ::artm::NodeController> node_controller_master;
   ::artm::MasterComponentConfig master_config;
-  if (is_network_mode) {
-    ::artm::NodeControllerConfig node_config;
-    node_config.set_create_endpoint("tcp://*:5556");
-    node_controller.reset(new ::artm::NodeController(node_config));
-
-    master_config.set_create_endpoint("tcp://*:5555");
-    master_config.set_connect_endpoint("tcp://localhost:5555");
-    master_config.add_node_connect_endpoint("tcp://localhost:5556");
-    master_config.set_disk_path(target_path);
-
-    // Clean all .batches files
-    boost::filesystem::recursive_directory_iterator it(".");
-    boost::filesystem::recursive_directory_iterator endit;
-    while (it != endit) {
-      if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
-        boost::filesystem::remove(*it);
-      }
-
-      ++it;
-    }
-
-    master_config.set_modus_operandi(::artm::MasterComponentConfig_ModusOperandi_Network);
-  } else {
-    master_config.set_modus_operandi(::artm::MasterComponentConfig_ModusOperandi_Local);
-    master_config.set_cache_theta(true);
-  }
+  master_config.set_cache_theta(true);
 
   ::artm::ScoreConfig score_config;
   score_config.set_config(::artm::PerplexityScoreConfig().SerializeAsString());
@@ -134,44 +104,42 @@ void BasicTest(bool is_network_mode) {
   }
 
   // Index doc-token matrix
-  if (is_network_mode) artm::SaveBatch(batch, target_path);
 
   std::shared_ptr<artm::TopicModel> topic_model;
   double expected_normalizer = 0;
   double previous_perplexity = 0;
   for (int iter = 0; iter < 5; ++iter) {
-    if (is_network_mode) master_component->InvokeIteration();
-    else master_component->AddBatch(batch, /*reset_scores =*/ true);  // NOLINT
+    master_component->AddBatch(batch, /*reset_scores =*/ true);  // NOLINT
     master_component->WaitIdle();
     model.Synchronize(0.0);
+    {
+      artm::GetTopicModelArgs args;
+      args.set_model_name(model.name());
+      for (int i = 0; i < nTopics; ++i) {
+        args.add_topic_name(model_config.topic_name(i));
+      }
+      for (int i = 0; i < nTokens; i++) {
+        args.add_token("token" + std::to_string(i));
+        args.add_class_id("@default_class");
+      }
 
-    artm::GetTopicModelArgs args;
-    args.set_model_name(model.name());
-    for (int i = 0; i < nTopics; ++i) {
-      args.add_topic_name(model_config.topic_name(i));
-    }
-    for (int i = 0; i < nTokens; i++) {
-      args.add_token("token" + std::to_string(i));
-      args.add_class_id("@default_class");
+      topic_model = master_component->GetTopicModel(args);
     }
 
-    topic_model = master_component->GetTopicModel(args);
     std::shared_ptr< ::artm::PerplexityScore> perplexity =
       master_component->GetScoreAs< ::artm::PerplexityScore>(model, "PerplexityScore");
 
-    if (!is_network_mode) {
-      if (iter > 0)
-        EXPECT_EQ(perplexity->value(), previous_perplexity);
+    if (iter > 0)
+      EXPECT_EQ(perplexity->value(), previous_perplexity);
 
-      artm::GetScoreValueArgs score_args;
-      score_args.set_model_name(model.name());
-      score_args.set_score_name("PerplexityScore");
-      score_args.mutable_batch()->CopyFrom(batch);
-      auto perplexity_data = master_component->GetScore(score_args);
-      auto perplexity2 = std::make_shared< ::artm::PerplexityScore>();
-      perplexity2->ParseFromString(perplexity_data->data());
-      previous_perplexity = perplexity2->value();
-    }
+    artm::GetScoreValueArgs score_args;
+    score_args.set_model_name(model.name());
+    score_args.set_score_name("PerplexityScore");
+    score_args.mutable_batch()->CopyFrom(batch);
+    auto perplexity_data = master_component->GetScore(score_args);
+    auto perplexity2 = std::make_shared< ::artm::PerplexityScore>();
+    perplexity2->ParseFromString(perplexity_data->data());
+    previous_perplexity = perplexity2->value();
 
     if (iter == 1) {
       expected_normalizer = perplexity->normalizer();
@@ -186,16 +154,13 @@ void BasicTest(bool is_network_mode) {
       }
 
     } else if (iter >= 2) {
-      if (!is_network_mode) {
-        // Verify that normalizer does not grow starting from second iteration.
-        // This confirms that the Instance::ForceResetScores() function works as expected.
-        EXPECT_EQ(perplexity->normalizer(), expected_normalizer);
-      }
+      // Verify that normalizer does not grow starting from second iteration.
+      // This confirms that the Instance::ForceResetScores() function works as expected.
+      EXPECT_EQ(perplexity->normalizer(), expected_normalizer);
     }
   }
 
-  if (is_network_mode) master_component->InvokeIteration();
-  else master_component->AddBatch(batch, /*reset_scores =*/ true);  // NOLINT
+  master_component->AddBatch(batch, /*reset_scores =*/ true);  // NOLINT
 
   EXPECT_TRUE(master_component->WaitIdle());
 
@@ -227,100 +192,97 @@ void BasicTest(bool is_network_mode) {
   {
     artm::GetThetaMatrixArgs args;
     args.set_model_name(model.name().c_str());
-    if (!is_network_mode) {
-      std::shared_ptr< ::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
+    std::shared_ptr< ::artm::ThetaMatrix> theta_matrix = master_component->GetThetaMatrix(args);
 
-      EXPECT_EQ(theta_matrix->item_id_size(), nDocs);
-      EXPECT_EQ(theta_matrix->item_title_size(), nDocs);
-      EXPECT_EQ(theta_matrix->topics_count(), nTopics);
-      for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
-        EXPECT_EQ(theta_matrix->item_id(item_index), 666 + item_index);
-        EXPECT_EQ(theta_matrix->item_title(item_index), item_title[item_index]);
-        const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
-        ASSERT_EQ(weights.value_size(), nTopics);
-        float sum = 0;
-        for (int topic_index = 0; topic_index < weights.value_size(); ++topic_index) {
-          float weight = weights.value(topic_index);
-          EXPECT_GT(weight, 0);
-          sum += weight;
-        }
-
-        EXPECT_LE(abs(sum - 1), 0.001);
+    EXPECT_EQ(theta_matrix->item_id_size(), nDocs);
+    EXPECT_EQ(theta_matrix->item_title_size(), nDocs);
+    EXPECT_EQ(theta_matrix->topics_count(), nTopics);
+    for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
+      EXPECT_EQ(theta_matrix->item_id(item_index), 666 + item_index);
+      EXPECT_EQ(theta_matrix->item_title(item_index), item_title[item_index]);
+      const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
+      ASSERT_EQ(weights.value_size(), nTopics);
+      float sum = 0;
+      for (int topic_index = 0; topic_index < weights.value_size(); ++topic_index) {
+        float weight = weights.value(topic_index);
+        EXPECT_GT(weight, 0);
+        sum += weight;
       }
 
-      args.add_topic_index(2); args.add_topic_index(3);  // retrieve 2nd and 3rd topic
-      std::shared_ptr< ::artm::ThetaMatrix> theta_matrix23 = master_component->GetThetaMatrix(args);
-      EXPECT_EQ(theta_matrix23->item_id_size(), nDocs);
-      EXPECT_EQ(theta_matrix23->topics_count(), 2);
-      for (int item_index = 0; item_index < theta_matrix23->item_id_size(); ++item_index) {
-        const ::artm::FloatArray& weights23 = theta_matrix23->item_weights(item_index);
-        const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
-        ASSERT_EQ(weights23.value_size(), 2);
-        EXPECT_EQ(weights23.value(0), weights.value(2));
-        EXPECT_EQ(weights23.value(1), weights.value(3));
-      }
-
-      args.clear_topic_index();
-      args.add_topic_name(topic_model->topic_name(2));  // retrieve 2nd and 3rd topic (but use topic_names)
-      args.add_topic_name(topic_model->topic_name(3));
-      theta_matrix23 = master_component->GetThetaMatrix(args);
-      EXPECT_EQ(theta_matrix23->topic_name_size(), 2);
-      EXPECT_EQ(theta_matrix23->topic_name(0), topic_model->topic_name(2));
-      EXPECT_EQ(theta_matrix23->topic_name(1), topic_model->topic_name(3));
-      EXPECT_EQ(theta_matrix23->item_id_size(), nDocs);
-      for (int item_index = 0; item_index < theta_matrix23->item_id_size(); ++item_index) {
-        const ::artm::FloatArray& weights23 = theta_matrix23->item_weights(item_index);
-        const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
-        ASSERT_EQ(weights23.value_size(), 2);
-        EXPECT_EQ(weights23.value(0), weights.value(2));
-        EXPECT_EQ(weights23.value(1), weights.value(3));
-      }
+      EXPECT_LE(abs(sum - 1), 0.001);
     }
+
+    args.add_topic_index(2); args.add_topic_index(3);  // retrieve 2nd and 3rd topic
+    std::shared_ptr< ::artm::ThetaMatrix> theta_matrix23 = master_component->GetThetaMatrix(args);
+    EXPECT_EQ(theta_matrix23->item_id_size(), nDocs);
+    EXPECT_EQ(theta_matrix23->topics_count(), 2);
+    for (int item_index = 0; item_index < theta_matrix23->item_id_size(); ++item_index) {
+      const ::artm::FloatArray& weights23 = theta_matrix23->item_weights(item_index);
+      const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
+      ASSERT_EQ(weights23.value_size(), 2);
+      EXPECT_EQ(weights23.value(0), weights.value(2));
+      EXPECT_EQ(weights23.value(1), weights.value(3));
+    }
+
+    args.clear_topic_index();
+    args.add_topic_name(topic_model->topic_name(2));  // retrieve 2nd and 3rd topic (but use topic_names)
+    args.add_topic_name(topic_model->topic_name(3));
+    theta_matrix23 = master_component->GetThetaMatrix(args);
+    EXPECT_EQ(theta_matrix23->topic_name_size(), 2);
+    EXPECT_EQ(theta_matrix23->topic_name(0), topic_model->topic_name(2));
+    EXPECT_EQ(theta_matrix23->topic_name(1), topic_model->topic_name(3));
+    EXPECT_EQ(theta_matrix23->item_id_size(), nDocs);
+    for (int item_index = 0; item_index < theta_matrix23->item_id_size(); ++item_index) {
+      const ::artm::FloatArray& weights23 = theta_matrix23->item_weights(item_index);
+      const ::artm::FloatArray& weights = theta_matrix->item_weights(item_index);
+      ASSERT_EQ(weights23.value_size(), 2);
+      EXPECT_EQ(weights23.value(0), weights.value(2));
+      EXPECT_EQ(weights23.value(1), weights.value(3));
+    }
+
 
     args.clear_topic_name();
     args.mutable_batch()->CopyFrom(batch);
-    if (!is_network_mode) {
-      std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
-      EXPECT_EQ(theta_matrix2->item_id_size(), nDocs);
-      EXPECT_EQ(theta_matrix2->item_title_size(), nDocs);
-      EXPECT_EQ(theta_matrix2->topics_count(), nTopics);
-      for (int item_index = 0; item_index < theta_matrix2->item_id_size(); ++item_index) {
-        EXPECT_EQ(theta_matrix2->item_id(item_index), 666 + item_index);
-        EXPECT_EQ(theta_matrix2->item_title(item_index), item_title[item_index]);
-        const ::artm::FloatArray& weights2 = theta_matrix2->item_weights(item_index);
-        EXPECT_EQ(weights2.value_size(), nTopics);
-        float sum2 = 0;
-        for (int topic_index = 0; topic_index < weights2.value_size(); ++topic_index) {
-          float weight2 = weights2.value(topic_index);
-          EXPECT_GT(weight2, 0);
-          sum2 += weight2;
-        }
-
-        EXPECT_LE(abs(sum2 - 1), 0.001);
+    std::shared_ptr< ::artm::ThetaMatrix> theta_matrix2 = master_component->GetThetaMatrix(args);
+    EXPECT_EQ(theta_matrix2->item_id_size(), nDocs);
+    EXPECT_EQ(theta_matrix2->item_title_size(), nDocs);
+    EXPECT_EQ(theta_matrix2->topics_count(), nTopics);
+    for (int item_index = 0; item_index < theta_matrix2->item_id_size(); ++item_index) {
+      EXPECT_EQ(theta_matrix2->item_id(item_index), 666 + item_index);
+      EXPECT_EQ(theta_matrix2->item_title(item_index), item_title[item_index]);
+      const ::artm::FloatArray& weights2 = theta_matrix2->item_weights(item_index);
+      EXPECT_EQ(weights2.value_size(), nTopics);
+      float sum2 = 0;
+      for (int topic_index = 0; topic_index < weights2.value_size(); ++topic_index) {
+        float weight2 = weights2.value(topic_index);
+        EXPECT_GT(weight2, 0);
+        sum2 += weight2;
       }
+
+      EXPECT_LE(abs(sum2 - 1), 0.001);
     }
   }
 
   model_config.set_name("model2_name");
   artm::Model model2(*master_component, model_config);
-  if (!is_network_mode) {
-    // Test overwrite topic model
-    artm::TopicModel new_topic_model;
-    new_topic_model.set_name(model2.name());
-    new_topic_model.mutable_topic_name()->CopyFrom(model_config.topic_name());
-    new_topic_model.add_token("my overwritten token");
-    new_topic_model.add_token("my overwritten token2");
-    new_topic_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
-    new_topic_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
-    auto weights = new_topic_model.add_token_weights();
-    auto weights2 = new_topic_model.add_token_weights();
-    for (int i = 0; i < nTopics; ++i) {
-      weights->add_value(static_cast<float>(i));
-      weights2->add_value(static_cast<float>(nTopics - i));
-    }
+  // Test overwrite topic model
+  artm::TopicModel new_topic_model;
+  new_topic_model.set_name(model2.name());
+  new_topic_model.mutable_topic_name()->CopyFrom(model_config.topic_name());
+  new_topic_model.add_token("my overwritten token");
+  new_topic_model.add_token("my overwritten token2");
+  new_topic_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
+  new_topic_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
+  auto weights = new_topic_model.add_token_weights();
+  auto weights2 = new_topic_model.add_token_weights();
+  for (int i = 0; i < nTopics; ++i) {
+    weights->add_value(static_cast<float>(i));
+    weights2->add_value(static_cast<float>(nTopics - i));
+  }
 
-    model2.Overwrite(new_topic_model);
+  model2.Overwrite(new_topic_model);
 
+  {
     artm::GetTopicModelArgs args;
     args.set_model_name(model2.name());
     for (int i = 0; i < nTopics; ++i) {
@@ -398,8 +360,6 @@ void BasicTest(bool is_network_mode) {
   // EXPECT_EQ(new_topic_model4->topic_name(3), model_config.topic_name(4));
 
   master_component.reset();
-  node_controller_master.reset();
-  node_controller.reset();
 
   try { boost::filesystem::remove_all(target_path); }
   catch (...) {}
@@ -407,12 +367,7 @@ void BasicTest(bool is_network_mode) {
 
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest_StandaloneMode
 TEST(CppInterface, BasicTest_StandaloneMode) {
-  BasicTest(false);
-}
-
-// artm_tests.exe --gtest_filter=CppInterface.BasicTest_NetworkMode
-TEST(CppInterface, BasicTest_NetworkMode) {
-  BasicTest(true);
+  BasicTest();
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.ModelExceptions
@@ -436,7 +391,7 @@ TEST(CppInterface, WaitIdleTimeout) {
   ::artm::MasterComponent master(master_config);
   ::artm::ModelConfig model_config;
   model_config.set_name("model_config1");
-  model_config.set_inner_iterations_count(10000);
+  model_config.set_inner_iterations_count(100000);
 
   ::artm::Model model(master, model_config);
   ::artm::Batch batch;
@@ -512,4 +467,119 @@ TEST(CppInterface, GatherNewTokens) {
   ASSERT_EQ(tm3->token_size(), 2);  // now new token is picked up
   ASSERT_TRUE((tm3->token(0) == token1 && tm3->token(1) == token2) ||
               (tm3->token(0) == token2 && tm3->token(1) == token1));
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.ProcessBatchesApi
+TEST(CppInterface, ProcessBatchesApi) {
+  int nTopics = 17;
+  int nBatches = 5;
+
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+  ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
+
+  artm::MasterComponentConfig master_config;
+  master_config.set_disk_path(target_folder);
+  artm::ScoreConfig* score_config = master_config.add_score_config();
+  score_config->set_name("Perplexity");
+  score_config->set_type(artm::ScoreConfig_Type_Perplexity);
+  ::artm::PerplexityScoreConfig perplexity_score_config;
+  score_config->set_config(perplexity_score_config.SerializeAsString());
+  artm::MasterComponent master(master_config);
+
+  ::artm::ModelConfig model_config;
+  model_config.set_name("pwt0");
+  model_config.set_topics_count(nTopics);
+  ::artm::Model model(master, model_config);
+
+  artm::InitializeModelArgs initialize_model_args;
+  initialize_model_args.set_disk_path(target_folder);
+  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_topics_count(nTopics);
+  initialize_model_args.set_model_name("pwt0");
+  master.InitializeModel(initialize_model_args);
+
+  std::shared_ptr< ::artm::TopicModel> pwt_model = master.GetTopicModel("pwt0");
+  ASSERT_NE(pwt_model, nullptr);
+  ASSERT_EQ(pwt_model->topics_count(), nTopics);
+
+  std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
+  ASSERT_EQ(all_batches.size(), nBatches);
+  artm::ProcessBatchesArgs process_batches_args;
+  for (std::string& batch_name : all_batches)
+    process_batches_args.add_batch_filename(batch_name);
+  process_batches_args.set_nwt_target_name("nwt_hat");
+
+  artm::NormalizeModelArgs normalize_model_args;
+  normalize_model_args.set_pwt_target_name("pwt");
+  normalize_model_args.set_nwt_source_name("nwt_hat");
+
+  std::shared_ptr< ::artm::PerplexityScore> perplexity_score;
+  for (int i = 0; i < 10; ++i) {  // 10 iterations
+    process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
+    std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
+    perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
+    master.NormalizeModel(normalize_model_args);
+  }
+
+  EXPECT_NE(perplexity_score, nullptr);
+  EXPECT_NE(perplexity_score->value(), 0.0);
+
+  for (int i = 0; i < 10; ++i) {
+    master.InvokeIteration();
+    master.WaitIdle();
+    model.Synchronize(0.0);
+  }
+
+  auto perplexity_score2 = master.GetScoreAs< ::artm::PerplexityScore>(model, "Perplexity");
+  EXPECT_NE(perplexity_score2, nullptr);
+  ASSERT_APPROX_EQ(perplexity_score2->value(), perplexity_score->value());
+
+  bool ok = false;
+  ::artm::test::Helpers::CompareTopicModels(*master.GetTopicModel("pwt"), *master.GetTopicModel("pwt0"), &ok);
+
+  if (!ok) {
+    std::cout << "New-tuned topic model:\n"
+      << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt"));
+    std::cout << "Old-tuned topic model:\n"
+      << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
+  }
+
+  // Verify that we may call ProcessBatches without nwt_target
+  process_batches_args.clear_nwt_target_name();
+  std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
+  perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
+  EXPECT_NE(perplexity_score, nullptr);
+  EXPECT_NE(perplexity_score->value(), 0.0);
+
+  // Dummy test to verify we can merge models
+  ::artm::MergeModelArgs merge_model_args;
+  merge_model_args.add_nwt_source_name("pwt"); merge_model_args.add_source_weight(1.0f);
+  merge_model_args.add_nwt_source_name("pwt0"); merge_model_args.add_source_weight(1.0f);
+  merge_model_args.set_nwt_target_name("nwt_merge");
+  master.MergeModel(merge_model_args);
+  std::shared_ptr< ::artm::TopicModel> nwt_merge = master.GetTopicModel("nwt_merge");
+  ASSERT_NE(nwt_merge, nullptr);
+  ASSERT_EQ(nwt_merge->topics_count(), nTopics);
+
+  // Dummy test to verify we can regularize models
+  ::artm::RegularizerConfig sparse_phi_config;
+  sparse_phi_config.set_name("sparse_phi");
+  sparse_phi_config.set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+  sparse_phi_config.set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
+  ::artm::Regularizer sparse_phi(master, sparse_phi_config);
+
+  ::artm::RegularizeModelArgs regularize_model_args;
+  regularize_model_args.set_rwt_target_name("rwt");
+  regularize_model_args.set_pwt_source_name("pwt");
+  regularize_model_args.set_nwt_source_name("nwt_hat");
+  ::artm::RegularizerSettings* regularizer_settings = regularize_model_args.add_regularizer_settings();
+  regularizer_settings->set_name("sparse_phi");
+  regularizer_settings->set_tau(-0.5);
+  master.RegularizeModel(regularize_model_args);
+  std::shared_ptr< ::artm::TopicModel> rwt = master.GetTopicModel("rwt");
+  ASSERT_NE(rwt, nullptr);
+  ASSERT_EQ(rwt->topics_count(), nTopics);
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
 }

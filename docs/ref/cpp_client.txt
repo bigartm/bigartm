@@ -85,15 +85,6 @@ You may also apply the following optimizations that should not change the result
       --disk_cache_folder arg              disk cache folder
       --merger_queue_size arg              size of the merger queue
 
-    Networking options:
-      --nodes arg                          endpoints of the remote nodes (enables
-                                           network modus operandi)
-      --localhost arg (=localhost)         DNS name or the IP address of the
-                                           localhost
-      --port arg (=5550)                   port to use for master node
-      --timeout arg (=1000)                network communication timeout in
-                                           milliseconds
-
     Examples:
             cpp_client -d docword.kos.txt -v vocab.kos.txt
             set GLOG_logtostderr=1 & cpp_client -d docword.kos.txt -v vocab.kos.txt

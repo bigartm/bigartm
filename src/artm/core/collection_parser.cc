@@ -74,22 +74,18 @@ void CollectionParser::CoocurrenceStatisticsAccumulator::FlushNewItem() {
   item_tokens_.clear();
 }
 
-void CollectionParser::CoocurrenceStatisticsAccumulator::Export(DictionaryConfig* dictionary) {
+void CollectionParser::CoocurrenceStatisticsAccumulator::Export(std::shared_ptr<DictionaryConfig> dictionary) {
+  dictionary->clear_cooc_entries();
+  artm::DictionaryCoocurenceEntries* cooc_entries = dictionary->mutable_cooc_entries();
   for (auto iter = token_coocurrence_.begin(); iter != token_coocurrence_.end(); ++iter) {
-    DictionaryEntry *entry = dictionary->add_entry();
-    std::string first_key = token_info_.find(iter->first.first)->second.keyword;
-    std::string second_key = token_info_.find(iter->first.second)->second.keyword;
-    std::string key = (first_key < second_key) ? (first_key + "~" + second_key)
-                                                : (second_key + "~" + first_key);
-    entry->set_key_token(key);
-    entry->set_items_count(iter->second);
+    cooc_entries->add_first_index(iter->first.first);
+    cooc_entries->add_second_index(iter->first.second);
+    cooc_entries->add_items_count(iter->second);
   }
 }
 
 CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config)
     : config_(config) {}
-
-
 
 std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   if (!boost::filesystem::exists(config_.docword_file_path()))
@@ -142,7 +138,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
   }
 
   std::unique_ptr<CoocurrenceStatisticsAccumulator> cooc_accum;
-  if (config_.has_cooccurrence_file_name()) {
+  if (config_.gather_cooc()) {
     if (config_.cooccurrence_token_size() == 0) {
       BOOST_THROW_EXCEPTION(InvalidOperation(
         "CollectionParser.cooccurrence_token is empty"));
@@ -169,7 +165,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
     if (token_map->find(token_id) == token_map->end())  {
       std::stringstream ss;
-      ss << "Failed to parse line '" << item_id << " " << (token_id+1) << " " << token_count << "' in "
+      ss << "Failed to parse line '" << item_id << " " << (token_id + 1) << " " << token_count << "' in "
          << config_.docword_file_path();
       if (token_id == -1) {
         ss << ". wordID column appears to be zero-based in the docword file being parsed. "
@@ -231,6 +227,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
   // Craft the dictionary
   auto retval = std::make_shared<DictionaryConfig>();
+  retval->set_name(config_.dictionary_file_name());
   retval->set_total_items_count(total_items_count);
   retval->set_total_token_count(total_token_count);
 
@@ -244,18 +241,14 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
                      static_cast<double>(total_token_count));
   }
 
+  // Craft the co-occurence part of dictionary
+  if (cooc_accum != nullptr) {
+    cooc_accum->Export(retval);
+  }
+
   if (config_.has_dictionary_file_name()) {
     ::artm::core::BatchHelpers::SaveMessage(config_.dictionary_file_name(),
                                             config_.target_folder(), *retval);
-  }
-
-  // Craft the co-occurence dictionary
-  if (cooc_accum != nullptr) {
-    DictionaryConfig cooc;
-    cooc_accum->Export(&cooc);
-    cooc.set_total_items_count(total_items_count);
-    ::artm::core::BatchHelpers::SaveMessage(config_.cooccurrence_file_name(),
-                                            config_.target_folder(), cooc);
   }
 
   LOG_IF(WARNING, token_count_zero > 0) << "Found " << token_count_zero << " tokens with zero "
@@ -501,6 +494,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
       config_.target_folder(), *retval);
   }
 
+  retval->set_name(config_.dictionary_file_name());
   return retval;
 }
 

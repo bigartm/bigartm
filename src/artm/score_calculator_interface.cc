@@ -3,11 +3,11 @@
 #include "artm/score_calculator_interface.h"
 
 #include "artm/core/dictionary.h"
-#include "artm/core/topic_model.h"
+#include "artm/core/phi_matrix.h"
 
 namespace artm {
 
-std::shared_ptr< ::artm::core::DictionaryMap> ScoreCalculatorInterface::dictionary(
+std::shared_ptr< ::artm::core::Dictionary> ScoreCalculatorInterface::dictionary(
     const std::string& dictionary_name) {
   if (dictionaries_ == nullptr) {
       return nullptr;

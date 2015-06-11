@@ -13,8 +13,8 @@
 #include "artm/messages.pb.h"
 #include "artm/utility/blas.h"
 #include "artm/core/common.h"
+#include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
-#include "artm/core/topic_model.h"
 
 #include "glog/logging.h"
 
@@ -22,10 +22,10 @@ namespace artm {
 
 namespace core {
   // Forward declarations
-  class Regularizable;
+  class Dictionary;
+  class PhiMatrix;
   template<typename K, typename T> class ThreadSafeCollectionHolder;
-  typedef std::map<artm::core::Token, ::artm::DictionaryEntry> DictionaryMap;
-  typedef ThreadSafeCollectionHolder<std::string, DictionaryMap> ThreadSafeDictionaryCollection;
+  typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 }
 
 class RegularizeThetaAgent {
@@ -58,8 +58,9 @@ class RegularizerInterface {
     return nullptr;
   }
 
-  virtual bool RegularizePhi(const ::artm::core::Regularizable& topic_model,
-                             ::artm::core::TokenCollectionWeights* result) { return true; }
+  virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
+                             const ::artm::core::PhiMatrix& n_wt,
+                             ::artm::core::PhiMatrix* result) { return true; }
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize() {
     return google::protobuf::RepeatedPtrField<std::string>();
@@ -79,7 +80,7 @@ class RegularizerInterface {
       "This regularizer has no internal state that can be retrieved."));
   }
 
-  std::shared_ptr< ::artm::core::DictionaryMap> dictionary(const std::string& dictionary_name);
+  std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
   void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
  private:

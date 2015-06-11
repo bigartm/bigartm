@@ -371,9 +371,6 @@ bool Helpers::FixAndValidate(::artm::GetScoreValueArgs* message, bool throw_erro
 bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_error) {
   std::stringstream ss;
 
-  if (!MasterComponentConfig_ModusOperandi_IsValid(message.modus_operandi()))
-    ss << "MasterComponentConfig.modus_operandi == " << message.modus_operandi() << " is invalid; ";
-
   if (message.processors_count() <= 0)
     ss << "MasterComponentConfig.processors_count == " << message.processors_count() << " is invalid; ";
 
@@ -385,15 +382,6 @@ bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_
     ss << "MasterComponentConfig.merger_queue_max_size == "
        << message.merger_queue_max_size() << " is invalid; ";
 
-  if (message.modus_operandi() == MasterComponentConfig_ModusOperandi_Network) {
-    if (!message.has_connect_endpoint())
-      ss << "MasterComponentConfig.connect_endpoint is required in modus_operandi==Network; ";
-    if (!message.has_create_endpoint())
-      ss << "MasterComponentConfig.create_endpoint is required in modus_operandi==Network; ";
-    if (message.node_connect_endpoint_size() == 0)
-      ss << "MasterComponentConfig.node_connect_endpoint must not be empty in modus_operandi==Network; ";
-  }
-
   if (ss.str().empty())
     return true;
 
@@ -403,8 +391,24 @@ bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_
   return false;
 }
 
+void Helpers::Fix(::artm::InitializeModelArgs* message) {
+  if (message->topic_name_size() == 0) {
+    for (int i = 0; i < message->topics_count(); ++i) {
+      message->add_topic_name("@topic_" + std::to_string(i));
+    }
+  } else {
+    message->set_topics_count(message->topic_name_size());
+  }
+}
+
 bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_error) {
   std::stringstream ss;
+
+  if (message.topics_count() != 0 || message.topic_name_size() != 0) {
+    if (message.topics_count() != message.topic_name_size())
+      ss << "Length mismatch in fields InitializeModelArgs.topics_count and InitializeModelArgs.topic_name";
+  }
+
   if (!message.has_model_name()) {
     ss << "InitializeModelArgs.model_name is not defined; ";
   }
@@ -426,6 +430,11 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
+}
+
+bool Helpers::FixAndValidate(::artm::InitializeModelArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
 }
 
 bool Helpers::Validate(const ::artm::ExportModelArgs& message, bool throw_error) {
@@ -456,6 +465,33 @@ bool Helpers::Validate(const ::artm::ImportModelArgs& message, bool throw_error)
   return false;
 }
 
+bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error) {
+  std::stringstream ss;
+  if (message.has_cooc_entries())
+    if (message.cooc_entries().first_index_size() != message.cooc_entries().second_index_size() ||
+        message.cooc_entries().first_index_size() != message.cooc_entries().items_count_size() ||
+        message.cooc_entries().second_index_size() != message.cooc_entries().items_count_size()) {
+      ss << "DictionaryConfig.cooc_entries fields have inconsistent sizes; ";
+
+      for (int i = 0; i < message.cooc_entries().first_index_size(); ++i) {
+        if (message.cooc_entries().first_index(i) < 0 ||
+            message.cooc_entries().first_index(i) >= message.entry_size())
+          ss << "DictionaryConfig.cooc_entries.first_index contain index nt from [0, entry.size); ";
+        if (message.cooc_entries().second_index(i) < 0 ||
+            message.cooc_entries().second_index(i) >= message.entry_size())
+          ss << "DictionaryConfig.cooc_entries.first_index contain index nt from [0, entry.size); ";
+      }
+    }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
 std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   std::stringstream ss;
   ss << "ModelConfig";
@@ -467,14 +503,8 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   ss << ", field_name=" << message.field_name();
   ss << ", stream_name=" << message.stream_name();
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
-  for (int i = 0; i < message.regularizer_settings().size(); ++i) {
-    ss << ", regularizer=(name=" << message.regularizer_settings(i).name() <<
-      ", tau=" << message.regularizer_settings(i).tau();
-    if (message.regularizer_settings(i).use_relative_regularization())
-      ss << "relative_regularization=True, gamma=" << message.regularizer_settings(i).gamma() << ")";
-    else
-      ss << "relative_regularization=False" << ")";
-  }
+  for (int i = 0; i < message.regularizer_settings_size(); ++i)
+    Helpers::Describe(message.regularizer_settings(i));
   for (int i = 0; i < message.class_id_size(); ++i)
     ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
@@ -486,8 +516,7 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
 std::string Helpers::Describe(const ::artm::MasterComponentConfig& message) {
   std::stringstream ss;
   ss << "MasterComponentConfig";
-  ss << ": modus_operandi=" << message.modus_operandi();
-  ss << ", disk_path=" << message.disk_path();
+  ss << ": disk_path=" << message.disk_path();
   ss << ", stream_size=" << message.stream_size();
   ss << ", compact_batches=" << (message.compact_batches() ? "yes" : "no");
   ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
@@ -495,14 +524,85 @@ std::string Helpers::Describe(const ::artm::MasterComponentConfig& message) {
   ss << ", processor_queue_max_size=" << message.processor_queue_max_size();
   ss << ", merger_queue_max_size=" << message.merger_queue_max_size();
   ss << ", score_config_size=" << message.score_config_size();
-  if (message.modus_operandi() == MasterComponentConfig_ModusOperandi_Network) {
-    ss << ", create_endpoint=" << message.create_endpoint();
-    ss << ", connect_endpoint=" << message.connect_endpoint();
-    ss << ", node_connect_endpoint_size=" << message.node_connect_endpoint_size();
-    ss << ", communication_timeout=" << message.communication_timeout();
-  }
-
   ss << ", disk_cache_path" << message.disk_cache_path();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::InitializeModelArgs& message) {
+  std::stringstream ss;
+  ss << "InitializeModelArgs";
+  ss << ": model_name=" << message.model_name();
+  ss << ", source_type=" <<
+    (message.source_type() == InitializeModelArgs_SourceType_Batches) ? "Batches" :
+    (message.source_type() == InitializeModelArgs_SourceType_Dictionary) ? "Dictionary" : "Unknown";
+  if (message.has_disk_path())
+    ss << ", disk_path=" << message.disk_path();
+  if (message.has_dictionary_name())
+    ss << ", dictionary_name=" << message.dictionary_name();
+  ss << ", filter_size=" << message.filter_size();
+  if (message.has_topics_count())
+    ss << ", topics_count=" << message.topics_count();
+  ss << ", topic_name_size=" << message.topic_name_size();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::ProcessBatchesArgs& message) {
+  std::stringstream ss;
+  ss << "ProcessBatchesArgs";
+  ss << ": nwt_target_name=" << message.nwt_target_name();
+  ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", pwt_source_name=" << message.pwt_source_name();
+  ss << ", inner_iterations_count=" << message.inner_iterations_count();
+  ss << ", stream_name=" << message.stream_name();
+  for (int i = 0; i < message.regularizer_name_size(); ++i)
+    ss << ", regularizer=(name:" << message.regularizer_name(i) << ", tau:" << message.regularizer_tau(i) << ")";
+  for (int i = 0; i < message.class_id_size(); ++i)
+    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
+  ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
+  ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
+  ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
+  ss << ", reset_scores=" << (message.reset_scores() ? "yes" : "no");
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::NormalizeModelArgs& message) {
+  std::stringstream ss;
+  ss << "NormalizeModelArgs";
+  ss << ": pwt_target_name=" << message.pwt_target_name();
+  ss << ", nwt_source_name=" << message.nwt_source_name();
+  ss << ", rwt_source_name=" << message.rwt_source_name();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::MergeModelArgs& message) {
+  std::stringstream ss;
+  ss << "MergeModelArgs";
+  ss << ": nwt_target_name=" << message.nwt_target_name();
+  for (int i = 0; i < message.nwt_source_name_size(); ++i)
+    ss << ", class=(" << message.nwt_source_name(i) << ":" << message.source_weight(i) << ")";
+  ss << ", topic_name_size=" << message.topic_name_size();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::RegularizeModelArgs& message) {
+  std::stringstream ss;
+  ss << "RegularizeModelArgs";
+  ss << ": rwt_target_name=" << message.rwt_target_name();
+  ss << ", pwt_source_name=" << message.pwt_source_name();
+  ss << ", nwt_source_name=" << message.nwt_source_name();
+  for (int i = 0; i < message.regularizer_settings_size(); ++i)
+    Helpers::Describe(message.regularizer_settings(i));
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::RegularizerSettings& message) {
+  std::stringstream ss;
+  ss << ", regularizer=(name:" << message.name() <<
+        ", tau:" << message.tau();
+  if (message.use_relative_regularization())
+    ss << "relative_regularization:True, gamma:" << message.gamma() << ")";
+  else
+    ss << "relative_regularization:False" << ")";
   return ss.str();
 }
 
@@ -536,28 +636,20 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
 
 // Return the filenames of all files that have the specified extension
 // in the specified directory.
-std::vector<BatchManagerTask> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
-  std::vector<BatchManagerTask> uuids;
+std::vector<std::string> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
+  std::vector<std::string> batches;
 
   if (boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
     boost::filesystem::recursive_directory_iterator it(root);
     boost::filesystem::recursive_directory_iterator endit;
     while (it != endit) {
       if (boost::filesystem::is_regular_file(*it) && it->path().extension() == kBatchExtension) {
-        std::string filename = it->path().filename().stem().string();
-        boost::uuids::uuid uuid = boost::uuids::nil_uuid();
-        try { uuid = boost::lexical_cast<boost::uuids::uuid>(filename); } catch (...) {}
-        if (uuid.is_nil()) {
-          uuid = boost::uuids::random_generator()();
-          LOG(INFO) << "Use " << uuid << " as uuid for batch " << it->path().string();
-        }
-
-        uuids.push_back(BatchManagerTask(uuid, it->path().string()));
+        batches.push_back(it->path().string());
       }
       ++it;
     }
   }
-  return uuids;
+  return batches;
 }
 
 boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,

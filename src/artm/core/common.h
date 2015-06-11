@@ -14,8 +14,6 @@
 
 #include "glog/logging.h"
 
-#include "rpcz/rpc.hpp"
-
 #include "artm/core/exceptions.h"
 #include "artm/core/internals.pb.h"
 
@@ -56,6 +54,10 @@ struct Token {
     return false;
   }
 
+  bool operator!=(const Token& token) const {
+    return !(*this == token);
+  }
+
   const std::string keyword;
   const ClassId class_id;
 
@@ -70,26 +72,6 @@ struct TokenHasher {
   }
 };
 
-struct BatchManagerTask {
-  BatchManagerTask(boost::uuids::uuid _uuid, std::string _file_path)
-      : uuid(_uuid), file_path(_file_path) {}
-
-  bool operator==(const BatchManagerTask& rhs) const {
-    return uuid == rhs.uuid && file_path == rhs.file_path;
-  }
-
-  BatchManagerTask& operator=(const BatchManagerTask &rhs) {
-    if (this != &rhs) {
-      uuid = rhs.uuid;
-      file_path = rhs.file_path;
-    }
-    return *this;
-  }
-
-  boost::uuids::uuid uuid;
-  std::string file_path;
-};
-
 const std::string DefaultClass = "@default_class";
 
 const int UnknownId = -1;
@@ -97,53 +79,6 @@ const int UnknownId = -1;
 const std::string kBatchExtension = ".batch";
 
 const int kIdleLoopFrequency = 1;  // 1 ms
-const int kNetworkPollingFrequency = 50;  // 50 ms
-
-class Notifiable {
- public:
-  virtual ~Notifiable() {}
-  virtual void Callback(ModelIncrement* model_increment) = 0;
-};
-
-inline bool make_rpcz_call(std::function<void()> f, const std::string& log_message = "", bool no_throw = false) {
-  try {
-    f();
-    return true;
-  } catch(const rpcz::rpc_error& error) {
-    std::stringstream ss;
-
-    if (error.get_status() == rpcz::status::DEADLINE_EXCEEDED) {
-      ss << "Network comminication timeout";
-      if (!log_message.empty()) ss << " in " << log_message;
-      LOG(ERROR) << ss.str();
-      if (!no_throw) BOOST_THROW_EXCEPTION(artm::core::NetworkException(ss.str()));
-      return false;
-    }
-
-    if (error.get_status() == rpcz::status::APPLICATION_ERROR) {
-      ss << "Remote RPCZ service application error";
-      if (!log_message.empty()) ss << " in " << log_message;
-      ss << ", code = " << error.get_application_error_code();
-      if (!error.get_error_message().empty()) ss << ", error_message = " << error.get_error_message();
-      LOG(ERROR) << ss.str();
-      if (!no_throw) BOOST_THROW_EXCEPTION(artm::core::NetworkException(ss.str()));
-      return false;
-    }
-
-    ss << "Network error";
-    if (!log_message.empty()) ss << " in " << log_message;
-    ss << ", rpcz_error_status = " << error.get_status();
-    LOG(ERROR) << ss.str();
-    if (!no_throw) BOOST_THROW_EXCEPTION(artm::core::NetworkException(ss.str()));
-    return false;
-  }
-
-  return false;
-}
-
-inline bool make_rpcz_call_no_throw(std::function<void()> f, const std::string& log_message = "") {
-  return make_rpcz_call(f, log_message, /*no_throw = */ true);
-}
 
 class CuckooWatch {
  public:
@@ -156,6 +91,9 @@ class CuckooWatch {
   CuckooWatch(std::string message, CuckooWatch* parent)
       : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent),
         threshold_ms_(1) {}
+  CuckooWatch(std::string message, CuckooWatch* parent, int threshold_ms)
+      : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent),
+        threshold_ms_(threshold_ms) {}
 
   ~CuckooWatch() {
     auto delta = (std::chrono::system_clock::now() - start_);
@@ -171,7 +109,7 @@ class CuckooWatch {
       LOG(INFO) << ss.str();
     } else {
       std::stringstream ss;
-      ss << delta_ms.count() << "ms in " << message_;
+      ss << delta_ms.count() << "ms in " << message_ << "; ";
       parent_->submessage_ += ss.str();
     }
   }

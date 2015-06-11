@@ -21,9 +21,6 @@ extern "C" {
   DLL_PUBLIC int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config);
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);
 
-  DLL_PUBLIC int ArtmCreateNodeController(int length, const char* node_controller_config);
-  DLL_PUBLIC int ArtmDisposeNodeController(int node_controller_id);
-
   DLL_PUBLIC int ArtmCreateModel(int master_id, int length, const char* model_config);
   DLL_PUBLIC int ArtmReconfigureModel(int master_id, int length, const char* model_config);
   DLL_PUBLIC int ArtmDisposeModel(int master_id, const char* model_name);
@@ -45,6 +42,11 @@ extern "C" {
   DLL_PUBLIC int ArtmInitializeModel(int master_id, int length, const char* init_model_args);
   DLL_PUBLIC int ArtmExportModel(int master_id, int length, const char* export_model_args);
   DLL_PUBLIC int ArtmImportModel(int master_id, int length, const char* import_model_args);
+
+  DLL_PUBLIC int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args);
+  DLL_PUBLIC int ArtmMergeModel(int master_id, int length, const char* merge_model_args);
+  DLL_PUBLIC int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args);
+  DLL_PUBLIC int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args);
 
   DLL_PUBLIC int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
