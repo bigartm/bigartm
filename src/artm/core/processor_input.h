@@ -20,6 +20,7 @@ class Notifiable {
 };
 
 class ScoresMerger;
+class CacheManager;
 
 class ProcessorInput {
  public:
@@ -32,7 +33,7 @@ class ProcessorInput {
 
   ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
                      batch_filename_(), task_id_(), notifiable_(nullptr), scores_merger_(nullptr),
-                     caller_(Caller::Unknown) {}
+                     cache_manager_(nullptr), caller_(Caller::Unknown) {}
 
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
@@ -45,6 +46,10 @@ class ProcessorInput {
 
   ScoresMerger* scores_merger() const { return scores_merger_; }
   void set_scores_merger(ScoresMerger* scores_merger) { scores_merger_ = scores_merger; }
+
+  CacheManager* cache_manager() const { return cache_manager_; }
+  void set_cache_manager(CacheManager* cache_manager) { cache_manager_ = cache_manager; }
+  bool has_cache_manager() const { return cache_manager_ != nullptr; }
 
   const ModelName& model_name() const { return model_name_; }
   void set_model_name(const ModelName& model_name) { model_name_ = model_name; }
@@ -72,6 +77,7 @@ class ProcessorInput {
   boost::uuids::uuid task_id_;
   Notifiable* notifiable_;
   ScoresMerger* scores_merger_;
+  CacheManager* cache_manager_;
   Caller caller_;
 };
 

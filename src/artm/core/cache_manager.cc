@@ -14,8 +14,7 @@ namespace fs = boost::filesystem;
 namespace artm {
 namespace core {
 
-CacheManager::CacheManager(const ThreadSafeHolder<InstanceSchema>& schema)
-    : schema_(schema), cache_() {}
+CacheManager::CacheManager() : cache_() {}
 
 CacheManager::~CacheManager() {
   auto keys = cache_.keys();

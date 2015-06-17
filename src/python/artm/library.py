@@ -54,6 +54,10 @@ InitializeModelArgs_SourceType_Dictionary = 0
 InitializeModelArgs_SourceType_Batches = 1
 SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
 SpecifiedSparsePhiConfig_Mode_SparseTokens = 1
+ProcessBatchesArgs_ThetaMatrixType_None = 0
+ProcessBatchesArgs_ThetaMatrixType_Dense = 1
+ProcessBatchesArgs_ThetaMatrixType_Sparse = 2
+ProcessBatchesArgs_ThetaMatrixType_Cache = 3
 
 #################################################################################
 
@@ -607,8 +611,26 @@ class MasterComponent:
         HandleErrorCode(self.lib_,
                         self.lib_.ArtmInitializeModel(self.id_, len(blob), blob_p))
 
+    def ExportModel(self, model_name, file_name):
+        args = messages_pb2.ExportModelArgs()
+        args.model_name = model_name
+        args.file_name = file_name
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmExportModel(self.id_, len(blob), blob_p))
+
+    def ImportModel(self, model_name, file_name):
+        args = messages_pb2.ImportModelArgs()
+        args.model_name = model_name
+        args.file_name = file_name
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmImportModel(self.id_, len(blob), blob_p))
+
     def ProcessBatches(self, pwt, batches, target_nwt=None, regularizers={}, inner_iterations_count=10, class_ids={},
-                       stream_name=None, reset_scores=None):
+                       stream_name=None, reset_scores=None, theta_matrix_type=None):
         """ MasterComponent.ProcessBatches() --- process batches to calculate p(t|d), scores, and nwt-increments.
         Args:
         - pwt --- the name of input Phi matrix
@@ -648,6 +670,8 @@ class MasterComponent:
             args.stream_name = stream_name
         if reset_scores is not None:
             args.reset_scores = reset_scores
+        if theta_matrix_type is not None:
+            args.theta_matrix_type = theta_matrix_type
 
         args_blob = args.SerializeToString()
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestProcessBatches(self.id_, len(args_blob), args_blob))

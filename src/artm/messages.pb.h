@@ -323,6 +323,27 @@ inline bool GetTopicModelArgs_RequestType_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<GetTopicModelArgs_RequestType>(
     GetTopicModelArgs_RequestType_descriptor(), name, value);
 }
+enum ProcessBatchesArgs_ThetaMatrixType {
+  ProcessBatchesArgs_ThetaMatrixType_None = 0,
+  ProcessBatchesArgs_ThetaMatrixType_Dense = 1,
+  ProcessBatchesArgs_ThetaMatrixType_Sparse = 2,
+  ProcessBatchesArgs_ThetaMatrixType_Cache = 3
+};
+bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value);
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MIN = ProcessBatchesArgs_ThetaMatrixType_None;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_Cache;
+const int ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_ARRAYSIZE = ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* ProcessBatchesArgs_ThetaMatrixType_descriptor();
+inline const ::std::string& ProcessBatchesArgs_ThetaMatrixType_Name(ProcessBatchesArgs_ThetaMatrixType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    ProcessBatchesArgs_ThetaMatrixType_descriptor(), value);
+}
+inline bool ProcessBatchesArgs_ThetaMatrixType_Parse(
+    const ::std::string& name, ProcessBatchesArgs_ThetaMatrixType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<ProcessBatchesArgs_ThetaMatrixType>(
+    ProcessBatchesArgs_ThetaMatrixType_descriptor(), name, value);
+}
 // ===================================================================
 
 class DoubleArray : public ::google::protobuf::Message {
@@ -7851,6 +7872,32 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
+  typedef ProcessBatchesArgs_ThetaMatrixType ThetaMatrixType;
+  static const ThetaMatrixType None = ProcessBatchesArgs_ThetaMatrixType_None;
+  static const ThetaMatrixType Dense = ProcessBatchesArgs_ThetaMatrixType_Dense;
+  static const ThetaMatrixType Sparse = ProcessBatchesArgs_ThetaMatrixType_Sparse;
+  static const ThetaMatrixType Cache = ProcessBatchesArgs_ThetaMatrixType_Cache;
+  static inline bool ThetaMatrixType_IsValid(int value) {
+    return ProcessBatchesArgs_ThetaMatrixType_IsValid(value);
+  }
+  static const ThetaMatrixType ThetaMatrixType_MIN =
+    ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MIN;
+  static const ThetaMatrixType ThetaMatrixType_MAX =
+    ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX;
+  static const int ThetaMatrixType_ARRAYSIZE =
+    ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  ThetaMatrixType_descriptor() {
+    return ProcessBatchesArgs_ThetaMatrixType_descriptor();
+  }
+  static inline const ::std::string& ThetaMatrixType_Name(ThetaMatrixType value) {
+    return ProcessBatchesArgs_ThetaMatrixType_Name(value);
+  }
+  static inline bool ThetaMatrixType_Parse(const ::std::string& name,
+      ThetaMatrixType* value) {
+    return ProcessBatchesArgs_ThetaMatrixType_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
 
   // optional string nwt_target_name = 1;
@@ -7996,6 +8043,13 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline bool reset_scores() const;
   inline void set_reset_scores(bool value);
 
+  // optional .artm.ProcessBatchesArgs.ThetaMatrixType theta_matrix_type = 14 [default = Cache];
+  inline bool has_theta_matrix_type() const;
+  inline void clear_theta_matrix_type();
+  static const int kThetaMatrixTypeFieldNumber = 14;
+  inline ::artm::ProcessBatchesArgs_ThetaMatrixType theta_matrix_type() const;
+  inline void set_theta_matrix_type(::artm::ProcessBatchesArgs_ThetaMatrixType value);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8014,6 +8068,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_use_sparse_bow();
   inline void set_has_reset_scores();
   inline void clear_has_reset_scores();
+  inline void set_has_theta_matrix_type();
+  inline void clear_has_theta_matrix_type();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8031,9 +8087,10 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool opt_for_avx_;
   bool use_sparse_bow_;
   bool reset_scores_;
+  int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8110,15 +8167,27 @@ class ProcessBatchesResult : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
       mutable_score_data();
 
+  // optional .artm.ThetaMatrix theta_matrix = 2;
+  inline bool has_theta_matrix() const;
+  inline void clear_theta_matrix();
+  static const int kThetaMatrixFieldNumber = 2;
+  inline const ::artm::ThetaMatrix& theta_matrix() const;
+  inline ::artm::ThetaMatrix* mutable_theta_matrix();
+  inline ::artm::ThetaMatrix* release_theta_matrix();
+  inline void set_allocated_theta_matrix(::artm::ThetaMatrix* theta_matrix);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesResult)
  private:
+  inline void set_has_theta_matrix();
+  inline void clear_has_theta_matrix();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::artm::ScoreData > score_data_;
+  ::artm::ThetaMatrix* theta_matrix_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -18756,6 +18825,29 @@ inline void ProcessBatchesArgs::set_reset_scores(bool value) {
   reset_scores_ = value;
 }
 
+// optional .artm.ProcessBatchesArgs.ThetaMatrixType theta_matrix_type = 14 [default = Cache];
+inline bool ProcessBatchesArgs::has_theta_matrix_type() const {
+  return (_has_bits_[0] & 0x00002000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_theta_matrix_type() {
+  _has_bits_[0] |= 0x00002000u;
+}
+inline void ProcessBatchesArgs::clear_has_theta_matrix_type() {
+  _has_bits_[0] &= ~0x00002000u;
+}
+inline void ProcessBatchesArgs::clear_theta_matrix_type() {
+  theta_matrix_type_ = 3;
+  clear_has_theta_matrix_type();
+}
+inline ::artm::ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::theta_matrix_type() const {
+  return static_cast< ::artm::ProcessBatchesArgs_ThetaMatrixType >(theta_matrix_type_);
+}
+inline void ProcessBatchesArgs::set_theta_matrix_type(::artm::ProcessBatchesArgs_ThetaMatrixType value) {
+  assert(::artm::ProcessBatchesArgs_ThetaMatrixType_IsValid(value));
+  set_has_theta_matrix_type();
+  theta_matrix_type_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // ProcessBatchesResult
@@ -18783,6 +18875,44 @@ ProcessBatchesResult::score_data() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
 ProcessBatchesResult::mutable_score_data() {
   return &score_data_;
+}
+
+// optional .artm.ThetaMatrix theta_matrix = 2;
+inline bool ProcessBatchesResult::has_theta_matrix() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ProcessBatchesResult::set_has_theta_matrix() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ProcessBatchesResult::clear_has_theta_matrix() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ProcessBatchesResult::clear_theta_matrix() {
+  if (theta_matrix_ != NULL) theta_matrix_->::artm::ThetaMatrix::Clear();
+  clear_has_theta_matrix();
+}
+inline const ::artm::ThetaMatrix& ProcessBatchesResult::theta_matrix() const {
+  return theta_matrix_ != NULL ? *theta_matrix_ : *default_instance_->theta_matrix_;
+}
+inline ::artm::ThetaMatrix* ProcessBatchesResult::mutable_theta_matrix() {
+  set_has_theta_matrix();
+  if (theta_matrix_ == NULL) theta_matrix_ = new ::artm::ThetaMatrix;
+  return theta_matrix_;
+}
+inline ::artm::ThetaMatrix* ProcessBatchesResult::release_theta_matrix() {
+  clear_has_theta_matrix();
+  ::artm::ThetaMatrix* temp = theta_matrix_;
+  theta_matrix_ = NULL;
+  return temp;
+}
+inline void ProcessBatchesResult::set_allocated_theta_matrix(::artm::ThetaMatrix* theta_matrix) {
+  delete theta_matrix_;
+  theta_matrix_ = theta_matrix;
+  if (theta_matrix) {
+    set_has_theta_matrix();
+  } else {
+    clear_has_theta_matrix();
+  }
 }
 
 // -------------------------------------------------------------------
@@ -19477,6 +19607,10 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::InitializeModelArgs_Sour
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::GetTopicModelArgs_RequestType>() {
   return ::artm::GetTopicModelArgs_RequestType_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::ProcessBatchesArgs_ThetaMatrixType>() {
+  return ::artm::ProcessBatchesArgs_ThetaMatrixType_descriptor();
 }
 
 }  // namespace google

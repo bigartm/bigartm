@@ -265,7 +265,22 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   Helpers::FixAndValidate(&model_config, /* throw_error =*/ true);
 
   BatchManager batch_manager;
+  CacheManager cache_manager;
   ScoresMerger* scores_merger = instance_->merger()->scores_merger();
+
+  bool return_theta = false;
+  CacheManager* cache_manager_ptr = nullptr;
+  switch (args.theta_matrix_type()) {
+    case ProcessBatchesArgs_ThetaMatrixType_Cache:
+      if (instance_->schema()->config().cache_theta())
+        cache_manager_ptr = instance_->cache_manager();
+      break;
+    case ProcessBatchesArgs_ThetaMatrixType_Dense:
+    case ProcessBatchesArgs_ThetaMatrixType_Sparse:
+      cache_manager_ptr = &cache_manager;
+      return_theta = true;
+  }
+
   if (args.reset_scores())
     scores_merger->ResetScores(model_name);
   for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
@@ -275,6 +290,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(&batch_manager);
     pi->set_scores_merger(scores_merger);
+    pi->set_cache_manager(cache_manager_ptr);
     pi->set_model_name(model_name);
     pi->set_batch_filename(args.batch_filename(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
@@ -286,8 +302,6 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 
     instance_->processor_queue()->push(pi);
   }
-
-  // ToDo - merge and extract ScoreData (require some refactoring)
 
   while (!batch_manager.IsEverythingProcessed()) {
     boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
@@ -301,6 +315,13 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     ScoreData score_data;
     if (scores_merger->RequestScore(schema, model_name, score_name, &score_data))
       process_batches_result->add_score_data()->Swap(&score_data);
+  }
+
+  if (return_theta) {
+    GetThetaMatrixArgs gta;
+    gta.set_model_name(model_name);
+    gta.set_use_sparse_format(args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse);
+    cache_manager.RequestThetaMatrix(gta, process_batches_result->mutable_theta_matrix());
   }
 }
 
