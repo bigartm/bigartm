@@ -403,6 +403,18 @@ void MasterComponent::RemoveStream(std::string stream_name) {
   Reconfigure(new_config);
 }
 
+void MasterComponent::ExportModel(const ExportModelArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmExportModel(id_, blob.size(), blob.c_str()));
+}
+
+void MasterComponent::ImportModel(const ImportModelArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmImportModel(id_, blob.size(), blob.c_str()));
+}
+
 std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
