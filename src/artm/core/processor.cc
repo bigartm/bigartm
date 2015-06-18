@@ -112,12 +112,10 @@ class PhiMatrixWriter : public NwtWriteAdapter {
 Processor::Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >*  processor_queue,
                      ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                      const Merger& merger,
-                     const CacheManager& cache_manager,
                      const ThreadSafeHolder<InstanceSchema>& schema)
     : processor_queue_(processor_queue),
       merger_queue_(merger_queue),
       merger_(merger),
-      cache_manager_(cache_manager),
       schema_(schema),
       is_stopping(false),
       thread_() {
@@ -842,7 +840,8 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<DataLoaderCacheEntry> cache;
         boost::uuids::uuid batch_uuid = boost::lexical_cast<boost::uuids::uuid>(batch.id());
-        cache = cache_manager_.FindCacheEntry(batch_uuid, model_config.name());
+        if (part->has_cache_manager())
+          cache = part->cache_manager()->FindCacheEntry(batch_uuid, model_config.name());
         std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache.get());
 
         std::shared_ptr<ModelIncrement> model_increment;
@@ -877,7 +876,7 @@ void Processor::ThreadFunction() {
                                       theta_matrix.get(), nwt_writer.get(), blas);
         }
 
-        if (master_config.cache_theta()) {
+        if (part->has_cache_manager()) {
           // Update theta cache
           std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(new DataLoaderCacheEntry());
           DataLoaderCacheEntry& new_cache_entry = *new_cache_entry_ptr;
@@ -908,7 +907,7 @@ void Processor::ThreadFunction() {
             }
           }
 
-          cache_manager_.UpdateCacheEntry(new_cache_entry_ptr);
+          part->cache_manager()->UpdateCacheEntry(new_cache_entry_ptr);
         }
 
         for (int score_index = 0; score_index < master_config.score_config_size(); ++score_index) {

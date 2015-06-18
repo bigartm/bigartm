@@ -516,8 +516,11 @@ TEST(CppInterface, ProcessBatchesApi) {
   std::shared_ptr< ::artm::PerplexityScore> perplexity_score;
   for (int i = 0; i < 10; ++i) {  // 10 iterations
     process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
+    process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Dense);
     std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
     perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
+    EXPECT_EQ(result->GetThetaMatrix().topics_count(), nTopics);
+    EXPECT_EQ(result->GetThetaMatrix().item_id_size(), nBatches);  // assuming that each batch has just one document
     master.NormalizeModel(normalize_model_args);
   }
 

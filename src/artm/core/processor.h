@@ -28,7 +28,6 @@ namespace core {
 
 class InstanceSchema;
 class Merger;
-class CacheManager;
 class TopicModel;
 
 class Processor : boost::noncopyable {
@@ -36,7 +35,6 @@ class Processor : boost::noncopyable {
   Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
             ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
             const Merger& merger,
-            const CacheManager& cache_manager,
             const ThreadSafeHolder<InstanceSchema>& schema);
 
   ~Processor();
@@ -49,7 +47,6 @@ class Processor : boost::noncopyable {
   ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue_;
   ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
   const Merger& merger_;
-  const CacheManager& cache_manager_;
   const ThreadSafeHolder<InstanceSchema>& schema_;
 
   mutable std::atomic<bool> is_stopping;

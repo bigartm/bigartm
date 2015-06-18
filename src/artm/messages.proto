@@ -532,6 +532,13 @@ message ImportModelArgs {
 }
 
 message ProcessBatchesArgs {
+  enum ThetaMatrixType {
+    None = 0;
+    Dense = 1;
+    Sparse = 2;
+    Cache = 3;
+  }
+
   optional string nwt_target_name = 1;
 
   repeated string batch_filename = 2;
@@ -546,10 +553,12 @@ message ProcessBatchesArgs {
   optional bool opt_for_avx = 11 [default = true];
   optional bool use_sparse_bow = 12 [default = true];
   optional bool reset_scores = 13 [default = true];
+  optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
 }
 
 message ProcessBatchesResult {
   repeated ScoreData score_data = 1;
+  optional ThetaMatrix theta_matrix = 2;
 }
 
 message MergeModelArgs {

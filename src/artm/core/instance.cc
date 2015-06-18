@@ -295,7 +295,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
 
   if (!is_configured_) {
     // First reconfiguration.
-    cache_manager_.reset(new CacheManager(schema_));
+    cache_manager_.reset(new CacheManager());
     batch_manager_.reset(new BatchManager());
     data_loader_.reset(new DataLoader(this));
     merger_.reset(new Merger(&merger_queue_, &schema_, &dictionaries_));
@@ -315,7 +315,6 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
           &processor_queue_,
           &merger_queue_,
           *merger_,
-          *cache_manager_,
           schema_)));
     }
   }

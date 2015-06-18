@@ -13,7 +13,6 @@
 
 #include "artm/messages.pb.h"
 #include "artm/core/common.h"
-#include "artm/core/instance_schema.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
 
@@ -22,7 +21,7 @@ namespace core {
 
 class CacheManager : boost::noncopyable {
  public:
-  explicit CacheManager(const ThreadSafeHolder<InstanceSchema>& schema);
+  explicit CacheManager();
   virtual ~CacheManager();
 
   void DisposeModel(ModelName model_name);
@@ -33,7 +32,6 @@ class CacheManager : boost::noncopyable {
   void UpdateCacheEntry(std::shared_ptr<DataLoaderCacheEntry> cache_entry) const;
 
  private:
-  const ThreadSafeHolder<InstanceSchema>& schema_;
   typedef std::pair<boost::uuids::uuid, ModelName> CacheKey;
   mutable ThreadSafeCollectionHolder<CacheKey, DataLoaderCacheEntry> cache_;
 };
