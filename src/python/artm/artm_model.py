@@ -1,5 +1,7 @@
 import artm.messages_pb2 as messages_pb2
 import artm.library as library
+import artm.visualization_ldavis
+from visualization_ldavis import TopicModelVisualization
 import collections
 from collections import OrderedDict
 from collections import namedtuple
@@ -11,6 +13,11 @@ import os
 from os import path
 import glob
 import csv
+import json
+import numpy
+import sklearn.decomposition
+from sklearn.decomposition import pca
+import urllib2
 
 # forward declaration
 class ArtmModel(object): pass
@@ -63,6 +70,11 @@ def create_parser_config(data_path, collection_name, target_folder):
   collection_parser_config.dictionary_file_name = 'dictionary'
   return collection_parser_config
 
+def download_ldavis():
+  ldavis_js = urllib2.urlopen(
+    'https://raw.githubusercontent.com/romovpa/bigartm/notebook-ideas/notebooks/ldavis/ldavis.js').read()
+  with open('../artm/_js/ldavis.js', 'w') as fout: fout.write(ldavis_js)
+
 #######################################################################################################################
 class ArtmModel(object):
   """ ArtmModel represents a topic model (public class).
@@ -98,15 +110,17 @@ class ArtmModel(object):
 
     if num_processors > 0:            self._num_processors        = num_processors
     if topics_count > 0:              self._topics_count          = topics_count
-    if len(topic_names) > 0:          self._topic_names           = topic_names
     if len(class_ids) > 0:            self._class_ids             = class_ids
     if document_passes_count > 0:     self._document_passes_count = document_passes_count
     if isinstance(cache_theta, bool): self._cache_theta           = cache_theta
+    if len(topic_names) > 0:
+      self._topic_names  = topic_names
+      self._topics_count = len(topic_names)
 
     self._master = library.MasterComponent()
     self._master.config().processors_count = self._num_processors
     self._master.config().cache_theta = cache_theta
-    self._master.Reconfigure()     
+    self._master.Reconfigure()         
 
     self._model = 'pwt'
     self._regularizers = Regularizers(self._master)
@@ -179,6 +193,7 @@ class ArtmModel(object):
       print 'Number of topic names should be non-negative, skip update'
     else:
       self._topic_names = topic_names
+      self._topics_count = len(topic_names)
 
   @class_ids.setter
   def class_ids(self, class_ids):
@@ -263,7 +278,7 @@ class ArtmModel(object):
                                               Is string, default = 'batches'
     Next argument has sense only if data_format is not 'batches' (e.g. parsing is necessary).
     - batch_size --- number of documents to be stored in each batch. Is int, default = 1000
-    Note: ArtmModel.init() should be proceed before first call ArtmModel.fit_offline(),
+    Note: ArtmModel.initialize() should be proceed before first call ArtmModel.fit_offline(),
           or it will be initialized by dictionary during first call.
     """
     if collection_name is None and data_format == 'bow_uci':
@@ -299,8 +314,7 @@ class ArtmModel(object):
       print 'Unknown data format, skip model.fit_offline()'
 
     if not self._was_initialized:
-      self.init(dictionary=self._master.CreateDictionary(unique_tokens))
-      self._was_initialized = True
+      self.initialize(dictionary=self._master.CreateDictionary(unique_tokens))
       
     theta_regularizers, phi_regularizers = {}, {}
     for name, config in self._regularizers.data.iteritems():
@@ -383,7 +397,7 @@ class ArtmModel(object):
                                               Is string, default = 'batches'
     Next argument has sense only if data_format is not 'batches' (e.g. parsing is necessary).
     - batch_size --- number of documents to be stored in each batch. Is int, default = 1000
-    Note: ArtmModel.init() should be proceed before first call ArtmModel.fit_online(),
+    Note: ArtmModel.initialize() should be proceed before first call ArtmModel.fit_online(),
           or it will be initialized by dictionary during first call.
     """
     if collection_name is None and data_format == 'bow_uci':
@@ -419,8 +433,7 @@ class ArtmModel(object):
       print 'Unknown data format, skip model.fit_online()'
 
     if not self._was_initialized:
-      self.init(dictionary=self._master.CreateDictionary(unique_tokens))
-      self._was_initialized = True
+      self.initialize(dictionary=self._master.CreateDictionary(unique_tokens))
 
     theta_regularizers, phi_regularizers = {}, {}
     for name, config in self._regularizers.data.iteritems():
@@ -489,6 +502,10 @@ class ArtmModel(object):
     Args:
     - file_name --- the name of file to store model. Is string, default = 'artm_model'
     """
+    if not self._was_initialized:
+      print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
+      return
+
     if os.path.isfile(file_name): os.remove(file_name)
     self._master.ExportModel(self._model, file_name)
 
@@ -518,13 +535,15 @@ class ArtmModel(object):
     Args:
     - file_name --- the name of file to store model. Is string, default = 'artm_model.csv'
     """
+    if not self._was_initialized:
+      print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
+      return
+
     if os.path.isfile(file_name): os.remove(file_name)
     with open(file_name, 'wb') as csvfile:
       writer = csv.writer(csvfile, delimiter=';', quotechar=';', quoting=csv.QUOTE_MINIMAL)
       if len(self._topic_names) > 0:
         writer.writerow(['Token'] + ['Class ID'] + ['TOPIC: ' + topic_name for topic_name in self._topic_names])
-      else:
-        writer.writerow(['Token'] + ['Class ID'] + ['TOPIC: ' + index for index in range(self._topics_count)])
       topic_model = self._master.GetTopicModel(self._model)
       for index in range(len(topic_model.token_weights)):
          writer.writerow([topic_model.token[index]] + [topic_model.class_id[index]] +
@@ -534,7 +553,7 @@ class ArtmModel(object):
     """ ArtmModel.get_theta() --- get Theta matrix for training set of documents.
     Args:
     - remove_theta --- flag indicates save or remove Theta from model after extraction. Is bool, default = False
-    Output: triple (document_ids, topic_names, values), where:
+    Output: named tuple (document_ids, topic_names, values), where:
             1) document_ids --- the ids of documents, for which the Theta matrix was requested. Is list of strings
             2) topic_names --- the names of topics in topic model, that was used to create Theta. Is list of strings
             3) values --- content of Theta matrix. Is list of lists of floats, each internal list represents one
@@ -543,12 +562,17 @@ class ArtmModel(object):
     if self.cache_theta == False:
       print 'ArtmModel.cache_theta == False, skip get_theta(). Set ArtmModel.cache_theta = True'
     else:
-      theta_matrix = self._master.GetThetaMatrix(self._model, clean_cache=remove_theta)
-      document_ids = [item_id for item_id in theta_matrix.item_id]
-      topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-      values = [[item_weight for item_weight in item_weights.value] for item_weights in theta_matrix.item_weights]
+      if not self._was_initialized:
+        print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
+        return
 
-      return (document_ids, topic_names, values)
+      theta_matrix = self._master.GetThetaMatrix(self._model, clean_cache=remove_theta)
+      retval = namedtuple('ThetaMatrix', ['document_ids', 'topic_names', 'values'])
+      retval.document_ids = [item_id for item_id in theta_matrix.item_id]
+      retval.topic_names = [topic_name for topic_name in theta_matrix.topic_name]
+      retval.values = [[item_w for item_w in item_weights.value] for item_weights in theta_matrix.item_weights]
+
+      return retval
 
 
   def find_theta(self, batches=None, collection_name=None, data_path='', data_format='batches'):
@@ -568,7 +592,7 @@ class ArtmModel(object):
                                               3) 'bow_vw' --- Bag-Of-Words in Vowpal Wabbit format
                                               4) 'plain_text' --- source text
                                               Is string, default = 'batches'
-    Output: triple (document_ids, topic_names, values), where:
+    Output: named tuple (document_ids, topic_names, values), where:
             1) document_ids --- the ids of documents, for which the Theta matrix was requested. Is list of strings
             2) topic_names --- the names of topics in topic model, that was used to create Theta. Is list of strings
             3) values --- content of Theta matrix. Is list of lists of floats, each internal list represents one
@@ -579,6 +603,10 @@ class ArtmModel(object):
 
     if not data_format == 'batches' and not batches is None:
       print "batches != None require data_format == 'batches'" 
+
+    if not self._was_initialized:
+      print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
+      return
 
     target_folder = data_path + '/batches_temp_' + str(random.uniform(0,1))
     batches_list = []
@@ -611,19 +639,20 @@ class ArtmModel(object):
                                           class_ids=self._class_ids,
                                           theta_matrix_type=library.ProcessBatchesArgs_ThetaMatrixType_Dense)
     theta_matrix = results.theta_matrix
-    document_ids = [item_id for item_id in theta_matrix.item_id]
-    topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-    values = [[item_weight for item_weight in item_weights.value] for item_weights in theta_matrix.item_weights]
+    retval = namedtuple('ThetaMatrix', ['document_ids', 'topic_names', 'values'])
+    retval.document_ids = [item_id for item_id in theta_matrix.item_id]
+    retval.topic_names = [topic_name for topic_name in theta_matrix.topic_name]
+    retval.values = [[item_w for item_w in item_weights.value] for item_weights in theta_matrix.item_weights]
 
     # remove temp batches folder if necessary
     if not data_format == 'batches':
       shutil.rmtree(target_folder)
 
-    return (document_ids, topic_names, values)
+    return retval
 
 
-  def init(self, data_path=None, dictionary=None):
-    """ ArtmModel.init() --- initialize topic model before learning.
+  def initialize(self, data_path=None, dictionary=None):
+    """ ArtmModel.initialize() --- initialize topic model before learning.
     Args:
     - data_path --- name of directory containing BigARTM batches. Is string, default = None
     - dictionary --- BigARTM collection dictionary. Is string, default = None
@@ -636,8 +665,138 @@ class ArtmModel(object):
                                    topics_count=self._topics_count, topic_names=self._topic_names)
     else:
       self._master.InitializeModel(model_name=self._model, dictionary=dictionary,
-                                   topics_count=self._topics_count, topic_names=self._topic_names)   
+                                   topics_count=self._topics_count, topic_names=self._topic_names)
+
+    args = messages_pb2.GetTopicModelArgs()
+    args.request_type = library.GetTopicModelArgs_RequestType_TopicNames
+    topic_model = self._master.GetTopicModel(model=self._model, args=args)
+    self._topic_names = [topic_name for topic_name in topic_model.topic_name]
     self._was_initialized = True                                   
+
+
+  def visualize(self, num_top_tokens=10, num_tokens_to_use=100):
+    """
+    """
+    if not self._was_initialized:
+      print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
+      return
+
+    if num_tokens_to_use < num_top_tokens:
+      print 'Number of all using tokens should be great or equal to number of top tokens, skip visualization.'
+      return
+
+    if not os.path.exists('../artm/_js/ldavis.js'): download_ldavis()
+
+    with open('lda.json') as f: data = json.load(f) # temp
+    return TopicModelVisualization(data)
+
+    #p_wt = self._master.GetTopicModel(self._model)
+    #args = messages_pb2.GetTopicModelArgs()
+    #args.request_type = library.GetTopicModelArgs_RequestType_Nwt
+    #n_wt = self._master.GetTopicModel(model="nwt", args=args)
+
+    #Phi = numpy.array([token_weight for token_weight in [token_weights.value for token_weights in p_wt.token_weights]])
+    #pca_model = sklearn.decomposition.pca.PCA(2)
+    #centers = pca_model.fit_transform(Phi.transpose()).transpose()
+
+    #all_max_indices = set()
+    #top_max_indices = []
+    #for column in Phi.T:
+    #  column_top_max_indices = set()
+    #  temp_column = list(column)
+    #  top_tokens_counter = 0
+    #  for i in range(num_tokens_to_use):
+    #    index = numpy.argmax(temp_column)
+    #    all_max_indices.add(index)
+    #    temp_column[index] = -1
+
+    #    if top_tokens_counter < num_top_tokens:
+    #      column_top_max_indices.add(index)
+    #      top_tokens_counter += 1
+    #  top_max_indices.append(column_top_max_indices)
+    #all_max_indices = list(all_max_indices)
+
+    #n_t = [0.0] * self._topics_count
+    #for token_weights in n_wt.token_weights:
+    #  n_t = [x + y for x, y in zip(n_t, token_weights.value)]
+
+    #p_w = list(numpy.sum(Phi, axis=1))
+    #n_w = list(numpy.sum(numpy.array([token_weight for token_weight in
+    #                                  [token_weights.value for token_weights in n_wt.token_weights]]), axis=1))
+
+    #all_tokens = []
+    #for index in all_max_indices:
+    #  for _ in range(self._topics_count):
+    #    all_tokens.append(p_wt.token[index])
+    #all_topics = self._topic_names * len(all_tokens)
+
+    ## we use duplicate of first topic as default
+    #top_tokens = [p_wt.token[token_index] for token_index in top_max_indices[0]]
+    #top_values = [Phi[token_index, 0] for token_index in top_max_indices[0]]
+    #top_p_wt_div_p_w = []
+    #top_p_wt = []
+    #top_p_w = []
+    #for token_index in top_max_indices[0]:
+    #  if p_w[token_index] < 1e-37: top_p_wt_div_p_w.append(0)
+    #  else:                        top_p_wt_div_p_w.append(Phi[token_index, 0] / p_w[token_index])
+    #  top_p_wt.append(p_wt.token_weights[token_index].value[0])
+    #  top_p_w.append(p_w[token_index])
+
+    #topic_index = -1
+    #for topic_max_indices_set in top_max_indices:
+    #  topic_index += 1
+    #  for token_index in topic_max_indices_set:
+    #    top_values.append(Phi[token_index, topic_index])
+    #    if p_w[token_index] < 1e-37: top_p_wt_div_p_w.append(0)
+    #    else:                        top_p_wt_div_p_w.append(Phi[token_index, topic_index] / p_w[token_index])
+    #    top_tokens.append(p_wt.token[token_index])
+    #    top_p_wt.append(p_wt.token_weights[token_index].value[topic_index])
+    #    top_p_w.append(p_w[token_index])
+
+    #Phi = []  # clean memory
+    #p_tw = []
+    #for token_weights in p_wt.token_weights:
+    #  numerator = [x * y for x, y in zip(n_t, token_weights.value)]
+    #  p_tw.append([x / y for x, y in zip(numerator, [sum(numerator)] * len(numerator))])
+    #p_tw = numpy.array(p_tw)
+
+    #all_values = []
+    #for index in all_max_indices:
+    #  all_values.append(list(p_tw[index, :]))
+    #all_values = [item for sublist in all_values for item in sublist]
+
+    #top_topics = [['Default'] * num_top_tokens]
+    #for i in range(self._topics_count):
+    #  top_topics.append(['Topic' + str(i)] * num_top_tokens)
+    #top_topics = [item for sublist in top_topics for item in sublist]
+
+    #if sum(n_t) > 100:
+    #  n_t = [x / y for x, y in zip(n_t, [sum(n_t) / 10] * len(n_t))]
+
+    ##file_name = '@TEMP_FILE_artm_model.json'
+    #file_name = 'lda.json'
+    #if os.path.isfile(file_name): os.remove(file_name)
+    #with open(file_name, "w") as outfile:
+    #  json.dump({'mdsDat' : {"x" : list(centers[0]),
+    #                         "y" : list(centers[1]),
+    #                         "topics" : [topic_name for topic_name in self._topic_names],
+    #                         "Freq" : n_t,
+    #                         "cluster" : [1] * self._topics_count},
+    #             'tinfo' : {"Term" : top_tokens,
+    #                        "logprob" : top_values,
+    #                        "loglift" : top_p_wt_div_p_w,
+    #                        "Freq" : top_p_wt,
+    #                        "Total" : top_p_w,
+    #                        "Category" : top_topics},
+    #             'token.table' : {"Term" : all_tokens,
+    #                              "Topic" : all_topics,
+    #                              "Freq" : all_values},
+    #             'R' : num_top_tokens,
+    #             "lambda.step" : 0.01,
+    #             "plot.opts" : {"xlab" : "PC-1",
+    #                            "ylab" : "PC-2"},
+    #             "topic_order" : [topic_id for topic_id in range(self._topics_count)]},
+    #            outfile, indent=2)
 
 #######################################################################################################################  
 class Regularizers(object):

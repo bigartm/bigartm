@@ -8,7 +8,7 @@ model = ArtmModel(num_processors=2, document_passes_count=10,
 print model.topic_names
 
 #model.parse(data_format='bow_uci', collection_name='kos')
-model.init(dictionary=model.load_dictionary('kos/dictionary'))
+model.initialize(dictionary=model.load_dictionary('kos/dictionary'))
 
 model.scores.add(SparsityPhiScore(name='SpPhiScore'))
 model.scores.add(SparsityThetaScore(name='SpThetaScore'))
@@ -42,16 +42,19 @@ model.fit_offline(data_path='kos', collection_passes_count=2)
 #  print  item
 #  print '\n'
 
-if not model.scores_info['TopTokenScore'].topic_info[0] is None:
-  print '\n'
-  print model.scores_info['TopTokenScore'].topic_info[0]['topic_1'].tokens
-  print model.scores_info['TopTokenScore'].topic_info[0]['topic_1'].weights
-  print model.scores_info['KernelScore'].topic_info[0]['topic_1'].tokens
+#if not model.scores_info['TopTokenScore'].topic_info[0] is None:
+#  print '\n'
+#  print model.scores_info['TopTokenScore'].topic_info[0]['topic_1'].tokens
+#  print model.scores_info['TopTokenScore'].topic_info[0]['topic_1'].weights
+#  print model.scores_info['KernelScore'].topic_info[0]['topic_1'].tokens
 
 #retval = model.find_theta(data_path='kos', batches=['a657484f-a028-4800-b965-f8ddf1d742f9.batch'])
 #retval = model.get_theta(remove_theta=True)
+#print retval.document_ids
 #print len(retval[0])
 #print retval[1]
 #print model.scores_info['ItemScore'].value
 #model.save()
 #model.to_csv()
+vis = model.visualize()
+vis.to_file('lda.html')
