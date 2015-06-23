@@ -14,6 +14,8 @@
 
 #include "artm_tests/test_mother.h"
 
+namespace fs = boost::filesystem;
+
 TEST(CppInterface, Canary) {
 }
 
@@ -501,6 +503,29 @@ TEST(CppInterface, ProcessBatchesApi) {
   std::shared_ptr< ::artm::TopicModel> pwt_model = master.GetTopicModel("pwt0");
   ASSERT_NE(pwt_model, nullptr);
   ASSERT_EQ(pwt_model->topics_count(), nTopics);
+
+  // Test export and import of new-style models
+  artm::ExportModelArgs export_model_args;
+  export_model_args.set_model_name(pwt_model->name());
+
+  fs::path export_filename = (fs::path(target_folder) / fs::path(artm::test::Helpers::getUniqueString() + ".model"));
+  export_model_args.set_model_name("pwt0");
+  export_model_args.set_file_name(export_filename.string());
+  artm::ImportModelArgs import_model_args;
+  import_model_args.set_model_name("import_pwt");
+  import_model_args.set_file_name(export_model_args.file_name());
+
+  master.ExportModel(export_model_args);
+  master.ImportModel(import_model_args);
+  bool ok2 = false;
+  ::artm::test::Helpers::CompareTopicModels(*master.GetTopicModel("pwt0"), *master.GetTopicModel("import_pwt"), &ok2);
+  if (!ok2) {
+    std::cout << "Exported topic model:\n"
+      << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
+    std::cout << "Imported topic model:\n"
+      << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("import_pwt"));
+  }
+  /////////////////////////////////////////////
 
   std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
   ASSERT_EQ(all_batches.size(), nBatches);
