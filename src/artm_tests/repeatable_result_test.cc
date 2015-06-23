@@ -231,12 +231,3 @@ TEST(RepeatableResult, OverwriteTopicModel_Pwt_sparse) {
   OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, true);
 }
 
-// artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Nwt_dense
-TEST(RepeatableResult, OverwriteTopicModel_Nwt_dense) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Nwt, false);
-}
-
-// artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Nwt_sparse
-TEST(RepeatableResult, OverwriteTopicModel_Nwt_sparse) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Nwt, true);
-}
