@@ -84,6 +84,8 @@ class MasterComponent {
   void NormalizeModel(const NormalizeModelArgs& args);
   void RegularizeModel(const RegularizeModelArgs& args);
   void InitializeModel(const InitializeModelArgs& args);
+  void ExportModel(const ExportModelArgs& args);
+  void ImportModel(const ImportModelArgs& args);
 
   void Reconfigure(const MasterComponentConfig& config);
   bool AddBatch(const Batch& batch);

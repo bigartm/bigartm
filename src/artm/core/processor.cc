@@ -644,17 +644,18 @@ void Processor::FindThetaMatrix(const Batch& batch,
   std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
   std::shared_ptr<const PhiMatrix> phi_matrix = merger_.GetPhiMatrix(model_name);
 
-  if (topic_model == nullptr) {
-    if (phi_matrix != nullptr)
-      BOOST_THROW_EXCEPTION(InvalidOperation("FindThetaMatrix failed for '" + model_name +
-                                             "' model because it does not have corresponding ModelConfig."));
-    else
-      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find topic model", model_name));
-  }
+  if (topic_model == nullptr && phi_matrix == nullptr)
+    BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find topic model", model_name));
 
-  const PhiMatrix& p_wt = topic_model->GetPwt();
+  const PhiMatrix& p_wt = topic_model != nullptr ? topic_model->GetPwt() : *phi_matrix;
 
   std::shared_ptr<InstanceSchema> schema = schema_.get();
+  if (!schema->has_model_config(model_name)) {
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "FindThetaMatrix failed for '" + model_name +
+      "' model because it has no corresponding ModelConfig."));
+  }
+
   const ModelConfig& model_config = schema->model_config(model_name);
 
   if (model_config.class_id_size() != model_config.class_weight_size())
