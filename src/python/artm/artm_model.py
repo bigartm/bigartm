@@ -2358,7 +2358,7 @@ class ArtmModel(object):
         self._scores = Scores(self._master, self._model)
 
         self._scores_info = {}
-        self._synchronizations_processed = -1
+        self._synchronizations_processed = 0
         self._was_initialized = False
 
 # ========== PROPERTIES ==========
@@ -2405,6 +2405,10 @@ class ArtmModel(object):
     @property
     def master(self):
         return self._master
+
+    @property
+    def num_phi_updates(self):
+        return self._synchronizations_processed
 
 # ========== SETTERS ==========
     @num_processors.setter
@@ -2631,7 +2635,7 @@ class ArtmModel(object):
                                         class_ids=self._class_ids,
                                         reset_scores=reset_theta_scores)
             self._synchronizations_processed += 1
-            if self._synchronizations_processed == 0:
+            if self._synchronizations_processed == 1:
                 self._master.MergeModel({self._model: decay_weight, 'nwt_hat': apply_weight},
                                         target_nwt='nwt', topic_names=self._topic_names)
             else:
@@ -2658,7 +2662,7 @@ class ArtmModel(object):
                     elif (self.scores[name].type == library.ScoreConfig_Type_TopicKernel):
                         self._scores_info[name] = TopicKernelScoreInfo(self.scores[name])
 
-                    for i in range(self._synchronizations_processed):
+                    for i in range(self._synchronizations_processed - 1):
                         self._scores_info[name].add()
 
                 self._scores_info[name].add(self.scores[name])
@@ -2793,7 +2797,7 @@ class ArtmModel(object):
                 decay_weight, apply_weight = 1-rho, rho
 
                 self._synchronizations_processed += 1
-                if self._synchronizations_processed == 0:
+                if self._synchronizations_processed == 1:
                     self._master.MergeModel({self._model: decay_weight, 'nwt_hat': apply_weight},
                                             target_nwt='nwt', topic_names=self._topic_names)
                 else:
@@ -2821,7 +2825,7 @@ class ArtmModel(object):
                         elif (self.scores[name].type == library.ScoreConfig_Type_TopicKernel):
                             self._scores_info[name] = TopicKernelScoreInfo(self.scores[name])
 
-                        for i in range(self._synchronizations_processed):
+                        for i in range(self._synchronizations_processed - 1):
                             self._scores_info[name].add()
 
                     self._scores_info[name].add(self.scores[name])
@@ -2871,7 +2875,7 @@ class ArtmModel(object):
 
         # Remove all info about previous iterations
         self._scores_info = {}
-        self._synchronizations_processed = -1
+        self._synchronizations_processed = 0
 
     def to_csv(self, file_name='artm_model.csv'):
         """ ArtmModel.to_csv() --- save the topic model to disk in
@@ -3080,6 +3084,10 @@ class ArtmModel(object):
         topic_model = self._master.GetTopicModel(model=self._model, args=args)
         self._topic_names = [topic_name for topic_name in topic_model.topic_name]
         self._was_initialized = True
+
+        # Remove all info about previous iterations
+        self._scores_info = {}
+        self._synchronizations_processed = 0
 
     def visualize(self, num_top_tokens=30, dictionary_path=None, lambda_step=0.1):
         """ ArtmModel.visualize() --- visualize topic model after learning.
