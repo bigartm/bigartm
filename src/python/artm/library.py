@@ -50,6 +50,7 @@ CollectionParserConfig_Format_MatrixMarket = 1
 CollectionParserConfig_Format_VowpalWabbit = 2
 GetTopicModelArgs_RequestType_Pwt = 0
 GetTopicModelArgs_RequestType_Nwt = 1
+GetTopicModelArgs_RequestType_TopicNames = 2
 InitializeModelArgs_SourceType_Dictionary = 0
 InitializeModelArgs_SourceType_Batches = 1
 SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
@@ -58,7 +59,11 @@ ProcessBatchesArgs_ThetaMatrixType_None = 0
 ProcessBatchesArgs_ThetaMatrixType_Dense = 1
 ProcessBatchesArgs_ThetaMatrixType_Sparse = 2
 ProcessBatchesArgs_ThetaMatrixType_Cache = 3
-
+TopicModel_OperationType_Initialize = 0
+TopicModel_OperationType_Increment = 1
+TopicModel_OperationType_Overwrite = 2
+TopicModel_OperationType_Remove = 3
+TopicModel_OperationType_Ignore = 4
 #################################################################################
 
 class InternalError(BaseException): pass
@@ -658,10 +663,10 @@ class MasterComponent:
         for batch in batches:
             args.batch_filename.append(batch)
         args.inner_iterations_count = inner_iterations_count
-        for (class_id, class_weight) in class_ids:
+        for class_id, class_weight in class_ids.iteritems():
             args.class_id.append(class_id)
             args.class_weight.append(class_weight)
-        for (reg_name, reg_tau) in regularizers:
+        for reg_name, reg_tau in regularizers.iteritems():
             args.regularizer_name.append(reg_name)
             args.regularizer_tau.append(reg_tau)
         if target_nwt is not None:
@@ -696,7 +701,7 @@ class MasterComponent:
         args.nwt_target_name = target_nwt
         for topic_name in topic_names:
             args.topic_name.append(topic_name)
-        for (nwt_source_name, source_weight) in models:
+        for nwt_source_name, source_weight in models.iteritems():
             args.nwt_source_name.append(nwt_source_name)
             args.source_weight.append(source_weight)
 
@@ -720,7 +725,7 @@ class MasterComponent:
         args.rwt_target_name = target_rwt
         for reg_setting in regularizer_settings:
             args.regularizer_settings.add().CopyFrom(reg_setting)
-        for (regularizer_name, regularizer_tau) in regularizers:
+        for regularizer_name, regularizer_tau in regularizers.iteritems():
             reg = args.regularizer_settings.add()
             reg.name = regularizer_name
             reg.tau = regularizer_tau

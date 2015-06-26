@@ -78,6 +78,7 @@ src/Win32/*
 /3rdparty/glog/vsprojects/libglog_static/Release/*
 /3rdparty/rpcz/vsprojects/Intermediate/*
 /3rdparty/rpcz/vsprojects/Win32/*
+/3rdparty/protobuf/python/*
 
 /libs/libboost*
 /libs/v100/*

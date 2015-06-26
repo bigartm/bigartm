@@ -34,6 +34,8 @@
   <ItemGroup>
     <Compile Include="../artm/library.py" />
     <Compile Include="../artm/messages_pb2.py" />
+    <Compile Include="../artm/artm_model.py" />
+    <Compile Include="../artm/visualization_ldavis.py" />
   </ItemGroup>
   <Import Condition="Exists($(PtvsTargetsFile))" Project="$(PtvsTargetsFile)" />
   <Import Condition="!Exists($(PtvsTargetsFile))" Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
