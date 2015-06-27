@@ -16,6 +16,8 @@ import json
 import glob
 import numpy as np
 import math
+import pandas
+from pandas import DataFrame
 import scipy.spatial.distance as sp_dist
 import shutil
 import sklearn.decomposition
@@ -2119,9 +2121,9 @@ class TopicKernelScoreInfo(object):
         self._name = score.name
         self._topic_info = []
         self._average_coherence = []
-        self._average_kernel_size = []
-        self._average_kernel_contrast = []
-        self._average_kernel_purity = []
+        self._average_size = []
+        self._average_contrast = []
+        self._average_purity = []
 
     def add(self, score=None):
         """ TopicKernelScoreInfo.add() --- add info about score after
@@ -2157,15 +2159,15 @@ class TopicKernelScoreInfo(object):
                 self._topic_info[index][topic_name].coherence = coherence
 
             self._average_coherence.append(_data.average_coherence)
-            self._average_kernel_size.append(_data.average_kernel_size)
-            self._average_kernel_contrast.append(_data.average_kernel_contrast)
-            self._average_kernel_purity.append(_data.average_kernel_purity)
+            self._average_size.append(_data.average_kernel_size)
+            self._average_contrast.append(_data.average_kernel_contrast)
+            self._average_purity.append(_data.average_kernel_purity)
         else:
             self._topic_info.append(None)
             self._average_coherence.append(None)
-            self._average_kernel_size.append(None)
-            self._average_kernel_contrast.append(None)
-            self._average_kernel_purity.append(None)
+            self._average_size.append(None)
+            self._average_contrast.append(None)
+            self._average_purity.append(None)
 
     @property
     def name(self):
@@ -2199,28 +2201,28 @@ class TopicKernelScoreInfo(object):
         return self._average_coherence
 
     @property
-    def average_kernel_size(self):
+    def average_size(self):
         """ Returns average kernel size of all requested topics on
         synchronizations.
         Is list of scalars
         """
-        return self._average_kernel_size
+        return self._average_size
 
     @property
-    def average_kernel_contrast(self):
+    def average_contrast(self):
         """ Returns average kernel contrast of all requested topics on
         synchronizations.
         Is list of scalars
         """
-        return self._average_kernel_contrast
+        return self._average_contrast
 
     @property
-    def average_kernel_purity(self):
+    def average_purity(self):
         """ Returns average kernel purity of all requested topics on
         synchronizations.
         Is list of scalars
         """
-        return self._average_kernel_purity
+        return self._average_purity
 
 
 ###################################################################################################
@@ -2917,19 +2919,15 @@ class ArtmModel(object):
 
         Returns:
         ----------
-        - named tuple (document_ids, topic_names, values), where:
+        - DataFrame (data, columns, rows), where:
 
-          1) document_ids --- the ids of documents, for which the
-          Theta matrix was requested.
-          Is list of strings
+          1) columns --- the ids of documents, for which the Theta
+          matrix was requested
 
-          2) topic_names --- the names of topics in topic model,
-          that was used to create Theta.
-          Is list of strings
+          2) rows --- the names of topics in topic model, that was
+          used to create Theta
 
-          3) values --- content of Theta matrix.
-          Is list of lists of floats, each internal list represents one
-          document and has length equal to len(topic_names).
+          3) data --- content of Theta matrix.
         """
         if self.cache_theta is False:
             print 'ArtmModel.cache_theta == False, skip get_theta().' + \
@@ -2940,11 +2938,13 @@ class ArtmModel(object):
                 return
 
             theta_matrix = self._master.GetThetaMatrix(self._model, clean_cache=remove_theta)
-            retval = namedtuple('ThetaMatrix', ['document_ids', 'topic_names', 'values'])
-            retval.document_ids = [item_id for item_id in theta_matrix.item_id]
-            retval.topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-            retval.values = [[item_w for item_w in item_weights.value]
-                             for item_weights in theta_matrix.item_weights]
+            document_ids = [item_id for item_id in theta_matrix.item_id]
+            topic_names = [topic_name for topic_name in theta_matrix.topic_name]
+            values = [[item_w for item_w in item_weights.value]
+                       for item_weights in theta_matrix.item_weights]
+            retval = DataFrame(data=np.matrix(values).transpose(),
+                               columns=document_ids,
+                               index=topic_names)
 
             return retval
 
@@ -2979,19 +2979,15 @@ class ArtmModel(object):
 
         Returns:
         ----------
-        - named tuple (document_ids, topic_names, values), where:
+        - DataFrame (data, columns, rows), where:
 
-          1) document_ids --- the ids of documents, for which the Theta
-          matrix was requested.
-          Is list of strings
+          1) columns --- the ids of documents, for which the Theta
+          matrix was requested
 
-          2) topic_names --- the names of topics in topic model, that was
-          used to create Theta.
-          Is list of strings
+          2) rows --- the names of topics in topic model, that was
+          used to create Theta
 
-          3) values --- content of Theta matrix.
-          Is list of lists of floats, each internal list represents one
-          document and has length equal to len(topic_names).
+          3) data --- content of Theta matrix.
         """
         if collection_name is None and data_format == 'bow_uci':
             print 'No collection name was given, skip model.fit_offline()'
@@ -3039,11 +3035,13 @@ class ArtmModel(object):
             theta_matrix_type=library.ProcessBatchesArgs_ThetaMatrixType_Dense)
 
         theta_matrix = results.theta_matrix
-        retval = namedtuple('ThetaMatrix', ['document_ids', 'topic_names', 'values'])
-        retval.document_ids = [item_id for item_id in theta_matrix.item_id]
-        retval.topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-        retval.values = [[item_w for item_w in item_weights.value]
-                         for item_weights in theta_matrix.item_weights]
+        document_ids = [item_id for item_id in theta_matrix.item_id]
+        topic_names = [topic_name for topic_name in theta_matrix.topic_name]
+        values = [[item_w for item_w in item_weights.value]
+                   for item_weights in theta_matrix.item_weights]
+        retval = DataFrame(data=np.matrix(values).transpose(),
+                           columns=document_ids,
+                           index=topic_names)
 
         # Remove temp batches folder if necessary
         if not data_format == 'batches':
