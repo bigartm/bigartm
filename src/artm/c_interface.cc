@@ -156,7 +156,7 @@ int ArtmCreateMasterComponent(int length, const char* master_component_config) {
 
     artm::MasterComponentConfig config;
     ParseFromArray(master_component_config, length, &config);
-    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
     auto& mcm = artm::core::MasterComponentManager::singleton();
     int retval = mcm.Create< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(config);
     assert(retval > 0);
@@ -172,7 +172,7 @@ int ArtmReconfigureMasterComponent(int master_id, int length, const char* master
   try {
     artm::MasterComponentConfig config;
     ParseFromArray(master_component_config, length, &config);
-    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
     master_component(master_id)->Reconfigure(config);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
