@@ -4,6 +4,7 @@
 
 #include <fstream>  // NOLINT
 #include <sstream>
+#include <thread>
 
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
@@ -368,6 +369,19 @@ bool Helpers::FixAndValidate(::artm::GetScoreValueArgs* message, bool throw_erro
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::MasterComponentConfig* message) {
+  if (!message->has_processors_count() || message->processors_count() <= 0) {
+    unsigned int n = std::thread::hardware_concurrency();
+    if (n == 0) {
+      LOG(INFO) << "MasterComponentConfig.processors_count is set to 1 (default)";
+      message->set_processors_count(1);
+    } else {
+      LOG(INFO) << "MasterComponentConfig.processors_count is automatically set to " << n;
+      message->set_processors_count(n);
+    }
+  }
+}
+
 bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_error) {
   std::stringstream ss;
 
@@ -389,6 +403,11 @@ bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
+}
+
+bool Helpers::FixAndValidate(::artm::MasterComponentConfig* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
 }
 
 void Helpers::Fix(::artm::InitializeModelArgs* message) {

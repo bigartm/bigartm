@@ -1512,7 +1512,7 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline bool cache_theta() const;
   inline void set_cache_theta(bool value);
 
-  // optional int32 processors_count = 6 [default = 1];
+  // optional int32 processors_count = 6;
   inline bool has_processors_count() const;
   inline void clear_processors_count();
   static const int kProcessorsCountFieldNumber = 6;
@@ -9880,7 +9880,7 @@ inline void MasterComponentConfig::set_cache_theta(bool value) {
   cache_theta_ = value;
 }
 
-// optional int32 processors_count = 6 [default = 1];
+// optional int32 processors_count = 6;
 inline bool MasterComponentConfig::has_processors_count() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -9891,7 +9891,7 @@ inline void MasterComponentConfig::clear_has_processors_count() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void MasterComponentConfig::clear_processors_count() {
-  processors_count_ = 1;
+  processors_count_ = 0;
   clear_has_processors_count();
 }
 inline ::google::protobuf::int32 MasterComponentConfig::processors_count() const {
