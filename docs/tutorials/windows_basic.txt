@@ -90,6 +90,12 @@ Configure BigARTM Python API
     If you have 64 bit operating system then you are free to select either version.
     However, please note that memory usage of 32 bit processes is limited by 2 GB.
     For this reason we recommend to select 64 bit configurations.
+	
+    Also you need to have several Python libraries to be installed on your machine:
+    * numpy >= 1.9.2
+    * scipy >= 0.15.0
+    * pandas >= 0.16.2
+    * scikit-learn >= 0.16.1
 
   
 2.  * Add ``C:\BigARTM\bin`` folder to your ``PATH`` system variable,
