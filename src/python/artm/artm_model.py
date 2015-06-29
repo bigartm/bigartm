@@ -50,12 +50,17 @@ def reconfigure_score_in_master(master, score_config, name):
     master.Reconfigure(master_config)
 
 
-def create_parser_config(data_path, collection_name, target_folder, batch_size):
+def create_parser_config(data_path, collection_name, target_folder, batch_size, data_format):
     collection_parser_config = messages_pb2.CollectionParserConfig()
-    collection_parser_config.format = library.CollectionParserConfig_Format_BagOfWordsUci
     collection_parser_config.num_items_per_batch = batch_size
-    collection_parser_config.docword_file_path = data_path + 'docword.' + collection_name + '.txt'
-    collection_parser_config.vocab_file_path = data_path + 'vocab.' + collection_name + '.txt'
+    if data_format == 'bow_uci':
+        collection_parser_config.docword_file_path = data_path + 'docword.' + \
+          collection_name + '.txt'
+        collection_parser_config.vocab_file_path = data_path + 'vocab.' + collection_name + '.txt'
+        collection_parser_config.format = library.CollectionParserConfig_Format_BagOfWordsUci
+    elif data_format == 'vowpal_wabbit':
+        collection_parser_config.docword_file_path = data_path
+        collection_parser_config.format = library.CollectionParserConfig_Format_VowpalWabbit
     collection_parser_config.target_folder = target_folder
     collection_parser_config.dictionary_file_name = 'dictionary'
 
@@ -306,7 +311,7 @@ class SmoothSparseThetaRegularizer(object):
 
     - alpha_iter --- list of additional coefficients of regularization
       on each iteration over document. Should have length equal to
-      model.document_passes_count.
+      model.num_document_passes.
       Is list of double, default = None
     """
     def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None):
@@ -2286,7 +2291,8 @@ class ArtmModel(object):
     Parameters:
     -----------
     - num_processors --- how many threads will be used for model training.
-    Is int, default = 1
+    Is int, default = 0 (means that number of threads will be
+    detected by the library)
 
     - topic_names --- names of topics in model.
     Is list of strings, default = []
@@ -2297,7 +2303,7 @@ class ArtmModel(object):
     - class_ids --- list of class_ids and their weights to be used in model.
     Is dict, key --- class_id, value --- weight, default = {}
 
-    - document_passes_count --- number of iterations over each document
+    - num_document_passes --- number of iterations over each document
     during processing/ Is int, default = 1
 
     - cache_theta --- save or not the Theta matrix in model. Necessary
@@ -2322,13 +2328,13 @@ class ArtmModel(object):
     """
 
 # ========== CONSTRUCTOR ==========
-    def __init__(self, num_processors=1, topic_names=[], topics_count=10,
-                 class_ids={}, document_passes_count=1, cache_theta=True):
-        self._num_processors = 1
+    def __init__(self, num_processors=0, topic_names=[], topics_count=10,
+                 class_ids={}, num_document_passes=1, cache_theta=True):
+        self._num_processors = 0
         self._topics_count = 10
         self._topic_names = []
         self._class_ids = {}
-        self._document_passes_count = 1
+        self._num_document_passes = 1
         self._cache_theta = True
 
         if num_processors > 0:
@@ -2340,8 +2346,8 @@ class ArtmModel(object):
         if len(class_ids) > 0:
             self._class_ids = class_ids
 
-        if document_passes_count > 0:
-            self._document_passes_count = document_passes_count
+        if num_document_passes > 0:
+            self._num_document_passes = num_document_passes
 
         if isinstance(cache_theta, bool):
             self._cache_theta = cache_theta
@@ -2369,8 +2375,8 @@ class ArtmModel(object):
         return self._num_processors
 
     @property
-    def document_passes_count(self):
-        return self._document_passes_count
+    def num_document_passes(self):
+        return self._num_document_passes
 
     @property
     def cache_theta(self):
@@ -2422,12 +2428,12 @@ class ArtmModel(object):
             self._master.config().processors_count = num_processors
             self._master.Reconfigure()
 
-    @document_passes_count.setter
-    def document_passes_count(self, document_passes_count):
-        if document_passes_count <= 0 or not isinstance(document_passes_count, int):
-            print 'Number of passes throug documents should be a positive integer, skip update'
+    @num_document_passes.setter
+    def num_document_passes(self, num_document_passes):
+        if num_document_passes <= 0 or not isinstance(num_document_passes, int):
+            print 'Number of passes through documents should be a positive integer, skip update'
         else:
-            self._document_passes_count = document_passes_count
+            self._num_document_passes = num_document_passes
 
     @cache_theta.setter
     def cache_theta(self, cache_theta):
@@ -2462,7 +2468,7 @@ class ArtmModel(object):
 
 # ========== METHODS ==========
     def parse(self, collection_name=None, data_path='', data_format='batches',
-              batch_size=1000, gather_cooc=False, cooc_tokens=[]):
+              batch_size=1000):
         """ ArtmModel.fit() --- proceed the learning of topic model
 
         Parameters:
@@ -2472,20 +2478,21 @@ class ArtmModel(object):
           Is string, default = None
 
         - data_path --- 1) if data_format == 'bow_uci' =>
-          folder containing docword.collection_name.txt
+          folder containing 'docword.collection_name.txt'
           and vocab.collection_name.txt files
-          2) if data_format == 'bow_vw' => file in Vowpal Wabbit format
+          2) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format
           3) if data_format == 'plain_text' => file with text
           Is string, default = ''
 
         - data_format --- the type of input data:
           1) 'bow_uci' --- Bag-Of-Words in UCI format
-          2) 'bow_vw' --- Bag-Of-Words in Vowpal Wabbit format
+          2) 'vowpal_wabbit' --- Vowpal Wabbit format
           3) 'plain_text' --- source text
           Is string, default = 'bow_uci'
 
         - batch_size --- number of documents to be stored in each batch.
           Is int, default = 1000
+
         - gather_cooc --- find or not the info about the token pairwise
           co-occuracies.
           Is bool, default=False
@@ -2494,22 +2501,26 @@ class ArtmModel(object):
           gather_cooc is True).
           Is list of lists, each internal list represents token and contain
           two strings --- token and its class_id, default = []
+
+        Note:
+        ----------
+        Gathering tokens co-ocurracies information is experimental and will be
+        changed in the next release.
         """
         if collection_name is None and data_format == 'bow_uci':
                 print 'No collection name was given, skip model.fit_offline()'
 
-        if data_format == 'bow_uci':
+        if data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
             collection_parser_config = create_parser_config(data_path,
                                                             collection_name,
                                                             collection_name,
-                                                            batch_size)
+                                                            batch_size,
+                                                            data_format)
             collection_parser_config.gather_cooc = gather_cooc
             for token in cooc_tokens:
                 collection_parser_config.cooccurrence_token.append(token)
             unique_tokens = library.Library().ParseCollection(collection_parser_config)
 
-        elif data_format == 'bow_vw':
-            raise NotImplementedError()
         elif data_format == 'plain_text':
             raise NotImplementedError()
         else:
@@ -2531,7 +2542,7 @@ class ArtmModel(object):
             print 'dictionary path is None, skip loading dictionary.'
 
     def fit_offline(self, collection_name=None, batches=None, data_path='',
-                    collection_passes_count=1, decay_weight=0.9, apply_weight=0.1,
+                    num_collection_passes=1, decay_weight=0.0, apply_weight=1.0,
                     reset_theta_scores=False, data_format='batches', batch_size=1000):
         """ ArtmModel.fit_offline() --- proceed the learning of
         topic model in off-line mode
@@ -2550,25 +2561,28 @@ class ArtmModel(object):
           folder containing batches and dictionary
           2) if data_format == 'bow_uci' => folder containing
             docword.collection_name.txt and vocab.collection_name.txt files
-          3) if data_format == 'bow_vw' => file in Vowpal Wabbit format
+          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format
           4) if data_format == 'plain_text' => file with text
           Is string, default = ''
 
-        - collection_passes_count --- number of iterations over whole
+        - num_collection_passes --- number of iterations over whole
           given collection.
           Is int, default = 1
 
         - decay_weight --- coefficient for applying old n_wt counters.
-          Is int, default = 0.9
+          Is int, default = 0.0 (apply_weight + decay_weight = 1.0)
+
         - apply_weight --- coefficient for applying new n_wt counters.
-          Is int, default = 0.1
+          Is int, default = 1.0 (apply_weight + decay_weight = 1.0)
+
         - reset_theta_scores --- reset accumulated Theta scores
           before learning.
           Is bool, default = False
+
         - data_format --- the type of input data:
           1) 'batches' --- the data in format of BigARTM
           2) 'bow_uci' --- Bag-Of-Words in UCI format
-          3) 'bow_vw' --- Bag-Of-Words in Vowpal Wabbit format
+          3) 'vowpal_wabbit' --- Vowpal Wabbit format
           4) 'plain_text' --- source text
           Is string, default = 'batches'
 
@@ -2603,16 +2617,15 @@ class ArtmModel(object):
             else:
                 batches_list = [data_path + '/' + batch for batch in batches]
 
-        elif data_format == 'bow_uci':
+        elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
             collection_parser_config = create_parser_config(data_path,
                                                             collection_name,
                                                             target_folder,
-                                                            batch_size)
+                                                            batch_size,
+                                                            data_format)
             unique_tokens = library.Library().ParseCollection(collection_parser_config)
             batches_list = glob.glob(target_folder + "/*.batch")
 
-        elif data_format == 'bow_vw':
-            raise NotImplementedError()
         elif data_format == 'plain_text':
             raise NotImplementedError()
         else:
@@ -2628,12 +2641,12 @@ class ArtmModel(object):
             else:
                 phi_regularizers[name] = config.tau
 
-        for iter in range(collection_passes_count):
+        for iter in range(num_collection_passes):
             self._master.ProcessBatches(pwt=self._model,
                                         batches=batches_list,
                                         target_nwt='nwt_hat',
                                         regularizers=theta_regularizers,
-                                        inner_iterations_count=self._document_passes_count,
+                                        inner_iterations_count=self._num_document_passes,
                                         class_ids=self._class_ids,
                                         reset_scores=reset_theta_scores)
             self._synchronizations_processed += 1
@@ -2693,7 +2706,7 @@ class ArtmModel(object):
           folder containing batches and dictionary
           2) if data_format == 'bow_uci' => folder containing
           docword.collection_name.txt and vocab.collection_name.txt files
-          3) if data_format == 'bow_vw' => file in Vowpal Wabbit format
+          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format
           4) if data_format == 'plain_text' => file with text
           Is string, default = ''
 
@@ -2720,7 +2733,7 @@ class ArtmModel(object):
         - data_format --- the type of input data:
           1) 'batches' --- the data in format of BigARTM
           2) 'bow_uci' --- Bag-Of-Words in UCI format
-          3) 'bow_vw' --- Bag-Of-Words in Vowpal Wabbit format
+          3) 'vowpal_wabbit' --- Vowpal Wabbit format
           4) 'plain_text' --- source text
           Is string, default = 'batches'
 
@@ -2755,16 +2768,15 @@ class ArtmModel(object):
             else:
                 batches_list = [data_path + '/' + batch for batch in batches]
 
-        elif data_format == 'bow_uci':
+        elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
             collection_parser_config = create_parser_config(data_path,
                                                             collection_name,
                                                             target_folder,
-                                                            batch_size)
+                                                            batch_size,
+                                                            data_format)
             unique_tokens = library.Library().ParseCollection(collection_parser_config)
             batches = glob.glob(target_folder + "/*.batch")
 
-        elif data_format == 'bow_vw':
-            raise NotImplementedError()
         elif data_format == 'plain_text':
             raise NotImplementedError()
         else:
@@ -2789,7 +2801,7 @@ class ArtmModel(object):
                                             batches=batches_to_process,
                                             target_nwt='nwt_hat',
                                             regularizers=theta_regularizers,
-                                            inner_iterations_count=self._document_passes_count,
+                                            inner_iterations_count=self._num_document_passes,
                                             class_ids=self._class_ids,
                                             reset_scores=reset_theta_scores)
 
@@ -2940,8 +2952,7 @@ class ArtmModel(object):
             theta_matrix = self._master.GetThetaMatrix(self._model, clean_cache=remove_theta)
             document_ids = [item_id for item_id in theta_matrix.item_id]
             topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-            values = [[item_w for item_w in item_weights.value]
-                       for item_weights in theta_matrix.item_weights]
+            values = [[w for w in ws.value] for ws in theta_matrix.item_weights]
             retval = DataFrame(data=np.matrix(values).transpose(),
                                columns=document_ids,
                                index=topic_names)
@@ -2966,14 +2977,14 @@ class ArtmModel(object):
           folder containing batches and dictionary
           2) if data_format == 'bow_uci' =>
           folder containing docword.txt and vocab.txt files
-          3) if data_format == 'bow_vw' => file in Vowpal Wabbit format
+          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format
           4) if data_format == 'plain_text' => file with text
           Is string, default = ''
 
         - data_format --- the type of input data:
           1) 'batches' --- the data in format of BigARTM
           2) 'bow_uci' --- Bag-Of-Words in UCI format
-          3) 'bow_vw' --- Bag-Of-Words in Vowpal Wabbit format
+          3) 'vowpal_wabbit' --- Vowpal Wabbit format
           4) 'plain_text' --- source text
           Is string, default = 'batches'
 
@@ -3011,16 +3022,15 @@ class ArtmModel(object):
             else:
                 batches_list = [data_path + '/' + batch for batch in batches]
 
-        elif data_format == 'bow_uci':
+        elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
             collection_parser_config = create_parser_config(data_path,
                                                             collection_name,
                                                             target_folder,
-                                                            batch_size)
+                                                            batch_size,
+                                                            data_format)
             unique_tokens = library.Library().ParseCollection(collection_parser_config)
             batches_list = glob.glob(target_folder + "/*.batch")
 
-        elif data_format == 'bow_vw':
-            raise NotImplementedError()
         elif data_format == 'plain_text':
             raise NotImplementedError()
         else:
@@ -3030,15 +3040,14 @@ class ArtmModel(object):
             pwt=self._model,
             batches=batches_list,
             target_nwt='nwt_hat',
-            inner_iterations_count=self._document_passes_count,
+            inner_iterations_count=self._num_document_passes,
             class_ids=self._class_ids,
             theta_matrix_type=library.ProcessBatchesArgs_ThetaMatrixType_Dense)
 
         theta_matrix = results.theta_matrix
         document_ids = [item_id for item_id in theta_matrix.item_id]
         topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-        values = [[item_w for item_w in item_weights.value]
-                   for item_weights in theta_matrix.item_weights]
+        values = [[w for w in ws.value] for ws in theta_matrix.item_weights]
         retval = DataFrame(data=np.matrix(values).transpose(),
                            columns=document_ids,
                            index=topic_names)
@@ -3110,7 +3119,7 @@ class ArtmModel(object):
         ----------
         This method still works incorrectly and dramatically ineffective while
         trying to visualize collection with huge number of topics and tokens.
-        It will be complete soon.
+        It will be complete in next release.
         """
         if not self._was_initialized:
             print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
