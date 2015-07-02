@@ -34,7 +34,8 @@ void TopicModel::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get
                                             ::artm::TopicModel* topic_model) const {
   const bool use_pwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Pwt);
   const bool use_nwt = (get_model_args.request_type() == GetTopicModelArgs_RequestType_Nwt);
-  if (!use_pwt && !use_nwt)
+  const bool get_topic_names = (get_model_args.request_type() == GetTopicModelArgs_RequestType_TopicNames);
+  if (!use_pwt && !use_nwt && !get_topic_names)
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("Invalid GetTopicModelArgs_RequestType"));
   if (use_pwt && (p_wt_.token_size() == 0))
     BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("pwt is not calculated for this TopicModel"));
