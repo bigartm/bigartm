@@ -50,7 +50,8 @@ def reconfigure_score_in_master(master, score_config, name):
     master.Reconfigure(master_config)
 
 
-def create_parser_config(data_path, collection_name, target_folder, batch_size, data_format):
+def create_parser_config(data_path, collection_name, target_folder,
+                         batch_size, data_format, dictionary_name='dictionary'):
     collection_parser_config = messages_pb2.CollectionParserConfig()
     collection_parser_config.num_items_per_batch = batch_size
     if data_format == 'bow_uci':
@@ -62,7 +63,7 @@ def create_parser_config(data_path, collection_name, target_folder, batch_size, 
         collection_parser_config.docword_file_path = data_path
         collection_parser_config.format = library.CollectionParserConfig_Format_VowpalWabbit
     collection_parser_config.target_folder = target_folder
-    collection_parser_config.dictionary_file_name = 'dictionary'
+    collection_parser_config.dictionary_file_name = dictionary_name
 
     return collection_parser_config
 
@@ -2468,7 +2469,7 @@ class ArtmModel(object):
 
 # ========== METHODS ==========
     def parse(self, collection_name=None, data_path='', data_format='batches',
-              batch_size=1000):
+              batch_size=1000, dictionary_name='dictionary'):
         """ ArtmModel.fit() --- proceed the learning of topic model
 
         Parameters:
@@ -2493,14 +2494,18 @@ class ArtmModel(object):
         - batch_size --- number of documents to be stored in each batch.
           Is int, default = 1000
 
-        - gather_cooc --- find or not the info about the token pairwise
-          co-occuracies.
-          Is bool, default=False
+        - dictionary_name --- the name of BigARTM dictionary with information
+          about collection, that will be gathered by the library parser.
+          Is string, default = 'dictionary'
 
-        - cooc_tokens --- tokens to collect cooc info (has sense if
-          gather_cooc is True).
-          Is list of lists, each internal list represents token and contain
-          two strings --- token and its class_id, default = []
+        #- gather_cooc --- find or not the info about the token pairwise
+        #  co-occuracies.
+        #  Is bool, default=False
+
+        #- cooc_tokens --- tokens to collect cooc info (has sense if
+        #  gather_cooc is True).
+        #  Is list of lists, each internal list represents token and contain
+        #  two strings --- token and its class_id, default = []
 
         Note:
         ----------
@@ -2515,10 +2520,11 @@ class ArtmModel(object):
                                                             collection_name,
                                                             collection_name,
                                                             batch_size,
-                                                            data_format)
-            collection_parser_config.gather_cooc = gather_cooc
-            for token in cooc_tokens:
-                collection_parser_config.cooccurrence_token.append(token)
+                                                            data_format,
+                                                            dictionary_name)
+            #collection_parser_config.gather_cooc = gather_cooc
+            #for token in cooc_tokens:
+            #    collection_parser_config.cooccurrence_token.append(token)
             unique_tokens = library.Library().ParseCollection(collection_parser_config)
 
         elif data_format == 'plain_text':
