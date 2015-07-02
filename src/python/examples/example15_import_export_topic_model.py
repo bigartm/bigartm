@@ -28,12 +28,11 @@ with artm.library.MasterComponent() as master:
         print "%.5f" % value,
 
 with artm.library.MasterComponent() as master2:
-    model = master2.CreateModel(topics_count=10)
-
     # Import topic model from binary file
-    model.Import(filename)
+    master2.ImportModel("pwt", filename)  # import creates a new-style model
 
-    theta_matrix = master2.GetThetaMatrix(model=model, batch=test_batch)
+    result = master2.ProcessBatches("pwt", batches=[batches[0]],
+                                    theta_matrix_type=artm.library.ProcessBatchesArgs_ThetaMatrixType_Dense)
     print "\nFor topic model imported into test_master:",
-    for value in theta_matrix.item_weights[0].value:
+    for value in result.theta_matrix.item_weights[0].value:
         print "%.5f" % value,

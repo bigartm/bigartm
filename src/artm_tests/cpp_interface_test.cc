@@ -14,6 +14,8 @@
 
 #include "artm_tests/test_mother.h"
 
+namespace fs = boost::filesystem;
+
 TEST(CppInterface, Canary) {
 }
 
@@ -502,6 +504,29 @@ TEST(CppInterface, ProcessBatchesApi) {
   ASSERT_NE(pwt_model, nullptr);
   ASSERT_EQ(pwt_model->topics_count(), nTopics);
 
+  // Test export and import of new-style models
+  artm::ExportModelArgs export_model_args;
+  export_model_args.set_model_name(pwt_model->name());
+
+  fs::path export_filename = (fs::path(target_folder) / fs::path(artm::test::Helpers::getUniqueString() + ".model"));
+  export_model_args.set_model_name("pwt0");
+  export_model_args.set_file_name(export_filename.string());
+  artm::ImportModelArgs import_model_args;
+  import_model_args.set_model_name("import_pwt");
+  import_model_args.set_file_name(export_model_args.file_name());
+
+  master.ExportModel(export_model_args);
+  master.ImportModel(import_model_args);
+  bool ok2 = false;
+  ::artm::test::Helpers::CompareTopicModels(*master.GetTopicModel("pwt0"), *master.GetTopicModel("import_pwt"), &ok2);
+  if (!ok2) {
+    std::cout << "Exported topic model:\n"
+      << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
+    std::cout << "Imported topic model:\n"
+      << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("import_pwt"));
+  }
+  /////////////////////////////////////////////
+
   std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
   ASSERT_EQ(all_batches.size(), nBatches);
   artm::ProcessBatchesArgs process_batches_args;
@@ -516,8 +541,11 @@ TEST(CppInterface, ProcessBatchesApi) {
   std::shared_ptr< ::artm::PerplexityScore> perplexity_score;
   for (int i = 0; i < 10; ++i) {  // 10 iterations
     process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
+    process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Dense);
     std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
     perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
+    EXPECT_EQ(result->GetThetaMatrix().topics_count(), nTopics);
+    EXPECT_EQ(result->GetThetaMatrix().item_id_size(), nBatches);  // assuming that each batch has just one document
     master.NormalizeModel(normalize_model_args);
   }
 

@@ -27,6 +27,7 @@
 #include "artm/core/topic_model.h"
 #include "artm/core/scores_merger.h"
 #include "artm/core/merger.h"
+#include "artm/core/dense_phi_matrix.h"
 
 namespace artm {
 namespace core {
@@ -96,11 +97,14 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(args.model_name());
   if (topic_model == nullptr && phi_matrix == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Model " + args.model_name() + " does not exist"));
-  const PhiMatrix& n_wt = (topic_model != nullptr) ? topic_model->GetNwt() : *phi_matrix;
+  const PhiMatrix& n_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
 
   LOG(INFO) << "Exporting model " << args.model_name() << " to " << args.file_name();
 
   const int token_size = n_wt.token_size();
+  if (token_size == 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + args.model_name() + " has no tokens, export failed"));
+
   int tokens_per_chunk = std::min<int>(token_size, 100 * 1024 * 1024 / n_wt.topic_size());
 
   ::artm::GetTopicModelArgs get_topic_model_args;
@@ -109,6 +113,9 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   get_topic_model_args.set_use_sparse_format(true);
   get_topic_model_args.mutable_token()->Reserve(tokens_per_chunk);
   get_topic_model_args.mutable_class_id()->Reserve(tokens_per_chunk);
+
+  const char version = 0;
+  fout << version;
   for (int token_id = 0; token_id < token_size; ++token_id) {
     Token token = n_wt.token(token_id);
     get_topic_model_args.add_token(token.keyword);
@@ -137,6 +144,15 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
 
   LOG(INFO) << "Importing model " << args.model_name() << " from " << args.file_name();
 
+  char version;
+  fin >> version;
+  if (version != 0) {
+    std::stringstream ss;
+    ss << "Unsupported fromat version: " << static_cast<int>(version);
+    BOOST_THROW_EXCEPTION(DiskReadException(ss.str()));
+  }
+
+  std::shared_ptr<DensePhiMatrix> target;
   while (!fin.eof()) {
     int length;
     fin >> length;
@@ -153,29 +169,21 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
       BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
     topic_model.set_name(args.model_name());
-    OverwriteTopicModel(topic_model);
+
+    if (target == nullptr)
+      target = std::make_shared<DensePhiMatrix>(args.model_name(), topic_model.topic_name());
+
+    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, target.get());
   }
 
   fin.close();
-  WaitIdle(WaitIdleArgs());
 
-  SynchronizeModelArgs sync_args;
-  sync_args.set_model_name(args.model_name());
-  sync_args.set_apply_weight(1.0f);
-  sync_args.set_decay_weight(0.0f);
-  sync_args.set_invoke_regularizers(true);
-  SynchronizeModel(sync_args);
+  if (target == nullptr)
+    BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
-  std::shared_ptr<const ::artm::core::TopicModel> topic_model =
-    instance_->merger()->GetLatestTopicModel(args.model_name());
-  if (topic_model == nullptr) {
-    LOG(ERROR) << "Unable to find " << args.model_name() << " after import";
-    return;
-  }
-
-  const PhiMatrix& phi_matrix = topic_model->GetPwt();
-  LOG(INFO) << "Import completed, token_size = " << phi_matrix.token_size()
-    << ", topic_size = " << phi_matrix.topic_size();
+  instance_->merger()->SetPhiMatrix(args.model_name(), target);
+  LOG(INFO) << "Import completed, token_size = " << target->token_size()
+    << ", topic_size = " << target->topic_size();
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
@@ -265,7 +273,22 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   Helpers::FixAndValidate(&model_config, /* throw_error =*/ true);
 
   BatchManager batch_manager;
+  CacheManager cache_manager;
   ScoresMerger* scores_merger = instance_->merger()->scores_merger();
+
+  bool return_theta = false;
+  CacheManager* cache_manager_ptr = nullptr;
+  switch (args.theta_matrix_type()) {
+    case ProcessBatchesArgs_ThetaMatrixType_Cache:
+      if (instance_->schema()->config().cache_theta())
+        cache_manager_ptr = instance_->cache_manager();
+      break;
+    case ProcessBatchesArgs_ThetaMatrixType_Dense:
+    case ProcessBatchesArgs_ThetaMatrixType_Sparse:
+      cache_manager_ptr = &cache_manager;
+      return_theta = true;
+  }
+
   if (args.reset_scores())
     scores_merger->ResetScores(model_name);
   for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
@@ -275,6 +298,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(&batch_manager);
     pi->set_scores_merger(scores_merger);
+    pi->set_cache_manager(cache_manager_ptr);
     pi->set_model_name(model_name);
     pi->set_batch_filename(args.batch_filename(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
@@ -286,8 +310,6 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 
     instance_->processor_queue()->push(pi);
   }
-
-  // ToDo - merge and extract ScoreData (require some refactoring)
 
   while (!batch_manager.IsEverythingProcessed()) {
     boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
@@ -301,6 +323,13 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     ScoreData score_data;
     if (scores_merger->RequestScore(schema, model_name, score_name, &score_data))
       process_batches_result->add_score_data()->Swap(&score_data);
+  }
+
+  if (return_theta) {
+    GetThetaMatrixArgs gta;
+    gta.set_model_name(model_name);
+    gta.set_use_sparse_format(args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse);
+    cache_manager.RequestThetaMatrix(gta, process_batches_result->mutable_theta_matrix());
   }
 }
 

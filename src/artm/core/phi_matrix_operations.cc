@@ -275,9 +275,9 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         }
 
         if (regularizer->topics_to_regularize().size() > 0)
-          topics_to_regularize.assign(topic_size, true);
-        else
           topics_to_regularize = core::is_member(n_wt.topic_name(), regularizer->topics_to_regularize());
+        else
+          topics_to_regularize.assign(topic_size, true);
 
         for (auto class_id : class_ids) {
           auto iter = n_t_all.find(class_id);

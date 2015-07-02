@@ -84,6 +84,8 @@ class MasterComponent {
   void NormalizeModel(const NormalizeModelArgs& args);
   void RegularizeModel(const RegularizeModelArgs& args);
   void InitializeModel(const InitializeModelArgs& args);
+  void ExportModel(const ExportModelArgs& args);
+  void ImportModel(const ImportModelArgs& args);
 
   void Reconfigure(const MasterComponentConfig& config);
   bool AddBatch(const Batch& batch);
@@ -192,14 +194,15 @@ class ProcessBatchesResultObject {
   explicit ProcessBatchesResultObject(ProcessBatchesResult message) : message_(message) {}
 
   template <typename T>
-  std::shared_ptr<T> GetScoreAs(const std::string& score_name);
+  std::shared_ptr<T> GetScoreAs(const std::string& score_name) const;
+  inline const ThetaMatrix& GetThetaMatrix() const { return message_.theta_matrix(); }
 
  private:
   ProcessBatchesResult message_;
 };
 
 template <typename T>
-std::shared_ptr<T> ProcessBatchesResultObject::GetScoreAs(const std::string& score_name) {
+std::shared_ptr<T> ProcessBatchesResultObject::GetScoreAs(const std::string& score_name) const {
   for (int i = 0; i < message_.score_data_size(); ++i) {
     if (message_.score_data(i).name() == score_name) {
       auto score = std::make_shared<T>();

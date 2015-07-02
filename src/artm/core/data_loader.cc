@@ -81,6 +81,8 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(instance_->batch_manager());
     pi->set_scores_merger(instance_->merger()->scores_merger());
+    if (config.cache_theta())
+      pi->set_cache_manager(instance_->cache_manager());
     pi->set_model_name(model_name);
     pi->mutable_batch()->CopyFrom(*batch);
     pi->mutable_model_config()->CopyFrom(schema->model_config(model_name));
@@ -124,6 +126,8 @@ void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
         std::shared_ptr<ProcessorInput> pi = std::make_shared<ProcessorInput>();
         pi->set_notifiable(instance()->batch_manager());
         pi->set_scores_merger(instance_->merger()->scores_merger());
+        if (schema->config().cache_theta())
+          pi->set_cache_manager(instance_->cache_manager());
         pi->set_task_id(task_id);
         pi->set_batch_filename(task);
         pi->set_model_name(model_name);
