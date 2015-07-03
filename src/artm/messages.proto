@@ -79,7 +79,7 @@ message MasterComponentConfig {
   repeated Stream stream = 3;
   optional bool compact_batches = 4 [default = true];
   optional bool cache_theta = 5 [default = false];
-  optional int32 processors_count = 6 [default = 1];
+  optional int32 processors_count = 6;
   optional int32 processor_queue_max_size = 7 [default = 10];
   optional int32 merger_queue_max_size = 8 [default = 10];
   repeated ScoreConfig score_config = 9;

@@ -588,7 +588,7 @@ int main(int argc, char * argv[]) {
         "If docword or vocab arguments are not provided, cpp_client will try to read pre-parsed batches from batch_folder location. "
         "Otherwise, if both docword and vocab arguments are provided, cpp_client will parse the data and store batches in batch_folder location. ")
       ("num_topic,t", po::value(&options.num_topics)->default_value(16), "number of topics")
-      ("num_processors,p", po::value(&options.num_processors)->default_value(2), "number of concurrent processors")
+      ("num_processors,p", po::value(&options.num_processors)->default_value(0), "number of concurrent processors (default: auto-detect)")
       ("num_iters,i", po::value(&options.num_iters)->default_value(10), "number of outer iterations")
       ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
       ("reuse_theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
