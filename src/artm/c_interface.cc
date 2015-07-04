@@ -381,6 +381,7 @@ int ArtmRequestParseCollection(int length, const char* collection_parser_config)
     EnableLogging();
     artm::CollectionParserConfig config;
     ParseFromArray(collection_parser_config, length, &config);
+    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
     ::artm::core::CollectionParser collection_parser(config);
     std::shared_ptr< ::artm::DictionaryConfig> dictionary = collection_parser.Parse();
     ::artm::core::Helpers::Validate(*dictionary, /* throw_error =*/ true);

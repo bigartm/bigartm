@@ -47,7 +47,8 @@ class CollectionParser : boost::noncopyable {
    public:
     CoocurrenceStatisticsAccumulator(
       const TokenMap& token_info,
-      const ::google::protobuf::RepeatedPtrField< ::std::string>& tokens_to_collect);
+      const ::google::protobuf::RepeatedPtrField< ::std::string>& tokens_to_collect,
+      const ::google::protobuf::RepeatedPtrField< ::std::string>& class_ids_to_collect);
 
     void AppendTokenId(int token_id);
     void FlushNewItem();
@@ -55,7 +56,7 @@ class CollectionParser : boost::noncopyable {
 
    private:
     const TokenMap& token_info_;
-    std::set<std::string> tokens_to_collect_;
+    std::set<Token> tokens_to_collect_;
     std::map<std::pair<int, int>, int> token_coocurrence_;
     std::vector<int> item_tokens_;
   };
