@@ -25,7 +25,7 @@ float CountTopicCoherence(const std::shared_ptr<core::Dictionary>& dictionary,
     auto entry_ptr_one = dictionary->entry(tokens_to_score[i]);
     if (entry_ptr_one == nullptr) {
       LOG(WARNING) << "CountTopicCoherence: token (" << tokens_to_score[i].keyword <<
-        ", " << tokens_to_score[i].class_id << ") doesn't present in dictionary and will be skiped";
+        ", " << tokens_to_score[i].class_id << ") doesn't present in dictionary and will be skipped";
       continue;
     }
 
@@ -33,16 +33,18 @@ float CountTopicCoherence(const std::shared_ptr<core::Dictionary>& dictionary,
       auto entry_ptr_two = dictionary->entry(tokens_to_score[j]);
       if (entry_ptr_two == nullptr) {
         LOG(WARNING) << "CountTopicCoherence: token (" << tokens_to_score[j].keyword <<
-          ", " << tokens_to_score[j].class_id << ") doesn't present in dictionary and will be skiped";
+          ", " << tokens_to_score[j].class_id << ") doesn't present in dictionary and will be skipped";
         continue;
       }
+
+      if (tokens_to_score[j].class_id != tokens_to_score[i].class_id) continue;
 
       int denominator = 1;
       if (entry_ptr_one->has_items_count()) {
         denominator *= entry_ptr_one->items_count();
       } else {
         LOG(WARNING) << "CountTopicCoherence: token (" << tokens_to_score[i].keyword <<
-          ", " << tokens_to_score[i].class_id << ") doesn't heve items_count info in dictionary and will be skiped";
+          ", " << tokens_to_score[i].class_id << ") doesn't heve items_count info in dictionary and will be skipped";
         continue;
       }
 
@@ -50,7 +52,7 @@ float CountTopicCoherence(const std::shared_ptr<core::Dictionary>& dictionary,
         denominator *= entry_ptr_two->items_count();
       } else {
         LOG(WARNING) << "CountTopicCoherence: token (" << tokens_to_score[j].keyword <<
-          ", " << tokens_to_score[j].class_id << ") doesn't heve items_count info in dictionary and will be skiped";
+          ", " << tokens_to_score[j].class_id << ") doesn't heve items_count info in dictionary and will be skipped";
         continue;
       }
 
