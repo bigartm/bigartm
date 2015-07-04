@@ -435,6 +435,7 @@ message CollectionParserConfig {
   repeated string cooccurrence_token = 7;
   optional bool use_unity_based_indices = 8 [default = true];
   optional bool gather_cooc = 9 [default = false];
+  repeated string cooccurrence_class_id = 10;
 }
 
 // Represents an argument of 'synchronize model' operation

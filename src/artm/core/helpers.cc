@@ -77,6 +77,35 @@ void Helpers::SetThreadName(int thread_id, const char* thread_name) {
 
 #endif
 
+void Helpers::Fix(::artm::CollectionParserConfig* message) {
+  const int token_size = message->cooccurrence_token_size();
+  if ((message->cooccurrence_class_id_size() == 0) && (token_size > 0)) {
+    message->mutable_cooccurrence_class_id()->Reserve(token_size);
+    for (int i = 0; i < token_size; ++i)
+      message->add_cooccurrence_class_id(::artm::core::DefaultClass);
+  }
+}
+
+bool Helpers::Validate(const ::artm::CollectionParserConfig& message, bool throw_error) {
+  std::stringstream ss;
+  const int token_size = message.cooccurrence_token_size();
+  if (message.cooccurrence_class_id_size() != token_size) {
+    ss << "Inconsistent cooc token and class_id fields size in CollectionParserConfig";
+  }
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
 void Helpers::Fix(::artm::TopicModel* message) {
   const int token_size = message->token_size();
   if ((message->class_id_size() == 0) && (token_size > 0)) {

@@ -29,19 +29,31 @@ namespace core {
 
 CollectionParser::CoocurrenceStatisticsAccumulator::CoocurrenceStatisticsAccumulator(
     const TokenMap& token_info,
-    const ::google::protobuf::RepeatedPtrField< ::std::string>& tokens_to_collect)
+    const ::google::protobuf::RepeatedPtrField< ::std::string>& tokens_to_collect,
+    const ::google::protobuf::RepeatedPtrField< ::std::string>& class_ids_to_collect)
     : token_info_(token_info),
       tokens_to_collect_(),
       token_coocurrence_(),
       item_tokens_() {
-  for (int i = 0; i < tokens_to_collect.size(); ++i) {
-    tokens_to_collect_.insert(tokens_to_collect.Get(i));
+  if (tokens_to_collect.size() == 0) {
+    for (auto token : token_info) {
+      tokens_to_collect_.insert(Token(token.second.class_id, token.second.keyword));
+      if (tokens_to_collect_.size() % 5000 == 0) {
+        LOG(INFO) << "The number of unique single tokens cooccurrence dictionary has reached "
+            << tokens_to_collect_.size();
+      }
+    }
+  } else {
+    for (int i = 0; i < tokens_to_collect.size(); ++i) {
+      tokens_to_collect_.insert(Token(class_ids_to_collect.Get(i), tokens_to_collect.Get(i)));
+    }
   }
 }
 
 void CollectionParser::CoocurrenceStatisticsAccumulator::AppendTokenId(int token_id) {
-  std::string keyword = token_info_.find(token_id)->second.keyword;
-  if (tokens_to_collect_.find(keyword) != tokens_to_collect_.end()) {
+  Token token = Token(token_info_.find(token_id)->second.class_id,
+                      token_info_.find(token_id)->second.keyword);
+  if (tokens_to_collect_.find(token) != tokens_to_collect_.end()) {
     item_tokens_.push_back(token_id);
   }
 }
@@ -139,13 +151,8 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
   std::unique_ptr<CoocurrenceStatisticsAccumulator> cooc_accum;
   if (config_.gather_cooc()) {
-    if (config_.cooccurrence_token_size() == 0) {
-      BOOST_THROW_EXCEPTION(InvalidOperation(
-        "CollectionParser.cooccurrence_token is empty"));
-    } else {
-      cooc_accum.reset(new CoocurrenceStatisticsAccumulator(
-        *token_map, config_.cooccurrence_token()));
-    }
+    cooc_accum.reset(new CoocurrenceStatisticsAccumulator(
+      *token_map, config_.cooccurrence_token(), config_.cooccurrence_class_id()));
   }
 
   std::map<int, int> batch_dictionary;

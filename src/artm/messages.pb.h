@@ -6343,6 +6343,22 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline bool gather_cooc() const;
   inline void set_gather_cooc(bool value);
 
+  // repeated string cooccurrence_class_id = 10;
+  inline int cooccurrence_class_id_size() const;
+  inline void clear_cooccurrence_class_id();
+  static const int kCooccurrenceClassIdFieldNumber = 10;
+  inline const ::std::string& cooccurrence_class_id(int index) const;
+  inline ::std::string* mutable_cooccurrence_class_id(int index);
+  inline void set_cooccurrence_class_id(int index, const ::std::string& value);
+  inline void set_cooccurrence_class_id(int index, const char* value);
+  inline void set_cooccurrence_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_cooccurrence_class_id();
+  inline void add_cooccurrence_class_id(const ::std::string& value);
+  inline void add_cooccurrence_class_id(const char* value);
+  inline void add_cooccurrence_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_class_id();
+
   // @@protoc_insertion_point(class_scope:artm.CollectionParserConfig)
  private:
   inline void set_has_format();
@@ -6371,11 +6387,12 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   ::std::string* target_folder_;
   ::std::string* dictionary_file_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_token_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_class_id_;
   bool use_unity_based_indices_;
   bool gather_cooc_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -16353,6 +16370,50 @@ inline bool CollectionParserConfig::gather_cooc() const {
 inline void CollectionParserConfig::set_gather_cooc(bool value) {
   set_has_gather_cooc();
   gather_cooc_ = value;
+}
+
+// repeated string cooccurrence_class_id = 10;
+inline int CollectionParserConfig::cooccurrence_class_id_size() const {
+  return cooccurrence_class_id_.size();
+}
+inline void CollectionParserConfig::clear_cooccurrence_class_id() {
+  cooccurrence_class_id_.Clear();
+}
+inline const ::std::string& CollectionParserConfig::cooccurrence_class_id(int index) const {
+  return cooccurrence_class_id_.Get(index);
+}
+inline ::std::string* CollectionParserConfig::mutable_cooccurrence_class_id(int index) {
+  return cooccurrence_class_id_.Mutable(index);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const ::std::string& value) {
+  cooccurrence_class_id_.Mutable(index)->assign(value);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const char* value) {
+  cooccurrence_class_id_.Mutable(index)->assign(value);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const char* value, size_t size) {
+  cooccurrence_class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CollectionParserConfig::add_cooccurrence_class_id() {
+  return cooccurrence_class_id_.Add();
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const ::std::string& value) {
+  cooccurrence_class_id_.Add()->assign(value);
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const char* value) {
+  cooccurrence_class_id_.Add()->assign(value);
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const char* value, size_t size) {
+  cooccurrence_class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+CollectionParserConfig::cooccurrence_class_id() const {
+  return cooccurrence_class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+CollectionParserConfig::mutable_cooccurrence_class_id() {
+  return &cooccurrence_class_id_;
 }
 
 // -------------------------------------------------------------------
