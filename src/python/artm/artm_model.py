@@ -637,7 +637,7 @@ class SpecifiedSparsePhiRegularizer(object):
     - topic_names --- list of names of topics to regularize.
       Is list of strings, default = None
 
-    - max_elements_count --- number of elements to save in row/column.
+    - num_max_elements --- number of elements to save in row/column.
       Is int, default = None
 
     - probability_threshold --- if m elements in row/column summarize into
@@ -649,11 +649,11 @@ class SpecifiedSparsePhiRegularizer(object):
       Is bool, default = True
     """
     def __init__(self, name=None, tau=1.0, class_id=None, topic_names=None,
-                 max_elements_count=None, probability_threshold=None, sparse_by_columns=True):
+                 num_max_elements=None, probability_threshold=None, sparse_by_columns=True):
         config = messages_pb2.SpecifiedSparsePhiConfig()
         self._class_id = '@default_class'
         self._topic_names = []
-        self._max_elements_count = 20
+        self._num_max_elements = 20
         self._probability_threshold = 0.99
         self._sparse_by_columns = True
 
@@ -667,9 +667,9 @@ class SpecifiedSparsePhiRegularizer(object):
             for topic_name in topic_names:
                 config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
-        if max_elements_count is not None:
-            config.max_elements_count = max_elements_count
-            self._max_elements_count = max_elements_count
+        if num_max_elements is not None:
+            config.max_elements_count = num_max_elements_count
+            self._num_max_elements = num_max_elements
         if probability_threshold is not None:
             config.probability_threshold = probability_threshold
             self._probability_threshold = probability_threshold
@@ -713,8 +713,8 @@ class SpecifiedSparsePhiRegularizer(object):
         return self._topic_names
 
     @property
-    def max_elements_count(self):
-        return self._max_elements_count
+    def num_max_elements(self):
+        return self._num_max_elements
 
     @property
     def probability_threshold(self):
@@ -754,12 +754,12 @@ class SpecifiedSparsePhiRegularizer(object):
             config.topic_name.append(topic_name)
         self.regularizer.Reconfigure(self.regularizer.config_.type, config)
 
-    @max_elements_count.setter
-    def max_elements_count(self, max_elements_count):
-        self._max_elements_count = max_elements_count
+    @num_max_elements.setter
+    def num_max_elements(self, num_max_elements):
+        self._num_max_elements = num_max_elements
         config = messages_pb2.SpecifiedSparseRegularizationPhiConfig()
         config.CopyFrom(self._config)
-        config.max_elements_count = max_elements_count
+        config.max_elements_count = num_max_elements
         self.regularizer.Reconfigure(self.regularizer.config_.type, config)
 
     @probability_threshold.setter
@@ -1815,6 +1815,26 @@ class SparsityPhiScoreInfo(object):
         """
         return self._total_tokens
 
+    @property
+    def last_value(self):
+        """ Returns value of Phi sparsity on the last synchronization.
+        Is double
+        """
+        return self._value[len(self._value) - 1]
+
+    @property
+    def last_zero_tokens(self):
+        """ Returns number of zero rows in Phi on the last synchronization.
+        Is int
+        """
+        return self._zero_tokens[len(self._zero_tokens) - 1]
+
+    @property
+    def last_total_tokens(self):
+        """ Returns total number of rows in Phi on the last synchronization.
+        Is int
+        """
+        return self._total_tokens[len(self._total_tokens) - 1]
 
 ###################################################################################################
 class SparsityThetaScoreInfo(object):
@@ -1876,6 +1896,27 @@ class SparsityThetaScoreInfo(object):
         Is list of scalars
         """
         return self._total_topics
+
+    @property
+    def last_value(self):
+        """ Returns value of Theta sparsity on the last synchronization.
+        Is double
+        """
+        return self._value[len(self._value) - 1]
+
+    @property
+    def last_zero_topics(self):
+        """ Returns number of zero rows in Theta on the last synchronization.
+        Is int
+        """
+        return self._zero_topics[len(self._zero_topics) - 1]
+
+    @property
+    def last_total_topics(self):
+        """ Returns total number of rows in Theta on the last synchronization.
+        Is int
+        """
+        return self._total_topics[len(self._total_topics) - 1]
 
 
 ###################################################################################################
@@ -1979,6 +2020,54 @@ class PerplexityScoreInfo(object):
         """
         return self._theta_sparsity_total_topics
 
+    @property
+    def last_value(self):
+        """ Returns value of perplexity on the last synchronization.
+        Is double
+        """
+        return self._value[len(self._value) - 1]
+
+    @property
+    def last_raw(self):
+        """ Returns raw value in formula of perplexity on the last synchronization.
+        Is double
+        """
+        return self._raw[len(self._raw) - 1]
+
+    @property
+    def last_normalizer(self):
+        """ normalizer value in formula of perplexity on the last synchronization.
+        Is double
+        """
+        return self._normalizer[len(self._normalizer) - 1]
+
+    @property
+    def last_zero_tokens(self):
+        """ number of tokens with zero counters on the last synchronization.
+        Is int
+        """
+        return self._zero_tokens[len(self._zero_tokens) - 1]
+
+    @property
+    def last_theta_sparsity_value(self):
+        """ Returns Theta sparsity value on the last synchronization.
+        Is double
+        """
+        return self._theta_sparsity_value[len(self._theta_sparsity_value) - 1]
+
+    @property
+    def last_theta_sparsity_zero_topics(self):
+        """ Returns number of zero rows in Theta on the last synchronization.
+        Is int
+        """
+        return self._theta_sparsity_zero_topics[len(self._theta_sparsity_zero_topics) - 1]
+
+    @property
+    def last_theta_sparsity_total_topics(self):
+        """ Returns total number of rows in Theta on the last synchronization.
+        Is int
+        """
+        return self._theta_sparsity_total_topics[len(self._theta_sparsity_total_topics) - 1]
 
 ###################################################################################################
 class ItemsProcessedScoreInfo(object):
@@ -2020,6 +2109,12 @@ class ItemsProcessedScoreInfo(object):
         """
         return self._value
 
+    @property
+    def last_value(self):
+        """ Returns total number of processed documents on the last synchronization.
+        Is int
+        """
+        return self._value[len(self._value) - 1]
 
 ###################################################################################################
 class TopTokensScoreInfo(object):
@@ -2100,6 +2195,7 @@ class TopTokensScoreInfo(object):
 
         - *.topic_info[sync_index][topic_name].weights --- list of weights
           (probabilities), corresponds the tokens.
+
         - *.topic_info[sync_index][topic_name].coherence --- the coherency
           of topic due to it's top tokens.
         """
@@ -2113,6 +2209,39 @@ class TopTokensScoreInfo(object):
         """
         return self._average_coherence
 
+    @property
+    def last_num_tokens(self):
+        """ Returns reqested number of top tokens in each topic on the last
+        synchronization.
+        Is int
+        """
+        return self._num_tokens[len(self._num_tokens) - 1]
+
+    @property
+    def last_topic_info(self):
+        """ Returns information about top tokens per topic on the last
+        synchronization.
+        Is set contains information about topics,
+        key --- name of topic, value --- named tuple:
+
+        - *.last_topic_info[topic_name].tokens --- list of top tokens
+          for this topic.
+
+        - *.last_topic_info[topic_name].weights --- list of weights
+          (probabilities), corresponds the tokens.
+
+        - *.last_topic_info[topic_name].coherence --- the coherency
+          of topic due to it's top tokens.
+        """
+        return self._topic_info[len(self._topic_info) - 1]
+
+    @property
+    def last_average_coherence(self):
+        """ Returns average coherence of top tokens in all requested topics
+        on the last synchronization.
+        Is double
+        """
+        return self._average_coherence[len(self._average_coherence) - 1]
 
 ###################################################################################################
 class TopicKernelScoreInfo(object):
@@ -2187,12 +2316,16 @@ class TopicKernelScoreInfo(object):
 
         - *.topic_info[sync_index][topic_name].tokens --- list of
           kernel tokens for this topic.
+
         - *.topic_info[sync_index][topic_name].size --- size of
           kernel for this topic.
+
         - *.topic_info[sync_index][topic_name].contrast --- contrast of
           kernel for this topic.
+
         - *.topic_info[sync_index][topic_name].purity --- purity of kernel
           for this topic.
+
         - *.topic_info[sync_index][topic_name].coherence --- the coherency of
           topic due to it's kernel.
         """
@@ -2230,6 +2363,60 @@ class TopicKernelScoreInfo(object):
         """
         return self._average_purity
 
+    @property
+    def last_topic_info(self):
+        """ Returns information about kernel tokens per topic on the last
+        synchronization. Is set contains information about topics,
+        key --- name of topic, value --- named tuple:
+
+        - *.topic_info[topic_name].tokens --- list of
+          kernel tokens for this topic.
+
+        - *.topic_info[topic_name].size --- size of
+          kernel for this topic.
+
+        - *.topic_info[topic_name].contrast --- contrast of
+          kernel for this topic.
+
+        - *.topic_info[topic_name].purity --- purity of kernel
+          for this topic.
+
+        - *.topic_info[topic_name].coherence --- the coherency of
+          topic due to it's kernel.
+        """
+        return self._topic_info[len(self._topic_info) - 1]
+
+    @property
+    def last_average_coherence(self):
+        """ Returns average coherence of kernel tokens in all requested
+        topics on the last synchronization.
+        Is double
+        """
+        return self._average_coherence[len(self._average_coherence) - 1]
+
+    @property
+    def last_average_size(self):
+        """ Returns average kernel size of all requested topics on
+        the last synchronization.
+        Is double
+        """
+        return self._average_size[len(self._average_size) - 1]
+
+    @property
+    def last_average_contrast(self):
+        """ Returns average kernel contrast of all requested topics on
+        the last synchronization.
+        Is double
+        """
+        return self._average_contrast[len(self._average_contrast) - 1]
+
+    @property
+    def last_average_purity(self):
+        """ Returns average kernel purity of all requested topics on
+        the last synchronization.
+        Is double
+        """
+        return self._average_purity[len(self._average_purity) - 1]
 
 ###################################################################################################
 class ThetaSnippetScoreInfo(object):
@@ -2257,7 +2444,7 @@ class ThetaSnippetScoreInfo(object):
             _data = messages_pb2.ThetaSnippetScore()
             _data = score.score.GetValue(score._model)
 
-            self._document_ids .append([item_id for item_id in _data.item_id])
+            self._document_ids.append([item_id for item_id in _data.item_id])
             self._snippet.append(
                 [[theta_td for theta_td in theta_d.value] for theta_d in _data.values])
         else:
@@ -2270,9 +2457,9 @@ class ThetaSnippetScoreInfo(object):
     @property
     def snippet(self):
         """ Returns the snippet (part) of Theta corresponds to documents from
-        document_ids.
-        Is list of lists of scalars, each internal list --- theta_d vector
-        for document d, in direct order of document_ids
+        document_ids on each synchronizations.
+        Is list of lists of lists of scalars, each most internal list ---
+        theta_d vector for document d, in direct order of document_ids
         """
         return self._snippet
 
@@ -2283,6 +2470,21 @@ class ThetaSnippetScoreInfo(object):
         """
         return self._document_ids
 
+    @property
+    def last_snippet(self):
+        """ Returns the snippet (part) of Theta corresponds to documents from
+        document_ids on last synchronization.
+        Is list of lists of scalars, each internal list --- theta_d vector
+        for document d, in direct order of document_ids
+        """
+        return self._snippet
+
+    @property
+    def last_document_ids(self):
+        """ Returns ids of documents in snippet on the last synchronization.
+        Is list of scalars
+        """
+        return self._document_ids
 
 ###################################################################################################
 # SECTION OF ARTM MODEL CLASS
@@ -2298,7 +2500,7 @@ class ArtmModel(object):
     - topic_names --- names of topics in model.
     Is list of strings, default = []
 
-    - topics_count --- number of topics in model (is used if
+    - num_topics --- number of topics in model (is used if
     topic_names == []). Is int, default = 10
 
     - class_ids --- list of class_ids and their weights to be used in model.
@@ -2329,10 +2531,10 @@ class ArtmModel(object):
     """
 
 # ========== CONSTRUCTOR ==========
-    def __init__(self, num_processors=0, topic_names=[], topics_count=10,
+    def __init__(self, num_processors=0, topic_names=[], num_topics=10,
                  class_ids={}, num_document_passes=1, cache_theta=True):
         self._num_processors = 0
-        self._topics_count = 10
+        self._num_topics = 10
         self._topic_names = []
         self._class_ids = {}
         self._num_document_passes = 1
@@ -2341,8 +2543,8 @@ class ArtmModel(object):
         if num_processors > 0:
             self._num_processors = num_processors
 
-        if topics_count > 0:
-            self._topics_count = topics_count
+        if num_topics > 0:
+            self._num_topics = num_topics
 
         if len(class_ids) > 0:
             self._class_ids = class_ids
@@ -2355,7 +2557,7 @@ class ArtmModel(object):
 
         if len(topic_names) > 0:
             self._topic_names = topic_names
-            self._topics_count = len(topic_names)
+            self._num_topics = len(topic_names)
 
         self._master = library.MasterComponent()
         self._master.config().processors_count = self._num_processors
@@ -2384,12 +2586,8 @@ class ArtmModel(object):
         return self._cache_theta
 
     @property
-    def tokens_count(self):
-        return self._tokens_count
-
-    @property
-    def topics_count(self):
-        return self._topics_count
+    def num_topics(self):
+        return self._num_topics
 
     @property
     def topic_names(self):
@@ -2445,12 +2643,12 @@ class ArtmModel(object):
             self._master.config().cache_theta = cache_theta
             self._master.Reconfigure()
 
-    @topics_count.setter
-    def topics_count(self, topics_count):
-        if topics_count <= 0 or not isinstance(topics_count, int):
+    @num_topics.setter
+    def num_topics(self, num_topics):
+        if num_topics <= 0 or not isinstance(num_topics, int):
             print 'Number of topics should be a positive integer, skip update'
         else:
-            self._topics_count = topics_count
+            self._num_topics = num_topics
 
     @topic_names.setter
     def topic_names(self, topic_names):
@@ -2458,7 +2656,7 @@ class ArtmModel(object):
             print 'Number of topic names should be non-negative, skip update'
         else:
             self._topic_names = topic_names
-            self._topics_count = len(topic_names)
+            self._num_topics = len(topic_names)
 
     @class_ids.setter
     def class_ids(self, class_ids):
@@ -2882,7 +3080,7 @@ class ArtmModel(object):
         Note:
         ----------
         Loaded model will overwrite ArtmModel.topic_names and
-        ArtmModel.topics_count fields. Also it will empty
+        ArtmModel.num_topics fields. Also it will empty
         ArtmModel.scores_info.
         """
         self._master.ImportModel(self._model, file_name)
@@ -2891,7 +3089,7 @@ class ArtmModel(object):
         args.request_type = library.GetTopicModelArgs_RequestType_TopicNames
         topic_model = self._master.GetTopicModel(model=self._model, args=args)
         self._topic_names = [topic_name for topic_name in topic_model.topic_name]
-        self._topics_count = topic_model.topics_count
+        self._num_topics = topic_model.topics_count
 
         # Remove all info about previous iterations
         self._scores_info = {}
@@ -3084,12 +3282,12 @@ class ArtmModel(object):
         if data_path is not None:
             self._master.InitializeModel(model_name=self._model,
                                          batch_folder=data_path,
-                                         topics_count=self._topics_count,
+                                         topics_count=self._num_topics,
                                          topic_names=self._topic_names)
         else:
             self._master.InitializeModel(model_name=self._model,
                                          dictionary=dictionary,
-                                         topics_count=self._topics_count,
+                                         topics_count=self._num_topics,
                                          topic_names=self._topic_names)
 
         args = messages_pb2.GetTopicModelArgs()
@@ -3155,7 +3353,7 @@ class ArtmModel(object):
         pca_model = sklearn.decomposition.pca.PCA(2)
         centers = pca_model.fit_transform(sp_dist.squareform(dist_matrix)).transpose()
 
-        topic_proportion = [1.0 / self._topics_count] * self._topics_count
+        topic_proportion = [1.0 / self._num_topics] * self._num_topics
 
         term_frequency = np.matrix([entry.token_count * 1.0
                                    for entry in dictionary.entry]).transpose()
@@ -3176,9 +3374,9 @@ class ArtmModel(object):
 
         counts = np.matrix(term_frequency.transpose()[0, sorting_indices])
         rs = np.matrix(range(0, num_top_tokens)[::-1])
-        topic_str_list = ['Topic' + str(i) for i in range(1, self._topics_count + 1)]
+        topic_str_list = ['Topic' + str(i) for i in range(1, self._num_topics + 1)]
         category = [x for item in topic_str_list for x in itertools.repeat(item, num_top_tokens)]
-        topics = [x for item in range(self._topics_count)
+        topics = [x for item in range(self._num_topics)
                   for x in itertools.repeat(item, num_top_tokens)]
 
         lift = np.divide(phi, term_proportion + GLOB_EPS)
@@ -3203,7 +3401,7 @@ class ArtmModel(object):
                                     axis=0, arr=relevance))
             idx.resize(1, idx.size)
             indices = np.concatenate((idx,
-                                      np.matrix([x for i in range(self._topics_count)
+                                      np.matrix([x for i in range(self._num_topics)
                                                  for x in itertools.repeat(i, num_top_tokens)])),
                                      axis=1)
 
@@ -3233,16 +3431,16 @@ class ArtmModel(object):
         all_topics = []
         all_values = []
         for token_index in range(len(p_wt_model.token_weights)):
-            for topic_index in range(self._topics_count):
+            for topic_index in range(self._num_topics):
                 all_tokens.append(p_wt_model.token[token_index])
                 all_topics.append(topic_index + 1)
                 all_values.append(p_wt_model.token_weights[token_index].value[topic_index])
 
         data = {'mdsDat': {'x': list(centers[0]),
                            'y': list(centers[1]),
-                           'topics': range(1, self._topics_count + 1),
+                           'topics': range(1, self._num_topics + 1),
                            'Freq': [i * 100 for i in topic_proportion],
-                           'cluster': [1] * self._topics_count},
+                           'cluster': [1] * self._num_topics},
                 'tinfo': {'Term': tinfo['Term'],
                           'logprob': tinfo['logprob'],
                           'loglift': tinfo['loglift'],
@@ -3256,7 +3454,7 @@ class ArtmModel(object):
                 'lambda.step': lambda_step,
                 'plot.opts': {'xlab': 'PC-1',
                               'ylab': 'PC-2'},
-                'topic_order': [i for i in range(self._topics_count)]}
+                'topic_order': [i for i in range(self._num_topics)]}
 
         file_name = 'lda.json'
         if os.path.isfile(file_name):
