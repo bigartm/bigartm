@@ -238,6 +238,9 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
 void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                             ProcessBatchesResult* process_batches_result) {
   LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
+  std::shared_ptr<MasterComponentConfig> config = config_.get();
+  std::shared_ptr<InstanceSchema> schema = instance_->schema();
+
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
   ModelConfig model_config;
@@ -291,6 +294,14 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 
   if (args.reset_scores())
     scores_merger->ResetScores(model_name);
+
+  if (args.batch_filename_size() < config->processors_count()) {
+    LOG_FIRST_N(WARNING, 1) << "Batches count (=" << args.batch_filename_size()
+                            << ") is smaller than processors threads count (="
+                            << config->processors_count()
+                            << "), which may cause suboptimal performance.";
+  }
+
   for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
     batch_manager.Add(task_id, std::string(), model_name);
@@ -316,8 +327,6 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   }
 
   process_batches_result->Clear();
-  std::shared_ptr<MasterComponentConfig> config = config_.get();
-  std::shared_ptr<InstanceSchema> schema = instance_->schema();
   for (int score_index = 0; score_index < config->score_config_size(); ++score_index) {
     ScoreName score_name = config->score_config(score_index).name();
     ScoreData score_data;
