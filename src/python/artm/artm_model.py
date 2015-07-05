@@ -668,7 +668,7 @@ class SpecifiedSparsePhiRegularizer(object):
                 config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
         if num_max_elements is not None:
-            config.max_elements_count = num_max_elements_count
+            config.max_elements_count = num_max_elements
             self._num_max_elements = num_max_elements
         if probability_threshold is not None:
             config.probability_threshold = probability_threshold
@@ -2507,7 +2507,7 @@ class ArtmModel(object):
     Is dict, key --- class_id, value --- weight, default = {}
 
     - num_document_passes --- number of iterations over each document
-    during processing/ Is int, default = 1
+    during processing/ Is int, default = 10
 
     - cache_theta --- save or not the Theta matrix in model. Necessary
     if ArtmModel.get_theta() usage expects. Is bool, default = True
@@ -2532,12 +2532,12 @@ class ArtmModel(object):
 
 # ========== CONSTRUCTOR ==========
     def __init__(self, num_processors=0, topic_names=[], num_topics=10,
-                 class_ids={}, num_document_passes=1, cache_theta=True):
+                 class_ids={}, num_document_passes=10, cache_theta=True):
         self._num_processors = 0
         self._num_topics = 10
         self._topic_names = []
         self._class_ids = {}
-        self._num_document_passes = 1
+        self._num_document_passes = 10
         self._cache_theta = True
 
         if num_processors > 0:
@@ -2666,7 +2666,7 @@ class ArtmModel(object):
             self._class_ids = class_ids
 
 # ========== METHODS ==========
-    def parse(self, collection_name=None, data_path='', data_format='batches',
+    def parse(self, collection_name=None, data_path='', data_format='',
               batch_size=1000, dictionary_name='dictionary'):
         """ ArtmModel.fit() --- proceed the learning of topic model
 
@@ -2711,7 +2711,7 @@ class ArtmModel(object):
         changed in the next release.
         """
         if collection_name is None and data_format == 'bow_uci':
-                print 'No collection name was given, skip model.fit_offline()'
+                print 'No collection name was given, skip model.parse()'
 
         if data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
             collection_parser_config = create_parser_config(data_path,
@@ -3205,7 +3205,7 @@ class ArtmModel(object):
           3) data --- content of Theta matrix.
         """
         if collection_name is None and data_format == 'bow_uci':
-            print 'No collection name was given, skip model.fit_offline()'
+            print 'No collection name was given, skip model.find_theta()'
 
         if not data_format == 'batches' and batches is not None:
             print "batches != None require data_format == 'batches'"
