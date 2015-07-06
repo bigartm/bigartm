@@ -58,6 +58,14 @@ ProcessBatchesArgs_ThetaMatrixType_None = 0
 ProcessBatchesArgs_ThetaMatrixType_Dense = 1
 ProcessBatchesArgs_ThetaMatrixType_Sparse = 2
 ProcessBatchesArgs_ThetaMatrixType_Cache = 3
+CopyRequestResultArgs_RequestType_GetThetaSecondPass = 0
+CopyRequestResultArgs_RequestType_GetModelSecondPass = 1
+GetTopicModelArgs_MatrixLayout_Protobuf = 0
+GetTopicModelArgs_MatrixLayout_RowMajor = 1
+GetTopicModelArgs_MatrixLayout_ColMajor = 2
+GetThetaMatrixArgs_MatrixLayout_Protobuf = 0
+GetThetaMatrixArgs_MatrixLayout_RowMajor = 1
+GetThetaMatrixArgs_MatrixLayout_ColMajor = 2
 
 #################################################################################
 

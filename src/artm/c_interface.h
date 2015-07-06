@@ -58,6 +58,7 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestLoadDictionary(const char* filename);
   DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int ArtmCopyRequestResult(int length, char* address);
+  DLL_PUBLIC int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args);
 
   DLL_PUBLIC int ArtmSaveBatch(const char* disk_path, int length, const char* batch);
   DLL_PUBLIC const char* ArtmGetLastErrorMessage();

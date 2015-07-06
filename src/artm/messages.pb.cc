@@ -178,9 +178,11 @@ const ::google::protobuf::Descriptor* GetTopicModelArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   GetTopicModelArgs_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_RequestType_descriptor_ = NULL;
+const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_MatrixLayout_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* GetThetaMatrixArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   GetThetaMatrixArgs_reflection_ = NULL;
+const ::google::protobuf::EnumDescriptor* GetThetaMatrixArgs_MatrixLayout_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* GetScoreValueArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   GetScoreValueArgs_reflection_ = NULL;
@@ -218,6 +220,10 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* ImportDictionaryArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ImportDictionaryArgs_reflection_ = NULL;
+const ::google::protobuf::Descriptor* CopyRequestResultArgs_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  CopyRequestResultArgs_reflection_ = NULL;
+const ::google::protobuf::EnumDescriptor* CopyRequestResultArgs_RequestType_descriptor_ = NULL;
 
 }  // namespace
 
@@ -1124,7 +1130,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(InitializeModelArgs_Filter));
   InitializeModelArgs_SourceType_descriptor_ = InitializeModelArgs_descriptor_->enum_type(0);
   GetTopicModelArgs_descriptor_ = file->message_type(46);
-  static const int GetTopicModelArgs_offsets_[7] = {
+  static const int GetTopicModelArgs_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, topic_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, token_),
@@ -1132,6 +1138,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, use_sparse_format_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, eps_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, request_type_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, matrix_layout_),
   };
   GetTopicModelArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1145,8 +1152,9 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetTopicModelArgs));
   GetTopicModelArgs_RequestType_descriptor_ = GetTopicModelArgs_descriptor_->enum_type(0);
+  GetTopicModelArgs_MatrixLayout_descriptor_ = GetTopicModelArgs_descriptor_->enum_type(1);
   GetThetaMatrixArgs_descriptor_ = file->message_type(47);
-  static const int GetThetaMatrixArgs_offsets_[7] = {
+  static const int GetThetaMatrixArgs_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, batch_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, topic_name_),
@@ -1154,6 +1162,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, clean_cache_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, use_sparse_format_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, eps_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, matrix_layout_),
   };
   GetThetaMatrixArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1166,6 +1175,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetThetaMatrixArgs));
+  GetThetaMatrixArgs_MatrixLayout_descriptor_ = GetThetaMatrixArgs_descriptor_->enum_type(0);
   GetScoreValueArgs_descriptor_ = file->message_type(48);
   static const int GetScoreValueArgs_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetScoreValueArgs, model_name_),
@@ -1379,6 +1389,22 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ImportDictionaryArgs));
+  CopyRequestResultArgs_descriptor_ = file->message_type(60);
+  static const int CopyRequestResultArgs_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CopyRequestResultArgs, request_type_),
+  };
+  CopyRequestResultArgs_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      CopyRequestResultArgs_descriptor_,
+      CopyRequestResultArgs::default_instance_,
+      CopyRequestResultArgs_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CopyRequestResultArgs, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CopyRequestResultArgs, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(CopyRequestResultArgs));
+  CopyRequestResultArgs_RequestType_descriptor_ = CopyRequestResultArgs_descriptor_->enum_type(0);
 }
 
 namespace {
@@ -1515,6 +1541,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     NormalizeModelArgs_descriptor_, &NormalizeModelArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ImportDictionaryArgs_descriptor_, &ImportDictionaryArgs::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    CopyRequestResultArgs_descriptor_, &CopyRequestResultArgs::default_instance());
 }
 
 }  // namespace
@@ -1664,6 +1692,8 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete NormalizeModelArgs_reflection_;
   delete ImportDictionaryArgs::default_instance_;
   delete ImportDictionaryArgs_reflection_;
+  delete CopyRequestResultArgs::default_instance_;
+  delete CopyRequestResultArgs_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fmessages_2eproto() {
@@ -1859,56 +1889,66 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "max_percentage\030\003 \001(\002\022\021\n\tmin_items\030\004 \001(\005\022"
     "\021\n\tmax_items\030\005 \001(\005\022\027\n\017min_total_count\030\006 "
     "\001(\005\022\032\n\022min_one_item_count\030\007 \001(\005\")\n\nSourc"
-    "eType\022\016\n\nDictionary\020\000\022\013\n\007Batches\020\001\"\355\001\n\021G"
+    "eType\022\016\n\nDictionary\020\000\022\013\n\007Batches\020\001\"\356\002\n\021G"
     "etTopicModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\n"
     "topic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class"
     "_id\030\004 \003(\t\022\031\n\021use_sparse_format\030\005 \001(\010\022\023\n\003"
     "eps\030\006 \001(\002:\0061e-037\022>\n\014request_type\030\007 \001(\0162"
     "#.artm.GetTopicModelArgs.RequestType:\003Pw"
-    "t\"\037\n\013RequestType\022\007\n\003Pwt\020\000\022\007\n\003Nwt\020\001\"\271\001\n\022G"
-    "etThetaMatrixArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n"
-    "\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic_name\030"
-    "\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clean_cach"
-    "e\030\005 \001(\010:\005false\022\031\n\021use_sparse_format\030\006 \001("
-    "\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\"W\n\021GetScoreValueA"
-    "rgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name\030\002 "
-    "\001(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"\202\001\n\014AddB"
-    "atchArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022 \n\024"
-    "timeout_milliseconds\030\002 \001(\005:\002-1\022\033\n\014reset_"
-    "scores\030\003 \001(\010:\005false\022\027\n\017batch_file_name\030\004"
-    " \001(\t\"a\n\023InvokeIterationArgs\022\033\n\020iteration"
-    "s_count\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004"
-    "true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014WaitIdleArgs\022"
-    " \n\024timeout_milliseconds\030\001 \001(\005:\002-1\"8\n\017Exp"
-    "ortModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel"
-    "_name\030\002 \001(\t\"8\n\017ImportModelArgs\022\021\n\tfile_n"
-    "ame\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"\367\003\n\022Proces"
-    "sBatchesArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\026\n"
-    "\016batch_filename\030\002 \003(\t\022\027\n\017pwt_source_name"
-    "\030\003 \001(\t\022\"\n\026inner_iterations_count\030\004 \001(\005:\002"
-    "10\022\034\n\013stream_name\030\005 \001(\t:\007@global\022\030\n\020regu"
-    "larizer_name\030\006 \003(\t\022\027\n\017regularizer_tau\030\007 "
-    "\003(\001\022\020\n\010class_id\030\010 \003(\t\022\024\n\014class_weight\030\t "
-    "\003(\002\022\032\n\013reuse_theta\030\n \001(\010:\005false\022\031\n\013opt_f"
-    "or_avx\030\013 \001(\010:\004true\022\034\n\016use_sparse_bow\030\014 \001"
-    "(\010:\004true\022\032\n\014reset_scores\030\r \001(\010:\004true\022J\n\021"
-    "theta_matrix_type\030\016 \001(\0162(.artm.ProcessBa"
-    "tchesArgs.ThetaMatrixType:\005Cache\"=\n\017Thet"
-    "aMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Spar"
-    "se\020\002\022\t\n\005Cache\020\003\"d\n\024ProcessBatchesResult\022"
-    "#\n\nscore_data\030\001 \003(\0132\017.artm.ScoreData\022\'\n\014"
-    "theta_matrix\030\002 \001(\0132\021.artm.ThetaMatrix\"m\n"
-    "\016MergeModelArgs\022\027\n\017nwt_target_name\030\001 \001(\t"
-    "\022\027\n\017nwt_source_name\030\002 \003(\t\022\025\n\rsource_weig"
-    "ht\030\003 \003(\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023Regular"
-    "izeModelArgs\022\027\n\017rwt_target_name\030\001 \001(\t\022\027\n"
-    "\017pwt_source_name\030\002 \001(\t\022\027\n\017nwt_source_nam"
-    "e\030\003 \001(\t\0227\n\024regularizer_settings\030\004 \003(\0132\031."
-    "artm.RegularizerSettings\"_\n\022NormalizeMod"
-    "elArgs\022\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017nwt_s"
-    "ource_name\030\002 \001(\t\022\027\n\017rwt_source_name\030\003 \001("
-    "\t\"B\n\024ImportDictionaryArgs\022\021\n\tfile_name\030\001"
-    " \001(\t\022\027\n\017dictionary_name\030\002 \001(\t", 9429);
+    "t\022E\n\rmatrix_layout\030\010 \001(\0162$.artm.GetTopic"
+    "ModelArgs.MatrixLayout:\010Protobuf\"\037\n\013Requ"
+    "estType\022\007\n\003Pwt\020\000\022\007\n\003Nwt\020\001\"8\n\014MatrixLayou"
+    "t\022\014\n\010Protobuf\020\000\022\014\n\010RowMajor\020\001\022\014\n\010ColMajo"
+    "r\020\002\"\273\002\n\022GetThetaMatrixArgs\022\022\n\nmodel_name"
+    "\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022\022\n\nto"
+    "pic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013c"
+    "lean_cache\030\005 \001(\010:\005false\022\031\n\021use_sparse_fo"
+    "rmat\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\022F\n\rmatri"
+    "x_layout\030\010 \001(\0162%.artm.GetThetaMatrixArgs"
+    ".MatrixLayout:\010Protobuf\"8\n\014MatrixLayout\022"
+    "\014\n\010Protobuf\020\000\022\014\n\010RowMajor\020\001\022\014\n\010ColMajor\020"
+    "\002\"W\n\021GetScoreValueArgs\022\022\n\nmodel_name\030\001 \001"
+    "(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013."
+    "artm.Batch\"\202\001\n\014AddBatchArgs\022\032\n\005batch\030\001 \001"
+    "(\0132\013.artm.Batch\022 \n\024timeout_milliseconds\030"
+    "\002 \001(\005:\002-1\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027"
+    "\n\017batch_file_name\030\004 \001(\t\"a\n\023InvokeIterati"
+    "onArgs\022\033\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014r"
+    "eset_scores\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001"
+    "(\t\"0\n\014WaitIdleArgs\022 \n\024timeout_millisecon"
+    "ds\030\001 \001(\005:\002-1\"8\n\017ExportModelArgs\022\021\n\tfile_"
+    "name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"8\n\017Import"
+    "ModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel_na"
+    "me\030\002 \001(\t\"\367\003\n\022ProcessBatchesArgs\022\027\n\017nwt_t"
+    "arget_name\030\001 \001(\t\022\026\n\016batch_filename\030\002 \003(\t"
+    "\022\027\n\017pwt_source_name\030\003 \001(\t\022\"\n\026inner_itera"
+    "tions_count\030\004 \001(\005:\00210\022\034\n\013stream_name\030\005 \001"
+    "(\t:\007@global\022\030\n\020regularizer_name\030\006 \003(\t\022\027\n"
+    "\017regularizer_tau\030\007 \003(\001\022\020\n\010class_id\030\010 \003(\t"
+    "\022\024\n\014class_weight\030\t \003(\002\022\032\n\013reuse_theta\030\n "
+    "\001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true\022\034\n"
+    "\016use_sparse_bow\030\014 \001(\010:\004true\022\032\n\014reset_sco"
+    "res\030\r \001(\010:\004true\022J\n\021theta_matrix_type\030\016 \001"
+    "(\0162(.artm.ProcessBatchesArgs.ThetaMatrix"
+    "Type:\005Cache\"=\n\017ThetaMatrixType\022\010\n\004None\020\000"
+    "\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\"d\n\024Pr"
+    "ocessBatchesResult\022#\n\nscore_data\030\001 \003(\0132\017"
+    ".artm.ScoreData\022\'\n\014theta_matrix\030\002 \001(\0132\021."
+    "artm.ThetaMatrix\"m\n\016MergeModelArgs\022\027\n\017nw"
+    "t_target_name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002"
+    " \003(\t\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\ntopic_nam"
+    "e\030\004 \003(\t\"\231\001\n\023RegularizeModelArgs\022\027\n\017rwt_t"
+    "arget_name\030\001 \001(\t\022\027\n\017pwt_source_name\030\002 \001("
+    "\t\022\027\n\017nwt_source_name\030\003 \001(\t\0227\n\024regularize"
+    "r_settings\030\004 \003(\0132\031.artm.RegularizerSetti"
+    "ngs\"_\n\022NormalizeModelArgs\022\027\n\017pwt_target_"
+    "name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 \001(\t\022\027\n\017r"
+    "wt_source_name\030\003 \001(\t\"B\n\024ImportDictionary"
+    "Args\022\021\n\tfile_name\030\001 \001(\t\022\027\n\017dictionary_na"
+    "me\030\002 \001(\t\"\225\001\n\025CopyRequestResultArgs\022=\n\014re"
+    "quest_type\030\001 \001(\0162\'.artm.CopyRequestResul"
+    "tArgs.RequestType\"=\n\013RequestType\022\026\n\022GetT"
+    "hetaSecondPass\020\000\022\026\n\022GetModelSecondPass\020\001", 9840);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -2013,6 +2053,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   RegularizeModelArgs::default_instance_ = new RegularizeModelArgs();
   NormalizeModelArgs::default_instance_ = new NormalizeModelArgs();
   ImportDictionaryArgs::default_instance_ = new ImportDictionaryArgs();
+  CopyRequestResultArgs::default_instance_ = new CopyRequestResultArgs();
   DoubleArray::default_instance_->InitAsDefaultInstance();
   FloatArray::default_instance_->InitAsDefaultInstance();
   BoolArray::default_instance_->InitAsDefaultInstance();
@@ -2075,6 +2116,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   RegularizeModelArgs::default_instance_->InitAsDefaultInstance();
   NormalizeModelArgs::default_instance_->InitAsDefaultInstance();
   ImportDictionaryArgs::default_instance_->InitAsDefaultInstance();
+  CopyRequestResultArgs::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fmessages_2eproto);
 }
 
@@ -20342,6 +20384,29 @@ const GetTopicModelArgs_RequestType GetTopicModelArgs::RequestType_MIN;
 const GetTopicModelArgs_RequestType GetTopicModelArgs::RequestType_MAX;
 const int GetTopicModelArgs::RequestType_ARRAYSIZE;
 #endif  // _MSC_VER
+const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_MatrixLayout_descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return GetTopicModelArgs_MatrixLayout_descriptor_;
+}
+bool GetTopicModelArgs_MatrixLayout_IsValid(int value) {
+  switch(value) {
+    case 0:
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#ifndef _MSC_VER
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::Protobuf;
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::RowMajor;
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::ColMajor;
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::MatrixLayout_MIN;
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::MatrixLayout_MAX;
+const int GetTopicModelArgs::MatrixLayout_ARRAYSIZE;
+#endif  // _MSC_VER
 #ifndef _MSC_VER
 const int GetTopicModelArgs::kModelNameFieldNumber;
 const int GetTopicModelArgs::kTopicNameFieldNumber;
@@ -20350,6 +20415,7 @@ const int GetTopicModelArgs::kClassIdFieldNumber;
 const int GetTopicModelArgs::kUseSparseFormatFieldNumber;
 const int GetTopicModelArgs::kEpsFieldNumber;
 const int GetTopicModelArgs::kRequestTypeFieldNumber;
+const int GetTopicModelArgs::kMatrixLayoutFieldNumber;
 #endif  // !_MSC_VER
 
 GetTopicModelArgs::GetTopicModelArgs()
@@ -20372,6 +20438,7 @@ void GetTopicModelArgs::SharedCtor() {
   use_sparse_format_ = false;
   eps_ = 1e-037f;
   request_type_ = 0;
+  matrix_layout_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -20418,6 +20485,7 @@ void GetTopicModelArgs::Clear() {
     use_sparse_format_ = false;
     eps_ = 1e-037f;
     request_type_ = 0;
+    matrix_layout_ = 0;
   }
   topic_name_.Clear();
   token_.Clear();
@@ -20554,6 +20622,27 @@ bool GetTopicModelArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(64)) goto parse_matrix_layout;
+        break;
+      }
+
+      // optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_matrix_layout:
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::artm::GetTopicModelArgs_MatrixLayout_IsValid(value)) {
+            set_matrix_layout(static_cast< ::artm::GetTopicModelArgs_MatrixLayout >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(8, value);
+          }
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -20628,6 +20717,12 @@ void GetTopicModelArgs::SerializeWithCachedSizes(
       7, this->request_type(), output);
   }
 
+  // optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+  if (has_matrix_layout()) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      8, this->matrix_layout(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -20689,6 +20784,12 @@ void GetTopicModelArgs::SerializeWithCachedSizes(
       7, this->request_type(), target);
   }
 
+  // optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+  if (has_matrix_layout()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      8, this->matrix_layout(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -20721,6 +20822,12 @@ int GetTopicModelArgs::ByteSize() const {
     if (has_request_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->request_type());
+    }
+
+    // optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+    if (has_matrix_layout()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->matrix_layout());
     }
 
   }
@@ -20786,6 +20893,9 @@ void GetTopicModelArgs::MergeFrom(const GetTopicModelArgs& from) {
     if (from.has_request_type()) {
       set_request_type(from.request_type());
     }
+    if (from.has_matrix_layout()) {
+      set_matrix_layout(from.matrix_layout());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -20816,6 +20926,7 @@ void GetTopicModelArgs::Swap(GetTopicModelArgs* other) {
     std::swap(use_sparse_format_, other->use_sparse_format_);
     std::swap(eps_, other->eps_);
     std::swap(request_type_, other->request_type_);
+    std::swap(matrix_layout_, other->matrix_layout_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -20833,6 +20944,29 @@ void GetTopicModelArgs::Swap(GetTopicModelArgs* other) {
 
 // ===================================================================
 
+const ::google::protobuf::EnumDescriptor* GetThetaMatrixArgs_MatrixLayout_descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return GetThetaMatrixArgs_MatrixLayout_descriptor_;
+}
+bool GetThetaMatrixArgs_MatrixLayout_IsValid(int value) {
+  switch(value) {
+    case 0:
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#ifndef _MSC_VER
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::Protobuf;
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::RowMajor;
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::ColMajor;
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::MatrixLayout_MIN;
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::MatrixLayout_MAX;
+const int GetThetaMatrixArgs::MatrixLayout_ARRAYSIZE;
+#endif  // _MSC_VER
 #ifndef _MSC_VER
 const int GetThetaMatrixArgs::kModelNameFieldNumber;
 const int GetThetaMatrixArgs::kBatchFieldNumber;
@@ -20841,6 +20975,7 @@ const int GetThetaMatrixArgs::kTopicIndexFieldNumber;
 const int GetThetaMatrixArgs::kCleanCacheFieldNumber;
 const int GetThetaMatrixArgs::kUseSparseFormatFieldNumber;
 const int GetThetaMatrixArgs::kEpsFieldNumber;
+const int GetThetaMatrixArgs::kMatrixLayoutFieldNumber;
 #endif  // !_MSC_VER
 
 GetThetaMatrixArgs::GetThetaMatrixArgs()
@@ -20865,6 +21000,7 @@ void GetThetaMatrixArgs::SharedCtor() {
   clean_cache_ = false;
   use_sparse_format_ = false;
   eps_ = 1e-037f;
+  matrix_layout_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -20915,6 +21051,7 @@ void GetThetaMatrixArgs::Clear() {
     clean_cache_ = false;
     use_sparse_format_ = false;
     eps_ = 1e-037f;
+    matrix_layout_ = 0;
   }
   topic_name_.Clear();
   topic_index_.Clear();
@@ -21043,6 +21180,27 @@ bool GetThetaMatrixArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(64)) goto parse_matrix_layout;
+        break;
+      }
+
+      // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_matrix_layout:
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::artm::GetThetaMatrixArgs_MatrixLayout_IsValid(value)) {
+            set_matrix_layout(static_cast< ::artm::GetThetaMatrixArgs_MatrixLayout >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(8, value);
+          }
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -21110,6 +21268,12 @@ void GetThetaMatrixArgs::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteFloat(7, this->eps(), output);
   }
 
+  // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+  if (has_matrix_layout()) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      8, this->matrix_layout(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -21165,6 +21329,12 @@ void GetThetaMatrixArgs::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(7, this->eps(), target);
   }
 
+  // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+  if (has_matrix_layout()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      8, this->matrix_layout(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -21203,6 +21373,12 @@ int GetThetaMatrixArgs::ByteSize() const {
     // optional float eps = 7 [default = 1e-037];
     if (has_eps()) {
       total_size += 1 + 4;
+    }
+
+    // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+    if (has_matrix_layout()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->matrix_layout());
     }
 
   }
@@ -21266,6 +21442,9 @@ void GetThetaMatrixArgs::MergeFrom(const GetThetaMatrixArgs& from) {
     if (from.has_eps()) {
       set_eps(from.eps());
     }
+    if (from.has_matrix_layout()) {
+      set_matrix_layout(from.matrix_layout());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -21296,6 +21475,7 @@ void GetThetaMatrixArgs::Swap(GetThetaMatrixArgs* other) {
     std::swap(clean_cache_, other->clean_cache_);
     std::swap(use_sparse_format_, other->use_sparse_format_);
     std::swap(eps_, other->eps_);
+    std::swap(matrix_layout_, other->matrix_layout_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -25520,6 +25700,241 @@ void ImportDictionaryArgs::Swap(ImportDictionaryArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = ImportDictionaryArgs_descriptor_;
   metadata.reflection = ImportDictionaryArgs_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+const ::google::protobuf::EnumDescriptor* CopyRequestResultArgs_RequestType_descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return CopyRequestResultArgs_RequestType_descriptor_;
+}
+bool CopyRequestResultArgs_RequestType_IsValid(int value) {
+  switch(value) {
+    case 0:
+    case 1:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#ifndef _MSC_VER
+const CopyRequestResultArgs_RequestType CopyRequestResultArgs::GetThetaSecondPass;
+const CopyRequestResultArgs_RequestType CopyRequestResultArgs::GetModelSecondPass;
+const CopyRequestResultArgs_RequestType CopyRequestResultArgs::RequestType_MIN;
+const CopyRequestResultArgs_RequestType CopyRequestResultArgs::RequestType_MAX;
+const int CopyRequestResultArgs::RequestType_ARRAYSIZE;
+#endif  // _MSC_VER
+#ifndef _MSC_VER
+const int CopyRequestResultArgs::kRequestTypeFieldNumber;
+#endif  // !_MSC_VER
+
+CopyRequestResultArgs::CopyRequestResultArgs()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void CopyRequestResultArgs::InitAsDefaultInstance() {
+}
+
+CopyRequestResultArgs::CopyRequestResultArgs(const CopyRequestResultArgs& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void CopyRequestResultArgs::SharedCtor() {
+  _cached_size_ = 0;
+  request_type_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+CopyRequestResultArgs::~CopyRequestResultArgs() {
+  SharedDtor();
+}
+
+void CopyRequestResultArgs::SharedDtor() {
+  if (this != default_instance_) {
+  }
+}
+
+void CopyRequestResultArgs::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* CopyRequestResultArgs::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return CopyRequestResultArgs_descriptor_;
+}
+
+const CopyRequestResultArgs& CopyRequestResultArgs::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
+  return *default_instance_;
+}
+
+CopyRequestResultArgs* CopyRequestResultArgs::default_instance_ = NULL;
+
+CopyRequestResultArgs* CopyRequestResultArgs::New() const {
+  return new CopyRequestResultArgs;
+}
+
+void CopyRequestResultArgs::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    request_type_ = 0;
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool CopyRequestResultArgs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::artm::CopyRequestResultArgs_RequestType_IsValid(value)) {
+            set_request_type(static_cast< ::artm::CopyRequestResultArgs_RequestType >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(1, value);
+          }
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void CopyRequestResultArgs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+  if (has_request_type()) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      1, this->request_type(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* CopyRequestResultArgs::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+  if (has_request_type()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      1, this->request_type(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int CopyRequestResultArgs::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+    if (has_request_type()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->request_type());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void CopyRequestResultArgs::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const CopyRequestResultArgs* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const CopyRequestResultArgs*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void CopyRequestResultArgs::MergeFrom(const CopyRequestResultArgs& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_request_type()) {
+      set_request_type(from.request_type());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void CopyRequestResultArgs::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void CopyRequestResultArgs::CopyFrom(const CopyRequestResultArgs& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool CopyRequestResultArgs::IsInitialized() const {
+
+  return true;
+}
+
+void CopyRequestResultArgs::Swap(CopyRequestResultArgs* other) {
+  if (other != this) {
+    std::swap(request_type_, other->request_type_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata CopyRequestResultArgs::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = CopyRequestResultArgs_descriptor_;
+  metadata.reflection = CopyRequestResultArgs_reflection_;
   return metadata;
 }
 
