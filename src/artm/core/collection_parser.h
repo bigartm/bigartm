@@ -67,6 +67,8 @@ class CollectionParser : boost::noncopyable {
   std::shared_ptr<DictionaryConfig> ParseDocwordBagOfWordsUci(TokenMap* token_map);
   std::shared_ptr<DictionaryConfig> ParseVowpalWabbit();
 
+  std::shared_ptr<DictionaryConfig> ParseCooccurrenceData(TokenMap* token_map);
+
   TokenMap ParseVocabBagOfWordsUci();
   TokenMap ParseVocabMatrixMarket();
 

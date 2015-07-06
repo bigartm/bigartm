@@ -222,7 +222,7 @@ message DictionaryEntry {
 message DictionaryCoocurenceEntries {
   repeated int32 first_index = 1;  // index of token in entry field
   repeated int32 second_index = 2; // index of token in entry field
-  repeated float items_count = 3;
+  repeated float value = 3;
 }
 
 // Represents a configuration of a general score
@@ -424,6 +424,7 @@ message CollectionParserConfig {
     BagOfWordsUci = 0;
     MatrixMarket = 1;
     VowpalWabbit = 2;
+    Cooccurrence = 3;
   }
 
   optional Format format = 1 [default = BagOfWordsUci];

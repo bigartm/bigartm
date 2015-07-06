@@ -517,8 +517,8 @@ bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error
   std::stringstream ss;
   if (message.has_cooc_entries())
     if (message.cooc_entries().first_index_size() != message.cooc_entries().second_index_size() ||
-        message.cooc_entries().first_index_size() != message.cooc_entries().items_count_size() ||
-        message.cooc_entries().second_index_size() != message.cooc_entries().items_count_size()) {
+        message.cooc_entries().first_index_size() != message.cooc_entries().value_size() ||
+        message.cooc_entries().second_index_size() != message.cooc_entries().value_size()) {
       ss << "DictionaryConfig.cooc_entries fields have inconsistent sizes; ";
 
       for (int i = 0; i < message.cooc_entries().first_index_size(); ++i) {

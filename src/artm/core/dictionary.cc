@@ -45,9 +45,9 @@ Dictionary::Dictionary(const artm::DictionaryConfig& config) {
         // std::map::insert() ignores attempts to write multiply pairs with same key
         // the data representation is symmetric for both first and second tokens in cooc pair
         first_cooc_iter->second.insert(std::make_pair(second_index_iter->second,
-                                                      config.cooc_entries().items_count(i)));
+                                                      config.cooc_entries().value(i)));
         second_cooc_iter->second.insert(std::make_pair(first_index_iter->second,
-                                                       config.cooc_entries().items_count(i)));
+                                                       config.cooc_entries().value(i)));
       }
     }
   }

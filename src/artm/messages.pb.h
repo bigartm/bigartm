@@ -268,11 +268,12 @@ inline bool TopicModel_OperationType_Parse(
 enum CollectionParserConfig_Format {
   CollectionParserConfig_Format_BagOfWordsUci = 0,
   CollectionParserConfig_Format_MatrixMarket = 1,
-  CollectionParserConfig_Format_VowpalWabbit = 2
+  CollectionParserConfig_Format_VowpalWabbit = 2,
+  CollectionParserConfig_Format_Cooccurrence = 3
 };
 bool CollectionParserConfig_Format_IsValid(int value);
 const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MIN = CollectionParserConfig_Format_BagOfWordsUci;
-const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MAX = CollectionParserConfig_Format_VowpalWabbit;
+const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MAX = CollectionParserConfig_Format_Cooccurrence;
 const int CollectionParserConfig_Format_Format_ARRAYSIZE = CollectionParserConfig_Format_Format_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* CollectionParserConfig_Format_descriptor();
@@ -3563,17 +3564,17 @@ class DictionaryCoocurenceEntries : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_second_index();
 
-  // repeated float items_count = 3;
-  inline int items_count_size() const;
-  inline void clear_items_count();
-  static const int kItemsCountFieldNumber = 3;
-  inline float items_count(int index) const;
-  inline void set_items_count(int index, float value);
-  inline void add_items_count(float value);
+  // repeated float value = 3;
+  inline int value_size() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 3;
+  inline float value(int index) const;
+  inline void set_value(int index, float value);
+  inline void add_value(float value);
   inline const ::google::protobuf::RepeatedField< float >&
-      items_count() const;
+      value() const;
   inline ::google::protobuf::RepeatedField< float >*
-      mutable_items_count();
+      mutable_value();
 
   // @@protoc_insertion_point(class_scope:artm.DictionaryCoocurenceEntries)
  private:
@@ -3582,7 +3583,7 @@ class DictionaryCoocurenceEntries : public ::google::protobuf::Message {
 
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > first_index_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > second_index_;
-  ::google::protobuf::RepeatedField< float > items_count_;
+  ::google::protobuf::RepeatedField< float > value_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -6228,6 +6229,7 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   static const Format BagOfWordsUci = CollectionParserConfig_Format_BagOfWordsUci;
   static const Format MatrixMarket = CollectionParserConfig_Format_MatrixMarket;
   static const Format VowpalWabbit = CollectionParserConfig_Format_VowpalWabbit;
+  static const Format Cooccurrence = CollectionParserConfig_Format_Cooccurrence;
   static inline bool Format_IsValid(int value) {
     return CollectionParserConfig_Format_IsValid(value);
   }
@@ -12588,29 +12590,29 @@ DictionaryCoocurenceEntries::mutable_second_index() {
   return &second_index_;
 }
 
-// repeated float items_count = 3;
-inline int DictionaryCoocurenceEntries::items_count_size() const {
-  return items_count_.size();
+// repeated float value = 3;
+inline int DictionaryCoocurenceEntries::value_size() const {
+  return value_.size();
 }
-inline void DictionaryCoocurenceEntries::clear_items_count() {
-  items_count_.Clear();
+inline void DictionaryCoocurenceEntries::clear_value() {
+  value_.Clear();
 }
-inline float DictionaryCoocurenceEntries::items_count(int index) const {
-  return items_count_.Get(index);
+inline float DictionaryCoocurenceEntries::value(int index) const {
+  return value_.Get(index);
 }
-inline void DictionaryCoocurenceEntries::set_items_count(int index, float value) {
-  items_count_.Set(index, value);
+inline void DictionaryCoocurenceEntries::set_value(int index, float value) {
+  value_.Set(index, value);
 }
-inline void DictionaryCoocurenceEntries::add_items_count(float value) {
-  items_count_.Add(value);
+inline void DictionaryCoocurenceEntries::add_value(float value) {
+  value_.Add(value);
 }
 inline const ::google::protobuf::RepeatedField< float >&
-DictionaryCoocurenceEntries::items_count() const {
-  return items_count_;
+DictionaryCoocurenceEntries::value() const {
+  return value_;
 }
 inline ::google::protobuf::RepeatedField< float >*
-DictionaryCoocurenceEntries::mutable_items_count() {
-  return &items_count_;
+DictionaryCoocurenceEntries::mutable_value() {
+  return &value_;
 }
 
 // -------------------------------------------------------------------
