@@ -166,7 +166,28 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
   int token_count_zero = 0;
 
   int item_id, token_id, token_count;
-  for (std::string token; docword >> item_id >> token_id >> token_count;) {
+  int index = 1;
+  std::getline(docword, str);  // skip end of previos line
+
+  while (!docword.eof()) {
+    std::getline(docword, str);
+    boost::algorithm::trim(str);
+    ++index;
+    if (str.empty()) continue;
+
+    std::vector<std::string> strs;
+    boost::split(strs, str, boost::is_any_of("\t "));
+    if (strs.size() != 3) {
+      std::stringstream ss;
+      ss << "Error at line" << index << " or " << index + 2 << ", file " << config_.docword_file_path()
+         << ". Expected format: item_id token_id n_wd";
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
+
+    item_id = std::stoi(strs[0]);
+    token_id = std::stoi(strs[1]);
+    token_count = std::stoi(strs[2]);
+
     if (config_.use_unity_based_indices())
       token_id--;  // convert 1-based to zero-based index
 
@@ -287,7 +308,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenM
   }
 
   // Craft the co-occurence part of dictionary
-  int index = -1;
+  int index = 0;
   std::string str;
   retval->clear_cooc_entries();
   artm::DictionaryCoocurenceEntries* cooc_entries = retval->mutable_cooc_entries();

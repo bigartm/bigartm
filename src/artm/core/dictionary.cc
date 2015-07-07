@@ -138,7 +138,7 @@ const DictionaryEntry* Dictionary::entry(int index) const {
 float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_score) {
   float coherence_value = 0.0;
   int k = tokens_to_score.size();
-  if (k == 0) return 0.0f;
+  if (k == 0 || k == 1) return 0.0f;
 
   for (int i = 0; i < k - 1; ++i) {
     auto token_one_index_iter = token_index_.find(tokens_to_score[i]);
