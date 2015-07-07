@@ -3,10 +3,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
 
-#include "artm/score/coherence_plugin.h"
 #include "artm/score/top_tokens.h"
 
 namespace artm {
@@ -88,7 +88,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     }
 
     if (count_coherence) {
-      float topic_coherence = CountTopicCoherence(dictionary_ptr, tokens_for_coherence);
+      float topic_coherence = dictionary_ptr->CountTopicCoherence(tokens_for_coherence);
       average_coherence += topic_coherence;
       coherence->add_value(topic_coherence);
     }

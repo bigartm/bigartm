@@ -54,16 +54,16 @@ TEST(CollectionParser, UciBagOfWords) {
 
   ASSERT_EQ(dictionary_loaded->cooc_entries().first_index_size(), 3);
   ASSERT_EQ(dictionary_loaded->cooc_entries().second_index_size(), 3);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().items_count_size(), 3);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().value_size(), 3);
   ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(0), 0);
   ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(1), 0);
   ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(2), 1);
   ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(0), 1);
   ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(1), 2);
   ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(2), 2);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().items_count(0), 1);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().items_count(1), 1);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().items_count(2), 2);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().value(0), 1);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().value(1), 1);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().value(2), 2);
 
   boost::filesystem::recursive_directory_iterator it(target_folder);
   boost::filesystem::recursive_directory_iterator endit;

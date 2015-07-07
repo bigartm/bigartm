@@ -5,10 +5,10 @@
 #include <cmath>
 #include <algorithm>
 
+#include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
 
-#include "artm/score/coherence_plugin.h"
 #include "artm/score/topic_kernel.h"
 
 namespace artm {
@@ -121,7 +121,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
     int denominator = 0;
     for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
       if (topics_to_score[topic_index]) {
-        float value = CountTopicCoherence(dictionary_ptr, topic_kernel_tokens[topic_index]);
+        float value = dictionary_ptr->CountTopicCoherence(topic_kernel_tokens[topic_index]);
         artm::core::repeated_field_append(kernel_coherence->mutable_value(), topic_index, value);
         average_kernel_coherence += value;
         ++denominator;

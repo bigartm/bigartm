@@ -19,7 +19,7 @@ struct TokenCoocInfo {
   TokenCoocInfo() : token(nullptr), value(0) {}
   TokenCoocInfo(const Token* _token, int _value) : token(_token), value(_value) { }
   const Token* token;
-  int value;
+  float value;
 };
 
 class Dictionary {
@@ -31,8 +31,8 @@ class Dictionary {
   const Token* cooc_token(const Token& token, int index) const;
 
   // cooc_value() methods return 0, if there're no such tokens
-  int cooc_value(const Token& token, int index) const;
-  int cooc_value(const Token& token_1, const Token& token_2) const;
+  float cooc_value(const Token& token, int index) const;
+  float cooc_value(const Token& token_1, const Token& token_2) const;
 
   // general method to return all cooc tokens with their values for given token
   const std::vector<TokenCoocInfo> cooc_info(const Token& token) const;
@@ -41,12 +41,14 @@ class Dictionary {
   const DictionaryEntry* entry(int index) const;
   inline int size() const { return entries_.size(); }
 
+  float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
+
  private:
   int total_items_count_;
   std::vector<DictionaryEntry> entries_;
   std::unordered_map<Token, int, TokenHasher> token_index_;
   std::unordered_map<int, Token> index_token_;
-  std::unordered_map<int, std::unordered_map<int, int> > cooc_values_;
+  std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
 };
 
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
