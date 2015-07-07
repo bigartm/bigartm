@@ -80,8 +80,6 @@ set(SRC_LIST
 	score/top_tokens.h
 	score/topic_kernel.cc
 	score/topic_kernel.h
-	score/coherence_plugin.cc
-	score/coherence_plugin.h
 	utility/ice.cc
 	utility/ice.h
 	utility/blas.cc
