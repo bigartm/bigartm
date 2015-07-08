@@ -307,6 +307,59 @@ bool Helpers::FixAndValidate(::artm::ThetaMatrix* message, bool throw_error) {
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::GetThetaMatrixArgs* message) {
+  if (message->has_batch())
+    Fix(message->mutable_batch());
+}
+
+bool Helpers::Validate(const ::artm::GetThetaMatrixArgs& message, bool throw_error) {
+  if (message.has_batch())
+    Validate(message.batch(), throw_error);
+
+  std::stringstream ss;
+  bool is_col_major = (message.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_ColMajor);
+  bool is_row_major = (message.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_RowMajor);
+  if ((is_col_major || is_row_major) && message.use_sparse_format())
+    ss << "A dense format is required for an extended request";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::GetThetaMatrixArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::GetTopicModelArgs* message) {
+}
+
+bool Helpers::Validate(const ::artm::GetTopicModelArgs& message, bool throw_error) {
+  std::stringstream ss;
+  bool is_col_major = (message.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_ColMajor);
+  bool is_row_major = (message.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_RowMajor);
+  if ((is_col_major || is_row_major) && message.use_sparse_format())
+    ss << "A dense format is required for an extended request";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::GetTopicModelArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
 void Helpers::Fix(::artm::Batch* message) {
   if (message->class_id_size() == 0) {
     for (int i = 0; i < message->token_size(); ++i) {

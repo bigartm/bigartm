@@ -29,7 +29,7 @@ with artm.library.MasterComponent(disk_path=batches_disk_path) as master:
     # Option 2.
     # Getting a full theta matrix cached during last iteration
     # This does requires "master.config().cache_theta = True" and stores the entire Theta matrix in memory.
-    theta_matrix = master.GetThetaMatrix(model, clean_cache=True)
+    theta_matrix, numpy_matrix = master.GetThetaMatrix(model, clean_cache=True)
     print "Option 2. Full ThetaMatrix cached during last iteration, #items = %i" % len(theta_matrix.item_id)
 
     # Option 3.
@@ -44,12 +44,12 @@ with artm.library.MasterComponent(disk_path=batches_disk_path) as master:
         if ((batch_index + 1) % 2 == 0) or ((batch_index + 1) == len(batches)):
             master.WaitIdle()  # wait for all batches are processed
             # model.Synchronize(decay_weight=..., apply_weight=...)  # uncomment for online algorithm
-            theta_matrix = master.GetThetaMatrix(model=model, clean_cache=True)
+            theta_matrix, numpy_matrix = master.GetThetaMatrix(model=model, clean_cache=True)
             print "Option 3. ThetaMatrix from cache, online, #items = %i" % len(theta_matrix.item_id)
 
     # Option 4.
     # Testing batches by explicitly loading them from disk. This is the right way of testing held-out batches.
     # This does not require "master.config().cache_theta = True"
     test_batch = artm.library.Library().LoadBatch(batches[0])  # select the first batch for demo purpose
-    theta_matrix = master.GetThetaMatrix(model=model, batch=test_batch)
+    theta_matrix, numpy_matrix = master.GetThetaMatrix(model=model, batch=test_batch)
     print "Option 4. ThetaMatrix for test batch, #items = %i" % len(theta_matrix.item_id)

@@ -1919,7 +1919,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "ds\030\001 \001(\005:\002-1\"8\n\017ExportModelArgs\022\021\n\tfile_"
     "name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"8\n\017Import"
     "ModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel_na"
-    "me\030\002 \001(\t\"\367\003\n\022ProcessBatchesArgs\022\027\n\017nwt_t"
+    "me\030\002 \001(\t\"\255\004\n\022ProcessBatchesArgs\022\027\n\017nwt_t"
     "arget_name\030\001 \001(\t\022\026\n\016batch_filename\030\002 \003(\t"
     "\022\027\n\017pwt_source_name\030\003 \001(\t\022\"\n\026inner_itera"
     "tions_count\030\004 \001(\005:\00210\022\034\n\013stream_name\030\005 \001"
@@ -1930,25 +1930,27 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\016use_sparse_bow\030\014 \001(\010:\004true\022\032\n\014reset_sco"
     "res\030\r \001(\010:\004true\022J\n\021theta_matrix_type\030\016 \001"
     "(\0162(.artm.ProcessBatchesArgs.ThetaMatrix"
-    "Type:\005Cache\"=\n\017ThetaMatrixType\022\010\n\004None\020\000"
-    "\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\"d\n\024Pr"
-    "ocessBatchesResult\022#\n\nscore_data\030\001 \003(\0132\017"
-    ".artm.ScoreData\022\'\n\014theta_matrix\030\002 \001(\0132\021."
-    "artm.ThetaMatrix\"m\n\016MergeModelArgs\022\027\n\017nw"
-    "t_target_name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002"
-    " \003(\t\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\ntopic_nam"
-    "e\030\004 \003(\t\"\231\001\n\023RegularizeModelArgs\022\027\n\017rwt_t"
-    "arget_name\030\001 \001(\t\022\027\n\017pwt_source_name\030\002 \001("
-    "\t\022\027\n\017nwt_source_name\030\003 \001(\t\0227\n\024regularize"
-    "r_settings\030\004 \003(\0132\031.artm.RegularizerSetti"
-    "ngs\"_\n\022NormalizeModelArgs\022\027\n\017pwt_target_"
-    "name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 \001(\t\022\027\n\017r"
-    "wt_source_name\030\003 \001(\t\"B\n\024ImportDictionary"
-    "Args\022\021\n\tfile_name\030\001 \001(\t\022\027\n\017dictionary_na"
-    "me\030\002 \001(\t\"\225\001\n\025CopyRequestResultArgs\022=\n\014re"
-    "quest_type\030\001 \001(\0162\'.artm.CopyRequestResul"
-    "tArgs.RequestType\"=\n\013RequestType\022\026\n\022GetT"
-    "hetaSecondPass\020\000\022\026\n\022GetModelSecondPass\020\001", 9840);
+    "Type:\005Cache\"s\n\017ThetaMatrixType\022\010\n\004None\020\000"
+    "\022\021\n\rDenseRowMajor\020\001\022\021\n\rDenseColMajor\020\002\022\021"
+    "\n\rDenseProtobuf\020\003\022\022\n\016SparseProtobuf\020\004\022\t\n"
+    "\005Cache\020\005\"d\n\024ProcessBatchesResult\022#\n\nscor"
+    "e_data\030\001 \003(\0132\017.artm.ScoreData\022\'\n\014theta_m"
+    "atrix\030\002 \001(\0132\021.artm.ThetaMatrix\"m\n\016MergeM"
+    "odelArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\027\n\017nwt"
+    "_source_name\030\002 \003(\t\022\025\n\rsource_weight\030\003 \003("
+    "\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023RegularizeMode"
+    "lArgs\022\027\n\017rwt_target_name\030\001 \001(\t\022\027\n\017pwt_so"
+    "urce_name\030\002 \001(\t\022\027\n\017nwt_source_name\030\003 \001(\t"
+    "\0227\n\024regularizer_settings\030\004 \003(\0132\031.artm.Re"
+    "gularizerSettings\"_\n\022NormalizeModelArgs\022"
+    "\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017nwt_source_n"
+    "ame\030\002 \001(\t\022\027\n\017rwt_source_name\030\003 \001(\t\"B\n\024Im"
+    "portDictionaryArgs\022\021\n\tfile_name\030\001 \001(\t\022\027\n"
+    "\017dictionary_name\030\002 \001(\t\"\225\001\n\025CopyRequestRe"
+    "sultArgs\022=\n\014request_type\030\001 \001(\0162\'.artm.Co"
+    "pyRequestResultArgs.RequestType\"=\n\013Reque"
+    "stType\022\026\n\022GetThetaSecondPass\020\000\022\026\n\022GetMod"
+    "elSecondPass\020\001", 9894);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -23253,6 +23255,8 @@ bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
+    case 5:
       return true;
     default:
       return false;
@@ -23261,8 +23265,10 @@ bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value) {
 
 #ifndef _MSC_VER
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::None;
-const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::Dense;
-const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::Sparse;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::DenseRowMajor;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::DenseColMajor;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::DenseProtobuf;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::SparseProtobuf;
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::Cache;
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::ThetaMatrixType_MIN;
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::ThetaMatrixType_MAX;
@@ -23310,7 +23316,7 @@ void ProcessBatchesArgs::SharedCtor() {
   opt_for_avx_ = true;
   use_sparse_bow_ = true;
   reset_scores_ = true;
-  theta_matrix_type_ = 3;
+  theta_matrix_type_ = 5;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -23377,7 +23383,7 @@ void ProcessBatchesArgs::Clear() {
     opt_for_avx_ = true;
     use_sparse_bow_ = true;
     reset_scores_ = true;
-    theta_matrix_type_ = 3;
+    theta_matrix_type_ = 5;
   }
   batch_filename_.Clear();
   regularizer_name_.Clear();

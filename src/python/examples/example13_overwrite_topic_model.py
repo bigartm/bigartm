@@ -54,13 +54,15 @@ with artm.library.MasterComponent() as master, artm.library.MasterComponent() as
         master.WaitIdle()
         model.Synchronize()
 
-    topic_model_odd = master.GetTopicModel(model=model, request_type=request_type, topic_names=topic_names_odd)
-    topic_model_even = master.GetTopicModel(model=model, request_type=request_type, topic_names=topic_names_even)
-    theta_matrix = master.GetThetaMatrix(model=model, batch=test_batch)
+    topic_model_odd = master.GetTopicModel(model=model, request_type=request_type, topic_names=topic_names_odd,
+                                           use_matrix=False)
+    topic_model_even = master.GetTopicModel(model=model, request_type=request_type, topic_names=topic_names_even,
+                                            use_matrix=False)
+    theta_matrix, numpy_matrix = master.GetThetaMatrix(model=model, batch=test_batch)
 
     print "Theta distribution for one test document: "
     print "For the original topic model:             ",
-    for value in theta_matrix.item_weights[0].value:
+    for value in numpy_matrix[0, :]:
         print "%.5f" % value,
 
     test_model = test_master.CreateModel(topic_names=topic_names)
@@ -69,9 +71,9 @@ with artm.library.MasterComponent() as master, artm.library.MasterComponent() as
     test_master.WaitIdle()
     invoke_regularizers = False if (request_type == pwt_request) else True
     test_model.Synchronize(decay_weight=0.0, apply_weight=1.0, invoke_regularizers=False)
-    test_theta = test_master.GetThetaMatrix(model=test_model, batch=test_batch)
+    test_theta, numpy_matrix = test_master.GetThetaMatrix(model=test_model, batch=test_batch)
     print "\nFor topic model copied into test_master:  ",
-    for value in test_theta.item_weights[0].value:
+    for value in numpy_matrix[0, :]:
         print "%.5f" % value,
     print '(the same result is expected)'
 
@@ -79,16 +81,16 @@ with artm.library.MasterComponent() as master, artm.library.MasterComponent() as
     master.InvokeIteration(disk_path=batches_disk_path)
     master.WaitIdle()
     model.Synchronize(decay_weight=0.5, apply_weight=1.0)
-    theta_matrix = master.GetThetaMatrix(model=model, batch=test_batch)
+    theta_matrix, numpy_matrix = master.GetThetaMatrix(model=model, batch=test_batch)
     print "After updating original topic model:      ",
-    for value in theta_matrix.item_weights[0].value:
+    for value in numpy_matrix[0, :]:
         print "%.5f" % value,
 
     test_master.InvokeIteration(disk_path=batches_disk_path)
     test_master.WaitIdle()
     test_model.Synchronize(decay_weight=0.5, apply_weight=1.0)
-    test_theta = test_master.GetThetaMatrix(model=test_model, batch=test_batch)
+    test_theta, numpy_matrix = test_master.GetThetaMatrix(model=test_model, batch=test_batch)
     print "\nAfter updating topic model in test_master:",
-    for value in test_theta.item_weights[0].value:
+    for value in numpy_matrix[0, :]:
         print "%.5f" % value,
     print '(depends on nwt vs pwt request)'

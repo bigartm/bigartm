@@ -47,6 +47,44 @@ static void set_last_error(const std::string& error) {
   last_error_->assign(error);
 }
 
+static void HandleExtendedTopicModelRequest(bool row_major, bool col_major, ::artm::TopicModel* topic_model) {
+  if (!row_major && !col_major)
+    return;
+
+  std::string* lm = last_message_ex();
+  lm->resize(sizeof(float) * topic_model->token_size() * topic_model->topics_count());
+  char* lm_ptr = &(*lm)[0];
+  float* lm_float = reinterpret_cast<float*>(lm_ptr);
+  for (int token_index = 0; token_index < topic_model->token_size(); ++token_index) {
+    for (int topic_index = 0; topic_index < topic_model->topics_count(); ++topic_index) {
+      int index = row_major ? (token_index * topic_model->topics_count() + topic_index)
+        : (topic_index * topic_model->token_size() + token_index);
+      lm_float[index] = topic_model->token_weights(token_index).value(topic_index);
+    }
+  }
+
+  topic_model->clear_token_weights();
+}
+
+static void HandleExtendedThetaMatrixRequest(bool row_major, bool col_major, ::artm::ThetaMatrix* theta_matrix) {
+  if (!row_major && !col_major)
+    return;
+
+  std::string* lm = last_message_ex();
+  lm->resize(sizeof(float) * theta_matrix->item_id_size() * theta_matrix->topics_count());
+  char* lm_ptr = &(*lm)[0];
+  float* lm_float = reinterpret_cast<float*>(lm_ptr);
+  for (int topic_index = 0; topic_index < theta_matrix->topics_count(); ++topic_index) {
+    for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
+      int index = row_major ? (topic_index * theta_matrix->item_id_size() + item_index)
+        : (item_index * theta_matrix->topics_count() + topic_index);
+      lm_float[index] = theta_matrix->item_weights(item_index).value(topic_index);
+    }
+  }
+
+  theta_matrix->clear_item_weights();
+}
+
 static void EnableLogging() {
   static bool logging_enabled = false;
   if (!logging_enabled) {
@@ -223,6 +261,11 @@ int ArtmRequestProcessBatches(int master_id, int length, const char* process_bat
     ParseFromArray(process_batches_args, length, &args);
     artm::ProcessBatchesResult result;
     master_component(master_id)->RequestProcessBatches(args, &result);
+
+    bool is_row_major = (args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor);
+    bool is_col_major = (args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_DenseColMajor);
+    HandleExtendedThetaMatrixRequest(is_row_major, is_col_major, result.mutable_theta_matrix());
+
     result.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
@@ -260,31 +303,13 @@ int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args
     artm::ThetaMatrix theta_matrix;
     artm::GetThetaMatrixArgs args;
     ParseFromArray(get_theta_args, length, &args);
-    if (args.has_batch()) ::artm::core::Helpers::FixAndValidate(args.mutable_batch());
-
-    bool extended_request = (args.matrix_layout() != artm::GetThetaMatrixArgs_MatrixLayout_Protobuf);
-    bool row_major = (args.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_RowMajor);
-    if (extended_request && args.use_sparse_format())
-      BOOST_THROW_EXCEPTION(::artm::core::InvalidOperation("A dense format is required for an extended request"));
-
+    ::artm::core::Helpers::FixAndValidate(&args);
     master_component(master_id)->RequestThetaMatrix(args, &theta_matrix);
     ::artm::core::Helpers::Validate(theta_matrix, false);
 
-    if (extended_request) {
-      std::string* lm = last_message_ex();
-      lm->resize(sizeof(float) * theta_matrix.item_id_size() * theta_matrix.topics_count());
-      char* lm_ptr = &(*lm)[0];
-      float* lm_float = reinterpret_cast<float*>(lm_ptr);
-      for (int topic_index = 0; topic_index < theta_matrix.topics_count(); ++topic_index) {
-        for (int item_index = 0; item_index < theta_matrix.item_id_size(); ++item_index) {
-          int index = row_major ? (topic_index * theta_matrix.item_id_size() + item_index)
-                                : (item_index * theta_matrix.topics_count() + topic_index);
-          lm_float[index] = theta_matrix.item_weights(item_index).value(topic_index);
-        }
-      }
-
-      theta_matrix.clear_item_weights();
-    }
+    bool is_col_major = (args.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_ColMajor);
+    bool is_row_major = (args.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_RowMajor);
+    HandleExtendedThetaMatrixRequest(is_row_major, is_col_major, &theta_matrix);
 
     theta_matrix.SerializeToString(last_message());
     return last_message()->size();
@@ -296,30 +321,14 @@ int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args)
     artm::TopicModel topic_model;
     artm::GetTopicModelArgs args;
     ParseFromArray(get_model_args, length, &args);
-
-    bool extended_request = (args.matrix_layout() != artm::GetTopicModelArgs_MatrixLayout_Protobuf);
-    bool row_major = (args.matrix_layout() == artm::GetTopicModelArgs_MatrixLayout_RowMajor);
-    if (extended_request && args.use_sparse_format())
-      BOOST_THROW_EXCEPTION(::artm::core::InvalidOperation("A dense format is required for an extended request"));
+    ::artm::core::Helpers::FixAndValidate(&args);
 
     master_component(master_id)->RequestTopicModel(args, &topic_model);
     ::artm::core::Helpers::Validate(topic_model, false);
 
-    if (extended_request) {
-      std::string* lm = last_message_ex();
-      lm->resize(sizeof(float) * topic_model.token_size() * topic_model.topics_count());
-      char* lm_ptr = &(*lm)[0];
-      float* lm_float = reinterpret_cast<float*>(lm_ptr);
-      for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
-        for (int topic_index = 0; topic_index < topic_model.topics_count(); ++topic_index) {
-          int index = row_major ? (token_index * topic_model.topics_count() + topic_index)
-                                : (topic_index * topic_model.token_size() + token_index);
-          lm_float[index] = topic_model.token_weights(token_index).value(topic_index);
-        }
-      }
-
-      topic_model.clear_token_weights();
-    }
+    bool is_row_major = (args.matrix_layout() == artm::GetTopicModelArgs_MatrixLayout_RowMajor);
+    bool is_col_major = (args.matrix_layout() == artm::GetTopicModelArgs_MatrixLayout_ColMajor);
+    HandleExtendedTopicModelRequest(is_row_major, is_col_major, &topic_model);
 
     topic_model.SerializeToString(last_message());
     return last_message()->size();

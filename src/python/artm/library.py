@@ -55,9 +55,11 @@ InitializeModelArgs_SourceType_Batches = 1
 SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
 SpecifiedSparsePhiConfig_Mode_SparseTokens = 1
 ProcessBatchesArgs_ThetaMatrixType_None = 0
-ProcessBatchesArgs_ThetaMatrixType_Dense = 1
-ProcessBatchesArgs_ThetaMatrixType_Sparse = 2
-ProcessBatchesArgs_ThetaMatrixType_Cache = 3
+ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor = 1
+ProcessBatchesArgs_ThetaMatrixType_DenseColMajor = 2
+ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf = 3
+ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf = 4
+ProcessBatchesArgs_ThetaMatrixType_Cache = 5
 CopyRequestResultArgs_RequestType_GetThetaSecondPass = 0
 CopyRequestResultArgs_RequestType_GetModelSecondPass = 1
 GetTopicModelArgs_MatrixLayout_Protobuf = 0
@@ -223,6 +225,36 @@ class MasterComponent:
 
     def __exit__(self, type, value, traceback):
         self.Dispose()
+
+    def __get_theta_matrix_second_pass(self, theta_matrix):
+        import numpy
+        num_rows = len(theta_matrix.item_id)
+        num_cols = theta_matrix.topics_count
+        numpy_matrix = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+        length = numpy_matrix.nbytes
+        blob = ctypes.c_char_p(numpy_matrix.ctypes.data)
+
+        args = messages_pb2.CopyRequestResultArgs()
+        args.request_type = CopyRequestResultArgs_RequestType_GetThetaSecondPass
+        args_blob = args.SerializeToString()
+
+        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob))
+        return numpy_matrix
+
+    def __get_topic_model_second_pass(self, topic_model):
+        import numpy
+        num_rows = topic_model.topics_count
+        num_cols = len(topic_model.token)
+        numpy_matrix = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+        length = numpy_matrix.nbytes
+        blob = ctypes.c_char_p(numpy_matrix.ctypes.data)
+
+        args = messages_pb2.CopyRequestResultArgs()
+        args.request_type = CopyRequestResultArgs_RequestType_GetModelSecondPass
+        args_blob = args.SerializeToString()
+
+        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob))
+        return numpy_matrix
 
     def Dispose(self):
         self.lib_.ArtmDisposeMasterComponent(self.id_)
@@ -522,7 +554,7 @@ class MasterComponent:
         self.Reconfigure(new_config_)
 
     def GetTopicModel(self, model=None, args=None, class_ids=None, topic_names=None, use_sparse_format=None,
-                      request_type=None):
+                      request_type=None, use_matrix=True):
         if args is None:
             args = messages_pb2.GetTopicModelArgs()
         if model is not None:
@@ -542,6 +574,8 @@ class MasterComponent:
             args.use_sparse_format=use_sparse_format
         if request_type is not None:
             args.request_type = request_type
+        if use_matrix:
+            args.matrix_layout = GetTopicModelArgs_MatrixLayout_RowMajor
 
         args_blob = args.SerializeToString()
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob))
@@ -551,7 +585,12 @@ class MasterComponent:
 
         topic_model = messages_pb2.TopicModel()
         topic_model.ParseFromString(topic_model_blob)
-        return topic_model
+
+        if not use_matrix:
+            return topic_model
+
+        numpy_matrix = self.__get_topic_model_second_pass(topic_model)
+        return topic_model, numpy_matrix
 
     def GetRegularizerState(self, regularizer_name):
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestRegularizerState(self.id_, regularizer_name))
@@ -563,7 +602,7 @@ class MasterComponent:
         regularizer_state.ParseFromString(state_blob)
         return regularizer_state
 
-    def GetThetaMatrix(self, model=None, batch=None, clean_cache=None, args=None, topic_names=None):
+    def GetThetaMatrix(self, model=None, batch=None, clean_cache=None, args=None, topic_names=None, use_matrix=True):
         if args is None:
             args = messages_pb2.GetThetaMatrixArgs()
         if model is not None:
@@ -579,6 +618,9 @@ class MasterComponent:
             args.ClearField('topic_name')
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
+        if use_matrix:
+            args.matrix_layout = GetThetaMatrixArgs_MatrixLayout_RowMajor
+
         args_blob = args.SerializeToString()
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
         blob = ctypes.create_string_buffer(length)
@@ -586,7 +628,12 @@ class MasterComponent:
 
         theta_matrix = messages_pb2.ThetaMatrix()
         theta_matrix.ParseFromString(blob)
-        return theta_matrix
+
+        if not use_matrix:
+            return theta_matrix
+
+        numpy_matrix = self.__get_theta_matrix_second_pass(theta_matrix)
+        return theta_matrix, numpy_matrix
 
     def InitializeModel(self, model_name, batch_folder=None, dictionary_name=None,
                         topics_count=None, topic_names=[], args=None):
@@ -688,7 +735,13 @@ class MasterComponent:
 
         result = messages_pb2.ProcessBatchesResult()
         result.ParseFromString(blob)
-        return result
+
+        if args.theta_matrix_type not in (ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor,
+                                          ProcessBatchesArgs_ThetaMatrixType_DenseColMajor):
+            return result
+
+        numpy_matrix = self.__get_theta_matrix_second_pass(result.theta_matrix)
+        return result, numpy_matrix
 
     def MergeModel(self, models, target_nwt, topic_names=[]):
         """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.

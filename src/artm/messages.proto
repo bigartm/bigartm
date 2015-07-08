@@ -550,9 +550,11 @@ message ImportModelArgs {
 message ProcessBatchesArgs {
   enum ThetaMatrixType {
     None = 0;
-    Dense = 1;
-    Sparse = 2;
-    Cache = 3;
+    DenseRowMajor = 1;
+    DenseColMajor = 2;
+    DenseProtobuf = 3;
+    SparseProtobuf = 4;
+    Cache = 5;
   }
 
   optional string nwt_target_name = 1;

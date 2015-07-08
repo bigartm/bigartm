@@ -149,7 +149,7 @@ with artm.library.MasterComponent(master_config) as master:
 
     print "Saving topic model... ",
     with open("Output.topic_model", "wb") as binary_file:
-        binary_file.write(master.GetTopicModel(model).SerializeToString())
+        binary_file.write(master.GetTopicModel(model, use_matrix=False).SerializeToString())
     print "Done. "
 
     # Perform one iteration to calculate Perplexity on the entire train dataset
@@ -182,7 +182,7 @@ with artm.library.MasterComponent(test_master_config) as test_master:
     perplexity = 0.0; perplexity_norm = 0.0
     for test_batch_filename in glob.glob(test_batches_folder + "*.batch"):
         test_batch = artm.library.Library().LoadBatch(test_batch_filename)
-        test_batch_theta = test_master.GetThetaMatrix(model=test_model, batch=test_batch)
+        test_batch_theta = test_master.GetThetaMatrix(model=test_model, batch=test_batch, use_matrix=False)
         theta_sparsity = calc_theta_sparsity(test_batch_theta)
         (batch_perplexity, batch_perplexity_norm) = calc_perplexity(topic_model, test_batch_theta, test_batch)
         print "Batch = " + test_batch_filename,

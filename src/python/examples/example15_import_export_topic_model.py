@@ -21,18 +21,18 @@ with artm.library.MasterComponent() as master:
     # Export topic model into file in binary format
     model.Export(filename)
 
-    theta_matrix = master.GetThetaMatrix(model=model, batch=test_batch)
+    theta_matrix, numpy_matrix= master.GetThetaMatrix(model=model, batch=test_batch)
     print "Theta distribution for one test document: "
     print "For the original topic model:             ",
-    for value in theta_matrix.item_weights[0].value:
+    for value in numpy_matrix[0, :]:
         print "%.5f" % value,
 
 with artm.library.MasterComponent() as master2:
     # Import topic model from binary file
     master2.ImportModel("pwt", filename)  # import creates a new-style model
 
-    result = master2.ProcessBatches("pwt", batches=[batches[0]],
-                                    theta_matrix_type=artm.library.ProcessBatchesArgs_ThetaMatrixType_Dense)
+    request = artm.library.ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor
+    result, numpy_matrix2 = master2.ProcessBatches("pwt", batches=[batches[0]], theta_matrix_type=request)
     print "\nFor topic model imported into test_master:",
-    for value in result.theta_matrix.item_weights[0].value:
+    for value in numpy_matrix2[0, :]:
         print "%.5f" % value,

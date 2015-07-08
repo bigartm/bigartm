@@ -36,5 +36,5 @@ with artm.library.MasterComponent() as master:
     #     master.WaitIdle()
     #     model.Synchronize()
 
-    topic_model = master.GetTopicModel(model=model)
+    topic_model, numpy_matrix = master.GetTopicModel(model=model)
     print "Resulting topic model contains", len(topic_model.token), "tokens"

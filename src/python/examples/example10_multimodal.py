@@ -89,9 +89,9 @@ with artm.library.MasterComponent() as master:
     artm.library.Visualizers.PrintTopTokensScore(ru_top_tokens_score.GetValue(model))
     artm.library.Visualizers.PrintTopTokensScore(en_top_tokens_score.GetValue(model))
 
-    ru_phi = master.GetTopicModel(model=model, class_ids={"@russian"})
-    en_phi = master.GetTopicModel(model=model, class_ids={"@english"})
-    combined_phi = master.GetTopicModel(model=model)
+    ru_phi, ru_numpy_matrix = master.GetTopicModel(model=model, class_ids={"@russian"})
+    en_phi, en_numpy_matrix = master.GetTopicModel(model=model, class_ids={"@english"})
+    combined_phi, combined_numpy_matrix = master.GetTopicModel(model=model)
 
     print "\nSparsity of theta matrix = %.3f" % theta_sparsity.GetValue(model).value
     print "@russian: phi matrix sparsity = %.3f," % ru_sparsity.GetValue(model).value, ' #tokens=%i' % len(ru_phi.token)

@@ -44,6 +44,14 @@ class Helpers {
   static bool Validate(const ::artm::ThetaMatrix& message, bool throw_error = true);
   static bool FixAndValidate(::artm::ThetaMatrix* message, bool throw_error = true);
 
+  static void Fix(::artm::GetThetaMatrixArgs* message);
+  static bool Validate(const ::artm::GetThetaMatrixArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::GetThetaMatrixArgs* message, bool throw_error = true);
+
+  static void Fix(::artm::GetTopicModelArgs* message);
+  static bool Validate(const ::artm::GetTopicModelArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::GetTopicModelArgs* message, bool throw_error = true);
+
   static void Fix(::artm::Batch* message);
   static bool Validate(const ::artm::Batch& message, bool throw_error = true);
   static bool FixAndValidate(::artm::Batch* message, bool throw_error = true);

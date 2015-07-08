@@ -368,9 +368,11 @@ inline bool GetThetaMatrixArgs_MatrixLayout_Parse(
 }
 enum ProcessBatchesArgs_ThetaMatrixType {
   ProcessBatchesArgs_ThetaMatrixType_None = 0,
-  ProcessBatchesArgs_ThetaMatrixType_Dense = 1,
-  ProcessBatchesArgs_ThetaMatrixType_Sparse = 2,
-  ProcessBatchesArgs_ThetaMatrixType_Cache = 3
+  ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor = 1,
+  ProcessBatchesArgs_ThetaMatrixType_DenseColMajor = 2,
+  ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf = 3,
+  ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf = 4,
+  ProcessBatchesArgs_ThetaMatrixType_Cache = 5
 };
 bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value);
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MIN = ProcessBatchesArgs_ThetaMatrixType_None;
@@ -8024,8 +8026,10 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
 
   typedef ProcessBatchesArgs_ThetaMatrixType ThetaMatrixType;
   static const ThetaMatrixType None = ProcessBatchesArgs_ThetaMatrixType_None;
-  static const ThetaMatrixType Dense = ProcessBatchesArgs_ThetaMatrixType_Dense;
-  static const ThetaMatrixType Sparse = ProcessBatchesArgs_ThetaMatrixType_Sparse;
+  static const ThetaMatrixType DenseRowMajor = ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor;
+  static const ThetaMatrixType DenseColMajor = ProcessBatchesArgs_ThetaMatrixType_DenseColMajor;
+  static const ThetaMatrixType DenseProtobuf = ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf;
+  static const ThetaMatrixType SparseProtobuf = ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf;
   static const ThetaMatrixType Cache = ProcessBatchesArgs_ThetaMatrixType_Cache;
   static inline bool ThetaMatrixType_IsValid(int value) {
     return ProcessBatchesArgs_ThetaMatrixType_IsValid(value);
@@ -19284,7 +19288,7 @@ inline void ProcessBatchesArgs::clear_has_theta_matrix_type() {
   _has_bits_[0] &= ~0x00002000u;
 }
 inline void ProcessBatchesArgs::clear_theta_matrix_type() {
-  theta_matrix_type_ = 3;
+  theta_matrix_type_ = 5;
   clear_has_theta_matrix_type();
 }
 inline ::artm::ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::theta_matrix_type() const {
