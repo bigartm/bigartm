@@ -11,11 +11,13 @@ before_install:
   - wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
   - cd ..
   - cp datasets/* src/python/examples/
+  - sudo pip install pep8
 
 before_script:
   - mkdir build && cd build && cmake .. && cd ..
 
 script:
+  - cd src/python/artm && pep8 --first --max-line-length=99 artm_model.py && cd ../../..
   - cd build && make -j4 && cd ..
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
   - cd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && cd ../../..

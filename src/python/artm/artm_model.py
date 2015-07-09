@@ -55,9 +55,10 @@ def create_parser_config(data_path, collection_name, target_folder,
     collection_parser_config = messages_pb2.CollectionParserConfig()
     collection_parser_config.num_items_per_batch = batch_size
     if data_format == 'bow_uci':
-        collection_parser_config.docword_file_path = data_path + 'docword.' + \
-          collection_name + '.txt'
-        collection_parser_config.vocab_file_path = data_path + 'vocab.' + collection_name + '.txt'
+        collection_parser_config.docword_file_path = \
+            os.path.join(data_path, 'docword.' + collection_name + '.txt')
+        collection_parser_config.vocab_file_path = \
+            os.path.join(data_path, 'vocab.' + collection_name + '.txt')
         collection_parser_config.format = library.CollectionParserConfig_Format_BagOfWordsUci
     elif data_format == 'vowpal_wabbit':
         collection_parser_config.docword_file_path = data_path
@@ -1836,6 +1837,7 @@ class SparsityPhiScoreInfo(object):
         """
         return self._total_tokens[len(self._total_tokens) - 1]
 
+
 ###################################################################################################
 class SparsityThetaScoreInfo(object):
     """ SparsityThetaScoreInfo represents a result of counting
@@ -2069,6 +2071,7 @@ class PerplexityScoreInfo(object):
         """
         return self._theta_sparsity_total_topics[len(self._theta_sparsity_total_topics) - 1]
 
+
 ###################################################################################################
 class ItemsProcessedScoreInfo(object):
     """ ItemsProcessedScoreInfo represents a result of counting
@@ -2115,6 +2118,7 @@ class ItemsProcessedScoreInfo(object):
         Is int
         """
         return self._value[len(self._value) - 1]
+
 
 ###################################################################################################
 class TopTokensScoreInfo(object):
@@ -2242,6 +2246,7 @@ class TopTokensScoreInfo(object):
         Is double
         """
         return self._average_coherence[len(self._average_coherence) - 1]
+
 
 ###################################################################################################
 class TopicKernelScoreInfo(object):
@@ -2418,6 +2423,7 @@ class TopicKernelScoreInfo(object):
         """
         return self._average_purity[len(self._average_purity) - 1]
 
+
 ###################################################################################################
 class ThetaSnippetScoreInfo(object):
     """ ThetaSnippetScoreInfo represents a result of counting
@@ -2485,6 +2491,7 @@ class ThetaSnippetScoreInfo(object):
         Is list of scalars
         """
         return self._document_ids
+
 
 ###################################################################################################
 # SECTION OF ARTM MODEL CLASS
@@ -2666,7 +2673,7 @@ class ArtmModel(object):
             self._class_ids = class_ids
 
 # ========== METHODS ==========
-    def parse(self, collection_name=None, data_path='', data_format='',
+    def parse(self, collection_name=None, data_path='', data_format='bow_uci',
               batch_size=1000, dictionary_name='dictionary'):
         """ ArtmModel.fit() --- proceed the learning of topic model
 
@@ -2720,8 +2727,8 @@ class ArtmModel(object):
                                                             batch_size,
                                                             data_format,
                                                             dictionary_name)
-            #collection_parser_config.gather_cooc = gather_cooc
-            #for token in cooc_tokens:
+            # collection_parser_config.gather_cooc = gather_cooc
+            # for token in cooc_tokens:
             #    collection_parser_config.cooccurrence_token.append(token)
             unique_tokens = library.Library().ParseCollection(collection_parser_config)
 
@@ -3121,7 +3128,7 @@ class ArtmModel(object):
             for index in range(len(topic_model.token_weights)):
                 writer.writerow(
                     [topic_model.token[index]] + [topic_model.class_id[index]] +
-                    [token_weight for token_weight in topic_model.token_weights[index].value])
+                    [round(token_w, 5) for token_w in topic_model.token_weights[index].value])
 
     def get_theta(self, remove_theta=False):
         """ ArtmModel.get_theta() --- get Theta matrix for training set
