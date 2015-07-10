@@ -328,6 +328,15 @@ void Dictionary::Reconfigure(const DictionaryConfig& config) {
   config_.CopyFrom(config);
 }
 
+void Dictionary::Import(const std::string& dictionary_name, const std::string& file_name) {
+  ImportDictionaryArgs args;
+  args.set_file_name(file_name);
+  args.set_dictionary_name(dictionary_name);
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmImportDictionary(master_id(), blob.size(), blob.c_str()));
+}
+
 bool MasterComponent::AddBatch(const Batch& batch) {
   return AddBatch(batch, /*bool reset_scores=*/ false);
 }
@@ -413,6 +422,12 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmImportModel(id_, blob.size(), blob.c_str()));
+}
+
+void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmImportDictionary(id_, blob.size(), blob.c_str()));
 }
 
 std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {

@@ -63,6 +63,7 @@ for (en, ru) in zip(ens, rus):
 
 # Create master component and infer topic model
 with artm.library.MasterComponent() as master:
+    unique_tokens.name = 'dictionary'
     dictionary = master.CreateDictionary(unique_tokens)
 
     # Create one top-token score per each class_id
@@ -76,7 +77,7 @@ with artm.library.MasterComponent() as master:
     model = master.CreateModel(topics_count=2, inner_iterations_count=10,
                                class_ids=('@russian', '@english'),
                                class_weights=(1.00, 1.00))
-    model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
+    model.Initialize('dictionary')  # Setup initial approximation for Phi matrix.
 
     # Infer the model in 10 passes over the batch
     for iteration in range(0, 10):

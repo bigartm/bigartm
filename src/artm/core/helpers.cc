@@ -513,6 +513,21 @@ bool Helpers::Validate(const ::artm::ImportModelArgs& message, bool throw_error)
   return false;
 }
 
+bool Helpers::Validate(const ::artm::ImportDictionaryArgs& message, bool throw_error) {
+  std::stringstream ss;
+  if (!message.has_file_name()) ss << "ImportDictionaryArgs.file_name is not defined; ";
+  if (!message.has_dictionary_name())
+    ss << "ImportDictionaryArgs.dictionary_name is not defined; ";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
 bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error) {
   std::stringstream ss;
   if (message.has_cooc_entries())

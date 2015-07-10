@@ -64,6 +64,7 @@ class MasterComponent : boost::noncopyable {
 
   void CreateOrReconfigureDictionary(const DictionaryConfig& config);
   void DisposeDictionary(const std::string& name);
+  void ImportDictionary(const ImportDictionaryArgs& args);
 
   // Returns false if BigARTM is still processing the collection, otherwise true.
   bool WaitIdle(const WaitIdleArgs& args);

@@ -5,24 +5,27 @@ import artm.messages_pb2
 import artm.library
 import sys
 import time
+import os
+import glob
 
 # Parse collection
 data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
 target_folder = 'kos'
 collection_name = 'kos'
-unique_tokens = artm.library.Library().ParseCollectionOrLoadDictionary(
-    data_folder + 'docword.' + collection_name + '.txt',
-    data_folder + 'vocab.' + collection_name + '.txt',
-    target_folder)
+if not glob.glob(target_folder + "/*.batch"):
+    artm.library.Library().ParseCollection(
+        docword_file_path=data_folder + 'docword.' + collection_name + '.txt',
+        vocab_file_path=data_folder + 'vocab.' + collection_name + '.txt',
+        target_folder=target_folder)
 
 # Create master component and infer topic model
 for processors_count in [4, 2, 1]:
     with artm.library.MasterComponent() as master:
-        dictionary = master.CreateDictionary(unique_tokens)
+        master.ImportDictionary('dictionary', os.path.join(target_folder, 'dictionary'))
 
         perplexity_score = master.CreatePerplexityScore()
         model = master.CreateModel(topics_count=10, inner_iterations_count=10)
-        model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
+        model.Initialize('dictionary')       # Setup initial approximation for Phi matrix.
 
         print "Setting processors_count to " + str(processors_count)
         master.config().processors_count = processors_count

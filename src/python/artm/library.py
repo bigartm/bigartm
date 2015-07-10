@@ -141,18 +141,24 @@ class Library:
         disk_path_p = ctypes.create_string_buffer(disk_path)
         HandleErrorCode(self.lib_, self.lib_.ArtmSaveBatch(disk_path_p, len(batch_blob), batch_blob_p))
 
-    def ParseCollection(self, collection_parser_config):
-        config_blob = collection_parser_config.SerializeToString()
+    def ParseCollection(self, collection_parser_config=None, docword_file_path=None,
+                        vocab_file_path=None, target_folder=None):
+        parser_config = messages_pb2.CollectionParserConfig()
+        parser_config.format = CollectionParserConfig_Format_BagOfWordsUci
+        parser_config.dictionary_file_name = 'dictionary'
+
+        if collection_parser_config is not None:
+            parser_config = collection_parser_config
+        if docword_file_path is not None:
+            parser_config.docword_file_path = docword_file_path
+        if vocab_file_path is not None:
+            parser_config.vocab_file_path = vocab_file_path
+        if target_folder is not None:
+            parser_config.target_folder = target_folder
+
+        config_blob = parser_config.SerializeToString()
         config_blob_p = ctypes.create_string_buffer(config_blob)
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestParseCollection(
-            len(config_blob), config_blob_p))
-
-        dictionary_blob = ctypes.create_string_buffer(length)
-        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, dictionary_blob))
-
-        dictionary = messages_pb2.DictionaryConfig()
-        dictionary.ParseFromString(dictionary_blob)
-        return dictionary
+        HandleErrorCode(self.lib_, self.lib_.ArtmParseCollection(len(config_blob), config_blob_p))
 
     def LoadDictionary(self, full_filename):
         full_filename_p = ctypes.create_string_buffer(full_filename)
@@ -177,22 +183,7 @@ class Library:
         return batch
 
     def ParseCollectionOrLoadDictionary(self, docword_file_path, vocab_file_path, target_folder):
-        batches_found = len(glob.glob(target_folder + "/*.batch"))
-        if batches_found == 0:
-            print "No batches found, parsing them from textual collection...",
-            collection_parser_config = messages_pb2.CollectionParserConfig()
-            collection_parser_config.format = CollectionParserConfig_Format_BagOfWordsUci
-
-            collection_parser_config.docword_file_path = docword_file_path
-            collection_parser_config.vocab_file_path = vocab_file_path
-            collection_parser_config.target_folder = target_folder
-            collection_parser_config.dictionary_file_name = 'dictionary'
-            unique_tokens = self.ParseCollection(collection_parser_config)
-            print " OK."
-            return unique_tokens
-        else:
-            print "Found " + str(batches_found) + " batches, using them."
-            return self.LoadDictionary(target_folder + '/dictionary')
+        raise BaseException('Method is obsolete; use ParseCollection() instead')
 
 #################################################################################
 
@@ -589,18 +580,18 @@ class MasterComponent:
         theta_matrix.ParseFromString(blob)
         return theta_matrix
 
-    def InitializeModel(self, model_name, batch_folder=None, dictionary=None,
+    def InitializeModel(self, model_name, batch_folder=None, dictionary_name=None,
                         topics_count=None, topic_names=[], args=None):
-        if (batch_folder is not None) and (dictionary is not None):
-            raise "Either batch_folder or dictionary argument needs to be specified, but not both at the same time"
+        if (batch_folder is not None) and (dictionary_name is not None):
+            raise "Either batch_folder or dictionary_name argument needs to be specified, but not both at the same time"
         if args is None:
             args = messages_pb2.InitializeModelArgs()
         args.model_name = model_name
         if batch_folder is not None:
             args.disk_path = batch_folder
             args.source_type = InitializeModelArgs_SourceType_Batches
-        if dictionary is not None:
-            args.dictionary_name = dictionary.name()
+        if dictionary_name is not None:
+            args.dictionary_name = dictionary_name
             args.source_type = InitializeModelArgs_SourceType_Dictionary
         if topics_count is not None:
             args.topics_count = topics_count
@@ -628,6 +619,15 @@ class MasterComponent:
         blob_p = ctypes.create_string_buffer(blob)
         HandleErrorCode(self.lib_,
                         self.lib_.ArtmImportModel(self.id_, len(blob), blob_p))
+
+    def ImportDictionary(self, dictionary_name, file_name):
+        args = messages_pb2.ImportDictionaryArgs()
+        args.dictionary_name = dictionary_name
+        args.file_name = file_name
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmImportDictionary(self.id_, len(blob), blob_p))
 
     def ProcessBatches(self, pwt, batches, target_nwt=None, regularizers={}, inner_iterations_count=10, class_ids={},
                        stream_name=None, reset_scores=None, theta_matrix_type=None):
@@ -802,8 +802,8 @@ class Model:
         HandleErrorCode(self.lib_, self.lib_.ArtmSynchronizeModel(
             self.master_id_, len(args_blob), args_blob_p))
 
-    def Initialize(self, dictionary=None, args=None):
-        self.master_component.InitializeModel(model_name=self.name(), dictionary=dictionary, args=args)
+    def Initialize(self, dictionary_name=None, args=None):
+        self.master_component.InitializeModel(model_name=self.name(), dictionary_name=dictionary_name, args=args)
 
     def Overwrite(self, topic_model, commit=True):
         copy_ = messages_pb2.TopicModel()
@@ -935,6 +935,15 @@ class Dictionary:
                                                                        len(dictionary_config_blob),
                                                                        dictionary_config_blob_p))
         self.config_.CopyFrom(config)
+
+    def Import(self, filename):
+        args = messages_pb2.ImportDictionaryArgs()
+        args.dictionary_name = self.name()
+        args.file_name = filename
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        HandleErrorCode(self.lib_,
+                        self.lib_.ArtmImportDictionary(self.master_id_, len(blob), blob_p))
 
 #################################################################################
 
