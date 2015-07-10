@@ -314,9 +314,6 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenM
   artm::DictionaryCoocurenceEntries* cooc_entries = retval->mutable_cooc_entries();
   while (!user_cooc_data.eof()) {
     std::getline(user_cooc_data, str);
-    if (user_cooc_data.eof())
-      break;
-
     ++index;
     boost::algorithm::trim(str);
     if (str.empty()) {
@@ -343,7 +340,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenM
 
     cooc_entries->add_first_index(std::stoi(strs[0]));
     cooc_entries->add_second_index(std::stoi(strs[1]));
-    cooc_entries->add_value(std::stoi(strs[2]));
+    cooc_entries->add_value(std::stof(strs[2]));
   }
 
   if (config_.has_dictionary_file_name()) {

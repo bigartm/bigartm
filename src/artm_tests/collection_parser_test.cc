@@ -180,3 +180,49 @@ TEST(CollectionParser, VowpalWabbit) {
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }
+
+TEST(CollectionParser, Cooccurrence) {
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+
+  ::artm::CollectionParserConfig config;
+  config.set_format(::artm::CollectionParserConfig_Format_Cooccurrence);
+  config.set_target_folder(target_folder);
+  config.set_dictionary_file_name("test_parser.dictionary");
+  config.set_gather_cooc(false);
+  config.set_num_items_per_batch(1);
+  config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
+  config.set_docword_file_path("../../../test_data/cooccurrence.parser_test.txt");
+
+  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
+  ASSERT_EQ(dictionary_parsed->entry_size(), 3);
+
+  std::shared_ptr< ::artm::DictionaryConfig> dictionary_loaded = ::artm::LoadDictionary(
+    (fs::path(target_folder) / "test_parser.dictionary").string());
+  ASSERT_EQ(dictionary_parsed->entry_size(), dictionary_loaded->entry_size());
+
+  ASSERT_EQ(dictionary_loaded->entry_size(), 3);
+  ASSERT_EQ(dictionary_loaded->entry(0).key_token(), "token1");
+  ASSERT_EQ(dictionary_loaded->entry(0).class_id(), "@default_class");
+  ASSERT_EQ(dictionary_loaded->entry(1).key_token(), "token2");
+  ASSERT_EQ(dictionary_loaded->entry(1).class_id(), "@default_class");
+  ASSERT_EQ(dictionary_loaded->entry(2).key_token(), "token3");
+  ASSERT_EQ(dictionary_loaded->entry(2).class_id(), "@default_class");
+
+  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index_size(), 3);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index_size(), 3);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().value_size(), 3);
+
+  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(0), 0);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(1), 1);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(2), 0);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(0), 1);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(1), 2);
+  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(2), 2);
+
+  ASSERT_FLOAT_EQ(dictionary_loaded->cooc_entries().value(0), 0.5);
+  ASSERT_FLOAT_EQ(dictionary_loaded->cooc_entries().value(1), 0.4);
+  ASSERT_FLOAT_EQ(dictionary_loaded->cooc_entries().value(2), 0.8);
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+}
