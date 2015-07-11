@@ -4,15 +4,14 @@
 # and then hardcoded in this script.
 # Several scores are printed on every iteration (perplexity score, sparsity of theta and phi matrix).
 
-import artm.messages_pb2, artm.library, sys, glob
+import artm.messages_pb2, artm.library, sys, glob, os
 
 # Parse collection
 data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
 target_folder = 'kos'
 collection_name = 'kos'
 
-# The following code is the same as library.ParseCollectionOrLoadDictionary(),
-# but it is important for you to understand what it does.
+# It is important for you to understand what this code does.
 # Please learn ParseCollection() and LoadDictionary() methods.
 
 batches_found = len(glob.glob(target_folder + "/*.batch"))
@@ -34,16 +33,15 @@ if batches_found == 0:
               index += 1
     collection_parser_config.gather_cooc = True
     
-    unique_tokens = artm.library.Library().ParseCollection(collection_parser_config)
+    artm.library.Library().ParseCollection(collection_parser_config)
     print " OK."
 else:
     print "Found " + str(batches_found) + " batches, using them."
-    unique_tokens = artm.library.Library().LoadDictionary(target_folder + '/dictionary')
 
 # Create master component and infer topic model
 with artm.library.MasterComponent() as master:
     # Create dictionary with tokens frequencies
-    dictionary = master.CreateDictionary(unique_tokens)
+    master.ImportDictionary('dictionary', os.path.join(target_folder, 'dictionary'))
 
     # Configure basic scores
     perplexity_score = master.CreatePerplexityScore()
@@ -62,7 +60,7 @@ with artm.library.MasterComponent() as master:
     model.EnableRegularizer(smsp_theta_reg, -0.1)
     model.EnableRegularizer(smsp_phi_reg, -0.2)
     model.EnableRegularizer(decorrelator_reg, 1000000)
-    model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
+    model.Initialize('dictionary')       # Setup initial approximation for Phi matrix.
 
     for iteration in range(0, 8):
         master.InvokeIteration(disk_path=target_folder)  # Invoke one scan over all batches,

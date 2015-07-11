@@ -32,6 +32,8 @@ extern "C" {
   DLL_PUBLIC int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config);
   DLL_PUBLIC int ArtmReconfigureDictionary(int master_id, int length, const char* dictionary_config);
   DLL_PUBLIC int ArtmDisposeDictionary(int master_id, const char* dictionary_name);
+  DLL_PUBLIC int ArtmImportDictionary(int master_id, int length, const char* import_dictionary_args);
+  DLL_PUBLIC int ArtmParseCollection(int length, const char* collection_parser_config);
 
   DLL_PUBLIC int ArtmAddBatch(int master_id, int length, const char* add_batch_args);
   DLL_PUBLIC int ArtmInvokeIteration(int master_id, int length, const char* invoke_iteration_args);

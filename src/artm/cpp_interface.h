@@ -87,6 +87,8 @@ class MasterComponent {
   void ExportModel(const ExportModelArgs& args);
   void ImportModel(const ImportModelArgs& args);
 
+  void ImportDictionary(const ImportDictionaryArgs& args);
+
   void Reconfigure(const MasterComponentConfig& config);
   bool AddBatch(const Batch& batch);
   bool AddBatch(const Batch& batch, bool reset_scores);
@@ -161,6 +163,8 @@ class Dictionary {
   ~Dictionary();
 
   void Reconfigure(const DictionaryConfig& config);
+
+  void Import(const std::string& dictionary_name, const std::string& file_name);
 
   int master_id() const { return master_id_; }
   const DictionaryConfig& config() const { return config_; }

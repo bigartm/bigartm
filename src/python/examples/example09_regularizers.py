@@ -5,13 +5,12 @@ import artm.messages_pb2, artm.library, sys, glob, os
 # Parse collection
 data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
 batches_disk_path = 'kos'
-unique_tokens = artm.library.Library().LoadDictionary(os.path.join(batches_disk_path, 'dictionary'))
 
 # Create master component and infer topic model
 with artm.library.MasterComponent() as master:
     master.config().processors_count = 2
     master.Reconfigure()
-    dictionary = master.CreateDictionary(unique_tokens)
+    master.ImportDictionary('dictionary', os.path.join(batches_disk_path, 'dictionary'))
 
     background_topics = []
     objective_topics = []
@@ -45,7 +44,7 @@ with artm.library.MasterComponent() as master:
     model.EnableRegularizer(phi_objective, -0.5)
     model.EnableRegularizer(phi_background, 0.5)
     model.EnableRegularizer(decorrelator_regularizer, 100000)
-    model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
+    model.Initialize('dictionary')  # Setup initial approximation for Phi matrix.
 
     # Online algorithm with AddBatch()
     update_every = master.config().processors_count

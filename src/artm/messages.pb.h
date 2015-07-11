@@ -95,6 +95,7 @@ class ProcessBatchesResult;
 class MergeModelArgs;
 class RegularizeModelArgs;
 class NormalizeModelArgs;
+class ImportDictionaryArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -8595,6 +8596,108 @@ class NormalizeModelArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static NormalizeModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ImportDictionaryArgs : public ::google::protobuf::Message {
+ public:
+  ImportDictionaryArgs();
+  virtual ~ImportDictionaryArgs();
+
+  ImportDictionaryArgs(const ImportDictionaryArgs& from);
+
+  inline ImportDictionaryArgs& operator=(const ImportDictionaryArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ImportDictionaryArgs& default_instance();
+
+  void Swap(ImportDictionaryArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ImportDictionaryArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ImportDictionaryArgs& from);
+  void MergeFrom(const ImportDictionaryArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string file_name = 1;
+  inline bool has_file_name() const;
+  inline void clear_file_name();
+  static const int kFileNameFieldNumber = 1;
+  inline const ::std::string& file_name() const;
+  inline void set_file_name(const ::std::string& value);
+  inline void set_file_name(const char* value);
+  inline void set_file_name(const char* value, size_t size);
+  inline ::std::string* mutable_file_name();
+  inline ::std::string* release_file_name();
+  inline void set_allocated_file_name(::std::string* file_name);
+
+  // optional string dictionary_name = 2;
+  inline bool has_dictionary_name() const;
+  inline void clear_dictionary_name();
+  static const int kDictionaryNameFieldNumber = 2;
+  inline const ::std::string& dictionary_name() const;
+  inline void set_dictionary_name(const ::std::string& value);
+  inline void set_dictionary_name(const char* value);
+  inline void set_dictionary_name(const char* value, size_t size);
+  inline ::std::string* mutable_dictionary_name();
+  inline ::std::string* release_dictionary_name();
+  inline void set_allocated_dictionary_name(::std::string* dictionary_name);
+
+  // @@protoc_insertion_point(class_scope:artm.ImportDictionaryArgs)
+ private:
+  inline void set_has_file_name();
+  inline void clear_has_file_name();
+  inline void set_has_dictionary_name();
+  inline void clear_has_dictionary_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* file_name_;
+  ::std::string* dictionary_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ImportDictionaryArgs* default_instance_;
 };
 // ===================================================================
 
@@ -19615,6 +19718,150 @@ inline void NormalizeModelArgs::set_allocated_rwt_source_name(::std::string* rwt
   } else {
     clear_has_rwt_source_name();
     rwt_source_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// ImportDictionaryArgs
+
+// optional string file_name = 1;
+inline bool ImportDictionaryArgs::has_file_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ImportDictionaryArgs::set_has_file_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ImportDictionaryArgs::clear_has_file_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ImportDictionaryArgs::clear_file_name() {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    file_name_->clear();
+  }
+  clear_has_file_name();
+}
+inline const ::std::string& ImportDictionaryArgs::file_name() const {
+  return *file_name_;
+}
+inline void ImportDictionaryArgs::set_file_name(const ::std::string& value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ImportDictionaryArgs::set_file_name(const char* value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ImportDictionaryArgs::set_file_name(const char* value, size_t size) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportDictionaryArgs::mutable_file_name() {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  return file_name_;
+}
+inline ::std::string* ImportDictionaryArgs::release_file_name() {
+  clear_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = file_name_;
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImportDictionaryArgs::set_allocated_file_name(::std::string* file_name) {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete file_name_;
+  }
+  if (file_name) {
+    set_has_file_name();
+    file_name_ = file_name;
+  } else {
+    clear_has_file_name();
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string dictionary_name = 2;
+inline bool ImportDictionaryArgs::has_dictionary_name() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ImportDictionaryArgs::set_has_dictionary_name() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ImportDictionaryArgs::clear_has_dictionary_name() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ImportDictionaryArgs::clear_dictionary_name() {
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_->clear();
+  }
+  clear_has_dictionary_name();
+}
+inline const ::std::string& ImportDictionaryArgs::dictionary_name() const {
+  return *dictionary_name_;
+}
+inline void ImportDictionaryArgs::set_dictionary_name(const ::std::string& value) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(value);
+}
+inline void ImportDictionaryArgs::set_dictionary_name(const char* value) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(value);
+}
+inline void ImportDictionaryArgs::set_dictionary_name(const char* value, size_t size) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportDictionaryArgs::mutable_dictionary_name() {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  return dictionary_name_;
+}
+inline ::std::string* ImportDictionaryArgs::release_dictionary_name() {
+  clear_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = dictionary_name_;
+    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImportDictionaryArgs::set_allocated_dictionary_name(::std::string* dictionary_name) {
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_name_;
+  }
+  if (dictionary_name) {
+    set_has_dictionary_name();
+    dictionary_name_ = dictionary_name;
+  } else {
+    clear_has_dictionary_name();
+    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 

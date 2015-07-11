@@ -376,6 +376,16 @@ int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmImportDictionary(int master_id, int length, const char* dictionary_args) {
+  try {
+    artm::ImportDictionaryArgs args;
+    ParseFromArray(dictionary_args, length, &args);
+    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
+    master_component(master_id)->ImportDictionary(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmRequestParseCollection(int length, const char* collection_parser_config) {
   try {
     EnableLogging();
@@ -387,6 +397,18 @@ int ArtmRequestParseCollection(int length, const char* collection_parser_config)
     ::artm::core::Helpers::Validate(*dictionary, /* throw_error =*/ true);
     dictionary->SerializeToString(last_message());
     return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmParseCollection(int length, const char* collection_parser_config) {
+  try {
+    EnableLogging();
+    artm::CollectionParserConfig config;
+    ParseFromArray(collection_parser_config, length, &config);
+    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
+    ::artm::core::CollectionParser collection_parser(config);
+    collection_parser.Parse();
+    return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
 

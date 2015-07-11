@@ -6,13 +6,12 @@ import artm.messages_pb2, artm.library, sys, glob, os
 # Parse collection
 data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
 batches_disk_path = 'kos'
-unique_tokens = artm.library.Library().LoadDictionary(os.path.join(batches_disk_path, 'dictionary'))
 
 # Create master component and infer topic model
 with artm.library.MasterComponent() as master:
     master.config().processors_count = 2
     master.Reconfigure()
-    dictionary = master.CreateDictionary(unique_tokens)
+    master.ImportDictionary('dictionary', os.path.join(batches_disk_path, 'dictionary'))
 
     perplexity_score = master.CreatePerplexityScore()
     sparsity_theta_score = master.CreateSparsityThetaScore()
@@ -30,7 +29,7 @@ with artm.library.MasterComponent() as master:
     model.EnableRegularizer(theta_regularizer, -0.1)
     model.EnableRegularizer(phi_regularizer, -0.2)
     model.EnableRegularizer(decorrelator_regularizer, 1000000)
-    model.Initialize(dictionary)  # Setup initial approximation for Phi matrix.
+    model.Initialize('dictionary')  # Setup initial approximation for Phi matrix.
 
     # Online algorithm with AddBatch()
     update_every = 4

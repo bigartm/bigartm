@@ -81,6 +81,16 @@ void MasterComponent::DisposeDictionary(const std::string& name) {
   instance_->DisposeDictionary(name);
 }
 
+void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
+  DictionaryConfig config;
+  BatchHelpers::LoadMessage(args.file_name(), &config);
+  Helpers::Validate(config);
+  config.set_name(args.dictionary_name());
+
+  instance_->CreateOrReconfigureDictionary(config);
+  LOG(INFO) << "Dictionary import completed";
+}
+
 void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
   instance_->merger()->ForceSynchronizeModel(args);
 }

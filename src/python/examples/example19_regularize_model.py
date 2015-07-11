@@ -7,10 +7,11 @@ import artm.messages_pb2, artm.library, sys, glob
 data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
 target_folder = 'kos'
 collection_name = 'kos'
-artm.library.Library().ParseCollectionOrLoadDictionary(
-    data_folder + 'docword.' + collection_name + '.txt',
-    data_folder + 'vocab.' + collection_name + '.txt',
-    target_folder)
+if not glob.glob(target_folder + "/*.batch"):
+    artm.library.Library().ParseCollection(
+        docword_file_path=data_folder + 'docword.' + collection_name + '.txt',
+        vocab_file_path=data_folder + 'vocab.' + collection_name + '.txt',
+        target_folder=target_folder)
 
 # Find file names of all batches in target folder
 batches = glob.glob(target_folder + "/*.batch")

@@ -1,19 +1,20 @@
 # This example creates train (90%) and test (10%) streams in the collection.
 # Train stream is used to tune topic model, and test stream is used to calculate perplexity.
 
-import artm.messages_pb2, artm.library, sys
+import artm.messages_pb2, artm.library, sys, os, glob
 
 # Parse collection
 data_folder = sys.argv[1] if (len(sys.argv) >= 2) else ''
 target_folder = 'kos'
 collection_name = 'kos'
-unique_tokens = artm.library.Library().ParseCollectionOrLoadDictionary(
-    data_folder + 'docword.' + collection_name + '.txt',
-    data_folder + 'vocab.' + collection_name + '.txt',
-    target_folder)
+if not glob.glob(target_folder + "/*.batch"):
+    artm.library.Library().ParseCollection(
+        docword_file_path=data_folder + 'docword.' + collection_name + '.txt',
+        vocab_file_path=data_folder + 'vocab.' + collection_name + '.txt',
+        target_folder=target_folder)
 
 with artm.library.MasterComponent() as master:
-    dictionary = master.CreateDictionary(unique_tokens)
+    master.ImportDictionary('dictionary', os.path.join(target_folder, 'dictionary'))
     # Configure test and train streams
     train_stream = artm.messages_pb2.Stream()
     train_stream.name = 'train_stream'
@@ -36,7 +37,7 @@ with artm.library.MasterComponent() as master:
     # Configure the model
     model = master.CreateModel(topics_count=10, inner_iterations_count=10)
     model.config().stream_name = train_stream.name
-    model.Initialize(dictionary)       # Setup initial approximation for Phi matrix.
+    model.Initialize('dictionary')       # Setup initial approximation for Phi matrix.
 
     for iteration in range(0, 8):
         master.InvokeIteration(disk_path=target_folder)  # Invoke one scan of the entire collection...

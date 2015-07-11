@@ -40,7 +40,9 @@
     <Compile Include="../examples/example13_overwrite_topic_model.py" />
     <Compile Include="../examples/example14_initialize_topic_model.py" />
     <Compile Include="../examples/example15_import_export_topic_model.py" />
-    <Compile Include="../examples/example16_coherence_score.py" />
+    <Compile Include="../examples/example17_process_batches.py" />
+    <Compile Include="../examples/example18_merge_model.py" />
+    <Compile Include="../examples/example19_regularize_model.py" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>
