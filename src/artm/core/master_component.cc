@@ -120,7 +120,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   ::artm::GetTopicModelArgs get_topic_model_args;
   get_topic_model_args.set_model_name(args.model_name());
   get_topic_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Nwt);
-  get_topic_model_args.set_use_sparse_format(true);
+  get_topic_model_args.set_matrix_layout(::artm::GetTopicModelArgs_MatrixLayout_Sparse);
   get_topic_model_args.mutable_token()->Reserve(tokens_per_chunk);
   get_topic_model_args.mutable_class_id()->Reserve(tokens_per_chunk);
 
@@ -194,6 +194,22 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
   instance_->merger()->SetPhiMatrix(args.model_name(), target);
   LOG(INFO) << "Import completed, token_size = " << target->token_size()
     << ", topic_size = " << target->topic_size();
+}
+
+void MasterComponent::AttachModel(const AttachModelArgs& args, int address_length, float* address) {
+  ModelName model_name = args.model_name();
+  LOG(INFO) << "Attaching model " << model_name << " to " << address << " (" << address_length << " bytes)";
+
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
+  if (phi_matrix == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
+
+  PhiMatrixFrame* frame = dynamic_cast<PhiMatrixFrame*>(const_cast<PhiMatrix*>(phi_matrix.get()));
+  if (frame == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Unable to attach to model " + model_name));
+
+  std::shared_ptr<AttachedPhiMatrix> attached = std::make_shared<AttachedPhiMatrix>(address_length, address, frame);
+  instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
@@ -296,10 +312,9 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
       if (instance_->schema()->config().cache_theta())
         cache_manager_ptr = instance_->cache_manager();
       break;
-    case ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor:
-    case ProcessBatchesArgs_ThetaMatrixType_DenseColMajor:
-    case ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf:
-    case ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf:
+    case ProcessBatchesArgs_ThetaMatrixType_Dense:
+    case ProcessBatchesArgs_ThetaMatrixType_Sparse:
+    case ProcessBatchesArgs_ThetaMatrixType_External:
       cache_manager_ptr = &cache_manager;
       return_theta = true;
   }
@@ -349,7 +364,8 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   if (return_theta) {
     GetThetaMatrixArgs gta;
     gta.set_model_name(model_name);
-    gta.set_use_sparse_format(args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf);
+    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse)
+      gta.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
     cache_manager.RequestThetaMatrix(gta, process_batches_result->mutable_theta_matrix());
   }
 }

@@ -90,6 +90,7 @@ class InvokeIterationArgs;
 class WaitIdleArgs;
 class ExportModelArgs;
 class ImportModelArgs;
+class AttachModelArgs;
 class ProcessBatchesArgs;
 class ProcessBatchesResult;
 class MergeModelArgs;
@@ -310,11 +311,12 @@ inline bool InitializeModelArgs_SourceType_Parse(
 enum GetTopicModelArgs_RequestType {
   GetTopicModelArgs_RequestType_Pwt = 0,
   GetTopicModelArgs_RequestType_Nwt = 1,
-  GetTopicModelArgs_RequestType_TopicNames = 2
+  GetTopicModelArgs_RequestType_TopicNames = 2,
+  GetTopicModelArgs_RequestType_Tokens = 3
 };
 bool GetTopicModelArgs_RequestType_IsValid(int value);
 const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MIN = GetTopicModelArgs_RequestType_Pwt;
-const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MAX = GetTopicModelArgs_RequestType_TopicNames;
+const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MAX = GetTopicModelArgs_RequestType_Tokens;
 const int GetTopicModelArgs_RequestType_RequestType_ARRAYSIZE = GetTopicModelArgs_RequestType_RequestType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_RequestType_descriptor();
@@ -328,13 +330,13 @@ inline bool GetTopicModelArgs_RequestType_Parse(
     GetTopicModelArgs_RequestType_descriptor(), name, value);
 }
 enum GetTopicModelArgs_MatrixLayout {
-  GetTopicModelArgs_MatrixLayout_Protobuf = 0,
-  GetTopicModelArgs_MatrixLayout_RowMajor = 1,
-  GetTopicModelArgs_MatrixLayout_ColMajor = 2
+  GetTopicModelArgs_MatrixLayout_Dense = 0,
+  GetTopicModelArgs_MatrixLayout_Sparse = 1,
+  GetTopicModelArgs_MatrixLayout_External = 2
 };
 bool GetTopicModelArgs_MatrixLayout_IsValid(int value);
-const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MIN = GetTopicModelArgs_MatrixLayout_Protobuf;
-const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX = GetTopicModelArgs_MatrixLayout_ColMajor;
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MIN = GetTopicModelArgs_MatrixLayout_Dense;
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX = GetTopicModelArgs_MatrixLayout_External;
 const int GetTopicModelArgs_MatrixLayout_MatrixLayout_ARRAYSIZE = GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_MatrixLayout_descriptor();
@@ -348,13 +350,13 @@ inline bool GetTopicModelArgs_MatrixLayout_Parse(
     GetTopicModelArgs_MatrixLayout_descriptor(), name, value);
 }
 enum GetThetaMatrixArgs_MatrixLayout {
-  GetThetaMatrixArgs_MatrixLayout_Protobuf = 0,
-  GetThetaMatrixArgs_MatrixLayout_RowMajor = 1,
-  GetThetaMatrixArgs_MatrixLayout_ColMajor = 2
+  GetThetaMatrixArgs_MatrixLayout_Dense = 0,
+  GetThetaMatrixArgs_MatrixLayout_Sparse = 1,
+  GetThetaMatrixArgs_MatrixLayout_External = 2
 };
 bool GetThetaMatrixArgs_MatrixLayout_IsValid(int value);
-const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MIN = GetThetaMatrixArgs_MatrixLayout_Protobuf;
-const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX = GetThetaMatrixArgs_MatrixLayout_ColMajor;
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MIN = GetThetaMatrixArgs_MatrixLayout_Dense;
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX = GetThetaMatrixArgs_MatrixLayout_External;
 const int GetThetaMatrixArgs_MatrixLayout_MatrixLayout_ARRAYSIZE = GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* GetThetaMatrixArgs_MatrixLayout_descriptor();
@@ -369,15 +371,14 @@ inline bool GetThetaMatrixArgs_MatrixLayout_Parse(
 }
 enum ProcessBatchesArgs_ThetaMatrixType {
   ProcessBatchesArgs_ThetaMatrixType_None = 0,
-  ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor = 1,
-  ProcessBatchesArgs_ThetaMatrixType_DenseColMajor = 2,
-  ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf = 3,
-  ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf = 4,
-  ProcessBatchesArgs_ThetaMatrixType_Cache = 5
+  ProcessBatchesArgs_ThetaMatrixType_Dense = 1,
+  ProcessBatchesArgs_ThetaMatrixType_Sparse = 2,
+  ProcessBatchesArgs_ThetaMatrixType_Cache = 3,
+  ProcessBatchesArgs_ThetaMatrixType_External = 4
 };
 bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value);
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MIN = ProcessBatchesArgs_ThetaMatrixType_None;
-const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_Cache;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_External;
 const int ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_ARRAYSIZE = ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ProcessBatchesArgs_ThetaMatrixType_descriptor();
@@ -6994,6 +6995,7 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   static const RequestType Pwt = GetTopicModelArgs_RequestType_Pwt;
   static const RequestType Nwt = GetTopicModelArgs_RequestType_Nwt;
   static const RequestType TopicNames = GetTopicModelArgs_RequestType_TopicNames;
+  static const RequestType Tokens = GetTopicModelArgs_RequestType_Tokens;
   static inline bool RequestType_IsValid(int value) {
     return GetTopicModelArgs_RequestType_IsValid(value);
   }
@@ -7016,9 +7018,9 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   }
 
   typedef GetTopicModelArgs_MatrixLayout MatrixLayout;
-  static const MatrixLayout Protobuf = GetTopicModelArgs_MatrixLayout_Protobuf;
-  static const MatrixLayout RowMajor = GetTopicModelArgs_MatrixLayout_RowMajor;
-  static const MatrixLayout ColMajor = GetTopicModelArgs_MatrixLayout_ColMajor;
+  static const MatrixLayout Dense = GetTopicModelArgs_MatrixLayout_Dense;
+  static const MatrixLayout Sparse = GetTopicModelArgs_MatrixLayout_Sparse;
+  static const MatrixLayout External = GetTopicModelArgs_MatrixLayout_External;
   static inline bool MatrixLayout_IsValid(int value) {
     return GetTopicModelArgs_MatrixLayout_IsValid(value);
   }
@@ -7123,7 +7125,7 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline ::artm::GetTopicModelArgs_RequestType request_type() const;
   inline void set_request_type(::artm::GetTopicModelArgs_RequestType value);
 
-  // optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+  // optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Dense];
   inline bool has_matrix_layout() const;
   inline void clear_matrix_layout();
   static const int kMatrixLayoutFieldNumber = 8;
@@ -7219,9 +7221,9 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   // nested types ----------------------------------------------------
 
   typedef GetThetaMatrixArgs_MatrixLayout MatrixLayout;
-  static const MatrixLayout Protobuf = GetThetaMatrixArgs_MatrixLayout_Protobuf;
-  static const MatrixLayout RowMajor = GetThetaMatrixArgs_MatrixLayout_RowMajor;
-  static const MatrixLayout ColMajor = GetThetaMatrixArgs_MatrixLayout_ColMajor;
+  static const MatrixLayout Dense = GetThetaMatrixArgs_MatrixLayout_Dense;
+  static const MatrixLayout Sparse = GetThetaMatrixArgs_MatrixLayout_Sparse;
+  static const MatrixLayout External = GetThetaMatrixArgs_MatrixLayout_External;
   static inline bool MatrixLayout_IsValid(int value) {
     return GetThetaMatrixArgs_MatrixLayout_IsValid(value);
   }
@@ -7315,7 +7317,7 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
-  // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+  // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Dense];
   inline bool has_matrix_layout() const;
   inline void clear_matrix_layout();
   static const int kMatrixLayoutFieldNumber = 8;
@@ -7986,6 +7988,93 @@ class ImportModelArgs : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class AttachModelArgs : public ::google::protobuf::Message {
+ public:
+  AttachModelArgs();
+  virtual ~AttachModelArgs();
+
+  AttachModelArgs(const AttachModelArgs& from);
+
+  inline AttachModelArgs& operator=(const AttachModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const AttachModelArgs& default_instance();
+
+  void Swap(AttachModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  AttachModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const AttachModelArgs& from);
+  void MergeFrom(const AttachModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string model_name = 1;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 1;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // @@protoc_insertion_point(class_scope:artm.AttachModelArgs)
+ private:
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* model_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static AttachModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class ProcessBatchesArgs : public ::google::protobuf::Message {
  public:
   ProcessBatchesArgs();
@@ -8040,11 +8129,10 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
 
   typedef ProcessBatchesArgs_ThetaMatrixType ThetaMatrixType;
   static const ThetaMatrixType None = ProcessBatchesArgs_ThetaMatrixType_None;
-  static const ThetaMatrixType DenseRowMajor = ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor;
-  static const ThetaMatrixType DenseColMajor = ProcessBatchesArgs_ThetaMatrixType_DenseColMajor;
-  static const ThetaMatrixType DenseProtobuf = ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf;
-  static const ThetaMatrixType SparseProtobuf = ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf;
+  static const ThetaMatrixType Dense = ProcessBatchesArgs_ThetaMatrixType_Dense;
+  static const ThetaMatrixType Sparse = ProcessBatchesArgs_ThetaMatrixType_Sparse;
   static const ThetaMatrixType Cache = ProcessBatchesArgs_ThetaMatrixType_Cache;
+  static const ThetaMatrixType External = ProcessBatchesArgs_ThetaMatrixType_External;
   static inline bool ThetaMatrixType_IsValid(int value) {
     return ProcessBatchesArgs_ThetaMatrixType_IsValid(value);
   }
@@ -17760,7 +17848,7 @@ inline void GetTopicModelArgs::set_request_type(::artm::GetTopicModelArgs_Reques
   request_type_ = value;
 }
 
-// optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+// optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Dense];
 inline bool GetTopicModelArgs::has_matrix_layout() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
@@ -18030,7 +18118,7 @@ inline void GetThetaMatrixArgs::set_eps(float value) {
   eps_ = value;
 }
 
-// optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Protobuf];
+// optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Dense];
 inline bool GetThetaMatrixArgs::has_matrix_layout() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
@@ -18825,6 +18913,80 @@ inline void ImportModelArgs::set_allocated_model_name(::std::string* model_name)
 
 // -------------------------------------------------------------------
 
+// AttachModelArgs
+
+// optional string model_name = 1;
+inline bool AttachModelArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void AttachModelArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void AttachModelArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void AttachModelArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& AttachModelArgs::model_name() const {
+  return *model_name_;
+}
+inline void AttachModelArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void AttachModelArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void AttachModelArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AttachModelArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* AttachModelArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void AttachModelArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
 // ProcessBatchesArgs
 
 // optional string nwt_target_name = 1;
@@ -19340,7 +19502,7 @@ inline void ProcessBatchesArgs::clear_has_theta_matrix_type() {
   _has_bits_[0] &= ~0x00002000u;
 }
 inline void ProcessBatchesArgs::clear_theta_matrix_type() {
-  theta_matrix_type_ = 5;
+  theta_matrix_type_ = 3;
   clear_has_theta_matrix_type();
 }
 inline ::artm::ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::theta_matrix_type() const {

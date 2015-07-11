@@ -481,29 +481,30 @@ message GetTopicModelArgs {
     Pwt = 0;
     Nwt = 1;
     TopicNames = 2;
+    Tokens = 3;
   }
 
   enum MatrixLayout {
-    Protobuf = 0;
-    RowMajor = 1;
-    ColMajor = 2;
+    Dense = 0;
+    Sparse = 1;
+    External = 2;
   }
 
   optional string model_name = 1;
   repeated string topic_name = 2;
   repeated string token = 3;
   repeated string class_id = 4;
-  optional bool use_sparse_format = 5;
+  optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
   optional RequestType request_type = 7 [default = Pwt];
-  optional MatrixLayout matrix_layout = 8 [default = Protobuf];
+  optional MatrixLayout matrix_layout = 8 [default = Dense];
 }
 
 message GetThetaMatrixArgs {
   enum MatrixLayout {
-    Protobuf = 0;
-    RowMajor = 1;
-    ColMajor = 2;
+    Dense = 0;
+    Sparse = 1;
+    External = 2;
   }
 
   optional string model_name = 1;
@@ -511,9 +512,9 @@ message GetThetaMatrixArgs {
   repeated string topic_name = 3;
   repeated int32 topic_index = 4;
   optional bool clean_cache = 5 [default = false];
-  optional bool use_sparse_format = 6;
+  optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
-  optional MatrixLayout matrix_layout = 8 [default = Protobuf];
+  optional MatrixLayout matrix_layout = 8 [default = Dense];
 }
 
 message GetScoreValueArgs {
@@ -549,14 +550,17 @@ message ImportModelArgs {
   optional string model_name = 2;
 }
 
+message AttachModelArgs {
+  optional string model_name = 1;
+}
+
 message ProcessBatchesArgs {
   enum ThetaMatrixType {
     None = 0;
-    DenseRowMajor = 1;
-    DenseColMajor = 2;
-    DenseProtobuf = 3;
-    SparseProtobuf = 4;
-    Cache = 5;
+    Dense = 1;
+    Sparse = 2;
+    Cache = 3;
+    External = 4;
   }
 
   optional string nwt_target_name = 1;

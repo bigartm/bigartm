@@ -471,6 +471,27 @@ TEST(CppInterface, GatherNewTokens) {
               (tm3->token(0) == token2 && tm3->token(1) == token1));
 }
 
+void VerifyAttachModel(artm::MasterComponent* master, const std::string& model_name) {
+  std::shared_ptr< ::artm::TopicModel> pwt_model = master->GetTopicModel(model_name);
+  std::shared_ptr< ::artm::Matrix> attached_phi = master->AttachTopicModel(model_name);
+  ASSERT_EQ(attached_phi->no_rows(), pwt_model->token_size());
+  ASSERT_EQ(attached_phi->no_columns(), pwt_model->topics_count());
+  for (int token_index = 0; token_index < pwt_model->token_size(); ++token_index) {
+    for (int topic_index = 0; topic_index < pwt_model->topics_count(); ++topic_index) {
+      EXPECT_EQ((*attached_phi)(token_index, topic_index), pwt_model->token_weights(token_index).value(topic_index));
+      (*attached_phi)(token_index, topic_index) = 2.0f * token_index + 3.0f * topic_index;
+    }
+  }
+
+  std::shared_ptr< ::artm::TopicModel> updated_model = master->GetTopicModel(model_name);
+  for (int token_index = 0; token_index < pwt_model->token_size(); ++token_index) {
+    for (int topic_index = 0; topic_index < pwt_model->topics_count(); ++topic_index) {
+      EXPECT_EQ(updated_model->token_weights(token_index).value(topic_index), 2.0f * token_index + 3.0f * topic_index);
+      (*attached_phi)(token_index, topic_index) = pwt_model->token_weights(token_index).value(topic_index);
+    }
+  }
+}
+
 // artm_tests.exe --gtest_filter=CppInterface.ProcessBatchesApi
 TEST(CppInterface, ProcessBatchesApi) {
   int nTopics = 17;
@@ -539,9 +560,10 @@ TEST(CppInterface, ProcessBatchesApi) {
   normalize_model_args.set_nwt_source_name("nwt_hat");
 
   std::shared_ptr< ::artm::PerplexityScore> perplexity_score;
+  std::shared_ptr< ::artm::Matrix> attached_phi;
   for (int i = 0; i < 10; ++i) {  // 10 iterations
     process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
-    process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf);
+    process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Dense);
     std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
     perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
     EXPECT_EQ(result->GetThetaMatrix().topics_count(), nTopics);
@@ -607,6 +629,9 @@ TEST(CppInterface, ProcessBatchesApi) {
   std::shared_ptr< ::artm::TopicModel> rwt = master.GetTopicModel("rwt");
   ASSERT_NE(rwt, nullptr);
   ASSERT_EQ(rwt->topics_count(), nTopics);
+
+  VerifyAttachModel(&master, "pwt");
+  master.DisposeModel("pwt");  // good practice is to dispose model once its attachment is gone.
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

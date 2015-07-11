@@ -56,24 +56,23 @@ InitializeModelArgs_SourceType_Batches = 1
 SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
 SpecifiedSparsePhiConfig_Mode_SparseTokens = 1
 ProcessBatchesArgs_ThetaMatrixType_None = 0
-ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor = 1
-ProcessBatchesArgs_ThetaMatrixType_DenseColMajor = 2
-ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf = 3
-ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf = 4
-ProcessBatchesArgs_ThetaMatrixType_Cache = 5
+ProcessBatchesArgs_ThetaMatrixType_Dense = 1
+ProcessBatchesArgs_ThetaMatrixType_Sparse = 2
+ProcessBatchesArgs_ThetaMatrixType_Cache = 3
+ProcessBatchesArgs_ThetaMatrixType_External = 4
 CopyRequestResultArgs_RequestType_GetThetaSecondPass = 0
 CopyRequestResultArgs_RequestType_GetModelSecondPass = 1
-GetTopicModelArgs_MatrixLayout_Protobuf = 0
-GetTopicModelArgs_MatrixLayout_RowMajor = 1
-GetTopicModelArgs_MatrixLayout_ColMajor = 2
-GetThetaMatrixArgs_MatrixLayout_Protobuf = 0
-GetThetaMatrixArgs_MatrixLayout_RowMajor = 1
-GetThetaMatrixArgs_MatrixLayout_ColMajor = 2
 TopicModel_OperationType_Initialize = 0
 TopicModel_OperationType_Increment = 1
 TopicModel_OperationType_Overwrite = 2
 TopicModel_OperationType_Remove = 3
 TopicModel_OperationType_Ignore = 4
+GetTopicModelArgs_MatrixLayout_Dense = 0
+GetTopicModelArgs_MatrixLayout_Sparse = 1
+GetTopicModelArgs_MatrixLayout_External = 2
+GetThetaMatrixArgs_MatrixLayout_Dense = 0
+GetThetaMatrixArgs_MatrixLayout_Sparse = 1
+GetThetaMatrixArgs_MatrixLayout_External = 2
 
 #################################################################################
 
@@ -577,11 +576,11 @@ class MasterComponent:
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         if use_sparse_format is not None:
-            args.use_sparse_format=use_sparse_format
+            args.matrix_layout = GetTopicModelArgs_MatrixLayout_Sparse
         if request_type is not None:
             args.request_type = request_type
         if use_matrix:
-            args.matrix_layout = GetTopicModelArgs_MatrixLayout_RowMajor
+            args.matrix_layout = GetTopicModelArgs_MatrixLayout_External
 
         args_blob = args.SerializeToString()
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob))
@@ -625,7 +624,7 @@ class MasterComponent:
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         if use_matrix:
-            args.matrix_layout = GetThetaMatrixArgs_MatrixLayout_RowMajor
+            args.matrix_layout = GetThetaMatrixArgs_MatrixLayout_External
 
         args_blob = args.SerializeToString()
         length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
@@ -742,8 +741,7 @@ class MasterComponent:
         result = messages_pb2.ProcessBatchesResult()
         result.ParseFromString(blob)
 
-        if args.theta_matrix_type not in (ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor,
-                                          ProcessBatchesArgs_ThetaMatrixType_DenseColMajor):
+        if args.theta_matrix_type != ProcessBatchesArgs_ThetaMatrixType_External:
             return result
 
         numpy_matrix = self.__get_theta_matrix_second_pass(result.theta_matrix)

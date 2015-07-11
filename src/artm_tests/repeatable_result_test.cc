@@ -80,7 +80,8 @@ TEST(RepeatableResult, RandomGenerator) {
   }
 }
 
-void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_type, bool use_sparse_format) {
+void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_type,
+                                  ::artm::GetTopicModelArgs_MatrixLayout matrix_layout) {
   const int nTopics = 16;
 
   ::artm::MasterComponentConfig master_config;
@@ -141,7 +142,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
     ::artm::GetTopicModelArgs get_topic_model_args;
     get_topic_model_args.set_model_name(model.name());
     get_topic_model_args.set_request_type(request_type);
-    get_topic_model_args.set_use_sparse_format(use_sparse_format);
+    get_topic_model_args.set_matrix_layout(matrix_layout);
     for (int topic_index = i; topic_index < nTopics; topic_index += slices) {
       get_topic_model_args.add_topic_name(model_config.topic_name(topic_index));
     }
@@ -223,11 +224,11 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_dense
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_dense) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, false);
+  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, artm::GetTopicModelArgs_MatrixLayout_Dense);
 }
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_sparse
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_sparse) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, true);
+  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, artm::GetTopicModelArgs_MatrixLayout_Sparse);
 }
 
