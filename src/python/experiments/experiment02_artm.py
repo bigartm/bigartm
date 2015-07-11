@@ -232,7 +232,7 @@ with artm.library.MasterComponent(master_config) as master:
           if (save_and_test_model):
             print 'Saving topic model... ',
             with open(home_folder + 'Output.topic_model', 'wb') as binary_file:
-              binary_file.write(master.GetTopicModel(model).SerializeToString())
+              binary_file.write(master.GetTopicModel(model, use_matrix=False).SerializeToString())
           break
           
 # close all opened files and finish the program

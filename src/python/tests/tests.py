@@ -94,10 +94,10 @@ with MasterComponent() as master_component:
     model.Disable()
     args_tm = messages_pb2.GetTopicModelArgs()
     args_tm.model_name = model.name()
-    topic_model = master_component.GetTopicModel(None, args=args_tm)
+    topic_model = master_component.GetTopicModel(None, args=args_tm, use_matrix=False)
     args_theta = messages_pb2.GetThetaMatrixArgs()
     args_theta.model_name = model.name()
-    theta_matrix = master_component.GetThetaMatrix(None, args=args_theta)
+    theta_matrix = master_component.GetThetaMatrix(None, args=args_theta, use_matrix=False)
     perplexity_score = perplexity_score.GetValue(model)
 
     model.Overwrite(topic_model)

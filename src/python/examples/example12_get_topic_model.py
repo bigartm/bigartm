@@ -21,8 +21,8 @@ with artm.library.MasterComponent(disk_path=batches_disk_path) as master:
     # This avoids retrieving large topic models in a single protobuf message.
     print "Output p(w|t) values for the first few tokens (alphabetically) in each topic:"
     for topic_name in topic_names:
-        topic_model = master.GetTopicModel(model=model, topic_names={topic_name})  # retrieve one column in Phi matrix
+        topic_model, numpy_matrix = master.GetTopicModel(model=model, topic_names={topic_name})  # retrieve one column in Phi matrix
         print topic_model.topic_name[0],
         for i in range(0, 5):
-            print topic_model.token[i], "%.5f" % topic_model.token_weights[i].value[0],
+            print topic_model.token[i], "%.5f" % numpy_matrix[0, i],
         print "..."

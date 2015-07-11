@@ -296,8 +296,10 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
       if (instance_->schema()->config().cache_theta())
         cache_manager_ptr = instance_->cache_manager();
       break;
-    case ProcessBatchesArgs_ThetaMatrixType_Dense:
-    case ProcessBatchesArgs_ThetaMatrixType_Sparse:
+    case ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor:
+    case ProcessBatchesArgs_ThetaMatrixType_DenseColMajor:
+    case ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf:
+    case ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf:
       cache_manager_ptr = &cache_manager;
       return_theta = true;
   }
@@ -306,10 +308,10 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     scores_merger->ResetScores(model_name);
 
   if (args.batch_filename_size() < config->processors_count()) {
-    LOG_FIRST_N(WARNING, 1) << "Batches count (=" << args.batch_filename_size()
-                            << ") is smaller than processors threads count (="
-                            << config->processors_count()
-                            << "), which may cause suboptimal performance.";
+    LOG_FIRST_N(INFO, 1) << "Batches count (=" << args.batch_filename_size()
+                         << ") is smaller than processors threads count (="
+                         << config->processors_count()
+                         << "), which may cause suboptimal performance.";
   }
 
   for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
@@ -347,7 +349,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   if (return_theta) {
     GetThetaMatrixArgs gta;
     gta.set_model_name(model_name);
-    gta.set_use_sparse_format(args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse);
+    gta.set_use_sparse_format(args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf);
     cache_manager.RequestThetaMatrix(gta, process_batches_result->mutable_theta_matrix());
   }
 }

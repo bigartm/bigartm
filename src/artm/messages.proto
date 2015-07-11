@@ -481,6 +481,12 @@ message GetTopicModelArgs {
     Nwt = 1;
   }
 
+  enum MatrixLayout {
+    Protobuf = 0;
+    RowMajor = 1;
+    ColMajor = 2;
+  }
+
   optional string model_name = 1;
   repeated string topic_name = 2;
   repeated string token = 3;
@@ -488,9 +494,16 @@ message GetTopicModelArgs {
   optional bool use_sparse_format = 5;
   optional float eps = 6 [default = 1e-37];
   optional RequestType request_type = 7 [default = Pwt];
+  optional MatrixLayout matrix_layout = 8 [default = Protobuf];
 }
 
 message GetThetaMatrixArgs {
+  enum MatrixLayout {
+    Protobuf = 0;
+    RowMajor = 1;
+    ColMajor = 2;
+  }
+
   optional string model_name = 1;
   optional Batch batch = 2;
   repeated string topic_name = 3;
@@ -498,6 +511,7 @@ message GetThetaMatrixArgs {
   optional bool clean_cache = 5 [default = false];
   optional bool use_sparse_format = 6;
   optional float eps = 7 [default = 1e-37];
+  optional MatrixLayout matrix_layout = 8 [default = Protobuf];
 }
 
 message GetScoreValueArgs {
@@ -536,9 +550,11 @@ message ImportModelArgs {
 message ProcessBatchesArgs {
   enum ThetaMatrixType {
     None = 0;
-    Dense = 1;
-    Sparse = 2;
-    Cache = 3;
+    DenseRowMajor = 1;
+    DenseColMajor = 2;
+    DenseProtobuf = 3;
+    SparseProtobuf = 4;
+    Cache = 5;
   }
 
   optional string nwt_target_name = 1;
@@ -587,4 +603,13 @@ message NormalizeModelArgs {
 message ImportDictionaryArgs {
   optional string file_name = 1;
   optional string dictionary_name = 2;
+}
+
+message CopyRequestResultArgs {
+  enum RequestType {
+	GetThetaSecondPass = 0;
+	GetModelSecondPass = 1;
+  }
+
+  optional RequestType request_type = 1;
 }

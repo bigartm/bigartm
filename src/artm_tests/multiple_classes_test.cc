@@ -207,6 +207,24 @@ TEST(MultipleClasses, BasicTest) {
   ShowTopicModel(*topic_model3);
   ShowTopicModel(*topic_model_reg);
 
+  ::artm::Matrix matrix_phi, matrix_theta;
+  std::shared_ptr< ::artm::TopicModel> model_ex1 = master_component.GetTopicModel(model1.name(), &matrix_phi);
+  std::shared_ptr< ::artm::ThetaMatrix> theta_ex1 = master_component.GetThetaMatrix(model1.name(), &matrix_theta);
+  EXPECT_EQ(theta_ex1->item_weights_size(), 0);
+  EXPECT_EQ(model_ex1->token_weights_size(), 0);
+  ASSERT_EQ(matrix_phi.no_columns(), nTopics);
+  ASSERT_EQ(matrix_phi.no_rows(), nTokens);
+  ASSERT_EQ(matrix_theta.no_columns(), nDocs);
+  ASSERT_EQ(matrix_theta.no_rows(), nTopics);
+  for (int token_index = 0; token_index < nTokens; ++token_index)
+    for (int topic_index = 0; topic_index < nTopics; ++topic_index)
+      EXPECT_EQ(matrix_phi(token_index, topic_index), topic_model1->token_weights(token_index).value(topic_index));
+  for (int topic_index = 0; topic_index < nTopics; ++topic_index)
+    for (int item_index = 0; item_index < nDocs; ++item_index)
+      EXPECT_EQ(matrix_theta(topic_index, item_index), theta_matrix1->item_weights(item_index).value(topic_index));
+
+  // ToDo: validate matrix_phi and matrix_theta
+
   // ShowThetaMatrix(*theta_matrix1);
   // ShowThetaMatrix(*theta_matrix1_explicit);
   // ShowThetaMatrix(*theta_matrix2);
