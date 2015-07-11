@@ -1,37 +1,25 @@
-# This module contains ArtmModel class and helper classes and provides high-level
-# Python API for BigARTM Library.
-#
-# Written for Python 2.7
-# Code satisfies the pep8 Python code style guide.
-#
-# Each change of this file should be tested with pep8 Python style guide checker
-# (https://pypi.python.org/pypi/pep8) using command
-# > pep8 --first --max-line-length=99 artm_model.py
+"""This module contains ArtmModel class and helper classes and provides high-level
+Python API for BigARTM Library.
 
-import collections
+Written for Python 2.7
+Code satisfies the pep8 Python code style guide.
+
+Each change of this file should be tested with pep8 Python style guide checker
+(https://pypi.python.org/pypi/pep8) using command
+> pep8 --first --max-line-length=99 artm_model.py
+"""
+
 from collections import OrderedDict, namedtuple
 import csv
-import itertools
-import json
 import glob
-import numpy as np
-import math
-import pandas
+from numpy import array
 from pandas import DataFrame
-import scipy.spatial.distance as sp_dist
 import shutil
-import sklearn.decomposition
-from sklearn.decomposition import pca
-import sys
 import os
-from os import path
 import random
-import urllib2
 import uuid
-
 import artm.messages_pb2 as messages_pb2
 import artm.library as library
-import artm.visualization_ldavis as visualization
 
 
 ###################################################################################################
@@ -41,6 +29,7 @@ GLOB_EPS = 1e-37
 
 
 def reconfigure_score_in_master(master, score_config, name):
+    """reconfigure_score_in_master --- helpful internal method"""
     master_config = messages_pb2.MasterComponentConfig()
     master_config.CopyFrom(master.config())
     for i in range(len(master_config.score_config)):
@@ -52,6 +41,7 @@ def reconfigure_score_in_master(master, score_config, name):
 
 def create_parser_config(data_path, collection_name, target_folder,
                          batch_size, data_format, dictionary_name='dictionary'):
+    """create_parser_config --- helpful internal method"""
     collection_parser_config = messages_pb2.CollectionParserConfig()
     collection_parser_config.num_items_per_batch = batch_size
     if data_format == 'bow_uci':
@@ -69,74 +59,95 @@ def create_parser_config(data_path, collection_name, target_folder,
     return collection_parser_config
 
 
-def download_ldavis():
-    adress = 'https://raw.githubusercontent.com/romovpa/' + \
-        'bigartm/notebook-ideas/notebooks/ldavis/ldavis.js'
-    ldavis_js = urllib2.urlopen(address).read()
-    with open('../artm/_js/ldavis.js', 'w') as fout:
-        fout.write(ldavis_js)
+###################################################################################################
+def parse(collection_name=None, data_path='', data_format='bow_uci',
+          batch_size=1000, dictionary_name='dictionary'):
+    """parse() --- proceed the learning of topic model
 
+    Args:
+      collection_name (str): the name of text collection (required if
+      data_format == 'bow_uci'), default=None
+      data_path (str):
+      1) if data_format == 'bow_uci' => folder containing
+      'docword.collection_name.txt' and vocab.collection_name.txt files;
+      2) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;
+      3) if data_format == 'plain_text' => file with text;
+      default=''
+      data_format (str:) the type of input data;
+      1) 'bow_uci' --- Bag-Of-Words in UCI format;
+      2) 'vowpal_wabbit' --- Vowpal Wabbit format;
+      3) 'plain_text' --- source text;
+      default='bow_uci'
+      batch_size (int): number of documents to be stored in each batch,
+      default=1000
+      dictionary_name (str): the name of BigARTM dictionary with information
+      about collection, that will be gathered by the library parser;
+      default='dictionary'
+    """
+    if collection_name is None and data_format == 'bow_uci':
+        raise IOError('ArtmModel.parse(): No collection name was given')
 
-def sym_kl_dist(u, v):
-    s = [(x + y) * 0.5 + GLOB_EPS for x, y in zip(u, v)]
-    temp1 = 0.5 * sum(a * (math.log(b) if b > GLOB_EPS else 0)
-                      for a, b in zip(u, [x / y for x, y in zip(u, s)]))
+    if data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
+        collection_parser_config = create_parser_config(data_path,
+                                                        collection_name,
+                                                        collection_name,
+                                                        batch_size,
+                                                        data_format,
+                                                        dictionary_name)
+        library.Library().ParseCollection(collection_parser_config)
 
-    temp2 = 0.5 * sum(a * (math.log(b) if b > GLOB_EPS else 0)
-                      for a, b in zip(v, [x / y for x, y in zip(v, s)]))
-
-    return temp1 + temp2
+    elif data_format == 'plain_text':
+        raise NotImplementedError()
+    else:
+        raise IOError('ArtmModel.parse(): Unknown data format')
 
 
 ###################################################################################################
 class Regularizers(object):
-    """ Regularizers represents a storage of regularizers in ArtmModel
-    (private class).
+    """Regularizers represents a storage of regularizers in ArtmModel (private class)
 
-    Parameters:
-    ----------
-    - master --- reference to master component object, no default
+    Args:
+      master (reference): reference to MasterComponent object, no default
     """
     def __init__(self, master):
         self._data = {}
         self._master = master
 
     def add(self, config):
-        """ Regularizers.add() --- add regularizer into ArtmModel.
-        Parameters:
-        ---------
-        - config --- an object of ***Regularizer class, no default
+        """Regularizers.add() --- add regularizer into ArtmModel
+
+        Args:
+          config (reference): reference to an object of ***Regularizer class, no default
         """
         if config.name in self._data:
-            print 'Regularizer with name ' + str(config.name) + ' is already exist'
+            raise ValueError('Regularizer with name ' + str(config.name) + ' is already exist')
         else:
             regularizer = self._master.CreateRegularizer(config.name, config.type, config.config)
-            config.regularizer = regularizer
+            config._regularizer = regularizer
             self._data[config.name] = config
 
     def __getitem__(self, name):
-        """ Regularizers.__getitem__() --- get regularizer with given name.
-        Parameters:
-        ---------
-        - name --- name of the regularizer.
-          Is string, no default
+        """Regularizers.__getitem__() --- get regularizer with given name
+
+        Args:
+          name (str): name of the regularizer, no default
         """
         if name in self._data:
             return self._data[name]
         else:
-            print 'No regularizer with name ' + str(config.name)
+            raise KeyError('No regularizer with name ' + name)
 
     @property
-    def data(self): return self._data
+    def data(self):
+        return self._data
 
 
 ###################################################################################################
 class Scores(object):
-    """ Scores represents a storage of scores in ArtmModel (private class).
+    """Scores represents a storage of scores in ArtmModel (private class)
 
-    Parameters:
-    ----------
-    - master --- reference to master component object, no default
+    Args:
+      master (reference): reference to MasterComponent object, no default
     """
     def __init__(self, master, model):
         self._data = {}
@@ -144,59 +155,51 @@ class Scores(object):
         self._model = model
 
     def add(self, config):
-        """ Scores.add() --- add score into ArtmModel.
-        Parameters:
-        ---------
-        - config --- an object of ***Scores class, no default
+        """Scores.add() --- add score into ArtmModel.
+
+        Args:
+          config (reference): an object of ***Scores class, no default
         """
         if config.name in self._data:
-            print 'Score with name ' + str(config.name) + ' is already exist'
+            raise ValueError('Score with name ' + str(config.name) + ' is already exist')
         else:
             score = self._master.CreateScore(config.name, config.type, config.config)
-            config.model = self._model
-            config.score = score
-            config.master = self._master
+            config._model = self._model
+            config._score = score
+            config._master = self._master
             self._data[config.name] = config
 
     def __getitem__(self, name):
-        """ Scores.__getitem__() --- get score with given name.
-        Parameters:
-        ----------
-        - name --- name of the score.
-          Is string, no default
+        """Scores.__getitem__() --- get score with given name
+
+        Args:
+          name (str): name of the regularizer, no default
         """
         if name in self._data:
             return self._data[name]
         else:
-            print 'No score with name ' + str(config.name)
+            raise KeyError('No score with name ' + name)
 
     @property
-    def data(self): return self._data
+    def data(self):
+        return self._data
 
 
 ###################################################################################################
 # SECTION OF REGULARIZER CLASSES
 ###################################################################################################
 class SmoothSparsePhiRegularizer(object):
-    """ SmoothSparsePhiRegularizer is a regularizer in ArtmModel
-    (public class).
+    """SmoothSparsePhiRegularizer is a regularizer in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of regularizer.
-      Is string, default = None
-
-    - tau --- the coefficient of regularization for this regularizer.
-      Is double, default = 1.0
-
-    - class_ids --- list of class_ids to regularize. Is list of strings.
-      Is default = None
-
-    - topic_names --- list of names of topics to regularize.
-      Is list of strings, default = None
-
-    - dictionary_name --- BigARTM collection dictionary.
-      Is string, default = None
+    Args:
+      name (str): the identifier of regularizer, will be auto-generated if not specified
+      tau (double): the coefficient of regularization for this regularizer, default=1.0
+      class_ids (list of str): list of class_ids to regularize, will regularize all
+      classes if not specified
+      topic_names (list of str): list of names of topics to regularize, will regularize
+      all topics if not specified
+      dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
+      specified
     """
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
@@ -206,7 +209,7 @@ class SmoothSparsePhiRegularizer(object):
         self._dictionary_name = ''
 
         if name is None:
-            name = "SmoothSparsePhiRegularizer:" + uuid.uuid1().urn
+            name = 'SmoothSparsePhiRegularizer:' + uuid.uuid1().urn
         if class_ids is not None:
             config.ClearField('class_id')
             for class_id in class_ids:
@@ -222,7 +225,7 @@ class SmoothSparsePhiRegularizer(object):
             self._dictionary_name = dictionary_name
 
         self._name = name
-        self._tau = tau
+        self.tau = tau
         self._type = PHI_REGULARIZER_TYPE
         self._config = config
         self._type = library.RegularizerConfig_Type_SmoothSparsePhi
@@ -231,10 +234,6 @@ class SmoothSparsePhiRegularizer(object):
     @property
     def name(self):
         return self._name
-
-    @property
-    def tau(self):
-        return self._tau
 
     @property
     def type(self):
@@ -259,14 +258,6 @@ class SmoothSparsePhiRegularizer(object):
     @property
     def regularizer(self):
         return self._regularizer
-
-    @regularizer.setter
-    def regularizer(self, regularizer):
-        self._regularizer = regularizer
-
-    @tau.setter
-    def tau(self, tau):
-        self._tau = tau
 
     @class_ids.setter
     def class_ids(self, class_ids):
@@ -299,22 +290,16 @@ class SmoothSparsePhiRegularizer(object):
 
 ###################################################################################################
 class SmoothSparseThetaRegularizer(object):
-    """ SmoothSparseThetaRegularizer is a regularizer in ArtmModel (public class).
-    Parameters:
-    ---------
-    - name --- the identifier of regularizer.
-      Is string, default = None
+    """SmoothSparseThetaRegularizer is a regularizer in ArtmModel (public class)
 
-    - tau --- the coefficient of regularization for this regularizer.
-      Is double, default = 1.0
-
-    - topic_names --- list of names of topics to regularize.
-      Is list of strings, default = None
-
-    - alpha_iter --- list of additional coefficients of regularization
-      on each iteration over document. Should have length equal to
-      model.num_document_passes.
-      Is list of double, default = None
+    Args:
+      name (str): the identifier of regularizer, will be auto-generated if not specified
+      tau (double): the coefficient of regularization for this regularizer, default=1.0
+      topic_names (list of str): list of names of topics to regularize, will regularize
+      all topics if not specified
+      alpha_iter (list of double, default=None): list of additional coefficients of
+      regularization on each iteration over document. Should have length equal to
+      model.num_document_passes
     """
     def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None):
         config = messages_pb2.SmoothSparseThetaConfig()
@@ -322,7 +307,7 @@ class SmoothSparseThetaRegularizer(object):
         self._alpha_iter = []
 
         if name is None:
-            name = "SmoothSparseThetaRegularizer:" + uuid.uuid1().urn
+            name = 'SmoothSparseThetaRegularizer:' + uuid.uuid1().urn
         if topic_names is not None:
             config.ClearField('topic_name')
             for topic_name in topic_names:
@@ -335,7 +320,7 @@ class SmoothSparseThetaRegularizer(object):
                 self._alpha_iter.append(alpha)
 
         self._name = name
-        self._tau = tau
+        self.tau = tau
         self._type = THETA_REGULARIZER_TYPE
         self._config = config
         self._type = library.RegularizerConfig_Type_SmoothSparseTheta
@@ -344,10 +329,6 @@ class SmoothSparseThetaRegularizer(object):
     @property
     def name(self):
         return self._name
-
-    @property
-    def tau(self):
-        return self._tau
 
     @property
     def type(self):
@@ -368,14 +349,6 @@ class SmoothSparseThetaRegularizer(object):
     @property
     def regularizer(self):
         return self._regularizer
-
-    @regularizer.setter
-    def regularizer(self, regularizer):
-        self._regularizer = regularizer
-
-    @tau.setter
-    def tau(self, tau):
-        self._tau = tau
 
     @topic_names.setter
     def topic_names(self, topic_names):
@@ -400,22 +373,15 @@ class SmoothSparseThetaRegularizer(object):
 
 ###################################################################################################
 class DecorrelatorPhiRegularizer(object):
-    """ DecorrelatorPhiRegularizer is a regularizer in ArtmModel
-    (public class).
+    """DecorrelatorPhiRegularizer is a regularizer in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of regularizer.
-      Is string, default = None
-
-    - tau --- the coefficient of regularization for this regularizer.
-      Is double, default = 1.0
-
-    - class_ids --- list of class_ids to regularize.
-      Is list of strings, default = None
-
-    - topic_names --- list of names of topics to regularize.
-      Is list of strings, default = None
+    Args:
+      name (str): the identifier of regularizer, will be auto-generated if not specified
+      tau (double): the coefficient of regularization for this regularizer, default=1.0
+      class_ids (list of str): list of class_ids to regularize, will regularize all
+      classes if not specified
+      topic_names (list of str): list of names of topics to regularize, will regularize
+      all topics if not specified
     """
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None):
         config = messages_pb2.DecorrelatorPhiConfig()
@@ -423,7 +389,7 @@ class DecorrelatorPhiRegularizer(object):
         self._topic_names = []
 
         if name is None:
-            name = "DecorrelatorPhiRegularizer:" + uuid.uuid1().urn
+            name = 'DecorrelatorPhiRegularizer:' + uuid.uuid1().urn
         if class_ids is not None:
             config.ClearField('class_id')
             for class_id in class_ids:
@@ -436,7 +402,7 @@ class DecorrelatorPhiRegularizer(object):
                 self._topic_names.append(topic_name)
 
         self._name = name
-        self._tau = tau
+        self.tau = tau
         self._type = PHI_REGULARIZER_TYPE
         self._config = config
         self._type = library.RegularizerConfig_Type_DecorrelatorPhi
@@ -445,10 +411,6 @@ class DecorrelatorPhiRegularizer(object):
     @property
     def name(self):
         return self._name
-
-    @property
-    def tau(self):
-        return self._tau
 
     @property
     def type(self):
@@ -469,14 +431,6 @@ class DecorrelatorPhiRegularizer(object):
     @property
     def regularizer(self):
         return self._regularizer
-
-    @regularizer.setter
-    def regularizer(self, regularizer):
-        self._regularizer = regularizer
-
-    @tau.setter
-    def tau(self, tau):
-        self._tau = tau
 
     @class_ids.setter
     def class_ids(self, class_ids):
@@ -501,24 +455,17 @@ class DecorrelatorPhiRegularizer(object):
 
 ###################################################################################################
 class LableRegularizationPhiRegularizer(object):
-    """ LableRegularizationPhiRegularizer is a regularizer in ArtmModel
-    (public class).
-    Parameters:
-    ----------
-    - name --- the identifier of regularizer.
-      Is string, default = None
+    """LableRegularizationPhiRegularizer is a regularizer in ArtmModel (public class)
 
-    - tau --- the coefficient of regularization for this regularizer.
-      Is double, default = 1.0
-
-    - class_ids --- list of class_ids to regularize.
-      Is list of strings, default = None
-
-    - topic_names --- list of names of topics to regularize.
-      Is list of strings, default = None
-
-    - dictionary_name --- BigARTM collection dictionary.
-      Is string, default = None
+    Args:
+      name (str): the identifier of regularizer, will be auto-generated if not specified
+      tau (double): the coefficient of regularization for this regularizer, default=1.0
+      class_ids (list of str): list of class_ids to regularize, will regularize all
+      classes if not specified
+      topic_names (list of str): list of names of topics to regularize, will regularize
+      all topics if not specified
+      dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
+      specified
     """
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
@@ -528,7 +475,7 @@ class LableRegularizationPhiRegularizer(object):
         self._dictionary_name = ''
 
         if name is None:
-            name = "LableRegularizationPhiRegularizer:" + uuid.uuid1().urn
+            name = 'LableRegularizationPhiRegularizer:' + uuid.uuid1().urn
         if class_ids is not None:
             config.ClearField('class_id')
             for class_id in class_ids:
@@ -544,7 +491,7 @@ class LableRegularizationPhiRegularizer(object):
             self._dictionary_name = dictionary_name
 
         self._name = name
-        self._tau = tau
+        self.tau = tau
         self._type = PHI_REGULARIZER_TYPE
         self._config = config
         self._type = library.RegularizerConfig_Type_LableRegularizationPhi
@@ -553,10 +500,6 @@ class LableRegularizationPhiRegularizer(object):
     @property
     def name(self):
         return self._name
-
-    @property
-    def tau(self):
-        return self._tau
 
     @property
     def type(self):
@@ -581,14 +524,6 @@ class LableRegularizationPhiRegularizer(object):
     @property
     def regularizer(self):
         return self._regularizer
-
-    @regularizer.setter
-    def regularizer(self, regularizer):
-        self._regularizer = regularizer
-
-    @tau.setter
-    def tau(self, tau):
-        self._tau = tau
 
     @class_ids.setter
     def class_ids(self, class_ids):
@@ -621,33 +556,20 @@ class LableRegularizationPhiRegularizer(object):
 
 ###################################################################################################
 class SpecifiedSparsePhiRegularizer(object):
-    """ SpecifiedSparsePhiRegularizer is a regularizer in ArtmModel
-    (public class).
+    """SpecifiedSparsePhiRegularizer is a regularizer in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of regularizer.
-      Is string, default = None
-
-    - tau --- the coefficient of regularization for this regularizer.
-      Is double, default = 1.0
-
-    - class_id --- class_id to regularize.
-      Is string, default = None
-
-    - topic_names --- list of names of topics to regularize.
-      Is list of strings, default = None
-
-    - num_max_elements --- number of elements to save in row/column.
-      Is int, default = None
-
-    - probability_threshold --- if m elements in row/column summarize into
-      value >= probability_threshold, m < n => only these elements would
-      be saved.
-      Is double, in (0,1), default = None
-
-    - sparse_by_columns --- find max elements in column or in row.
-      Is bool, default = True
+    Args:
+      name (str): the identifier of regularizer, will be auto-generated if not specified
+      tau (double): the coefficient of regularization for this regularizer, default=1.0
+      class_id (str): class_id to regularize, default=None
+      topic_names (list of str): list of names of topics to regularize, will regularize
+      all topics if not specified
+      topic_names (list of str, default=None): list of names of topics to regularize
+      num_max_elements (int): number of elements to save in row/column, default=None
+      probability_threshold (double): if m elements in row/column
+      summarize into value >= probability_threshold, m < n => only these elements would
+      be saved. Value should be in (0, 1), default=None
+      sparse_by_columns (bool) --- find max elements in column or in row, default=True
     """
     def __init__(self, name=None, tau=1.0, class_id=None, topic_names=None,
                  num_max_elements=None, probability_threshold=None, sparse_by_columns=True):
@@ -659,7 +581,7 @@ class SpecifiedSparsePhiRegularizer(object):
         self._sparse_by_columns = True
 
         if name is None:
-            name = "SpecifiedSparsePhiRegularizer:" + uuid.uuid1().urn
+            name = 'SpecifiedSparsePhiRegularizer:' + uuid.uuid1().urn
         if class_id is not None:
             config.class_id = class_id
             self._class_id = class_id
@@ -683,7 +605,7 @@ class SpecifiedSparsePhiRegularizer(object):
                 self._sparse_by_columns = False
 
         self._name = name
-        self._tau = tau
+        self.tau = tau
         self._type = PHI_REGULARIZER_TYPE
         self._config = config
         self._type = library.RegularizerConfig_Type_SpecifiedSparsePhi
@@ -692,10 +614,6 @@ class SpecifiedSparsePhiRegularizer(object):
     @property
     def name(self):
         return self._name
-
-    @property
-    def tau(self):
-        return self._tau
 
     @property
     def type(self):
@@ -728,14 +646,6 @@ class SpecifiedSparsePhiRegularizer(object):
     @property
     def regularizer(self):
         return self._regularizer
-
-    @regularizer.setter
-    def regularizer(self, regularizer):
-        self._regularizer = regularizer
-
-    @tau.setter
-    def tau(self, tau):
-        self._tau = tau
 
     @class_id.setter
     def class_id(self, class_id):
@@ -785,25 +695,17 @@ class SpecifiedSparsePhiRegularizer(object):
 
 ###################################################################################################
 class ImproveCoherencePhiRegularizer(object):
-    """ ImproveCoherencePhiRegularizer is a regularizer in ArtmModel
-    (public class).
+    """ImproveCoherencePhiRegularizer is a regularizer in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of regularizer.
-      Is string, default = None
-
-    - tau --- the coefficient of regularization for this regularizer.
-      Is double, default = 1.0
-
-    - class_ids --- list of class_ids to regularize.
-      Is list of strings, default = None
-
-    - topic_names --- list of names of topics to regularize.
-      Is list of strings, default = None
-
-    - dictionary_name --- BigARTM collection dictionary.
-      Is string, default = None
+    Args:
+      name (str): the identifier of regularizer, will be auto-generated if not specified
+      tau (double): the coefficient of regularization for this regularizer, default=1.0
+      class_ids (list of str): list of class_ids to regularize, will regularize all
+      classes if not specified
+      topic_names (list of str): list of names of topics to regularize, will regularize
+      all topics if not specified
+      dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
+      specified
     """
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
@@ -813,7 +715,7 @@ class ImproveCoherencePhiRegularizer(object):
         self._dictionary_name = ''
 
         if name is None:
-            name = "ImproveCoherencePhiRegularizer:" + uuid.uuid1().urn
+            name = 'ImproveCoherencePhiRegularizer:' + uuid.uuid1().urn
         if class_ids is not None:
             config.ClearField('class_id')
             for class_id in class_ids:
@@ -829,7 +731,7 @@ class ImproveCoherencePhiRegularizer(object):
             self._dictionary_name = dictionary_name
 
         self._name = name
-        self._tau = tau
+        self.tau = tau
         self._type = PHI_REGULARIZER_TYPE
         self._config = config
         self._type = library.RegularizerConfig_Type_ImproveCoherencePhi
@@ -838,10 +740,6 @@ class ImproveCoherencePhiRegularizer(object):
     @property
     def name(self):
         return self._name
-
-    @property
-    def tau(self):
-        return self._tau
 
     @property
     def type(self):
@@ -866,14 +764,6 @@ class ImproveCoherencePhiRegularizer(object):
     @property
     def regularizer(self):
         return self._regularizer
-
-    @regularizer.setter
-    def regularizer(self, regularizer):
-        self._regularizer = regularizer
-
-    @tau.setter
-    def tau(self, tau):
-        self._tau = tau
 
     @class_ids.setter
     def class_ids(self, class_ids):
@@ -908,21 +798,15 @@ class ImproveCoherencePhiRegularizer(object):
 # SECTION OF SCORE CLASSES
 ###################################################################################################
 class SparsityPhiScore(object):
-    """ SparsityPhiScore is a score in ArtmModel (public class).
+    """SparsityPhiScore is a score in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of score.
-      Is string, default = None
-
-    - class_id --- class_id to score.
-       Is string, default = None
-
-    - topic_names --- list of names of topics to score.
-      Is list of strings, default = None
-
-    - eps --- the tolerance const, everything < eps considered to be zero.
-      Is double, default = None
+    Args:
+      name (str): the identifier of score, will be auto-generated if not specified
+      class_id (str): class_id to score, default=None
+      topic_names (list of str): list of names of topics to regularize, will
+      score all topics if not specified
+      eps (double): the tolerance const, everything < eps
+      considered to be zero, default=1e-37
     """
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
         config = messages_pb2.SparsityPhiScoreConfig()
@@ -931,7 +815,7 @@ class SparsityPhiScore(object):
         self._eps = GLOB_EPS
 
         if name is None:
-            name = "SparsityPhiScore:" + uuid.uuid1().urn
+            name = 'SparsityPhiScore:' + uuid.uuid1().urn
         if class_id is not None:
             config.class_id = class_id
             self._class_id = class_id
@@ -987,18 +871,6 @@ class SparsityPhiScore(object):
     def master(self):
         return self._master
 
-    @model.setter
-    def model(self, model):
-        self._model = model
-
-    @score.setter
-    def score(self, score):
-        self._score = score
-
-    @master.setter
-    def master(self, master):
-        self._master = master
-
     @class_id.setter
     def class_id(self, class_id):
         self._class_id = class_id
@@ -1028,17 +900,14 @@ class SparsityPhiScore(object):
 
 ###################################################################################################
 class SparsityThetaScore(object):
-    """ SparsityThetaScore is a score in ArtmModel (public class).
+    """SparsityThetaScore is a score in ArtmModel (public class)
 
-    Parameters:
-    - name --- the identifier of score.
-      Is string, default = None
-
-    - topic_names --- list of names of topics to score.
-      Is list of strings, default = None
-
-    - eps --- the tolerance const, everything < eps considered to be zero.
-      Is double, default = None
+    Args:
+      name (str): the identifier of score, will be auto-generated if not specified
+      topic_names (list of str): list of names of topics to regularize, will
+      score all topics if not specified
+      eps (double): the tolerance const, everything < eps
+      considered to be zero, default=1e-37
     """
     def __init__(self, name=None, topic_names=None, eps=None):
         config = messages_pb2.SparsityThetaScoreConfig()
@@ -1046,7 +915,7 @@ class SparsityThetaScore(object):
         self._eps = GLOB_EPS
 
         if name is None:
-            name = "SparsityThetaScore:" + uuid.uuid1().urn
+            name = 'SparsityThetaScore:' + uuid.uuid1().urn
         if topic_names is not None:
             config.ClearField('topic_name')
             for topic_name in topic_names:
@@ -1095,18 +964,6 @@ class SparsityThetaScore(object):
     def master(self):
         return self._master
 
-    @model.setter
-    def model(self, model):
-        self._model = model
-
-    @score.setter
-    def score(self, score):
-        self._score = score
-
-    @master.setter
-    def master(self, master):
-        self._master = master
-
     @topic_names.setter
     def topic_names(self, topic_names):
         self._topic_names = topic_names
@@ -1128,29 +985,19 @@ class SparsityThetaScore(object):
 
 ###################################################################################################
 class PerplexityScore(object):
-    """ PerplexityScore is a score in ArtmModel (public class).
+    """PerplexityScore is a score in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of score.
-      Is string, default = None
-
-    - class_id --- class_id to score.
-      Is string, default = None
-
-    - topic_names --- list of names of topics to score Theta sparsity.
-      Is list of strings, default = None
-
-    - eps --- the tolerance const for Theta sparsity, everything < eps
-      considered to be zero.
-      Is double, default = None
-
-    - dictionary_name --- BigARTM collection dictionary.
-      Is string, default = None
-
-    - use_unigram_document_model --- use uni-gram document/collection model
-      if token's counter == 0.
-      Is bool, default = None
+    Args:
+      name (str): the identifier of score, will be auto-generated if not specified
+      class_id (str): class_id to score, default=None
+      topic_names (list of str): list of names of topics to regularize, will
+      score all topics if not specified
+      eps (double, default=None): the tolerance const, everything < eps
+      considered to be zero
+      dictionary_name (str): BigARTM collection dictionary, won't use dictionary
+      if not specified
+      use_unigram_document_model (bool): use uni-gram
+      document/collection model if token's counter == 0, default=True
     """
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, use_unigram_document_model=None):
@@ -1162,7 +1009,7 @@ class PerplexityScore(object):
         self._use_unigram_document_model = True
 
         if name is None:
-            name = "PerplexityScore:" + uuid.uuid1().urn
+            name = 'PerplexityScore:' + uuid.uuid1().urn
         if class_id is not None:
             config.class_id = class_id
             self._class_id = class_id
@@ -1235,18 +1082,6 @@ class PerplexityScore(object):
     def master(self):
         return self._master
 
-    @model.setter
-    def model(self, model):
-        self._model = model
-
-    @score.setter
-    def score(self, score):
-        self._score = score
-
-    @master.setter
-    def master(self, master):
-        self._master = master
-
     @class_id.setter
     def class_id(self, class_id):
         self._class_id = class_id
@@ -1295,18 +1130,16 @@ class PerplexityScore(object):
 
 ###################################################################################################
 class ItemsProcessedScore(object):
-    """ ItemsProcessedScore is a score in ArtmModel (public class).
+    """ItemsProcessedScore is a score in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of score.
-      Is string, default = None
+    Args:
+      name (str): the identifier of score, will be auto-generated if not specified
     """
     def __init__(self, name=None):
         config = messages_pb2.ItemsProcessedScoreConfig()
 
         if name is None:
-            name = "PerplexityScore:" + uuid.uuid1().urn
+            name = 'PerplexityScore:' + uuid.uuid1().urn
 
         self._name = name
         self._config = config
@@ -1339,39 +1172,20 @@ class ItemsProcessedScore(object):
     def master(self):
         return self._master
 
-    @model.setter
-    def model(self, model):
-        self._model = model
-
-    @score.setter
-    def score(self, score):
-        self._score = score
-
-    @master.setter
-    def master(self, master):
-        self._master = master
-
 
 ###################################################################################################
 class TopTokensScore(object):
-    """ TopTokensScore is a score in ArtmModel (public class).
+    """TopTokensScore is a score in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of score.
-      Is string, default = None
-
-    - class_id --- class_id to score.
-      Is string, default = None
-
-    - topic_names --- list of names of topics to score Theta sparsity.
-      Is list of strings, default = None
-
-    - num_tokens --- Number of tokens with max probability in each topic.
-      Is int, default = None
-
-    - dictionary_name --- BigARTM collection dictionary.
-      Is string, default = None
+    Args:
+      name (str): the identifier of score, will be auto-generated if not specified
+      class_id (str): class_id to score, default=None
+      topic_names (list of str): list of names of topics to regularize, will
+      score all topics if not specified
+      num_tokens (int): number of tokens with max probability
+      in each topic, default=10
+      dictionary_name (str): BigARTM collection dictionary, won't use dictionary
+      if not specified
     """
     def __init__(self, name=None, class_id=None, topic_names=None,
                  num_tokens=None, dictionary_name=None):
@@ -1382,7 +1196,7 @@ class TopTokensScore(object):
         self._dictionary_name = ''
 
         if name is None:
-            name = "TopTokensScore:" + uuid.uuid1().urn
+            name = 'TopTokensScore:' + uuid.uuid1().urn
         if class_id is not None:
             config.class_id = class_id
             self._class_id = class_id
@@ -1445,18 +1259,6 @@ class TopTokensScore(object):
     def master(self):
         return self._master
 
-    @model.setter
-    def model(self, model):
-        self._model = model
-
-    @score.setter
-    def score(self, score):
-        self._score = score
-
-    @master.setter
-    def master(self, master):
-        self._master = master
-
     @class_id.setter
     def class_id(self, class_id):
         self._class_id = class_id
@@ -1494,19 +1296,13 @@ class TopTokensScore(object):
 
 ###################################################################################################
 class ThetaSnippetScore(object):
-    """ ThetaSnippetScore is a score in ArtmModel (public class).
+    """ThetaSnippetScore is a score in ArtmModel (public class)
 
-    Parameters:
-    ----------
-    - name --- the identifier of score.
-      Is string, default = None
-
-    - item_ids --- list of names of items to show.
-      Is list of ints, default = None
-
-    - num_items --- number of theta vectors to show from the
-      beginning (no sense if item_ids given).
-      Is int, default = None
+    Args:
+      name (str): the identifier of score, will be auto-generated if not specified
+      item_ids (list of int): list of names of items to show, default=None
+      num_items (int): number of theta vectors to show from the
+      beginning (no sense if item_ids given), default=10
     """
     def __init__(self, name=None, item_ids=None, num_items=None):
         config = messages_pb2.ThetaSnippetScoreConfig()
@@ -1514,7 +1310,7 @@ class ThetaSnippetScore(object):
         self._num_items = 10
 
         if name is None:
-            name = "ThetaSnippetScore:" + uuid.uuid1().urn
+            name = 'ThetaSnippetScore:' + uuid.uuid1().urn
         if item_ids is not None:
             config.ClearField('item_id')
             for item_id in item_ids:
@@ -1563,18 +1359,6 @@ class ThetaSnippetScore(object):
     def master(self):
         return self._master
 
-    @model.setter
-    def model(self, model):
-        self._model = model
-
-    @score.setter
-    def score(self, score):
-        self._score = score
-
-    @master.setter
-    def master(self, master):
-        self._master = master
-
     @item_ids.setter
     def item_ids(self, item_ids):
         self._item_ids = item_ids
@@ -1596,27 +1380,19 @@ class ThetaSnippetScore(object):
 
 ###################################################################################################
 class TopicKernelScore(object):
-    """ TopicKernelScore is a score in ArtmModel (public class).
+    """TopicKernelScore is a score in ArtmModel (public class)
 
-    Parameters:
-    - name --- the identifier of score.
-      Is string, default = None
-
-    - class_id --- class_id to score.
-      Is string, default = None
-
-    - topic_names --- list of names of topics to score Theta sparsity.
-      Is list of strings, default = None
-
-    - eps --- the tolerance const for counting, everything < eps
-      considered to be zero.
-      Is double, default = None
-
-    - dictionary_name --- BigARTM collection dictionary_name.
-      Is string, default = None
-    - probability_mass_threshold --- the threshold for p(t|w) values to get
-      token into topic kernel.
-      Is double, in (0,1), default = None
+    Args:
+      name (str): the identifier of score, will be auto-generated if not specified
+      class_id (str): class_id to score, default=None
+      topic_names (list of str): list of names of topics to regularize, will
+      score all topics if not specified
+      eps (double): the tolerance const, everything < eps
+      considered to be zero, default=1e-37
+      dictionary_name (str): BigARTM collection dictionary, won't use dictionary
+      if not specified
+      probability_mass_threshold (double): the threshold for p(t|w) values to
+      get token into topic kernel. Should be in (0, 1), default=0.1
     """
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, probability_mass_threshold=None):
@@ -1628,7 +1404,7 @@ class TopicKernelScore(object):
         self._probability_mass_threshold = 0.1
 
         if name is None:
-            name = "TopicKernelScore:" + uuid.uuid1().urn
+            name = 'TopicKernelScore:' + uuid.uuid1().urn
         if class_id is not None:
             config.class_id = class_id
             self._class_id = class_id
@@ -1698,18 +1474,6 @@ class TopicKernelScore(object):
     def master(self):
         return self._master
 
-    @model.setter
-    def model(self, model):
-        self._model = model
-
-    @score.setter
-    def score(self, score):
-        self._score = score
-
-    @master.setter
-    def master(self, master):
-        self._master = master
-
     @class_id.setter
     def class_id(self, class_id):
         self._class_id = class_id
@@ -1757,12 +1521,11 @@ class TopicKernelScore(object):
 # SECTION OF SCORE INFO CLASSES
 ###################################################################################################
 class SparsityPhiScoreInfo(object):
-    """ SparsityPhiScoreInfo represents a result of counting SparsityPhiScore
-    (private class).
+    """SparsityPhiScoreInfo represents a result of counting
+    SparsityPhiScore (private class)
 
-    Parameters:
-    ----------
-    - score --- reference to score object, no default
+    Args:
+      score (reference): reference to Score object, no default
     """
     def __init__(self, score):
         self._name = score.name
@@ -1771,16 +1534,13 @@ class SparsityPhiScoreInfo(object):
         self._total_tokens = []
 
     def add(self, score=None):
-        """ SparsityPhiScoreInfo.add() --- add info about score after
-        synchronization.
+        """SparsityPhiScoreInfo.add() --- add info about score after synchronization
 
-        Parameters:
-        ----------
-        - score --- reference to score object,
-          default = None (means "Add None values")
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
         """
         if score is not None:
-            _data = messages_pb2.SparsityPhiScore()
             _data = score.score.GetValue(score._model)
 
             self._value.append(_data.value)
@@ -1797,55 +1557,54 @@ class SparsityPhiScoreInfo(object):
 
     @property
     def value(self):
-        """ Returns value of Phi sparsity on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: value of Phi sparsity on synchronizations
         """
         return self._value
 
     @property
     def zero_tokens(self):
-        """ Returns number of zero rows in Phi on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: number of zero rows in Phi on synchronizations
         """
         return self._zero_tokens
 
     @property
     def total_tokens(self):
-        """ Returns total number of rows in Phi on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: total number of rows in Phi on synchronizations
         """
         return self._total_tokens
 
     @property
     def last_value(self):
-        """ Returns value of Phi sparsity on the last synchronization.
-        Is double
+        """Returns:
+        double: value of Phi sparsity on the last synchronization
         """
         return self._value[len(self._value) - 1]
 
     @property
     def last_zero_tokens(self):
-        """ Returns number of zero rows in Phi on the last synchronization.
-        Is int
+        """Returns:
+        int: number of zero rows in Phi on the last synchronization
         """
         return self._zero_tokens[len(self._zero_tokens) - 1]
 
     @property
     def last_total_tokens(self):
-        """ Returns total number of rows in Phi on the last synchronization.
-        Is int
+        """Returns:
+        int: total number of rows in Phi on the last synchronization
         """
         return self._total_tokens[len(self._total_tokens) - 1]
 
 
 ###################################################################################################
 class SparsityThetaScoreInfo(object):
-    """ SparsityThetaScoreInfo represents a result of counting
-    SparsityThetaScore (private class).
+    """SparsityThetaScoreInfo represents a result of counting
+    SparsityThetaScore (private class)
 
-    Parameters:
-    ----------
-    - score --- reference to score object, no default
+    Args:
+      score (reference): reference to Score object, no default
     """
     def __init__(self, score):
         self._name = score.name
@@ -1854,16 +1613,14 @@ class SparsityThetaScoreInfo(object):
         self._total_topics = []
 
     def add(self, score=None):
-        """ SparsityThetaScoreInfo.add() --- add info about score
-        after synchronization.
+        """SparsityThetaScoreInfo.add() --- add info about score
+        after synchronization
 
-        Parameters:
-        ----------
-        - score --- reference to score object,
-          default = None (means "Add None values")
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
         """
         if score is not None:
-            _data = messages_pb2.SparsityThetaScore()
             _data = score.score.GetValue(score._model)
 
             self._value.append(_data.value)
@@ -1880,55 +1637,54 @@ class SparsityThetaScoreInfo(object):
 
     @property
     def value(self):
-        """ Returns value of Theta sparsity on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: value of Theta sparsity on synchronizations
         """
         return self._value
 
     @property
     def zero_topics(self):
-        """ Returns number of zero rows in Theta on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: number of zero rows in Theta on synchronizations
         """
         return self._zero_topics
 
     @property
     def total_topics(self):
-        """ Returns total number of rows in Theta on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: total number of rows in Theta on synchronizations
         """
         return self._total_topics
 
     @property
     def last_value(self):
-        """ Returns value of Theta sparsity on the last synchronization.
-        Is double
+        """Returns:
+          double: value of Theta sparsity on the last synchronization
         """
         return self._value[len(self._value) - 1]
 
     @property
     def last_zero_topics(self):
-        """ Returns number of zero rows in Theta on the last synchronization.
-        Is int
+        """Returns:
+          int: number of zero rows in Theta on the last synchronization
         """
         return self._zero_topics[len(self._zero_topics) - 1]
 
     @property
     def last_total_topics(self):
-        """ Returns total number of rows in Theta on the last synchronization.
-        Is int
+        """Returns:
+          int: total number of rows in Theta on the last synchronization
         """
         return self._total_topics[len(self._total_topics) - 1]
 
 
 ###################################################################################################
 class PerplexityScoreInfo(object):
-    """ PerplexityScoreInfo represents a result of counting PerplexityScore
-    (private class).
+    """PerplexityScoreInfo represents a result of counting PerplexityScore
+    (private class)
 
-    Parameters:
-    ----------
-    - score --- reference to score object, no default
+    Args:
+      score (reference): reference to Score object, no default
     """
     def __init__(self, score):
         self._name = score.name
@@ -1941,16 +1697,14 @@ class PerplexityScoreInfo(object):
         self._theta_sparsity_total_topics = []
 
     def add(self, score=None):
-        """ PerplexityScoreInfo.add() --- add info about score after
-        synchronization.
+        """PerplexityScoreInfo.add() --- add info about score after
+        synchronization
 
-        Parameters:
-        ----------
-        - score --- reference to score object,
-          default = None (means "Add None values")
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
         """
         if score is not None:
-            _data = messages_pb2.PerplexityScore()
             _data = score.score.GetValue(score._model)
 
             self._value.append(_data.value)
@@ -1975,127 +1729,124 @@ class PerplexityScoreInfo(object):
 
     @property
     def value(self):
-        """ Returns value of perplexity on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: value of perplexity on synchronizations
         """
         return self._value
 
     @property
     def raw(self):
-        """ Returns raw value in formula of perplexity on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: raw value in formula of perplexity on synchronizations
         """
         return self._raw
 
     @property
     def normalizer(self):
-        """ normalizer value in formula of perplexity on synchronizations.
-        Is list of scalars
+        """Returns:
+          list double: normalizer value in formula of perplexity on synchronizations
         """
         return self._normalizer
 
     @property
     def zero_tokens(self):
-        """ number of tokens with zero counters on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: number of tokens with zero counters on synchronizations
         """
         return self._zero_tokens
 
     @property
     def theta_sparsity_value(self):
-        """ Returns Theta sparsity value on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: Theta sparsity value on synchronizations
         """
         return self._theta_sparsity_value
 
     @property
     def theta_sparsity_zero_topics(self):
-        """ Returns number of zero rows in Theta on synchronizations.
-        Is list of scalars
+        """Returns:
+        list of int: number of zero rows in Theta on synchronizations
         """
         return self._theta_sparsity_zero_topics
 
     @property
     def theta_sparsity_total_topics(self):
-        """ Returns total number of rows in Theta on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: total number of rows in Theta on synchronizations
         """
         return self._theta_sparsity_total_topics
 
     @property
     def last_value(self):
-        """ Returns value of perplexity on the last synchronization.
-        Is double
+        """Returns:
+          double: value of perplexity on the last synchronization
         """
         return self._value[len(self._value) - 1]
 
     @property
     def last_raw(self):
-        """ Returns raw value in formula of perplexity on the last synchronization.
-        Is double
+        """Returns:
+          double: raw value in formula of perplexity on the last synchronization
         """
         return self._raw[len(self._raw) - 1]
 
     @property
     def last_normalizer(self):
-        """ normalizer value in formula of perplexity on the last synchronization.
-        Is double
+        """Returns:
+          double: normalizer value in formula of perplexity on the last synchronization
         """
         return self._normalizer[len(self._normalizer) - 1]
 
     @property
     def last_zero_tokens(self):
-        """ number of tokens with zero counters on the last synchronization.
-        Is int
+        """Returns:
+          int: number of tokens with zero counters on the last synchronization
         """
         return self._zero_tokens[len(self._zero_tokens) - 1]
 
     @property
     def last_theta_sparsity_value(self):
-        """ Returns Theta sparsity value on the last synchronization.
-        Is double
+        """Returns:
+          double: Theta sparsity value on the last synchronization
         """
         return self._theta_sparsity_value[len(self._theta_sparsity_value) - 1]
 
     @property
     def last_theta_sparsity_zero_topics(self):
-        """ Returns number of zero rows in Theta on the last synchronization.
-        Is int
+        """Returns:
+          int: number of zero rows in Theta on the last synchronization
         """
         return self._theta_sparsity_zero_topics[len(self._theta_sparsity_zero_topics) - 1]
 
     @property
     def last_theta_sparsity_total_topics(self):
-        """ Returns total number of rows in Theta on the last synchronization.
-        Is int
+        """Returns:
+          int: total number of rows in Theta on the last synchronization
         """
         return self._theta_sparsity_total_topics[len(self._theta_sparsity_total_topics) - 1]
 
 
 ###################################################################################################
 class ItemsProcessedScoreInfo(object):
-    """ ItemsProcessedScoreInfo represents a result of counting
-    ItemsProcessedScore (private class).
+    """ItemsProcessedScoreInfo represents a result of counting
+    ItemsProcessedScore (private class)
 
-    Parameters:
-    ----------
-    - score --- reference to score object, no default
+    Args:
+      score (reference): reference to Score object, no default
     """
     def __init__(self, score):
         self._name = score.name
         self._value = []
 
     def add(self, score=None):
-        """ ItemsProcessedScoreInfo.add() --- add info about score
-        after synchronization.
+        """ItemsProcessedScoreInfo.add() --- add info about score
+        after synchronization
 
-        Parameters:
-        ----------
-        - score --- reference to score object,
-          default = None (means "Add None values")
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
         """
         if score is not None:
-            _data = messages_pb2.ItemsProcessedScore()
             _data = score.score.GetValue(score._model)
             self._value.append(_data.value)
         else:
@@ -2107,27 +1858,26 @@ class ItemsProcessedScoreInfo(object):
 
     @property
     def value(self):
-        """ Returns total number of processed documents on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: total number of processed documents on synchronizations
         """
         return self._value
 
     @property
     def last_value(self):
-        """ Returns total number of processed documents on the last synchronization.
-        Is int
+        """Returns:
+          int: total number of processed documents on the last synchronization
         """
         return self._value[len(self._value) - 1]
 
 
 ###################################################################################################
 class TopTokensScoreInfo(object):
-    """ TopTokensScoreInfo represents a result of counting TopTokensScore
-    (private class).
+    """TopTokensScoreInfo represents a result of counting TopTokensScore
+    (private class)
 
-    Parameters:
-    ----------
-    - score --- reference to score object, no default
+    Args:
+      score (reference): reference to Score object, no default
     """
     def __init__(self, score):
         self._name = score.name
@@ -2136,16 +1886,14 @@ class TopTokensScoreInfo(object):
         self._average_coherence = []
 
     def add(self, score=None):
-        """ TopTokensScoreInfo.add() --- add info about score
-        after synchronization.
+        """TopTokensScoreInfo.add() --- add info about score
+        after synchronization
 
-        Parameters:
-        ----------
-        - score --- reference to score object,
-          default = None (means "Add None values")
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
         """
         if score is not None:
-            _data = messages_pb2.TopTokensScore()
             _data = score.score.GetValue(score._model)
 
             self._num_tokens.append(_data.num_entries)
@@ -2182,80 +1930,75 @@ class TopTokensScoreInfo(object):
 
     @property
     def num_tokens(self):
-        """ Returns reqested number of top tokens in each topic on
-        synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: reqested number of top tokens in each topic on
+        synchronizations
         """
         return self._num_tokens
 
     @property
     def topic_info(self):
-        """ Returns information about top tokens per topic on synchronizations.
-        Is list of sets. Set contains information about topics,
-        key --- name of topic, value --- named tuple:
-
-        - *.topic_info[sync_index][topic_name].tokens --- list of top tokens
-          for this topic.
-
-        - *.topic_info[sync_index][topic_name].weights --- list of weights
-          (probabilities), corresponds the tokens.
-
-        - *.topic_info[sync_index][topic_name].coherence --- the coherency
-          of topic due to it's top tokens.
+        """Returns:
+          list of sets: information about top tokens per topic on synchronizations;
+          each set contains information about topics,
+          key --- name of topic, value --- named tuple:
+          - *.topic_info[sync_index][topic_name].tokens --- list of top tokens
+            for this topic
+          - *.topic_info[sync_index][topic_name].weights --- list of weights
+            (probabilities), corresponds the tokens
+          - *.topic_info[sync_index][topic_name].coherence --- the coherency
+            of topic due to it's top tokens
         """
         return self._topic_info
 
     @property
     def average_coherence(self):
-        """ Returns average coherence of top tokens in all requested topics
-        on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: average coherence of top tokens in all requested topics
+          on synchronizations
         """
         return self._average_coherence
 
     @property
     def last_num_tokens(self):
-        """ Returns reqested number of top tokens in each topic on the last
-        synchronization.
-        Is int
+        """Returns:
+          int: reqested number of top tokens in each topic on the last
+          synchronization
         """
         return self._num_tokens[len(self._num_tokens) - 1]
 
     @property
     def last_topic_info(self):
-        """ Returns information about top tokens per topic on the last
-        synchronization.
-        Is set contains information about topics,
-        key --- name of topic, value --- named tuple:
-
-        - *.last_topic_info[topic_name].tokens --- list of top tokens
-          for this topic.
-
-        - *.last_topic_info[topic_name].weights --- list of weights
-          (probabilities), corresponds the tokens.
-
-        - *.last_topic_info[topic_name].coherence --- the coherency
-          of topic due to it's top tokens.
+        """Returns:
+          set: information about top tokens per topic on the last
+          synchronization;
+          each set contains information about topics,
+          key --- name of topic, value --- named tuple:
+          - *.last_topic_info[topic_name].tokens --- list of top tokens
+            for this topic
+          - *.last_topic_info[topic_name].weights --- list of weights
+            (probabilities), corresponds the tokens
+          - *.last_topic_info[topic_name].coherence --- the coherency
+            of topic due to it's top tokens
         """
         return self._topic_info[len(self._topic_info) - 1]
 
     @property
     def last_average_coherence(self):
-        """ Returns average coherence of top tokens in all requested topics
-        on the last synchronization.
-        Is double
+        """Returns:
+          double: average coherence of top tokens in all requested topics
+          on the last synchronization
         """
         return self._average_coherence[len(self._average_coherence) - 1]
 
 
 ###################################################################################################
 class TopicKernelScoreInfo(object):
-    """ TopicKernelScoreInfo represents a result of counting TopicKernelScore
-    (private class).
+    """TopicKernelScoreInfo represents a result of counting TopicKernelScore
+    (private class)
 
-    Parameters:
-    ----------
-    - score --- reference to score object, no default
+    Args:
+      score (reference): reference to Score object, no default
     """
     def __init__(self, score):
         self._name = score.name
@@ -2266,16 +2009,14 @@ class TopicKernelScoreInfo(object):
         self._average_purity = []
 
     def add(self, score=None):
-        """ TopicKernelScoreInfo.add() --- add info about score after
-        synchronization.
+        """TopicKernelScoreInfo.add() --- add info about score after
+        synchronization
 
-        Parameters:
-        ----------
-        - score --- reference to score object,
-          default = None (means "Add None values")
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
         """
         if score is not None:
-            _data = messages_pb2.TopicKernelScore()
             _data = score.score.GetValue(score._model)
 
             self._topic_info.append({})
@@ -2315,123 +2056,114 @@ class TopicKernelScoreInfo(object):
 
     @property
     def topic_info(self):
-        """ Returns information about kernel tokens per topic on
-        synchronizations. Is list of sets. Set contains information
-        about topics, key --- name of topic, value --- named tuple:
-
-        - *.topic_info[sync_index][topic_name].tokens --- list of
-          kernel tokens for this topic.
-
-        - *.topic_info[sync_index][topic_name].size --- size of
-          kernel for this topic.
-
-        - *.topic_info[sync_index][topic_name].contrast --- contrast of
-          kernel for this topic.
-
-        - *.topic_info[sync_index][topic_name].purity --- purity of kernel
-          for this topic.
-
-        - *.topic_info[sync_index][topic_name].coherence --- the coherency of
-          topic due to it's kernel.
+        """Returns:
+          list of sets: information about kernel tokens per topic on
+          synchronizations; each set contains information
+          about topics, key --- name of topic, value --- named tuple:
+          - *.topic_info[sync_index][topic_name].tokens --- list of
+            kernel tokens for this topic
+          - *.topic_info[sync_index][topic_name].size --- size of
+            kernel for this topic
+          - *.topic_info[sync_index][topic_name].contrast --- contrast of
+            kernel for this topic.
+          - *.topic_info[sync_index][topic_name].purity --- purity of kernel
+            for this topic
+          - *.topic_info[sync_index][topic_name].coherence --- the coherency of
+            topic due to it's kernel
         """
         return self._topic_info
 
     @property
     def average_coherence(self):
-        """ Returns average coherence of kernel tokens in all requested
-        topics on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: average coherence of kernel tokens in all requested
+          topics on synchronizations
         """
         return self._average_coherence
 
     @property
     def average_size(self):
-        """ Returns average kernel size of all requested topics on
-        synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: average kernel size of all requested topics on
+          synchronizations
         """
         return self._average_size
 
     @property
     def average_contrast(self):
-        """ Returns average kernel contrast of all requested topics on
-        synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: average kernel contrast of all requested topics on
+        synchronizations
         """
         return self._average_contrast
 
     @property
     def average_purity(self):
-        """ Returns average kernel purity of all requested topics on
-        synchronizations.
-        Is list of scalars
+        """Returns:
+          list of double: average kernel purity of all requested topics on
+        synchronizations
         """
         return self._average_purity
 
     @property
     def last_topic_info(self):
-        """ Returns information about kernel tokens per topic on the last
-        synchronization. Is set contains information about topics,
-        key --- name of topic, value --- named tuple:
-
-        - *.topic_info[topic_name].tokens --- list of
-          kernel tokens for this topic.
-
-        - *.topic_info[topic_name].size --- size of
-          kernel for this topic.
-
-        - *.topic_info[topic_name].contrast --- contrast of
-          kernel for this topic.
-
-        - *.topic_info[topic_name].purity --- purity of kernel
-          for this topic.
-
-        - *.topic_info[topic_name].coherence --- the coherency of
-          topic due to it's kernel.
+        """Returns:
+          set: information about kernel tokens per topic on the last
+          synchronization; each set contains information about topics,
+          key --- name of topic, value --- named tuple:
+          - *.topic_info[topic_name].tokens --- list of
+            kernel tokens for this topic
+          - *.topic_info[topic_name].size --- size of
+            kernel for this topic
+          - *.topic_info[topic_name].contrast --- contrast of
+            kernel for this topic
+          - *.topic_info[topic_name].purity --- purity of kernel
+            for this topic
+          - *.topic_info[topic_name].coherence --- the coherency of
+            topic due to it's kernel
         """
         return self._topic_info[len(self._topic_info) - 1]
 
     @property
     def last_average_coherence(self):
-        """ Returns average coherence of kernel tokens in all requested
-        topics on the last synchronization.
-        Is double
+        """Returns:
+          double: average coherence of kernel tokens in all requested
+          topics on the last synchronization
         """
         return self._average_coherence[len(self._average_coherence) - 1]
 
     @property
     def last_average_size(self):
-        """ Returns average kernel size of all requested topics on
-        the last synchronization.
-        Is double
+        """Returns:
+          double: average kernel size of all requested topics on
+          the last synchronization
         """
         return self._average_size[len(self._average_size) - 1]
 
     @property
     def last_average_contrast(self):
-        """ Returns average kernel contrast of all requested topics on
-        the last synchronization.
-        Is double
+        """Returns:
+          double: average kernel contrast of all requested topics on
+          the last synchronization
         """
         return self._average_contrast[len(self._average_contrast) - 1]
 
     @property
     def last_average_purity(self):
-        """ Returns average kernel purity of all requested topics on
-        the last synchronization.
-        Is double
+        """Returns:
+          double: average kernel purity of all requested topics on
+          the last synchronization
         """
         return self._average_purity[len(self._average_purity) - 1]
 
 
 ###################################################################################################
 class ThetaSnippetScoreInfo(object):
-    """ ThetaSnippetScoreInfo represents a result of counting
-    ThetaSnippetScore (private class).
+    """ThetaSnippetScoreInfo represents a result of counting
+    ThetaSnippetScore (private class)
 
-    Parameters:
-    ----------
-    - score --- reference to score object, no default
+    Args:
+      score (reference): reference to Score object, no default
     """
     def __init__(self, score):
         self._name = score.name
@@ -2439,15 +2171,14 @@ class ThetaSnippetScoreInfo(object):
         self._snippet = []
 
     def add(self, score=None):
-        """ ThetaSnippetScoreInfo.add() --- add info about score after
-        synchronization.
+        """ThetaSnippetScoreInfo.add() --- add info about score after
+        synchronization
 
-        Parameters:
-        - score --- reference to score object,
-          default = None (means "Add None values")
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
         """
         if score is not None:
-            _data = messages_pb2.ThetaSnippetScore()
             _data = score.score.GetValue(score._model)
 
             self._document_ids.append([item_id for item_id in _data.item_id])
@@ -2458,37 +2189,40 @@ class ThetaSnippetScoreInfo(object):
             self._snippet.append(None)
 
     @property
-    def name(self): return self._name
+    def name(self):
+        return self._name
 
     @property
     def snippet(self):
-        """ Returns the snippet (part) of Theta corresponds to documents from
-        document_ids on each synchronizations.
-        Is list of lists of lists of scalars, each most internal list ---
-        theta_d vector for document d, in direct order of document_ids
+        """Returns:
+          list of lists of lists of double: the snippet (part) of Theta
+          corresponds to documents from document_ids on each synchronizations;
+          each most internal list --- theta_d vector for document d,
+          in direct order of document_ids
         """
         return self._snippet
 
     @property
     def document_ids(self):
-        """ Returns ids of documents in snippet on synchronizations.
-        Is list of scalars
+        """Returns:
+          list of int: ids of documents in snippet on synchronizations
         """
         return self._document_ids
 
     @property
     def last_snippet(self):
-        """ Returns the snippet (part) of Theta corresponds to documents from
-        document_ids on last synchronization.
-        Is list of lists of scalars, each internal list --- theta_d vector
-        for document d, in direct order of document_ids
+        """Returns:
+          list of lists of double: the snippet (part) of Theta corresponds
+          to documents from document_ids on last synchronization;
+          each internal list --- theta_d vector for document d,
+          in direct order of document_ids
         """
         return self._snippet
 
     @property
     def last_document_ids(self):
-        """ Returns ids of documents in snippet on the last synchronization.
-        Is list of scalars
+        """Returns:
+          list of int: ids of documents in snippet on the last synchronization
         """
         return self._document_ids
 
@@ -2497,74 +2231,68 @@ class ThetaSnippetScoreInfo(object):
 # SECTION OF ARTM MODEL CLASS
 ###################################################################################################
 class ArtmModel(object):
-    """ ArtmModel represents a topic model (public class).
-    Parameters:
-    -----------
-    - num_processors --- how many threads will be used for model training.
-    Is int, default = 0 (means that number of threads will be
-    detected by the library)
+    """ArtmModel represents a topic model (public class)
 
-    - topic_names --- names of topics in model.
-    Is list of strings, default = []
-
-    - num_topics --- number of topics in model (is used if
-    topic_names == []). Is int, default = 10
-
-    - class_ids --- list of class_ids and their weights to be used in model.
-    Is dict, key --- class_id, value --- weight, default = {}
-
-    - num_document_passes --- number of iterations over each document
-    during processing/ Is int, default = 10
-
-    - cache_theta --- save or not the Theta matrix in model. Necessary
-    if ArtmModel.get_theta() usage expects. Is bool, default = True
+    Args:
+      num_processors (int): how many threads will be used for model training,
+      if not specified then number of threads will be detected by the library
+      topic_names (list of str): names of topics in model, if not specified will be
+      auto-generated by library according to num_topics
+      num_topics (int): number of topics in model (is used if topic_names
+      not specified), default=10
+      class_ids (dict): list of class_ids and their weights to be used in model,
+      key --- class_id, value --- weight, if not specified then all class_ids
+      will be used
+      num_document_passes (int): number of iterations over each document
+      during processing, default=10
+      cache_theta (bool): save or not the Theta matrix in model. Necessary
+      if ArtmModel.get_theta() usage expects, default=True
 
     Important public fields:
-    ----------
-    - regularizers --- contains dict of regularizers, included into model
-    - scores --- contains dict of scores, included into model
-    - scores_info --- contains dict of scoring results;
-    key --- score name, value --- ScoreInfo object, which contains info about
-    values of score on each synchronization in list
+      regularizers: contains dict of regularizers, included into model
+      scores: contains dict of scores, included into model
+      scores_info: contains dict of scoring results;
+      key --- score name, value --- ScoreInfo object, which contains info about
+      values of score on each synchronization in list
 
     NOTE:
-    ----------
-    - Here and anywhere in BigARTM empty topic_names or class_ids means that
+      - Here and anywhere in BigARTM empty topic_names or class_ids means that
       model (or regularizer, or score) should use all topics or class_ids.
-    - If some fields of regularizers or scores are not defined by
+      - If some fields of regularizers or scores are not defined by
       user --- internal library defaults would be used.
-    - If field 'topics_name' == [], it will be generated by BigARTM and will
+      - If field 'topics_name' == [], it will be generated by BigARTM and will
       be available using ArtmModel.topics_name().
     """
 
 # ========== CONSTRUCTOR ==========
-    def __init__(self, num_processors=0, topic_names=[], num_topics=10,
-                 class_ids={}, num_document_passes=10, cache_theta=True):
+    def __init__(self, num_processors=0, topic_names=None, num_topics=10,
+                 class_ids=None, num_document_passes=10, cache_theta=True):
         self._num_processors = 0
         self._num_topics = 10
-        self._topic_names = []
-        self._class_ids = {}
         self._num_document_passes = 10
         self._cache_theta = True
 
+        if topic_names is None or topic_names is []:
+            self._topic_names = []
+            if num_topics > 0:
+                self._num_topics = num_topics
+        else:
+            self._topic_names = topic_names
+            self._num_topics = len(topic_names)
+
+        if class_ids is None:
+            self._class_ids = {}
+        elif len(class_ids) > 0:
+            self._class_ids = class_ids
+
         if num_processors > 0:
             self._num_processors = num_processors
-
-        if num_topics > 0:
-            self._num_topics = num_topics
-
-        if len(class_ids) > 0:
-            self._class_ids = class_ids
 
         if num_document_passes > 0:
             self._num_document_passes = num_document_passes
 
         if isinstance(cache_theta, bool):
             self._cache_theta = cache_theta
-
-        if len(topic_names) > 0:
-            self._topic_names = topic_names
-            self._num_topics = len(topic_names)
 
         self._master = library.MasterComponent()
         self._master.config().processors_count = self._num_processors
@@ -2577,7 +2305,7 @@ class ArtmModel(object):
 
         self._scores_info = {}
         self._synchronizations_processed = 0
-        self._was_initialized = False
+        self._initialized = False
 
 # ========== PROPERTIES ==========
     @property
@@ -2628,7 +2356,7 @@ class ArtmModel(object):
     @num_processors.setter
     def num_processors(self, num_processors):
         if num_processors <= 0 or not isinstance(num_processors, int):
-            print 'Number of processors should be a positive integer, skip update'
+            raise IOError('Number of processors should be a positive integer')
         else:
             self._num_processors = num_processors
             self._master.config().processors_count = num_processors
@@ -2637,14 +2365,15 @@ class ArtmModel(object):
     @num_document_passes.setter
     def num_document_passes(self, num_document_passes):
         if num_document_passes <= 0 or not isinstance(num_document_passes, int):
-            print 'Number of passes through documents should be a positive integer, skip update'
+            raise IOError("Number of passes through documents" +
+                          "should be a positive integer")
         else:
             self._num_document_passes = num_document_passes
 
     @cache_theta.setter
     def cache_theta(self, cache_theta):
         if not isinstance(cache_theta, bool):
-            print 'cache_theta should be bool, skip update'
+            raise IOError('cache_theta should be bool')
         else:
             self._cache_theta = cache_theta
             self._master.config().cache_theta = cache_theta
@@ -2653,14 +2382,14 @@ class ArtmModel(object):
     @num_topics.setter
     def num_topics(self, num_topics):
         if num_topics <= 0 or not isinstance(num_topics, int):
-            print 'Number of topics should be a positive integer, skip update'
+            raise IOError('Number of topics should be a positive integer')
         else:
             self._num_topics = num_topics
 
     @topic_names.setter
     def topic_names(self, topic_names):
         if len(topic_names) < 0:
-            print 'Number of topic names should be non-negative, skip update'
+            raise IOError('Number of topic names should be non-negative')
         else:
             self._topic_names = topic_names
             self._num_topics = len(topic_names)
@@ -2668,162 +2397,84 @@ class ArtmModel(object):
     @class_ids.setter
     def class_ids(self, class_ids):
         if len(class_ids) < 0:
-            print 'Number of (class_id, class_weight) pairs shoul be non-negative, skip update'
+            raise IOError('Number of (class_id, class_weight) pairs should be non-negative')
         else:
             self._class_ids = class_ids
 
 # ========== METHODS ==========
-    def parse(self, collection_name=None, data_path='', data_format='bow_uci',
-              batch_size=1000, dictionary_name='dictionary'):
-        """ ArtmModel.fit() --- proceed the learning of topic model
-
-        Parameters:
-        ----------
-        - collection_name --- the name of text collection
-          (required if data_format == 'bow_uci').
-          Is string, default = None
-
-        - data_path --- 1) if data_format == 'bow_uci' =>
-          folder containing 'docword.collection_name.txt'
-          and vocab.collection_name.txt files
-          2) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format
-          3) if data_format == 'plain_text' => file with text
-          Is string, default = ''
-
-        - data_format --- the type of input data:
-          1) 'bow_uci' --- Bag-Of-Words in UCI format
-          2) 'vowpal_wabbit' --- Vowpal Wabbit format
-          3) 'plain_text' --- source text
-          Is string, default = 'bow_uci'
-
-        - batch_size --- number of documents to be stored in each batch.
-          Is int, default = 1000
-
-        - dictionary_name --- the name of BigARTM dictionary with information
-          about collection, that will be gathered by the library parser.
-          Is string, default = 'dictionary'
-
-        #- gather_cooc --- find or not the info about the token pairwise
-        #  co-occuracies.
-        #  Is bool, default=False
-
-        #- cooc_tokens --- tokens to collect cooc info (has sense if
-        #  gather_cooc is True).
-        #  Is list of lists, each internal list represents token and contain
-        #  two strings --- token and its class_id, default = []
-
-        Note:
-        ----------
-        Gathering tokens co-ocurracies information is experimental and will be
-        changed in the next release.
-        """
-        if collection_name is None and data_format == 'bow_uci':
-                print 'No collection name was given, skip model.parse()'
-
-        if data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
-            collection_parser_config = create_parser_config(data_path,
-                                                            collection_name,
-                                                            collection_name,
-                                                            batch_size,
-                                                            data_format,
-                                                            dictionary_name)
-            # collection_parser_config.gather_cooc = gather_cooc
-            # for token in cooc_tokens:
-            #    collection_parser_config.cooccurrence_token.append(token)
-            unique_tokens = library.Library().ParseCollection(collection_parser_config)
-
-        elif data_format == 'plain_text':
-            raise NotImplementedError()
-        else:
-            print 'Unknown data format, skip model.parse()'
-
     def load_dictionary(self, dictionary_path=None):
-        """ ArtmModel.load_dictionary() --- load and return the BigARTM
+        """ArtmModel.load_dictionary() --- load and return the BigARTM
         dictionary of the collection
 
-        Parameters:
-        ----------
-        - dictionary_path --- full file name of the dictionary.
-          Is string, default = None
+        Args:
+          dictionary_path (str): full file name of the dictionary, default=None
         """
         if dictionary_path is not None:
             unique_tokens = library.Library().LoadDictionary(dictionary_path)
             return self._master.CreateDictionary(unique_tokens)
         else:
-            print 'dictionary path is None, skip loading dictionary.'
+            raise IOError('ArtmModel.load_dictionary(): dictionary_path is None')
 
     def fit_offline(self, collection_name=None, batches=None, data_path='',
                     num_collection_passes=1, decay_weight=0.0, apply_weight=1.0,
                     reset_theta_scores=False, data_format='batches', batch_size=1000):
-        """ ArtmModel.fit_offline() --- proceed the learning of
+        """ArtmModel.fit_offline() --- proceed the learning of
         topic model in off-line mode
 
-        Parameters:
-        ----------
-        - collection_name --- the name of text collection
-          (required if data_format == 'bow_uci').
-          Is string, default = None
-
-        - batches --- list of file names of batches to be processed.
-          If not None, than data_format should be 'batches'.
-          Is list of strings in format '*.batch', default = None
-
-        - data_path --- 1) if data_format == 'batches' =>
-          folder containing batches and dictionary
+        Args:
+          collection_name (str): the name of text collection (required if
+          data_format == 'bow_uci'), default=None
+          batches (list of str): list of file names of batches to be processed.
+          If not None, than data_format should be 'batches'. Format --- '*.batch',
+          default=None
+          data_path (str):
+          1) if data_format == 'batches' => folder containing batches and dictionary;
           2) if data_format == 'bow_uci' => folder containing
-            docword.collection_name.txt and vocab.collection_name.txt files
-          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format
-          4) if data_format == 'plain_text' => file with text
-          Is string, default = ''
+            docword.collection_name.txt and vocab.collection_name.txt files;
+          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;
+          4) if data_format == 'plain_text' => file with text;
+          default=''
+          num_collection_passes (int): number of iterations over whole given
+          collection, default=1
+          decay_weight (int): coefficient for applying old n_wt counters,
+          default=0.0 (apply_weight + decay_weight = 1.0)
+          apply_weight (int): coefficient for applying new n_wt counters,
+          default=1.0 (apply_weight + decay_weight = 1.0)
+          reset_theta_scores (bool): reset accumulated Theta scores
+          before learning, default=False
+          data_format (str): the type of input data;
+          1) 'batches' --- the data in format of BigARTM;
+          2) 'bow_uci' --- Bag-Of-Words in UCI format;
+          3) 'vowpal_wabbit' --- Vowpal Wabbit format;
+          4) 'plain_text' --- source text;
+          default='batches'
 
-        - num_collection_passes --- number of iterations over whole
-          given collection.
-          Is int, default = 1
-
-        - decay_weight --- coefficient for applying old n_wt counters.
-          Is int, default = 0.0 (apply_weight + decay_weight = 1.0)
-
-        - apply_weight --- coefficient for applying new n_wt counters.
-          Is int, default = 1.0 (apply_weight + decay_weight = 1.0)
-
-        - reset_theta_scores --- reset accumulated Theta scores
-          before learning.
-          Is bool, default = False
-
-        - data_format --- the type of input data:
-          1) 'batches' --- the data in format of BigARTM
-          2) 'bow_uci' --- Bag-Of-Words in UCI format
-          3) 'vowpal_wabbit' --- Vowpal Wabbit format
-          4) 'plain_text' --- source text
-          Is string, default = 'batches'
-
-        Next argument has sense only if data_format is not 'batches'
-        (e.g. parsing is necessary).
-        - batch_size --- number of documents to be stored ineach batch.
-          Is int, default = 1000
+          Next argument has sense only if data_format is not 'batches'
+          (e.g. parsing is necessary).
+            batch_size (int): number of documents to be stored ineach batch,
+            default=1000
 
         Note:
-        ----------
-        ArtmModel.initialize() should be proceed before first call
-        ArtmModel.fit_offline(), or it will be initialized by dictionary
-        during first call.
+          ArtmModel.initialize() should be proceed before first call
+          ArtmModel.fit_offline(), or it will be initialized by dictionary
+          during first call.
         """
         if collection_name is None and data_format == 'bow_uci':
-            print 'No collection name was given, skip model.fit_offline()'
+            raise IOError('ArtmModel.fit_offline(): No collection name was given')
 
         if not data_format == 'batches' and batches is not None:
-            print "batches != None require data_format == 'batches'"
+            raise IOError("ArtmModel.fit_offline(): batches != None" +
+                          "require data_format == batches")
 
         unique_tokens = messages_pb2.DictionaryConfig()
         target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
         batches_list = []
         if data_format == 'batches':
             if batches is None:
-                batches_list = glob.glob(data_path + "/*.batch")
+                batches_list = glob.glob(data_path + '/*.batch')
                 if len(batches_list) < 1:
-                    print 'No batches were found, skip model.fit_offline()'
-                    return
-                print 'fit_offline() found ' + str(len(batches_list)) + ' batches'
+                    raise RuntimeError('ArtmModel.fit_offline(): No batches were found')
+
                 unique_tokens = library.Library().LoadDictionary(data_path + '/dictionary')
             else:
                 batches_list = [data_path + '/' + batch for batch in batches]
@@ -2835,14 +2486,14 @@ class ArtmModel(object):
                                                             batch_size,
                                                             data_format)
             unique_tokens = library.Library().ParseCollection(collection_parser_config)
-            batches_list = glob.glob(target_folder + "/*.batch")
+            batches_list = glob.glob(target_folder + '/*.batch')
 
         elif data_format == 'plain_text':
             raise NotImplementedError()
         else:
-            print 'Unknown data format, skip model.fit_offline()'
+            raise IOError('ArtmModel.fit_offline(): Unknown data format')
 
-        if not self._was_initialized:
+        if not self._initialized:
             self.initialize(dictionary=self._master.CreateDictionary(unique_tokens))
 
         theta_regularizers, phi_regularizers = {}, {}
@@ -2852,7 +2503,7 @@ class ArtmModel(object):
             else:
                 phi_regularizers[name] = config.tau
 
-        for iter in range(num_collection_passes):
+        for _ in range(num_collection_passes):
             self._master.ProcessBatches(pwt=self._model,
                                         batches=batches_list,
                                         target_nwt='nwt_hat',
@@ -2873,22 +2524,22 @@ class ArtmModel(object):
 
             for name in self.scores.data.keys():
                 if name not in self.scores_info:
-                    if (self.scores[name].type == library.ScoreConfig_Type_SparsityPhi):
+                    if self.scores[name].type == library.ScoreConfig_Type_SparsityPhi:
                         self._scores_info[name] = SparsityPhiScoreInfo(self.scores[name])
-                    elif (self.scores[name].type == library.ScoreConfig_Type_SparsityTheta):
+                    elif self.scores[name].type == library.ScoreConfig_Type_SparsityTheta:
                         self._scores_info[name] = SparsityThetaScoreInfo(self.scores[name])
-                    elif (self.scores[name].type == library.ScoreConfig_Type_Perplexity):
+                    elif self.scores[name].type == library.ScoreConfig_Type_Perplexity:
                         self._scores_info[name] = PerplexityScoreInfo(self.scores[name])
-                    elif (self.scores[name].type == library.ScoreConfig_Type_ThetaSnippet):
+                    elif self.scores[name].type == library.ScoreConfig_Type_ThetaSnippet:
                         self._scores_info[name] = ThetaSnippetScoreInfo(self.scores[name])
-                    elif (self.scores[name].type == library.ScoreConfig_Type_ItemsProcessed):
+                    elif self.scores[name].type == library.ScoreConfig_Type_ItemsProcessed:
                         self._scores_info[name] = ItemsProcessedScoreInfo(self.scores[name])
-                    elif (self.scores[name].type == library.ScoreConfig_Type_TopTokens):
+                    elif self.scores[name].type == library.ScoreConfig_Type_TopTokens:
                         self._scores_info[name] = TopTokensScoreInfo(self.scores[name])
-                    elif (self.scores[name].type == library.ScoreConfig_Type_TopicKernel):
+                    elif self.scores[name].type == library.ScoreConfig_Type_TopicKernel:
                         self._scores_info[name] = TopicKernelScoreInfo(self.scores[name])
 
-                    for i in range(self._synchronizations_processed - 1):
+                    for _ in range(self._synchronizations_processed - 1):
                         self._scores_info[name].add()
 
                 self._scores_info[name].add(self.scores[name])
@@ -2900,36 +2551,26 @@ class ArtmModel(object):
     def fit_online(self, collection_name=None, batches=None, data_path='',
                    tau0=1024.0, kappa=0.7, update_every=1, reset_theta_scores=False,
                    data_format='batches', batch_size=1000):
-        """ ArtmModel.fit_online() --- proceed the learning of topic model
+        """ArtmModel.fit_online() --- proceed the learning of topic model
         in on-line mode
 
-        Parameters:
-        ----------
-        - collection_name --- the name of text collection
-          (required if data_format == 'bow_uci').
-          Is string, default = None
-
-        - batches --- list of file names of batches to be processed.
-          If not None, than data_format should be 'batches'.
-          Is list of strings in format '*.batch', default = None
-
-        - data_path --- 1) if data_format == 'batches' =>
-          folder containing batches and dictionary
+        Args:
+          collection_name (str): the name of text collection (required if
+          data_format == 'bow_uci'), default=None
+          batches (list of str): list of file names of batches to be processed.
+          If not None, than data_format should be 'batches'. Format --- '*.batch',
+          default=None
+          data_path (str):
+          1) if data_format == 'batches' => folder containing batches and dictionary;
           2) if data_format == 'bow_uci' => folder containing
-          docword.collection_name.txt and vocab.collection_name.txt files
-          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format
-          4) if data_format == 'plain_text' => file with text
-          Is string, default = ''
-
-        - update_every --- the number of batches; model will be updated
-          once per it.
-          Is int, default = 1
-
-        - tau0 --- coefficient (see kappa).
-          Is float, default = 1024.0
-
-        - kappa --- power for tau0.
-          Is float, default = 0.7
+            docword.collection_name.txt and vocab.collection_name.txt files;
+          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;
+          4) if data_format == 'plain_text' => file with text;
+          default=''
+          update_every (int): the number of batches; model will be updated once per it,
+          default=1
+          tau0 (float): coefficient (see kappa), default=1024.0
+          kappa (float): power for tau0, default=0.7
 
           The formulas for decay_weight and apply_weight:
           update_count = current_processed_docs / (batch_size * update_every)
@@ -2937,44 +2578,40 @@ class ArtmModel(object):
           decay_weight = 1-rho
           apply_weight = rho
 
-        - reset_theta_scores --- reset accumulated Theta scores before
-          learning.
-          Is bool, default = False
+          reset_theta_scores (bool): reset accumulated Theta scores
+          before learning, default=False
+          data_format (str): the type of input data;
+          1) 'batches' --- the data in format of BigARTM;
+          2) 'bow_uci' --- Bag-Of-Words in UCI format;
+          3) 'vowpal_wabbit' --- Vowpal Wabbit format;
+          4) 'plain_text' --- source text;
+          default='batches'
 
-        - data_format --- the type of input data:
-          1) 'batches' --- the data in format of BigARTM
-          2) 'bow_uci' --- Bag-Of-Words in UCI format
-          3) 'vowpal_wabbit' --- Vowpal Wabbit format
-          4) 'plain_text' --- source text
-          Is string, default = 'batches'
-
-        Next argument has sense only if data_format is not 'batches'
-        (e.g. parsing is necessary).
-        - batch_size --- number of documents to be stored in each batch.
-        Is int, default = 1000
+          Next argument has sense only if data_format is not 'batches'
+          (e.g. parsing is necessary).
+            batch_size (int): number of documents to be stored ineach batch,
+            default=1000
 
         Note:
-        ----------
-        ArtmModel.initialize() should be proceed before first call
-        ArtmModel.fit_online(), or it will be initialized by dictionary
-        during first call.
+          ArtmModel.initialize() should be proceed before first call
+          ArtmModel.fit_online(), or it will be initialized by dictionary
+          during first call.
         """
         if collection_name is None and data_format == 'bow_uci':
-                print 'No collection name was given, skip model.fit_online()'
+            raise IOError('ArtmModel.fit_online(): No collection name was given')
 
         if not data_format == 'batches' and batches is not None:
-            print "batches != None require data_format == 'batches'"
+            raise IOError('batches != None require data_format == batches')
 
         unique_tokens = messages_pb2.DictionaryConfig()
         target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
         batches_list = []
         if data_format == 'batches':
             if batches is None:
-                batches_list = glob.glob(data_path + "/*.batch")
+                batches_list = glob.glob(data_path + '/*.batch')
                 if len(batches_list) < 1:
-                    print 'No batches were found, skip model.fit_online()'
-                    return
-                print 'fit_online() found ' + str(len(batches_list)) + ' batches'
+                    raise RuntimeError('ArtmModel.fit_online(): No batches were found')
+
                 unique_tokens = library.Library().LoadDictionary(data_path + '/dictionary')
             else:
                 batches_list = [data_path + '/' + batch for batch in batches]
@@ -2986,14 +2623,14 @@ class ArtmModel(object):
                                                             batch_size,
                                                             data_format)
             unique_tokens = library.Library().ParseCollection(collection_parser_config)
-            batches = glob.glob(target_folder + "/*.batch")
+            batches = glob.glob(target_folder + '/*.batch')
 
         elif data_format == 'plain_text':
             raise NotImplementedError()
         else:
-            print 'Unknown data format, skip model.fit_online()'
+            raise IOError('ArtmModel.fit_online(): Unknown data format')
 
-        if not self._was_initialized:
+        if not self._initialized:
             self.initialize(dictionary=self._master.CreateDictionary(unique_tokens))
 
         theta_regularizers, phi_regularizers = {}, {}
@@ -3035,22 +2672,22 @@ class ArtmModel(object):
 
                 for name in self.scores.data.keys():
                     if name not in self.scores_info:
-                        if (self.scores[name].type == library.ScoreConfig_Type_SparsityPhi):
+                        if self.scores[name].type == library.ScoreConfig_Type_SparsityPhi:
                             self._scores_info[name] = SparsityPhiScoreInfo(self.scores[name])
-                        elif (self.scores[name].type == library.ScoreConfig_Type_SparsityTheta):
+                        elif self.scores[name].type == library.ScoreConfig_Type_SparsityTheta:
                             self._scores_info[name] = SparsityThetaScoreInfo(self.scores[name])
-                        elif (self.scores[name].type == library.ScoreConfig_Type_Perplexity):
+                        elif self.scores[name].type == library.ScoreConfig_Type_Perplexity:
                             self._scores_info[name] = PerplexityScoreInfo(self.scores[name])
-                        elif (self.scores[name].type == library.ScoreConfig_Type_ThetaSnippet):
+                        elif self.scores[name].type == library.ScoreConfig_Type_ThetaSnippet:
                             self._scores_info[name] = ThetaSnippetScoreInfo(self.scores[name])
-                        elif (self.scores[name].type == library.ScoreConfig_Type_ItemsProcessed):
+                        elif self.scores[name].type == library.ScoreConfig_Type_ItemsProcessed:
                             self._scores_info[name] = ItemsProcessedScoreInfo(self.scores[name])
-                        elif (self.scores[name].type == library.ScoreConfig_Type_TopTokens):
+                        elif self.scores[name].type == library.ScoreConfig_Type_TopTokens:
                             self._scores_info[name] = TopTokensScoreInfo(self.scores[name])
-                        elif (self.scores[name].type == library.ScoreConfig_Type_TopicKernel):
+                        elif self.scores[name].type == library.ScoreConfig_Type_TopicKernel:
                             self._scores_info[name] = TopicKernelScoreInfo(self.scores[name])
 
-                        for i in range(self._synchronizations_processed - 1):
+                        for _ in range(self._synchronizations_processed - 1):
                             self._scores_info[name].add()
 
                     self._scores_info[name].add(self.scores[name])
@@ -3060,38 +2697,33 @@ class ArtmModel(object):
             shutil.rmtree(target_folder)
 
     def save(self, file_name='artm_model'):
-        """ ArtmModel.save() --- save the topic model to disk.
+        """ArtmModel.save() --- save the topic model to disk
 
-        Parameters:
-        ----------
-        - file_name --- the name of file to store model.
-          Is string, default = 'artm_model'
+        Args:
+          file_name (str): the name of file to store model, default='artm_model'
         """
-        if not self._was_initialized:
-            print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
-            return
+        if not self._initialized:
+            raise RuntimeError("Model does not exist yet. Use " +
+                               "ArtmModel.initialize()/ArtmModel.fit_*()")
 
         if os.path.isfile(file_name):
             os.remove(file_name)
         self._master.ExportModel(self._model, file_name)
 
     def load(self, file_name):
-        """ ArtmModel.load() --- load the topic model,
-        saved by ArtmModel.save(), from disk.
+        """ArtmModel.load() --- load the topic model,
+        saved by ArtmModel.save(), from disk
 
-        Parameters:
-        ----------
-        - file_name --- the name of file containing model.
-          Is string, no default
+        Args:
+          file_name (str) --- the name of file containing model, no default
 
         Note:
-        ----------
-        Loaded model will overwrite ArtmModel.topic_names and
-        ArtmModel.num_topics fields. Also it will empty
-        ArtmModel.scores_info.
+          Loaded model will overwrite ArtmModel.topic_names and
+          ArtmModel.num_topics fields. Also it will empty
+          ArtmModel.scores_info.
         """
         self._master.ImportModel(self._model, file_name)
-        self._was_initialized = True
+        self._initialized = True
         args = messages_pb2.GetTopicModelArgs()
         args.request_type = library.GetTopicModelArgs_RequestType_TopicNames
         topic_model = self._master.GetTopicModel(model=self._model, args=args)
@@ -3103,17 +2735,15 @@ class ArtmModel(object):
         self._synchronizations_processed = 0
 
     def to_csv(self, file_name='artm_model.csv'):
-        """ ArtmModel.to_csv() --- save the topic model to disk in
-        .csv format (can't be loaded back).
+        """ArtmModel.to_csv() --- save the topic model to disk in
+        .csv format (can't be loaded back)
 
-        Parameters:
-        ----------
-        - file_name --- the name of file to store model.
-          Is string, default = 'artm_model.csv'
+        Args:
+          file_name (str): the name of file to store model, default='artm_model.csv'
         """
-        if not self._was_initialized:
-            print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
-            return
+        if not self._initialized:
+            raise RuntimeError("Model does not exist yet. Use " +
+                               "ArtmModel.initialize()/ArtmModel.fit_*()")
 
         if os.path.isfile(file_name):
             os.remove(file_name)
@@ -3131,121 +2761,105 @@ class ArtmModel(object):
                     [round(token_w, 5) for token_w in topic_model.token_weights[index].value])
 
     def get_theta(self, remove_theta=False):
-        """ ArtmModel.get_theta() --- get Theta matrix for training set
-        of documents.
+        """ArtmModel.get_theta() --- get Theta matrix for training set
+        of documents
 
-        Parameters:
-        ----------
-        - remove_theta --- flag indicates save or remove Theta from model
-          after extraction.
-          Is bool, default = False
+        Args:
+          remove_theta (bool): flag indicates save or remove Theta from model
+          after extraction, default=False
 
         Returns:
-        ----------
-        - DataFrame (data, columns, rows), where:
-
+          pandas.DataFrame: (data, columns, rows), where:
           1) columns --- the ids of documents, for which the Theta
           matrix was requested
-
           2) rows --- the names of topics in topic model, that was
           used to create Theta
-
           3) data --- content of Theta matrix.
         """
         if self.cache_theta is False:
-            print 'ArtmModel.cache_theta == False, skip get_theta().' + \
-                  'Set ArtmModel.cache_theta = True'
-        else:
-            if not self._was_initialized:
-                print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
-                return
+            raise ValueError("ArtmModel.get_theta(): cache_theta == False" +
+                             "Set ArtmModel.cache_theta = True")
+        if not self._initialized:
+            raise RuntimeError("ArtmModel.get_theta(): Model does not exist yet. Use " +
+                               "ArtmModel.initialize()/ArtmModel.fit_*()")
 
-            theta_matrix = self._master.GetThetaMatrix(self._model, clean_cache=remove_theta)
-            document_ids = [item_id for item_id in theta_matrix.item_id]
-            topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-            values = [[w for w in ws.value] for ws in theta_matrix.item_weights]
-            retval = DataFrame(data=np.matrix(values).transpose(),
-                               columns=document_ids,
-                               index=topic_names)
+        theta_matrix = self._master.GetThetaMatrix(self._model, clean_cache=remove_theta)
+        document_ids = [item_id for item_id in theta_matrix.item_id]
+        topic_names = [topic_name for topic_name in theta_matrix.topic_name]
+        values = [[w for w in ws.value] for ws in theta_matrix.item_weights]
+        retval = DataFrame(data=array(values).transpose(),
+                           columns=document_ids,
+                           index=topic_names)
 
-            return retval
+        return retval
 
     def find_theta(self, batches=None, collection_name=None,
                    data_path='', data_format='batches'):
-        """ ArtmModel.find_theta() --- find Theta matrix for new documents.
+        """ArtmModel.find_theta() --- find Theta matrix for new documents
 
-        Parameters:
-        ----------
-        - collection_name --- the name of text collection
-          required if data_format == 'bow_uci').
-          Is string, default = None
-
-        - batches --- list of file names of batches to be processed.
-          If not None, than data_format should be 'batches'.
-          Is list of strings in format '*.batch', default = None
-
-        - data_path --- 1) if data_format == 'batches' =>
-          folder containing batches and dictionary
+        Args:
+          collection_name (str): the name of text collection (required if
+          data_format == 'bow_uci'), default=None
+          batches (list of str): list of file names of batches to be processed;
+          if not None, than data_format should be 'batches'; format '*.batch',
+          default=None
+          data_path (str):
+          1) if data_format == 'batches' =>
+          folder containing batches and dictionary;
           2) if data_format == 'bow_uci' =>
-          folder containing docword.txt and vocab.txt files
-          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format
-          4) if data_format == 'plain_text' => file with text
-          Is string, default = ''
-
-        - data_format --- the type of input data:
-          1) 'batches' --- the data in format of BigARTM
-          2) 'bow_uci' --- Bag-Of-Words in UCI format
-          3) 'vowpal_wabbit' --- Vowpal Wabbit format
-          4) 'plain_text' --- source text
-          Is string, default = 'batches'
+          folder containing docword.txt and vocab.txt files;
+          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;
+          4) if data_format == 'plain_text' => file with text;
+          default=''
+          data_format (str): the type of input data;
+          1) 'batches' --- the data in format of BigARTM;
+          2) 'bow_uci' --- Bag-Of-Words in UCI format;
+          3) 'vowpal_wabbit' --- Vowpal Wabbit format;
+          4) 'plain_text' --- source text;
+          default='batches'
 
         Returns:
-        ----------
-        - DataFrame (data, columns, rows), where:
-
+          pandas.DataFrame: (data, columns, rows), where:
           1) columns --- the ids of documents, for which the Theta
           matrix was requested
-
           2) rows --- the names of topics in topic model, that was
           used to create Theta
-
           3) data --- content of Theta matrix.
         """
         if collection_name is None and data_format == 'bow_uci':
-            print 'No collection name was given, skip model.find_theta()'
+            raise IOError('ArtmModel.find_theta(): No collection name was given')
 
         if not data_format == 'batches' and batches is not None:
-            print "batches != None require data_format == 'batches'"
+            raise IOError("ArtmModel.find_theta(): batches != None require" +
+                          "data_format == batches")
 
-        if not self._was_initialized:
-            print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
-            return
+        if not self._initialized:
+            raise RuntimeError("ArtmModel.find_theta(): Model does not exist yet. Use " +
+                               "ArtmModel.initialize()/ArtmModel.fit_*()")
 
         target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
         batches_list = []
         if data_format == 'batches':
             if batches is None:
-                batches_list = glob.glob(data_path + "/*.batch")
+                batches_list = glob.glob(data_path + '/*.batch')
                 if len(batches_list) < 1:
-                    print 'No batches were found, skip model.fit()'
-                    return
-                print 'find_theta() found ' + str(len(batches_list)) + ' batches'
+                    raise RuntimeError('ArtmModel.find_theta(): No batches were found')
             else:
                 batches_list = [data_path + '/' + batch for batch in batches]
 
         elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
-            collection_parser_config = create_parser_config(data_path,
-                                                            collection_name,
-                                                            target_folder,
-                                                            batch_size,
-                                                            data_format)
-            unique_tokens = library.Library().ParseCollection(collection_parser_config)
-            batches_list = glob.glob(target_folder + "/*.batch")
+            collection_parser_config = create_parser_config(data_path=data_path,
+                                                            collection_name=collection_name,
+                                                            target_folder=target_folder,
+                                                            batch_size=1000,
+                                                            data_format=data_format)
+            library.Library().ParseCollection(collection_parser_config)
+            batches_list = glob.glob(target_folder + '/*.batch')
 
         elif data_format == 'plain_text':
             raise NotImplementedError()
         else:
-            print 'Unknown data format, skip model.find_theta()'
+            raise IOError('ArtmModel.find_theta():Unknown data format')
 
         results = self._master.ProcessBatches(
             pwt=self._model,
@@ -3259,7 +2873,7 @@ class ArtmModel(object):
         document_ids = [item_id for item_id in theta_matrix.item_id]
         topic_names = [topic_name for topic_name in theta_matrix.topic_name]
         values = [[w for w in ws.value] for ws in theta_matrix.item_weights]
-        retval = DataFrame(data=np.matrix(values).transpose(),
+        retval = DataFrame(data=array(values).transpose(),
                            columns=document_ids,
                            index=topic_names)
 
@@ -3270,21 +2884,16 @@ class ArtmModel(object):
         return retval
 
     def initialize(self, data_path=None, dictionary=None):
-        """ ArtmModel.initialize() --- initialize topic model before learning.
+        """ArtmModel.initialize() --- initialize topic model before learning
 
-        Parameters:
-        ----------
-        - data_path --- name of directory containing BigARTM batches.
-          Is string, default = None
-
-        - dictionary --- BigARTM collection dictionary.
-          Is string, default = None
+        Args:
+          data_path (str): name of directory containing BigARTM batches, default=None
+          dictionary (str): BigARTM collection dictionary, default=None
 
         Note:
-        ----------
-        Priority of initialization:
-        1) batches in 'data_path'
-        2) dictionary
+          Priority of initialization:
+          1) batches in 'data_path'
+          2) dictionary
         """
         if data_path is not None:
             self._master.InitializeModel(model_name=self._model,
@@ -3301,172 +2910,8 @@ class ArtmModel(object):
         args.request_type = library.GetTopicModelArgs_RequestType_TopicNames
         topic_model = self._master.GetTopicModel(model=self._model, args=args)
         self._topic_names = [topic_name for topic_name in topic_model.topic_name]
-        self._was_initialized = True
+        self._initialized = True
 
         # Remove all info about previous iterations
         self._scores_info = {}
         self._synchronizations_processed = 0
-
-    def visualize(self, num_top_tokens=30, dictionary_path=None, lambda_step=0.1):
-        """ ArtmModel.visualize() --- visualize topic model after learning.
-
-        Parameters:
-        ----------
-        - num_top_tokens --- number of top tokens to be used in visualization.
-          Is int, default = 30
-
-        - dictionary_path --- path to file containing BigARTM
-          collection dictionary.
-          Is string, default = None
-
-        - lambda_step ---the parameter of the LDAvis visualizer.
-          Is double in (0, 1), default = 0.1
-
-        Returns:
-        ---------
-        - an object of visualization.TopicModelVisualization() class
-
-        Note:
-        ----------
-        This method still works incorrectly and dramatically ineffective while
-        trying to visualize collection with huge number of topics and tokens.
-        It will be complete in next release.
-        """
-        if not self._was_initialized:
-            print 'Model does not exist yet. Use ArtmModel.initialize()/ArtmModel.fit_*()'
-            return
-
-        dictionary = messages_pb2.DictionaryConfig()
-        if dictionary_path is not None:
-            dictionary = library.Library().LoadDictionary(dictionary_path)
-        else:
-            print 'dictionary path is None, skip visualization.'
-            return
-
-        if not os.path.exists('../artm/_js/ldavis.js'):
-            download_ldavis()
-
-        p_wt_model = self._master.GetTopicModel(self._model)
-
-        phi = np.matrix([token_w for token_w in
-                        [token_weights.value for token_weights in p_wt_model.token_weights]])
-
-        vocab = np.matrix([token for token in p_wt_model.token])
-        token_to_index = {}
-        for i in range(len(p_wt_model.token)):
-            token_to_index[p_wt_model.token[i]] = i
-
-        dist_matrix = sp_dist.pdist(phi.transpose(), lambda u, v: sym_kl_dist(u, v))
-        pca_model = sklearn.decomposition.pca.PCA(2)
-        centers = pca_model.fit_transform(sp_dist.squareform(dist_matrix)).transpose()
-
-        topic_proportion = [1.0 / self._num_topics] * self._num_topics
-
-        term_frequency = np.matrix([entry.token_count * 1.0
-                                   for entry in dictionary.entry]).transpose()
-        term_proportion = np.matrix(np.divide(term_frequency, sum(term_frequency)))
-
-        term_topic_frequency = phi
-        p_w = np.matrix(np.sum(phi, axis=1))
-        term_topic_frequency = np.multiply(term_topic_frequency, (np.divide(term_frequency,
-                                                                            p_w + GLOB_EPS)))
-
-        topic_given_term = np.matrix(np.divide(phi, p_w + GLOB_EPS))
-        vect_log = np.vectorize(lambda x: math.log(x) if x > GLOB_EPS else 0)
-        kernel = np.matrix(np.multiply(topic_given_term, vect_log(topic_given_term)))
-        saliency = np.matrix(np.multiply(term_proportion, np.matrix(np.sum(kernel, axis=1))))
-
-        sorting_indices = saliency.ravel().argsort()
-        default_terms = np.matrix(vocab[0, sorting_indices][0, 0: num_top_tokens])
-
-        counts = np.matrix(term_frequency.transpose()[0, sorting_indices])
-        rs = np.matrix(range(0, num_top_tokens)[::-1])
-        topic_str_list = ['Topic' + str(i) for i in range(1, self._num_topics + 1)]
-        category = [x for item in topic_str_list for x in itertools.repeat(item, num_top_tokens)]
-        topics = [x for item in range(self._num_topics)
-                  for x in itertools.repeat(item, num_top_tokens)]
-
-        lift = np.divide(phi, term_proportion + GLOB_EPS)
-        phi_column = phi.reshape(phi.size, 1)
-        lift_column = lift.reshape(lift.size, 1)
-
-        tinfo = {}
-        tinfo['Term'] = np.array(default_terms)[0].tolist()
-        tinfo['Category'] = ['Default' for _ in np.array(default_terms)[0].tolist()]
-        tinfo['logprob'] = np.array(rs)[0].tolist()
-        tinfo['loglift'] = np.array(rs)[0].tolist()
-        tinfo['Freq'] = np.array(counts)[0].tolist()
-        tinfo['Total'] = np.array(counts)[0].tolist()
-
-        term_indices = []
-        topic_indices = []
-
-        def find_relevance(i, term_indices, topic_indices, tinfo):
-            relevance = np.matrix(i * vect_log(phi) + (1 - i) * vect_log(lift))
-            idx = np.matrix(
-                np.apply_along_axis(lambda x: x.ravel().argsort()[range(0, num_top_tokens)],
-                                    axis=0, arr=relevance))
-            idx.resize(1, idx.size)
-            indices = np.concatenate((idx,
-                                      np.matrix([x for i in range(self._num_topics)
-                                                 for x in itertools.repeat(i, num_top_tokens)])),
-                                     axis=1)
-
-            tinfo['Term'] += np.array(vocab[0, idx])[0].tolist()
-            tinfo['Category'] += category
-            tinfo['logprob'] += np.array(
-                                    np.round(vect_log(phi_column[indices, 0]), 4))[0].tolist()
-            tinfo['loglift'] += np.array(
-                                    np.round(vect_log(lift_column[indices, 0]), 4))[0].tolist()
-            term_indices += np.array(idx)[0].tolist()
-            topic_indices += topics
-
-        for i in np.arange(0, 1, lambda_step):
-            find_relevance(i, term_indices, topic_indices, tinfo)
-
-        tinfo['Total'] += np.array(term_frequency[term_indices, 0])[0].tolist()
-        for i in range(len(term_indices)):
-            tinfo['Freq'].append(term_topic_frequency[term_indices[i], topic_indices[i]])
-
-        # ut = list(set(tinfo['Term']))
-        # ut.sort()
-        # m = [token_to_index[token] for token in ut]
-        # m.sort()
-        # phi_submatrix = np.matrix(term_topic_frequency[m, :])
-
-        all_tokens = []
-        all_topics = []
-        all_values = []
-        for token_index in range(len(p_wt_model.token_weights)):
-            for topic_index in range(self._num_topics):
-                all_tokens.append(p_wt_model.token[token_index])
-                all_topics.append(topic_index + 1)
-                all_values.append(p_wt_model.token_weights[token_index].value[topic_index])
-
-        data = {'mdsDat': {'x': list(centers[0]),
-                           'y': list(centers[1]),
-                           'topics': range(1, self._num_topics + 1),
-                           'Freq': [i * 100 for i in topic_proportion],
-                           'cluster': [1] * self._num_topics},
-                'tinfo': {'Term': tinfo['Term'],
-                          'logprob': tinfo['logprob'],
-                          'loglift': tinfo['loglift'],
-                          'Freq': tinfo['Freq'],
-                          'Total': tinfo['Total'],
-                          'Category': tinfo['Category']},
-                'token.table': {'Term': all_tokens,
-                                'Topic': all_topics,
-                                'Freq': all_values},
-                'R': num_top_tokens,
-                'lambda.step': lambda_step,
-                'plot.opts': {'xlab': 'PC-1',
-                              'ylab': 'PC-2'},
-                'topic_order': [i for i in range(self._num_topics)]}
-
-        file_name = 'lda.json'
-        if os.path.isfile(file_name):
-            os.remove(file_name)
-
-        with open(file_name, "w") as outfile:
-            json.dump(data, outfile, indent=2)
-        return visualization.TopicModelVisualization(data)
