@@ -51,6 +51,7 @@ CollectionParserConfig_Format_VowpalWabbit = 2
 GetTopicModelArgs_RequestType_Pwt = 0
 GetTopicModelArgs_RequestType_Nwt = 1
 GetTopicModelArgs_RequestType_TopicNames = 2
+GetTopicModelArgs_RequestType_Tokens = 3
 InitializeModelArgs_SourceType_Dictionary = 0
 InitializeModelArgs_SourceType_Batches = 1
 SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
@@ -242,14 +243,15 @@ class MasterComponent:
         args = messages_pb2.CopyRequestResultArgs()
         args.request_type = CopyRequestResultArgs_RequestType_GetThetaSecondPass
         args_blob = args.SerializeToString()
+        args_blob_p = ctypes.create_string_buffer(args_blob)
 
-        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob))
+        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob_p))
         return numpy_matrix
 
     def __get_topic_model_second_pass(self, topic_model):
         import numpy
-        num_rows = topic_model.topics_count
-        num_cols = len(topic_model.token)
+        num_rows = len(topic_model.token)
+        num_cols = topic_model.topics_count
         numpy_matrix = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
         length = numpy_matrix.nbytes
         blob = ctypes.c_char_p(numpy_matrix.ctypes.data)
@@ -257,8 +259,9 @@ class MasterComponent:
         args = messages_pb2.CopyRequestResultArgs()
         args.request_type = CopyRequestResultArgs_RequestType_GetModelSecondPass
         args_blob = args.SerializeToString()
+        args_blob_p = ctypes.create_string_buffer(args_blob)
 
-        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob))
+        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob_p))
         return numpy_matrix
 
     def Dispose(self):
@@ -583,7 +586,8 @@ class MasterComponent:
             args.matrix_layout = GetTopicModelArgs_MatrixLayout_External
 
         args_blob = args.SerializeToString()
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob_p))
 
         topic_model_blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, topic_model_blob))
@@ -627,7 +631,8 @@ class MasterComponent:
             args.matrix_layout = GetThetaMatrixArgs_MatrixLayout_External
 
         args_blob = args.SerializeToString()
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob_p))
         blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
@@ -679,6 +684,38 @@ class MasterComponent:
         blob_p = ctypes.create_string_buffer(blob)
         HandleErrorCode(self.lib_,
                         self.lib_.ArtmImportModel(self.id_, len(blob), blob_p))
+
+    def AttachModel(self, model_name):
+        topics = self.GetTopicModel(model=model_name, use_matrix=False,
+                                    request_type=GetTopicModelArgs_RequestType_TopicNames)
+        tokens = self.GetTopicModel(model=model_name, use_matrix=False,
+                                    request_type=GetTopicModelArgs_RequestType_Tokens)
+
+        if topics.topics_count == 0:
+            raise ArgumentOutOfRangeException("Unable to attach to topic model with zero topics")
+        if not tokens.token:
+            raise ArgumentOutOfRangeException("Unable to attach to topic model with zero tokens")
+
+        import numpy
+        num_rows = len(tokens.token)
+        num_cols = topics.topics_count
+        numpy_matrix = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+        length = numpy_matrix.nbytes
+        blob = ctypes.c_char_p(numpy_matrix.ctypes.data)
+
+        args = messages_pb2.AttachModelArgs()
+        args.model_name = model_name
+        args_blob = args.SerializeToString()
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+
+        HandleErrorCode(self.lib_, self.lib_.ArtmAttachModel(self.id_, len(args_blob), args_blob_p, length, blob))
+
+        topic_model = messages_pb2.TopicModel()
+        topic_model.topics_count = topics.topics_count
+        topic_model.topic_name.MergeFrom(topics.topic_name)
+        topic_model.class_id.MergeFrom(tokens.class_id)
+        topic_model.token.MergeFrom(tokens.token)
+        return topic_model, numpy_matrix
 
     def ImportDictionary(self, dictionary_name, file_name):
         args = messages_pb2.ImportDictionaryArgs()
@@ -734,7 +771,8 @@ class MasterComponent:
             args.theta_matrix_type = theta_matrix_type
 
         args_blob = args.SerializeToString()
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestProcessBatches(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestProcessBatches(self.id_, len(args_blob), args_blob_p))
         blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
@@ -766,7 +804,8 @@ class MasterComponent:
             args.source_weight.append(source_weight)
 
         args_blob = args.SerializeToString()
-        HandleErrorCode(self.lib_, self.lib_.ArtmMergeModel(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        HandleErrorCode(self.lib_, self.lib_.ArtmMergeModel(self.id_, len(args_blob), args_blob_p))
 
     def RegularizeModel(self, pwt, nwt, target_rwt, regularizers={}, regularizer_settings=()):
         """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
@@ -792,7 +831,8 @@ class MasterComponent:
             reg.use_relative_regularization = False
 
         args_blob = args.SerializeToString()
-        HandleErrorCode(self.lib_, self.lib_.ArtmRegularizeModel(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        HandleErrorCode(self.lib_, self.lib_.ArtmRegularizeModel(self.id_, len(args_blob), args_blob_p))
 
     def NormalizeModel(self, nwt, target_pwt, rwt=None):
         """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
@@ -809,7 +849,8 @@ class MasterComponent:
             args.rwt_source_name = rwt
 
         args_blob = args.SerializeToString()
-        HandleErrorCode(self.lib_, self.lib_.ArtmNormalizeModel(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        HandleErrorCode(self.lib_, self.lib_.ArtmNormalizeModel(self.id_, len(args_blob), args_blob_p))
 
 #################################################################################
 
@@ -1039,8 +1080,9 @@ class Score:
         if batch is not None:
             args.batch.CopyFrom(batch)
         args_blob = args.SerializeToString()
+        args_blob_p = ctypes.create_string_buffer(args_blob)
         length = HandleErrorCode(self.lib_,
-                                 self.lib_.ArtmRequestScore(self.master_id_, len(args_blob), args_blob))
+                                 self.lib_.ArtmRequestScore(self.master_id_, len(args_blob), args_blob_p))
         blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
