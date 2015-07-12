@@ -2402,18 +2402,32 @@ class ArtmModel(object):
             self._class_ids = class_ids
 
 # ========== METHODS ==========
-    def load_dictionary(self, dictionary_path=None):
-        """ArtmModel.load_dictionary() --- load and return the BigARTM
-        dictionary of the collection
+    def load_dictionary(self, dictionary_name=None, dictionary_path=None):
+        """ArtmModel.load_dictionary() --- load the BigARTM dictionary of
+        the collection into the library
 
         Args:
+          dictionary_name (str): the name of the dictionary in the library, default=None
           dictionary_path (str): full file name of the dictionary, default=None
         """
-        if dictionary_path is not None:
-            unique_tokens = library.Library().LoadDictionary(dictionary_path)
-            return self._master.CreateDictionary(unique_tokens)
-        else:
+        if dictionary_path is not None and dictionary_name is not None:
+            self._master.ImportDictionary(dictionary_name, dictionary_path)
+        elif dictionary_path is None:
             raise IOError('ArtmModel.load_dictionary(): dictionary_path is None')
+        else:
+            raise IOError('ArtmModel.load_dictionary(): dictionary_name is None')
+
+    def remove_dictionary(self, dictionary_name=None):
+        """ArtmModel.remove_dictionary() --- remove the loaded BigARTM dictionary
+        from the library
+
+        Args:
+          dictionary_name (str): the name of the dictionary in th library, default=None
+        """
+        if dictionary_path is not None and dictionary_name is not None:
+            self._master.lib_.ArtmDisposeDictionary(self._master.id_, dictionary_name)
+        elif dictionary_name is None:
+            raise IOError('ArtmModel.remove_dictionary(): dictionary_name is None')
 
     def fit_offline(self, collection_name=None, batches=None, data_path='',
                     num_collection_passes=1, decay_weight=0.0, apply_weight=1.0,
@@ -2466,26 +2480,24 @@ class ArtmModel(object):
             raise IOError("ArtmModel.fit_offline(): batches != None" +
                           "require data_format == batches")
 
-        unique_tokens = messages_pb2.DictionaryConfig()
-        target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
+        target_folder = data_path
         batches_list = []
         if data_format == 'batches':
             if batches is None:
                 batches_list = glob.glob(data_path + '/*.batch')
                 if len(batches_list) < 1:
                     raise RuntimeError('ArtmModel.fit_offline(): No batches were found')
-
-                unique_tokens = library.Library().LoadDictionary(data_path + '/dictionary')
             else:
                 batches_list = [data_path + '/' + batch for batch in batches]
 
         elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
+            target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
             collection_parser_config = create_parser_config(data_path,
                                                             collection_name,
                                                             target_folder,
                                                             batch_size,
                                                             data_format)
-            unique_tokens = library.Library().ParseCollection(collection_parser_config)
+            library.Library().ParseCollection(collection_parser_config)
             batches_list = glob.glob(target_folder + '/*.batch')
 
         elif data_format == 'plain_text':
@@ -2494,7 +2506,11 @@ class ArtmModel(object):
             raise IOError('ArtmModel.fit_offline(): Unknown data format')
 
         if not self._initialized:
-            self.initialize(dictionary=self._master.CreateDictionary(unique_tokens))
+            dictionary_name = 'dictionary' + str(uuid.uuid4())
+            self._master.ImportDictionary(dictionary_name,
+                                          os.path.join(target_folder, 'dictionary'))
+            self.initialize(dictionary_name)
+            self.remove_dictionary(dictionary_name)
 
         theta_regularizers, phi_regularizers = {}, {}
         for name, config in self._regularizers.data.iteritems():
@@ -2603,26 +2619,24 @@ class ArtmModel(object):
         if not data_format == 'batches' and batches is not None:
             raise IOError('batches != None require data_format == batches')
 
-        unique_tokens = messages_pb2.DictionaryConfig()
-        target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
+        target_folder = data_path
         batches_list = []
         if data_format == 'batches':
             if batches is None:
                 batches_list = glob.glob(data_path + '/*.batch')
                 if len(batches_list) < 1:
                     raise RuntimeError('ArtmModel.fit_online(): No batches were found')
-
-                unique_tokens = library.Library().LoadDictionary(data_path + '/dictionary')
             else:
                 batches_list = [data_path + '/' + batch for batch in batches]
 
         elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
+            target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
             collection_parser_config = create_parser_config(data_path,
                                                             collection_name,
                                                             target_folder,
                                                             batch_size,
                                                             data_format)
-            unique_tokens = library.Library().ParseCollection(collection_parser_config)
+            library.Library().ParseCollection(collection_parser_config)
             batches = glob.glob(target_folder + '/*.batch')
 
         elif data_format == 'plain_text':
@@ -2631,7 +2645,11 @@ class ArtmModel(object):
             raise IOError('ArtmModel.fit_online(): Unknown data format')
 
         if not self._initialized:
-            self.initialize(dictionary=self._master.CreateDictionary(unique_tokens))
+            dictionary_name = 'dictionary' + str(uuid.uuid4())
+            self._master.ImportDictionary(dictionary_name,
+                                          os.path.join(target_folder, 'dictionary'))
+            self.initialize(dictionary_name)
+            self.remove_dictionary(dictionary_name)
 
         theta_regularizers, phi_regularizers = {}, {}
         for name, config in self._regularizers.data.iteritems():
@@ -2724,9 +2742,7 @@ class ArtmModel(object):
         """
         self._master.ImportModel(self._model, file_name)
         self._initialized = True
-        args = messages_pb2.GetTopicModelArgs()
-        args.request_type = library.GetTopicModelArgs_RequestType_TopicNames
-        topic_model = self._master.GetTopicModel(model=self._model, args=args)
+        topic_model = self._master.GetTopicModel(model=self._model, use_matrix=False)
         self._topic_names = [topic_name for topic_name in topic_model.topic_name]
         self._num_topics = topic_model.topics_count
 
@@ -2754,11 +2770,35 @@ class ArtmModel(object):
                 writer.writerow(['Token'] + ['Class ID'] +
                                 ['TOPIC: ' + topic_name for topic_name in self._topic_names])
 
-            topic_model = self._master.GetTopicModel(self._model)
-            for index in range(len(topic_model.token_weights)):
+            model = self._master.GetTopicModel(model=self._model)
+            index = -1
+            for row in model[1].transpose():
+                index += 1
                 writer.writerow(
-                    [topic_model.token[index]] + [topic_model.class_id[index]] +
-                    [round(token_w, 5) for token_w in topic_model.token_weights[index].value])
+                    [model[0].token[index]] + [model[0].class_id[index]] +
+                    [round(token_w, 5) for token_w in row])
+
+    def get_phi(self):
+        """ArtmModel.get_phi() --- get Phi matrix of model
+
+        Returns:
+          pandas.DataFrame: (data, columns, rows), where:
+          1) columns --- the names of topics in topic model
+          2) rows --- the tokens of topic model
+          3) data --- content of Phi matrix
+        """
+        if not self._initialized:
+            raise RuntimeError("Model does not exist yet. Use " +
+                               "ArtmModel.initialize()/ArtmModel.fit_*()")
+
+        topic_model = self._master.GetTopicModel(model=self._model)
+        tokens = [token for token in topic_model[0].token]
+        topic_names = [topic_name for topic_name in topic_model[0].topic_name]
+        retval = DataFrame(data=topic_model[1].transpose(),
+                           columns=topic_names,
+                           index=tokens)
+
+        return retval
 
     def get_theta(self, remove_theta=False):
         """ArtmModel.get_theta() --- get Theta matrix for training set
@@ -2774,7 +2814,7 @@ class ArtmModel(object):
           matrix was requested
           2) rows --- the names of topics in topic model, that was
           used to create Theta
-          3) data --- content of Theta matrix.
+          3) data --- content of Theta matrix
         """
         if self.cache_theta is False:
             raise ValueError("ArtmModel.get_theta(): cache_theta == False" +
@@ -2784,10 +2824,9 @@ class ArtmModel(object):
                                "ArtmModel.initialize()/ArtmModel.fit_*()")
 
         theta_matrix = self._master.GetThetaMatrix(self._model, clean_cache=remove_theta)
-        document_ids = [item_id for item_id in theta_matrix.item_id]
-        topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-        values = [[w for w in ws.value] for ws in theta_matrix.item_weights]
-        retval = DataFrame(data=array(values).transpose(),
+        document_ids = [item_id for item_id in theta_matrix[0].item_id]
+        topic_names = [topic_name for topic_name in theta_matrix[0].topic_name]
+        retval = DataFrame(data=theta_matrix[1].transpose(),
                            columns=document_ids,
                            index=topic_names)
 
@@ -2859,7 +2898,7 @@ class ArtmModel(object):
         elif data_format == 'plain_text':
             raise NotImplementedError()
         else:
-            raise IOError('ArtmModel.find_theta():Unknown data format')
+            raise IOError('ArtmModel.find_theta(): Unknown data format')
 
         results = self._master.ProcessBatches(
             pwt=self._model,
@@ -2867,13 +2906,11 @@ class ArtmModel(object):
             target_nwt='nwt_hat',
             inner_iterations_count=self._num_document_passes,
             class_ids=self._class_ids,
-            theta_matrix_type=library.ProcessBatchesArgs_ThetaMatrixType_Dense)
+            theta_matrix_type=library.ProcessBatchesArgs_ThetaMatrixType_DenseColMajor)
 
-        theta_matrix = results.theta_matrix
-        document_ids = [item_id for item_id in theta_matrix.item_id]
-        topic_names = [topic_name for topic_name in theta_matrix.topic_name]
-        values = [[w for w in ws.value] for ws in theta_matrix.item_weights]
-        retval = DataFrame(data=array(values).transpose(),
+        document_ids = [item_id for item_id in results[0].theta_matrix.item_id]
+        topic_names = [topic_name for topic_name in results[0].theta_matrix.topic_name]
+        retval = DataFrame(data=results[1].transpose(),
                            columns=document_ids,
                            index=topic_names)
 
@@ -2883,12 +2920,13 @@ class ArtmModel(object):
 
         return retval
 
-    def initialize(self, data_path=None, dictionary=None):
+    def initialize(self, data_path=None, dictionary_name=None):
         """ArtmModel.initialize() --- initialize topic model before learning
 
         Args:
           data_path (str): name of directory containing BigARTM batches, default=None
-          dictionary (str): BigARTM collection dictionary, default=None
+          dictionary_name (str): the name of loaded BigARTM collection
+          dictionary, default=None
 
         Note:
           Priority of initialization:
@@ -2902,13 +2940,11 @@ class ArtmModel(object):
                                          topic_names=self._topic_names)
         else:
             self._master.InitializeModel(model_name=self._model,
-                                         dictionary=dictionary,
+                                         dictionary_name=dictionary_name,
                                          topics_count=self._num_topics,
                                          topic_names=self._topic_names)
 
-        args = messages_pb2.GetTopicModelArgs()
-        args.request_type = library.GetTopicModelArgs_RequestType_TopicNames
-        topic_model = self._master.GetTopicModel(model=self._model, args=args)
+        topic_model = self._master.GetTopicModel(model=self._model, use_matrix=False)
         self._topic_names = [topic_name for topic_name in topic_model.topic_name]
         self._initialized = True
 
