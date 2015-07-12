@@ -45,8 +45,8 @@ with artm.library.MasterComponent() as master:
     phi_background = master.CreateSmoothSparsePhiRegularizer(topic_names=background_topics)
     decorrelator = master.CreateDecorrelatorPhiRegularizer(topic_names=objective_topics)
 
-    theta_regularizers = {(theta_objective.name(), -0.5), (theta_background.name(), 0.5)}
-    phi_regularizers = {(phi_objective.name(), -0.5), (phi_background.name(), 0.5), (decorrelator.name(), 100000)}
+    theta_regularizers = {theta_objective.name() : -0.5, theta_background.name() : 0.5}
+    phi_regularizers = {phi_objective.name() : -0.5, phi_background.name() : 0.5, decorrelator.name() : 100000}
 
     # Initialize model
     pwt_model = "pwt"

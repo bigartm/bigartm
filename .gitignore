@@ -78,6 +78,23 @@ src/Win32/*
 /3rdparty/glog/vsprojects/libglog_static/Release/*
 /3rdparty/rpcz/vsprojects/Intermediate/*
 /3rdparty/rpcz/vsprojects/Win32/*
+/3rdparty/protobuf/python/dist/*
+/3rdparty/protobuf/python/google/protobuf/compiler/*
+/3rdparty/protobuf/python/google/protobuf/descriptor_pb2.py
+/3rdparty/protobuf/python/google/protobuf/internal/factory_test1_pb2.py
+/3rdparty/protobuf/python/google/protobuf/internal/factory_test2_pb2.py
+/3rdparty/protobuf/python/google/protobuf/internal/more_extensions_dynamic_pb2.py
+/3rdparty/protobuf/python/google/protobuf/internal/more_extensions_pb2.py
+/3rdparty/protobuf/python/google/protobuf/internal/more_messages_pb2.py
+/3rdparty/protobuf/python/google/protobuf/internal/test_bad_identifiers_pb2.py
+/3rdparty/protobuf/python/google/protobuf/unittest_custom_options_pb2.py
+/3rdparty/protobuf/python/google/protobuf/unittest_import_pb2.py
+/3rdparty/protobuf/python/google/protobuf/unittest_import_public_pb2.py
+/3rdparty/protobuf/python/google/protobuf/unittest_mset_pb2.py
+/3rdparty/protobuf/python/google/protobuf/unittest_no_generic_services_pb2.py
+/3rdparty/protobuf/python/google/protobuf/unittest_pb2.py
+/3rdparty/protobuf/python/protobuf.egg_info/*
+/3rdparty/protobuf/python/setuptools-0.6c11-py2.7.egg
 
 /libs/libboost*
 /libs/v100/*
