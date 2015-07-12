@@ -28,6 +28,16 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
     topic_model->set_topics_count(phi_matrix.topic_size());
     return;
   }
+
+  if (get_model_args.request_type() == GetTopicModelArgs_RequestType_Tokens) {
+    for (int token_index = 0; token_index < phi_matrix.token_size(); token_index++) {
+      const Token& current_token = phi_matrix.token(token_index);
+      topic_model->add_token(current_token.keyword);
+      topic_model->add_class_id(current_token.class_id);
+    }
+    return;
+  }
+
   const bool has_sparse_format = (get_model_args.matrix_layout() == GetTopicModelArgs_MatrixLayout_Sparse);
 
   std::vector<int> tokens_to_use;
@@ -61,15 +71,6 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
         tokens_to_use.push_back(i);
       }
     }
-  }
-
-  if (get_model_args.request_type() == GetTopicModelArgs_RequestType_Tokens) {
-    for (int token_index : tokens_to_use) {
-      const Token& current_token = phi_matrix.token(token_index);
-      topic_model->add_token(current_token.keyword);
-      topic_model->add_class_id(current_token.class_id);
-    }
-    return;
   }
 
   std::vector<int> topics_to_use;

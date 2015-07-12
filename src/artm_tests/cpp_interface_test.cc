@@ -471,27 +471,6 @@ TEST(CppInterface, GatherNewTokens) {
               (tm3->token(0) == token2 && tm3->token(1) == token1));
 }
 
-void VerifyAttachModel(artm::MasterComponent* master, const std::string& model_name) {
-  std::shared_ptr< ::artm::TopicModel> pwt_model = master->GetTopicModel(model_name);
-  std::shared_ptr< ::artm::Matrix> attached_phi = master->AttachTopicModel(model_name);
-  ASSERT_EQ(attached_phi->no_rows(), pwt_model->token_size());
-  ASSERT_EQ(attached_phi->no_columns(), pwt_model->topics_count());
-  for (int token_index = 0; token_index < pwt_model->token_size(); ++token_index) {
-    for (int topic_index = 0; topic_index < pwt_model->topics_count(); ++topic_index) {
-      EXPECT_EQ((*attached_phi)(token_index, topic_index), pwt_model->token_weights(token_index).value(topic_index));
-      (*attached_phi)(token_index, topic_index) = 2.0f * token_index + 3.0f * topic_index;
-    }
-  }
-
-  std::shared_ptr< ::artm::TopicModel> updated_model = master->GetTopicModel(model_name);
-  for (int token_index = 0; token_index < pwt_model->token_size(); ++token_index) {
-    for (int topic_index = 0; topic_index < pwt_model->topics_count(); ++topic_index) {
-      EXPECT_EQ(updated_model->token_weights(token_index).value(topic_index), 2.0f * token_index + 3.0f * topic_index);
-      (*attached_phi)(token_index, topic_index) = pwt_model->token_weights(token_index).value(topic_index);
-    }
-  }
-}
-
 // artm_tests.exe --gtest_filter=CppInterface.ProcessBatchesApi
 TEST(CppInterface, ProcessBatchesApi) {
   int nTopics = 17;
@@ -630,8 +609,60 @@ TEST(CppInterface, ProcessBatchesApi) {
   ASSERT_NE(rwt, nullptr);
   ASSERT_EQ(rwt->topics_count(), nTopics);
 
-  VerifyAttachModel(&master, "pwt");
-  master.DisposeModel("pwt");  // good practice is to dispose model once its attachment is gone.
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.AttachModel
+TEST(CppInterface, AttachModel) {
+  int nTopics = 17, nBatches = 5;
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+  ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
+  artm::MasterComponentConfig master_config;
+  artm::MasterComponent master(master_config);
+
+  // Verify that it is possible to attach immediatelly after Initialize()
+  artm::InitializeModelArgs initialize_model_args;
+  initialize_model_args.set_disk_path(target_folder);
+  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_topics_count(nTopics);
+  initialize_model_args.set_model_name("pwt0");
+  master.InitializeModel(initialize_model_args);
+  std::shared_ptr< ::artm::Matrix> attached_pwt = master.AttachTopicModel("pwt0");
+  std::shared_ptr< ::artm::TopicModel> pwt0_model = master.GetTopicModel("pwt0");
+  ASSERT_EQ(attached_pwt->no_rows(), pwt0_model->token_size());
+  ASSERT_EQ(attached_pwt->no_columns(), pwt0_model->topics_count());
+
+  ::artm::MergeModelArgs merge_model_args;
+  merge_model_args.add_nwt_source_name("pwt0"); merge_model_args.add_source_weight(1.0f);
+  merge_model_args.set_nwt_target_name("nwt_merge");
+  master.MergeModel(merge_model_args);
+  std::shared_ptr< ::artm::Matrix> attached_nwt_merge = master.AttachTopicModel("nwt_merge");
+  std::shared_ptr< ::artm::TopicModel> nwt_merge_model = master.GetTopicModel("nwt_merge");
+  ASSERT_EQ(attached_nwt_merge->no_rows(), nwt_merge_model->token_size());
+  ASSERT_EQ(attached_nwt_merge->no_columns(), nwt_merge_model->topics_count());
+
+  // Verify that it is possible to modify the attached matrix
+  for (int token_index = 0; token_index < nwt_merge_model->token_size(); ++token_index) {
+    for (int topic_index = 0; topic_index < nwt_merge_model->topics_count(); ++topic_index) {
+      EXPECT_EQ((*attached_nwt_merge)(token_index, topic_index),
+                nwt_merge_model->token_weights(token_index).value(topic_index));
+      (*attached_nwt_merge)(token_index, topic_index) = 2.0f * token_index + 3.0f * topic_index;
+    }
+  }
+
+  std::shared_ptr< ::artm::TopicModel> updated_model = master.GetTopicModel("nwt_merge");
+  for (int token_index = 0; token_index < nwt_merge_model->token_size(); ++token_index) {
+    for (int topic_index = 0; topic_index < nwt_merge_model->topics_count(); ++topic_index) {
+      EXPECT_EQ(updated_model->token_weights(token_index).value(topic_index),
+                2.0f * token_index + 3.0f * topic_index);
+    }
+  }
+
+  // Good practice is to dispose model once its attachment is gone.
+  master.DisposeModel("pwt");
+  master.DisposeModel("nwt_merge");
+
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
