@@ -110,6 +110,10 @@ class MasterComponent {
   std::shared_ptr<TopicModel> GetTopicModel(const std::string& model_name, Matrix* matrix);
   std::shared_ptr<TopicModel> GetTopicModel(const GetTopicModelArgs& args);
   std::shared_ptr<TopicModel> GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix);
+
+  std::shared_ptr<Matrix> AttachTopicModel(const std::string& model_name);
+  std::shared_ptr<Matrix> AttachTopicModel(const std::string& model_name, TopicModel* topic_model);
+
   std::shared_ptr<RegularizerInternalState> GetRegularizerState(
     const std::string& regularizer_name);
   std::shared_ptr<ThetaMatrix> GetThetaMatrix(const std::string& model_name);
@@ -131,6 +135,7 @@ class MasterComponent {
   void InitializeModel(const InitializeModelArgs& args);
   void ExportModel(const ExportModelArgs& args);
   void ImportModel(const ImportModelArgs& args);
+  void DisposeModel(const std::string& model_name);
 
   void ImportDictionary(const ImportDictionaryArgs& args);
 

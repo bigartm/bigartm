@@ -121,50 +121,66 @@ void Helpers::Fix(::artm::TopicModel* message) {
 
 bool Helpers::Validate(const ::artm::TopicModel& message, bool throw_error) {
   std::stringstream ss;
-  const int token_size = message.token_size();
-  const bool use_sparse_format = (message.topic_index_size() != 0);
-  if ((message.class_id_size() != token_size) ||
-      (message.operation_type_size() != token_size) ||
-      (message.token_weights_size() != token_size) ||
-      (use_sparse_format && (message.topic_index_size() != token_size))) {
-    ss << "Inconsistent fields size in TopicModel: "
-       << message.token_size() << " vs " << message.class_id_size()
-       << " vs " << message.operation_type_size() << " vs " << message.token_weights_size() << ";";
+
+  const bool has_topic_data = (message.topics_count() != 0 || message.topic_name_size() != 0);
+  const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
+  const bool has_bulk_data = (message.token_weights_size() != 0 || message.operation_type_size() != 0);
+  const bool has_sparse_format = has_bulk_data && (message.topic_index_size() != 0);
+
+  if (has_topic_data) {
+    if (message.topics_count() != message.topic_name_size())
+      ss << "Length mismatch in fields TopicModel.topics_count and TopicModel.topic_name";
   }
 
-  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+  if (has_token_data) {
+    if (message.class_id_size() != message.token_size())
+      ss << "Inconsistent fields size in TopicModel.token and TopicModel.class_id: "
+         << message.token_size() << " vs " << message.class_id_size();
+  }
+
+  if (has_bulk_data && !has_topic_data)
     ss << "TopicModel.topic_name_size is empty";
-  if (message.topics_count() != message.topic_name_size())
-    ss << "Length mismatch in fields TopicModel.topics_count and TopicModel.topic_name";
+  if (has_bulk_data && !has_token_data)
+    ss << "TopicModel.token_size is empty";
 
-  for (int i = 0; i < message.token_size(); ++i) {
-    bool use_sparse_format_local = use_sparse_format && (message.topic_index(i).value_size() > 0);
-    if (use_sparse_format_local) {
-      if (message.topic_index(i).value_size() != message.token_weights(i).value_size()) {
-        ss << "Length mismatch between TopicModel.topic_index(" << i << ") and TopicModel.token_weights(" << i << ")";
-        break;
-      }
-
-      bool ok = true;
-      for (int topic_index : message.topic_index(i).value()) {
-        if (topic_index < 0 || topic_index >= message.topics_count()) {
-          ss << "Value " << topic_index << " in message.topic_index(" << i
-             << ") is negative or exceeds TopicModel.topics_count";
-          ok = false;
-          break;
-        }
-      }
-
-      if (!ok)
-        break;
+  if (has_bulk_data) {
+    if ((message.operation_type_size() != message.token_size()) ||
+      (message.token_weights_size() != message.token_size()) ||
+      (has_sparse_format && (message.topic_index_size() != message.token_size()))) {
+      ss << "Inconsistent fields size in TopicModel: "
+        << message.token_size() << " vs " << message.class_id_size()
+        << " vs " << message.operation_type_size() << " vs " << message.token_weights_size() << ";";
     }
 
-    if (!use_sparse_format) {
-      if (message.operation_type(i) == TopicModel_OperationType_Increment ||
-          message.operation_type(i) == TopicModel_OperationType_Overwrite) {
-        if (message.token_weights(i).value_size() != message.topics_count()) {
-          ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+    for (int i = 0; i < message.token_size(); ++i) {
+      bool has_sparse_format_local = has_sparse_format && (message.topic_index(i).value_size() > 0);
+      if (has_sparse_format_local) {
+        if (message.topic_index(i).value_size() != message.token_weights(i).value_size()) {
+          ss << "Length mismatch between TopicModel.topic_index(" << i << ") and TopicModel.token_weights(" << i << ")";
           break;
+        }
+
+        bool ok = true;
+        for (int topic_index : message.topic_index(i).value()) {
+          if (topic_index < 0 || topic_index >= message.topics_count()) {
+            ss << "Value " << topic_index << " in message.topic_index(" << i
+               << ") is negative or exceeds TopicModel.topics_count";
+            ok = false;
+            break;
+          }
+        }
+
+        if (!ok)
+          break;
+      }
+
+      if (!has_sparse_format) {
+        if (message.operation_type(i) == TopicModel_OperationType_Increment ||
+            message.operation_type(i) == TopicModel_OperationType_Overwrite) {
+          if (message.token_weights(i).value_size() != message.topics_count()) {
+            ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+            break;
+          }
         }
       }
     }
@@ -257,10 +273,10 @@ bool Helpers::Validate(const ::artm::ThetaMatrix& message, bool throw_error) {
   std::stringstream ss;
   const int item_size = message.item_id_size();
   const bool has_title = (message.item_title_size() > 0);
-  const bool use_sparse_format = (message.topic_index_size() != 0);
+  const bool has_sparse_format = (message.topic_index_size() != 0);
   if ((message.item_weights_size() != item_size) ||
       (has_title && (message.item_title_size() != item_size)) ||
-      (use_sparse_format && (message.topic_index_size() != item_size))) {
+      (has_sparse_format && (message.topic_index_size() != item_size))) {
     ss << "Inconsistent fields size in ThetaMatrix: "
        << message.item_id_size() << " vs " << message.item_weights_size()
        << " vs " << message.item_title_size() << " vs " << message.topic_index_size() << ";";
@@ -272,7 +288,7 @@ bool Helpers::Validate(const ::artm::ThetaMatrix& message, bool throw_error) {
     ss << "Length mismatch in fields ThetaMatrix.topics_count and ThetaMatrix.topic_name";
 
   for (int i = 0; i < message.item_id_size(); ++i) {
-    if (use_sparse_format) {
+    if (has_sparse_format) {
       if (message.topic_index(i).value_size() != message.item_weights(i).value_size()) {
         ss << "Length mismatch between ThetaMatrix.topic_index(" << i << ") and ThetaMatrix.item_weights(" << i << ")";
         break;
@@ -310,6 +326,9 @@ bool Helpers::FixAndValidate(::artm::ThetaMatrix* message, bool throw_error) {
 void Helpers::Fix(::artm::GetThetaMatrixArgs* message) {
   if (message->has_batch())
     Fix(message->mutable_batch());
+
+  if (message->has_use_sparse_format())
+    message->set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
 }
 
 bool Helpers::Validate(const ::artm::GetThetaMatrixArgs& message, bool throw_error) {
@@ -317,10 +336,6 @@ bool Helpers::Validate(const ::artm::GetThetaMatrixArgs& message, bool throw_err
     Validate(message.batch(), throw_error);
 
   std::stringstream ss;
-  bool is_col_major = (message.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_ColMajor);
-  bool is_row_major = (message.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_RowMajor);
-  if ((is_col_major || is_row_major) && message.use_sparse_format())
-    ss << "A dense format is required for an extended request";
 
   if (ss.str().empty())
     return true;
@@ -337,15 +352,12 @@ bool Helpers::FixAndValidate(::artm::GetThetaMatrixArgs* message, bool throw_err
 }
 
 void Helpers::Fix(::artm::GetTopicModelArgs* message) {
+  if (message->has_use_sparse_format())
+    message->set_matrix_layout(GetTopicModelArgs_MatrixLayout_Sparse);
 }
 
 bool Helpers::Validate(const ::artm::GetTopicModelArgs& message, bool throw_error) {
   std::stringstream ss;
-  bool is_col_major = (message.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_ColMajor);
-  bool is_row_major = (message.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_RowMajor);
-  if ((is_col_major || is_row_major) && message.use_sparse_format())
-    ss << "A dense format is required for an extended request";
-
   if (ss.str().empty())
     return true;
 
@@ -907,7 +919,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
   auto& args_model_name = get_theta_args.model_name();
   auto& args_topic_name = get_theta_args.topic_name();
   auto& args_topic_index = get_theta_args.topic_index();
-  const bool use_sparse_format = get_theta_args.use_sparse_format();
+  const bool has_sparse_format = get_theta_args.matrix_layout() == GetThetaMatrixArgs_MatrixLayout_Sparse;
 
   std::vector<int> topics_to_use;
   if (args_topic_index.size() > 0) {
@@ -970,7 +982,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     ::artm::FloatArray* theta_vec = theta_matrix->add_item_weights();
 
     const artm::FloatArray& item_theta = cache.theta(item_index);
-    if (!use_sparse_format) {
+    if (!has_sparse_format) {
       for (int topic_index : topics_to_use)
         theta_vec->add_value(item_theta.value(topic_index));
     } else {

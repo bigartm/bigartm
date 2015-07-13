@@ -51,29 +51,29 @@ CollectionParserConfig_Format_VowpalWabbit = 2
 GetTopicModelArgs_RequestType_Pwt = 0
 GetTopicModelArgs_RequestType_Nwt = 1
 GetTopicModelArgs_RequestType_TopicNames = 2
+GetTopicModelArgs_RequestType_Tokens = 3
 InitializeModelArgs_SourceType_Dictionary = 0
 InitializeModelArgs_SourceType_Batches = 1
 SpecifiedSparsePhiConfig_Mode_SparseTopics = 0
 SpecifiedSparsePhiConfig_Mode_SparseTokens = 1
 ProcessBatchesArgs_ThetaMatrixType_None = 0
-ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor = 1
-ProcessBatchesArgs_ThetaMatrixType_DenseColMajor = 2
-ProcessBatchesArgs_ThetaMatrixType_DenseProtobuf = 3
-ProcessBatchesArgs_ThetaMatrixType_SparseProtobuf = 4
-ProcessBatchesArgs_ThetaMatrixType_Cache = 5
+ProcessBatchesArgs_ThetaMatrixType_Dense = 1
+ProcessBatchesArgs_ThetaMatrixType_Sparse = 2
+ProcessBatchesArgs_ThetaMatrixType_Cache = 3
+ProcessBatchesArgs_ThetaMatrixType_External = 4
 CopyRequestResultArgs_RequestType_GetThetaSecondPass = 0
 CopyRequestResultArgs_RequestType_GetModelSecondPass = 1
-GetTopicModelArgs_MatrixLayout_Protobuf = 0
-GetTopicModelArgs_MatrixLayout_RowMajor = 1
-GetTopicModelArgs_MatrixLayout_ColMajor = 2
-GetThetaMatrixArgs_MatrixLayout_Protobuf = 0
-GetThetaMatrixArgs_MatrixLayout_RowMajor = 1
-GetThetaMatrixArgs_MatrixLayout_ColMajor = 2
 TopicModel_OperationType_Initialize = 0
 TopicModel_OperationType_Increment = 1
 TopicModel_OperationType_Overwrite = 2
 TopicModel_OperationType_Remove = 3
 TopicModel_OperationType_Ignore = 4
+GetTopicModelArgs_MatrixLayout_Dense = 0
+GetTopicModelArgs_MatrixLayout_Sparse = 1
+GetTopicModelArgs_MatrixLayout_External = 2
+GetThetaMatrixArgs_MatrixLayout_Dense = 0
+GetThetaMatrixArgs_MatrixLayout_Sparse = 1
+GetThetaMatrixArgs_MatrixLayout_External = 2
 
 #################################################################################
 
@@ -243,14 +243,15 @@ class MasterComponent:
         args = messages_pb2.CopyRequestResultArgs()
         args.request_type = CopyRequestResultArgs_RequestType_GetThetaSecondPass
         args_blob = args.SerializeToString()
+        args_blob_p = ctypes.create_string_buffer(args_blob)
 
-        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob))
+        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob_p))
         return numpy_matrix
 
     def __get_topic_model_second_pass(self, topic_model):
         import numpy
-        num_rows = topic_model.topics_count
-        num_cols = len(topic_model.token)
+        num_rows = len(topic_model.token)
+        num_cols = topic_model.topics_count
         numpy_matrix = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
         length = numpy_matrix.nbytes
         blob = ctypes.c_char_p(numpy_matrix.ctypes.data)
@@ -258,8 +259,9 @@ class MasterComponent:
         args = messages_pb2.CopyRequestResultArgs()
         args.request_type = CopyRequestResultArgs_RequestType_GetModelSecondPass
         args_blob = args.SerializeToString()
+        args_blob_p = ctypes.create_string_buffer(args_blob)
 
-        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob))
+        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResultEx(length, blob, len(args_blob), args_blob_p))
         return numpy_matrix
 
     def Dispose(self):
@@ -577,14 +579,15 @@ class MasterComponent:
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         if use_sparse_format is not None:
-            args.use_sparse_format=use_sparse_format
+            args.matrix_layout = GetTopicModelArgs_MatrixLayout_Sparse
         if request_type is not None:
             args.request_type = request_type
         if use_matrix:
-            args.matrix_layout = GetTopicModelArgs_MatrixLayout_RowMajor
+            args.matrix_layout = GetTopicModelArgs_MatrixLayout_External
 
         args_blob = args.SerializeToString()
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob_p))
 
         topic_model_blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, topic_model_blob))
@@ -625,10 +628,11 @@ class MasterComponent:
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         if use_matrix:
-            args.matrix_layout = GetThetaMatrixArgs_MatrixLayout_RowMajor
+            args.matrix_layout = GetThetaMatrixArgs_MatrixLayout_External
 
         args_blob = args.SerializeToString()
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob_p))
         blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
@@ -680,6 +684,38 @@ class MasterComponent:
         blob_p = ctypes.create_string_buffer(blob)
         HandleErrorCode(self.lib_,
                         self.lib_.ArtmImportModel(self.id_, len(blob), blob_p))
+
+    def AttachModel(self, model_name):
+        topics = self.GetTopicModel(model=model_name, use_matrix=False,
+                                    request_type=GetTopicModelArgs_RequestType_TopicNames)
+        tokens = self.GetTopicModel(model=model_name, use_matrix=False,
+                                    request_type=GetTopicModelArgs_RequestType_Tokens)
+
+        if topics.topics_count == 0:
+            raise ArgumentOutOfRangeException("Unable to attach to topic model with zero topics")
+        if not tokens.token:
+            raise ArgumentOutOfRangeException("Unable to attach to topic model with zero tokens")
+
+        import numpy
+        num_rows = len(tokens.token)
+        num_cols = topics.topics_count
+        numpy_matrix = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+        length = numpy_matrix.nbytes
+        blob = ctypes.c_char_p(numpy_matrix.ctypes.data)
+
+        args = messages_pb2.AttachModelArgs()
+        args.model_name = model_name
+        args_blob = args.SerializeToString()
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+
+        HandleErrorCode(self.lib_, self.lib_.ArtmAttachModel(self.id_, len(args_blob), args_blob_p, length, blob))
+
+        topic_model = messages_pb2.TopicModel()
+        topic_model.topics_count = topics.topics_count
+        topic_model.topic_name.MergeFrom(topics.topic_name)
+        topic_model.class_id.MergeFrom(tokens.class_id)
+        topic_model.token.MergeFrom(tokens.token)
+        return topic_model, numpy_matrix
 
     def ImportDictionary(self, dictionary_name, file_name):
         args = messages_pb2.ImportDictionaryArgs()
@@ -735,15 +771,15 @@ class MasterComponent:
             args.theta_matrix_type = theta_matrix_type
 
         args_blob = args.SerializeToString()
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestProcessBatches(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestProcessBatches(self.id_, len(args_blob), args_blob_p))
         blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
         result = messages_pb2.ProcessBatchesResult()
         result.ParseFromString(blob)
 
-        if args.theta_matrix_type not in (ProcessBatchesArgs_ThetaMatrixType_DenseRowMajor,
-                                          ProcessBatchesArgs_ThetaMatrixType_DenseColMajor):
+        if args.theta_matrix_type != ProcessBatchesArgs_ThetaMatrixType_External:
             return result
 
         numpy_matrix = self.__get_theta_matrix_second_pass(result.theta_matrix)
@@ -768,7 +804,8 @@ class MasterComponent:
             args.source_weight.append(source_weight)
 
         args_blob = args.SerializeToString()
-        HandleErrorCode(self.lib_, self.lib_.ArtmMergeModel(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        HandleErrorCode(self.lib_, self.lib_.ArtmMergeModel(self.id_, len(args_blob), args_blob_p))
 
     def RegularizeModel(self, pwt, nwt, target_rwt, regularizers={}, regularizer_settings=()):
         """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
@@ -794,7 +831,8 @@ class MasterComponent:
             reg.use_relative_regularization = False
 
         args_blob = args.SerializeToString()
-        HandleErrorCode(self.lib_, self.lib_.ArtmRegularizeModel(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        HandleErrorCode(self.lib_, self.lib_.ArtmRegularizeModel(self.id_, len(args_blob), args_blob_p))
 
     def NormalizeModel(self, nwt, target_pwt, rwt=None):
         """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
@@ -811,7 +849,8 @@ class MasterComponent:
             args.rwt_source_name = rwt
 
         args_blob = args.SerializeToString()
-        HandleErrorCode(self.lib_, self.lib_.ArtmNormalizeModel(self.id_, len(args_blob), args_blob))
+        args_blob_p = ctypes.create_string_buffer(args_blob)
+        HandleErrorCode(self.lib_, self.lib_.ArtmNormalizeModel(self.id_, len(args_blob), args_blob_p))
 
 #################################################################################
 
@@ -1041,8 +1080,9 @@ class Score:
         if batch is not None:
             args.batch.CopyFrom(batch)
         args_blob = args.SerializeToString()
+        args_blob_p = ctypes.create_string_buffer(args_blob)
         length = HandleErrorCode(self.lib_,
-                                 self.lib_.ArtmRequestScore(self.master_id_, len(args_blob), args_blob))
+                                 self.lib_.ArtmRequestScore(self.master_id_, len(args_blob), args_blob_p))
         blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 

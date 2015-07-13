@@ -212,16 +212,16 @@ TEST(MultipleClasses, BasicTest) {
   std::shared_ptr< ::artm::ThetaMatrix> theta_ex1 = master_component.GetThetaMatrix(model1.name(), &matrix_theta);
   EXPECT_EQ(theta_ex1->item_weights_size(), 0);
   EXPECT_EQ(model_ex1->token_weights_size(), 0);
-  ASSERT_EQ(matrix_phi.no_columns(), nTopics);
   ASSERT_EQ(matrix_phi.no_rows(), nTokens);
-  ASSERT_EQ(matrix_theta.no_columns(), nDocs);
-  ASSERT_EQ(matrix_theta.no_rows(), nTopics);
+  ASSERT_EQ(matrix_phi.no_columns(), nTopics);
+  ASSERT_EQ(matrix_theta.no_rows(), nDocs);
+  ASSERT_EQ(matrix_theta.no_columns(), nTopics);
   for (int token_index = 0; token_index < nTokens; ++token_index)
     for (int topic_index = 0; topic_index < nTopics; ++topic_index)
       EXPECT_EQ(matrix_phi(token_index, topic_index), topic_model1->token_weights(token_index).value(topic_index));
   for (int topic_index = 0; topic_index < nTopics; ++topic_index)
     for (int item_index = 0; item_index < nDocs; ++item_index)
-      EXPECT_EQ(matrix_theta(topic_index, item_index), theta_matrix1->item_weights(item_index).value(topic_index));
+      EXPECT_EQ(matrix_theta(item_index, topic_index), theta_matrix1->item_weights(item_index).value(topic_index));
 
   // ToDo: validate matrix_phi and matrix_theta
 
@@ -369,11 +369,11 @@ TEST(MultipleClasses, WithoutDefaultClass) {
 
 void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::artm::MasterComponent* master) {
   ::artm::GetTopicModelArgs args_dense(args);
-  args_dense.set_use_sparse_format(false);;
+  args_dense.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_Dense);
   auto tm_dense = master->GetTopicModel(args_dense);
 
   ::artm::GetTopicModelArgs args_sparse(args);
-  args_sparse.set_use_sparse_format(true);
+  args_sparse.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_Sparse);
   auto tm_sparse = master->GetTopicModel(args_sparse);
 
   ::artm::GetTopicModelArgs args_all;
@@ -442,11 +442,11 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
 
 void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, ::artm::MasterComponent* master) {
   ::artm::GetThetaMatrixArgs args_dense(args);
-  args_dense.set_use_sparse_format(false);;
+  args_dense.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_Dense);
   auto tm_dense = master->GetThetaMatrix(args_dense);
 
   ::artm::GetThetaMatrixArgs args_sparse(args);
-  args_sparse.set_use_sparse_format(true);
+  args_sparse.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_Sparse);
   auto tm_sparse = master->GetThetaMatrix(args_sparse);
 
   ::artm::GetThetaMatrixArgs args_all;

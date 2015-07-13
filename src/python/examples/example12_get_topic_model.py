@@ -24,5 +24,5 @@ with artm.library.MasterComponent(disk_path=batches_disk_path) as master:
         topic_model, numpy_matrix = master.GetTopicModel(model=model, topic_names={topic_name})  # retrieve one column in Phi matrix
         print topic_model.topic_name[0],
         for i in range(0, 5):
-            print topic_model.token[i], "%.5f" % numpy_matrix[0, i],
+            print topic_model.token[i], "%.5f" % numpy_matrix[i, 0],
         print "..."

@@ -44,6 +44,8 @@ extern "C" {
   DLL_PUBLIC int ArtmInitializeModel(int master_id, int length, const char* init_model_args);
   DLL_PUBLIC int ArtmExportModel(int master_id, int length, const char* export_model_args);
   DLL_PUBLIC int ArtmImportModel(int master_id, int length, const char* import_model_args);
+  DLL_PUBLIC int ArtmAttachModel(int master_id, int length, const char* attach_model_args,
+                                 int address_length, char* address);
 
   DLL_PUBLIC int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args);
   DLL_PUBLIC int ArtmMergeModel(int master_id, int length, const char* merge_model_args);

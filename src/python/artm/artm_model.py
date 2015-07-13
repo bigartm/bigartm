@@ -2772,7 +2772,7 @@ class ArtmModel(object):
 
             model = self._master.GetTopicModel(model=self._model)
             index = -1
-            for row in model[1].transpose():
+            for row in model[1]:
                 index += 1
                 writer.writerow(
                     [model[0].token[index]] + [model[0].class_id[index]] +
@@ -2794,7 +2794,7 @@ class ArtmModel(object):
         topic_model = self._master.GetTopicModel(model=self._model)
         tokens = [token for token in topic_model[0].token]
         topic_names = [topic_name for topic_name in topic_model[0].topic_name]
-        retval = DataFrame(data=topic_model[1].transpose(),
+        retval = DataFrame(data=topic_model[1],
                            columns=topic_names,
                            index=tokens)
 
@@ -2906,7 +2906,7 @@ class ArtmModel(object):
             target_nwt='nwt_hat',
             inner_iterations_count=self._num_document_passes,
             class_ids=self._class_ids,
-            theta_matrix_type=library.ProcessBatchesArgs_ThetaMatrixType_DenseColMajor)
+            theta_matrix_type=library.ProcessBatchesArgs_ThetaMatrixType_External)
 
         document_ids = [item_id for item_id in results[0].theta_matrix.item_id]
         topic_names = [topic_name for topic_name in results[0].theta_matrix.topic_name]

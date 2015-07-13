@@ -503,11 +503,18 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
       "InitializeModelArgs.source_type", args.source_type()));
   }
 
-  auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
-  PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
+  if (model_config != nullptr) {
+    auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
+    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
 
-  new_ttm->CalcPwt();   // calculate pwt matrix
-  topic_model_.set(args.model_name(), new_ttm);
+    new_ttm->CalcPwt();   // calculate pwt matrix
+    topic_model_.set(args.model_name(), new_ttm);
+  } else {
+    auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), topic_model.topic_name());
+    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm.get());
+    PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
+    SetPhiMatrix(args.model_name(), new_ttm);
+  }
 }
 
 }  // namespace core

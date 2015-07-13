@@ -136,7 +136,7 @@ std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelAr
 
 std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
   GetTopicModelArgs args_copy(args);
-  args_copy.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_RowMajor);
+  args_copy.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_External);
   std::shared_ptr<TopicModel> retval = GetTopicModel(args_copy);
   matrix->resize(retval->token_size(), retval->topics_count());
 
@@ -149,6 +149,46 @@ std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelAr
   HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
     args_blob.size(), args_blob.c_str()));
   return retval;
+}
+
+std::shared_ptr<Matrix> MasterComponent::AttachTopicModel(const std::string& model_name) {
+  return AttachTopicModel(model_name, nullptr);
+}
+
+std::shared_ptr<Matrix> MasterComponent::AttachTopicModel(const std::string& model_name, TopicModel* topic_model) {
+  GetTopicModelArgs topic_args;
+  topic_args.set_model_name(model_name);
+  topic_args.set_request_type(GetTopicModelArgs_RequestType_TopicNames);
+  std::shared_ptr<TopicModel> topics = GetTopicModel(topic_args);
+
+  GetTopicModelArgs token_args;
+  token_args.set_model_name(model_name);
+  token_args.set_request_type(GetTopicModelArgs_RequestType_Tokens);
+  std::shared_ptr<TopicModel> tokens = GetTopicModel(token_args);
+
+  AttachModelArgs attach_model_args;
+  attach_model_args.set_model_name(model_name);
+  std::string args_blob;
+  attach_model_args.SerializeToString(&args_blob);
+
+  if (topics->topics_count() == 0)
+    throw ArgumentOutOfRangeException("Unable to attach to topic model with zero topics");
+  if (tokens->token_size() == 0)
+    throw ArgumentOutOfRangeException("Unable to attach to topic model with zero tokens");
+
+  std::shared_ptr<Matrix> matrix = std::make_shared<Matrix>(tokens->token_size(), topics->topics_count());
+  int address_length = matrix->no_columns() * matrix->no_rows() * sizeof(float);
+  HandleErrorCode(ArtmAttachModel(id(), args_blob.size(), args_blob.c_str(),
+                  address_length, reinterpret_cast<char*>(matrix->get_data())));
+
+  if (topic_model != nullptr) {
+    topic_model->set_topics_count(topics->topics_count());
+    topic_model->mutable_topic_name()->CopyFrom(topics->topic_name());
+    topic_model->mutable_class_id()->CopyFrom(tokens->class_id());
+    topic_model->mutable_token()->CopyFrom(tokens->token());
+  }
+
+  return matrix;
 }
 
 std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(
@@ -198,9 +238,9 @@ std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatri
 
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
   GetThetaMatrixArgs args_copy(args);
-  args_copy.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_RowMajor);
+  args_copy.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_External);
   std::shared_ptr<ThetaMatrix> retval = GetThetaMatrix(args_copy);
-  matrix->resize(retval->topics_count(), retval->item_id_size());
+  matrix->resize(retval->item_id_size(), retval->topics_count());
 
   CopyRequestResultArgs copy_request_args;
   copy_request_args.set_request_type(CopyRequestResultArgs_RequestType_GetThetaSecondPass);
@@ -468,6 +508,10 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmImportModel(id_, blob.size(), blob.c_str()));
+}
+
+void MasterComponent::DisposeModel(const std::string& model_name) {
+  ArtmDisposeModel(id(), model_name.c_str());
 }
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {

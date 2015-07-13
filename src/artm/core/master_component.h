@@ -72,6 +72,7 @@ class MasterComponent : boost::noncopyable {
   void SynchronizeModel(const SynchronizeModelArgs& args);
   void ExportModel(const ExportModelArgs& args);
   void ImportModel(const ImportModelArgs& args);
+  void AttachModel(const AttachModelArgs& args, int address_length, float* address);
   void InitializeModel(const InitializeModelArgs& args);
   bool AddBatch(const AddBatchArgs& args);
 
