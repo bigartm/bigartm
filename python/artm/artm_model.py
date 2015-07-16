@@ -9,20 +9,21 @@ Each change of this file should be tested with pep8 Python style guide checker
 > pep8 --first --max-line-length=99 artm_model.py
 """
 
-from collections import OrderedDict, namedtuple
-import csv
-import glob
-from numpy import array
-from pandas import DataFrame
-import shutil
 import os
-import random
+import csv
 import uuid
+import glob
+import shutil
+import random
+import collections
+
+from pandas import DataFrame
+
 import artm.messages_pb2 as messages_pb2
 import artm.library as library
 
 
-###################################################################################################
+# ##################################################################################################
 THETA_REGULARIZER_TYPE = 0
 PHI_REGULARIZER_TYPE = 1
 GLOB_EPS = 1e-37
@@ -109,6 +110,7 @@ class Regularizers(object):
     Args:
       master (reference): reference to MasterComponent object, no default
     """
+
     def __init__(self, master):
         self._data = {}
         self._master = master
@@ -149,6 +151,7 @@ class Scores(object):
     Args:
       master (reference): reference to MasterComponent object, no default
     """
+
     def __init__(self, master, model):
         self._data = {}
         self._master = master
@@ -201,6 +204,7 @@ class SmoothSparsePhiRegularizer(object):
       dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
       specified
     """
+
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
         config = messages_pb2.SmoothSparsePhiConfig()
@@ -301,6 +305,7 @@ class SmoothSparseThetaRegularizer(object):
       regularization on each iteration over document. Should have length equal to
       model.num_document_passes
     """
+
     def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None):
         config = messages_pb2.SmoothSparseThetaConfig()
         self._topic_names = []
@@ -383,6 +388,7 @@ class DecorrelatorPhiRegularizer(object):
       topic_names (list of str): list of names of topics to regularize, will regularize
       all topics if not specified
     """
+
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None):
         config = messages_pb2.DecorrelatorPhiConfig()
         self._class_ids = []
@@ -467,6 +473,7 @@ class LabelRegularizationPhiRegularizer(object):
       dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
       specified
     """
+
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
         config = messages_pb2.LabelRegularizationPhiConfig()
@@ -571,6 +578,7 @@ class SpecifiedSparsePhiRegularizer(object):
       be saved. Value should be in (0, 1), default=None
       sparse_by_columns (bool) --- find max elements in column or in row, default=True
     """
+
     def __init__(self, name=None, tau=1.0, class_id=None, topic_names=None,
                  num_max_elements=None, probability_threshold=None, sparse_by_columns=True):
         config = messages_pb2.SpecifiedSparsePhiConfig()
@@ -707,6 +715,7 @@ class ImproveCoherencePhiRegularizer(object):
       dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
       specified
     """
+
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
         config = messages_pb2.ImproveCoherencePhiConfig()
@@ -808,6 +817,7 @@ class SparsityPhiScore(object):
       eps (double): the tolerance const, everything < eps
       considered to be zero, default=1e-37
     """
+
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
         config = messages_pb2.SparsityPhiScoreConfig()
         self._class_id = '@default_class'
@@ -909,6 +919,7 @@ class SparsityThetaScore(object):
       eps (double): the tolerance const, everything < eps
       considered to be zero, default=1e-37
     """
+
     def __init__(self, name=None, topic_names=None, eps=None):
         config = messages_pb2.SparsityThetaScoreConfig()
         self._topic_names = []
@@ -999,6 +1010,7 @@ class PerplexityScore(object):
       use_unigram_document_model (bool): use uni-gram
       document/collection model if token's counter == 0, default=True
     """
+
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, use_unigram_document_model=None):
         config = messages_pb2.PerplexityScoreConfig()
@@ -1135,6 +1147,7 @@ class ItemsProcessedScore(object):
     Args:
       name (str): the identifier of score, will be auto-generated if not specified
     """
+
     def __init__(self, name=None):
         config = messages_pb2.ItemsProcessedScoreConfig()
 
@@ -1187,6 +1200,7 @@ class TopTokensScore(object):
       dictionary_name (str): BigARTM collection dictionary, won't use dictionary
       if not specified
     """
+
     def __init__(self, name=None, class_id=None, topic_names=None,
                  num_tokens=None, dictionary_name=None):
         config = messages_pb2.TopTokensScoreConfig()
@@ -1304,6 +1318,7 @@ class ThetaSnippetScore(object):
       num_items (int): number of theta vectors to show from the
       beginning (no sense if item_ids given), default=10
     """
+
     def __init__(self, name=None, item_ids=None, num_items=None):
         config = messages_pb2.ThetaSnippetScoreConfig()
         self._item_ids = []
@@ -1394,6 +1409,7 @@ class TopicKernelScore(object):
       probability_mass_threshold (double): the threshold for p(t|w) values to
       get token into topic kernel. Should be in (0, 1), default=0.1
     """
+
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, probability_mass_threshold=None):
         config = messages_pb2.TopicKernelScoreConfig()
@@ -1527,6 +1543,7 @@ class SparsityPhiScoreInfo(object):
     Args:
       score (reference): reference to Score object, no default
     """
+
     def __init__(self, score):
         self._name = score.name
         self._value = []
@@ -1606,6 +1623,7 @@ class SparsityThetaScoreInfo(object):
     Args:
       score (reference): reference to Score object, no default
     """
+
     def __init__(self, score):
         self._name = score.name
         self._value = []
@@ -1686,6 +1704,7 @@ class PerplexityScoreInfo(object):
     Args:
       score (reference): reference to Score object, no default
     """
+
     def __init__(self, score):
         self._name = score.name
         self._value = []
@@ -1834,6 +1853,7 @@ class ItemsProcessedScoreInfo(object):
     Args:
       score (reference): reference to Score object, no default
     """
+
     def __init__(self, score):
         self._name = score.name
         self._value = []
@@ -1879,6 +1899,7 @@ class TopTokensScoreInfo(object):
     Args:
       score (reference): reference to Score object, no default
     """
+
     def __init__(self, score):
         self._name = score.name
         self._num_tokens = []
@@ -1901,7 +1922,7 @@ class TopTokensScoreInfo(object):
             self._topic_info.append({})
             index = len(self._topic_info) - 1
             topic_index = -1
-            for topic_name in list(OrderedDict.fromkeys(_data.topic_name)):
+            for topic_name in list(collections.OrderedDict.fromkeys(_data.topic_name)):
                 topic_index += 1
                 tokens = []
                 weights = []
@@ -1913,12 +1934,12 @@ class TopTokensScoreInfo(object):
                 if len(_data.coherence.value) > 0:
                     coherence = _data.coherence.value[topic_index]
                 self._topic_info[index][topic_name] = \
-                    namedtuple('TopTokensScoreTuple', ['tokens', 'weights', 'coherence'])
+                    collections.namedtuple('TopTokensScoreTuple', ['tokens', 'weights', 'coherence'])
                 self._topic_info[index][topic_name].tokens = tokens
                 self._topic_info[index][topic_name].weights = weights
                 self._topic_info[index][topic_name].coherence = coherence
 
-            self._average_coherence. append(_data.average_coherence)
+            self._average_coherence.append(_data.average_coherence)
         else:
             self._num_tokens.append(None)
             self._topic_info.append(None)
@@ -2000,6 +2021,7 @@ class TopicKernelScoreInfo(object):
     Args:
       score (reference): reference to Score object, no default
     """
+
     def __init__(self, score):
         self._name = score.name
         self._topic_info = []
@@ -2029,7 +2051,7 @@ class TopicKernelScoreInfo(object):
                 if len(_data.coherence.value) > 0:
                     coherence = _data.coherence.value[topic_index]
                 self._topic_info[index][topic_name] = \
-                    namedtuple('TopicKernelScoreTuple',
+                    collections.namedtuple('TopicKernelScoreTuple',
                                ['tokens', 'size', 'contrast', 'purity', 'coherence'])
                 self._topic_info[index][topic_name].tokens = tokens
                 self._topic_info[index][topic_name].size = _data.kernel_size.value[topic_index]
@@ -2165,6 +2187,7 @@ class ThetaSnippetScoreInfo(object):
     Args:
       score (reference): reference to Score object, no default
     """
+
     def __init__(self, score):
         self._name = score.name
         self._document_ids = []
@@ -2264,7 +2287,7 @@ class ArtmModel(object):
       be available using ArtmModel.topics_name().
     """
 
-# ========== CONSTRUCTOR ==========
+    # ========== CONSTRUCTOR ==========
     def __init__(self, num_processors=0, topic_names=None, num_topics=10,
                  class_ids=None, num_document_passes=10, cache_theta=True):
         self._num_processors = 0
@@ -2307,7 +2330,7 @@ class ArtmModel(object):
         self._synchronizations_processed = 0
         self._initialized = False
 
-# ========== PROPERTIES ==========
+    # ========== PROPERTIES ==========
     @property
     def num_processors(self):
         return self._num_processors
@@ -2352,7 +2375,7 @@ class ArtmModel(object):
     def num_phi_updates(self):
         return self._synchronizations_processed
 
-# ========== SETTERS ==========
+    # ========== SETTERS ==========
     @num_processors.setter
     def num_processors(self, num_processors):
         if num_processors <= 0 or not isinstance(num_processors, int):
@@ -2401,7 +2424,8 @@ class ArtmModel(object):
         else:
             self._class_ids = class_ids
 
-# ========== METHODS ==========
+        # ========== METHODS ==========
+
     def load_dictionary(self, dictionary_name=None, dictionary_path=None):
         """ArtmModel.load_dictionary() --- load the BigARTM dictionary of
         the collection into the library
@@ -2424,9 +2448,9 @@ class ArtmModel(object):
         Args:
           dictionary_name (str): the name of the dictionary in th library, default=None
         """
-        if dictionary_path is not None and dictionary_name is not None:
+        if dictionary_name is not None:
             self._master.lib_.ArtmDisposeDictionary(self._master.id_, dictionary_name)
-        elif dictionary_name is None:
+        else:
             raise IOError('ArtmModel.remove_dictionary(): dictionary_name is None')
 
     def fit_offline(self, collection_name=None, batches=None, data_path='',
@@ -2674,7 +2698,7 @@ class ArtmModel(object):
                 current_processed_documents += batch_size * update_every
                 update_count = current_processed_documents / (batch_size * update_every)
                 rho = pow(tau0 + update_count, -kappa)
-                decay_weight, apply_weight = 1-rho, rho
+                decay_weight, apply_weight = 1 - rho, rho
 
                 self._synchronizations_processed += 1
                 if self._synchronizations_processed == 1:
