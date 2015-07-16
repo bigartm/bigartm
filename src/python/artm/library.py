@@ -48,6 +48,7 @@ PerplexityScoreConfig_Type_UnigramCollectionModel = 1
 CollectionParserConfig_Format_BagOfWordsUci = 0
 CollectionParserConfig_Format_MatrixMarket = 1
 CollectionParserConfig_Format_VowpalWabbit = 2
+CollectionParserConfig_Format_Cooccurrence = 3
 GetTopicModelArgs_RequestType_Pwt = 0
 GetTopicModelArgs_RequestType_Nwt = 1
 GetTopicModelArgs_RequestType_TopicNames = 2
