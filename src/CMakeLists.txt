@@ -25,7 +25,7 @@ add_subdirectory(artm)
 add_subdirectory(artm_tests)
 add_subdirectory(cpp_client)
 
-install(FILES python/artm/library.py python/artm/messages_pb2.py python/artm/__init__.py DESTINATION python/artm)
+install(FILES python/artm/library.py python/artm/artm_model.py python/artm/messages_pb2.py python/artm/__init__.py DESTINATION python/artm)
 install(FILES ../datasets/docword.kos.txt ../datasets/vocab.kos.txt DESTINATION python/examples)
 
 FILE(GLOB PYTHON_EXAMPLES python/examples/*.py)
