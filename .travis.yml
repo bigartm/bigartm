@@ -5,23 +5,19 @@ compiler:
   - gcc
 
 before_install:
-  - cd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && cd ..
-  - mkdir datasets && cd datasets
-  - wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz && gunzip docword.kos.txt.gz
-  - wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
-  - cd ..
-  - cp datasets/* python/examples/
+  - pushd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && popd
+  - pushd python/examples && ./download_datasets.sh && popd
   - sudo pip install pep8
 
 before_script:
-  - mkdir build && cd build && cmake .. && cd ..
+  - mkdir build
+  - pushd build && cmake .. && popd
 
 script:
-  - cd python/artm && pep8 --first --max-line-length=99 artm_model.py && cd ../..
-  - cd build && make -j && sudo make install && cd ..
+  - pep8 --first --max-line-length=99 python/artm/artm_model.py
+  - pushd build && make -j && sudo make install && popd
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
-  - cd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && cd ../../..
-  - cd build/src/artm_tests && ./artm_tests && cd ../../..
-  - cd python/tests && python tests.py && cd ../..
-  - cd python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && cd ../..
-
+  - pushd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && popd
+  - pushd build/src/artm_tests && ./artm_tests && popd
+  - pushd python/tests && python tests.py && popd
+  - pushd python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && popd
