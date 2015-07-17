@@ -159,7 +159,7 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
     }
   }
 
-  return 2 / (k * (k - 1)) * coherence_value;
+  return 2.0f / (k * (k - 1)) * coherence_value;
 }
 
 }  // namespace core

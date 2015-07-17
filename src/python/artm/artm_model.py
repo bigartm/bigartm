@@ -1418,7 +1418,7 @@ class TopicKernelScore(object):
             self._eps = eps
         if dictionary_name is not None:
             self._dictionary_name = dictionary_name
-            config.dictionary_name = dictionary_name
+            config.cooccurrence_dictionary_name = dictionary_name
         if probability_mass_threshold is not None:
             config.probability_mass_threshold = probability_mass_threshold
             self._probability_mass_threshold = probability_mass_threshold
@@ -1505,7 +1505,7 @@ class TopicKernelScore(object):
         self._dictionary_name = dictionary_name
         score_config = messages_pb2.TopicKernelScoreConfig()
         score_config.CopyFrom(self._config)
-        score_config.dictionary = dictionary_name
+        score_config.cooccurrence_dictionary_name = dictionary_name
         reconfigure_score_in_master(self._master, score_config, self._name)
 
     @probability_mass_threshold.setter
