@@ -1934,7 +1934,8 @@ class TopTokensScoreInfo(object):
                 if len(_data.coherence.value) > 0:
                     coherence = _data.coherence.value[topic_index]
                 self._topic_info[index][topic_name] = \
-                    collections.namedtuple('TopTokensScoreTuple', ['tokens', 'weights', 'coherence'])
+                    collections.namedtuple('TopTokensScoreTuple',
+                                           ['tokens', 'weights', 'coherence'])
                 self._topic_info[index][topic_name].tokens = tokens
                 self._topic_info[index][topic_name].weights = weights
                 self._topic_info[index][topic_name].coherence = coherence
@@ -2052,7 +2053,7 @@ class TopicKernelScoreInfo(object):
                     coherence = _data.coherence.value[topic_index]
                 self._topic_info[index][topic_name] = \
                     collections.namedtuple('TopicKernelScoreTuple',
-                               ['tokens', 'size', 'contrast', 'purity', 'coherence'])
+                                           ['tokens', 'size', 'contrast', 'purity', 'coherence'])
                 self._topic_info[index][topic_name].tokens = tokens
                 self._topic_info[index][topic_name].size = _data.kernel_size.value[topic_index]
                 self._topic_info[index][topic_name].contrast = \
