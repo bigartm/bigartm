@@ -310,16 +310,21 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenM
   // Craft the co-occurence part of dictionary
   int index = 0;
   std::string str;
+  bool last_line = false;
   retval->clear_cooc_entries();
   artm::DictionaryCoocurenceEntries* cooc_entries = retval->mutable_cooc_entries();
   while (!user_cooc_data.eof()) {
+    if (last_line) {
+      std::stringstream ss;
+      ss << "Empty pair of tokens at line " << index << ", file " << config_.docword_file_path();
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
     std::getline(user_cooc_data, str);
     ++index;
     boost::algorithm::trim(str);
     if (str.empty()) {
-      std::stringstream ss;
-      ss << "Empty pair of tokens at line " << index << ", file " << config_.docword_file_path();
-      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+      last_line = true;
+      continue;
     }
 
     std::vector<std::string> strs;
