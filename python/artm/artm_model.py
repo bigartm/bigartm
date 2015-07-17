@@ -23,7 +23,7 @@ import artm.messages_pb2 as messages_pb2
 import artm.library as library
 
 
-# ##################################################################################################
+###################################################################################################
 THETA_REGULARIZER_TYPE = 0
 PHI_REGULARIZER_TYPE = 1
 GLOB_EPS = 1e-37
