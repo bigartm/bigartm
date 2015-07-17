@@ -10,19 +10,18 @@ before_install:
   - wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz && gunzip docword.kos.txt.gz
   - wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
   - cd ..
-  - cp datasets/* src/python/examples/
+  - cp datasets/* python/examples/
   - sudo pip install pep8
 
 before_script:
   - mkdir build && cd build && cmake .. && cd ..
 
 script:
-  - cd src/python/artm && pep8 --first --max-line-length=99 artm_model.py && cd ../../..
-  - cd build && make -j4 && cd ..
+  - cd python/artm && pep8 --first --max-line-length=99 artm_model.py && cd ../..
+  - cd build && make -j && sudo make install && cd ..
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
   - cd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && cd ../../..
   - cd build/src/artm_tests && ./artm_tests && cd ../../..
-  - export PYTHONPATH=`pwd`/src/python:$PYTHONPATH
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.dylib
-  - cd src/python/tests && python tests.py && cd ../../..
-  - cd src/python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && cd ../../..
+  - cd python/tests && python tests.py && cd ../..
+  - cd python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && cd ../..
+
