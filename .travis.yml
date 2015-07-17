@@ -1,9 +1,15 @@
 sudo: required
 
+addons:
+  apt:
+    packages:
+    - pep8
+    - python-pandas
+    - libboost-all-dev
+
 before_install:
   - pushd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && popd
   - pushd python/examples && ./download_datasets.sh && popd
-  - sudo apt-get install pep8 python-pandas
 
 before_script:
   - mkdir build
