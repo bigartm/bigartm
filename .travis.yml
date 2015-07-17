@@ -1,7 +1,9 @@
+sudo: false
+
 before_install:
   - pushd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && popd
   - pushd python/examples && ./download_datasets.sh && popd
-  - sudo pip install pep8 pandas
+  - apt-get install pep8 python-pandas
 
 before_script:
   - mkdir build
@@ -9,9 +11,9 @@ before_script:
 
 script:
   - pep8 --first --max-line-length=99 python/artm/artm_model.py
-  - pushd build && make -j && sudo make install && popd
+  - pushd build && make -j && make install && popd
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
-  - pushd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && popd
+  - pushd 3rdparty/protobuf/python && python setup.py build && python setup.py install && popd
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests && python tests.py && popd
   - pushd python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && popd
