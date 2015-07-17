@@ -7,7 +7,7 @@ compiler:
 before_install:
   - pushd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && popd
   - pushd python/examples && ./download_datasets.sh && popd
-  - sudo pip install pep8
+  - sudo pip install pep8 pandas
 
 before_script:
   - mkdir build
@@ -15,7 +15,6 @@ before_script:
 
 script:
   - pep8 --first --max-line-length=99 python/artm/artm_model.py
-  - pip install pandas
   - pushd build && make -j && sudo make install && popd
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
   - pushd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && popd
