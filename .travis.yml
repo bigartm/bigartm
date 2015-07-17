@@ -1,9 +1,3 @@
-language:
-  - objective-c
-
-compiler:
-  - gcc
-
 before_install:
   - pushd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && popd
   - pushd python/examples && ./download_datasets.sh && popd
