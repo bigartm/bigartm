@@ -93,5 +93,3 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(python)
-
-install(FILES LICENSE DESTINATION .)
