@@ -6,6 +6,7 @@ compiler:
 
 before_install:
   - sudo pip install pep8 pandas
+  - sudo easy_install --upgrade numpy
 
 install:
   - ./codestyle_checks.sh
