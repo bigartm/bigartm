@@ -1,6 +1,8 @@
-language: cpp
+language:
+  - objective-c
 
-compiler: gcc
+compiler:
+  - gcc
 
 before_install:
   - sudo apt-get update -qq
@@ -20,7 +22,7 @@ before_script:
 
 script:
   - export PYTHONPATH=`pwd`/python:$PYTHONPATH
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
+  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.dylib
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests && python tests.py && popd
   - pushd python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && popd
