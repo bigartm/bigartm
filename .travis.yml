@@ -5,7 +5,8 @@ compiler: gcc
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq libboost-all-dev
-  - sudo apt-get install -qq pep8 python-pandas
+  - sudo apt-get install -qq python-pandas
+  - sudo pip install pep8
 
 install:
   - ./codestyle_checks.sh
