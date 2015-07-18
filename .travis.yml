@@ -1,26 +1,24 @@
-sudo: required
+language: cpp
 
-addons:
-  apt:
-    packages:
-    - pep8
-    - python-pandas
-    - libboost-all-dev
+compiler: gcc
 
 before_install:
-  - pushd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && popd
-  - pushd python/examples && ./download_datasets.sh && popd
+  - sudo apt-get update -qq libboost-all-dev
+  - sudo apt-get update -qq pep8 python-pandas
 
-before_script:
+install:
+  - ./codestyle_checks.sh
   - mkdir build
-  - pushd build && cmake .. && popd
-
-script:
-  - pep8 --first --max-line-length=99 python/artm/artm_model.py
-  - pushd build && make -j && sudo make install && popd
+  - pushd build && cmake .. && make -j && popd
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
   - pushd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && popd
+
+before_script:
+  - pushd python/examples && ./download_datasets.sh && popd
+
+script:
+  - export PYTHONPATH=`pwd`/python:$PYTHONPATH
+  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests && python tests.py && popd
   - pushd python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && popd
-
