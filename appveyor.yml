@@ -15,7 +15,20 @@ platform: x64
 configuration: Release
 
 install:
-  # by default, all script lines are interpreted as batch
+  - ps: >-
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+    if ($env:BOND_BUILD -eq "C++") {
+      git submodule update --init
+      if (!(Test-Path boost.7z)) {
+        echo "Downloading Boost 1.57 ..."
+        Start-FileDownload "http://iweb.dl.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.7z" -FileName boost.7z -Timeout 1200000
+      }
+      echo "Extracting Boost..."
+      7z x boost.7z -y -o"${env:APPVEYOR_BUILD_FOLDER}" "boost_1_57_0/boost" > $null
+      $env:BOOST_ROOT = "${env:APPVEYOR_BUILD_FOLDER}/boost_1_57_0"
+    }
+
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
 build:
   project: INSTALL.vcxproj      # path to Visual Studio solution or project
@@ -35,3 +48,6 @@ after_build:
 artifacts:
   - path: bigartm.zip
     name: bigartm.zip
+
+cache:
+  - boost.7z
