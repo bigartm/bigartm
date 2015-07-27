@@ -17,16 +17,15 @@ configuration: Release
 install:
   - ps: >-
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
-    if ($env:BOND_BUILD -eq "C++") {
-      git submodule update --init
-      if (!(Test-Path boost.7z)) {
-        echo "Downloading Boost 1.57 ..."
-        Start-FileDownload "http://iweb.dl.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.7z" -FileName boost.7z -Timeout 1200000
-      }
-      echo "Extracting Boost..."
-      7z x boost.7z -y -o"${env:APPVEYOR_BUILD_FOLDER}" "boost_1_57_0/boost" > $null
-      $env:BOOST_ROOT = "${env:APPVEYOR_BUILD_FOLDER}/boost_1_57_0"
+
+    git submodule update --init
+    if (!(Test-Path boost.7z)) {
+      echo "Downloading Boost 1.57 ..."
+      Start-FileDownload "http://iweb.dl.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.7z" -FileName boost.7z -Timeout 1200000
     }
+    echo "Extracting Boost..."
+    7z x boost.7z -y -o"${env:APPVEYOR_BUILD_FOLDER}" "boost_1_57_0/boost" > $null
+    $env:BOOST_ROOT = "${env:APPVEYOR_BUILD_FOLDER}/boost_1_57_0"
 
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
