@@ -32,7 +32,7 @@ def reconfigure_score_in_master(master, score_config, name):
     """reconfigure_score_in_master --- helpful internal method"""
     master_config = messages_pb2.MasterComponentConfig()
     master_config.CopyFrom(master.config())
-    for i in range(len(master_config.score_config)):
+    for i in xrange(len(master_config.score_config)):
         if master_config.score_config[i].name == name:
             master_config.score_config[i].config = score_config.SerializeToString()
             break
@@ -454,8 +454,8 @@ class DecorrelatorPhiRegularizer(object):
 
 
 ###################################################################################################
-class LableRegularizationPhiRegularizer(object):
-    """LableRegularizationPhiRegularizer is a regularizer in ArtmModel (public class)
+class LabelRegularizationPhiRegularizer(object):
+    """LabelRegularizationPhiRegularizer is a regularizer in ArtmModel (public class)
 
     Args:
       name (str): the identifier of regularizer, will be auto-generated if not specified
@@ -469,13 +469,13 @@ class LableRegularizationPhiRegularizer(object):
     """
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
-        config = messages_pb2.LableRegularizationPhiConfig()
+        config = messages_pb2.LabelRegularizationPhiConfig()
         self._class_ids = []
         self._topic_names = []
         self._dictionary_name = ''
 
         if name is None:
-            name = 'LableRegularizationPhiRegularizer:' + uuid.uuid1().urn
+            name = 'LabelRegularizationPhiRegularizer:' + uuid.uuid1().urn
         if class_ids is not None:
             config.ClearField('class_id')
             for class_id in class_ids:
@@ -494,7 +494,7 @@ class LableRegularizationPhiRegularizer(object):
         self.tau = tau
         self._type = PHI_REGULARIZER_TYPE
         self._config = config
-        self._type = library.RegularizerConfig_Type_LableRegularizationPhi
+        self._type = library.RegularizerConfig_Type_LabelRegularizationPhi
         self._regularizer = None  # Reserve place for the regularizer
 
     @property
@@ -528,7 +528,7 @@ class LableRegularizationPhiRegularizer(object):
     @class_ids.setter
     def class_ids(self, class_ids):
         self._class_ids = class_ids
-        config = messages_pb2.LableRegularizationPhiConfig()
+        config = messages_pb2.LabelRegularizationPhiConfig()
         config.CopyFrom(self._config)
         config.ClearField('class_id')
         for class_id in class_ids:
@@ -538,7 +538,7 @@ class LableRegularizationPhiRegularizer(object):
     @topic_names.setter
     def topic_names(self, topic_names):
         self._topic_names = topic_names
-        config = messages_pb2.LableRegularizationPhiConfig()
+        config = messages_pb2.LabelRegularizationPhiConfig()
         config.CopyFrom(self._config)
         config.ClearField('topic_name')
         for topic_name in topic_names:
@@ -548,7 +548,7 @@ class LableRegularizationPhiRegularizer(object):
     @dictionary_name.setter
     def dictionary_name(self, dictionary_name):
         self._dictionary_name = dictionary_name
-        config = messages_pb2.LableRegularizationPhiConfig()
+        config = messages_pb2.LabelRegularizationPhiConfig()
         config.CopyFrom(self._config)
         config.dictionary_name = dictionary_name
         self.regularizer.Reconfigure(self.regularizer.config_.type, config)
@@ -1905,7 +1905,7 @@ class TopTokensScoreInfo(object):
                 topic_index += 1
                 tokens = []
                 weights = []
-                for i in range(_data.num_entries):
+                for i in xrange(_data.num_entries):
                     if _data.topic_name[i] == topic_name:
                         tokens.append(_data.token[i])
                         weights.append(_data.weight[i])
@@ -2519,7 +2519,7 @@ class ArtmModel(object):
             else:
                 phi_regularizers[name] = config.tau
 
-        for _ in range(num_collection_passes):
+        for _ in xrange(num_collection_passes):
             self._master.ProcessBatches(pwt=self._model,
                                         batches=batches_list,
                                         target_nwt='nwt_hat',
@@ -2555,7 +2555,7 @@ class ArtmModel(object):
                     elif self.scores[name].type == library.ScoreConfig_Type_TopicKernel:
                         self._scores_info[name] = TopicKernelScoreInfo(self.scores[name])
 
-                    for _ in range(self._synchronizations_processed - 1):
+                    for _ in xrange(self._synchronizations_processed - 1):
                         self._scores_info[name].add()
 
                 self._scores_info[name].add(self.scores[name])
@@ -2705,7 +2705,7 @@ class ArtmModel(object):
                         elif self.scores[name].type == library.ScoreConfig_Type_TopicKernel:
                             self._scores_info[name] = TopicKernelScoreInfo(self.scores[name])
 
-                        for _ in range(self._synchronizations_processed - 1):
+                        for _ in xrange(self._synchronizations_processed - 1):
                             self._scores_info[name].add()
 
                     self._scores_info[name].add(self.scores[name])
@@ -2778,8 +2778,14 @@ class ArtmModel(object):
                     [model[0].token[index]] + [model[0].class_id[index]] +
                     [round(token_w, 5) for token_w in row])
 
-    def get_phi(self):
+    def get_phi(self, topic_names=None, class_ids=None):
         """ArtmModel.get_phi() --- get Phi matrix of model
+
+        Args:
+          topic_names (list of str): list with topics to extract,
+          default=None (means all topics)
+          class_ids (list of str): list with class ids to extract,
+          default=None (means all class ids)
 
         Returns:
           pandas.DataFrame: (data, columns, rows), where:
@@ -2791,7 +2797,9 @@ class ArtmModel(object):
             raise RuntimeError("Model does not exist yet. Use " +
                                "ArtmModel.initialize()/ArtmModel.fit_*()")
 
-        topic_model = self._master.GetTopicModel(model=self._model)
+        topic_model = self._master.GetTopicModel(model=self._model,
+                                                 class_ids=class_ids,
+                                                 topic_names=topic_names)
         tokens = [token for token in topic_model[0].token]
         topic_names = [topic_name for topic_name in topic_model[0].topic_name]
         retval = DataFrame(data=topic_model[1],
