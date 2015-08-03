@@ -54,8 +54,8 @@ Downloads
                                         * `wiki_enru_dictionary (5.3 MB)  <https://s3-eu-west-1.amazonaws.com/artm/wiki_enru_dictionary>`_
                                         * class_id(s): ``@english``, ``@russian``
 
-    lastfm    `lastfm`_         1000    * `lastfm_1k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_1k.7z>`_ (Vowpal Wabbit format)
-                                360000  * `lastfm_360k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_360k.7z>`_ (Vowpal Wabbit format)
+    lastfm    `lastfm`_         1k,     * `lastfm_1k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_1k.7z>`_ (VW format)
+                                360k    * `lastfm_360k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_360k.7z>`_ (VW format)
     ========= ========= ======= ======= ==================================================================================================================
 
 .. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words
