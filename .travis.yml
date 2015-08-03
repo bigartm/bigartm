@@ -42,4 +42,4 @@ script:
   - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests && python tests.py && popd
-  - pushd python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && popd
+  - pushd python/examples && ./run_all.sh && popd
