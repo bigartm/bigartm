@@ -1,26 +1,32 @@
-language:
-  - objective-c
+sudo: false
 
-compiler:
-  - gcc
+python:
+  - "2.7"
+
+addons:
+  apt:
+    packages:
+      - cmake
+      - python-numpy
+      - python-pandas
+      - python-virtualenv
 
 before_install:
-  - sudo pip install pep8 pandas
-  - sudo easy_install --upgrade numpy
+  - pip install pep8
 
 install:
   - ./codestyle_checks.sh
   - mkdir build
   - pushd build && cmake .. && make -j && popd
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
-  - pushd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && popd
+  - pushd 3rdparty/protobuf/python && python setup.py build && python setup.py install && popd
 
 before_script:
   - pushd python/examples && ./download_datasets.sh && popd
 
 script:
   - export PYTHONPATH=`pwd`/python:$PYTHONPATH
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.dylib
+  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests && python tests.py && popd
   - pushd python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && popd
