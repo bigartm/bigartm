@@ -2,10 +2,12 @@ from setuptools import setup
 
 setup(
     name='bigartm',
-    version='${PACKAGE_VERSION}', # FIXME: fill version variable in CMakeLists
-    package_dir={'': '${CMAKE_CURRENT_SOURCE_DIR}'},
-    packages=['artm'],
+    version='0.0.1',
+    packages=[
+        'artm',
+    ],
     install_requires=[
         'pandas',
+        'numpy',
     ],
 )
