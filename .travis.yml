@@ -11,6 +11,9 @@ compiler:
 python:
   - "2.7"
 
+virtualenv:
+  system_site_packages: true
+
 addons:
   apt:
     packages:
@@ -22,7 +25,6 @@ addons:
 
 before_install:
   - pip install pep8
-  - pip install pandas
 
 install:
   - ./codestyle_checks.sh
