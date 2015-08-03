@@ -3,7 +3,7 @@ from artm_model import (
 
     DecorrelatorPhiRegularizer,
     ImproveCoherencePhiRegularizer,
-    LableRegularizationPhiRegularizer,
+    LabelRegularizationPhiRegularizer,
     SmoothSparsePhiRegularizer,
     SmoothSparseThetaRegularizer,
     SpecifiedSparsePhiRegularizer,
