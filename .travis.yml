@@ -1,6 +1,12 @@
 sudo: false
 
-language: python
+language:
+  - python
+  - cpp
+
+compiler:
+  - clang
+  - gcc
 
 python:
   - "2.7"
