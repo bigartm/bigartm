@@ -9,6 +9,7 @@ addons:
   apt:
     packages:
       - cmake
+      - libboost-all-dev
       - python-numpy
       - python-pandas
       - python-virtualenv
