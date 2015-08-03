@@ -22,6 +22,7 @@ addons:
 
 before_install:
   - pip install pep8
+  - pip install pandas
 
 install:
   - ./codestyle_checks.sh
@@ -29,6 +30,7 @@ install:
   - pushd build && cmake .. && make && popd
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
   - pushd 3rdparty/protobuf/python && python setup.py build && python setup.py install && popd
+  - pushd python && python setup.py install && popd
 
 before_script:
   - pushd python/examples && ./download_datasets.sh && popd
