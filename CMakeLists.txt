@@ -92,5 +92,3 @@ if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
 endif()
 
 add_subdirectory(src)
-
-install(FILES LICENSE DESTINATION .)
