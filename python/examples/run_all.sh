@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 for f in *.py
 do
