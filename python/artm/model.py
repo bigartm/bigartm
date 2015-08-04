@@ -281,12 +281,13 @@ class ArtmModel(object):
 
         elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
             target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
-            collection_parser_config = \
-                batches.create_parser_config(data_path,
-                                             collection_name,
-                                             target_folder,
-                                             batch_size,
-                                             data_format)
+            collection_parser_config = batches._create_parser_config(
+                data_path,
+                collection_name,
+                target_folder,
+                batch_size,
+                data_format)
+
             library.Library().ParseCollection(collection_parser_config)
             batches_list = glob.glob(target_folder + '/*.batch')
 
@@ -421,12 +422,13 @@ class ArtmModel(object):
 
         elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
             target_folder = data_path + '/batches_temp_' + str(random.uniform(0, 1))
-            collection_parser_config = \
-                batches.create_parser_config(data_path,
-                                             collection_name,
-                                             target_folder,
-                                             batch_size,
-                                             data_format)
+            collection_parser_config = batches._create_parser_config(
+                data_path,
+                collection_name,
+                target_folder,
+                batch_size,
+                data_format)
+
             library.Library().ParseCollection(collection_parser_config)
             batches = glob.glob(target_folder + '/*.batch')
 
@@ -693,12 +695,13 @@ class ArtmModel(object):
                 batches_list = [data_path + '/' + batch for batch in batches]
 
         elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
-            collection_parser_config = \
-                batches.create_parser_config(data_path=data_path,
-                                             collection_name=collection_name,
-                                             target_folder=target_folder,
-                                             batch_size=1000,
-                                             data_format=data_format)
+            collection_parser_config = batches._create_parser_config(
+                data_path=data_path,
+                collection_name=collection_name,
+                target_folder=target_folder,
+                batch_size=1000,
+                data_format=data_format)
+
             library.Library().ParseCollection(collection_parser_config)
             batches_list = glob.glob(target_folder + '/*.batch')
 

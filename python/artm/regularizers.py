@@ -15,6 +15,15 @@ import artm.library as library
 THETA_REGULARIZER_TYPE = 0
 PHI_REGULARIZER_TYPE = 1
 
+__all__ = [
+    'SmoothSparsePhiRegularizer',
+    'SmoothSparseThetaRegularizer',
+    'DecorrelatorPhiRegularizer',
+    'LabelRegularizationPhiRegularizer',
+    'SpecifiedSparsePhiRegularizer',
+    'ImproveCoherencePhiRegularizer'
+]
+
 
 class Regularizers(object):
     """Regularizers represents a storage of regularizers in ArtmModel (private class)

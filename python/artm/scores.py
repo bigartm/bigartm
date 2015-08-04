@@ -10,8 +10,18 @@ import artm.library as library
 GLOB_EPS = 1e-37
 
 
-def reconfigure_score_in_master(master, score_config, name):
-    """reconfigure_score_in_master --- helpful internal method"""
+__all__ = [
+    'SparsityPhiScore',
+    'ItemsProcessedScore',
+    'PerplexityScore',
+    'SparsityThetaScore',
+    'ThetaSnippetScore',
+    'TopicKernelScore',
+    'TopTokensScore'
+]
+
+
+def _reconfigure_score_in_master(master, score_config, name):
     master_config = messages_pb2.MasterComponentConfig()
     master_config.CopyFrom(master.config())
     for i in xrange(len(master_config.score_config)):
@@ -148,7 +158,7 @@ class SparsityPhiScore(object):
         score_config = messages_pb2.SparsityPhiScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.class_id = class_id
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @topic_names.setter
     def topic_names(self, topic_names):
@@ -158,7 +168,7 @@ class SparsityPhiScore(object):
         score_config.ClearField('topic_names')
         for topic_name in topic_names:
             score_config.topic_name.append(topic_name)
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @eps.setter
     def eps(self, eps):
@@ -166,7 +176,7 @@ class SparsityPhiScore(object):
         score_config = messages_pb2.SparsityPhiScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.eps = eps
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
 
 ###################################################################################################
@@ -244,7 +254,7 @@ class SparsityThetaScore(object):
         score_config.ClearField('topic_names')
         for topic_name in topic_names:
             score_config.topic_name.append(topic_name)
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @eps.setter
     def eps(self, eps):
@@ -252,7 +262,7 @@ class SparsityThetaScore(object):
         score_config = messages_pb2.SparsityThetaScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.eps = eps
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
 
 ###################################################################################################
@@ -361,7 +371,7 @@ class PerplexityScore(object):
         score_config = messages_pb2.PerplexityScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.class_id = class_id
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @topic_names.setter
     def topic_names(self, topic_names):
@@ -371,7 +381,7 @@ class PerplexityScore(object):
         score_config.ClearField('topic_names')
         for topic_name in topic_names:
             score_config.topic_name.append(topic_name)
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @eps.setter
     def eps(self, eps):
@@ -379,7 +389,7 @@ class PerplexityScore(object):
         score_config = messages_pb2.PerplexityScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.eps = eps
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @dictionary_name.setter
     def dictionary_name(self, dictionary_name):
@@ -387,7 +397,7 @@ class PerplexityScore(object):
         score_config = messages_pb2.PerplexityScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.dictionary = dictionary_name
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @use_unigram_document_model.setter
     def use_unigram_document_model(self, use_unigram_document_model):
@@ -398,7 +408,7 @@ class PerplexityScore(object):
             score_config.model_type = library.PerplexityScoreConfig_Type_UnigramDocumentModel
         else:
             score_config.model_type = library.PerplexityScoreConfig_Type_UnigramCollectionModel
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
 
 ###################################################################################################
@@ -540,7 +550,7 @@ class TopTokensScore(object):
         score_config = messages_pb2.TopTokensScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.class_id = class_id
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @topic_names.setter
     def topic_names(self, topic_names):
@@ -550,7 +560,7 @@ class TopTokensScore(object):
         score_config.ClearField('topic_names')
         for topic_name in topic_names:
             score_config.topic_name.append(topic_name)
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @num_tokens.setter
     def num_tokens(self, num_tokens):
@@ -558,7 +568,7 @@ class TopTokensScore(object):
         score_config = messages_pb2.TopTokensScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.num_tokens = num_tokens
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @dictionary_name.setter
     def dictionary_name(self, dictionary_name):
@@ -566,7 +576,7 @@ class TopTokensScore(object):
         score_config = messages_pb2.TopTokensScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.cooccurrence_dictionary_name = dictionary_name
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
 
 ###################################################################################################
@@ -643,7 +653,7 @@ class ThetaSnippetScore(object):
         score_config.ClearField('item_id')
         for item_id in item_ids:
             score_config.item_id.append(item_id)
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @num_items.setter
     def num_items(self, num_items):
@@ -651,7 +661,7 @@ class ThetaSnippetScore(object):
         score_config = messages_pb2.ThetaSnippetScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.item_count = num_items
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
 
 ###################################################################################################
@@ -757,7 +767,7 @@ class TopicKernelScore(object):
         score_config = messages_pb2.TopicKernelScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.class_id = class_id
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @topic_names.setter
     def topic_names(self, topic_names):
@@ -767,7 +777,7 @@ class TopicKernelScore(object):
         score_config.ClearField('topic_names')
         for topic_name in topic_names:
             score_config.topic_name.append(topic_name)
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @eps.setter
     def eps(self, eps):
@@ -775,7 +785,7 @@ class TopicKernelScore(object):
         score_config = messages_pb2.TopicKernelScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.eps = eps
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @dictionary_name.setter
     def dictionary_name(self, dictionary_name):
@@ -783,7 +793,7 @@ class TopicKernelScore(object):
         score_config = messages_pb2.TopicKernelScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.cooccurrence_dictionary_name = dictionary_name
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
     @probability_mass_threshold.setter
     def probability_mass_threshold(self, probability_mass_threshold):
@@ -791,7 +801,7 @@ class TopicKernelScore(object):
         score_config = messages_pb2.TopicKernelScoreConfig()
         score_config.CopyFrom(self._config)
         score_config.probability_mass_threshold = probability_mass_threshold
-        reconfigure_score_in_master(self._master, score_config, self._name)
+        _reconfigure_score_in_master(self._master, score_config, self._name)
 
 
 ###################################################################################################

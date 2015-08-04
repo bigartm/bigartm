@@ -4,9 +4,8 @@ import artm.messages_pb2 as messages_pb2
 import artm.library as library
 
 
-def create_parser_config(data_path, collection_name, target_folder,
-                         batch_size, data_format, dictionary_name='dictionary'):
-    """create_parser_config --- helpful internal method"""
+def _create_parser_config(data_path, collection_name, target_folder,
+                          batch_size, data_format, dictionary_name='dictionary'):
     collection_parser_config = messages_pb2.CollectionParserConfig()
     collection_parser_config.num_items_per_batch = batch_size
     if data_format == 'bow_uci':
@@ -52,12 +51,13 @@ def parse(collection_name=None, data_path='', data_format='bow_uci',
         raise IOError('ArtmModel.parse(): No collection name was given')
 
     if data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
-        collection_parser_config = create_parser_config(data_path,
-                                                        collection_name,
-                                                        collection_name,
-                                                        batch_size,
-                                                        data_format,
-                                                        dictionary_name)
+        collection_parser_config = _create_parser_config(
+            data_path,
+            collection_name,
+            collection_name,
+            batch_size,
+            data_format,
+            dictionary_name)
         library.Library().ParseCollection(collection_parser_config)
 
     elif data_format == 'plain_text':
