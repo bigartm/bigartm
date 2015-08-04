@@ -7,8 +7,8 @@ import random
 
 from pandas import DataFrame
 
-import artm.messages_pb2 as messages_pb2
-import artm.library as library
+import messages_pb2
+import library
 
 import batches
 import regularizers
@@ -189,8 +189,7 @@ class ArtmModel(object):
         else:
             self._class_ids = class_ids
 
-        # ========== METHODS ==========
-
+    # ========== METHODS ==========
     def load_dictionary(self, dictionary_name=None, dictionary_path=None):
         """ArtmModel.load_dictionary() --- load the BigARTM dictionary of
         the collection into the library
@@ -305,7 +304,7 @@ class ArtmModel(object):
 
         theta_regularizers, phi_regularizers = {}, {}
         for name, config in self._regularizers.data.iteritems():
-            if config.type == regularizers.THETA_REGULARIZER_TYPE:
+            if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
                 theta_regularizers[name] = config.tau
             else:
                 phi_regularizers[name] = config.tau
@@ -446,7 +445,7 @@ class ArtmModel(object):
 
         theta_regularizers, phi_regularizers = {}, {}
         for name, config in self._regularizers.data.iteritems():
-            if config.type == regularizers.THETA_REGULARIZER_TYPE:
+            if str(config.__class__.__bases__[0]) == 'BaseRegularizerTheta':
                 theta_regularizers[name] = config.tau
             else:
                 phi_regularizers[name] = config.tau

@@ -3,8 +3,8 @@ import collections
 
 from pandas import DataFrame
 
-import artm.messages_pb2 as messages_pb2
-import artm.library as library
+import messages_pb2
+import library
 
 
 GLOB_EPS = 1e-37

@@ -1,7 +1,7 @@
 import os
 
-import artm.messages_pb2 as messages_pb2
-import artm.library as library
+import messages_pb2
+import library
 
 
 def _create_parser_config(data_path, collection_name, target_folder,
