@@ -1,13 +1,15 @@
-from artm_model import (
+from model import (
     ArtmModel,
-
+)
+from regularizers import (
     DecorrelatorPhiRegularizer,
     ImproveCoherencePhiRegularizer,
     LabelRegularizationPhiRegularizer,
     SmoothSparsePhiRegularizer,
     SmoothSparseThetaRegularizer,
     SpecifiedSparsePhiRegularizer,
-
+)
+from scores import (
     SparsityPhiScore,
     ItemsProcessedScore,
     PerplexityScore,
@@ -15,4 +17,7 @@ from artm_model import (
     ThetaSnippetScore,
     TopicKernelScore,
     TopTokensScore,
+)
+from batches import (
+    parse
 )
