@@ -10,5 +10,7 @@ if(MSVC)
   FILE(GLOB PYTHON_EXPERIMENTS experiments/*.py)
   install(FILES ${PYTHON_EXPERIMENTS} DESTINATION python/experiments)
 
+  install(FILES setup.py DESTINATION python)
+
   install(FILES ../datasets/docword.kos.txt ../datasets/vocab.kos.txt DESTINATION python/examples)
 endif()
