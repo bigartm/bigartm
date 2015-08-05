@@ -72,6 +72,10 @@ class Helpers {
   static bool Validate(const ::artm::DictionaryConfig& message, bool throw_error = true);
   static bool FixAndValidate(::artm::DictionaryConfig* message, bool throw_error = true);
 
+  static void Fix(::artm::ProcessBatchesArgs* message);
+  static bool Validate(const ::artm::ProcessBatchesArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::ProcessBatchesArgs* message, bool throw_error = true);
+
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportDictionaryArgs& message, bool throw_error = true);

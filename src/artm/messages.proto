@@ -579,6 +579,7 @@ message ProcessBatchesArgs {
   optional bool use_sparse_bow = 12 [default = true];
   optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
+  repeated float batch_weight = 15;
 }
 
 message ProcessBatchesResult {

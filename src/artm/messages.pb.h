@@ -8334,6 +8334,18 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::artm::ProcessBatchesArgs_ThetaMatrixType theta_matrix_type() const;
   inline void set_theta_matrix_type(::artm::ProcessBatchesArgs_ThetaMatrixType value);
 
+  // repeated float batch_weight = 15;
+  inline int batch_weight_size() const;
+  inline void clear_batch_weight();
+  static const int kBatchWeightFieldNumber = 15;
+  inline float batch_weight(int index) const;
+  inline void set_batch_weight(int index, float value);
+  inline void add_batch_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      batch_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_batch_weight();
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8371,10 +8383,11 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool opt_for_avx_;
   bool use_sparse_bow_;
   bool reset_scores_;
+  ::google::protobuf::RepeatedField< float > batch_weight_;
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -19610,6 +19623,31 @@ inline void ProcessBatchesArgs::set_theta_matrix_type(::artm::ProcessBatchesArgs
   assert(::artm::ProcessBatchesArgs_ThetaMatrixType_IsValid(value));
   set_has_theta_matrix_type();
   theta_matrix_type_ = value;
+}
+
+// repeated float batch_weight = 15;
+inline int ProcessBatchesArgs::batch_weight_size() const {
+  return batch_weight_.size();
+}
+inline void ProcessBatchesArgs::clear_batch_weight() {
+  batch_weight_.Clear();
+}
+inline float ProcessBatchesArgs::batch_weight(int index) const {
+  return batch_weight_.Get(index);
+}
+inline void ProcessBatchesArgs::set_batch_weight(int index, float value) {
+  batch_weight_.Set(index, value);
+}
+inline void ProcessBatchesArgs::add_batch_weight(float value) {
+  batch_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+ProcessBatchesArgs::batch_weight() const {
+  return batch_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+ProcessBatchesArgs::mutable_batch_weight() {
+  return &batch_weight_;
 }
 
 // -------------------------------------------------------------------

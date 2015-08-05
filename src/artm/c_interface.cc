@@ -260,6 +260,7 @@ static int ImplRequestProcessBatches(int master_id, int length, const char* proc
   try {
     artm::ProcessBatchesArgs args;
     ParseFromArray(process_batches_args, length, &args);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
 
     if (external && args.theta_matrix_type() != artm::ProcessBatchesArgs_ThetaMatrixType_Dense) {
       set_last_error("Dense matrix format is required for ArtmRequestProcessBatchesExternal");

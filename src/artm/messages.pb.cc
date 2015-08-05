@@ -1298,7 +1298,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AttachModelArgs));
   ProcessBatchesArgs_descriptor_ = file->message_type(55);
-  static const int ProcessBatchesArgs_offsets_[14] = {
+  static const int ProcessBatchesArgs_offsets_[15] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, nwt_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, batch_filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, pwt_source_name_),
@@ -1313,6 +1313,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, use_sparse_bow_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, reset_scores_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, theta_matrix_type_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, batch_weight_),
   };
   ProcessBatchesArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1948,7 +1949,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "elArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel_name\030"
     "\002 \001(\t\"8\n\017ImportModelArgs\022\021\n\tfile_name\030\001 "
     "\001(\t\022\022\n\nmodel_name\030\002 \001(\t\"%\n\017AttachModelAr"
-    "gs\022\022\n\nmodel_name\030\001 \001(\t\"\367\003\n\022ProcessBatche"
+    "gs\022\022\n\nmodel_name\030\001 \001(\t\"\215\004\n\022ProcessBatche"
     "sArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\026\n\016batch_"
     "filename\030\002 \003(\t\022\027\n\017pwt_source_name\030\003 \001(\t\022"
     "\"\n\026inner_iterations_count\030\004 \001(\005:\00210\022\034\n\013s"
@@ -1959,27 +1960,27 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\013 \001(\010:\004true\022\034\n\016use_sparse_bow\030\014 \001(\010:\004tru"
     "e\022\032\n\014reset_scores\030\r \001(\010:\004true\022J\n\021theta_m"
     "atrix_type\030\016 \001(\0162(.artm.ProcessBatchesAr"
-    "gs.ThetaMatrixType:\005Cache\"=\n\017ThetaMatrix"
-    "Type\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n"
-    "\005Cache\020\003\"d\n\024ProcessBatchesResult\022#\n\nscor"
-    "e_data\030\001 \003(\0132\017.artm.ScoreData\022\'\n\014theta_m"
-    "atrix\030\002 \001(\0132\021.artm.ThetaMatrix\"m\n\016MergeM"
-    "odelArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\027\n\017nwt"
-    "_source_name\030\002 \003(\t\022\025\n\rsource_weight\030\003 \003("
-    "\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023RegularizeMode"
-    "lArgs\022\027\n\017rwt_target_name\030\001 \001(\t\022\027\n\017pwt_so"
-    "urce_name\030\002 \001(\t\022\027\n\017nwt_source_name\030\003 \001(\t"
-    "\0227\n\024regularizer_settings\030\004 \003(\0132\031.artm.Re"
-    "gularizerSettings\"_\n\022NormalizeModelArgs\022"
-    "\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017nwt_source_n"
-    "ame\030\002 \001(\t\022\027\n\017rwt_source_name\030\003 \001(\t\"B\n\024Im"
-    "portDictionaryArgs\022\021\n\tfile_name\030\001 \001(\t\022\027\n"
-    "\017dictionary_name\030\002 \001(\t\"\301\001\n\025CopyRequestRe"
-    "sultArgs\022Q\n\014request_type\030\001 \001(\0162\'.artm.Co"
-    "pyRequestResultArgs.RequestType:\022Default"
-    "RequestType\"U\n\013RequestType\022\026\n\022DefaultReq"
-    "uestType\020\000\022\026\n\022GetThetaSecondPass\020\001\022\026\n\022Ge"
-    "tModelSecondPass\020\002", 10018);
+    "gs.ThetaMatrixType:\005Cache\022\024\n\014batch_weigh"
+    "t\030\017 \003(\002\"=\n\017ThetaMatrixType\022\010\n\004None\020\000\022\t\n\005"
+    "Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\"d\n\024Proces"
+    "sBatchesResult\022#\n\nscore_data\030\001 \003(\0132\017.art"
+    "m.ScoreData\022\'\n\014theta_matrix\030\002 \001(\0132\021.artm"
+    ".ThetaMatrix\"m\n\016MergeModelArgs\022\027\n\017nwt_ta"
+    "rget_name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 \003(\t"
+    "\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\ntopic_name\030\004 "
+    "\003(\t\"\231\001\n\023RegularizeModelArgs\022\027\n\017rwt_targe"
+    "t_name\030\001 \001(\t\022\027\n\017pwt_source_name\030\002 \001(\t\022\027\n"
+    "\017nwt_source_name\030\003 \001(\t\0227\n\024regularizer_se"
+    "ttings\030\004 \003(\0132\031.artm.RegularizerSettings\""
+    "_\n\022NormalizeModelArgs\022\027\n\017pwt_target_name"
+    "\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 \001(\t\022\027\n\017rwt_s"
+    "ource_name\030\003 \001(\t\"B\n\024ImportDictionaryArgs"
+    "\022\021\n\tfile_name\030\001 \001(\t\022\027\n\017dictionary_name\030\002"
+    " \001(\t\"\301\001\n\025CopyRequestResultArgs\022Q\n\014reques"
+    "t_type\030\001 \001(\0162\'.artm.CopyRequestResultArg"
+    "s.RequestType:\022DefaultRequestType\"U\n\013Req"
+    "uestType\022\026\n\022DefaultRequestType\020\000\022\026\n\022GetT"
+    "hetaSecondPass\020\001\022\026\n\022GetModelSecondPass\020\002", 10040);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -23714,6 +23715,7 @@ const int ProcessBatchesArgs::kOptForAvxFieldNumber;
 const int ProcessBatchesArgs::kUseSparseBowFieldNumber;
 const int ProcessBatchesArgs::kResetScoresFieldNumber;
 const int ProcessBatchesArgs::kThetaMatrixTypeFieldNumber;
+const int ProcessBatchesArgs::kBatchWeightFieldNumber;
 #endif  // !_MSC_VER
 
 ProcessBatchesArgs::ProcessBatchesArgs()
@@ -23814,6 +23816,7 @@ void ProcessBatchesArgs::Clear() {
   regularizer_tau_.Clear();
   class_id_.Clear();
   class_weight_.Clear();
+  batch_weight_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -24072,6 +24075,28 @@ bool ProcessBatchesArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(125)) goto parse_batch_weight;
+        break;
+      }
+
+      // repeated float batch_weight = 15;
+      case 15: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
+         parse_batch_weight:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 1, 125, input, this->mutable_batch_weight())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, this->mutable_batch_weight())));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(125)) goto parse_batch_weight;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -24191,6 +24216,12 @@ void ProcessBatchesArgs::SerializeWithCachedSizes(
       14, this->theta_matrix_type(), output);
   }
 
+  // repeated float batch_weight = 15;
+  for (int i = 0; i < this->batch_weight_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(
+      15, this->batch_weight(i), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -24299,6 +24330,12 @@ void ProcessBatchesArgs::SerializeWithCachedSizes(
       14, this->theta_matrix_type(), target);
   }
 
+  // repeated float batch_weight = 15;
+  for (int i = 0; i < this->batch_weight_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteFloatToArray(15, this->batch_weight(i), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -24402,6 +24439,13 @@ int ProcessBatchesArgs::ByteSize() const {
     total_size += 1 * this->class_weight_size() + data_size;
   }
 
+  // repeated float batch_weight = 15;
+  {
+    int data_size = 0;
+    data_size = 4 * this->batch_weight_size();
+    total_size += 1 * this->batch_weight_size() + data_size;
+  }
+
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -24432,6 +24476,7 @@ void ProcessBatchesArgs::MergeFrom(const ProcessBatchesArgs& from) {
   regularizer_tau_.MergeFrom(from.regularizer_tau_);
   class_id_.MergeFrom(from.class_id_);
   class_weight_.MergeFrom(from.class_weight_);
+  batch_weight_.MergeFrom(from.batch_weight_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_nwt_target_name()) {
       set_nwt_target_name(from.nwt_target_name());
@@ -24499,6 +24544,7 @@ void ProcessBatchesArgs::Swap(ProcessBatchesArgs* other) {
     std::swap(use_sparse_bow_, other->use_sparse_bow_);
     std::swap(reset_scores_, other->reset_scores_);
     std::swap(theta_matrix_type_, other->theta_matrix_type_);
+    batch_weight_.Swap(&other->batch_weight_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

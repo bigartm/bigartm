@@ -668,6 +668,34 @@ bool Helpers::FixAndValidate(::artm::DictionaryConfig* message, bool throw_error
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::ProcessBatchesArgs* message) {
+  if (message->batch_weight_size() == 0) {
+    for (int i = 0; i < message->batch_filename_size(); ++i)
+      message->add_batch_weight(1.0f);
+  }
+}
+
+bool Helpers::Validate(const ::artm::ProcessBatchesArgs& message, bool throw_error) {
+  std::stringstream ss;
+
+  if (message.batch_filename_size() != message.batch_weight_size())
+    ss << "Length mismatch in fields ProcessBatchesArgs.batch_filename and ProcessBatchesArgs.batch_weight";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::ProcessBatchesArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+
 std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   std::stringstream ss;
   ss << "ModelConfig";
@@ -727,6 +755,7 @@ std::string Helpers::Describe(const ::artm::ProcessBatchesArgs& message) {
   ss << "ProcessBatchesArgs";
   ss << ": nwt_target_name=" << message.nwt_target_name();
   ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", pwt_source_name=" << message.pwt_source_name();
   ss << ", inner_iterations_count=" << message.inner_iterations_count();
   ss << ", stream_name=" << message.stream_name();

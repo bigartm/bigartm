@@ -338,6 +338,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     pi->set_cache_manager(cache_manager_ptr);
     pi->set_model_name(model_name);
     pi->set_batch_filename(args.batch_filename(batch_index));
+    pi->set_batch_weight(args.batch_weight(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);

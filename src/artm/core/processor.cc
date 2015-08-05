@@ -449,7 +449,7 @@ InferThetaSparse(const ModelConfig& model_config, const Batch& batch, const Inst
 }
 
 static void
-UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask* mask,
+UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
                 const CsrMatrix<float>& sparse_ndw, const ::artm::core::PhiMatrix& p_wt,
                 const DenseMatrix<float>& theta_matrix,
                 NwtWriteAdapter* nwt_writer, util::Blas* blas) {
@@ -489,12 +489,13 @@ UpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, const Mask*
       n_wt_local[topic_index] = 0.0f;
     }
 
+    for (float& value : values) value *= batch_weight;
     nwt_writer->Store(w, token_id[w], values);
   }
 }
 
 static void
-InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch, const Mask* mask,
+InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
                             const InstanceSchema& schema, const DenseMatrix<float>& dense_ndw,
                             const ::artm::core::PhiMatrix& p_wt, DenseMatrix<float>* theta_matrix,
                             NwtWriteAdapter* nwt_writer, util::Blas* blas) {
@@ -594,6 +595,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
         values[topic_index] = (*n_wt)(token_index, topic_index);
 
       int token_id = p_wt.token_index(Token(batch.class_id(token_index), batch.token(token_index)));
+      for (float& value : values) value *= batch_weight;
       nwt_writer->Store(token_index, token_id, values);
     }
   }
@@ -684,7 +686,7 @@ void Processor::FindThetaMatrix(const Batch& batch,
     InferThetaSparse(model_config, batch, *schema, *sparse_ndw, p_wt, theta_matrix.get(), blas);
   } else {
     // We don't need 'UpdateNwt' part, but for Dense mode it is hard to split this function.
-    InferThetaAndUpdateNwtDense(model_config, batch, nullptr, *schema, *dense_ndw, p_wt,
+    InferThetaAndUpdateNwtDense(model_config, batch, 1.0f, nullptr, *schema, *dense_ndw, p_wt,
                                 theta_matrix.get(), nullptr, blas);
   }
 
@@ -873,8 +875,8 @@ void Processor::ThreadFunction() {
           InferThetaSparse(model_config, batch, *schema, *sparse_ndw, p_wt, theta_matrix.get(), blas);
         } else {
           CuckooWatch cuckoo2("InferThetaAndUpdateNwtDense", &cuckoo, kTimeLoggingThreshold);
-          InferThetaAndUpdateNwtDense(model_config, batch, stream_mask, *schema, *dense_ndw, p_wt,
-                                      theta_matrix.get(), nwt_writer.get(), blas);
+          InferThetaAndUpdateNwtDense(model_config, batch, part->batch_weight(), stream_mask, *schema, *dense_ndw,
+                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas);
         }
 
         if (part->has_cache_manager()) {
@@ -949,7 +951,7 @@ void Processor::ThreadFunction() {
           // Keep UpdateNwtSparse as further down in the code as possible,
           // because it consumes a lot of memory to transfer increments to merger.
           CuckooWatch cuckoo2("UpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
-          UpdateNwtSparse(model_config, batch, stream_mask, *sparse_ndw, p_wt,
+          UpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw, p_wt,
             *theta_matrix, nwt_writer.get(), blas);
         }
         merger_queue_->release();
