@@ -14,14 +14,11 @@ from .spec import ARTM_API
 class LibArtm(object):
     def __init__(self, lib_name):
         self.cdll = ctypes.CDLL(lib_name)
-        self._spec_by_name = {spec.name: spec for spec in ARTM_API}
 
-    def __getattr__(self, name):
-        spec = self._spec_by_name.get(name)
-        if spec is None:
-            raise AttributeError('%s is not a function of libartm' % name)
-        func = getattr(self.cdll, name)
-        return self._wrap_call(func, spec)
+        # adding specified functions
+        for spec in ARTM_API:
+            func = getattr(self.cdll, spec.name)
+            setattr(self, spec.name, self._wrap_call(func, spec))
 
     def _check_error(self, error_code):
         if error_code < -1:
