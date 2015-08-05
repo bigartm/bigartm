@@ -95,7 +95,7 @@ void BasicTest() {
     artm::Field* field = item->add_field();
     for (int iToken = 0; iToken < nTokens; ++iToken) {
       field->add_token_id(iToken);
-      field->add_token_count(iDoc + iToken + 1);
+      field->add_token_weight(static_cast<float>(iDoc + iToken + 1));
     }
   }
 
@@ -402,7 +402,7 @@ TEST(CppInterface, WaitIdleTimeout) {
     ::artm::Item* item = batch.add_item();
     ::artm::Field* field = item->add_field();
     field->add_token_id(i);
-    field->add_token_count(i + 1);
+    field->add_token_weight(static_cast<float>(i + 1));
     batch.add_token(artm::test::Helpers::getUniqueString());
   }
 
@@ -434,7 +434,7 @@ TEST(CppInterface, GatherNewTokens) {
   ::artm::Item* item = batch.add_item();
   ::artm::Field* field = item->add_field();
   field->add_token_id(0);
-  field->add_token_count(1);
+  field->add_token_weight(1.0f);
 
   // Process batch and expect that token is automatically picked up by the model
   master.AddBatch(batch);

@@ -1149,6 +1149,18 @@ class Field : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& date_array() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_date_array();
 
+  // repeated float token_weight = 20;
+  inline int token_weight_size() const;
+  inline void clear_token_weight();
+  static const int kTokenWeightFieldNumber = 20;
+  inline float token_weight(int index) const;
+  inline void set_token_weight(int index, float value);
+  inline void add_token_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      token_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_token_weight();
+
   // @@protoc_insertion_point(class_scope:artm.Field)
  private:
   inline void set_has_name();
@@ -1177,9 +1189,10 @@ class Field : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::int64 > int_array_;
   ::google::protobuf::RepeatedField< double > double_array_;
   ::google::protobuf::RepeatedPtrField< ::std::string> date_array_;
+  ::google::protobuf::RepeatedField< float > token_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(12 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3357,6 +3370,13 @@ class DictionaryConfig : public ::google::protobuf::Message {
   inline ::artm::DictionaryCoocurenceEntries* release_cooc_entries();
   inline void set_allocated_cooc_entries(::artm::DictionaryCoocurenceEntries* cooc_entries);
 
+  // optional float total_token_weight = 6;
+  inline bool has_total_token_weight() const;
+  inline void clear_total_token_weight();
+  static const int kTotalTokenWeightFieldNumber = 6;
+  inline float total_token_weight() const;
+  inline void set_total_token_weight(float value);
+
   // @@protoc_insertion_point(class_scope:artm.DictionaryConfig)
  private:
   inline void set_has_name();
@@ -3367,6 +3387,8 @@ class DictionaryConfig : public ::google::protobuf::Message {
   inline void clear_has_total_items_count();
   inline void set_has_cooc_entries();
   inline void clear_has_cooc_entries();
+  inline void set_has_total_token_weight();
+  inline void clear_has_total_token_weight();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -3375,9 +3397,10 @@ class DictionaryConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 total_token_count_;
   ::google::protobuf::int32 total_items_count_;
   ::artm::DictionaryCoocurenceEntries* cooc_entries_;
+  float total_token_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3512,6 +3535,13 @@ class DictionaryEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 items_count() const;
   inline void set_items_count(::google::protobuf::int32 value);
 
+  // optional float token_weight = 8;
+  inline bool has_token_weight() const;
+  inline void clear_token_weight();
+  static const int kTokenWeightFieldNumber = 8;
+  inline float token_weight() const;
+  inline void set_token_weight(float value);
+
   // @@protoc_insertion_point(class_scope:artm.DictionaryEntry)
  private:
   inline void set_has_key_token();
@@ -3526,6 +3556,8 @@ class DictionaryEntry : public ::google::protobuf::Message {
   inline void clear_has_token_count();
   inline void set_has_items_count();
   inline void clear_has_items_count();
+  inline void set_has_token_weight();
+  inline void clear_has_token_weight();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -3536,9 +3568,10 @@ class DictionaryEntry : public ::google::protobuf::Message {
   ::google::protobuf::int32 token_count_;
   ::artm::FloatArray* values_;
   ::google::protobuf::int32 items_count_;
+  float token_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9796,6 +9829,31 @@ Field::mutable_date_array() {
   return &date_array_;
 }
 
+// repeated float token_weight = 20;
+inline int Field::token_weight_size() const {
+  return token_weight_.size();
+}
+inline void Field::clear_token_weight() {
+  token_weight_.Clear();
+}
+inline float Field::token_weight(int index) const {
+  return token_weight_.Get(index);
+}
+inline void Field::set_token_weight(int index, float value) {
+  token_weight_.Set(index, value);
+}
+inline void Field::add_token_weight(float value) {
+  token_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+Field::token_weight() const {
+  return token_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+Field::mutable_token_weight() {
+  return &token_weight_;
+}
+
 // -------------------------------------------------------------------
 
 // Batch
@@ -12685,6 +12743,28 @@ inline void DictionaryConfig::set_allocated_cooc_entries(::artm::DictionaryCoocu
   }
 }
 
+// optional float total_token_weight = 6;
+inline bool DictionaryConfig::has_total_token_weight() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void DictionaryConfig::set_has_total_token_weight() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void DictionaryConfig::clear_has_total_token_weight() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void DictionaryConfig::clear_total_token_weight() {
+  total_token_weight_ = 0;
+  clear_has_total_token_weight();
+}
+inline float DictionaryConfig::total_token_weight() const {
+  return total_token_weight_;
+}
+inline void DictionaryConfig::set_total_token_weight(float value) {
+  set_has_total_token_weight();
+  total_token_weight_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // DictionaryEntry
@@ -12975,6 +13055,28 @@ inline ::google::protobuf::int32 DictionaryEntry::items_count() const {
 inline void DictionaryEntry::set_items_count(::google::protobuf::int32 value) {
   set_has_items_count();
   items_count_ = value;
+}
+
+// optional float token_weight = 8;
+inline bool DictionaryEntry::has_token_weight() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void DictionaryEntry::set_has_token_weight() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void DictionaryEntry::clear_has_token_weight() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void DictionaryEntry::clear_token_weight() {
+  token_weight_ = 0;
+  clear_has_token_weight();
+}
+inline float DictionaryEntry::token_weight() const {
+  return token_weight_;
+}
+inline void DictionaryEntry::set_token_weight(float value) {
+  set_has_token_weight();
+  token_weight_ = value;
 }
 
 // -------------------------------------------------------------------

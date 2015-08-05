@@ -378,6 +378,18 @@ void Helpers::Fix(::artm::Batch* message) {
       message->add_class_id(DefaultClass);
     }
   }
+
+  // Upgrade token_count to token_weight
+  for (::artm::Item& item : *message->mutable_item()) {
+    for (::artm::Field& field : *item.mutable_field()) {
+      if (field.token_count_size() != 0 && field.token_weight_size() == 0) {
+        field.mutable_token_weight()->Reserve(field.token_count_size());
+        for (int i = 0; i < field.token_count_size(); ++i)
+          field.add_token_weight(static_cast<float>(field.token_count(i)));
+        field.clear_token_count();
+      }
+    }
+  }
 }
 
 bool Helpers::Validate(const ::artm::Batch& message, bool throw_error) {
@@ -401,14 +413,18 @@ bool Helpers::Validate(const ::artm::Batch& message, bool throw_error) {
 
   for (int item_id = 0; item_id < message.item_size(); ++item_id) {
     for (const Field& field : message.item(item_id).field()) {
-      if (field.token_count_size() != field.token_id_size()) {
-        ss << "Length mismatch in field Batch.item(" << item_id << ").token_count and token_id; ";
+      if (field.token_count_size() != 0) {
+        ss << "Field.token_count field is deprecated. Use Field.token_weight instead; ";
+        break;
+      }
+
+      if (field.token_weight_size() != field.token_id_size()) {
+        ss << "Length mismatch in field Batch.item(" << item_id << ").token_weight and token_id; ";
         break;
       }
 
       for (int token_index = 0; token_index < field.token_count_size(); token_index++) {
         int token_id = field.token_id(token_index);
-        int token_count = field.token_count(token_index);
         if (token_id < 0 || token_id >= message.token_size()) {
           ss << "Value " << token_id << " in Batch.Item(" << item_id
              << ").token_id is negative or exceeds Batch.token_size";
@@ -593,9 +609,24 @@ bool Helpers::Validate(const ::artm::ImportDictionaryArgs& message, bool throw_e
   return false;
 }
 
+void Helpers::Fix(::artm::DictionaryConfig* message) {
+  // Upgrade from token_count to token_weight
+  if (message->has_total_token_count() && message->has_total_token_weight()) {
+    message->set_total_token_weight(static_cast<float>(message->total_token_count()));
+    message->clear_total_token_count();
+  }
+
+  for (::artm::DictionaryEntry& entry : *message->mutable_entry()) {
+    if (entry.has_token_count() && !entry.has_token_weight()) {
+      entry.set_token_weight(static_cast<float>(entry.token_count()));
+      entry.clear_token_count();
+    }
+  }
+}
+
 bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error) {
   std::stringstream ss;
-  if (message.has_cooc_entries())
+  if (message.has_cooc_entries()) {
     if (message.cooc_entries().first_index_size() != message.cooc_entries().second_index_size() ||
         message.cooc_entries().first_index_size() != message.cooc_entries().value_size() ||
         message.cooc_entries().second_index_size() != message.cooc_entries().value_size()) {
@@ -610,6 +641,18 @@ bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error
           ss << "DictionaryConfig.cooc_entries.first_index contain index nt from [0, entry.size); ";
       }
     }
+  }
+
+  // Validate no info in deprecated field (token_count)
+  if (message.has_total_token_count()) {
+    ss << "DictionaryConfig.total_token_count field is deprecated. Use DictionaryConfig.total_token_weight instead; ";
+  }
+
+  for (const ::artm::DictionaryEntry& entry : message.entry()) {
+    if (entry.has_token_count()) {
+      ss << "DictionaryEntry.token_count field is deprecated. Use DictionaryEntry.token_weight instead; ";
+    }
+  }
 
   if (ss.str().empty())
     return true;
@@ -618,6 +661,11 @@ bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
+}
+
+bool Helpers::FixAndValidate(::artm::DictionaryConfig* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
 }
 
 std::string Helpers::Describe(const ::artm::ModelConfig& message) {

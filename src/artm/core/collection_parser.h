@@ -32,12 +32,12 @@ class CollectionParser : boost::noncopyable {
  private:
   struct CollectionParserTokenInfo {
     explicit CollectionParserTokenInfo()
-      : keyword(), class_id(DefaultClass), token_count(), items_count() {}
+      : keyword(), class_id(DefaultClass), token_weight(), items_count() {}
     explicit CollectionParserTokenInfo(std::string keyword_, ClassId class_id_)
-      : keyword(keyword_), class_id(class_id_), token_count(0), items_count(0) {}
+      : keyword(keyword_), class_id(class_id_), token_weight(0.0f), items_count(0) {}
     std::string keyword;
     ClassId class_id;
-    int token_count;
+    float token_weight;
     int items_count;
   };
 

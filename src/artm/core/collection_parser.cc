@@ -179,11 +179,12 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
   ::artm::Field* field = nullptr;
   int prev_item_id = -1;
 
-  int64_t total_token_count = 0;
+  int64_t total_token_weight = 0;
   int64_t total_items_count = 0;
-  int token_count_zero = 0;
+  int token_weight_zero = 0;
 
-  int item_id, token_id, token_count;
+  int item_id, token_id;
+  float token_weight;
   int index = 1;
   std::getline(docword, str);  // skip end of previos line
 
@@ -204,14 +205,14 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
     item_id = std::stoi(strs[0]);
     token_id = std::stoi(strs[1]);
-    token_count = std::stoi(strs[2]);
+    token_weight = std::stof(strs[2]);
 
     if (config_.use_unity_based_indices())
       token_id--;  // convert 1-based to zero-based index
 
     if (token_map->find(token_id) == token_map->end())  {
       std::stringstream ss;
-      ss << "Failed to parse line '" << item_id << " " << (token_id + 1) << " " << token_count << "' in "
+      ss << "Failed to parse line '" << item_id << " " << (token_id + 1) << " " << token_weight << "' in "
          << config_.docword_file_path();
       if (token_id == -1) {
         ss << ". wordID column appears to be zero-based in the docword file being parsed. "
@@ -225,8 +226,8 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("wordID", token_id, ss.str()));
     }
 
-    if (token_count == 0) {
-      token_count_zero++;
+    if (token_weight == 0.0f) {
+      token_weight_zero++;
       continue;
     }
 
@@ -257,13 +258,13 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
     }
 
     field->add_token_id(iter->second);
-    field->add_token_count(token_count);
+    field->add_token_weight(token_weight);
     if (cooc_accum != nullptr) cooc_accum->AppendTokenId(token_id);
 
     // Increment statistics
-    total_token_count += token_count;
+    total_token_weight += token_weight;
     (*token_map)[token_id].items_count++;
-    (*token_map)[token_id].token_count += token_count;
+    (*token_map)[token_id].token_weight += token_weight;
   }
 
   if (batch.item_size() > 0) {
@@ -275,16 +276,16 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
   auto retval = std::make_shared<DictionaryConfig>();
   retval->set_name(config_.dictionary_file_name());
   retval->set_total_items_count(total_items_count);
-  retval->set_total_token_count(total_token_count);
+  retval->set_total_token_weight(total_token_weight);
 
   for (auto& key_value : (*token_map)) {
     artm::DictionaryEntry* entry = retval->add_entry();
     entry->set_key_token(key_value.second.keyword);
     entry->set_class_id(key_value.second.class_id);
-    entry->set_token_count(key_value.second.token_count);
+    entry->set_token_weight(key_value.second.token_weight);
     entry->set_items_count(key_value.second.items_count);
-    entry->set_value(static_cast<double>(key_value.second.token_count) /
-                     static_cast<double>(total_token_count));
+    entry->set_value(static_cast<double>(key_value.second.token_weight) /
+                     static_cast<double>(total_token_weight));
   }
 
   // Craft the co-occurence part of dictionary
@@ -297,7 +298,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
                                             config_.target_folder(), *retval);
   }
 
-  LOG_IF(WARNING, token_count_zero > 0) << "Found " << token_count_zero << " tokens with zero "
+  LOG_IF(WARNING, token_weight_zero > 0) << "Found " << token_weight_zero << " tokens with zero "
                                         << "occurrencies. All these tokens were ignored.";
 
   return retval;
@@ -311,13 +312,13 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenM
   auto retval = std::make_shared<DictionaryConfig>();
   retval->set_name(config_.dictionary_file_name());
   retval->set_total_items_count(0);
-  retval->set_total_token_count(0);
+  retval->set_total_token_weight(0.0f);
 
   for (auto& key_value : (*token_map)) {
     artm::DictionaryEntry* entry = retval->add_entry();
     entry->set_key_token(key_value.second.keyword);
     entry->set_class_id(key_value.second.class_id);
-    entry->set_token_count(0);
+    entry->set_token_weight(0.0f);
     entry->set_items_count(0);
     entry->set_value(0);
   }
@@ -428,9 +429,10 @@ CollectionParser::TokenMap CollectionParser::ParseVocabMatrixMarket() {
     ifstream_or_cin stream_or_cin(config_.vocab_file_path());
     std::istream& vocab = stream_or_cin.get_stream();
 
-    int token_id, token_count;
-    for (std::string token; vocab >> token_id >> token >> token_count;) {
-      // token_count is ignored --- it will be re-calculated based on the docword file.
+    int token_id;
+    float token_weight;
+    for (std::string token; vocab >> token_id >> token >> token_weight;) {
+      // token_weight is ignored --- it will be re-calculated based on the docword file.
       token_info.insert(std::make_pair(token_id, CollectionParserTokenInfo(token, DefaultClass)));
     }
   }
@@ -445,7 +447,7 @@ class CollectionParser::BatchCollector {
   Batch batch_;
   std::map<Token, int> local_map_;
   std::map<Token, CollectionParserTokenInfo> global_map_;
-  int64_t total_token_count_;
+  int64_t total_token_weight_;
   int64_t total_items_count_;
 
   void StartNewItem() {
@@ -455,9 +457,9 @@ class CollectionParser::BatchCollector {
   }
 
  public:
-  BatchCollector() : item_(nullptr), total_token_count_(0), total_items_count_(0) {}
+  BatchCollector() : item_(nullptr), total_token_weight_(0), total_items_count_(0) {}
 
-  void Record(Token token, int token_count) {
+  void Record(Token token, int token_weight) {
     if (global_map_.find(token) == global_map_.end())
       global_map_.insert(std::make_pair(token, CollectionParserTokenInfo(token.keyword, token.class_id)));
     if (local_map_.find(token) == local_map_.end()) {
@@ -473,11 +475,11 @@ class CollectionParser::BatchCollector {
 
     Field* field = item_->mutable_field(0);
     field->add_token_id(local_token_id);
-    field->add_token_count(token_count);
+    field->add_token_weight(token_weight);
 
     token_info.items_count++;
-    token_info.token_count += token_count;
-    total_token_count_ += token_count;
+    token_info.token_weight += token_weight;
+    total_token_weight_ += token_weight;
   }
 
   void FinishItem(int item_id, std::string item_title) {
@@ -507,16 +509,16 @@ class CollectionParser::BatchCollector {
     // Craft the dictionary
     auto retval = std::make_shared<DictionaryConfig>();
     retval->set_total_items_count(total_items_count_);
-    retval->set_total_token_count(total_token_count_);
+    retval->set_total_token_weight(total_token_weight_);
 
     for (auto& key_value : global_map_) {
       artm::DictionaryEntry* entry = retval->add_entry();
       entry->set_key_token(key_value.second.keyword);
       entry->set_class_id(key_value.second.class_id);
-      entry->set_token_count(key_value.second.token_count);
+      entry->set_token_weight(key_value.second.token_weight);
       entry->set_items_count(key_value.second.items_count);
-      entry->set_value(static_cast<double>(key_value.second.token_count) /
-        static_cast<double>(total_token_count_));
+      entry->set_value(static_cast<double>(key_value.second.token_weight) /
+        static_cast<double>(total_token_weight_));
     }
 
     return retval;
@@ -558,7 +560,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
         continue;
       }
 
-      int token_count = 1;
+      float token_weight = 1.0f;
       std::string token = elem;
       size_t split_index = elem.find(':');
       if (split_index != std::string::npos) {
@@ -571,7 +573,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
         token = elem.substr(0, split_index);
         std::string token_occurences_string = elem.substr(split_index + 1);
         try {
-          token_count = boost::lexical_cast<int>(token_occurences_string);
+          token_weight = boost::lexical_cast<float>(token_occurences_string);
         }
         catch (boost::bad_lexical_cast &) {
           std::stringstream ss;
@@ -581,7 +583,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
         }
       }
 
-      batch_collector.Record(artm::core::Token(class_id, token), token_count);
+      batch_collector.Record(artm::core::Token(class_id, token), token_weight);
     }
 
     batch_collector.FinishItem(line_no, item_title);

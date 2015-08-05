@@ -36,21 +36,21 @@ TEST(CollectionParser, UciBagOfWords) {
   ASSERT_EQ(dictionary_parsed->entry_size(), dictionary_loaded->entry_size());
 
   ASSERT_EQ(dictionary_loaded->entry_size(), 3);
-  ASSERT_EQ(dictionary_loaded->total_token_count(), 18);
+  ASSERT_EQ(dictionary_loaded->total_token_weight(), 18.0f);
   ASSERT_EQ(dictionary_loaded->total_items_count(), 2);
   ASSERT_EQ(dictionary_loaded->entry(0).key_token(), "token1");
   ASSERT_EQ(dictionary_loaded->entry(0).class_id(), "@default_class");
   ASSERT_EQ(dictionary_loaded->entry(0).items_count(), 1);
-  ASSERT_EQ(dictionary_loaded->entry(0).token_count(), 5);
+  ASSERT_EQ(dictionary_loaded->entry(0).token_weight(), 5.0f);
   ASSERT_GT(dictionary_loaded->entry(0).value(), 0);
   ASSERT_EQ(dictionary_loaded->entry(1).key_token(), "token2");
   ASSERT_EQ(dictionary_loaded->entry(1).class_id(), "@default_class");
   ASSERT_EQ(dictionary_loaded->entry(1).items_count(), 2);
-  ASSERT_EQ(dictionary_loaded->entry(1).token_count(), 4);
+  ASSERT_EQ(dictionary_loaded->entry(1).token_weight(), 4.0f);
   ASSERT_EQ(dictionary_loaded->entry(2).key_token(), "token3");
   ASSERT_EQ(dictionary_loaded->entry(2).class_id(), "@default_class");
   ASSERT_EQ(dictionary_loaded->entry(2).items_count(), 2);
-  ASSERT_EQ(dictionary_loaded->entry(2).token_count(), 9);
+  ASSERT_EQ(dictionary_loaded->entry(2).token_weight(), 9.0f);
 
   ASSERT_EQ(dictionary_loaded->cooc_entries().first_index_size(), 3);
   ASSERT_EQ(dictionary_loaded->cooc_entries().second_index_size(), 3);
@@ -73,7 +73,7 @@ TEST(CollectionParser, UciBagOfWords) {
       batches_count++;
       std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
       ASSERT_TRUE(batch->item_size() == 1 || batch->item_size() == 3);
-      int tokens_size = batch->item(0).field(0).token_count_size();
+      int tokens_size = batch->item(0).field(0).token_weight_size();
       ASSERT_TRUE(tokens_size == 2 || tokens_size == 3);
     }
     ++it;
@@ -166,16 +166,16 @@ TEST(CollectionParser, VowpalWabbit) {
   ASSERT_EQ(dictionary_parsed->entry_size(), 4);
   EXPECT_EQ(dictionary_parsed->entry(0).key_token(), "alex");
   EXPECT_EQ(dictionary_parsed->entry(0).class_id(), "author");
-  EXPECT_EQ(dictionary_parsed->entry(0).token_count(), 3);
+  EXPECT_EQ(dictionary_parsed->entry(0).token_weight(), 3.0f);
   EXPECT_EQ(dictionary_parsed->entry(1).key_token(), "hello");
   EXPECT_EQ(dictionary_parsed->entry(1).class_id(), "@default_class");
-  EXPECT_EQ(dictionary_parsed->entry(1).token_count(), 6);
+  EXPECT_EQ(dictionary_parsed->entry(1).token_weight(), 6.0f);
   EXPECT_EQ(dictionary_parsed->entry(2).key_token(), "noname");
   EXPECT_EQ(dictionary_parsed->entry(2).class_id(), "author");
-  EXPECT_EQ(dictionary_parsed->entry(2).token_count(), 1);
+  EXPECT_EQ(dictionary_parsed->entry(2).token_weight(), 1.0);
   EXPECT_EQ(dictionary_parsed->entry(3).key_token(), "world");
   EXPECT_EQ(dictionary_parsed->entry(3).class_id(), "@default_class");
-  EXPECT_EQ(dictionary_parsed->entry(3).token_count(), 2);
+  EXPECT_EQ(dictionary_parsed->entry(3).token_weight(), 2.0);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

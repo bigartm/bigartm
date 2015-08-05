@@ -52,7 +52,7 @@ class InstanceTest : boost::noncopyable {
       artm::Field* field = item->add_field();
       for (int i = 0; i <= iLength; ++i) {
         field->add_token_id(iToken);
-        field->add_token_count(iOccurences + 1);
+        field->add_token_weight(static_cast<float>(iOccurences + 1));
 
         iOccurences = (iOccurences + 1) % max_occurences;
         iToken = (iToken + 1) % n_tokens;
@@ -83,7 +83,7 @@ TEST(Instance, Basic) {
     artm::Item* item = batch1.add_item();
     artm::Field* field = item->add_field();
     field->add_token_id(i);
-    field->add_token_count(i+1);
+    field->add_token_weight(static_cast<float>(i+1));
   }
 
   ::artm::core::Helpers::Fix(&batch1);
@@ -98,7 +98,7 @@ TEST(Instance, Basic) {
   artm::Field* field = item->add_field();
   for (int iToken = 0; iToken < 2; ++iToken) {
     field->add_token_id(iToken);
-    field->add_token_count(iToken + 2);
+    field->add_token_weight(static_cast<float>(iToken + 2));
   }
 
   artm::AddBatchArgs args4;

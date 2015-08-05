@@ -499,7 +499,7 @@ int ArtmReconfigureDictionary(int master_id, int length, const char* dictionary_
   try {
     artm::DictionaryConfig config;
     ParseFromArray(dictionary_config, length, &config);
-    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
     master_component(master_id)->CreateOrReconfigureDictionary(config);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -530,7 +530,7 @@ int ArtmRequestParseCollection(int length, const char* collection_parser_config)
     ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
     ::artm::core::CollectionParser collection_parser(config);
     std::shared_ptr< ::artm::DictionaryConfig> dictionary = collection_parser.Parse();
-    ::artm::core::Helpers::Validate(*dictionary, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(dictionary.get(), /* throw_error =*/ true);
     dictionary->SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
@@ -553,7 +553,7 @@ int ArtmRequestLoadDictionary(const char* filename) {
     EnableLogging();
     auto dictionary = std::make_shared< ::artm::DictionaryConfig>();
     ::artm::core::BatchHelpers::LoadMessage(filename, dictionary.get());
-    ::artm::core::Helpers::Validate(*dictionary, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(dictionary.get(), /* throw_error =*/ true);
     dictionary->SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

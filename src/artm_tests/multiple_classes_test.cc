@@ -93,7 +93,7 @@ artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::strin
       field->add_token_id(iToken);
       int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
       int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
-      field->add_token_count(background_count + topical_count);
+      field->add_token_weight(static_cast<float>(background_count + topical_count));
     }
   }
 

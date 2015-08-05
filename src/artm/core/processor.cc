@@ -327,8 +327,8 @@ InitializeSparseNdw(const Batch& batch, const ModelConfig& model_config) {
           class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
         }
 
-        float token_count = static_cast<float>(field.token_count(token_index));
-        n_dw_val.push_back(class_weight * token_count);
+        const float token_weight = field.token_weight(token_index);
+        n_dw_val.push_back(class_weight * token_weight);
         n_dw_col_ind.push_back(token_id);
       }
     }
@@ -348,8 +348,8 @@ InitializeDenseNdw(const Batch& batch) {
     for (auto& field : current_item.field()) {
       for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
         int token_id = field.token_id(token_index);
-        int token_count = field.token_count(token_index);
-        (*n_dw)(token_id, item_index) += token_count;
+        float token_weight = field.token_weight(token_index);
+        (*n_dw)(token_id, item_index) += token_weight;
       }
     }
   }

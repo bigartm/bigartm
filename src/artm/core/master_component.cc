@@ -84,7 +84,7 @@ void MasterComponent::DisposeDictionary(const std::string& name) {
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   DictionaryConfig config;
   BatchHelpers::LoadMessage(args.file_name(), &config);
-  Helpers::Validate(config);
+  Helpers::FixAndValidate(&config, /* throw_error =*/ true);
   config.set_name(args.dictionary_name());
 
   instance_->CreateOrReconfigureDictionary(config);

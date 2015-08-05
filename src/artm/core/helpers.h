@@ -68,10 +68,13 @@ class Helpers {
   static bool Validate(const ::artm::InitializeModelArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::InitializeModelArgs* message, bool throw_error = true);
 
+  static void Fix(::artm::DictionaryConfig* message);
+  static bool Validate(const ::artm::DictionaryConfig& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::DictionaryConfig* message, bool throw_error = true);
+
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportDictionaryArgs& message, bool throw_error = true);
-  static bool Validate(const ::artm::DictionaryConfig& message, bool throw_error = true);
 
   static std::string Describe(const ::artm::ModelConfig& message);
   static std::string Describe(const ::artm::MasterComponentConfig& message);
