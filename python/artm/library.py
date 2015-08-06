@@ -61,9 +61,9 @@ ProcessBatchesArgs_ThetaMatrixType_None = 0
 ProcessBatchesArgs_ThetaMatrixType_Dense = 1
 ProcessBatchesArgs_ThetaMatrixType_Sparse = 2
 ProcessBatchesArgs_ThetaMatrixType_Cache = 3
-ProcessBatchesArgs_ThetaMatrixType_External = 4
-CopyRequestResultArgs_RequestType_GetThetaSecondPass = 0
-CopyRequestResultArgs_RequestType_GetModelSecondPass = 1
+CopyRequestResultArgs_RequestType_DefaultRequestType = 0
+CopyRequestResultArgs_RequestType_GetThetaSecondPass = 1
+CopyRequestResultArgs_RequestType_GetModelSecondPass = 2
 TopicModel_OperationType_Initialize = 0
 TopicModel_OperationType_Increment = 1
 TopicModel_OperationType_Overwrite = 2
@@ -71,10 +71,8 @@ TopicModel_OperationType_Remove = 3
 TopicModel_OperationType_Ignore = 4
 GetTopicModelArgs_MatrixLayout_Dense = 0
 GetTopicModelArgs_MatrixLayout_Sparse = 1
-GetTopicModelArgs_MatrixLayout_External = 2
 GetThetaMatrixArgs_MatrixLayout_Dense = 0
 GetThetaMatrixArgs_MatrixLayout_Sparse = 1
-GetThetaMatrixArgs_MatrixLayout_External = 2
 
 #################################################################################
 
@@ -583,12 +581,11 @@ class MasterComponent:
             args.matrix_layout = GetTopicModelArgs_MatrixLayout_Sparse
         if request_type is not None:
             args.request_type = request_type
-        if use_matrix:
-            args.matrix_layout = GetTopicModelArgs_MatrixLayout_External
 
         args_blob = args.SerializeToString()
         args_blob_p = ctypes.create_string_buffer(args_blob)
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestTopicModel(self.id_, len(args_blob), args_blob_p))
+        func = self.lib_.ArtmRequestTopicModelExternal if use_matrix else self.lib_.ArtmRequestTopicModel
+        length = HandleErrorCode(self.lib_, func(self.id_, len(args_blob), args_blob_p))
 
         topic_model_blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, topic_model_blob))
@@ -628,12 +625,11 @@ class MasterComponent:
             args.ClearField('topic_name')
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
-        if use_matrix:
-            args.matrix_layout = GetThetaMatrixArgs_MatrixLayout_External
 
         args_blob = args.SerializeToString()
         args_blob_p = ctypes.create_string_buffer(args_blob)
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestThetaMatrix(self.id_, len(args_blob), args_blob_p))
+        func = self.lib_.ArtmRequestThetaMatrixExternal if use_matrix else self.lib_.ArtmRequestThetaMatrix
+        length = HandleErrorCode(self.lib_, func(self.id_, len(args_blob), args_blob_p))
         blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
@@ -728,7 +724,7 @@ class MasterComponent:
                         self.lib_.ArtmImportDictionary(self.id_, len(blob), blob_p))
 
     def ProcessBatches(self, pwt, batches, target_nwt=None, regularizers={}, inner_iterations_count=10, class_ids={},
-                       stream_name=None, reset_scores=None, theta_matrix_type=None):
+                       stream_name=None, reset_scores=None, theta_matrix_type=None, use_matrix=False):
         """ MasterComponent.ProcessBatches() --- process batches to calculate p(t|d), scores, and nwt-increments.
         Args:
         - pwt --- the name of input Phi matrix
@@ -770,17 +766,20 @@ class MasterComponent:
             args.reset_scores = reset_scores
         if theta_matrix_type is not None:
             args.theta_matrix_type = theta_matrix_type
+        if use_matrix == True:
+            args.theta_matrix_type = ProcessBatchesArgs_ThetaMatrixType_Dense
 
         args_blob = args.SerializeToString()
         args_blob_p = ctypes.create_string_buffer(args_blob)
-        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestProcessBatches(self.id_, len(args_blob), args_blob_p))
+        func = self.lib_.ArtmRequestProcessBatchesExternal if use_matrix else self.lib_.ArtmRequestProcessBatches
+        length = HandleErrorCode(self.lib_, func(self.id_, len(args_blob), args_blob_p))
         blob = ctypes.create_string_buffer(length)
         HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, blob))
 
         result = messages_pb2.ProcessBatchesResult()
         result.ParseFromString(blob)
 
-        if args.theta_matrix_type != ProcessBatchesArgs_ThetaMatrixType_External:
+        if not use_matrix:
             return result
 
         numpy_matrix = self.__get_theta_matrix_second_pass(result.theta_matrix)

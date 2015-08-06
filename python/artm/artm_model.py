@@ -2939,7 +2939,7 @@ class ArtmModel(object):
             target_nwt='nwt_hat',
             inner_iterations_count=self._num_document_passes,
             class_ids=self._class_ids,
-            theta_matrix_type=library.ProcessBatchesArgs_ThetaMatrixType_External)
+            use_matrix=True)
 
         document_ids = [item_id for item_id in results[0].theta_matrix.item_id]
         topic_names = [topic_name for topic_name in results[0].theta_matrix.topic_name]

@@ -47,7 +47,7 @@ static void set_last_error(const std::string& error) {
   last_error_->assign(error);
 }
 
-static void HandleExtendedTopicModelRequest(::artm::TopicModel* topic_model) {
+static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model) {
   std::string* lm = last_message_ex();
   lm->resize(sizeof(float) * topic_model->token_size() * topic_model->topics_count());
   char* lm_ptr = &(*lm)[0];
@@ -63,7 +63,7 @@ static void HandleExtendedTopicModelRequest(::artm::TopicModel* topic_model) {
   topic_model->clear_operation_type();
 }
 
-static void HandleExtendedThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix) {
+static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix) {
   std::string* lm = last_message_ex();
   lm->resize(sizeof(float) * theta_matrix->item_id_size() * theta_matrix->topics_count());
   char* lm_ptr = &(*lm)[0];
@@ -117,32 +117,40 @@ static void ParseFromArray(const char* buffer, int length, google::protobuf::Mes
 // =========================================================================
 
 int ArtmCopyRequestResult(int length, char* address) {
-  if (length != static_cast<int>(last_message()->size())) {
-    set_last_error("ArtmCopyRequestResult() called with invalid 'length' parameter.");
-    return ARTM_INVALID_OPERATION;
-  }
-
-  memcpy(address, StringAsArray(last_message()), length);
-  return ARTM_SUCCESS;
+  ::artm::CopyRequestResultArgs args;
+  std::string blob = args.SerializeAsString();
+  return ArtmCopyRequestResultEx(length, address, blob.size(), blob.c_str());
 }
 
 int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args) {
   try {
     ::artm::CopyRequestResultArgs args;
     ParseFromArray(copy_result_args, args_length, &args);
-    if (args.request_type() == ::artm::CopyRequestResultArgs_RequestType_GetThetaSecondPass ||
-        args.request_type() == ::artm::CopyRequestResultArgs_RequestType_GetModelSecondPass) {
-      if (length != static_cast<int>(last_message_ex()->size())) {
-        set_last_error("ArtmCopyRequestResultEx() called with invalid 'length' parameter.");
-        return ARTM_INVALID_OPERATION;
-      }
 
-      memcpy(address, StringAsArray(last_message_ex()), length);
-      return ARTM_SUCCESS;
+    std::string* source = nullptr;
+    if (args.request_type() == artm::CopyRequestResultArgs_RequestType_DefaultRequestType) source = last_message();
+    if (args.request_type() == artm::CopyRequestResultArgs_RequestType_GetThetaSecondPass) source = last_message_ex();
+    if (args.request_type() == artm::CopyRequestResultArgs_RequestType_GetModelSecondPass) source = last_message_ex();
+
+    if (source == nullptr) {
+      std::stringstream ss;
+      ss << "CopyRequestResultArgs.request_type=" << args.request_type()  << " is not valid.";
+      set_last_error(ss.str().c_str());
+      return ARTM_INVALID_OPERATION;
     }
 
-    set_last_error("CopyRequestResultArgs.request_type is not valid.");
-    return ARTM_INVALID_OPERATION;
+    if (length != static_cast<int>(source->size())) {
+      std::stringstream ss;
+      ss << "ArtmCopyRequestResultEx() called with invalid 'length' parameter ";
+      ss << "(" << source->size() << " expected, found " << length << ").";
+      set_last_error(ss.str());
+      return ARTM_INVALID_OPERATION;
+    }
+
+    memcpy(address, StringAsArray(source), length);
+    LOG(INFO) << "ArtmCopyRequestResultEx(request_type=" << args.request_type() << ") copied " << length << " bytes";
+
+    return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
 
@@ -248,19 +256,33 @@ int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args) {
+static int ImplRequestProcessBatches(int master_id, int length, const char* process_batches_args, bool external) {
   try {
     artm::ProcessBatchesArgs args;
     ParseFromArray(process_batches_args, length, &args);
+
+    if (external && args.theta_matrix_type() != artm::ProcessBatchesArgs_ThetaMatrixType_Dense) {
+      set_last_error("Dense matrix format is required for ArtmRequestProcessBatchesExternal");
+      return ARTM_INVALID_OPERATION;
+    }
+
     artm::ProcessBatchesResult result;
     master_component(master_id)->RequestProcessBatches(args, &result);
 
-    if (args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_External)
-      HandleExtendedThetaMatrixRequest(result.mutable_theta_matrix());
+    if (external)
+      HandleExternalThetaMatrixRequest(result.mutable_theta_matrix());
 
     result.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
+}
+
+int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args) {
+  return ImplRequestProcessBatches(master_id, length, process_batches_args, /* external =*/ false);
+}
+
+int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* process_batches_args) {
+  return ImplRequestProcessBatches(master_id, length, process_batches_args, /* external =*/ true);
 }
 
 int ArtmMergeModel(int master_id, int length, const char* merge_model_args) {
@@ -290,29 +312,48 @@ int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_ar
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args) {
+static int ImplRequestThetaMatrix(int master_id, int length, const char* get_theta_args, bool external) {
   try {
     artm::ThetaMatrix theta_matrix;
     artm::GetThetaMatrixArgs args;
     ParseFromArray(get_theta_args, length, &args);
     ::artm::core::Helpers::FixAndValidate(&args);
+
+    if (external && args.matrix_layout() != artm::GetThetaMatrixArgs_MatrixLayout_Dense) {
+      set_last_error("Dense matrix format is required for ArtmRequestThetaMatrixExternal");
+      return ARTM_INVALID_OPERATION;
+    }
+
     master_component(master_id)->RequestThetaMatrix(args, &theta_matrix);
     ::artm::core::Helpers::Validate(theta_matrix, false);
 
-    if (args.matrix_layout() == artm::GetThetaMatrixArgs_MatrixLayout_External)
-      HandleExtendedThetaMatrixRequest(&theta_matrix);
+    if (external)
+      HandleExternalThetaMatrixRequest(&theta_matrix);
 
     theta_matrix.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args) {
+int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args) {
+  return ImplRequestThetaMatrix(master_id, length, get_theta_args, /* external =*/ false);
+}
+
+int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* get_theta_args) {
+  return ImplRequestThetaMatrix(master_id, length, get_theta_args, /* external =*/ true);
+}
+
+static int ImplRequestTopicModel(int master_id, int length, const char* get_model_args, bool external) {
   try {
     artm::TopicModel topic_model;
     artm::GetTopicModelArgs args;
     ParseFromArray(get_model_args, length, &args);
     ::artm::core::Helpers::FixAndValidate(&args);
+
+    if (external && args.matrix_layout() != artm::GetTopicModelArgs_MatrixLayout_Dense) {
+      set_last_error("Dense matrix format is required for ArtmRequestTopicModelExternal");
+      return ARTM_INVALID_OPERATION;
+    }
 
     if (!master_component(master_id)->RequestTopicModel(args, &topic_model)) {
       set_last_error("Topic model does not exist");
@@ -321,12 +362,20 @@ int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args)
 
     ::artm::core::Helpers::Validate(topic_model, false);
 
-    if (args.matrix_layout() == artm::GetTopicModelArgs_MatrixLayout_External)
-      HandleExtendedTopicModelRequest(&topic_model);
+    if (external)
+      HandleExternalTopicModelRequest(&topic_model);
 
     topic_model.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
+}
+
+int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args) {
+  return ImplRequestTopicModel(master_id, length, get_model_args, /* external =*/ false);
+}
+
+int ArtmRequestTopicModelExternal(int master_id, int length, const char* get_model_args) {
+  return ImplRequestTopicModel(master_id, length, get_model_args, /* external =*/ true);
 }
 
 int ArtmRequestRegularizerState(int master_id, const char* regularizer_name) {

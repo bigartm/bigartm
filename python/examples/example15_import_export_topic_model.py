@@ -31,8 +31,7 @@ with artm.library.MasterComponent() as master2:
     # Import topic model from binary file
     master2.ImportModel("pwt", filename)  # import creates a new-style model
 
-    request = artm.library.ProcessBatchesArgs_ThetaMatrixType_External
-    result, numpy_matrix2 = master2.ProcessBatches("pwt", batches=[batches[0]], theta_matrix_type=request)
+    result, numpy_matrix2 = master2.ProcessBatches("pwt", batches=[batches[0]], use_matrix=True)
     print "\nFor topic model imported into test_master:",
     for value in numpy_matrix2[0, :]:
         print "%.5f" % value,
