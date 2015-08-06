@@ -6,5 +6,5 @@ cat utils/cpplint_files.txt | xargs python utils/cpplint.py --linelength=120 || 
 echo "Running Python code checks"
 for scr in python/artm/{model,batches,regularizers,scores}.py
 do
-    pep8 --first --max-line-length=99 ${scr} || exit 1
+    pep8 --first --max-line-length=100 ${scr} || exit 1
 done

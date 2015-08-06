@@ -24,16 +24,18 @@ CREATE_REGULARIZER_CONFIG = {
 }
 
 
-def _reconfigure_field(obj, field, field_name):
+def _reconfigure_field(obj, field, field_name, proto_field_name=None):
+    if proto_field_name is None:
+        proto_field_name = field_name
     setattr(obj, '_' + field_name, field)
     config = CREATE_REGULARIZER_CONFIG[obj._type]()
     config.CopyFrom(obj._config)
     if isinstance(field, list):
-        config.ClearField(field_name)
+        config.ClearField(proto_field_name)
         for value in field:
-            getattr(config, field_name).append(value)
+            getattr(config, proto_field_name).append(value)
     else:
-        setattr(config, field_name, field)
+        setattr(config, proto_field_name, field)
     obj.regularizer.Reconfigure(obj.regularizer.config_.type, config)
 
 
@@ -83,7 +85,7 @@ class BaseRegularizer(object):
         self._topic_names = []
 
         if name is None:
-            name = self._type + ': ' + uuid.uuid1().urn
+            name = str(self._type) + ': ' + uuid.uuid1().urn
         if topic_names is not None:
             config.ClearField('topic_name')
             for topic_name in topic_names:
@@ -367,11 +369,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
 
     @num_max_elements.setter
     def num_max_elements(self, num_max_elements):
-        self._num_max_elements = num_max_elements
-        config = messages_pb2.SpecifiedSparseRegularizationPhiConfig()
-        config.CopyFrom(self._config)
-        config.max_elements_count = num_max_elements
-        self.regularizer.Reconfigure(self.regularizer.config_.type, config)
+        _reconfigure_field(self, num_max_elements, 'num_max_elements', 'max_elements_count')
 
     @probability_threshold.setter
     def probability_threshold(self, probability_threshold):

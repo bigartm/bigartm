@@ -13,11 +13,9 @@ import library
 import batches
 import regularizers
 import scores
+import scores_info as si
 
 
-###################################################################################################
-# SECTION OF ARTM MODEL CLASS
-###################################################################################################
 class ArtmModel(object):
     """ArtmModel represents a topic model (public class)
 
@@ -331,19 +329,19 @@ class ArtmModel(object):
             for name in self.scores.data.keys():
                 if name not in self.scores_info:
                     if self.scores[name].type == library.ScoreConfig_Type_SparsityPhi:
-                        self._scores_info[name] = scores.SparsityPhiScoreInfo(self.scores[name])
+                        self._scores_info[name] = si.SparsityPhiScoreInfo(self.scores[name])
                     elif self.scores[name].type == library.ScoreConfig_Type_SparsityTheta:
-                        self._scores_info[name] = scores.SparsityThetaScoreInfo(self.scores[name])
+                        self._scores_info[name] = si.SparsityThetaScoreInfo(self.scores[name])
                     elif self.scores[name].type == library.ScoreConfig_Type_Perplexity:
-                        self._scores_info[name] = scores.PerplexityScoreInfo(self.scores[name])
+                        self._scores_info[name] = si.PerplexityScoreInfo(self.scores[name])
                     elif self.scores[name].type == library.ScoreConfig_Type_ThetaSnippet:
-                        self._scores_info[name] = scores.ThetaSnippetScoreInfo(self.scores[name])
+                        self._scores_info[name] = si.ThetaSnippetScoreInfo(self.scores[name])
                     elif self.scores[name].type == library.ScoreConfig_Type_ItemsProcessed:
-                        self._scores_info[name] = scores.ItemsProcessedScoreInfo(self.scores[name])
+                        self._scores_info[name] = si.ItemsProcessedScoreInfo(self.scores[name])
                     elif self.scores[name].type == library.ScoreConfig_Type_TopTokens:
-                        self._scores_info[name] = scores.TopTokensScoreInfo(self.scores[name])
+                        self._scores_info[name] = si.TopTokensScoreInfo(self.scores[name])
                     elif self.scores[name].type == library.ScoreConfig_Type_TopicKernel:
-                        self._scores_info[name] = scores.TopicKernelScoreInfo(self.scores[name])
+                        self._scores_info[name] = si.TopicKernelScoreInfo(self.scores[name])
 
                     for _ in xrange(self._synchronizations_processed - 1):
                         self._scores_info[name].add()
@@ -483,26 +481,19 @@ class ArtmModel(object):
                 for name in self.scores.data.keys():
                     if name not in self.scores_info:
                         if self.scores[name].type == library.ScoreConfig_Type_SparsityPhi:
-                            self._scores_info[name] = \
-                                scores.SparsityPhiScoreInfo(self.scores[name])
+                            self._scores_info[name] = si.SparsityPhiScoreInfo(self.scores[name])
                         elif self.scores[name].type == library.ScoreConfig_Type_SparsityTheta:
-                            self._scores_info[name] = \
-                                scores.SparsityThetaScoreInfo(self.scores[name])
+                            self._scores_info[name] = si.SparsityThetaScoreInfo(self.scores[name])
                         elif self.scores[name].type == library.ScoreConfig_Type_Perplexity:
-                            self._scores_info[name] = \
-                                scores.PerplexityScoreInfo(self.scores[name])
+                            self._scores_info[name] = si.PerplexityScoreInfo(self.scores[name])
                         elif self.scores[name].type == library.ScoreConfig_Type_ThetaSnippet:
-                            self._scores_info[name] = \
-                                scores.ThetaSnippetScoreInfo(self.scores[name])
+                            self._scores_info[name] = si.ThetaSnippetScoreInfo(self.scores[name])
                         elif self.scores[name].type == library.ScoreConfig_Type_ItemsProcessed:
-                            self._scores_info[name] = \
-                                scores.ItemsProcessedScoreInfo(self.scores[name])
+                            self._scores_info[name] = si.ItemsProcessedScoreInfo(self.scores[name])
                         elif self.scores[name].type == library.ScoreConfig_Type_TopTokens:
-                            self._scores_info[name] = \
-                                scores.TopTokensScoreInfo(self.scores[name])
+                            self._scores_info[name] = si.TopTokensScoreInfo(self.scores[name])
                         elif self.scores[name].type == library.ScoreConfig_Type_TopicKernel:
-                            self._scores_info[name] = \
-                                scores.TopicKernelScoreInfo(self.scores[name])
+                            self._scores_info[name] = si.TopicKernelScoreInfo(self.scores[name])
 
                         for _ in xrange(self._synchronizations_processed - 1):
                             self._scores_info[name].add()
