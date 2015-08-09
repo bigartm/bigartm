@@ -2,6 +2,8 @@
 Implementation of wrapper API
 """
 
+import os
+import sys
 import ctypes
 
 from google import protobuf
@@ -12,13 +14,43 @@ from .spec import ARTM_API
 
 
 class LibArtm(object):
-    def __init__(self, lib_name):
-        self.cdll = ctypes.CDLL(lib_name)
+    def __init__(self, lib_name=None):
+        self.cdll = self._load_cdll(lib_name)
 
         # adding specified functions
         for spec in ARTM_API:
-            func = getattr(self.cdll, spec.name)
+            func = self.cdll[spec.name]
             setattr(self, spec.name, self._wrap_call(func, spec))
+
+    def _load_cdll(self, lib_name):
+        # choose default library name
+        default_lib_name = 'artm.so'
+        if sys.platform.startswith('win'):
+            default_lib_name = 'artm.dll'
+        if sys.platform.startswith('darwin'):
+            default_lib_name = 'artm.dylib'
+
+        if lib_name is None:
+            # try to get library path from environment variable
+            lib_name = os.environ.get('ARTM_SHARED_LIBRARY')
+
+        if lib_name is None:
+            # set the default library name
+            lib_name = default_lib_name
+
+        try:
+            cdll = ctypes.CDLL(lib_name)
+        except OSError as e:
+            exception_message = (
+                e.message + '\n'
+                'Failed to load artm shared library. '
+                'Try to add the location of `{default_lib_name}` file into your PATH '
+                'system variable, or to set ARTM_SHARED_LIBRARY - a specific system variable '
+                'which may point to `{default_lib_name}` file, including the full path.'
+            ).format(**locals())
+            raise OSError(exception_message)
+
+        return cdll
 
     def _check_error(self, error_code):
         if error_code < -1:
@@ -36,7 +68,7 @@ class LibArtm(object):
 
     def _copy_request_result(self, length):
         message_blob = ctypes.create_string_buffer(length)
-        error_code = self.lib_.ArtmCopyRequestResult(length, message_blob)
+        error_code = self.cdll.ArtmCopyRequestResult(length, message_blob)
         self._check_error(error_code)
         return message_blob
 
