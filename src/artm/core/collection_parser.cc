@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <iostream>  // NOLINT
 
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
@@ -23,6 +24,26 @@
 #include "artm/core/helpers.h"
 
 using boost::iostreams::mapped_file_source;
+
+namespace {
+class ifstream_or_cin {
+ public:
+  explicit ifstream_or_cin(const std::string& filename) {
+    if (filename == "-")  // read from std::cin
+      return;
+
+    if (!boost::filesystem::exists(filename))
+      BOOST_THROW_EXCEPTION(::artm::core::DiskReadException("File " + filename + " does not exist."));
+
+    file_.open(filename);
+  }
+
+  std::istream& get_stream() { return file_.is_open() ? file_ : std::cin; }
+
+ private:
+  boost::iostreams::stream<mapped_file_source> file_;
+};
+}  // namespace
 
 namespace artm {
 namespace core {
@@ -100,11 +121,8 @@ CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config)
     : config_(config) {}
 
 std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
-  if (!boost::filesystem::exists(config_.docword_file_path()))
-    BOOST_THROW_EXCEPTION(DiskReadException(
-      "File " + config_.docword_file_path() + " does not exist."));
-
-  boost::iostreams::stream<mapped_file_source> docword(config_.docword_file_path());
+  ifstream_or_cin stream_or_cin(config_.docword_file_path());
+  std::istream& docword = stream_or_cin.get_stream();
 
   // Skip all lines starting with "%" and parse N, W, NNZ from the first line after that.
   auto pos = docword.tellg();
@@ -286,11 +304,8 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 }
 
 std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenMap* token_map) {
-  if (!boost::filesystem::exists(config_.docword_file_path()))
-    BOOST_THROW_EXCEPTION(DiskReadException(
-      "File " + config_.docword_file_path() + " does not exist."));
-
-  boost::iostreams::stream<mapped_file_source> user_cooc_data(config_.docword_file_path());
+  ifstream_or_cin stream_or_cin(config_.docword_file_path());
+  std::istream& user_cooc_data = stream_or_cin.get_stream();
 
   // Craft the dictionary
   auto retval = std::make_shared<DictionaryConfig>();
@@ -357,11 +372,8 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenM
 }
 
 CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
-  if (!boost::filesystem::exists(config_.vocab_file_path()))
-    BOOST_THROW_EXCEPTION(DiskReadException(
-    "File " + config_.vocab_file_path() + " does not exist."));
-
-  boost::iostreams::stream<mapped_file_source> vocab(config_.vocab_file_path());
+  ifstream_or_cin stream_or_cin(config_.vocab_file_path());
+  std::istream& vocab = stream_or_cin.get_stream();
 
   std::map<Token, int> token_to_token_id;
 
@@ -410,13 +422,11 @@ CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
 
 CollectionParser::TokenMap CollectionParser::ParseVocabMatrixMarket() {
   bool has_vocab = config_.has_vocab_file_path();
-  if (has_vocab && !boost::filesystem::exists(config_.vocab_file_path())) {
-    LOG(WARNING) << "File " + config_.vocab_file_path() + " does not exist.";
-  }
 
   TokenMap token_info;
   if (has_vocab) {
-    boost::iostreams::stream<mapped_file_source> vocab(config_.vocab_file_path());
+    ifstream_or_cin stream_or_cin(config_.vocab_file_path());
+    std::istream& vocab = stream_or_cin.get_stream();
 
     int token_id, token_count;
     for (std::string token; vocab >> token_id >> token >> token_count;) {
@@ -516,11 +526,9 @@ class CollectionParser::BatchCollector {
 std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
   BatchCollector batch_collector;
 
-  if (!boost::filesystem::exists(config_.docword_file_path()))
-    BOOST_THROW_EXCEPTION(DiskReadException(
-    "File " + config_.docword_file_path() + " does not exist."));
+  ifstream_or_cin stream_or_cin(config_.docword_file_path());
+  std::istream& docword = stream_or_cin.get_stream();
 
-  boost::iostreams::stream<mapped_file_source> docword(config_.docword_file_path());
   std::string str;
   int line_no = 0;
   while (!docword.eof()) {
