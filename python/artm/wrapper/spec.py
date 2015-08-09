@@ -2,6 +2,8 @@
 Specifications of C-API functions
 """
 
+# TODO: generate this file automatically
+
 import ctypes
 
 import numpy

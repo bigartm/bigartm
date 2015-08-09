@@ -21,6 +21,7 @@ class LibArtm(object):
         for spec in ARTM_API:
             func = self.cdll[spec.name]
             setattr(self, spec.name, self._wrap_call(func, spec))
+            # TODO: add docstring for wrapped function
 
     def _load_cdll(self, lib_name):
         # choose default library name

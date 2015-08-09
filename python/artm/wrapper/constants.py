@@ -2,7 +2,7 @@
 Constants values, used in messages
 """
 
-# TODO: collect constants automatically
+# TODO: generate this file automatically
 
 Stream_Type_Global = 0
 Stream_Type_ItemIdModulus = 1
