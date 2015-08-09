@@ -4,7 +4,9 @@ Specifications of C-API functions
 
 import ctypes
 
-from . import messages_pb2
+import numpy
+
+from . import messages_pb2 as messages
 
 
 class CallSpec(object):
@@ -16,128 +18,163 @@ class CallSpec(object):
 
 
 ARTM_API = [
+
     CallSpec(
         'ArtmCreateMasterComponent',
-        [('config', messages_pb2.MasterComponentConfig)],
+        [('config', messages.MasterComponentConfig)],
         result=ctypes.c_int,
     ),
     CallSpec(
         'ArtmReconfigureMasterComponent',
-        [('master_id', int), ('config', messages_pb2.MasterComponentConfig)],
+        [('master_id', int), ('config', messages.MasterComponentConfig)],
     ),
     CallSpec(
         'ArtmDisposeMasterComponent',
         [('master_id', int)],
     ),
+
     CallSpec(
         'ArtmCreateModel',
-        [('master_id', int), ('config', messages_pb2.ModelConfig)],
+        [('master_id', int), ('config', messages.ModelConfig)],
     ),
     CallSpec(
         'ArtmReconfigureModel',
-        [('master_id', int), ('config', messages_pb2.ModelConfig)],
+        [('master_id', int), ('config', messages.ModelConfig)],
     ),
     CallSpec(
         'ArtmDisposeModel',
         [('master_id', int), ('name', str)],
     ),
+
     CallSpec(
         'ArtmCreateRegularizer',
-        [('master_id', int), ('config', messages_pb2.RegularizerConfig)],
+        [('master_id', int), ('config', messages.RegularizerConfig)],
     ),
     CallSpec(
         'ArtmReconfigureRegularizer',
-        [('master_id', int), ('config', messages_pb2.RegularizerConfig)],
+        [('master_id', int), ('config', messages.RegularizerConfig)],
     ),
     CallSpec(
         'ArtmDisposeRegularizer',
         [('master_id', int), ('name', str)],
     ),
+
     CallSpec(
         'ArtmCreateDictionary',
-        [('master_id', int), ('config', messages_pb2.DictionaryConfig)],
+        [('master_id', int), ('config', messages.DictionaryConfig)],
     ),
     CallSpec(
         'ArtmReconfigureDictionary',
-        [('master_id', int), ('config', messages_pb2.DictionaryConfig)],
+        [('master_id', int), ('config', messages.DictionaryConfig)],
     ),
     CallSpec(
         'ArtmDisposeDictionary',
         [('master_id', int), ('name', str)],
     ),
     CallSpec(
+        'ArtmImportDictionary',
+        [('master_id', int), ('args', messages.ImportDictionaryArgs)],
+    ),
+    CallSpec(
+        'ArtmParseCollection',
+        [('config', messages.CollectionParserConfig)],
+    ),
+
+    CallSpec(
         'ArtmAddBatch',
-        [('master_id', int), ('args', messages_pb2.AddBatchArgs)],
+        [('master_id', int), ('args', messages.AddBatchArgs)],
     ),
     CallSpec(
         'ArtmInvokeIteration',
-        [('master_id', int), ('args', messages_pb2.InvokeIterationArgs)],
-    ),
-    CallSpec(
-        'ArtmSynchronizeModel',
-        [('master_id', int), ('args', messages_pb2.SynchronizeModelArgs)],
-    ),
-    CallSpec(
-        'ArtmInitializeModel',
-        [('master_id', int), ('args', messages_pb2.InitializeModelArgs)],
-    ),
-    CallSpec(
-        'ArtmExportModel',
-        [('master_id', int), ('args', messages_pb2.ExportModelArgs)],
-    ),
-    CallSpec(
-        'ArtmImportModel',
-        [('master_id', int), ('args', messages_pb2.ImportModelArgs)],
+        [('master_id', int), ('args', messages.InvokeIterationArgs)],
     ),
     CallSpec(
         'ArtmWaitIdle',
-        [('master_id', int), ('args', messages_pb2.WaitIdleArgs)],
+        [('master_id', int), ('args', messages.WaitIdleArgs)],
     ),
+    CallSpec(
+        'ArtmSynchronizeModel',
+        [('master_id', int), ('args', messages.SynchronizeModelArgs)],
+    ),
+
     CallSpec(
         'ArtmOverwriteTopicModel',
-        [('master_id', int), ('model', messages_pb2.TopicModel)],
+        [('master_id', int), ('model', messages.TopicModel)],
     ),
     CallSpec(
+        'ArtmInitializeModel',
+        [('master_id', int), ('args', messages.InitializeModelArgs)],
+    ),
+    CallSpec(
+        'ArtmExportModel',
+        [('master_id', int), ('args', messages.ExportModelArgs)],
+    ),
+    CallSpec(
+        'ArtmImportModel',
+        [('master_id', int), ('args', messages.ImportModelArgs)],
+    ),
+    CallSpec(
+        'ArtmAttachModel',
+        [('master_id', int), ('args', messages.AttachModelArgs), ('matrix', numpy.ndarray)],
+    ),
+
+    CallSpec(
+        'ArtmRequestProcessBatches',
+        [('master_id', int), ('args', messages.ProcessBatchesArgs)],
+        request=messages.ProcessBatchesResult,
+    ),
+    CallSpec(
+        'ArtmMergeModel',
+        [('master_id', int), ('args', messages.MergeModelArgs)],
+    ),
+    CallSpec(
+        'ArtmRegularizeModel',
+        [('master_id', int), ('args', messages.RegularizeModelArgs)],
+    ),
+    CallSpec(
+        'ArtmNormalizeModel',
+        [('master_id', int), ('args', messages.NormalizeModelArgs)],
+    ),
+
+    CallSpec(
         'ArtmRequestThetaMatrix',
-        [('master_id', int), ('args', messages_pb2.GetThetaMatrixArgs)],
-        request=messages_pb2.ThetaMatrix,
+        [('master_id', int), ('args', messages.GetThetaMatrixArgs)],
+        request=messages.ThetaMatrix,
     ),
     CallSpec(
         'ArtmRequestTopicModel',
-        [('master_id', int), ('args', messages_pb2.GetTopicModelArgs)],
-        request=messages_pb2.TopicModel,
+        [('master_id', int), ('args', messages.GetTopicModelArgs)],
+        request=messages.TopicModel,
     ),
     CallSpec(
         'ArtmRequestRegularizerState',
         [('master_id', int), ('name', str)],
-        request=messages_pb2.RegularizerInternalState,
+        request=messages.RegularizerInternalState,
     ),
     CallSpec(
         'ArtmRequestScore',
-        [('master_id', int), ('args', messages_pb2.GetScoreValueArgs)],
-        request=messages_pb2.ScoreData,
+        [('master_id', int), ('args', messages.GetScoreValueArgs)],
+        request=messages.ScoreData,
     ),
     CallSpec(
         'ArtmRequestParseCollection',
-        [('args', messages_pb2.CollectionParserConfig)],
-        request=messages_pb2.DictionaryConfig,
+        [('args', messages.CollectionParserConfig)],
+        request=messages.DictionaryConfig,
     ),
     CallSpec(
         'ArtmRequestLoadDictionary',
         [('filename', str)],
-        request=messages_pb2.DictionaryConfig,
+        request=messages.DictionaryConfig,
     ),
     CallSpec(
         'ArtmRequestLoadBatch',
         [('filename', str)],
-        request=messages_pb2.Batch,
+        request=messages.Batch,
     ),
+
     CallSpec(
         'ArtmSaveBatch',
-        [('filename', str), ('batch', messages_pb2.Batch)],
+        [('filename', str), ('batch', messages.Batch)],
     ),
-    CallSpec(
-        'ArtmSaveBatch',
-        [('filename', str), ('batch', messages_pb2.Batch)],
-    ),
+
 ]
