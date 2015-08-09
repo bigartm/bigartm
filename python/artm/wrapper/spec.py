@@ -35,14 +35,16 @@ ARTM_API = [
         [('master_id', int)],
     ),
 
-    CallSpec(
-        'ArtmCreateModel',
-        [('master_id', int), ('config', messages.ModelConfig)],
-    ),
-    CallSpec(
-        'ArtmReconfigureModel',
-        [('master_id', int), ('config', messages.ModelConfig)],
-    ),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmCreateModel',
+    #    [('master_id', int), ('config', messages.ModelConfig)],
+    #),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmReconfigureModel',
+    #    [('master_id', int), ('config', messages.ModelConfig)],
+    #),
     CallSpec(
         'ArtmDisposeModel',
         [('master_id', int), ('name', str)],
@@ -61,14 +63,16 @@ ARTM_API = [
         [('master_id', int), ('name', str)],
     ),
 
-    CallSpec(
-        'ArtmCreateDictionary',
-        [('master_id', int), ('config', messages.DictionaryConfig)],
-    ),
-    CallSpec(
-        'ArtmReconfigureDictionary',
-        [('master_id', int), ('config', messages.DictionaryConfig)],
-    ),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmCreateDictionary',
+    #    [('master_id', int), ('config', messages.DictionaryConfig)],
+    #),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmReconfigureDictionary',
+    #    [('master_id', int), ('config', messages.DictionaryConfig)],
+    #),
     CallSpec(
         'ArtmDisposeDictionary',
         [('master_id', int), ('name', str)],
@@ -82,22 +86,26 @@ ARTM_API = [
         [('config', messages.CollectionParserConfig)],
     ),
 
-    CallSpec(
-        'ArtmAddBatch',
-        [('master_id', int), ('args', messages.AddBatchArgs)],
-    ),
-    CallSpec(
-        'ArtmInvokeIteration',
-        [('master_id', int), ('args', messages.InvokeIterationArgs)],
-    ),
-    CallSpec(
-        'ArtmWaitIdle',
-        [('master_id', int), ('args', messages.WaitIdleArgs)],
-    ),
-    CallSpec(
-        'ArtmSynchronizeModel',
-        [('master_id', int), ('args', messages.SynchronizeModelArgs)],
-    ),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmAddBatch',
+    #    [('master_id', int), ('args', messages.AddBatchArgs)],
+    #),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmInvokeIteration',
+    #    [('master_id', int), ('args', messages.InvokeIterationArgs)],
+    #),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmWaitIdle',
+    #    [('master_id', int), ('args', messages.WaitIdleArgs)],
+    #),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmSynchronizeModel',
+    #    [('master_id', int), ('args', messages.SynchronizeModelArgs)],
+    #),
 
     CallSpec(
         'ArtmOverwriteTopicModel',
@@ -148,11 +156,12 @@ ARTM_API = [
         [('master_id', int), ('args', messages.GetTopicModelArgs)],
         request=messages.TopicModel,
     ),
-    CallSpec(
-        'ArtmRequestRegularizerState',
-        [('master_id', int), ('name', str)],
-        request=messages.RegularizerInternalState,
-    ),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmRequestRegularizerState',
+    #    [('master_id', int), ('name', str)],
+    #    request=messages.RegularizerInternalState,
+    #),
     CallSpec(
         'ArtmRequestScore',
         [('master_id', int), ('args', messages.GetScoreValueArgs)],
