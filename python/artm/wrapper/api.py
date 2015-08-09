@@ -68,7 +68,7 @@ class LibArtm(object):
             else:
                 raise RuntimeError(error_message)
 
-    def _copy_request_result(self, length):
+    def _get_requested_message(self, length):
         message_blob = ctypes.create_string_buffer(length)
         error_code = self.cdll.ArtmCopyRequestResult(length, message_blob)
         self._check_error(error_code)
@@ -88,7 +88,7 @@ class LibArtm(object):
                 ))
 
             c_args = []
-            for (arg_index, arg_value), (arg_name, arg_type) in zip(enumerate(args), spec.arguments):
+            for (arg_pos, arg_value), (arg_name, arg_type) in zip(enumerate(args), spec.arguments):
                 # try to cast argument to the required type
                 arg_casted = arg_value
                 if issubclass(arg_type, protobuf.message.Message) and isinstance(arg_value, dict):
@@ -97,9 +97,9 @@ class LibArtm(object):
 
                 # check argument type
                 if not isinstance(arg_casted, arg_type):
-                    raise TypeError('Argument {arg_index} ({arg_name}) should have '
+                    raise TypeError('Argument {arg_position} ({arg_name}) should have '
                                     'type {arg_type} but {given_type} given'.format(
-                        arg_index=arg_index,
+                        arg_position=arg_pos,
                         arg_name=arg_name,
                         arg_type=str(arg_type),
                         given_type=str(type(arg_value)),
@@ -130,7 +130,7 @@ class LibArtm(object):
 
             # return result value
             if spec.request_type is not None:
-                return self._copy_request_result(length=result)
+                return self._get_requested_message(length=result)
             if spec.result_type is not None:
                 return result
 

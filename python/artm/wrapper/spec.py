@@ -179,4 +179,9 @@ ARTM_API = [
         [('filename', str), ('batch', messages.Batch)],
     ),
 
+    CallSpec(
+        'ArtmCopyRequestResultEx',
+        [('args', messages.CopyRequestResultArgs), ('array', numpy.ndarray)],
+    ),
+
 ]
