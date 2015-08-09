@@ -55,7 +55,7 @@ void TestMother::GenerateBatches(int batches_size, int nTokens,
     for (int iToken = 0; iToken < nTokens; ++iToken) {
       if (iToken == 0 || rand() % 3 == 0) {  // NOLINT
         field->add_token_id(iToken);
-        field->add_token_count(1);
+        field->add_token_weight(1.0);
       }
     }
 

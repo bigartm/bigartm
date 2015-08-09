@@ -84,7 +84,7 @@ void MasterComponent::DisposeDictionary(const std::string& name) {
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   DictionaryConfig config;
   BatchHelpers::LoadMessage(args.file_name(), &config);
-  Helpers::Validate(config);
+  Helpers::FixAndValidate(&config, /* throw_error =*/ true);
   config.set_name(args.dictionary_name());
 
   instance_->CreateOrReconfigureDictionary(config);
@@ -338,6 +338,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     pi->set_cache_manager(cache_manager_ptr);
     pi->set_model_name(model_name);
     pi->set_batch_filename(args.batch_filename(batch_index));
+    pi->set_batch_weight(args.batch_weight(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);

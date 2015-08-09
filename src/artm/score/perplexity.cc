@@ -84,7 +84,7 @@ void Perplexity::AppendScore(
 
   float n_d = 0;
   for (auto& field : item.field()) {
-    for (int token_index = 0; token_index < field.token_count_size(); ++token_index) {
+    for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
       float class_weight = 1.0f;
       if (use_class_id) {
         ::artm::core::ClassId class_id = token_dict[field.token_id(token_index)].class_id;
@@ -94,7 +94,7 @@ void Perplexity::AppendScore(
         class_weight = iter->second;
       }
 
-      n_d += class_weight * static_cast<float>(field.token_count(token_index));
+      n_d += class_weight * field.token_weight(token_index);
     }
   }
 
@@ -121,7 +121,7 @@ void Perplexity::AppendScore(
   }
 
   for (auto& field : item.field()) {
-    for (int token_index = 0; token_index < field.token_count_size(); ++token_index) {
+    for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
       double sum = 0.0;
       const artm::core::Token& token = token_dict[field.token_id(token_index)];
 
@@ -133,9 +133,8 @@ void Perplexity::AppendScore(
         class_weight = iter->second;
       }
 
-      int token_count_int = field.token_count(token_index);
-      if (token_count_int == 0) continue;
-      double token_count = class_weight * static_cast<double>(token_count_int);
+      float token_weight = class_weight * field.token_weight(token_index);
+      if (token_weight == 0.0f) continue;
 
       int p_wt_token_index = p_wt.token_index(token);
       if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
@@ -145,7 +144,7 @@ void Perplexity::AppendScore(
       }
       if (sum == 0.0) {
         if (use_document_unigram_model) {
-          sum = token_count / n_d;
+          sum = token_weight / n_d;
         } else {
           auto entry_ptr = dictionary_ptr->entry(token);
           bool failed = true;
@@ -158,14 +157,14 @@ void Perplexity::AppendScore(
             LOG(INFO) << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
                       << ". Verify that the token exists in the dictionary and contains DictionaryEntry.value field. "
                       << "Document unigram model will be used for this token.";
-            sum = token_count / n_d;
+            sum = token_weight / n_d;
           }
         }
         zero_words++;
       }
 
-      normalizer += token_count;
-      raw        += token_count * log(sum);
+      normalizer += token_weight;
+      raw        += token_weight * log(sum);
     }
   }
 

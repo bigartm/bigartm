@@ -32,7 +32,8 @@ class ProcessorInput {
   };
 
   ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
-                     batch_filename_(), task_id_(), notifiable_(nullptr), scores_merger_(nullptr),
+                     batch_filename_(), batch_weight_(1.0f), task_id_(),
+                     notifiable_(nullptr), scores_merger_(nullptr),
                      cache_manager_(nullptr), caller_(Caller::Unknown) {}
 
   Batch* mutable_batch() { return &batch_; }
@@ -62,6 +63,9 @@ class ProcessorInput {
   void set_batch_filename(const std::string& batch_filename) { batch_filename_ = batch_filename; }
   bool has_batch_filename() const { return !batch_filename_.empty(); }
 
+  const float batch_weight() const { return batch_weight_; }
+  void set_batch_weight(float batch_weight) { batch_weight_ = batch_weight; }
+
   const boost::uuids::uuid& task_id() const { return task_id_; }
   void set_task_id(const boost::uuids::uuid& task_id) { task_id_ = task_id; }
 
@@ -74,6 +78,7 @@ class ProcessorInput {
   ModelName model_name_;
   ModelName nwt_target_name_;
   std::string batch_filename_;  // if this is set batch_ is ignored;
+  float batch_weight_;
   boost::uuids::uuid task_id_;
   Notifiable* notifiable_;
   ScoresMerger* scores_merger_;

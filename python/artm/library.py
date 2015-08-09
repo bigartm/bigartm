@@ -724,7 +724,8 @@ class MasterComponent:
                         self.lib_.ArtmImportDictionary(self.id_, len(blob), blob_p))
 
     def ProcessBatches(self, pwt, batches, target_nwt=None, regularizers={}, inner_iterations_count=10, class_ids={},
-                       stream_name=None, reset_scores=None, theta_matrix_type=None, use_matrix=False):
+                       stream_name=None, reset_scores=None, theta_matrix_type=None, use_matrix=False,
+                       batch_weights=None):
         """ MasterComponent.ProcessBatches() --- process batches to calculate p(t|d), scores, and nwt-increments.
         Args:
         - pwt --- the name of input Phi matrix
@@ -768,6 +769,10 @@ class MasterComponent:
             args.theta_matrix_type = theta_matrix_type
         if use_matrix == True:
             args.theta_matrix_type = ProcessBatchesArgs_ThetaMatrixType_Dense
+        if batch_weights is not None:
+            args.ClearField('batch_weight')
+            for batch_weight in batch_weights:
+                args.batch_weight.append(batch_weight)
 
         args_blob = args.SerializeToString()
         args_blob_p = ctypes.create_string_buffer(args_blob)
