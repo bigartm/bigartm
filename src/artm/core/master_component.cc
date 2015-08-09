@@ -314,7 +314,6 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
       break;
     case ProcessBatchesArgs_ThetaMatrixType_Dense:
     case ProcessBatchesArgs_ThetaMatrixType_Sparse:
-    case ProcessBatchesArgs_ThetaMatrixType_External:
       cache_manager_ptr = &cache_manager;
       return_theta = true;
   }

@@ -121,31 +121,33 @@ std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const std::string& mo
 }
 
 std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args) {
-  // Request model topics
+  return GetTopicModel(args, nullptr);
+}
+
+std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmRequestTopicModel(id(), args_blob.size(), args_blob.c_str()));
+  auto func = (matrix == nullptr) ? ArtmRequestTopicModel : ArtmRequestTopicModelExternal;
+  int length = HandleErrorCode(func(id(), args_blob.size(), args_blob.c_str()));
   std::string topic_model_blob;
   topic_model_blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&topic_model_blob)));
 
-  std::shared_ptr<TopicModel> topic_model(new TopicModel());
-  topic_model->ParseFromString(topic_model_blob);
-  return topic_model;
-}
+  std::shared_ptr<TopicModel> retval(new TopicModel());
+  retval->ParseFromString(topic_model_blob);
 
-std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
-  GetTopicModelArgs args_copy(args);
-  args_copy.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_External);
-  std::shared_ptr<TopicModel> retval = GetTopicModel(args_copy);
+  if (matrix == nullptr)
+    return retval;
+
   matrix->resize(retval->token_size(), retval->topics_count());
 
   CopyRequestResultArgs copy_request_args;
   copy_request_args.set_request_type(CopyRequestResultArgs_RequestType_GetModelSecondPass);
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
 
-  int length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
+  args_blob.clear();
+  copy_request_args.SerializeToString(&args_blob);
+
+  length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
   HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
     args_blob.size(), args_blob.c_str()));
   return retval;
@@ -224,30 +226,32 @@ std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& 
 }
 
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args) {
+  return GetThetaMatrix(args, nullptr);
+}
+
+std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmRequestThetaMatrix(id(), args_blob.size(), args_blob.c_str()));
+  auto func = (matrix == nullptr) ? ArtmRequestThetaMatrix : ArtmRequestThetaMatrixExternal;
+  int length = HandleErrorCode(func(id(), args_blob.size(), args_blob.c_str()));
   std::string blob;
   blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));
 
-  std::shared_ptr<ThetaMatrix> theta_matrix(new ThetaMatrix());
-  theta_matrix->ParseFromString(blob);
-  return theta_matrix;
-}
+  std::shared_ptr<ThetaMatrix> retval(new ThetaMatrix());
+  retval->ParseFromString(blob);
 
-std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
-  GetThetaMatrixArgs args_copy(args);
-  args_copy.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_External);
-  std::shared_ptr<ThetaMatrix> retval = GetThetaMatrix(args_copy);
+  if (matrix == nullptr)
+    return retval;
+
   matrix->resize(retval->item_id_size(), retval->topics_count());
 
   CopyRequestResultArgs copy_request_args;
   copy_request_args.set_request_type(CopyRequestResultArgs_RequestType_GetThetaSecondPass);
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
+  args_blob.clear();
+  copy_request_args.SerializeToString(&args_blob);
 
-  int length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
+  length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
   HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
                                           args_blob.size(), args_blob.c_str()));
   return retval;

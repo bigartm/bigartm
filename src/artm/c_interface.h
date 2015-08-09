@@ -48,12 +48,15 @@ extern "C" {
                                  int address_length, char* address);
 
   DLL_PUBLIC int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args);
+  DLL_PUBLIC int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* process_batches_args);
   DLL_PUBLIC int ArtmMergeModel(int master_id, int length, const char* merge_model_args);
   DLL_PUBLIC int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args);
   DLL_PUBLIC int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args);
 
   DLL_PUBLIC int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args);
+  DLL_PUBLIC int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
+  DLL_PUBLIC int ArtmRequestTopicModelExternal(int master_id, int length, const char* get_model_args);
   DLL_PUBLIC int ArtmRequestRegularizerState(int master_id, const char* regularizer_name);
   DLL_PUBLIC int ArtmRequestScore(int master_id, int length, const char* get_score_args);
   DLL_PUBLIC int ArtmRequestParseCollection(int length, const char* collection_parser_config);

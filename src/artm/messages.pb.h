@@ -331,12 +331,11 @@ inline bool GetTopicModelArgs_RequestType_Parse(
 }
 enum GetTopicModelArgs_MatrixLayout {
   GetTopicModelArgs_MatrixLayout_Dense = 0,
-  GetTopicModelArgs_MatrixLayout_Sparse = 1,
-  GetTopicModelArgs_MatrixLayout_External = 2
+  GetTopicModelArgs_MatrixLayout_Sparse = 1
 };
 bool GetTopicModelArgs_MatrixLayout_IsValid(int value);
 const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MIN = GetTopicModelArgs_MatrixLayout_Dense;
-const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX = GetTopicModelArgs_MatrixLayout_External;
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX = GetTopicModelArgs_MatrixLayout_Sparse;
 const int GetTopicModelArgs_MatrixLayout_MatrixLayout_ARRAYSIZE = GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_MatrixLayout_descriptor();
@@ -351,12 +350,11 @@ inline bool GetTopicModelArgs_MatrixLayout_Parse(
 }
 enum GetThetaMatrixArgs_MatrixLayout {
   GetThetaMatrixArgs_MatrixLayout_Dense = 0,
-  GetThetaMatrixArgs_MatrixLayout_Sparse = 1,
-  GetThetaMatrixArgs_MatrixLayout_External = 2
+  GetThetaMatrixArgs_MatrixLayout_Sparse = 1
 };
 bool GetThetaMatrixArgs_MatrixLayout_IsValid(int value);
 const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MIN = GetThetaMatrixArgs_MatrixLayout_Dense;
-const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX = GetThetaMatrixArgs_MatrixLayout_External;
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX = GetThetaMatrixArgs_MatrixLayout_Sparse;
 const int GetThetaMatrixArgs_MatrixLayout_MatrixLayout_ARRAYSIZE = GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* GetThetaMatrixArgs_MatrixLayout_descriptor();
@@ -373,12 +371,11 @@ enum ProcessBatchesArgs_ThetaMatrixType {
   ProcessBatchesArgs_ThetaMatrixType_None = 0,
   ProcessBatchesArgs_ThetaMatrixType_Dense = 1,
   ProcessBatchesArgs_ThetaMatrixType_Sparse = 2,
-  ProcessBatchesArgs_ThetaMatrixType_Cache = 3,
-  ProcessBatchesArgs_ThetaMatrixType_External = 4
+  ProcessBatchesArgs_ThetaMatrixType_Cache = 3
 };
 bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value);
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MIN = ProcessBatchesArgs_ThetaMatrixType_None;
-const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_External;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_Cache;
 const int ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_ARRAYSIZE = ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ProcessBatchesArgs_ThetaMatrixType_descriptor();
@@ -392,11 +389,12 @@ inline bool ProcessBatchesArgs_ThetaMatrixType_Parse(
     ProcessBatchesArgs_ThetaMatrixType_descriptor(), name, value);
 }
 enum CopyRequestResultArgs_RequestType {
-  CopyRequestResultArgs_RequestType_GetThetaSecondPass = 0,
-  CopyRequestResultArgs_RequestType_GetModelSecondPass = 1
+  CopyRequestResultArgs_RequestType_DefaultRequestType = 0,
+  CopyRequestResultArgs_RequestType_GetThetaSecondPass = 1,
+  CopyRequestResultArgs_RequestType_GetModelSecondPass = 2
 };
 bool CopyRequestResultArgs_RequestType_IsValid(int value);
-const CopyRequestResultArgs_RequestType CopyRequestResultArgs_RequestType_RequestType_MIN = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
+const CopyRequestResultArgs_RequestType CopyRequestResultArgs_RequestType_RequestType_MIN = CopyRequestResultArgs_RequestType_DefaultRequestType;
 const CopyRequestResultArgs_RequestType CopyRequestResultArgs_RequestType_RequestType_MAX = CopyRequestResultArgs_RequestType_GetModelSecondPass;
 const int CopyRequestResultArgs_RequestType_RequestType_ARRAYSIZE = CopyRequestResultArgs_RequestType_RequestType_MAX + 1;
 
@@ -7020,7 +7018,6 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   typedef GetTopicModelArgs_MatrixLayout MatrixLayout;
   static const MatrixLayout Dense = GetTopicModelArgs_MatrixLayout_Dense;
   static const MatrixLayout Sparse = GetTopicModelArgs_MatrixLayout_Sparse;
-  static const MatrixLayout External = GetTopicModelArgs_MatrixLayout_External;
   static inline bool MatrixLayout_IsValid(int value) {
     return GetTopicModelArgs_MatrixLayout_IsValid(value);
   }
@@ -7223,7 +7220,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   typedef GetThetaMatrixArgs_MatrixLayout MatrixLayout;
   static const MatrixLayout Dense = GetThetaMatrixArgs_MatrixLayout_Dense;
   static const MatrixLayout Sparse = GetThetaMatrixArgs_MatrixLayout_Sparse;
-  static const MatrixLayout External = GetThetaMatrixArgs_MatrixLayout_External;
   static inline bool MatrixLayout_IsValid(int value) {
     return GetThetaMatrixArgs_MatrixLayout_IsValid(value);
   }
@@ -8132,7 +8128,6 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   static const ThetaMatrixType Dense = ProcessBatchesArgs_ThetaMatrixType_Dense;
   static const ThetaMatrixType Sparse = ProcessBatchesArgs_ThetaMatrixType_Sparse;
   static const ThetaMatrixType Cache = ProcessBatchesArgs_ThetaMatrixType_Cache;
-  static const ThetaMatrixType External = ProcessBatchesArgs_ThetaMatrixType_External;
   static inline bool ThetaMatrixType_IsValid(int value) {
     return ProcessBatchesArgs_ThetaMatrixType_IsValid(value);
   }
@@ -8990,6 +8985,7 @@ class CopyRequestResultArgs : public ::google::protobuf::Message {
   // nested types ----------------------------------------------------
 
   typedef CopyRequestResultArgs_RequestType RequestType;
+  static const RequestType DefaultRequestType = CopyRequestResultArgs_RequestType_DefaultRequestType;
   static const RequestType GetThetaSecondPass = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
   static const RequestType GetModelSecondPass = CopyRequestResultArgs_RequestType_GetModelSecondPass;
   static inline bool RequestType_IsValid(int value) {
@@ -9015,7 +9011,7 @@ class CopyRequestResultArgs : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1 [default = DefaultRequestType];
   inline bool has_request_type() const;
   inline void clear_request_type();
   static const int kRequestTypeFieldNumber = 1;
@@ -20369,7 +20365,7 @@ inline void ImportDictionaryArgs::set_allocated_dictionary_name(::std::string* d
 
 // CopyRequestResultArgs
 
-// optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+// optional .artm.CopyRequestResultArgs.RequestType request_type = 1 [default = DefaultRequestType];
 inline bool CopyRequestResultArgs::has_request_type() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }

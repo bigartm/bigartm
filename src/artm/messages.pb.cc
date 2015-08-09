@@ -1913,7 +1913,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "ax_percentage\030\003 \001(\002\022\021\n\tmin_items\030\004 \001(\005\022\021"
     "\n\tmax_items\030\005 \001(\005\022\027\n\017min_total_count\030\006 \001"
     "(\005\022\032\n\022min_one_item_count\030\007 \001(\005\")\n\nSource"
-    "Type\022\016\n\nDictionary\020\000\022\013\n\007Batches\020\001\"\202\003\n\021Ge"
+    "Type\022\016\n\nDictionary\020\000\022\013\n\007Batches\020\001\"\364\002\n\021Ge"
     "tTopicModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nt"
     "opic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class_"
     "id\030\004 \003(\t\022\031\n\021use_sparse_format\030\005 \001(\010\022\023\n\003e"
@@ -1922,59 +1922,59 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\022B\n\rmatrix_layout\030\010 \001(\0162$.artm.GetTopicM"
     "odelArgs.MatrixLayout:\005Dense\";\n\013RequestT"
     "ype\022\007\n\003Pwt\020\000\022\007\n\003Nwt\020\001\022\016\n\nTopicNames\020\002\022\n\n"
-    "\006Tokens\020\003\"3\n\014MatrixLayout\022\t\n\005Dense\020\000\022\n\n\006"
-    "Sparse\020\001\022\014\n\010External\020\002\"\263\002\n\022GetThetaMatri"
-    "xArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\013"
-    "2\013.artm.Batch\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013top"
-    "ic_index\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001(\010:\005fal"
-    "se\022\031\n\021use_sparse_format\030\006 \001(\010\022\023\n\003eps\030\007 \001"
-    "(\002:\0061e-037\022C\n\rmatrix_layout\030\010 \001(\0162%.artm"
-    ".GetThetaMatrixArgs.MatrixLayout:\005Dense\""
-    "3\n\014MatrixLayout\022\t\n\005Dense\020\000\022\n\n\006Sparse\020\001\022\014"
-    "\n\010External\020\002\"W\n\021GetScoreValueArgs\022\022\n\nmod"
-    "el_name\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005bat"
-    "ch\030\003 \001(\0132\013.artm.Batch\"\202\001\n\014AddBatchArgs\022\032"
-    "\n\005batch\030\001 \001(\0132\013.artm.Batch\022 \n\024timeout_mi"
-    "lliseconds\030\002 \001(\005:\002-1\022\033\n\014reset_scores\030\003 \001"
-    "(\010:\005false\022\027\n\017batch_file_name\030\004 \001(\t\"a\n\023In"
-    "vokeIterationArgs\022\033\n\020iterations_count\030\001 "
-    "\001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010:\004true\022\021\n\tdi"
-    "sk_path\030\003 \001(\t\"0\n\014WaitIdleArgs\022 \n\024timeout"
-    "_milliseconds\030\001 \001(\005:\002-1\"8\n\017ExportModelAr"
-    "gs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001("
-    "\t\"8\n\017ImportModelArgs\022\021\n\tfile_name\030\001 \001(\t\022"
-    "\022\n\nmodel_name\030\002 \001(\t\"%\n\017AttachModelArgs\022\022"
-    "\n\nmodel_name\030\001 \001(\t\"\205\004\n\022ProcessBatchesArg"
-    "s\022\027\n\017nwt_target_name\030\001 \001(\t\022\026\n\016batch_file"
-    "name\030\002 \003(\t\022\027\n\017pwt_source_name\030\003 \001(\t\022\"\n\026i"
-    "nner_iterations_count\030\004 \001(\005:\00210\022\034\n\013strea"
-    "m_name\030\005 \001(\t:\007@global\022\030\n\020regularizer_nam"
-    "e\030\006 \003(\t\022\027\n\017regularizer_tau\030\007 \003(\001\022\020\n\010clas"
-    "s_id\030\010 \003(\t\022\024\n\014class_weight\030\t \003(\002\022\032\n\013reus"
-    "e_theta\030\n \001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001("
-    "\010:\004true\022\034\n\016use_sparse_bow\030\014 \001(\010:\004true\022\032\n"
-    "\014reset_scores\030\r \001(\010:\004true\022J\n\021theta_matri"
-    "x_type\030\016 \001(\0162(.artm.ProcessBatchesArgs.T"
-    "hetaMatrixType:\005Cache\"K\n\017ThetaMatrixType"
-    "\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cac"
-    "he\020\003\022\014\n\010External\020\004\"d\n\024ProcessBatchesResu"
-    "lt\022#\n\nscore_data\030\001 \003(\0132\017.artm.ScoreData\022"
-    "\'\n\014theta_matrix\030\002 \001(\0132\021.artm.ThetaMatrix"
-    "\"m\n\016MergeModelArgs\022\027\n\017nwt_target_name\030\001 "
-    "\001(\t\022\027\n\017nwt_source_name\030\002 \003(\t\022\025\n\rsource_w"
-    "eight\030\003 \003(\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023Regu"
-    "larizeModelArgs\022\027\n\017rwt_target_name\030\001 \001(\t"
-    "\022\027\n\017pwt_source_name\030\002 \001(\t\022\027\n\017nwt_source_"
-    "name\030\003 \001(\t\0227\n\024regularizer_settings\030\004 \003(\013"
-    "2\031.artm.RegularizerSettings\"_\n\022Normalize"
-    "ModelArgs\022\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017nw"
-    "t_source_name\030\002 \001(\t\022\027\n\017rwt_source_name\030\003"
-    " \001(\t\"B\n\024ImportDictionaryArgs\022\021\n\tfile_nam"
-    "e\030\001 \001(\t\022\027\n\017dictionary_name\030\002 \001(\t\"\225\001\n\025Cop"
-    "yRequestResultArgs\022=\n\014request_type\030\001 \001(\016"
-    "2\'.artm.CopyRequestResultArgs.RequestTyp"
-    "e\"=\n\013RequestType\022\026\n\022GetThetaSecondPass\020\000"
-    "\022\026\n\022GetModelSecondPass\020\001", 9944);
+    "\006Tokens\020\003\"%\n\014MatrixLayout\022\t\n\005Dense\020\000\022\n\n\006"
+    "Sparse\020\001\"\245\002\n\022GetThetaMatrixArgs\022\022\n\nmodel"
+    "_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch\022"
+    "\022\n\ntopic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003(\005"
+    "\022\032\n\013clean_cache\030\005 \001(\010:\005false\022\031\n\021use_spar"
+    "se_format\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\022C\n\r"
+    "matrix_layout\030\010 \001(\0162%.artm.GetThetaMatri"
+    "xArgs.MatrixLayout:\005Dense\"%\n\014MatrixLayou"
+    "t\022\t\n\005Dense\020\000\022\n\n\006Sparse\020\001\"W\n\021GetScoreValu"
+    "eArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name\030"
+    "\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"\202\001\n\014Ad"
+    "dBatchArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022 "
+    "\n\024timeout_milliseconds\030\002 \001(\005:\002-1\022\033\n\014rese"
+    "t_scores\030\003 \001(\010:\005false\022\027\n\017batch_file_name"
+    "\030\004 \001(\t\"a\n\023InvokeIterationArgs\022\033\n\020iterati"
+    "ons_count\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001(\010"
+    ":\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014WaitIdleArg"
+    "s\022 \n\024timeout_milliseconds\030\001 \001(\005:\002-1\"8\n\017E"
+    "xportModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmod"
+    "el_name\030\002 \001(\t\"8\n\017ImportModelArgs\022\021\n\tfile"
+    "_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"%\n\017Attac"
+    "hModelArgs\022\022\n\nmodel_name\030\001 \001(\t\"\367\003\n\022Proce"
+    "ssBatchesArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\026"
+    "\n\016batch_filename\030\002 \003(\t\022\027\n\017pwt_source_nam"
+    "e\030\003 \001(\t\022\"\n\026inner_iterations_count\030\004 \001(\005:"
+    "\00210\022\034\n\013stream_name\030\005 \001(\t:\007@global\022\030\n\020reg"
+    "ularizer_name\030\006 \003(\t\022\027\n\017regularizer_tau\030\007"
+    " \003(\001\022\020\n\010class_id\030\010 \003(\t\022\024\n\014class_weight\030\t"
+    " \003(\002\022\032\n\013reuse_theta\030\n \001(\010:\005false\022\031\n\013opt_"
+    "for_avx\030\013 \001(\010:\004true\022\034\n\016use_sparse_bow\030\014 "
+    "\001(\010:\004true\022\032\n\014reset_scores\030\r \001(\010:\004true\022J\n"
+    "\021theta_matrix_type\030\016 \001(\0162(.artm.ProcessB"
+    "atchesArgs.ThetaMatrixType:\005Cache\"=\n\017The"
+    "taMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Spa"
+    "rse\020\002\022\t\n\005Cache\020\003\"d\n\024ProcessBatchesResult"
+    "\022#\n\nscore_data\030\001 \003(\0132\017.artm.ScoreData\022\'\n"
+    "\014theta_matrix\030\002 \001(\0132\021.artm.ThetaMatrix\"m"
+    "\n\016MergeModelArgs\022\027\n\017nwt_target_name\030\001 \001("
+    "\t\022\027\n\017nwt_source_name\030\002 \003(\t\022\025\n\rsource_wei"
+    "ght\030\003 \003(\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023Regula"
+    "rizeModelArgs\022\027\n\017rwt_target_name\030\001 \001(\t\022\027"
+    "\n\017pwt_source_name\030\002 \001(\t\022\027\n\017nwt_source_na"
+    "me\030\003 \001(\t\0227\n\024regularizer_settings\030\004 \003(\0132\031"
+    ".artm.RegularizerSettings\"_\n\022NormalizeMo"
+    "delArgs\022\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017nwt_"
+    "source_name\030\002 \001(\t\022\027\n\017rwt_source_name\030\003 \001"
+    "(\t\"B\n\024ImportDictionaryArgs\022\021\n\tfile_name\030"
+    "\001 \001(\t\022\027\n\017dictionary_name\030\002 \001(\t\"\301\001\n\025CopyR"
+    "equestResultArgs\022Q\n\014request_type\030\001 \001(\0162\'"
+    ".artm.CopyRequestResultArgs.RequestType:"
+    "\022DefaultRequestType\"U\n\013RequestType\022\026\n\022De"
+    "faultRequestType\020\000\022\026\n\022GetThetaSecondPass"
+    "\020\001\022\026\n\022GetModelSecondPass\020\002", 9946);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -20475,7 +20475,6 @@ bool GetTopicModelArgs_MatrixLayout_IsValid(int value) {
   switch(value) {
     case 0:
     case 1:
-    case 2:
       return true;
     default:
       return false;
@@ -20485,7 +20484,6 @@ bool GetTopicModelArgs_MatrixLayout_IsValid(int value) {
 #ifndef _MSC_VER
 const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::Dense;
 const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::Sparse;
-const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::External;
 const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::MatrixLayout_MIN;
 const GetTopicModelArgs_MatrixLayout GetTopicModelArgs::MatrixLayout_MAX;
 const int GetTopicModelArgs::MatrixLayout_ARRAYSIZE;
@@ -21035,7 +21033,6 @@ bool GetThetaMatrixArgs_MatrixLayout_IsValid(int value) {
   switch(value) {
     case 0:
     case 1:
-    case 2:
       return true;
     default:
       return false;
@@ -21045,7 +21042,6 @@ bool GetThetaMatrixArgs_MatrixLayout_IsValid(int value) {
 #ifndef _MSC_VER
 const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::Dense;
 const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::Sparse;
-const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::External;
 const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::MatrixLayout_MIN;
 const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::MatrixLayout_MAX;
 const int GetThetaMatrixArgs::MatrixLayout_ARRAYSIZE;
@@ -23561,7 +23557,6 @@ bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value) {
     case 1:
     case 2:
     case 3:
-    case 4:
       return true;
     default:
       return false;
@@ -23573,7 +23568,6 @@ const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::None;
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::Dense;
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::Sparse;
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::Cache;
-const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::External;
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::ThetaMatrixType_MIN;
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs::ThetaMatrixType_MAX;
 const int ProcessBatchesArgs::ThetaMatrixType_ARRAYSIZE;
@@ -26024,6 +26018,7 @@ bool CopyRequestResultArgs_RequestType_IsValid(int value) {
   switch(value) {
     case 0:
     case 1:
+    case 2:
       return true;
     default:
       return false;
@@ -26031,6 +26026,7 @@ bool CopyRequestResultArgs_RequestType_IsValid(int value) {
 }
 
 #ifndef _MSC_VER
+const CopyRequestResultArgs_RequestType CopyRequestResultArgs::DefaultRequestType;
 const CopyRequestResultArgs_RequestType CopyRequestResultArgs::GetThetaSecondPass;
 const CopyRequestResultArgs_RequestType CopyRequestResultArgs::GetModelSecondPass;
 const CopyRequestResultArgs_RequestType CopyRequestResultArgs::RequestType_MIN;
@@ -26105,7 +26101,7 @@ bool CopyRequestResultArgs::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+      // optional .artm.CopyRequestResultArgs.RequestType request_type = 1 [default = DefaultRequestType];
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -26143,7 +26139,7 @@ bool CopyRequestResultArgs::MergePartialFromCodedStream(
 
 void CopyRequestResultArgs::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1 [default = DefaultRequestType];
   if (has_request_type()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       1, this->request_type(), output);
@@ -26157,7 +26153,7 @@ void CopyRequestResultArgs::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* CopyRequestResultArgs::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1 [default = DefaultRequestType];
   if (has_request_type()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       1, this->request_type(), target);
@@ -26174,7 +26170,7 @@ int CopyRequestResultArgs::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional .artm.CopyRequestResultArgs.RequestType request_type = 1;
+    // optional .artm.CopyRequestResultArgs.RequestType request_type = 1 [default = DefaultRequestType];
     if (has_request_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->request_type());
