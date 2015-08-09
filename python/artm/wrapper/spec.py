@@ -107,10 +107,11 @@ ARTM_API = [
     #    [('master_id', int), ('args', messages.SynchronizeModelArgs)],
     #),
 
-    CallSpec(
-        'ArtmOverwriteTopicModel',
-        [('master_id', int), ('model', messages.TopicModel)],
-    ),
+    ## deprecated
+    #CallSpec(
+    #    'ArtmOverwriteTopicModel',
+    #    [('master_id', int), ('model', messages.TopicModel)],
+    #),
     CallSpec(
         'ArtmInitializeModel',
         [('master_id', int), ('args', messages.InitializeModelArgs)],
