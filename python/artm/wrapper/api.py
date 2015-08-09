@@ -6,6 +6,7 @@ import os
 import sys
 import ctypes
 
+import numpy
 from google import protobuf
 
 from . import utils
@@ -86,13 +87,13 @@ class LibArtm(object):
                     n_given=n_args_given,
                 ))
 
-            cargs = []
-            for (arg_index, arg), (arg_name, arg_type) in zip(enumerate(args), spec.arguments):
+            c_args = []
+            for (arg_index, arg_value), (arg_name, arg_type) in zip(enumerate(args), spec.arguments):
                 # try to cast argument to the required type
-                arg_casted = arg
-                if issubclass(arg_type, protobuf.message.Message) and isinstance(arg, dict):
+                arg_casted = arg_value
+                if issubclass(arg_type, protobuf.message.Message) and isinstance(arg_value, dict):
                     # dict -> protobuf message
-                    arg_casted = utils.dict_to_message(arg, arg_type)
+                    arg_casted = utils.dict_to_message(arg_value, arg_type)
 
                 # check argument type
                 if not isinstance(arg_casted, arg_type):
@@ -101,27 +102,30 @@ class LibArtm(object):
                         arg_index=arg_index,
                         arg_name=arg_name,
                         arg_type=str(arg_type),
-                        given_type=str(type(arg)),
+                        given_type=str(type(arg_value)),
                     ))
-                arg = arg_casted
+                arg_value = arg_casted
 
-                # construct c-style arguments                
+                # construct c-style arguments
                 if issubclass(arg_type, basestring):
-                    arg_cstr_p = ctypes.create_string_buffer(arg)
-                    cargs.append(arg_cstr_p)
+                    arg_cstr_p = ctypes.create_string_buffer(arg_value)
+                    c_args.append(arg_cstr_p)
 
                 elif issubclass(arg_type, protobuf.message.Message):
-                    message_str = arg.SerializeToString()
+                    message_str = arg_value.SerializeToString()
                     message_cstr_p = ctypes.create_string_buffer(message_str)
-                    cargs += [len(message_str), message_cstr_p]
+                    c_args += [len(message_str), message_cstr_p]
+
+                elif issubclass(arg_type, numpy.ndarray):
+                    c_args += [arg_value.nbytes, ctypes.c_char_p(arg_value.ctypes.data)]
 
                 else:
-                    cargs.append(arg)
+                    c_args.append(arg_value)
 
             # make api call
             if spec.result_type is not None:
                 func.restype = spec.result_type
-            result = func(*cargs)
+            result = func(*c_args)
             self._check_error(result)
 
             # return result value
