@@ -135,6 +135,11 @@ ARTM_API = [
         request=messages.ProcessBatchesResult,
     ),
     CallSpec(
+        'ArtmRequestProcessBatchesExternal',
+        [('master_id', int), ('args', messages.ProcessBatchesArgs)],
+        request=messages.ProcessBatchesResult,
+    ),
+    CallSpec(
         'ArtmMergeModel',
         [('master_id', int), ('args', messages.MergeModelArgs)],
     ),
@@ -153,7 +158,17 @@ ARTM_API = [
         request=messages.ThetaMatrix,
     ),
     CallSpec(
+        'ArtmRequestThetaMatrixExternal',
+        [('master_id', int), ('args', messages.GetThetaMatrixArgs)],
+        request=messages.ThetaMatrix,
+    ),
+    CallSpec(
         'ArtmRequestTopicModel',
+        [('master_id', int), ('args', messages.GetTopicModelArgs)],
+        request=messages.TopicModel,
+    ),
+    CallSpec(
+        'ArtmRequestTopicModelExternal',
         [('master_id', int), ('args', messages.GetTopicModelArgs)],
         request=messages.TopicModel,
     ),
