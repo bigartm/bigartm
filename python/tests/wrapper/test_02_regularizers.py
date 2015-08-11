@@ -23,8 +23,8 @@ def test_func():
     decor_phi_tau = 1000000
 
     num_topics = 10
-    inner_iterations_count = 10
-    outer_iterations_count = 8
+    num_inner_iterations = 10
+    num_outer_iterations = 8
 
     tolerance = 0.001
     expected_perplexity_value_on_iteration = {
@@ -35,7 +35,7 @@ def test_func():
         4: 1760.534,
         5: 1659.460,
         6: 1638.274,
-        7: 1604.741,
+        7: 1604.741
     }
     expected_phi_sparsity_value_on_iteration = {
         0: 0.059,
@@ -45,7 +45,7 @@ def test_func():
         4: 0.380,
         5: 0.438,
         6: 0.482,
-        7: 0.517,
+        7: 0.517
     }
     expected_theta_sparsity_value_on_iteration = {
         0: 0.008,
@@ -55,7 +55,7 @@ def test_func():
         4: 0.273,
         5: 0.292,
         6: 0.302,
-        7: 0.309,
+        7: 0.309
     }
 
     batches_folder = tempfile.mkdtemp()
@@ -146,7 +146,7 @@ def test_func():
         for name in os.listdir(batches_folder):
             if name != dictionary_name:
                 proc_args.batch_filename.append(os.path.join(batches_folder, name))
-        proc_args.inner_iterations_count = inner_iterations_count
+        proc_args.inner_iterations_count = num_inner_iterations
 
         # Create configuration for Phi regularization
         reg_args = messages.RegularizeModelArgs()
@@ -187,7 +187,7 @@ def test_func():
         sparsity_theta_args.model_name = pwt
         sparsity_theta_args.score_name = 'SparsityThetaScore'
 
-        for iter in xrange(outer_iterations_count):
+        for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
             lib.ArtmRequestProcessBatches(master_id, proc_args)
             lib.ArtmRegularizeModel(master_id, reg_args)

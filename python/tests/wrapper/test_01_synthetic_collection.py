@@ -18,8 +18,8 @@ def test_func():
     nwt = 'nwt'
     
     num_topics = 10
-    inner_iterations_count = 10
-    outer_iterations_count = 10
+    num_inner_iterations = 10
+    num_outer_iterations = 10
     num_top_tokens = 4
 
     perplexity_tol = 0.1
@@ -33,7 +33,7 @@ def test_func():
         6: 20.5,
         7: 20.5,
         8: 20.5,
-        9: 20.5,
+        9: 20.5
     }
 
     top_tokens_tol = 0.05
@@ -96,7 +96,7 @@ def test_func():
 
         for name in os.listdir(batches_folder):
             proc_args.batch_filename.append(os.path.join(batches_folder, name))
-        proc_args.inner_iterations_count = inner_iterations_count
+        proc_args.inner_iterations_count = num_inner_iterations
 
         # Create configuration for Phi normalization
         norm_args = messages.NormalizeModelArgs()
@@ -112,7 +112,7 @@ def test_func():
         top_tokens_args.model_name = pwt
         top_tokens_args.score_name = 'TopTokensScore'
 
-        for iter in xrange(outer_iterations_count):
+        for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi
             lib.ArtmRequestProcessBatches(master_id, proc_args)
             lib.ArtmNormalizeModel(master_id, norm_args)    
