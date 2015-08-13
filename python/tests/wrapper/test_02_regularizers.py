@@ -26,40 +26,40 @@ def test_func():
     num_inner_iterations = 10
     num_outer_iterations = 8
 
-    tolerance = 0.001
+    perplexity_tol = 0.001
     expected_perplexity_value_on_iteration = {
-        0: 6722.401,
-        1: 2452.129,
-        2: 2375.061,
-        3: 1830.576,
-        4: 1760.534,
-        5: 1659.460,
-        6: 1638.274,
-        7: 1604.741
+        0: 6691.688,
+        1: 2442.690,
+        2: 2330.616,
+        3: 1826.080,
+        4: 1711.015,
+        5: 1614.403,
+        6: 1590.140,
+        7: 1564.405
     }
+    sparsity_tol = 0.001
     expected_phi_sparsity_value_on_iteration = {
-        0: 0.059,
-        1: 0.119,
-        2: 0.211,
-        3: 0.304,
-        4: 0.380,
-        5: 0.438,
-        6: 0.482,
-        7: 0.517
+        0: 0.060,
+        1: 0.121,
+        2: 0.210,
+        3: 0.312,
+        4: 0.393,
+        5: 0.452,
+        6: 0.495,
+        7: 0.528
     }
     expected_theta_sparsity_value_on_iteration = {
-        0: 0.008,
-        1: 0.025,
-        2: 0.127,
-        3: 0.227,
-        4: 0.273,
-        5: 0.292,
-        6: 0.302,
-        7: 0.309
+        0: 0.012,
+        1: 0.035,
+        2: 0.143,
+        3: 0.245,
+        4: 0.314,
+        5: 0.335,
+        6: 0.345,
+        7: 0.349
     }
 
     batches_folder = tempfile.mkdtemp()
-
     try:
         # Create the instance of low-level API
         lib = artm.wrapper.LibArtm()
@@ -78,25 +78,25 @@ def test_func():
         # Create master component and add scores
         master_config = messages.MasterComponentConfig()
 
-        # add perplexity score
+        # Add perplexity score
         ref_score_config = master_config.score_config.add()
         ref_score_config.name = 'PerplexityScore'
         ref_score_config.type = constants.ScoreConfig_Type_Perplexity
         ref_score_config.config = messages.PerplexityScoreConfig().SerializeToString()
 
-        # add sparsity Phi score
+        # Add sparsity Phi score
         ref_score_config = master_config.score_config.add()
         ref_score_config.name = 'SparsityPhiScore'
         ref_score_config.type = constants.ScoreConfig_Type_SparsityPhi
         ref_score_config.config = messages.SparsityPhiScoreConfig().SerializeToString()
 
-        # add sparsity Theta score
+        # Add sparsity Theta score
         ref_score_config = master_config.score_config.add()
         ref_score_config.name = 'SparsityThetaScore'
         ref_score_config.type = constants.ScoreConfig_Type_SparsityTheta
         ref_score_config.config = messages.SparsityThetaScoreConfig().SerializeToString()  
 
-        # add top tokens score
+        # Add top tokens score
         ref_score_config = master_config.score_config.add()
         ref_score_config.name = 'TopTokensScore'
         ref_score_config.type = constants.ScoreConfig_Type_TopTokens
@@ -214,16 +214,16 @@ def test_func():
             sparsity_theta_score = messages.SparsityThetaScore()
             sparsity_theta_score.ParseFromString(score_data.data)
 
-            # assert and print scores
+            # Assert and print scores
             string = 'Iter#{0}'.format(iter)
             string += ': Perplexity = {0:.3f}'.format(perplexity_score.value)
             string += ', Phi sparsity = {0:.3f}'.format(sparsity_phi_score.value)
             string += ', Theta sparsity = {0:.3f}'.format(sparsity_theta_score.value)
             print string
 
-            assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < tolerance
-            assert abs(sparsity_phi_score.value - expected_phi_sparsity_value_on_iteration[iter]) < tolerance
-            assert abs(sparsity_theta_score.value - expected_theta_sparsity_value_on_iteration[iter]) < tolerance
+            assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < perplexity_tol
+            assert abs(sparsity_phi_score.value - expected_phi_sparsity_value_on_iteration[iter]) < sparsity_tol
+            assert abs(sparsity_theta_score.value - expected_theta_sparsity_value_on_iteration[iter]) < sparsity_tol
 
         # Retrieve and print top tokens score
         results = lib.ArtmRequestScore(master_id, top_tokens_args)

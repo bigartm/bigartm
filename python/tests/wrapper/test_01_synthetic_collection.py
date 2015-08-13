@@ -1,7 +1,7 @@
 import random
 import uuid
-import shutil
 import os
+import shutil
 import tempfile
 import itertools
 import pytest
@@ -22,27 +22,26 @@ def test_func():
     num_outer_iterations = 10
     num_top_tokens = 4
 
-    perplexity_tol = 0.1
+    perplexity_tol = 0.001
     expected_perplexity_value_on_iteration = {
-        0: 54.9,
-        1: 37.2,
-        2: 28.2,
-        3: 22.7,
-        4: 20.7,
-        5: 20.5,
-        6: 20.5,
-        7: 20.5,
-        8: 20.5,
-        9: 20.5
+        0: 55.620,
+        1: 37.397,
+        2: 28.466,
+        3: 23.285,
+        4: 20.741,
+        5: 20.529,
+        6: 20.472,
+        7: 20.453,
+        8: 20.454,
+        9: 20.455
     }
 
     top_tokens_tol = 0.05
     expected_top_tokens_weight = 0.1
-    random.seed(1)
-    batches_folder = tempfile.mkdtemp()
 
+    batches_folder = tempfile.mkdtemp()
     try:
-        # Generate small collection of random items
+        # Generate small collection
         batch = messages.Batch()
         batch.id = str(uuid.uuid4())
         for token_id in xrange(num_tokens):
@@ -54,7 +53,7 @@ def test_func():
             field = item.field.add()
             for token_id in xrange(num_tokens):
                 field.token_id.append(token_id)
-                background_count = random.randint(1, 5) if (token_id >= 40) else 0
+                background_count = ((item_id + token_id) % 5 + 1) if (token_id >= 40) else 0
                 target_topics = num_topics if (token_id < 40) and ((token_id % 10) == (item_id % 10)) else 0
                 field.token_count.append(background_count + target_topics)
 

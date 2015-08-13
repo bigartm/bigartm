@@ -1,4 +1,3 @@
-import sys
 import time
 import os
 import glob
@@ -26,15 +25,14 @@ def test_func():
 
     perplexity_tol = 0.001
     expected_perplexity_value_on_iteration = {
-        0: 6729.054,
-        1: 2459.403,
-        2: 2222.311,
-        3: 1938.016,
-        4: 1786.314
+        0: 6699.124,
+        1: 2449.832,
+        2: 2211.953,
+        3: 1938.363,
+        4: 1767.228
     }
 
     batches_folder = tempfile.mkdtemp()
-
     try:
         # Create the instance of low-level API
         lib = artm.wrapper.LibArtm()
