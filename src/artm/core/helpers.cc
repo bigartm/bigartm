@@ -8,6 +8,8 @@
 
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
+#include "boost/random/uniform_real.hpp"
+#include "boost/random/variate_generator.hpp"
 #include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 
@@ -738,20 +740,13 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   std::vector<float> retval;
   retval.reserve(size);
 
-#if defined(_WIN32) || defined(_WIN64)
-  // http://msdn.microsoft.com/en-us/library/aa272875(v=vs.60).aspx
-  // rand() is thread-safe on Windows when linked with LIBCMT.LIB
+  boost::mt19937 rng(seed);
+  boost::uniform_real<float> u(0.0f, 1.0f);
+  boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > gen(rng, u);
 
-  srand(seed);
   for (int i = 0; i < size; ++i) {
-    retval.push_back(static_cast<float>(rand()) / static_cast<float>(RAND_MAX));  // NOLINT
+    retval.push_back(gen());
   }
-#else
-  unsigned int int_seed = static_cast<unsigned int>(seed);
-  for (int i = 0; i < size; ++i) {
-    retval.push_back(static_cast<float>(rand_r(&int_seed)) / static_cast<float>(RAND_MAX));
-  }
-#endif
 
   float sum = 0.0f;
   for (int i = 0; i < size; ++i) sum += retval[i];
