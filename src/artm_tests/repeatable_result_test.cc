@@ -6,6 +6,7 @@
 #include "boost/filesystem.hpp"
 
 #include "artm/cpp_interface.h"
+#include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/messages.pb.h"
@@ -78,6 +79,17 @@ TEST(RepeatableResult, RandomGenerator) {
     ASSERT_EQ(first_result[i], second_result[i]);
     ASSERT_NE(first_result[i - 1], first_result[i]);
   }
+}
+
+// artm_tests.exe --gtest_filter=RepeatableResult.TokenHasher
+TEST(RepeatableResult, TokenHasher) {
+  auto token_hasher = artm::core::TokenHasher();
+  EXPECT_EQ(token_hasher(artm::core::Token("class_id_1", "")), 14257342049058733748);
+  EXPECT_EQ(token_hasher(artm::core::Token("1_class_id", "")), 4746014843600301604);
+  EXPECT_EQ(token_hasher(artm::core::Token("", "token_1")), 16997208685286627075);
+  EXPECT_EQ(token_hasher(artm::core::Token("", "1_token")), 16937404881261379982);
+  EXPECT_EQ(token_hasher(artm::core::Token("class_id_1", "token_1")), 2667808992958584549);
+  EXPECT_EQ(token_hasher(artm::core::Token("class_id_2", "token_2")), 2667808992958584487);
 }
 
 void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_type,
