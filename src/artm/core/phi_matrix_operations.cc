@@ -186,7 +186,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       // Add new tokens discovered by processor
       if (current_token_id == -1) {
         current_token_id = phi_matrix->AddToken(token);
-        std::vector<float> vec = Helpers::GenerateRandomVector(phi_matrix->topic_size(), TokenHasher()(token));
+        std::vector<float> vec = Helpers::GenerateRandomVector(phi_matrix->topic_size(), token);
         phi_matrix->increase(current_token_id, vec);
       }
       break;

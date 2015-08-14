@@ -16,6 +16,9 @@
 
 #include "artm_tests/test_mother.h"
 
+using artm::core::Helpers;
+using artm::core::Token;
+
 std::string runOfflineTest() {
   const int nTopics = 5;
 
@@ -84,12 +87,12 @@ TEST(RepeatableResult, RandomGenerator) {
 // artm_tests.exe --gtest_filter=RepeatableResult.TokenHasher
 TEST(RepeatableResult, TokenHasher) {
   auto token_hasher = artm::core::TokenHasher();
-  EXPECT_EQ(token_hasher(artm::core::Token("class_id_1", "")), 14257342049058733748);
-  EXPECT_EQ(token_hasher(artm::core::Token("1_class_id", "")), 4746014843600301604);
-  EXPECT_EQ(token_hasher(artm::core::Token("", "token_1")), 16997208685286627075);
-  EXPECT_EQ(token_hasher(artm::core::Token("", "1_token")), 16937404881261379982);
-  EXPECT_EQ(token_hasher(artm::core::Token("class_id_1", "token_1")), 2667808992958584549);
-  EXPECT_EQ(token_hasher(artm::core::Token("class_id_2", "token_2")), 2667808992958584487);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_1", ""))[0], 0.245338);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("1_class_id", ""))[0], 0.319662);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("", "token_1"))[0], 0.341962);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("", "1_token"))[0], 0.315842);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_1", "token_1"))[0], 0.318573);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_2", "token_2"))[0], 0.410061);
 }
 
 void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_type,
