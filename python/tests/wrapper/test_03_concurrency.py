@@ -1,6 +1,5 @@
 import time
 import os
-import glob
 import itertools
 import tempfile
 import shutil
@@ -9,6 +8,7 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
+import helpers
 
 def test_func():
     # Set some constants
@@ -25,88 +25,47 @@ def test_func():
 
     perplexity_tol = 0.001
     expected_perplexity_value_on_iteration = {
-        0: 6699.124,
-        1: 2449.832,
-        2: 2211.953,
-        3: 1938.363,
-        4: 1767.228
+        0: 6710.208,
+        1: 2434.135,
+        2: 2202.418,
+        3: 1936.493,
+        4: 1774.600
     }
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API
+        # Create the instance of low-level API and helper object
         lib = artm.wrapper.LibArtm()
+        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
-        parser_config = messages.CollectionParserConfig()
-        parser_config.format = constants.CollectionParserConfig_Format_BagOfWordsUci
-
-        parser_config.docword_file_path = os.path.join(os.getcwd(), docword)
-        parser_config.vocab_file_path = os.path.join(os.getcwd(), vocab)
-        parser_config.target_folder = batches_folder
-        parser_config.dictionary_file_name = dictionary_name
-
-        lib.ArtmParseCollection(parser_config)
+        helper.parse_collection_uci(os.path.join(os.getcwd(), docword),
+                                    os.path.join(os.getcwd(), vocab),
+                                    batches_folder,
+                                    dictionary_name)
 
         for num_processors in num_processors_list:
-            # Create master component and add scores
-            master_config = messages.MasterComponentConfig()
-            master_config.processors_count = num_processors
-
-            ref_score_config = master_config.score_config.add()
-            ref_score_config.name = 'PerplexityScore'
-            ref_score_config.type = constants.ScoreConfig_Type_Perplexity
-            ref_score_config.config = messages.PerplexityScoreConfig().SerializeToString()
-
-            master_id = lib.ArtmCreateMasterComponent(master_config)
+            # Create master component and scores
+            scores = [('PerplexityScore', messages.PerplexityScoreConfig())]
+            master_id = helper.create_master_component(scores=scores)
+            helper.master_id = master_id
 
             # Import the collection dictionary
-            dict_args = messages.ImportDictionaryArgs()
-            dict_args.dictionary_name = dictionary_name
-            dict_args.file_name = os.path.join(batches_folder, dictionary_name)
-            lib.ArtmImportDictionary(master_id, dict_args)
+            helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
             # Initialize model
-            init_args = messages.InitializeModelArgs()
-            init_args.model_name = pwt
-            init_args.dictionary_name = dictionary_name
-            init_args.source_type = constants.InitializeModelArgs_SourceType_Dictionary
-            init_args.topics_count = num_topics
-            lib.ArtmInitializeModel(master_id, init_args)
-
-            # Create configuration for batch processing
-            proc_args = messages.ProcessBatchesArgs()
-            proc_args.pwt_source_name = pwt
-            proc_args.nwt_target_name = nwt
-            for name in os.listdir(batches_folder):
-                if name != dictionary_name:
-                    proc_args.batch_filename.append(os.path.join(batches_folder, name))
-            proc_args.inner_iterations_count = num_inner_iterations
-
-            # Create configuration for Phi normalization
-            norm_args = messages.NormalizeModelArgs()
-            norm_args.pwt_target_name = pwt
-            norm_args.nwt_source_name = nwt
-
-            # Create config for scores retrieval
-            perplexity_args = messages.GetScoreValueArgs()
-            perplexity_args.model_name = pwt
-            perplexity_args.score_name = 'PerplexityScore'
+            helper.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
 
             times = []
             for iter in xrange(num_outer_iterations):
                 start = time.time()
                 
                 # Invoke one scan of the collection and normalize Phi
-                lib.ArtmRequestProcessBatches(master_id, proc_args)
-                lib.ArtmNormalizeModel(master_id, norm_args)
+                helper.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
+                helper.normalize_model(pwt, nwt)  
 
                 # Retrieve and print perplexity score
-                results = lib.ArtmRequestScore(master_id, perplexity_args)
-                score_data = messages.ScoreData()
-                score_data.ParseFromString(results)
-                perplexity_score = messages.PerplexityScore()
-                perplexity_score.ParseFromString(score_data.data)
+                perplexity_score = helper.retrieve_score(pwt, 'PerplexityScore')
 
                 end = time.time()
                 assert abs(expected_perplexity_value_on_iteration[iter] - perplexity_score.value) < perplexity_tol

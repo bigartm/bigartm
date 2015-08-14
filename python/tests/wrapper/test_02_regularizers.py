@@ -1,5 +1,4 @@
 import os
-import glob
 import itertools
 import tempfile
 import shutil
@@ -8,6 +7,7 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
+import helpers
 
 def test_func():
     # Set some constants
@@ -28,191 +28,80 @@ def test_func():
 
     perplexity_tol = 0.001
     expected_perplexity_value_on_iteration = {
-        0: 6691.688,
-        1: 2442.690,
-        2: 2330.616,
-        3: 1826.080,
-        4: 1711.015,
-        5: 1614.403,
-        6: 1590.140,
-        7: 1564.405
+        0: 6703.161,
+        1: 2426.277,
+        2: 2276.476,
+        3: 1814.072,
+        4: 1742.911,
+        5: 1637.142,
+        6: 1612.946,
+        7: 1581.725
     }
     sparsity_tol = 0.001
     expected_phi_sparsity_value_on_iteration = {
-        0: 0.060,
-        1: 0.121,
-        2: 0.210,
-        3: 0.312,
-        4: 0.393,
-        5: 0.452,
-        6: 0.495,
-        7: 0.528
+        0: 0.059,
+        1: 0.120,
+        2: 0.212,
+        3: 0.306,
+        4: 0.380,
+        5: 0.438,
+        6: 0.483,
+        7: 0.516
     }
     expected_theta_sparsity_value_on_iteration = {
-        0: 0.012,
-        1: 0.035,
-        2: 0.143,
-        3: 0.245,
-        4: 0.314,
-        5: 0.335,
-        6: 0.345,
-        7: 0.349
+        0: 0.009,
+        1: 0.036,
+        2: 0.146,
+        3: 0.239,
+        4: 0.278,
+        5: 0.301,
+        6: 0.315,
+        7: 0.319
     }
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API
+        # Create the instance of low-level API and helper object
         lib = artm.wrapper.LibArtm()
+        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
-        parser_config = messages.CollectionParserConfig()
-        parser_config.format = constants.CollectionParserConfig_Format_BagOfWordsUci
+        helper.parse_collection_uci(os.path.join(os.getcwd(), docword),
+                                    os.path.join(os.getcwd(), vocab),
+                                    batches_folder,
+                                    dictionary_name)
 
-        parser_config.docword_file_path = os.path.join(os.getcwd(), docword)
-        parser_config.vocab_file_path = os.path.join(os.getcwd(), vocab)
-        parser_config.target_folder = batches_folder
-        parser_config.dictionary_file_name = dictionary_name
-
-        lib.ArtmParseCollection(parser_config)
-
-        # Create master component and add scores
-        master_config = messages.MasterComponentConfig()
-
-        # Add perplexity score
-        ref_score_config = master_config.score_config.add()
-        ref_score_config.name = 'PerplexityScore'
-        ref_score_config.type = constants.ScoreConfig_Type_Perplexity
-        ref_score_config.config = messages.PerplexityScoreConfig().SerializeToString()
-
-        # Add sparsity Phi score
-        ref_score_config = master_config.score_config.add()
-        ref_score_config.name = 'SparsityPhiScore'
-        ref_score_config.type = constants.ScoreConfig_Type_SparsityPhi
-        ref_score_config.config = messages.SparsityPhiScoreConfig().SerializeToString()
-
-        # Add sparsity Theta score
-        ref_score_config = master_config.score_config.add()
-        ref_score_config.name = 'SparsityThetaScore'
-        ref_score_config.type = constants.ScoreConfig_Type_SparsityTheta
-        ref_score_config.config = messages.SparsityThetaScoreConfig().SerializeToString()  
-
-        # Add top tokens score
-        ref_score_config = master_config.score_config.add()
-        ref_score_config.name = 'TopTokensScore'
-        ref_score_config.type = constants.ScoreConfig_Type_TopTokens
-        ref_score_config.config = messages.TopTokensScoreConfig().SerializeToString()
-
-        master_id = lib.ArtmCreateMasterComponent(master_config)
+        # Create master component and scores
+        scores = [('Perplexity', messages.PerplexityScoreConfig()),
+                  ('SparsityPhi', messages.SparsityPhiScoreConfig()),
+                  ('SparsityTheta', messages.SparsityThetaScoreConfig()),
+                  ('TopTokens', messages.TopTokensScoreConfig())]
+        master_id = helper.create_master_component(scores=scores)
+        helper.master_id = master_id
 
         # Import the collection dictionary
-        dict_args = messages.ImportDictionaryArgs()
-        dict_args.dictionary_name = 'dictionary'
-        dict_args.file_name = os.path.join(batches_folder, dictionary_name)
-        lib.ArtmImportDictionary(master_id, dict_args)
+        helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
         # Configure basic regularizers
-        ref_reg_config = messages.RegularizerConfig()
-        ref_reg_config.name = 'SmoothSparsePhi'
-        ref_reg_config.type = constants.RegularizerConfig_Type_SmoothSparsePhi
-        ref_reg_config.config = messages.SmoothSparsePhiConfig().SerializeToString()
-        lib.ArtmCreateRegularizer(master_id, ref_reg_config)
-
-        ref_reg_config = messages.RegularizerConfig()
-        ref_reg_config.name = 'SmoothSparseTheta'
-        ref_reg_config.type = constants.RegularizerConfig_Type_SmoothSparseTheta
-        ref_reg_config.config = messages.SmoothSparseThetaConfig().SerializeToString()
-        lib.ArtmCreateRegularizer(master_id, ref_reg_config)
-
-        ref_reg_config = messages.RegularizerConfig()
-        ref_reg_config.name = 'DecorrelatorPhi'
-        ref_reg_config.type = constants.RegularizerConfig_Type_DecorrelatorPhi
-        ref_reg_config.config = messages.DecorrelatorPhiConfig().SerializeToString()
-        lib.ArtmCreateRegularizer(master_id, ref_reg_config)
+        helper.create_smooth_sparse_phi_regularizer('SmoothSparsePhi')
+        helper.create_smooth_sparse_theta_regularizer('SmoothSparseTheta')
+        helper.create_decorrelator_phi_regularizer('DecorrelatorPhi')
 
         # Initialize model
-        init_args = messages.InitializeModelArgs()
-        init_args.model_name = pwt
-        init_args.dictionary_name = dictionary_name
-        init_args.source_type = constants.InitializeModelArgs_SourceType_Dictionary
-        init_args.topics_count = num_topics
-        lib.ArtmInitializeModel(master_id, init_args)
-
-        # Create configuration for batch processing
-        proc_args = messages.ProcessBatchesArgs()
-        proc_args.regularizer_name.append('SmoothSparseTheta')
-        proc_args.regularizer_tau.append(smsp_theta_tau)
-        proc_args.pwt_source_name = pwt
-        proc_args.nwt_target_name = nwt
-        for name in os.listdir(batches_folder):
-            if name != dictionary_name:
-                proc_args.batch_filename.append(os.path.join(batches_folder, name))
-        proc_args.inner_iterations_count = num_inner_iterations
-
-        # Create configuration for Phi regularization
-        reg_args = messages.RegularizeModelArgs()
-        reg_args.pwt_source_name = pwt
-        reg_args.nwt_source_name = nwt
-        reg_args.rwt_target_name = rwt
-        
-        reg_set = reg_args.regularizer_settings.add()
-        reg_set.name = 'SmoothSparsePhi'
-        reg_set.tau = smsp_phi_tau
-        reg_set.use_relative_regularization = False
-
-        reg_set = reg_args.regularizer_settings.add()
-        reg_set.name = 'DecorrelatorPhi'
-        reg_set.tau = decor_phi_tau
-        reg_set.use_relative_regularization = False
-
-        # Create configuration for Phi normalization
-        norm_args = messages.NormalizeModelArgs()
-        norm_args.pwt_target_name = pwt
-        norm_args.nwt_source_name = nwt
-        norm_args.rwt_source_name = rwt
-
-        # Create config for scores retrieval
-        perplexity_args = messages.GetScoreValueArgs()
-        perplexity_args.model_name = pwt
-        perplexity_args.score_name = 'PerplexityScore'
-
-        top_tokens_args = messages.GetScoreValueArgs()
-        top_tokens_args.model_name = pwt
-        top_tokens_args.score_name = 'TopTokensScore'
-
-        sparsity_phi_args = messages.GetScoreValueArgs()
-        sparsity_phi_args.model_name = pwt
-        sparsity_phi_args.score_name = 'SparsityPhiScore'
-
-        sparsity_theta_args = messages.GetScoreValueArgs()
-        sparsity_theta_args.model_name = pwt
-        sparsity_theta_args.score_name = 'SparsityThetaScore'
+        helper.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
-            lib.ArtmRequestProcessBatches(master_id, proc_args)
-            lib.ArtmRegularizeModel(master_id, reg_args)
-            lib.ArtmNormalizeModel(master_id, norm_args)    
+            helper.process_batches(pwt, nwt, num_inner_iterations,
+                                   batches_folder, ['SmoothSparseTheta'], [smsp_theta_tau])
+            helper.regularize_model(pwt, nwt, rwt,
+                                    ['SmoothSparsePhi', 'DecorrelatorPhi'], [smsp_phi_tau, decor_phi_tau])
+            helper.normalize_model(pwt, nwt, rwt)   
 
-            # Retrieve perplexity score
-            results = lib.ArtmRequestScore(master_id, perplexity_args)
-            score_data = messages.ScoreData()
-            score_data.ParseFromString(results)
-            perplexity_score = messages.PerplexityScore()
-            perplexity_score.ParseFromString(score_data.data)
-
-            # Retrieve sparsity phi score
-            results = lib.ArtmRequestScore(master_id, sparsity_phi_args)
-            score_data = messages.ScoreData()
-            score_data.ParseFromString(results)
-            sparsity_phi_score = messages.SparsityPhiScore()
-            sparsity_phi_score.ParseFromString(score_data.data)
-
-            # Retrieve sparsity theta score
-            results = lib.ArtmRequestScore(master_id, sparsity_theta_args)
-            score_data = messages.ScoreData()
-            score_data.ParseFromString(results)
-            sparsity_theta_score = messages.SparsityThetaScore()
-            sparsity_theta_score.ParseFromString(score_data.data)
+            # Retrieve scores
+            perplexity_score = helper.retrieve_score(pwt, 'Perplexity')
+            sparsity_phi_score = helper.retrieve_score(pwt, 'SparsityPhi')
+            sparsity_theta_score = helper.retrieve_score(pwt, 'SparsityTheta')
 
             # Assert and print scores
             string = 'Iter#{0}'.format(iter)
@@ -226,11 +115,7 @@ def test_func():
             assert abs(sparsity_theta_score.value - expected_theta_sparsity_value_on_iteration[iter]) < sparsity_tol
 
         # Retrieve and print top tokens score
-        results = lib.ArtmRequestScore(master_id, top_tokens_args)
-        score_data = messages.ScoreData()
-        score_data.ParseFromString(results)
-        top_tokens_score = messages.TopTokensScore()
-        top_tokens_score.ParseFromString(score_data.data)
+        top_tokens_score = helper.retrieve_score(pwt, 'TopTokens')
 
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))

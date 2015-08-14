@@ -11,6 +11,18 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
+import helpers
+
+def _print_top_tokens(top_tokens_score, expected_values_topic, tolerance):
+    top_tokens_triplets = zip(top_tokens_score.topic_index,
+                              zip(top_tokens_score.token,
+                                  top_tokens_score.weight))
+    for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda (topic_index, _): topic_index):
+        print_string = u'Topic#{0} : '.format(topic_index)
+        for _, (token, weight) in group:
+            print_string += u' {0}({1:.3f})'.format(token, weight)
+            assert abs(expected_values_topic[topic_index][token] - weight) < tolerance
+        print print_string
 
 def test_func():
     # Set some constants
@@ -30,18 +42,6 @@ def test_func():
     tolerance = 0.001
     expected_values_rus_topic = {
         0: {
-            u'ногие': 0.115,
-            u'отряд': 0.115,
-            u'млекопитающие': 0.115,
-            u'семейство': 0.115,
-            u'хищный': 0.077,
-            u'ушастый': 0.077,
-            u'ласто': 0.077,
-            u'моржовых': 0.077,
-            u'тюлень': 0.077,
-            u'коротко': 0.038
-        },
-        1: {
             u'документ': 0.125,
             u'текст': 0.125,
             u'анализ': 0.125,
@@ -49,13 +49,37 @@ def test_func():
             u'модель': 0.125,
             u'коллекция': 0.083,
             u'тематическая': 0.083,
-            'plsa': 0.042,
-            'lda': 0.042,
-            'model': 0.042        
+            'model': 0.042,
+            'topic': 0.042,
+            'artm': 0.042
+        },
+        1: {
+            u'ногие': 0.115,
+            u'отряд': 0.115,
+            u'млекопитающие': 0.115,
+            u'семейство': 0.115,
+            u'хищный': 0.077,
+            u'ласто': 0.077,
+            u'моржовых': 0.077,
+            u'тюлень': 0.077,
+            u'ушастый': 0.077,
+            u'коротко': 0.038
         }
     }
     expected_values_eng_topic = {
         0: {
+            'model': 0.167,
+            'text': 0.125,
+            'analysis': 0.125,
+            'statistical': 0.125,
+            'topic': 0.125,
+            'artm': 0.083,
+            'plsa': 0.083,
+            'lda': 0.083,
+            'collection': 0.083,
+            'not': 0.000
+        },
+        1: {
             'mammal': 0.188,
             'predatory': 0.125,
             'eared': 0.125,
@@ -66,21 +90,9 @@ def test_func():
             'crocodilia': 0.062,
             'order': 0.062,
             'pinnipeds': 0.062
-        },
-        1: {
-            'model': 0.167,
-            'text': 0.125,
-            'statistical': 0.125,
-            'analysis': 0.125,
-            'topic': 0.125,
-            'plsa': 0.083,
-            'lda': 0.083,
-            'collection': 0.083,
-            'artm': 0.083,
-            'not': 0.000     
         }
     }
-    expected_sparsity_values = {'russian': 0.4, 'english': 0.395}
+    expected_sparsity_values = {'russian': 0.5, 'english': 0.5}
 
     # Prepare multimodal data
     ens = []
@@ -138,8 +150,9 @@ def test_func():
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API
+        # Create the instance of low-level API and helper object
         lib = artm.wrapper.LibArtm()
+        helper = helpers.TestHelper(lib)
 
         # Save batch and dictionary on the disk
         lib.ArtmSaveBatch(batches_folder, batch)
@@ -148,146 +161,40 @@ def test_func():
         with open(os.path.join(batches_folder, dictionary_name), 'wb') as file:
             file.write(dict_config.SerializeToString())
 
-        # Create master component and add scores
-        master_config = messages.MasterComponentConfig()
-
-        # Add sparsity Phi scores for russian and english
-        ref_score_config = master_config.score_config.add()
-        ref_score_config.name = 'SparsityPhiRussianScore'
-        ref_score_config.type = constants.ScoreConfig_Type_SparsityPhi
-        sparsity_score = messages.SparsityPhiScoreConfig()
-        sparsity_score.class_id = russian_class
-        ref_score_config.config = sparsity_score.SerializeToString()
-
-        ref_score_config = master_config.score_config.add()
-        ref_score_config.name = 'SparsityPhiEnglishScore'
-        ref_score_config.type = constants.ScoreConfig_Type_SparsityPhi
-        sparsity_score = messages.SparsityPhiScoreConfig()
-        sparsity_score.class_id = english_class
-        ref_score_config.config = sparsity_score.SerializeToString()
-
-        # Add top tokens scores for russian and english
-        ref_score_config = master_config.score_config.add()
-        ref_score_config.name = 'TopTokensRussianScore'
-        ref_score_config.type = constants.ScoreConfig_Type_TopTokens
-        top_tokens_score = messages.TopTokensScoreConfig()
-        top_tokens_score.class_id = russian_class
-        ref_score_config.config = top_tokens_score.SerializeToString()
-
-        ref_score_config = master_config.score_config.add()
-        ref_score_config.name = 'TopTokensEnglishScore'
-        ref_score_config.type = constants.ScoreConfig_Type_TopTokens
-        top_tokens_score = messages.TopTokensScoreConfig()
-        top_tokens_score.class_id = english_class
-        ref_score_config.config = top_tokens_score.SerializeToString()
-
-        master_id = lib.ArtmCreateMasterComponent(master_config)        
+        # Create master component and scores
+        scores = [('SparsityPhiRus', messages.SparsityPhiScoreConfig(class_id = russian_class)),
+                  ('SparsityPhiEng', messages.SparsityPhiScoreConfig(class_id = english_class)),
+                  ('TopTokensRus', messages.TopTokensScoreConfig(class_id=russian_class)),
+                  ('TopTokensEng', messages.TopTokensScoreConfig(class_id = english_class))]
+        master_id = helper.create_master_component(scores=scores)
+        helper.master_id = master_id
 
         # Import the collection dictionary
-        dict_args = messages.ImportDictionaryArgs()
-        dict_args.dictionary_name = 'dictionary'
-        dict_args.file_name = os.path.join(batches_folder, dictionary_name)
-        lib.ArtmImportDictionary(master_id, dict_args)
+        helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
         # Initialize model
-        init_args = messages.InitializeModelArgs()
-        init_args.model_name = pwt
-        init_args.dictionary_name = dictionary_name
-        init_args.source_type = constants.InitializeModelArgs_SourceType_Dictionary
-        init_args.topics_count = num_topics
-        lib.ArtmInitializeModel(master_id, init_args)
-
-        # Create configuration for batch processing
-        proc_args = messages.ProcessBatchesArgs()
-        proc_args.pwt_source_name = pwt
-        proc_args.nwt_target_name = nwt
-        
-        proc_args.class_id.append(russian_class)
-        proc_args.class_id.append(english_class)
-        proc_args.class_weight.append(russian_class_weight)
-        proc_args.class_weight.append(english_class_weight)
-        
-        for name in os.listdir(batches_folder):
-            if name != dictionary_name:
-                proc_args.batch_filename.append(os.path.join(batches_folder, name))
-        proc_args.inner_iterations_count = num_inner_iterations
-
-        # Create configuration for Phi normalization
-        norm_args = messages.NormalizeModelArgs()
-        norm_args.pwt_target_name = pwt
-        norm_args.nwt_source_name = nwt
-
-        # Create config for scores retrieval
-        sp_phi_rus_args = messages.GetScoreValueArgs()
-        sp_phi_rus_args.model_name = pwt
-        sp_phi_rus_args.score_name = 'SparsityPhiRussianScore'
-
-        sp_phi_eng_args = messages.GetScoreValueArgs()
-        sp_phi_eng_args.model_name = pwt
-        sp_phi_eng_args.score_name = 'SparsityPhiEnglishScore'
-
-        top_tokens_rus_args = messages.GetScoreValueArgs()
-        top_tokens_rus_args.model_name = pwt
-        top_tokens_rus_args.score_name = 'TopTokensRussianScore'
-
-        top_tokens_eng_args = messages.GetScoreValueArgs()
-        top_tokens_eng_args.model_name = pwt
-        top_tokens_eng_args.score_name = 'TopTokensEnglishScore'
+        helper.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
-            lib.ArtmRequestProcessBatches(master_id, proc_args)
-            lib.ArtmNormalizeModel(master_id, norm_args)    
+            helper.process_batches(pwt, nwt, num_inner_iterations, batches_folder,
+                                   class_ids=[russian_class, english_class],
+                                   class_weights=[russian_class_weight, english_class_weight])
+            helper.normalize_model(pwt, nwt)    
 
-        # Retrieve scores
-        results = lib.ArtmRequestScore(master_id, sp_phi_rus_args)
-        score_data = messages.ScoreData()
-        score_data.ParseFromString(results)
-        sp_phi_rus_score = messages.SparsityPhiScore()
-        sp_phi_rus_score.ParseFromString(score_data.data)
-
-        results = lib.ArtmRequestScore(master_id, sp_phi_eng_args)
-        score_data = messages.ScoreData()
-        score_data.ParseFromString(results)
-        sp_phi_eng_score = messages.SparsityPhiScore()
-        sp_phi_eng_score.ParseFromString(score_data.data)
-
-        results = lib.ArtmRequestScore(master_id, top_tokens_rus_args)
-        score_data = messages.ScoreData()
-        score_data.ParseFromString(results)
-        top_tokens_rus_score = messages.TopTokensScore()
-        top_tokens_rus_score.ParseFromString(score_data.data)
-
-        results = lib.ArtmRequestScore(master_id, top_tokens_eng_args)
-        score_data = messages.ScoreData()
-        score_data.ParseFromString(results)
-        top_tokens_eng_score = messages.TopTokensScore()
-        top_tokens_eng_score.ParseFromString(score_data.data)
+        # Retrieve and print scores
+        top_tokens_rus = helper.retrieve_score(pwt, 'TopTokensRus')
+        top_tokens_eng = helper.retrieve_score(pwt, 'TopTokensEng')
+        sp_phi_rus = helper.retrieve_score(pwt, 'SparsityPhiRus')
+        sp_phi_eng = helper.retrieve_score(pwt, 'SparsityPhiEng')
 
         print 'Top tokens per russian topic:'
-        top_tokens_triplets = zip(top_tokens_rus_score.topic_index,
-                                  zip(top_tokens_rus_score.token,
-                                      top_tokens_rus_score.weight))
-        for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda (topic_index, _): topic_index):
-            print_string = u'Topic#{0} : '.format(topic_index)
-            for _, (token, weight) in group:
-                print_string += u' {0}({1:.3f})'.format(token, weight)
-                assert abs(expected_values_rus_topic[topic_index][token] - weight) < tolerance
-            print print_string
-
+        _print_top_tokens(top_tokens_rus, expected_values_rus_topic, tolerance)
         print 'Top tokens per english topic:'
-        top_tokens_triplets = zip(top_tokens_eng_score.topic_index,
-                                  zip(top_tokens_eng_score.token,
-                                      top_tokens_eng_score.weight))
-        for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda (topic_index, _): topic_index):
-            print_string = u'Topic#{0} : '.format(topic_index)
-            for _, (token, weight) in group:
-                print_string += u' {0}({1:.3f})'.format(token, weight)
-                assert abs(expected_values_eng_topic[topic_index][token] - weight) < tolerance
-            print print_string
+        _print_top_tokens(top_tokens_eng, expected_values_eng_topic, tolerance)
 
-        print '\nSparsity Phi: russian {0:.3f}, english {1:.3f}'.format(sp_phi_rus_score.value, sp_phi_eng_score.value)
-        assert abs(expected_sparsity_values['russian'] - sp_phi_rus_score.value) < tolerance
-        assert abs(expected_sparsity_values['english'] - sp_phi_eng_score.value) < tolerance
+        print '\nSparsity Phi: russian {0:.3f}, english {1:.3f}'.format(sp_phi_rus.value, sp_phi_eng.value)
+        assert abs(expected_sparsity_values['russian'] - sp_phi_rus.value) < tolerance
+        assert abs(expected_sparsity_values['english'] - sp_phi_eng.value) < tolerance
     finally:
         shutil.rmtree(batches_folder)
