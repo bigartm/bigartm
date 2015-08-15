@@ -834,6 +834,22 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   return retval;
 }
 
+std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token) {
+  size_t h = 1125899906842597L;  // prime
+
+  if (token.class_id != DefaultClass) {
+    for (int i = 0; i < token.class_id.size(); i++)
+      h = 31 * h + token.class_id[i];
+  }
+
+  h = 31 * h + 255;  // separate class_id and token
+
+  for (int i = 0; i < token.keyword.size(); i++)
+    h = 31 * h + token.keyword[i];
+
+  return GenerateRandomVector(size, h);
+}
+
 // Return the filenames of all files that have the specified extension
 // in the specified directory.
 std::vector<std::string> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
