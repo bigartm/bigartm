@@ -77,7 +77,7 @@ def test_func():
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi
             helper.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
-            helper.normalize_model(pwt, nwt)  
+            helper.normalize_model(pwt, nwt)
 
             # Retrieve and print perplexity score
             perplexity_score = helper.retrieve_score(pwt, 'PerplexityScore')

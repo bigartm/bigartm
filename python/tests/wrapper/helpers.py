@@ -1,4 +1,5 @@
 import os
+import numpy
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -10,7 +11,7 @@ class TestHelper(object):
         self._lib = library
         self.master_id = None
 
-    def create_master_component(self, num_processors=None, scores=None):
+    def create_master_component(self, num_processors=None, scores=None, cache_theta=False):
         """ Args:
             - num_processors (int): number of work threads to use
             - scores (list): list of tuples (name, config) for each config to use
@@ -21,6 +22,8 @@ class TestHelper(object):
 
         if num_processors is not None:
             master_config.processors_count = num_processors
+        if cache_theta is not None:
+            master_config.cache_theta = cache_theta
         if scores is not None:
             for name, config in scores:
                 ref_score_config = master_config.score_config.add()
@@ -141,27 +144,37 @@ class TestHelper(object):
         score_info.ParseFromString(score_data.data)
         return score_info
 
-    def process_batches(self, pwt, nwt, num_inner_iterations, batches_folder,
-                        regularizer_name=None, regularizer_tau=None,
-                        class_ids=None, class_weights=None, master_id=None):
+    def process_batches(self, pwt, nwt, num_inner_iterations, batches_folder=None,
+                        batches=None, regularizer_name=None, regularizer_tau=None,
+                        class_ids=None, class_weights=None, master_id=None, find_theta=False):
         """Args:
            - pwt(str): name of pwt matrix in BigARTM
            - nwt(str): name of nwt matrix in BigARTM
            - num_inner_iterations(int): number of inner iterations during processing
-           - batches_folder(str): full path to data folder
+           - batches_folder(str): full path to data folder (alternative 1)
+           - batches(list of str): full file names of batches to process (alternative 2)
            - regularizer_name(list of str): list of names of Theta regularizers to use
            - regularizer_tau(list of double): list of tau coefficients for Theta regularizers
            - class_ids(list of str): list of class ids to use during processing
            - class_weights(list of double): list of corresponding weights of class ids
            - master_id(int): the id of master component returned by create_master_component()
+           - find_theat(bool): find theta matrix for 'batches' (if alternative 2)
+           Returns:
+           - tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta (find_theta==True)
+           - messages.ThetaMatrix --- the info about Theta (find_theta==False)
         """
         args = messages.ProcessBatchesArgs()
         args.pwt_source_name = pwt
         args.nwt_target_name = nwt
-        for name in os.listdir(batches_folder):
-            _, extension = os.path.splitext(name)
-            if extension == '.batch':
-                args.batch_filename.append(os.path.join(batches_folder, name))
+        if batches_folder is not None:
+            for name in os.listdir(batches_folder):
+                _, extension = os.path.splitext(name)
+                if extension == '.batch':
+                    args.batch_filename.append(os.path.join(batches_folder, name))
+        if batches is not None:
+            for batch in batches:
+                args.batch_filename.append(batch)
+            
         args.inner_iterations_count = num_inner_iterations
 
         if regularizer_name is not None and regularizer_tau is not None:
@@ -174,10 +187,33 @@ class TestHelper(object):
                 args.class_id.append(class_id)
                 args.class_weight.append(weight)
 
+        func = None
+        if find_theta:
+            args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_Dense
+            func = self._lib.ArtmRequestProcessBatchesExternal
+        elif not find_theta or find_theta is None:
+            func = self._lib.ArtmRequestProcessBatches
+
         cur_master_id = self.master_id
         if master_id is not None:
             cur_master_id = master_id
-        self._lib.ArtmRequestProcessBatches(cur_master_id, args)
+        retval = func(cur_master_id, args)
+
+        result = messages.ProcessBatchesResult()
+        result.ParseFromString(retval)
+
+        if not find_theta:
+            return result.theta_matrix
+
+        num_rows = len(result.theta_matrix.item_id)
+        num_cols = result.theta_matrix.topics_count
+        numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+
+        cp_args = messages.CopyRequestResultArgs()
+        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
+        self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+
+        return result.theta_matrix, numpy_ndarray
 
     def regularize_model(self, pwt, nwt, rwt, regularizer_name, regularizer_tau, master_id=None):
         """Args:
@@ -281,3 +317,56 @@ class TestHelper(object):
         if master_id is not None:
             cur_master_id = master_id
         self._lib.ArtmCreateRegularizer(cur_master_id, ref_reg_config)
+
+    def get_theta_info(self, model, master_id=None):
+        """Args:
+           - model(str): name of matrix in BigARTM
+           - master_id(int): the id of master component returned by create_master_component()
+           Returns:
+           - messages.ThetaMatrix object
+        """
+        cur_master_id = self.master_id
+        if master_id is not None:
+            cur_master_id = master_id
+        result = self._lib.ArtmRequestThetaMatrix(cur_master_id, messages.GetThetaMatrixArgs(model_name=model))
+
+        theta_matrix_info = messages.ThetaMatrix()
+        theta_matrix_info.ParseFromString(result)
+
+        return theta_matrix_info
+
+    def get_theta_matrix(self, model, clean_cache=None, topic_names=None, master_id=None):
+        """Args:
+           - model(str): name of matrix in BigARTM
+           - cleab_cache(bool): remove or not the info about Theta after retrieval
+           - topic_names(list of str): list of topics to retrieve (None == all topics)
+           - master_id(int): the id of master component returned by create_master_component()
+           Returns:
+           - numpy.ndarray with Theta data (e.g. p(t|d) values)
+        """
+        args = messages.GetThetaMatrixArgs()
+        args.model_name = model
+        if clean_cache is not None:
+            args.clean_cache = clean_cache
+        if topic_names is not None:
+            args.ClearField('topic_name')
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
+
+        cur_master_id = self.master_id
+        if master_id is not None:
+            cur_master_id = master_id
+        result = self._lib.ArtmRequestThetaMatrixExternal(cur_master_id, args)
+
+        theta_matrix_info = messages.ThetaMatrix()
+        theta_matrix_info.ParseFromString(result)
+
+        num_rows = len(theta_matrix_info.item_id)
+        num_cols = theta_matrix_info.topics_count
+        numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+
+        cp_args = messages.CopyRequestResultArgs()
+        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
+        self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+
+        return numpy_ndarray

@@ -92,8 +92,12 @@ def test_func():
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
-            helper.process_batches(pwt, nwt, num_inner_iterations,
-                                   batches_folder, ['SmoothSparseTheta'], [smsp_theta_tau])
+            helper.process_batches(pwt=pwt,
+                                   nwt=nwt,
+                                   num_inner_iterations=num_inner_iterations,
+                                   batches_folder=batches_folder,
+                                   regularizer_name=['SmoothSparseTheta'],
+                                   regularizer_tau=[smsp_theta_tau])
             helper.regularize_model(pwt, nwt, rwt,
                                     ['SmoothSparsePhi', 'DecorrelatorPhi'], [smsp_phi_tau, decor_phi_tau])
             helper.normalize_model(pwt, nwt, rwt)   
