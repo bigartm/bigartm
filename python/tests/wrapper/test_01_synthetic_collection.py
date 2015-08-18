@@ -6,7 +6,6 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
-import artm.wrapper.constants as constants
 import helpers
 
 def test_func():
@@ -68,8 +67,7 @@ def test_func():
         config.num_tokens = num_top_tokens
         scores = [('PerplexityScore', messages.PerplexityScoreConfig()),
                   ('TopTokensScore', config)]
-        master_id = helper.create_master_component(scores=scores)
-        helper.master_id = master_id
+        helper.master_id = helper.create_master_component(scores=scores)
 
         # Initialize model
         helper.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)

@@ -10,7 +10,6 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
-import artm.wrapper.constants as constants
 import helpers
 
 def _print_top_tokens(top_tokens_score, expected_values_topic, tolerance):
@@ -166,8 +165,7 @@ def test_func():
                   ('SparsityPhiEng', messages.SparsityPhiScoreConfig(class_id = english_class)),
                   ('TopTokensRus', messages.TopTokensScoreConfig(class_id=russian_class)),
                   ('TopTokensEng', messages.TopTokensScoreConfig(class_id = english_class))]
-        master_id = helper.create_master_component(scores=scores)
-        helper.master_id = master_id
+        helper.master_id = helper.create_master_component(scores=scores)
 
         # Import the collection dictionary
         helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)

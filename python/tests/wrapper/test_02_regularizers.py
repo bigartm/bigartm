@@ -6,7 +6,6 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
-import artm.wrapper.constants as constants
 import helpers
 
 def test_func():
@@ -76,8 +75,7 @@ def test_func():
                   ('SparsityPhi', messages.SparsityPhiScoreConfig()),
                   ('SparsityTheta', messages.SparsityThetaScoreConfig()),
                   ('TopTokens', messages.TopTokensScoreConfig())]
-        master_id = helper.create_master_component(scores=scores)
-        helper.master_id = master_id
+        helper.master_id = helper.create_master_component(scores=scores)
 
         # Import the collection dictionary
         helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
@@ -108,11 +106,11 @@ def test_func():
             sparsity_theta_score = helper.retrieve_score(pwt, 'SparsityTheta')
 
             # Assert and print scores
-            string = 'Iter#{0}'.format(iter)
-            string += ': Perplexity = {0:.3f}'.format(perplexity_score.value)
-            string += ', Phi sparsity = {0:.3f}'.format(sparsity_phi_score.value)
-            string += ', Theta sparsity = {0:.3f}'.format(sparsity_theta_score.value)
-            print string
+            print_string = 'Iter#{0}'.format(iter)
+            print_string += ': Perplexity = {0:.3f}'.format(perplexity_score.value)
+            print_string += ', Phi sparsity = {0:.3f}'.format(sparsity_phi_score.value)
+            print_string += ', Theta sparsity = {0:.3f}'.format(sparsity_theta_score.value)
+            print print_string
 
             assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < perplexity_tol
             assert abs(sparsity_phi_score.value - expected_phi_sparsity_value_on_iteration[iter]) < sparsity_tol
@@ -124,9 +122,9 @@ def test_func():
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))
         for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda (topic_index, _): topic_index):
-            string = 'Topic#{0} : '.format(topic_index)
+            print_string = 'Topic#{0} : '.format(topic_index)
             for _, (token, weight) in group:
-                string += ' {0}({1:.3f})'.format(token, weight)
-            print string
+                print_string += ' {0}({1:.3f})'.format(token, weight)
+            print print_string
     finally:
         shutil.rmtree(batches_folder)

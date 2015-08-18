@@ -7,7 +7,6 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
-import artm.wrapper.constants as constants
 import helpers
 
 def test_func():
@@ -47,8 +46,7 @@ def test_func():
         for num_processors in num_processors_list:
             # Create master component and scores
             scores = [('PerplexityScore', messages.PerplexityScoreConfig())]
-            master_id = helper.create_master_component(scores=scores)
-            helper.master_id = master_id
+            helper.master_id = helper.create_master_component(scores=scores)
 
             # Import the collection dictionary
             helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)

@@ -7,7 +7,6 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
-import artm.wrapper.constants as constants
 import helpers
 
 def test_func():
@@ -42,8 +41,7 @@ def test_func():
 
         # Create master component and scores
         scores = [('ThetaSnippetScore', messages.ThetaSnippetScoreConfig())]
-        master_id = helper.create_master_component(scores=scores, cache_theta=True)
-        helper.master_id = master_id
+        helper.master_id = helper.create_master_component(scores=scores, cache_theta=True)
 
         # Import the collection dictionary
         helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)

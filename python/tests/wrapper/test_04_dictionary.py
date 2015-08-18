@@ -75,8 +75,7 @@ def test_func():
         
         scores = [('PerplexityDoc', messages.PerplexityScoreConfig()),
                   ('PerplexityCol', perplexity_config)]
-        master_id = helper.create_master_component(scores=scores)
-        helper.master_id = master_id
+        helper.master_id = helper.create_master_component(scores=scores)
 
         # Import the collection dictionary
         helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)

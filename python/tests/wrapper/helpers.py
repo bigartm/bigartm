@@ -75,13 +75,11 @@ class TestHelper(object):
         args.dictionary_name = dictionary_name
         args.file_name = file_name
         
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         self._lib.ArtmImportDictionary(cur_master_id, args)
 
-    def initialize_model(self, model_name, num_topics, source_type=None,
-                         disk_path=None, dictionary_name=None, master_id=None):
+    def initialize_model(self, model_name=None, num_topics=None, source_type=None, disk_path=None,
+                         dictionary_name=None, args=None, master_id=None):
         """Args:
            - model_name(str): name of pwt matrix in BigARTM
            - source_type(str): 'batches' | 'dictionary'
@@ -90,23 +88,25 @@ class TestHelper(object):
            - dictionary_name(str): name of imported dictionary (need if InitializeModelArgs_SourceType_Dictionary)
            - master_id(int): the id of master component returned by create_master_component()
         """
-        args = messages.InitializeModelArgs()
-        args.model_name = model_name
-        args.topics_count = num_topics
+        init_args = messages.InitializeModelArgs()
+        if args is not None:
+            init_args = args
+        if model_name is not None:
+            init_args.model_name = model_name
+        if num_topics is not None:
+            init_args.topics_count = num_topics
 
         if source_type is 'batches':
-            args.source_type = constants.InitializeModelArgs_SourceType_Batches
+            init_args.source_type = constants.InitializeModelArgs_SourceType_Batches
             if disk_path is not None:
-                args.disk_path = disk_path
+                init_args.disk_path = disk_path
         elif source_type is 'dictionary':
-            args.source_type = constants.InitializeModelArgs_SourceType_Dictionary
+            init_args.source_type = constants.InitializeModelArgs_SourceType_Dictionary
             if dictionary_name is not None:
-                args.dictionary_name = dictionary_name
+                init_args.dictionary_name = dictionary_name
 
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
-        self._lib.ArtmInitializeModel(cur_master_id, args)
+        cur_master_id = master_id if master_id is not None else self.master_id
+        self._lib.ArtmInitializeModel(cur_master_id, init_args)
 
     def retrieve_score(self, model_name, score_name, master_id=None):
         """Args:
@@ -119,9 +119,7 @@ class TestHelper(object):
         args.model_name = model_name
         args.score_name = score_name
 
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         results = self._lib.ArtmRequestScore(cur_master_id, args)
         score_data = messages.ScoreData()
         score_data.ParseFromString(results)
@@ -194,9 +192,7 @@ class TestHelper(object):
         elif not find_theta or find_theta is None:
             func = self._lib.ArtmRequestProcessBatches
 
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         retval = func(cur_master_id, args)
 
         result = messages.ProcessBatchesResult()
@@ -235,9 +231,7 @@ class TestHelper(object):
             reg_set.tau = tau
             reg_set.use_relative_regularization = False
 
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         self._lib.ArtmRegularizeModel(cur_master_id, args)
 
     def normalize_model(self, pwt, nwt, rwt=None, master_id=None):
@@ -253,9 +247,7 @@ class TestHelper(object):
         if rwt is not None:
             args.rwt_source_name = rwt
 
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         self._lib.ArtmNormalizeModel(cur_master_id, args)
 
     def create_smooth_sparse_phi_regularizer(self, name, class_ids=None, dictionary_name=None, master_id=None):
@@ -276,9 +268,7 @@ class TestHelper(object):
         if dictionary_name is not None:
             config.dictionary_name = dictionary_name
 
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         ref_reg_config.config = config.SerializeToString()
         self._lib.ArtmCreateRegularizer(cur_master_id, ref_reg_config)
 
@@ -292,9 +282,7 @@ class TestHelper(object):
         ref_reg_config.type = constants.RegularizerConfig_Type_SmoothSparseTheta
         ref_reg_config.config = messages.SmoothSparseThetaConfig().SerializeToString()
 
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         self._lib.ArtmCreateRegularizer(cur_master_id, ref_reg_config)
 
     def create_decorrelator_phi_regularizer(self, name, class_ids=None, master_id=None):
@@ -313,9 +301,7 @@ class TestHelper(object):
                 config.class_id.append(class_id)
         
         ref_reg_config.config = config.SerializeToString()
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         self._lib.ArtmCreateRegularizer(cur_master_id, ref_reg_config)
 
     def get_theta_info(self, model, master_id=None):
@@ -325,9 +311,7 @@ class TestHelper(object):
            Returns:
            - messages.ThetaMatrix object
         """
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         result = self._lib.ArtmRequestThetaMatrix(cur_master_id, messages.GetThetaMatrixArgs(model_name=model))
 
         theta_matrix_info = messages.ThetaMatrix()
@@ -353,9 +337,7 @@ class TestHelper(object):
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
 
-        cur_master_id = self.master_id
-        if master_id is not None:
-            cur_master_id = master_id
+        cur_master_id = master_id if master_id is not None else self.master_id
         result = self._lib.ArtmRequestThetaMatrixExternal(cur_master_id, args)
 
         theta_matrix_info = messages.ThetaMatrix()
@@ -370,3 +352,70 @@ class TestHelper(object):
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
         return numpy_ndarray
+
+    def get_phi_info(self, model, master_id=None):
+        """Args:
+           - model(str): name of matrix in BigARTM
+           - master_id(int): the id of master component returned by create_master_component()
+           Returns:
+           - messages.TopicModel object
+        """
+        cur_master_id = master_id if master_id is not None else self.master_id
+        result = self._lib.ArtmRequestTopicModel(cur_master_id, messages.GetTopicModelArgs(model_name=model))
+
+        phi_matrix_info = messages.TopicModel()
+        phi_matrix_info.ParseFromString(result)
+
+        return phi_matrix_info
+
+    def get_phi_matrix(self, model, topic_names=None, master_id=None):
+        """Args:
+           - model(str): name of matrix in BigARTM
+           - topic_names(list of str): list of topics to retrieve (None == all topics)
+           - master_id(int): the id of master component returned by create_master_component()
+           Returns:
+           - numpy.ndarray with Phi data (e.g. p(t|d) values)
+        """
+        args = messages.GetTopicModelArgs()
+        args.model_name = model
+        if topic_names is not None:
+            args.ClearField('topic_name')
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
+
+        cur_master_id = master_id if master_id is not None else self.master_id
+        result = self._lib.ArtmRequestTopicModelExternal(cur_master_id, args)
+
+        phi_matrix_info = messages.TopicModel()
+        phi_matrix_info.ParseFromString(result)
+
+        num_rows = len(phi_matrix_info.token)
+        num_cols = phi_matrix_info.topics_count
+        numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+
+        cp_args = messages.CopyRequestResultArgs()
+        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetModelSecondPass
+        self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+
+        return numpy_ndarray
+
+    def export_model(self, model, file_name, master_id=None):
+        args = messages.ExportModelArgs()
+        args.model_name = model
+        args.file_name = file_name
+
+        cur_master_id = master_id if master_id is not None else self.master_id
+        result = self._lib.ArtmExportModel(cur_master_id, args)
+
+    def import_model(self, model, file_name, master_id=None):
+        """Args:
+           - model(str): name of matrix in BigARTM
+           - file_name(str): the name of file to load model from binary format
+           - master_id(int): the id of master component returned by create_master_component()
+        """
+        args = messages.ImportModelArgs()
+        args.model_name = model
+        args.file_name = file_name
+
+        cur_master_id = master_id if master_id is not None else self.master_id
+        result = self._lib.ArtmImportModel(cur_master_id, args)
