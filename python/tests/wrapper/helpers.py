@@ -250,6 +250,53 @@ class TestHelper(object):
         cur_master_id = master_id if master_id is not None else self.master_id
         self._lib.ArtmNormalizeModel(cur_master_id, args)
 
+    def merge_model(self, models, nwt, topic_names=None, master_id=None):
+        """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
+        Args:
+        - models(dict): list of models with nwt-increments and their weights,
+                        key - nwt_source_name, value - source_weight.
+        - nwt(str): the name of target matrix to store combined nwt. The matrix will be created by this operation.
+        - topic_names(list of str): names of topics in the resulting model. By default model
+                                    names are taken from the first model in the list.
+        - master_id(int): the id of master component returned by create_master_component()
+        """
+        args = messages.MergeModelArgs()
+        args.nwt_target_name = nwt
+        if topic_names is not None:
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
+        for nwt_source_name, source_weight in models.iteritems():
+            args.nwt_source_name.append(nwt_source_name)
+            args.source_weight.append(source_weight)
+
+        cur_master_id = master_id if master_id is not None else self.master_id
+        self._lib.ArtmMergeModel(cur_master_id, args)
+
+    def attach_model(self, model, master_id=None):
+        """Args:
+           - model(str): name of matrix in BigARTM
+           - master_id(int): the id of master component returned by create_master_component()
+           Returns:
+           - messages.TopicModel() object with info about Phi matrix
+           - numpy.ndarray with Phi data (e.g. p(w|t) values)
+        """
+        topics = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_TopicNames)
+        tokens = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_Tokens)
+
+        num_rows = len(tokens.token)
+        num_cols = topics.topics_count
+        numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+
+        cur_master_id = master_id if master_id is not None else self.master_id
+        self._lib.ArtmAttachModel(cur_master_id, messages.AttachModelArgs(model_name=model), numpy_ndarray)
+
+        topic_model = messages.TopicModel()
+        topic_model.topics_count = topics.topics_count
+        topic_model.topic_name.MergeFrom(topics.topic_name)
+        topic_model.class_id.MergeFrom(tokens.class_id)
+        topic_model.token.MergeFrom(tokens.token)
+        return topic_model, numpy_ndarray
+
     def create_smooth_sparse_phi_regularizer(self, name, class_ids=None, dictionary_name=None, master_id=None):
         """Args:
            - name(str): the name of the future regularizer
@@ -353,15 +400,20 @@ class TestHelper(object):
 
         return numpy_ndarray
 
-    def get_phi_info(self, model, master_id=None):
+    def get_phi_info(self, model, request_type=None, master_id=None):
         """Args:
            - model(str): name of matrix in BigARTM
+           - request_type(int): Pwt = 0 | Nwt = 1; | TopicNames = 2 | Tokens = 3
            - master_id(int): the id of master component returned by create_master_component()
            Returns:
            - messages.TopicModel object
         """
+        args = messages.GetTopicModelArgs(model_name=model)
+        if request_type is not None:
+            args.request_type = request_type
+        
         cur_master_id = master_id if master_id is not None else self.master_id
-        result = self._lib.ArtmRequestTopicModel(cur_master_id, messages.GetTopicModelArgs(model_name=model))
+        result = self._lib.ArtmRequestTopicModel(cur_master_id, args)
 
         phi_matrix_info = messages.TopicModel()
         phi_matrix_info.ParseFromString(result)
@@ -374,7 +426,7 @@ class TestHelper(object):
            - topic_names(list of str): list of topics to retrieve (None == all topics)
            - master_id(int): the id of master component returned by create_master_component()
            Returns:
-           - numpy.ndarray with Phi data (e.g. p(t|d) values)
+           - numpy.ndarray with Phi data (e.g. p(w|t) values)
         """
         args = messages.GetTopicModelArgs()
         args.model_name = model
