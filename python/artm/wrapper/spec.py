@@ -206,7 +206,7 @@ ARTM_API = [
 
     CallSpec(
         'ArtmCopyRequestResultEx',
-        [('args', messages.CopyRequestResultArgs), ('array', numpy.ndarray)],
+        [('array', numpy.ndarray), ('args', messages.CopyRequestResultArgs)],
     ),
 
 ]
