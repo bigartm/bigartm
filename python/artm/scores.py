@@ -80,7 +80,7 @@ class Scores(object):
         """Scores.__getitem__() --- get score with given name
 
         Args:
-          name (str): name of the regularizer, no default
+          name (str): name of the score, no default
         """
         if name in self._data:
             return self._data[name]

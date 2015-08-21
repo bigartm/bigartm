@@ -3,9 +3,11 @@ import os
 import messages_pb2
 import library
 
+DICTIONARY_NAME = 'dictionary'
+
 
 def _create_parser_config(data_path, collection_name, target_folder,
-                          batch_size, data_format, dictionary_name='dictionary'):
+                          batch_size, data_format, dictionary_name=DICTIONARY_NAME):
     collection_parser_config = messages_pb2.CollectionParserConfig()
     collection_parser_config.num_items_per_batch = batch_size
     if data_format == 'bow_uci':
@@ -24,7 +26,7 @@ def _create_parser_config(data_path, collection_name, target_folder,
 
 
 def parse(collection_name=None, data_path='', data_format='bow_uci',
-          batch_size=1000, dictionary_name='dictionary'):
+          batch_size=1000, dictionary_name=DICTIONARY_NAME):
     """parse() --- proceed the learning of topic model
 
     Args:
@@ -45,7 +47,7 @@ def parse(collection_name=None, data_path='', data_format='bow_uci',
       default=1000
       dictionary_name (str): the name of BigARTM dictionary with information
       about collection, that will be gathered by the library parser;
-      default='dictionary'
+      default=DICTIONARY_NAME
     """
     if collection_name is None and data_format == 'bow_uci':
         raise IOError('ArtmModel.parse(): No collection name was given')

@@ -397,9 +397,8 @@ class TopTokensScoreInfo(object):
 
             self._topic_info.append({})
             index = len(self._topic_info) - 1
-            topic_index = -1
-            for topic_name in list(collections.OrderedDict.fromkeys(_data.topic_name)):
-                topic_index += 1
+            for topic_index, topic_name in enumerate(
+                list(collections.OrderedDict.fromkeys(_data.topic_name))):
                 tokens = []
                 weights = []
                 for i in xrange(_data.num_entries):
@@ -520,9 +519,7 @@ class TopicKernelScoreInfo(object):
 
             self._topic_info.append({})
             index = len(self._topic_info) - 1
-            topic_index = -1
-            for topic_name in _data.topic_name.value:
-                topic_index += 1
+            for topic_index, topic_name in enumerate(_data.topic_name.value):
                 tokens = [token for token in _data.kernel_tokens[topic_index].value]
                 coherence = -1
                 if len(_data.coherence.value) > 0:
