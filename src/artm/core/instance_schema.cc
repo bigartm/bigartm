@@ -24,6 +24,10 @@ InstanceSchema::InstanceSchema(const InstanceSchema& schema)
 InstanceSchema::InstanceSchema(const MasterComponentConfig& config)
     : config_(config), regularizers_(), models_config_(), score_calculators_() {}
 
+std::shared_ptr<InstanceSchema> InstanceSchema::Duplicate() const {
+  return std::shared_ptr<InstanceSchema>(new InstanceSchema(*this));
+}
+
 void InstanceSchema::set_config(const MasterComponentConfig& config) {
   config_.CopyFrom(config);
 }

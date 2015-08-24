@@ -98,6 +98,7 @@ class RegularizeModelArgs;
 class NormalizeModelArgs;
 class ImportDictionaryArgs;
 class CopyRequestResultArgs;
+class DuplicateMasterComponentArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -9082,6 +9083,78 @@ class CopyRequestResultArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static CopyRequestResultArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class DuplicateMasterComponentArgs : public ::google::protobuf::Message {
+ public:
+  DuplicateMasterComponentArgs();
+  virtual ~DuplicateMasterComponentArgs();
+
+  DuplicateMasterComponentArgs(const DuplicateMasterComponentArgs& from);
+
+  inline DuplicateMasterComponentArgs& operator=(const DuplicateMasterComponentArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DuplicateMasterComponentArgs& default_instance();
+
+  void Swap(DuplicateMasterComponentArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  DuplicateMasterComponentArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DuplicateMasterComponentArgs& from);
+  void MergeFrom(const DuplicateMasterComponentArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:artm.DuplicateMasterComponentArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[1];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static DuplicateMasterComponentArgs* default_instance_;
 };
 // ===================================================================
 
@@ -20527,6 +20600,10 @@ inline void CopyRequestResultArgs::set_request_type(::artm::CopyRequestResultArg
   set_has_request_type();
   request_type_ = value;
 }
+
+// -------------------------------------------------------------------
+
+// DuplicateMasterComponentArgs
 
 
 // @@protoc_insertion_point(namespace_scope)

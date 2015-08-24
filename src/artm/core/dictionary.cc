@@ -53,6 +53,10 @@ Dictionary::Dictionary(const artm::DictionaryConfig& config) {
   }
 }
 
+std::shared_ptr<Dictionary> Dictionary::Duplicate() const {
+  return std::shared_ptr<Dictionary>(new Dictionary(*this));
+}
+
 int Dictionary::cooc_size(const Token& token) const {
   auto index_iter = token_index_.find(token);
   if (index_iter == token_index_.end()) return 0;

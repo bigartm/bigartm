@@ -103,6 +103,7 @@ class Matrix {
 class MasterComponent {
  public:
   explicit MasterComponent(const MasterComponentConfig& config);
+  MasterComponent(const MasterComponent& rhs);
   ~MasterComponent();
 
   int id() const { return id_; }
@@ -158,7 +159,7 @@ class MasterComponent {
  private:
   int id_;
   MasterComponentConfig config_;
-  DISALLOW_COPY_AND_ASSIGN(MasterComponent);
+  MasterComponent& operator=(const MasterComponent&);
 };
 
 class Model {

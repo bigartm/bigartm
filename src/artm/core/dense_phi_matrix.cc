@@ -78,6 +78,16 @@ PhiMatrixFrame::PhiMatrixFrame(const ModelName& model_name,
   }
 }
 
+PhiMatrixFrame::PhiMatrixFrame(const PhiMatrixFrame& rhs)
+    : model_name_(rhs.model_name_),
+      topic_name_(rhs.topic_name_),
+      token_collection_(rhs.token_collection_),
+      spin_locks_() {
+  spin_locks_.reserve(rhs.spin_locks_.size());
+  for (int i = 0; i < rhs.spin_locks_.size(); ++i)
+    spin_locks_.push_back(std::make_shared<SpinLock>());
+}
+
 const Token& PhiMatrixFrame::token(int index) const {
   return token_collection_.token(index);
 }
@@ -133,8 +143,29 @@ void PhiMatrixFrame::Swap(PhiMatrixFrame* rhs) {
 // =======================================================
 
 DensePhiMatrix::DensePhiMatrix(const ModelName& model_name,
-                               const google::protobuf::RepeatedPtrField<std::string>& topic_name) :
-    PhiMatrixFrame(model_name, topic_name), values_() {}
+                               const google::protobuf::RepeatedPtrField<std::string>& topic_name)
+    : PhiMatrixFrame(model_name, topic_name), values_() {}
+
+DensePhiMatrix::DensePhiMatrix(const DensePhiMatrix& rhs) : PhiMatrixFrame(rhs), values_() {
+  for (int token_index = 0; token_index < rhs.token_size(); ++token_index) {
+    float* values = new float[topic_size()];
+    values_.push_back(values);
+    memcpy(values, rhs.values_[token_index], sizeof(float) * topic_size());
+  }
+}
+
+DensePhiMatrix::DensePhiMatrix(const AttachedPhiMatrix& rhs)
+    : PhiMatrixFrame(rhs), values_() {
+  for (int token_index = 0; token_index < rhs.token_size(); ++token_index) {
+    float* values = new float[topic_size()];
+    values_.push_back(values);
+    memcpy(values, rhs.values_[token_index], sizeof(float) * topic_size());
+  }
+}
+
+std::shared_ptr<PhiMatrix> DensePhiMatrix::Duplicate() const {
+  return std::shared_ptr<PhiMatrix>(new DensePhiMatrix(*this));
+}
 
 void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment) {
   const int topic_size = this->topic_size();
@@ -210,6 +241,10 @@ AttachedPhiMatrix::AttachedPhiMatrix(int address_length, float* address, PhiMatr
 
   PhiMatrixFrame::Swap(source);
   source->Clear();
+}
+
+std::shared_ptr<PhiMatrix> AttachedPhiMatrix::Duplicate() const {
+  return std::shared_ptr<PhiMatrix>(new DensePhiMatrix(*this));
 }
 
 void AttachedPhiMatrix::increase(int token_id, const std::vector<float>& increment) {

@@ -37,10 +37,12 @@ typedef ThreadSafeQueue<std::shared_ptr<ModelIncrement>> MergerQueue;
 
 // Class Instance is respondible for joint hosting of many other components
 // (processors, merger, data loader) and data structures (schema, queues, etc).
-class Instance : boost::noncopyable {
+class Instance {
  public:
   explicit Instance(const MasterComponentConfig& config);
   ~Instance();
+
+  std::shared_ptr<Instance> Duplicate() const;
 
   std::shared_ptr<InstanceSchema> schema() const { return schema_.get(); }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
@@ -93,6 +95,9 @@ class Instance : boost::noncopyable {
 
   // Depends on schema_, processor_queue_, merger_queue_, and merger_
   std::vector<std::shared_ptr<Processor> > processors_;
+
+  Instance(const Instance& rhs);
+  Instance& operator=(const Instance&);
 };
 
 }  // namespace core

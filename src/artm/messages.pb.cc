@@ -227,6 +227,9 @@ const ::google::protobuf::Descriptor* CopyRequestResultArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   CopyRequestResultArgs_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* CopyRequestResultArgs_RequestType_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* DuplicateMasterComponentArgs_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  DuplicateMasterComponentArgs_reflection_ = NULL;
 
 }  // namespace
 
@@ -1428,6 +1431,20 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(CopyRequestResultArgs));
   CopyRequestResultArgs_RequestType_descriptor_ = CopyRequestResultArgs_descriptor_->enum_type(0);
+  DuplicateMasterComponentArgs_descriptor_ = file->message_type(62);
+  static const int DuplicateMasterComponentArgs_offsets_[1] = {
+  };
+  DuplicateMasterComponentArgs_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      DuplicateMasterComponentArgs_descriptor_,
+      DuplicateMasterComponentArgs::default_instance_,
+      DuplicateMasterComponentArgs_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DuplicateMasterComponentArgs, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DuplicateMasterComponentArgs, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(DuplicateMasterComponentArgs));
 }
 
 namespace {
@@ -1568,6 +1585,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     ImportDictionaryArgs_descriptor_, &ImportDictionaryArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     CopyRequestResultArgs_descriptor_, &CopyRequestResultArgs::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    DuplicateMasterComponentArgs_descriptor_, &DuplicateMasterComponentArgs::default_instance());
 }
 
 }  // namespace
@@ -1721,6 +1740,8 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete ImportDictionaryArgs_reflection_;
   delete CopyRequestResultArgs::default_instance_;
   delete CopyRequestResultArgs_reflection_;
+  delete DuplicateMasterComponentArgs::default_instance_;
+  delete DuplicateMasterComponentArgs_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fmessages_2eproto() {
@@ -1980,7 +2001,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "t_type\030\001 \001(\0162\'.artm.CopyRequestResultArg"
     "s.RequestType:\022DefaultRequestType\"U\n\013Req"
     "uestType\022\026\n\022DefaultRequestType\020\000\022\026\n\022GetT"
-    "hetaSecondPass\020\001\022\026\n\022GetModelSecondPass\020\002", 10040);
+    "hetaSecondPass\020\001\022\026\n\022GetModelSecondPass\020\002"
+    "\"\036\n\034DuplicateMasterComponentArgs", 10072);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -2087,6 +2109,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   NormalizeModelArgs::default_instance_ = new NormalizeModelArgs();
   ImportDictionaryArgs::default_instance_ = new ImportDictionaryArgs();
   CopyRequestResultArgs::default_instance_ = new CopyRequestResultArgs();
+  DuplicateMasterComponentArgs::default_instance_ = new DuplicateMasterComponentArgs();
   DoubleArray::default_instance_->InitAsDefaultInstance();
   FloatArray::default_instance_->InitAsDefaultInstance();
   BoolArray::default_instance_->InitAsDefaultInstance();
@@ -2151,6 +2174,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   NormalizeModelArgs::default_instance_->InitAsDefaultInstance();
   ImportDictionaryArgs::default_instance_->InitAsDefaultInstance();
   CopyRequestResultArgs::default_instance_->InitAsDefaultInstance();
+  DuplicateMasterComponentArgs::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fmessages_2eproto);
 }
 
@@ -26413,6 +26437,162 @@ void CopyRequestResultArgs::Swap(CopyRequestResultArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = CopyRequestResultArgs_descriptor_;
   metadata.reflection = CopyRequestResultArgs_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+#endif  // !_MSC_VER
+
+DuplicateMasterComponentArgs::DuplicateMasterComponentArgs()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void DuplicateMasterComponentArgs::InitAsDefaultInstance() {
+}
+
+DuplicateMasterComponentArgs::DuplicateMasterComponentArgs(const DuplicateMasterComponentArgs& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void DuplicateMasterComponentArgs::SharedCtor() {
+  _cached_size_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+DuplicateMasterComponentArgs::~DuplicateMasterComponentArgs() {
+  SharedDtor();
+}
+
+void DuplicateMasterComponentArgs::SharedDtor() {
+  if (this != default_instance_) {
+  }
+}
+
+void DuplicateMasterComponentArgs::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* DuplicateMasterComponentArgs::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return DuplicateMasterComponentArgs_descriptor_;
+}
+
+const DuplicateMasterComponentArgs& DuplicateMasterComponentArgs::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
+  return *default_instance_;
+}
+
+DuplicateMasterComponentArgs* DuplicateMasterComponentArgs::default_instance_ = NULL;
+
+DuplicateMasterComponentArgs* DuplicateMasterComponentArgs::New() const {
+  return new DuplicateMasterComponentArgs;
+}
+
+void DuplicateMasterComponentArgs::Clear() {
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool DuplicateMasterComponentArgs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+        ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+      return true;
+    }
+    DO_(::google::protobuf::internal::WireFormat::SkipField(
+          input, tag, mutable_unknown_fields()));
+  }
+  return true;
+#undef DO_
+}
+
+void DuplicateMasterComponentArgs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* DuplicateMasterComponentArgs::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int DuplicateMasterComponentArgs::ByteSize() const {
+  int total_size = 0;
+
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void DuplicateMasterComponentArgs::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const DuplicateMasterComponentArgs* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const DuplicateMasterComponentArgs*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void DuplicateMasterComponentArgs::MergeFrom(const DuplicateMasterComponentArgs& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void DuplicateMasterComponentArgs::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DuplicateMasterComponentArgs::CopyFrom(const DuplicateMasterComponentArgs& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DuplicateMasterComponentArgs::IsInitialized() const {
+
+  return true;
+}
+
+void DuplicateMasterComponentArgs::Swap(DuplicateMasterComponentArgs* other) {
+  if (other != this) {
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata DuplicateMasterComponentArgs::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = DuplicateMasterComponentArgs_descriptor_;
+  metadata.reflection = DuplicateMasterComponentArgs_reflection_;
   return metadata;
 }
 

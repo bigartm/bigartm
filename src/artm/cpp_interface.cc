@@ -97,6 +97,13 @@ MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), 
     config_blob.size(), StringAsArray(&config_blob)));
 }
 
+MasterComponent::MasterComponent(const MasterComponent& rhs) : id_(0), config_(rhs.config_) {
+  ::artm::DuplicateMasterComponentArgs args;
+  std::string config_blob;
+  args.SerializeToString(&config_blob);
+  id_ = HandleErrorCode(ArtmDuplicateMasterComponent(rhs.id_, config_blob.size(), StringAsArray(&config_blob)));
+}
+
 MasterComponent::~MasterComponent() {
   ArtmDisposeMasterComponent(id());
 }

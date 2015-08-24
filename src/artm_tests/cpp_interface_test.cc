@@ -573,6 +573,13 @@ TEST(CppInterface, ProcessBatchesApi) {
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
   }
 
+  {
+    artm::MasterComponent master_clone(master);
+    ::artm::test::Helpers::CompareTopicModels(*master_clone.GetTopicModel("pwt"),
+                                              *master.GetTopicModel("pwt"), &ok);
+    ASSERT_TRUE(ok);
+  }
+
   // Verify that we may call ProcessBatches without nwt_target
   process_batches_args.clear_nwt_target_name();
   std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
@@ -657,6 +664,14 @@ TEST(CppInterface, AttachModel) {
       EXPECT_EQ(updated_model->token_weights(token_index).value(topic_index),
                 2.0f * token_index + 3.0f * topic_index);
     }
+  }
+
+  {
+    bool ok = false;
+    artm::MasterComponent master_clone(master);
+    ::artm::test::Helpers::CompareTopicModels(*master_clone.GetTopicModel("nwt_merge"),
+      *master.GetTopicModel("nwt_merge"), &ok);
+    ASSERT_TRUE(ok);
   }
 
   // Good practice is to dispose model once its attachment is gone.

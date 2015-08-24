@@ -62,6 +62,8 @@ class Merger : boost::noncopyable {
   bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData *score_data) const;
 
+  std::vector<ModelName> model_name() const;
+
  private:
   enum MergerTaskType {
     kDisposeModel,

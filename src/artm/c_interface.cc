@@ -232,6 +232,18 @@ int ArtmCreateMasterComponent(int length, const char* master_component_config) {
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicate_master_args) {
+  try {
+    EnableLogging();
+
+    std::shared_ptr< ::artm::core::MasterComponent> master = master_component(master_id);
+    auto& mcm = artm::core::MasterComponentManager::singleton();
+    int retval = mcm.Create< ::artm::core::MasterComponent, ::artm::core::MasterComponent>(*master);
+    assert(retval > 0);
+    return retval;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmCreateModel(int master_id, int length, const char* model_config) {
   return ArtmReconfigureModel(master_id, length, model_config);
 }

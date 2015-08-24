@@ -1,5 +1,6 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -78,7 +79,39 @@ Instance::Instance(const MasterComponentConfig& config)
   Reconfigure(config);
 }
 
+Instance::Instance(const Instance& rhs)
+    : is_configured_(false),
+      schema_(rhs.schema()->Duplicate()),
+      dictionaries_(),
+      processor_queue_(),
+      merger_queue_(),
+      cache_manager_(),
+      batch_manager_(),
+      data_loader_(nullptr),
+      merger_(),
+      processors_() {
+  std::vector<std::string> dict_name = rhs.dictionaries_.keys();
+  for (auto& key : dict_name) {
+    std::shared_ptr<Dictionary> value = rhs.dictionaries_.get(key);
+    if (value != nullptr)
+      dictionaries_.set(key, value->Duplicate());
+  }
+
+  Reconfigure(schema_.get()->config());
+
+  std::vector<ModelName> model_name = rhs.merger_->model_name();
+  for (auto& key : model_name) {
+    std::shared_ptr<const PhiMatrix> value = rhs.merger_->GetPhiMatrix(key);
+    if (value != nullptr)
+      merger_->SetPhiMatrix(key, value->Duplicate());
+  }
+}
+
 Instance::~Instance() {}
+
+std::shared_ptr<Instance> Instance::Duplicate() const {
+  return std::shared_ptr<Instance>(new Instance(*this));
+}
 
 DataLoader* Instance::data_loader() {
   return data_loader_.get();
