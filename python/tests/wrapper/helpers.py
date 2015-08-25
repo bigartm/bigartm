@@ -48,23 +48,6 @@ class TestHelper(object):
 
         return self._lib.ArtmCreateMasterComponent(master_config)
 
-    def parse_collection_uci(self, docword, vocab, target_folder, dictionary_name):
-        """Args:
-           - docword(str): full path to docword.<name>.txt
-           - vocab(str): full path to vocab.<name>.txt
-           - target_folder(str): full path to folder for batches
-           - dictionry_name(str): the name of future collection dictionary
-        """
-        config = messages.CollectionParserConfig()
-        config.format = constants.CollectionParserConfig_Format_BagOfWordsUci
-
-        config.docword_file_path = docword
-        config.vocab_file_path = vocab
-        config.target_folder = target_folder
-        config.dictionary_file_name = dictionary_name
-
-        self._lib.ArtmParseCollection(config)
-
     def import_dictionary(self, file_name, dictionary_name, master_id=None):
         """Args:
            - file_name(str): full name of dictionary file

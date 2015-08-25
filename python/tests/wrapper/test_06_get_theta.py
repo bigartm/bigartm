@@ -7,6 +7,7 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
+import artm.wrapper.constants as constants
 import helpers
 
 def test_func():
@@ -34,10 +35,11 @@ def test_func():
         helper = helpers.TestHelper(lib)
 
         # Parse collection from disk
-        helper.parse_collection_uci(os.path.join(os.getcwd(), docword),
-                                    os.path.join(os.getcwd(), vocab),
-                                    batches_folder,
-                                    dictionary_name)
+        lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
+                                 'docword_file_path': os.path.join(os.getcwd(), docword),
+                                 'vocab_file_path': os.path.join(os.getcwd(), vocab),
+                                 'target_folder': batches_folder,
+                                 'dictionary_file_name': dictionary_name})
 
         # Create master component and scores
         scores = [('ThetaSnippetScore', messages.ThetaSnippetScoreConfig())]

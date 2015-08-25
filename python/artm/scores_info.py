@@ -397,23 +397,22 @@ class TopTokensScoreInfo(object):
 
             self._topic_info.append({})
             index = len(self._topic_info) - 1
-            for topic_index, topic_name in enumerate(
-                list(collections.OrderedDict.fromkeys(_data.topic_name))):
+            for top_idx, top_name in enumerate(collections.OrderedDict.fromkeys(_data.topic_name)):
                 tokens = []
                 weights = []
                 for i in xrange(_data.num_entries):
-                    if _data.topic_name[i] == topic_name:
+                    if _data.topic_name[i] == top_name:
                         tokens.append(_data.token[i])
                         weights.append(_data.weight[i])
                 coherence = -1
                 if len(_data.coherence.value) > 0:
-                    coherence = _data.coherence.value[topic_index]
-                self._topic_info[index][topic_name] = \
+                    coherence = _data.coherence.value[top_idx]
+                self._topic_info[index][top_name] = \
                     collections.namedtuple('TopTokensScoreTuple',
                                            ['tokens', 'weights', 'coherence'])
-                self._topic_info[index][topic_name].tokens = tokens
-                self._topic_info[index][topic_name].weights = weights
-                self._topic_info[index][topic_name].coherence = coherence
+                self._topic_info[index][top_name].tokens = tokens
+                self._topic_info[index][top_name].weights = weights
+                self._topic_info[index][top_name].coherence = coherence
 
             self._average_coherence.append(_data.average_coherence)
         else:
