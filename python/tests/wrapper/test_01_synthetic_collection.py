@@ -62,10 +62,8 @@ def test_func():
         lib.ArtmSaveBatch(batches_folder, batch)
 
         # Create master component and scores
-        config = messages.TopTokensScoreConfig()
-        config.num_tokens = num_top_tokens
         scores = [('PerplexityScore', messages.PerplexityScoreConfig()),
-                  ('TopTokensScore', config)]
+                  ('TopTokensScore', messages.TopTokensScoreConfig(num_tokens = num_top_tokens))]
         master = mc.MasterComponent(lib, scores=scores)
 
         # Initialize model
@@ -73,7 +71,7 @@ def test_func():
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi
-            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
+            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder, reset_scores=True)
             master.normalize_model(pwt, nwt)
 
             # Retrieve and print perplexity score

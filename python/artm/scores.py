@@ -1,7 +1,8 @@
 import uuid
 
-import messages_pb2
-import library as lib
+import artm.wrapper
+import artm.wrapper.messages_pb2 as messages
+import artm.wrapper.constants as constants
 
 
 GLOB_EPS = 1e-37
@@ -17,13 +18,13 @@ __all__ = [
 ]
 
 CREATE_SCORE_CONFIG = {
-    lib.ScoreConfig_Type_SparsityPhi: messages_pb2.SparsityPhiScoreConfig,
-    lib.ScoreConfig_Type_SparsityTheta: messages_pb2.SparsityThetaScoreConfig,
-    lib.ScoreConfig_Type_Perplexity: messages_pb2.PerplexityScoreConfig,
-    lib.ScoreConfig_Type_ItemsProcessed: messages_pb2.ItemsProcessedScoreConfig,
-    lib.ScoreConfig_Type_TopTokens: messages_pb2.TopTokensScoreConfig,
-    lib.ScoreConfig_Type_ThetaSnippet: messages_pb2.ThetaSnippetScoreConfig,
-    lib.ScoreConfig_Type_TopicKernel: messages_pb2.TopicKernelScoreConfig
+    constants.ScoreConfig_Type_SparsityPhi: messages.SparsityPhiScoreConfig,
+    constants.ScoreConfig_Type_SparsityTheta: messages.SparsityThetaScoreConfig,
+    constants.ScoreConfig_Type_Perplexity: messages.PerplexityScoreConfig,
+    constants.ScoreConfig_Type_ItemsProcessed: messages.ItemsProcessedScoreConfig,
+    constants.ScoreConfig_Type_TopTokens: messages.TopTokensScoreConfig,
+    constants.ScoreConfig_Type_ThetaSnippet: messages.ThetaSnippetScoreConfig,
+    constants.ScoreConfig_Type_TopicKernel: messages.TopicKernelScoreConfig
 }
 
 
@@ -40,13 +41,13 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     else:
         setattr(score_config, proto_field_name, field)
 
-    master_config = messages_pb2.MasterComponentConfig()
+    master_config = messages.MasterComponentConfig()
     master_config.CopyFrom(obj._master.config())
     for i in xrange(len(master_config.score_config)):
         if master_config.score_config[i].name == obj._name:
             master_config.score_config[i].config = score_config.SerializeToString()
             break
-    obj._master.Reconfigure(master_config)
+    obj._master.reconfigure(master_config)
 
 
 class Scores(object):
@@ -61,20 +62,19 @@ class Scores(object):
         self._master = master
         self._model = model
 
-    def add(self, config):
+    def add(self, score):
         """Scores.add() --- add score into ArtmModel.
 
         Args:
-          config (reference): an object of ***Scores class, no default
+          score: an object of ***Scores class, no default
         """
-        if config.name in self._data:
-            raise ValueError('Score with name ' + str(config.name) + ' is already exist')
+        if score.name in self._data:
+            raise ValueError('Score with name ' + str(score.name) + ' is already exist')
         else:
-            score = self._master.CreateScore(config.name, config.type, config.config)
-            config._model = self._model
-            config._score = score
-            config._master = self._master
-            self._data[config.name] = config
+            self._master.create_score(score.name, score.type, score.config)
+            score._model = self._model
+            score._master = self._master
+            self._data[score.name] = score
 
     def __getitem__(self, name):
         """Scores.__getitem__() --- get score with given name
@@ -113,7 +113,6 @@ class BaseScore(object):
         self._config = config
         self._model = None  # Reserve place for the model
         self._master = None  # Reserve place for the master (to reconfigure Scores)
-        self._score = None  # Reserve place for the score
 
     @property
     def name(self):
@@ -171,7 +170,7 @@ class SparsityPhiScore(BaseScore):
       considered to be zero, default=1e-37
     """
 
-    _type = lib.ScoreConfig_Type_SparsityPhi
+    _type = constants.ScoreConfig_Type_SparsityPhi
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
         BaseScore.__init__(self,
@@ -204,7 +203,7 @@ class SparsityThetaScore(BaseScore):
       considered to be zero, default=1e-37
     """
 
-    _type = lib.ScoreConfig_Type_SparsityTheta
+    _type = constants.ScoreConfig_Type_SparsityTheta
 
     def __init__(self, name=None, topic_names=None, eps=None):
         BaseScore.__init__(self,
@@ -250,7 +249,7 @@ class PerplexityScore(BaseScore):
       document/collection model if token's counter == 0, default=True
     """
 
-    _type = lib.ScoreConfig_Type_Perplexity
+    _type = constants.ScoreConfig_Type_Perplexity
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, use_unigram_document_model=None):
@@ -298,7 +297,7 @@ class PerplexityScore(BaseScore):
     @use_unigram_document_model.setter
     def use_unigram_document_model(self, use_unigram_document_model):
         self._use_unigram_document_model = use_unigram_document_model
-        score_config = messages_pb2.PerplexityScoreConfig()
+        score_config = messages.PerplexityScoreConfig()
         score_config.CopyFrom(self._config)
         if use_unigram_document_model is True:
             score_config.model_type = lib.PerplexityScoreConfig_Type_UnigramDocumentModel
@@ -314,7 +313,7 @@ class ItemsProcessedScore(BaseScore):
       name (str): the identifier of score, will be auto-generated if not specified
     """
 
-    _type = lib.ScoreConfig_Type_ItemsProcessed
+    _type = constants.ScoreConfig_Type_ItemsProcessed
 
     def __init__(self, name=None):
         BaseScore.__init__(self,
@@ -353,7 +352,7 @@ class TopTokensScore(BaseScore):
       if not specified
     """
 
-    _type = lib.ScoreConfig_Type_TopTokens
+    _type = constants.ScoreConfig_Type_TopTokens
 
     def __init__(self, name=None, class_id=None, topic_names=None,
                  num_tokens=None, dictionary_name=None):
@@ -399,7 +398,7 @@ class ThetaSnippetScore(BaseScore):
       beginning (no sense if item_ids given), default=10
     """
 
-    _type = lib.ScoreConfig_Type_ThetaSnippet
+    _type = constants.ScoreConfig_Type_ThetaSnippet
 
     def __init__(self, name=None, item_ids=None, num_items=None):
         BaseScore.__init__(self,
@@ -467,7 +466,7 @@ class TopicKernelScore(BaseScore):
       get token into topic kernel. Should be in (0, 1), default=0.1
     """
 
-    _type = lib.ScoreConfig_Type_TopicKernel
+    _type = constants.ScoreConfig_Type_TopicKernel
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, probability_mass_threshold=None):

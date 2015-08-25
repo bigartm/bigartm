@@ -7,8 +7,9 @@ import tempfile
 
 from pandas import DataFrame
 
-import messages_pb2
-import library as lib
+import artm.wrapper
+import artm.wrapper.constants as constants
+import artm.master_component as mc
 
 import batches_utils as bu
 import regularizers
@@ -16,44 +17,14 @@ import scores
 import scores_info as si
 
 SCORE_INFO = {
-    lib.ScoreConfig_Type_SparsityPhi: si.SparsityPhiScoreInfo,
-    lib.ScoreConfig_Type_SparsityTheta: si.SparsityThetaScoreInfo,
-    lib.ScoreConfig_Type_Perplexity: si.PerplexityScoreInfo,
-    lib.ScoreConfig_Type_ThetaSnippet: si.ThetaSnippetScoreInfo,
-    lib.ScoreConfig_Type_ItemsProcessed: si.ItemsProcessedScoreInfo,
-    lib.ScoreConfig_Type_TopTokens: si.TopTokensScoreInfo,
-    lib.ScoreConfig_Type_TopicKernel: si.TopicKernelScoreInfo
+    constants.ScoreConfig_Type_SparsityPhi: si.SparsityPhiScoreInfo,
+    constants.ScoreConfig_Type_SparsityTheta: si.SparsityThetaScoreInfo,
+    constants.ScoreConfig_Type_Perplexity: si.PerplexityScoreInfo,
+    constants.ScoreConfig_Type_ThetaSnippet: si.ThetaSnippetScoreInfo,
+    constants.ScoreConfig_Type_ItemsProcessed: si.ItemsProcessedScoreInfo,
+    constants.ScoreConfig_Type_TopTokens: si.TopTokensScoreInfo,
+    constants.ScoreConfig_Type_TopicKernel: si.TopicKernelScoreInfo
 }
-
-
-def _parse_collection_inline(target_folder, data_path, data_format, method_name,
-                             collection_name=None, batches=None, batch_size=None):
-    batches_list = []
-    if data_format == 'batches':
-        if batches is None:
-            batches_list = glob.glob(os.path.join(data_path, '*.batch'))
-            if len(batches_list) < 1:
-                raise RuntimeError('ArtmModel.' + method_name + '(): No batches were found')
-        else:
-            batches_list = [os.path.join(data_path, batch) for batch in batches]
-
-    elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
-        collection_parser_config = bu._create_parser_config(
-            data_path=data_path,
-            collection_name=collection_name,
-            target_folder=target_folder,
-            batch_size=batch_size,
-            data_format=data_format)
-
-        lib.Library().ParseCollection(collection_parser_config)
-        batches_list = glob.glob(os.path.join(target_folder, '*.batch'))
-
-    elif data_format == 'plain_text':
-        raise NotImplementedError()
-    else:
-        raise IOError('ArtmModel.' + method_name + '(): Unknown data format')
-
-    return batches_list
 
 
 class ArtmModel(object):
@@ -120,14 +91,14 @@ class ArtmModel(object):
         if isinstance(cache_theta, bool):
             self._cache_theta = cache_theta
 
-        self._master = lib.MasterComponent()
-        self._master.config().processors_count = self._num_processors
-        self._master.config().cache_theta = cache_theta
-        self._master.Reconfigure()
+        self._lib = artm.wrapper.LibArtm()
+        self._master = mc.MasterComponent(self._lib,
+                                          num_processors=self._num_processors,
+                                          cache_theta=self._cache_theta)
 
         self._model = 'pwt'
-        self._regularizers = regularizers.Regularizers(self.master)
-        self._scores = scores.Scores(self.master, self._model)
+        self._regularizers = regularizers.Regularizers(self._master)
+        self._scores = scores.Scores(self._master, self._model)
 
         self._scores_info = {}
         self._synchronizations_processed = 0
@@ -188,9 +159,8 @@ class ArtmModel(object):
         if num_processors <= 0 or not isinstance(num_processors, int):
             raise IOError('Number of processors should be a positive integer')
         else:
+            self.master.reconfigure(num_processors=num_processors)
             self._num_processors = num_processors
-            self.master.config().processors_count = num_processors
-            self.master.Reconfigure()
 
     @num_document_passes.setter
     def num_document_passes(self, num_document_passes):
@@ -205,9 +175,8 @@ class ArtmModel(object):
         if not isinstance(cache_theta, bool):
             raise IOError('cache_theta should be bool')
         else:
+            self.master.reconfigure(cache_theta=cache_theta)
             self._cache_theta = cache_theta
-            self.master.config().cache_theta = cache_theta
-            self.master.Reconfigure()
 
     @num_topics.setter
     def num_topics(self, num_topics):
@@ -231,6 +200,36 @@ class ArtmModel(object):
         else:
             self._class_ids = class_ids
 
+    # ========== PRIVATE ==========
+    def _parse_collection_inline(self, target_folder, data_path, data_format, method_name,
+                                 collection_name=None, batches=None, batch_size=None):
+        batches_list = []
+        if data_format == 'batches':
+            if batches is None:
+                batches_list = glob.glob(os.path.join(data_path, '*.batch'))
+                if len(batches_list) < 1:
+                    raise RuntimeError('ArtmModel.' + method_name + '(): No batches were found')
+            else:
+                batches_list = [os.path.join(data_path, batch) for batch in batches]
+
+        elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
+            collection_parser_config = bu._create_parser_config(
+                data_path=data_path,
+                collection_name=collection_name,
+                target_folder=target_folder,
+                batch_size=batch_size,
+                data_format=data_format)
+
+            self._lib.ArtmParseCollection(self._master.master_id, collection_parser_config)
+            batches_list = glob.glob(os.path.join(target_folder, '*.batch'))
+
+        elif data_format == 'plain_text':
+            raise NotImplementedError()
+        else:
+            raise IOError('ArtmModel.' + method_name + '(): Unknown data format')
+
+        return batches_list
+
     # ========== METHODS ==========
     def load_dictionary(self, dictionary_name=None, dictionary_path=None):
         """ArtmModel.load_dictionary() --- load the BigARTM dictionary of
@@ -241,7 +240,7 @@ class ArtmModel(object):
           dictionary_path (str): full file name of the dictionary, default=None
         """
         if dictionary_path is not None and dictionary_name is not None:
-            self.master.ImportDictionary(dictionary_name, dictionary_path)
+            self.master.import_dictionary(file_name=dictionary_path, dictionary_name=dictionary_name)
         elif dictionary_path is None:
             raise IOError('ArtmModel.load_dictionary(): dictionary_path is None')
         else:
@@ -255,7 +254,7 @@ class ArtmModel(object):
           dictionary_name (str): the name of the dictionary in th lib, default=None
         """
         if dictionary_name is not None:
-            self.master.lib_.ArtmDisposeDictionary(self.master.id_, dictionary_name)
+            self._lib.ArtmDisposeDictionary(self.master.master_id, dictionary_name)
         else:
             raise IOError('ArtmModel.remove_dictionary(): dictionary_name is None')
 
@@ -314,46 +313,51 @@ class ArtmModel(object):
         if not data_format == 'batches':
             target_folder = tempfile.mkdtemp()
         try:
-            batches_list = _parse_collection_inline(target_folder,
-                                                    data_path,
-                                                    data_format,
-                                                    'fit_offline',
-                                                    collection_name,
-                                                    batches,
-                                                    batch_size)
+            batches_list = self._parse_collection_inline(target_folder,
+                                                         data_path,
+                                                         data_format,
+                                                         'fit_offline',
+                                                         collection_name,
+                                                         batches,
+                                                         batch_size)
 
             if not self._initialized:
                 dictionary_name = bu.DICTIONARY_NAME + str(uuid.uuid4())
-                self.master.ImportDictionary(dictionary_name,
-                                             os.path.join(target_folder, bu.DICTIONARY_NAME))
+                self.master.import_dictionary(self, dictionary_name=dictionary_name,
+                    file_name=os.path.join(target_folder, bu.DICTIONARY_NAME))
+
                 self.initialize(dictionary_name=dictionary_name)
                 self.remove_dictionary(dictionary_name)
 
-            theta_regularizers, phi_regularizers = {}, {}
+            theta_reg_name, theta_reg_tau, phi_reg_name, phi_reg_tau = [], [], [], []
             for name, config in self._regularizers.data.iteritems():
                 if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
-                    theta_regularizers[name] = config.tau
+                    theta_reg_name.append(name)
+                    theta_reg_tau.append(config.tau)
                 else:
-                    phi_regularizers[name] = config.tau
+                    phi_reg_name.append(name)
+                    phi_reg_tau.append(config.tau)
 
             for _ in xrange(num_collection_passes):
-                self.master.ProcessBatches(pwt=self.model,
-                                           batches=batches_list,
-                                           target_nwt='nwt_hat',
-                                           regularizers=theta_regularizers,
-                                           inner_iterations_count=self._num_document_passes,
-                                           class_ids=self._class_ids,
-                                           reset_scores=reset_theta_scores)
+                self.master.process_batches(pwt=self.model,
+                                            batches=batches_list,
+                                            nwt='nwt_hat',
+                                            regularizer_name=theta_reg_name,
+                                            regularizer_tau=theta_reg_tau,
+                                            num_inner_iterations=self._num_document_passes,
+                                            class_ids=self._class_ids,
+                                            reset_scores=reset_theta_scores)
                 self._synchronizations_processed += 1
                 if self._synchronizations_processed == 1:
-                    self.master.MergeModel({self.model: decay_weight, 'nwt_hat': apply_weight},
-                                           target_nwt='nwt', topic_names=self._topic_names)
+                    self.master.merge_model({self.model: decay_weight, 'nwt_hat': apply_weight},
+                                            nwt='nwt', topic_names=self._topic_names)
                 else:
-                    self.master.MergeModel({'nwt': decay_weight, 'nwt_hat': apply_weight},
-                                           target_nwt='nwt', topic_names=self._topic_names)
+                    self.master.merge_model({'nwt': decay_weight, 'nwt_hat': apply_weight},
+                                            nwt='nwt', topic_names=self._topic_names)
 
-                self.master.RegularizeModel(self.model, 'nwt', 'rwt', phi_regularizers)
-                self.master.NormalizeModel('nwt', self.model, 'rwt')
+                self.master.regularize_model(pwt=self.model, nwt='nwt', rwt='rwt',
+                    regularizer_name=phi_reg_name, regularizer_tau=phi_reg_tau)
+                self.master.normalize_model(nwt='nwt', pwt=self.model, rwt='rwt')
 
                 for name in self.scores.data.keys():
                     if name not in self.scores_info:
@@ -423,40 +427,44 @@ class ArtmModel(object):
         if not data_format == 'batches':
             target_folder = tempfile.mkdtemp()
         try:
-            batches_list = _parse_collection_inline(target_folder,
-                                                    data_path,
-                                                    data_format,
-                                                    'fit_online',
-                                                    collection_name,
-                                                    batches,
-                                                    batch_size)
+            batches_list = self._parse_collection_inline(target_folder,
+                                                         data_path,
+                                                         data_format,
+                                                         'fit_online',
+                                                         collection_name,
+                                                         batches,
+                                                         batch_size)
 
             if not self._initialized:
                 dictionary_name = bu.DICTIONARY_NAME + str(uuid.uuid4())
-                self.master.ImportDictionary(dictionary_name,
-                                             os.path.join(target_folder, bu.DICTIONARY_NAME))
+                self.master.import_dictionary(self, dictionary_name=dictionary_name,
+                    file_name=os.path.join(target_folder, bu.DICTIONARY_NAME))
+
                 self.initialize(dictionary_name=dictionary_name)
                 self.remove_dictionary(dictionary_name)
 
-            theta_regularizers, phi_regularizers = {}, {}
+            theta_reg_name, theta_reg_tau, phi_reg_name, phi_reg_tau = [], [], [], []
             for name, config in self._regularizers.data.iteritems():
-                if str(config.__class__.__bases__[0]) == 'BaseRegularizerTheta':
-                    theta_regularizers[name] = config.tau
+                if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
+                    theta_reg_name.append(name)
+                    theta_reg_tau.append(config.tau)
                 else:
-                    phi_regularizers[name] = config.tau
+                    phi_reg_name.append(name)
+                    phi_reg_tau.append(config.tau)
 
             batches_to_process = []
             current_processed_documents = 0
             for batch_idx, batch_filename in enumerate(batches_list):
                 batches_to_process.append(batch_filename)
                 if ((batch_idx + 1) % update_every == 0) or ((batch_idx + 1) == len(batches_list)):
-                    self.master.ProcessBatches(pwt=self.model,
-                                               batches=batches_to_process,
-                                               target_nwt='nwt_hat',
-                                               regularizers=theta_regularizers,
-                                               inner_iterations_count=self._num_document_passes,
-                                               class_ids=self._class_ids,
-                                               reset_scores=reset_theta_scores)
+                    self.master.process_batches(pwt=self.model,
+                                                batches=batches_to_process,
+                                                nwt='nwt_hat',
+                                                regularizer_name=theta_reg_name,
+                                                regularizer_tau=theta_reg_tau,
+                                                num_inner_iterations=self._num_document_passes,
+                                                class_ids=self._class_ids,
+                                                reset_scores=reset_theta_scores)
 
                     current_processed_documents += batch_size * update_every
                     update_count = current_processed_documents / (batch_size * update_every)
@@ -465,14 +473,15 @@ class ArtmModel(object):
 
                     self._synchronizations_processed += 1
                     if self._synchronizations_processed == 1:
-                        self.master.MergeModel({self.model: decay_weight, 'nwt_hat': apply_weight},
-                                               target_nwt='nwt', topic_names=self._topic_names)
+                        self.master.merge_model({self.model: decay_weight, 'nwt_hat': apply_weight},
+                                               nwt='nwt', topic_names=self._topic_names)
                     else:
-                        self.master.MergeModel({'nwt': decay_weight, 'nwt_hat': apply_weight},
-                                               target_nwt='nwt', topic_names=self._topic_names)
+                        self.master.merge_model({'nwt': decay_weight, 'nwt_hat': apply_weight},
+                                               nwt='nwt', topic_names=self._topic_names)
 
-                    self.master.RegularizeModel(self.model, 'nwt', 'rwt', phi_regularizers)
-                    self.master.NormalizeModel('nwt', self.model, 'rwt')
+                    self.master.regularize_model(pwt=self.model, nwt='nwt', rwt='rwt',
+                        regularizer_name=phi_reg_name, regularizer_tau=phi_reg_tau)
+                    self.master.normalize_model(nwt='nwt', pwt=self.model, rwt='rwt')
                     batches_to_process = []
 
                     for name in self.scores.data.keys():
@@ -501,7 +510,7 @@ class ArtmModel(object):
 
         if os.path.isfile(file_name):
             os.remove(file_name)
-        self.master.ExportModel(self.model, file_name)
+        self.master.export_model(self.model, file_name)
 
     def load(self, file_name):
         """ArtmModel.load() --- load the topic model,
@@ -515,41 +524,15 @@ class ArtmModel(object):
           ArtmModel.num_topics fields. Also it will empty
           ArtmModel.scores_info.
         """
-        self.master.ImportModel(self.model, file_name)
+        self.master.import_model(self.model, file_name)
         self._initialized = True
-        topic_model = self.master.GetTopicModel(model=self.model, use_matrix=False)
+        topic_model = self.master.get_phi_info(model=self.model)
         self._topic_names = [topic_name for topic_name in topic_model.topic_name]
         self._num_topics = topic_model.topics_count
 
         # Remove all info about previous iterations
         self._scores_info = {}
         self._synchronizations_processed = 0
-
-    def to_csv(self, file_name='artm_model.csv'):
-        """ArtmModel.to_csv() --- save the topic model to disk in
-        .csv format (can't be loaded back)
-
-        Args:
-          file_name (str): the name of file to store model, default='artm_model.csv'
-        """
-        if not self._initialized:
-            raise RuntimeError("Model does not exist yet. Use " +
-                               "ArtmModel.initialize()/ArtmModel.fit_*()")
-
-        if os.path.isfile(file_name):
-            os.remove(file_name)
-
-        with open(file_name, 'wb') as csvfile:
-            writer = csv.writer(csvfile, delimiter=';', quotechar=';', quoting=csv.QUOTE_MINIMAL)
-            if len(self._topic_names) > 0:
-                writer.writerow(['Token'] + ['Class ID'] +
-                                ['TOPIC: ' + topic_name for topic_name in self._topic_names])
-
-            model = self.master.GetTopicModel(model=self.model)
-            for index, row in enumerate(model[1]):
-                writer.writerow(
-                    [model[0].token[index]] + [model[0].class_id[index]] +
-                    [round(token_w, 5) for token_w in row])
 
     def get_phi(self, topic_names=None, class_ids=None):
         """ArtmModel.get_phi() --- get Phi matrix of model
@@ -570,22 +553,26 @@ class ArtmModel(object):
             raise RuntimeError("Model does not exist yet. Use " +
                                "ArtmModel.initialize()/ArtmModel.fit_*()")
 
-        topic_model = self.master.GetTopicModel(model=self.model,
-                                                class_ids=class_ids,
-                                                topic_names=topic_names)
-        tokens = [token for token in topic_model[0].token]
-        topic_names = [topic_name for topic_name in topic_model[0].topic_name]
-        retval = DataFrame(data=topic_model[1],
-                           columns=topic_names,
-                           index=tokens)
+        phi_info = self.master.get_phi_info(model=self.model)
+        nd_array = self.master.get_phi_matrix(model=self.model,
+                                              topic_names=topic_names,
+                                              class_ids=class_ids)
 
-        return retval
+        tokens = [token for token in phi_info.token]
+        topic_names = [topic_name for topic_name in phi_info.topic_name]
+        phi_data_frame = DataFrame(data=nd_array,
+                                   columns=topic_names,
+                                   index=tokens)
 
-    def get_theta(self, remove_theta=False):
+        return phi_data_frame
+
+    def get_theta(self, topic_names=None, remove_theta=False):
         """ArtmModel.get_theta() --- get Theta matrix for training set
         of documents
 
         Args:
+          topic_names (list of str): list with topics to extract,
+          default=None (means all topics)
           remove_theta (bool): flag indicates save or remove Theta from model
           after extraction, default=False
 
@@ -604,14 +591,20 @@ class ArtmModel(object):
             raise RuntimeError("ArtmModel.get_theta(): Model does not exist yet. Use " +
                                "ArtmModel.initialize()/ArtmModel.fit_*()")
 
-        theta_matrix = self.master.GetThetaMatrix(self.model, clean_cache=remove_theta)
-        document_ids = [item_id for item_id in theta_matrix[0].item_id]
-        topic_names = [topic_name for topic_name in theta_matrix[0].topic_name]
-        retval = DataFrame(data=theta_matrix[1].transpose(),
-                           columns=document_ids,
-                           index=topic_names)
+        theta_info = self.master.get_theta_info(model=self.model)
 
-        return retval
+        document_ids = [item_id for item_id in theta_info.item_id]
+        all_topic_names = [topic_name for topic_name in theta_info.topic_name]
+        use_topic_names = topic_names if topic_names is not None else all_topic_names
+        nd_array = self.master.get_theta_matrix(model=self.model,
+                                                topic_names=use_topic_names,
+                                                clean_cache=remove_theta)
+
+        theta_data_frame = DataFrame(data=nd_array.transpose(),
+                                     columns=document_ids,
+                                     index=use_topic_names)
+
+        return theta_data_frame
 
     def find_theta(self, batches=None, collection_name=None,
                    data_path='', data_format='batches'):
@@ -661,34 +654,34 @@ class ArtmModel(object):
         if not data_format == 'batches':
             target_folder = tempfile.mkdtemp()
         try:
-            batches_list = _parse_collection_inline(target_folder,
-                                                    data_path,
-                                                    data_format,
-                                                    'find_theta',
-                                                    collection_name,
-                                                    batches,
-                                                    batch_size=1000)
+            batches_list = self._parse_collection_inline(target_folder,
+                                                         data_path,
+                                                         data_format,
+                                                         'find_theta',
+                                                         collection_name,
+                                                         batches,
+                                                         batch_size=1000)
 
-            results = self.master.ProcessBatches(
-                pwt=self.model,
-                batches=batches_list,
-                target_nwt='nwt_hat',
-                inner_iterations_count=self._num_document_passes,
-                class_ids=self._class_ids,
-                theta_matrix_type=lib.ProcessBatchesArgs_ThetaMatrixType_External)
+            theta_info, nd_array = self.master.process_batches(
+                        pwt=self.model,
+                        batches=batches_list,
+                        nwt='nwt_hat',
+                        num_inner_iterations=self._num_document_passes,
+                        class_ids=self._class_ids,
+                        find_theta=True)
 
-            document_ids = [item_id for item_id in results[0].theta_matrix.item_id]
-            topic_names = [topic_name for topic_name in results[0].theta_matrix.topic_name]
-            retval = DataFrame(data=results[1].transpose(),
-                               columns=document_ids,
-                               index=topic_names)
+            document_ids = [item_id for item_id in theta_info.item_id]
+            topic_names = [topic_name for topic_name in theta_info.topic_name]
+            theta_data_frame = DataFrame(data=nd_array.transpose(),
+                                         columns=document_ids,
+                                         index=topic_names)
 
         finally:
             # Remove temp batches folder if necessary
             if not data_format == 'batches':
                 shutil.rmtree(target_folder)
 
-        return retval
+        return theta_data_frame
 
     def initialize(self, data_path=None, dictionary_name=None):
         """ArtmModel.initialize() --- initialize topic model before learning
@@ -704,18 +697,20 @@ class ArtmModel(object):
           2) dictionary
         """
         if data_path is not None:
-            self.master.InitializeModel(model_name=self.model,
-                                        batch_folder=data_path,
-                                        topics_count=self._num_topics,
-                                        topic_names=self._topic_names)
+            self.master.initialize_model(model_name=self.model,
+                                         disk_path=data_path,
+                                         num_topics=self._num_topics,
+                                         topic_names=self._topic_names,
+                                         source_type='batches')
         else:
-            self.master.InitializeModel(model_name=self.model,
-                                        dictionary_name=dictionary_name,
-                                        topics_count=self._num_topics,
-                                        topic_names=self._topic_names)
+            self.master.initialize_model(model_name=self.model,
+                                         dictionary_name=dictionary_name,
+                                         num_topics=self._num_topics,
+                                         topic_names=self._topic_names,
+                                         source_type='dictionary')
 
-        topic_model = self.master.GetTopicModel(model=self.model, use_matrix=False)
-        self._topic_names = [topic_name for topic_name in topic_model.topic_name]
+        phi_info = self.master.get_phi_info(model=self.model)
+        self._topic_names = [topic_name for topic_name in phi_info.topic_name]
         self._initialized = True
 
         # Remove all info about previous iterations

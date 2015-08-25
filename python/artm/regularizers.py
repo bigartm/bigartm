@@ -1,8 +1,9 @@
 import uuid
 import random
 
-import messages_pb2
-import library as lib
+import artm.wrapper
+import artm.wrapper.messages_pb2 as messages
+import artm.wrapper.constants as constants
 
 
 __all__ = [
@@ -15,12 +16,12 @@ __all__ = [
 ]
 
 CREATE_REGULARIZER_CONFIG = {
-    lib.RegularizerConfig_Type_SmoothSparsePhi: messages_pb2.SmoothSparsePhiConfig,
-    lib.RegularizerConfig_Type_SmoothSparseTheta: messages_pb2.SmoothSparseThetaConfig,
-    lib.RegularizerConfig_Type_DecorrelatorPhi: messages_pb2.DecorrelatorPhiConfig,
-    lib.RegularizerConfig_Type_LabelRegularizationPhi: messages_pb2.LabelRegularizationPhiConfig,
-    lib.RegularizerConfig_Type_SpecifiedSparsePhi: messages_pb2.SpecifiedSparsePhiConfig,
-    lib.RegularizerConfig_Type_ImproveCoherencePhi: messages_pb2.ImproveCoherencePhiConfig
+    constants.RegularizerConfig_Type_SmoothSparsePhi: messages.SmoothSparsePhiConfig,
+    constants.RegularizerConfig_Type_SmoothSparseTheta: messages.SmoothSparseThetaConfig,
+    constants.RegularizerConfig_Type_DecorrelatorPhi: messages.DecorrelatorPhiConfig,
+    constants.RegularizerConfig_Type_LabelRegularizationPhi: messages.LabelRegularizationPhiConfig,
+    constants.RegularizerConfig_Type_SpecifiedSparsePhi: messages.SpecifiedSparsePhiConfig,
+    constants.RegularizerConfig_Type_ImproveCoherencePhi: messages.ImproveCoherencePhiConfig
 }
 
 
@@ -36,7 +37,7 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
             getattr(config, proto_field_name).append(value)
     else:
         setattr(config, proto_field_name, field)
-    obj.regularizer.Reconfigure(obj.regularizer.config_.type, config)
+    obj._master.reconfigure_regularizer(obj.name, obj.config.type, config)
 
 
 class Regularizers(object):
@@ -50,18 +51,18 @@ class Regularizers(object):
         self._data = {}
         self._master = master
 
-    def add(self, config):
+    def add(self, regularizer):
         """Regularizers.add() --- add regularizer into ArtmModel
 
         Args:
-          config (reference): reference to an object of ***Regularizer class, no default
+          regularizer: an object of ***Regularizer class, no default
         """
-        if config.name in self._data:
-            raise ValueError('Regularizer with name ' + str(config.name) + ' is already exist')
+        if regularizer.name in self._data:
+            raise ValueError('Regularizer with name ' + str(regularizer.name) + ' is already exist')
         else:
-            regularizer = self._master.CreateRegularizer(config.name, config.type, config.config)
-            config._regularizer = regularizer
-            self._data[config.name] = config
+            self._master.create_regularizer(regularizer.name, regularizer.type, regularizer.config)
+            regularizer._master = self._master
+            self._data[regularizer.name] = regularizer
 
     def __getitem__(self, name):
         """Regularizers.__getitem__() --- get regularizer with given name
@@ -95,7 +96,7 @@ class BaseRegularizer(object):
         self._name = name
         self.tau = tau
         self._config = config
-        self._regularizer = None  # Reserve place for the regularizer
+        self._master = None  # reserve place for master
 
     @property
     def name(self):
@@ -198,7 +199,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
       specified
     """
 
-    _type = lib.RegularizerConfig_Type_SmoothSparsePhi
+    _type = constants.RegularizerConfig_Type_SmoothSparsePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
@@ -223,7 +224,7 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
       model.num_document_passes
     """
 
-    _type = lib.RegularizerConfig_Type_SmoothSparseTheta
+    _type = constants.RegularizerConfig_Type_SmoothSparseTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None):
         BaseRegularizerTheta.__init__(self,
@@ -245,7 +246,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
       all topics if not specified
     """
 
-    _type = lib.RegularizerConfig_Type_DecorrelatorPhi
+    _type = constants.RegularizerConfig_Type_DecorrelatorPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None):
         BaseRegularizerPhi.__init__(self,
@@ -278,7 +279,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
       specified
     """
 
-    _type = lib.RegularizerConfig_Type_LabelRegularizationPhi
+    _type = constants.RegularizerConfig_Type_LabelRegularizationPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
@@ -307,7 +308,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
       sparse_by_columns (bool) --- find max elements in column or in row, default=True
     """
 
-    _type = lib.RegularizerConfig_Type_SpecifiedSparsePhi
+    _type = constants.RegularizerConfig_Type_SpecifiedSparsePhi
 
     def __init__(self, name=None, tau=1.0, topic_names=None, class_id=None,
                  num_max_elements=None, probability_threshold=None, sparse_by_columns=True):
@@ -378,7 +379,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
     @sparse_by_columns.setter
     def sparse_by_columns(self, sparse_by_columns):
         self._sparse_by_columns = sparse_by_columns
-        config = messages_pb2.SpecifiedSparseRegularizationPhiConfig()
+        config = messages.SpecifiedSparseRegularizationPhiConfig()
         config.CopyFrom(self._config)
         if sparse_by_columns is True:
             config.mode = lib.SpecifiedSparsePhiConfig_Mode_SparseTopics
@@ -409,7 +410,7 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
       specified
     """
 
-    _type = lib.RegularizerConfig_Type_ImproveCoherencePhi
+    _type = constants.RegularizerConfig_Type_ImproveCoherencePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):

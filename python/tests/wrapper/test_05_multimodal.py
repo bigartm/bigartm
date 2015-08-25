@@ -176,7 +176,8 @@ def test_func():
             # Invoke one scan of the collection, regularize and normalize Phi
             master.process_batches(pwt, nwt, num_inner_iterations, batches_folder,
                                    class_ids=[russian_class, english_class],
-                                   class_weights=[russian_class_weight, english_class_weight])
+                                   class_weights=[russian_class_weight, english_class_weight],
+                                   reset_scores=True)
             master.normalize_model(pwt, nwt)    
 
         # Retrieve and print scores

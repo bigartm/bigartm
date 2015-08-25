@@ -19,8 +19,9 @@ class MasterComponent(object):
 
         if num_processors is not None:
             master_config.processors_count = num_processors
-        if cache_theta is not None:
-            master_config.cache_theta = cache_theta
+
+        master_config.cache_theta = cache_theta
+
         if scores is not None:
             for name, config in scores:
                 ref_score_config = master_config.score_config.add()
@@ -43,7 +44,21 @@ class MasterComponent(object):
 
                 ref_score_config.config = config.SerializeToString()
 
+        self._config = master_config
         self.master_id = self._lib.ArtmCreateMasterComponent(master_config)
+
+    def reconfigure(self, num_processors=None, cache_theta=None, config=None):
+        if config is None:
+            config = messages.MasterComponentConfig()
+            config.CopyFrom(self._config)
+
+        if num_processors is not None:
+            master_config.processors_count = num_processors
+        if cache_theta is not None:
+            master_config.cache_theta = cache_theta
+
+        self._config = config
+        self._lib.ArtmReconfigureMasterComponent(self.master_id, master_config)
 
     def import_dictionary(self, file_name, dictionary_name):
         """Args:
@@ -56,14 +71,16 @@ class MasterComponent(object):
 
         self._lib.ArtmImportDictionary(self.master_id, args)
 
-    def initialize_model(self, model_name=None, num_topics=None, source_type=None, disk_path=None,
-                         dictionary_name=None, args=None):
+    def initialize_model(self, model_name=None, num_topics=None, topic_names=None,
+                         source_type=None, disk_path=None, dictionary_name=None, args=None):
         """Args:
            - model_name(str): name of pwt matrix in BigARTM
            - source_type(str): 'batches' | 'dictionary'
            - num_topics(int): number of topics in model
+           - topic_names(list of str): the list of names of topics to be used in model
            - disk_path(str): full name of folder with batches (need if InitializeModelArgs_SourceType_Batches)
            - dictionary_name(str): name of imported dictionary (need if InitializeModelArgs_SourceType_Dictionary)
+           - args: an instance of InitilaizeModelArgs
         """
         init_args = messages.InitializeModelArgs()
         if args is not None:
@@ -72,6 +89,10 @@ class MasterComponent(object):
             init_args.model_name = model_name
         if num_topics is not None:
             init_args.topics_count = num_topics
+        if topic_names is not None:
+            init_args.ClearField('topic_name')
+            for topic_name in topic_names:
+                init_args.topic_name.append(topic_name)
 
         if source_type is 'batches':
             init_args.source_type = constants.InitializeModelArgs_SourceType_Batches
@@ -84,41 +105,9 @@ class MasterComponent(object):
 
         self._lib.ArtmInitializeModel(self.master_id, init_args)
 
-    def retrieve_score(self, model_name, score_name):
-        """Args:
-           - model_name(str): name of pwt matrix in BigARTM
-           - score_name(str): the user defined name of score to retrieve
-           - score_config: reference to score data object
-        """
-        args = messages.GetScoreValueArgs()
-        args.model_name = model_name
-        args.score_name = score_name
-
-        results = self._lib.ArtmRequestScore(self.master_id, args)
-        score_data = messages.ScoreData()
-        score_data.ParseFromString(results)
-
-        score_info = None
-        if score_data.type == constants.ScoreData_Type_Perplexity:
-            score_info = messages.PerplexityScore()
-        elif score_data.type == constants.ScoreData_Type_SparsityTheta:
-            score_info = messages.SparsityThetaScore()
-        elif score_data.type == constants.ScoreData_Type_SparsityPhi:
-            score_info = messages.SparsityPhiScore()
-        elif score_data.type == constants.ScoreData_Type_ItemsProcessed:
-            score_info = messages.ItemsProcessedScore()
-        elif score_data.type == constants.ScoreData_Type_TopTokens:
-            score_info = messages.TopTokensScore()
-        elif score_data.type == constants.ScoreData_Type_ThetaSnippet:
-            score_info = messages.ThetaSnippetScore()
-        elif score_data.type == constants.ScoreData_Type_TopicKernel:
-            score_info = messages.TopicKernelScore()
-        score_info.ParseFromString(score_data.data)
-        return score_info
-
-    def process_batches(self, pwt, nwt, num_inner_iterations, batches_folder=None,
+    def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
-                        class_ids=None, class_weights=None, find_theta=False):
+                        class_ids=None, class_weights=None, find_theta=False, reset_scores=False):
         """Args:
            - pwt(str): name of pwt matrix in BigARTM
            - nwt(str): name of nwt matrix in BigARTM
@@ -130,6 +119,7 @@ class MasterComponent(object):
            - class_ids(list of str): list of class ids to use during processing
            - class_weights(list of double): list of corresponding weights of class ids
            - find_theat(bool): find theta matrix for 'batches' (if alternative 2)
+           - reset_scores(bool): reset scores after iterations or not
            Returns:
            - tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta (find_theta==True)
            - messages.ThetaMatrix --- the info about Theta (find_theta==False)
@@ -146,7 +136,9 @@ class MasterComponent(object):
             for batch in batches:
                 args.batch_filename.append(batch)
             
-        args.inner_iterations_count = num_inner_iterations
+        if num_inner_iterations is not None:
+            args.inner_iterations_count = num_inner_iterations
+        args.reset_scores = reset_scores
 
         if regularizer_name is not None and regularizer_tau is not None:
             for name, tau in zip(regularizer_name, regularizer_tau):
@@ -230,6 +222,7 @@ class MasterComponent(object):
         args = messages.MergeModelArgs()
         args.nwt_target_name = nwt
         if topic_names is not None:
+            args.ClearField('topic_name')
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
         for nwt_source_name, source_weight in models.iteritems():
@@ -271,53 +264,125 @@ class MasterComponent(object):
         cfg = messages.RegularizerConfig(name=name, type=type, config=config.SerializeToString())
         self._lib.ArtmCreateRegularizer(self.master_id, cfg)
 
-    def create_smooth_sparse_phi_regularizer(self, name, class_ids=None, dictionary_name=None):
+    def create_smooth_sparse_phi_regularizer(self, name, config=None, topic_names=None,
+                                             class_ids=None, dictionary_name=None):
         """Args:
            - name(str): the name of the future regularizer
+           - config: an instance of SmoothSparseThetaConfig
+           - topic_names(list of str): list of topics to regularize
            - class_ids(list of str): the list of class_ids to be regularized
            - dictionary_name(str): name of imported dictionary
         """
-        ref_reg_config = messages.RegularizerConfig()
-        ref_reg_config.name = name
-        ref_reg_config.type = constants.RegularizerConfig_Type_SmoothSparsePhi
-        
-        config = messages.SmoothSparsePhiConfig()
+        if config is None:
+            config = messages.SmoothSparsePhiConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
         if class_ids is not None:
             for class_id in class_ids:
                 config.class_id.append(class_id)
         if dictionary_name is not None:
             config.dictionary_name = dictionary_name
 
-        ref_reg_config.config = config.SerializeToString()
-        self._lib.ArtmCreateRegularizer(self.master_id, ref_reg_config)
+        self.create_regularizer(name=name,
+                                type=constants.RegularizerConfig_Type_SmoothSparsePhi,
+                                config=config)
 
-    def create_smooth_sparse_theta_regularizer(self, name):
+    def create_smooth_sparse_theta_regularizer(self, name, config=None, topic_names=None):
         """Args:
            - name(str): the name of the future regularizer
+           - config: an instance of SmoothSparseThetaConfig
+           - topic_names(list of str): list of topics to regularize
         """
-        ref_reg_config = messages.RegularizerConfig()
-        ref_reg_config.name = name
-        ref_reg_config.type = constants.RegularizerConfig_Type_SmoothSparseTheta
-        ref_reg_config.config = messages.SmoothSparseThetaConfig().SerializeToString()
+        if config is None:
+            config = messages.SmoothSparseThetaConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
 
-        self._lib.ArtmCreateRegularizer(self.master_id, ref_reg_config)
+        self.create_regularizer(name=name,
+                                type=constants.RegularizerConfig_Type_SmoothSparseTheta,
+                                config=config)
 
-    def create_decorrelator_phi_regularizer(self, name, class_ids=None):
+    def create_decorrelator_phi_regularizer(self, name, config=None,
+                                            topic_names=None, class_ids=None):
         """Args:
            - name(str): the name of the future regularizer
+           - config: an instance of SmoothSparseThetaConfig
+           - topic_names(list of str): list of topics to regularize
            - class_ids(list of str): the list of class_ids to be regularized
         """
-        ref_reg_config = messages.RegularizerConfig()
-        ref_reg_config.name = name
-        ref_reg_config.type = constants.RegularizerConfig_Type_DecorrelatorPhi
-        
-        config = messages.DecorrelatorPhiConfig()
+        if config is None:
+            config = messages.DecorrelatorPhiConfig()
+        if topic_names is not None:
+            config.ClearField('topic_name')
+            for topic_name in topic_names:
+                config.topic_name.append(topic_name)
         if class_ids is not None:
             for class_id in class_ids:
                 config.class_id.append(class_id)
-        
-        ref_reg_config.config = config.SerializeToString()
-        self._lib.ArtmCreateRegularizer(self.master_id, ref_reg_config)
+
+        self.create_regularizer(name=name,
+                                type=constants.RegularizerConfig_Type_DecorrelatorPhi,
+                                config=config)
+
+    def reconfigure_regularizer(self, name, type, config):
+        cfg = messages_pb2.RegularizerConfig(name=name,
+                                             type=type,
+                                             config=config.SerializeToString())
+        self._lib.ArtmReconfigureRegularizer(self.master_id, cfg)
+
+    def retrieve_score(self, model_name, score_name):
+        """Args:
+           - model_name(str): name of pwt matrix in BigARTM
+           - score_name(str): the user defined name of score to retrieve
+           - score_config: reference to score data object
+        """
+        args = messages.GetScoreValueArgs()
+        args.model_name = model_name
+        args.score_name = score_name
+
+        results = self._lib.ArtmRequestScore(self.master_id, args)
+        score_data = messages.ScoreData()
+        score_data.ParseFromString(results)
+
+        score_info = None
+        if score_data.type == constants.ScoreData_Type_Perplexity:
+            score_info = messages.PerplexityScore()
+        elif score_data.type == constants.ScoreData_Type_SparsityTheta:
+            score_info = messages.SparsityThetaScore()
+        elif score_data.type == constants.ScoreData_Type_SparsityPhi:
+            score_info = messages.SparsityPhiScore()
+        elif score_data.type == constants.ScoreData_Type_ItemsProcessed:
+            score_info = messages.ItemsProcessedScore()
+        elif score_data.type == constants.ScoreData_Type_TopTokens:
+            score_info = messages.TopTokensScore()
+        elif score_data.type == constants.ScoreData_Type_ThetaSnippet:
+            score_info = messages.ThetaSnippetScore()
+        elif score_data.type == constants.ScoreData_Type_TopicKernel:
+            score_info = messages.TopicKernelScore()
+
+        score_info.ParseFromString(score_data.data)
+        return score_info
+
+    def create_score(self, name, type, config):
+        """Args:
+           - name(str): the name of the future score
+           - type(int): the type of the future score
+           - config: an instance of ***ScoreConfig
+        """
+        master_config = messages.MasterComponentConfig()
+        master_config.CopyFrom(self._config)
+
+        score_config = master_config.score_config.add()
+        score_config.name = name
+        score_config.type = type
+        score_config.config = config.SerializeToString()
+
+        self._config = master_config
+        self._lib.ArtmReconfigureMasterComponent(self.master_id, master_config)
 
     def get_theta_info(self, model):
         """Args:
@@ -382,10 +447,12 @@ class MasterComponent(object):
 
         return phi_matrix_info
 
-    def get_phi_matrix(self, model, topic_names=None):
+    def get_phi_matrix(self, model, topic_names=None, class_ids=None, use_sparse_format=None):
         """Args:
            - model(str): name of matrix in BigARTM
            - topic_names(list of str): list of topics to retrieve (None == all topics)
+           - class_ids(list of str): list of class ids to retrieve (None == all class ids)
+           - use_sparse_format(bool): use sparse\dense layout
            Returns:
            - numpy.ndarray with Phi data (e.g. p(w|t) values)
         """
@@ -395,6 +462,12 @@ class MasterComponent(object):
             args.ClearField('topic_name')
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
+        if class_ids is not None:
+            args.ClearField('class_id')
+            for class_id in class_ids:
+                args.class_id.append(class_id)
+        if use_sparse_format is not None:
+            args.matrix_layout = constants.GetTopicModelArgs_MatrixLayout_Sparse
 
         result = self._lib.ArtmRequestTopicModelExternal(self.master_id, args)
 

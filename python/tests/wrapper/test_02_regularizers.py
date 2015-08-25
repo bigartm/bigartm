@@ -82,9 +82,9 @@ def test_func():
         master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
         # Configure basic regularizers
-        master.create_smooth_sparse_phi_regularizer('SmoothSparsePhi')
-        master.create_smooth_sparse_theta_regularizer('SmoothSparseTheta')
-        master.create_decorrelator_phi_regularizer('DecorrelatorPhi')
+        master.create_smooth_sparse_phi_regularizer(name='SmoothSparsePhi')
+        master.create_smooth_sparse_theta_regularizer(name='SmoothSparseTheta')
+        master.create_decorrelator_phi_regularizer(name='DecorrelatorPhi')
 
         # Initialize model
         master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
@@ -96,7 +96,8 @@ def test_func():
                                    num_inner_iterations=num_inner_iterations,
                                    batches_folder=batches_folder,
                                    regularizer_name=['SmoothSparseTheta'],
-                                   regularizer_tau=[smsp_theta_tau])
+                                   regularizer_tau=[smsp_theta_tau],
+                                   reset_scores=True)
             master.regularize_model(pwt, nwt, rwt,
                                     ['SmoothSparsePhi', 'DecorrelatorPhi'], [smsp_phi_tau, decor_phi_tau])
             master.normalize_model(pwt, nwt, rwt)   

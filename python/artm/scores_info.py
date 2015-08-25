@@ -34,7 +34,7 @@ class SparsityPhiScoreInfo(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.score.GetValue(score._model)
+            _data = score.master.retrieve_score(score._model, score.name)
 
             self._value.append(_data.value)
             self._zero_tokens.append(_data.zero_tokens)
@@ -115,7 +115,7 @@ class SparsityThetaScoreInfo(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.score.GetValue(score._model)
+            _data = score.master.retrieve_score(score._model, score.name)
 
             self._value.append(_data.value)
             self._zero_topics.append(_data.zero_topics)
@@ -200,7 +200,7 @@ class PerplexityScoreInfo(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.score.GetValue(score._model)
+            _data = score.master.retrieve_score(score._model, score.name)
 
             self._value.append(_data.value)
             self._raw.append(_data.raw)
@@ -343,7 +343,7 @@ class ItemsProcessedScoreInfo(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.score.GetValue(score._model)
+            _data = score.master.retrieve_score(score._model, score.name)
             self._value.append(_data.value)
         else:
             self._value.append(None)
@@ -391,7 +391,7 @@ class TopTokensScoreInfo(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.score.GetValue(score._model)
+            _data = score.master.retrieve_score(score._model, score.name)
 
             self._num_tokens.append(_data.num_entries)
 
@@ -514,7 +514,7 @@ class TopicKernelScoreInfo(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.score.GetValue(score._model)
+            _data = score.master.retrieve_score(score._model, score.name)
 
             self._topic_info.append({})
             index = len(self._topic_info) - 1
@@ -675,7 +675,7 @@ class ThetaSnippetScoreInfo(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.score.GetValue(score._model)
+            _data = score.master.retrieve_score(score._model, score.name)
 
             self._document_ids.append([item_id for item_id in _data.item_id])
             self._snippet.append(

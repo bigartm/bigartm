@@ -60,7 +60,7 @@ def test_func():
                 start = time.time()
                 
                 # Invoke one scan of the collection and normalize Phi
-                master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
+                master.process_batches(pwt, nwt, num_inner_iterations, batches_folder, reset_scores=True)
                 master.normalize_model(pwt, nwt)  
 
                 # Retrieve and print perplexity score

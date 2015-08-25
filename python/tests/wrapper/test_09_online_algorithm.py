@@ -66,7 +66,8 @@ def test_func():
             for batch_index, batch_filename in enumerate(batches):
                 batches_to_process.append(batch_filename)
                 if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):
-                    master.process_batches(pwt, nwt_hat, num_inner_iterations, batches=batches_to_process)
+                    master.process_batches(pwt, nwt_hat, num_inner_iterations,
+                        batches=batches_to_process, reset_scores=True)
                     master.merge_model({nwt: decay_weight, nwt_hat: apply_weight}, nwt=nwt)
                     master.normalize_model(pwt, nwt)
 
