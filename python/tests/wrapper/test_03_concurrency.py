@@ -8,7 +8,7 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
-import helpers
+import artm.master_component as mc
 
 def test_func():
     # Set some constants
@@ -34,9 +34,8 @@ def test_func():
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
@@ -48,24 +47,24 @@ def test_func():
         for num_processors in num_processors_list:
             # Create master component and scores
             scores = [('PerplexityScore', messages.PerplexityScoreConfig())]
-            helper.master_id = helper.create_master_component(scores=scores)
+            master = mc.MasterComponent(lib, scores=scores)
 
             # Import the collection dictionary
-            helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
+            master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
             # Initialize model
-            helper.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
+            master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
 
             times = []
             for iter in xrange(num_outer_iterations):
                 start = time.time()
                 
                 # Invoke one scan of the collection and normalize Phi
-                helper.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
-                helper.normalize_model(pwt, nwt)  
+                master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
+                master.normalize_model(pwt, nwt)  
 
                 # Retrieve and print perplexity score
-                perplexity_score = helper.retrieve_score(pwt, 'PerplexityScore')
+                perplexity_score = master.retrieve_score(pwt, 'PerplexityScore')
 
                 end = time.time()
                 assert abs(expected_perplexity_value_on_iteration[iter] - perplexity_score.value) < perplexity_tol

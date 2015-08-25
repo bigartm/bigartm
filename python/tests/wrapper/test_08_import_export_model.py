@@ -6,7 +6,7 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.constants as constants
-import helpers
+import artm.master_component as mc
 
 def test_func():
     # Set some constants
@@ -22,9 +22,8 @@ def test_func():
     batches_folder = tempfile.mkdtemp()
     model_filename = os.path.join(batches_folder, str(uuid.uuid1()))
     try:
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
@@ -34,24 +33,24 @@ def test_func():
                                  'dictionary_file_name': dictionary_name})
 
         # Create master component
-        helper.master_id = helper.create_master_component()
+        master = mc.MasterComponent(lib)
 
         # Import the collection dictionary
-        helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
+        master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
         # Initialize model
-        helper.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
-        phi_matrix_info = helper.get_phi_info(model=pwt)
+        master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
+        phi_matrix_info = master.get_phi_info(model=pwt)
         
         # Export initialized model
-        helper.export_model(pwt, model_filename)
+        master.export_model(pwt, model_filename)
 
         # Create new master component
-        master_id_new = helper.create_master_component()
+        master_new = mc.MasterComponent(lib)
         
         # Import model into new master component
-        helper.import_model(pwt, model_filename, master_id=master_id_new)
-        phi_matrix_info_new = helper.get_phi_info(model=pwt, master_id=master_id_new)
+        master_new.import_model(pwt, model_filename)
+        phi_matrix_info_new = master_new.get_phi_info(model=pwt)
         assert phi_matrix_info.token == phi_matrix_info_new.token
         assert phi_matrix_info_new.topics_count == num_topics
         

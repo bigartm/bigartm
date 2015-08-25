@@ -7,7 +7,7 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
-import helpers
+import artm.master_component as mc
 
 def test_func():
     # Set some constants
@@ -34,9 +34,8 @@ def test_func():
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
@@ -48,10 +47,10 @@ def test_func():
         # Create master component and scores
         scores = [('Perplexity', messages.PerplexityScoreConfig()),
                   ('TopTokens', messages.TopTokensScoreConfig())]
-        helper.master_id = helper.create_master_component(num_processors=num_processors, scores=scores)
+        master = mc.MasterComponent(lib, num_processors=num_processors, scores=scores)
 
         # Initialize model
-        helper.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)
+        master.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)
 
         # Get file names of batches to process
         batches = []
@@ -67,12 +66,12 @@ def test_func():
             for batch_index, batch_filename in enumerate(batches):
                 batches_to_process.append(batch_filename)
                 if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):
-                    helper.process_batches(pwt, nwt_hat, num_inner_iterations, batches=batches_to_process)
-                    helper.merge_model({nwt: decay_weight, nwt_hat: apply_weight}, nwt=nwt)
-                    helper.normalize_model(pwt, nwt)
+                    master.process_batches(pwt, nwt_hat, num_inner_iterations, batches=batches_to_process)
+                    master.merge_model({nwt: decay_weight, nwt_hat: apply_weight}, nwt=nwt)
+                    master.normalize_model(pwt, nwt)
 
                     # Retrieve and print perplexity score
-                    perplexity_score = helper.retrieve_score(pwt, 'Perplexity')
+                    perplexity_score = master.retrieve_score(pwt, 'Perplexity')
                     if iter == 0 and batch_index == 0:
                         assert(perplexity_score.value in perplexity_first_value)
                     assert len(batches_to_process) == num_batches
@@ -83,7 +82,7 @@ def test_func():
                     batches_to_process = []
 
         # Retrieve and print top tokens score
-        top_tokens_score = helper.retrieve_score(pwt, 'TopTokens')
+        top_tokens_score = master.retrieve_score(pwt, 'TopTokens')
 
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))

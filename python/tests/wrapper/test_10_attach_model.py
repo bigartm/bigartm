@@ -6,7 +6,7 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
-import helpers
+import artm.master_component as mc
 
 def test_func():
     # Set some constants
@@ -24,9 +24,8 @@ def test_func():
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
@@ -37,21 +36,21 @@ def test_func():
 
         # Create master component and scores
         scores = [('ThetaSnippet', messages.ThetaSnippetScoreConfig())]
-        helper.master_id = helper.create_master_component(scores=scores)
+        master = mc.MasterComponent(lib, scores=scores)
 
         # Initialize model
-        helper.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)
+        master.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)
 
         # Attach Pwt matrix
-        topic_model, numpy_matrix = helper.attach_model(pwt)
+        topic_model, numpy_matrix = master.attach_model(pwt)
         numpy_matrix[:, index_to_zero] = 0
 
         # Perform iterations
         for iter in xrange(num_outer_iterations):
-            helper.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
-            helper.normalize_model(pwt, nwt) 
+            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
+            master.normalize_model(pwt, nwt) 
 
-        theta_snippet_score = helper.retrieve_score(pwt, 'ThetaSnippet')
+        theta_snippet_score = master.retrieve_score(pwt, 'ThetaSnippet')
 
         print 'Option 1. ThetaSnippetScore.'
          # Note that 5th topic is fully zero; this is because we performed "numpy_matrix[:, 4] = 0".

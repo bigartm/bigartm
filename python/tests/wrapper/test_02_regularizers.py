@@ -7,7 +7,7 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
-import helpers
+import artm.master_component as mc
 
 def test_func():
     # Set some constants
@@ -61,9 +61,8 @@ def test_func():
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
@@ -77,35 +76,35 @@ def test_func():
                   ('SparsityPhi', messages.SparsityPhiScoreConfig()),
                   ('SparsityTheta', messages.SparsityThetaScoreConfig()),
                   ('TopTokens', messages.TopTokensScoreConfig())]
-        helper.master_id = helper.create_master_component(scores=scores)
+        master = mc.MasterComponent(lib, scores=scores)
 
         # Import the collection dictionary
-        helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
+        master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
         # Configure basic regularizers
-        helper.create_smooth_sparse_phi_regularizer('SmoothSparsePhi')
-        helper.create_smooth_sparse_theta_regularizer('SmoothSparseTheta')
-        helper.create_decorrelator_phi_regularizer('DecorrelatorPhi')
+        master.create_smooth_sparse_phi_regularizer('SmoothSparsePhi')
+        master.create_smooth_sparse_theta_regularizer('SmoothSparseTheta')
+        master.create_decorrelator_phi_regularizer('DecorrelatorPhi')
 
         # Initialize model
-        helper.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
+        master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
-            helper.process_batches(pwt=pwt,
+            master.process_batches(pwt=pwt,
                                    nwt=nwt,
                                    num_inner_iterations=num_inner_iterations,
                                    batches_folder=batches_folder,
                                    regularizer_name=['SmoothSparseTheta'],
                                    regularizer_tau=[smsp_theta_tau])
-            helper.regularize_model(pwt, nwt, rwt,
+            master.regularize_model(pwt, nwt, rwt,
                                     ['SmoothSparsePhi', 'DecorrelatorPhi'], [smsp_phi_tau, decor_phi_tau])
-            helper.normalize_model(pwt, nwt, rwt)   
+            master.normalize_model(pwt, nwt, rwt)   
 
             # Retrieve scores
-            perplexity_score = helper.retrieve_score(pwt, 'Perplexity')
-            sparsity_phi_score = helper.retrieve_score(pwt, 'SparsityPhi')
-            sparsity_theta_score = helper.retrieve_score(pwt, 'SparsityTheta')
+            perplexity_score = master.retrieve_score(pwt, 'Perplexity')
+            sparsity_phi_score = master.retrieve_score(pwt, 'SparsityPhi')
+            sparsity_theta_score = master.retrieve_score(pwt, 'SparsityTheta')
 
             # Assert and print scores
             print_string = 'Iter#{0}'.format(iter)
@@ -119,7 +118,7 @@ def test_func():
             assert abs(sparsity_theta_score.value - expected_theta_sparsity_value_on_iteration[iter]) < sparsity_tol
 
         # Retrieve and print top tokens score
-        top_tokens_score = helper.retrieve_score(pwt, 'TopTokens')
+        top_tokens_score = master.retrieve_score(pwt, 'TopTokens')
 
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))
