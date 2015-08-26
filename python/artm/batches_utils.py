@@ -1,24 +1,26 @@
 import os
 
-import messages_pb2
-import library
+from . import wrapper
+from wrapper import constants
+from wrapper import messages_pb2 as messages
+from . import master_component as mc
 
 DICTIONARY_NAME = 'dictionary'
 
 
 def _create_parser_config(data_path, collection_name, target_folder,
                           batch_size, data_format, dictionary_name=DICTIONARY_NAME):
-    collection_parser_config = messages_pb2.CollectionParserConfig()
+    collection_parser_config = messages.CollectionParserConfig()
     collection_parser_config.num_items_per_batch = batch_size
     if data_format == 'bow_uci':
         collection_parser_config.docword_file_path = \
             os.path.join(data_path, 'docword.' + collection_name + '.txt')
         collection_parser_config.vocab_file_path = \
             os.path.join(data_path, 'vocab.' + collection_name + '.txt')
-        collection_parser_config.format = library.CollectionParserConfig_Format_BagOfWordsUci
+        collection_parser_config.format = constants.CollectionParserConfig_Format_BagOfWordsUci
     elif data_format == 'vowpal_wabbit':
         collection_parser_config.docword_file_path = data_path
-        collection_parser_config.format = library.CollectionParserConfig_Format_VowpalWabbit
+        collection_parser_config.format = constants.CollectionParserConfig_Format_VowpalWabbit
     collection_parser_config.target_folder = target_folder
     collection_parser_config.dictionary_file_name = dictionary_name
 
@@ -52,6 +54,7 @@ def parse(collection_name=None, data_path='', data_format='bow_uci',
     if collection_name is None and data_format == 'bow_uci':
         raise IOError('ArtmModel.parse(): No collection name was given')
 
+    lib = wrapper.LibArtm()
     if data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
         collection_parser_config = _create_parser_config(
             data_path,
@@ -60,7 +63,7 @@ def parse(collection_name=None, data_path='', data_format='bow_uci',
             batch_size,
             data_format,
             dictionary_name)
-        library.Library().ParseCollection(collection_parser_config)
+        lib.ArtmParseCollection(collection_parser_config)
 
     elif data_format == 'plain_text':
         raise NotImplementedError()

@@ -1,9 +1,8 @@
 import os
 import numpy
 
-import wrapper
-import wrapper.messages_pb2 as messages
-import wrapper.constants as constants
+from .wrapper import messages_pb2 as messages
+from .wrapper import constants
 
 
 class MasterComponent(object):
@@ -26,7 +25,7 @@ class MasterComponent(object):
             for name, config in scores:
                 ref_score_config = master_config.score_config.add()
                 ref_score_config.name = name
-            
+
                 if isinstance(config, messages.PerplexityScoreConfig):
                     ref_score_config.type = constants.ScoreConfig_Type_Perplexity
                 elif isinstance(config, messages.SparsityThetaScoreConfig):
@@ -78,8 +77,10 @@ class MasterComponent(object):
            - source_type(str): 'batches' | 'dictionary'
            - num_topics(int): number of topics in model
            - topic_names(list of str): the list of names of topics to be used in model
-           - disk_path(str): full name of folder with batches (need if InitializeModelArgs_SourceType_Batches)
-           - dictionary_name(str): name of imported dictionary (need if InitializeModelArgs_SourceType_Dictionary)
+           - disk_path(str): full name of folder with batches
+                             (need if InitializeModelArgs_SourceType_Batches)
+           - dictionary_name(str): name of imported dictionary
+                                   (need if InitializeModelArgs_SourceType_Dictionary)
            - args: an instance of InitilaizeModelArgs
         """
         init_args = messages.InitializeModelArgs()
@@ -135,7 +136,7 @@ class MasterComponent(object):
         if batches is not None:
             for batch in batches:
                 args.batch_filename.append(batch)
-            
+
         if num_inner_iterations is not None:
             args.inner_iterations_count = num_inner_iterations
         args.reset_scores = reset_scores
@@ -187,7 +188,7 @@ class MasterComponent(object):
         args.pwt_source_name = pwt
         args.nwt_source_name = nwt
         args.rwt_target_name = rwt
-        
+
         for name, tau in zip(regularizer_name, regularizer_tau):
             reg_set = args.regularizer_settings.add()
             reg_set.name = name
@@ -215,7 +216,8 @@ class MasterComponent(object):
         Args:
         - models(dict): list of models with nwt-increments and their weights,
                         key - nwt_source_name, value - source_weight.
-        - nwt(str): the name of target matrix to store combined nwt. The matrix will be created by this operation.
+        - nwt(str): the name of target matrix to store combined nwt.
+                    The matrix will be created by this operation.
         - topic_names(list of str): names of topics in the resulting model. By default model
                                     names are taken from the first model in the list.
         """
@@ -245,7 +247,9 @@ class MasterComponent(object):
         num_cols = topics.topics_count
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
-        self._lib.ArtmAttachModel(self.master_id, messages.AttachModelArgs(model_name=model), numpy_ndarray)
+        self._lib.ArtmAttachModel(self.master_id,
+                                  messages.AttachModelArgs(model_name=model),
+                                  numpy_ndarray)
 
         topic_model = messages.TopicModel()
         topic_model.topics_count = topics.topics_count
@@ -390,7 +394,8 @@ class MasterComponent(object):
            Returns:
            - messages.ThetaMatrix object
         """
-        result = self._lib.ArtmRequestThetaMatrix(self.master_id, messages.GetThetaMatrixArgs(model_name=model))
+        result = self._lib.ArtmRequestThetaMatrix(self.master_id,
+                                                  messages.GetThetaMatrixArgs(model_name=model))
 
         theta_matrix_info = messages.ThetaMatrix()
         theta_matrix_info.ParseFromString(result)

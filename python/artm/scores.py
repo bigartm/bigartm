@@ -1,8 +1,7 @@
 import uuid
 
-import artm.wrapper
-import artm.wrapper.messages_pb2 as messages
-import artm.wrapper.constants as constants
+from wrapper import messages_pb2 as messages
+from wrapper import constants
 
 
 GLOB_EPS = 1e-37
@@ -17,22 +16,13 @@ __all__ = [
     'TopTokensScore'
 ]
 
-CREATE_SCORE_CONFIG = {
-    constants.ScoreConfig_Type_SparsityPhi: messages.SparsityPhiScoreConfig,
-    constants.ScoreConfig_Type_SparsityTheta: messages.SparsityThetaScoreConfig,
-    constants.ScoreConfig_Type_Perplexity: messages.PerplexityScoreConfig,
-    constants.ScoreConfig_Type_ItemsProcessed: messages.ItemsProcessedScoreConfig,
-    constants.ScoreConfig_Type_TopTokens: messages.TopTokensScoreConfig,
-    constants.ScoreConfig_Type_ThetaSnippet: messages.ThetaSnippetScoreConfig,
-    constants.ScoreConfig_Type_TopicKernel: messages.TopicKernelScoreConfig
-}
-
 
 def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     if proto_field_name is None:
         proto_field_name = field_name
     setattr(obj, '_' + field_name, field)
-    score_config = CREATE_SCORE_CONFIG[obj._type]()
+
+    score_config = obj._config_message()
     score_config.CopyFrom(obj._config)
     if isinstance(field, list):
         score_config.ClearField(proto_field_name)
@@ -94,15 +84,17 @@ class Scores(object):
 
 class BaseScore(object):
     def __init__(self, name, class_id, topic_names):
-        config = CREATE_SCORE_CONFIG[self._type]()
+        config = self._config_message()
         self._class_id = '@default_class'
         self._topic_names = []
 
         if name is None:
             name = str(self._type) + uuid.uuid1().urn
+
         if class_id is not None:
             config.class_id = class_id
             self._class_id = class_id
+
         if topic_names is not None:
             config.ClearField('topic_name')
             for topic_name in topic_names:
@@ -170,6 +162,7 @@ class SparsityPhiScore(BaseScore):
       considered to be zero, default=1e-37
     """
 
+    _config_message = messages.SparsityPhiScoreConfig
     _type = constants.ScoreConfig_Type_SparsityPhi
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
@@ -177,8 +170,8 @@ class SparsityPhiScore(BaseScore):
                            name=name,
                            class_id=class_id,
                            topic_names=topic_names)
-        self._eps = GLOB_EPS
 
+        self._eps = GLOB_EPS
         if eps is not None:
             self._config.eps = eps
             self._eps = eps
@@ -203,6 +196,7 @@ class SparsityThetaScore(BaseScore):
       considered to be zero, default=1e-37
     """
 
+    _config_message = messages.SparsityThetaScoreConfig
     _type = constants.ScoreConfig_Type_SparsityTheta
 
     def __init__(self, name=None, topic_names=None, eps=None):
@@ -210,8 +204,8 @@ class SparsityThetaScore(BaseScore):
                            name=name,
                            class_id=None,
                            topic_names=topic_names)
-        self._eps = GLOB_EPS
 
+        self._eps = GLOB_EPS
         if eps is not None:
             self._config.eps = eps
             self._eps = eps
@@ -249,6 +243,7 @@ class PerplexityScore(BaseScore):
       document/collection model if token's counter == 0, default=True
     """
 
+    _config_message = messages.PerplexityScoreConfig
     _type = constants.ScoreConfig_Type_Perplexity
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
@@ -257,16 +252,18 @@ class PerplexityScore(BaseScore):
                            name=name,
                            class_id=class_id,
                            topic_names=topic_names)
-        self._eps = GLOB_EPS
-        self._dictionary_name = ''
-        self._use_unigram_document_model = True
 
+        self._eps = GLOB_EPS
         if eps is not None:
             self._config.theta_sparsity_eps = eps
             self._eps = eps
+
+        self._dictionary_name = ''
         if dictionary_name is not None:
             self._dictionary_name = dictionary_name
             self._config.dictionary_name = dictionary_name
+
+        self._use_unigram_document_model = True
         if use_unigram_document_model is not None:
             self._use_unigram_document_model = use_unigram_document_model
             if use_unigram_document_model is True:
@@ -313,6 +310,7 @@ class ItemsProcessedScore(BaseScore):
       name (str): the identifier of score, will be auto-generated if not specified
     """
 
+    _config_message = messages.ItemsProcessedScoreConfig
     _type = constants.ScoreConfig_Type_ItemsProcessed
 
     def __init__(self, name=None):
@@ -352,6 +350,7 @@ class TopTokensScore(BaseScore):
       if not specified
     """
 
+    _config_message = messages.TopTokensScoreConfig
     _type = constants.ScoreConfig_Type_TopTokens
 
     def __init__(self, name=None, class_id=None, topic_names=None,
@@ -360,12 +359,13 @@ class TopTokensScore(BaseScore):
                            name=name,
                            class_id=class_id,
                            topic_names=topic_names)
-        self._num_tokens = 10
-        self._dictionary_name = ''
 
+        self._num_tokens = 10
         if num_tokens is not None:
             self._config.num_tokens = num_tokens
             self._num_tokens = num_tokens
+
+        self._dictionary_name = ''
         if dictionary_name is not None:
             self._dictionary_name = dictionary_name
             self._config.cooccurrence_dictionary_name = dictionary_name
@@ -398,6 +398,7 @@ class ThetaSnippetScore(BaseScore):
       beginning (no sense if item_ids given), default=10
     """
 
+    _config_message = messages.ThetaSnippetScoreConfig
     _type = constants.ScoreConfig_Type_ThetaSnippet
 
     def __init__(self, name=None, item_ids=None, num_items=None):
@@ -405,14 +406,15 @@ class ThetaSnippetScore(BaseScore):
                            name=name,
                            class_id=None,
                            topic_names=None)
-        self._item_ids = []
-        self._num_items = 10
 
+        self._item_ids = []
         if item_ids is not None:
             self._config.ClearField('item_id')
             for item_id in item_ids:
                 self._config.item_id.append(item_id)
                 self._item_ids.append(item_id)
+
+        self._num_items = 10
         if num_items is not None:
             self._config.item_count = num_items
             self._num_items = num_items
@@ -466,6 +468,7 @@ class TopicKernelScore(BaseScore):
       get token into topic kernel. Should be in (0, 1), default=0.1
     """
 
+    _config_message = messages.TopicKernelScoreConfig
     _type = constants.ScoreConfig_Type_TopicKernel
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
@@ -474,16 +477,18 @@ class TopicKernelScore(BaseScore):
                            name=name,
                            class_id=class_id,
                            topic_names=topic_names)
-        self._eps = GLOB_EPS
-        self._dictionary_name = ''
-        self._probability_mass_threshold = 0.1
 
+        self._eps = GLOB_EPS
         if eps is not None:
             self._config.theta_sparsity_eps = eps
             self._eps = eps
+
+        self._dictionary_name = ''
         if dictionary_name is not None:
             self._self._dictionary_name = dictionary_name
             config.cooccurrence_dictionary_name = dictionary_name
+
+        self._probability_mass_threshold = 0.1
         if probability_mass_threshold is not None:
             self._config.probability_mass_threshold = probability_mass_threshold
             self._probability_mass_threshold = probability_mass_threshold

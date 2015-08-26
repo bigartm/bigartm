@@ -2,18 +2,18 @@ import collections
 
 
 __all__ = [
-    'SparsityPhiScoreInfo',
-    'ItemsProcessedScoreInfo',
-    'PerplexityScoreInfo',
-    'SparsityThetaScoreInfo',
-    'ThetaSnippetScoreInfo',
-    'TopicKernelScoreInfo',
-    'TopTokensScoreInfo'
+    'SparsityPhiScoreTracker',
+    'ItemsProcessedScoreTracker',
+    'PerplexityScoreTracker',
+    'SparsityThetaScoreTracker',
+    'ThetaSnippetScoreTracker',
+    'TopicKernelScoreTracker',
+    'TopTokensScoreTracker'
 ]
 
 
-class SparsityPhiScoreInfo(object):
-    """SparsityPhiScoreInfo represents a result of counting
+class SparsityPhiScoreTracker(object):
+    """SparsityPhiScoreTracker represents a result of counting
     SparsityPhiScore (private class)
 
     Args:
@@ -27,7 +27,7 @@ class SparsityPhiScoreInfo(object):
         self._total_tokens = []
 
     def add(self, score=None):
-        """SparsityPhiScoreInfo.add() --- add info about score after synchronization
+        """SparsityPhiScoreTracker.add() --- add info about score after synchronization
 
         Args:
           score (reference): reference to score object, if not specified
@@ -74,26 +74,26 @@ class SparsityPhiScoreInfo(object):
         """Returns:
         double: value of Phi sparsity on the last synchronization
         """
-        return self._value[len(self._value) - 1]
+        return self._value[-1]
 
     @property
     def last_zero_tokens(self):
         """Returns:
         int: number of zero rows in Phi on the last synchronization
         """
-        return self._zero_tokens[len(self._zero_tokens) - 1]
+        return self._zero_tokens[-1]
 
     @property
     def last_total_tokens(self):
         """Returns:
         int: total number of rows in Phi on the last synchronization
         """
-        return self._total_tokens[len(self._total_tokens) - 1]
+        return self._total_tokens[-1]
 
 
 ###################################################################################################
-class SparsityThetaScoreInfo(object):
-    """SparsityThetaScoreInfo represents a result of counting
+class SparsityThetaScoreTracker(object):
+    """SparsityThetaScoreTracker represents a result of counting
     SparsityThetaScore (private class)
 
     Args:
@@ -107,7 +107,7 @@ class SparsityThetaScoreInfo(object):
         self._total_topics = []
 
     def add(self, score=None):
-        """SparsityThetaScoreInfo.add() --- add info about score
+        """SparsityThetaScoreTracker.add() --- add info about score
         after synchronization
 
         Args:
@@ -155,26 +155,26 @@ class SparsityThetaScoreInfo(object):
         """Returns:
           double: value of Theta sparsity on the last synchronization
         """
-        return self._value[len(self._value) - 1]
+        return self._value[-1]
 
     @property
     def last_zero_topics(self):
         """Returns:
           int: number of zero rows in Theta on the last synchronization
         """
-        return self._zero_topics[len(self._zero_topics) - 1]
+        return self._zero_topics[-1]
 
     @property
     def last_total_topics(self):
         """Returns:
           int: total number of rows in Theta on the last synchronization
         """
-        return self._total_topics[len(self._total_topics) - 1]
+        return self._total_topics[-1]
 
 
 ###################################################################################################
-class PerplexityScoreInfo(object):
-    """PerplexityScoreInfo represents a result of counting PerplexityScore
+class PerplexityScoreTracker(object):
+    """PerplexityScoreTracker represents a result of counting PerplexityScore
     (private class)
 
     Args:
@@ -192,7 +192,7 @@ class PerplexityScoreInfo(object):
         self._theta_sparsity_total_topics = []
 
     def add(self, score=None):
-        """PerplexityScoreInfo.add() --- add info about score after
+        """PerplexityScoreTracker.add() --- add info about score after
         synchronization
 
         Args:
@@ -276,54 +276,54 @@ class PerplexityScoreInfo(object):
         """Returns:
           double: value of perplexity on the last synchronization
         """
-        return self._value[len(self._value) - 1]
+        return self._value[-1]
 
     @property
     def last_raw(self):
         """Returns:
           double: raw value in formula of perplexity on the last synchronization
         """
-        return self._raw[len(self._raw) - 1]
+        return self._raw[-1]
 
     @property
     def last_normalizer(self):
         """Returns:
           double: normalizer value in formula of perplexity on the last synchronization
         """
-        return self._normalizer[len(self._normalizer) - 1]
+        return self._normalizer[-1]
 
     @property
     def last_zero_tokens(self):
         """Returns:
           int: number of tokens with zero counters on the last synchronization
         """
-        return self._zero_tokens[len(self._zero_tokens) - 1]
+        return self._zero_tokens[-1]
 
     @property
     def last_theta_sparsity_value(self):
         """Returns:
           double: Theta sparsity value on the last synchronization
         """
-        return self._theta_sparsity_value[len(self._theta_sparsity_value) - 1]
+        return self._theta_sparsity_value[-1]
 
     @property
     def last_theta_sparsity_zero_topics(self):
         """Returns:
           int: number of zero rows in Theta on the last synchronization
         """
-        return self._theta_sparsity_zero_topics[len(self._theta_sparsity_zero_topics) - 1]
+        return self._theta_sparsity_zero_topics[-1]
 
     @property
     def last_theta_sparsity_total_topics(self):
         """Returns:
           int: total number of rows in Theta on the last synchronization
         """
-        return self._theta_sparsity_total_topics[len(self._theta_sparsity_total_topics) - 1]
+        return self._theta_sparsity_total_topics[-1]
 
 
 ###################################################################################################
-class ItemsProcessedScoreInfo(object):
-    """ItemsProcessedScoreInfo represents a result of counting
+class ItemsProcessedScoreTracker(object):
+    """ItemsProcessedScoreTracker represents a result of counting
     ItemsProcessedScore (private class)
 
     Args:
@@ -335,7 +335,7 @@ class ItemsProcessedScoreInfo(object):
         self._value = []
 
     def add(self, score=None):
-        """ItemsProcessedScoreInfo.add() --- add info about score
+        """ItemsProcessedScoreTracker.add() --- add info about score
         after synchronization
 
         Args:
@@ -364,12 +364,12 @@ class ItemsProcessedScoreInfo(object):
         """Returns:
           int: total number of processed documents on the last synchronization
         """
-        return self._value[len(self._value) - 1]
+        return self._value[-1]
 
 
 ###################################################################################################
-class TopTokensScoreInfo(object):
-    """TopTokensScoreInfo represents a result of counting TopTokensScore
+class TopTokensScoreTracker(object):
+    """TopTokensScoreTracker represents a result of counting TopTokensScore
     (private class)
 
     Args:
@@ -383,7 +383,7 @@ class TopTokensScoreInfo(object):
         self._average_coherence = []
 
     def add(self, score=None):
-        """TopTokensScoreInfo.add() --- add info about score
+        """TopTokensScoreTracker.add() --- add info about score
         after synchronization
 
         Args:
@@ -396,7 +396,6 @@ class TopTokensScoreInfo(object):
             self._num_tokens.append(_data.num_entries)
 
             self._topic_info.append({})
-            index = len(self._topic_info) - 1
             for top_idx, top_name in enumerate(collections.OrderedDict.fromkeys(_data.topic_name)):
                 tokens = []
                 weights = []
@@ -407,12 +406,12 @@ class TopTokensScoreInfo(object):
                 coherence = -1
                 if len(_data.coherence.value) > 0:
                     coherence = _data.coherence.value[top_idx]
-                self._topic_info[index][top_name] = \
+                self._topic_info[-1][top_name] = \
                     collections.namedtuple('TopTokensScoreTuple',
                                            ['tokens', 'weights', 'coherence'])
-                self._topic_info[index][top_name].tokens = tokens
-                self._topic_info[index][top_name].weights = weights
-                self._topic_info[index][top_name].coherence = coherence
+                self._topic_info[-1][top_name].tokens = tokens
+                self._topic_info[-1][top_name].weights = weights
+                self._topic_info[-1][top_name].coherence = coherence
 
             self._average_coherence.append(_data.average_coherence)
         else:
@@ -461,7 +460,7 @@ class TopTokensScoreInfo(object):
           int: reqested number of top tokens in each topic on the last
           synchronization
         """
-        return self._num_tokens[len(self._num_tokens) - 1]
+        return self._num_tokens[-1]
 
     @property
     def last_topic_info(self):
@@ -477,7 +476,7 @@ class TopTokensScoreInfo(object):
           - *.last_topic_info[topic_name].coherence --- the coherency
             of topic due to it's top tokens
         """
-        return self._topic_info[len(self._topic_info) - 1]
+        return self._topic_info[-1]
 
     @property
     def last_average_coherence(self):
@@ -485,12 +484,12 @@ class TopTokensScoreInfo(object):
           double: average coherence of top tokens in all requested topics
           on the last synchronization
         """
-        return self._average_coherence[len(self._average_coherence) - 1]
+        return self._average_coherence[-1]
 
 
 ###################################################################################################
-class TopicKernelScoreInfo(object):
-    """TopicKernelScoreInfo represents a result of counting TopicKernelScore
+class TopicKernelScoreTracker(object):
+    """TopicKernelScoreTracker represents a result of counting TopicKernelScore
     (private class)
 
     Args:
@@ -506,7 +505,7 @@ class TopicKernelScoreInfo(object):
         self._average_purity = []
 
     def add(self, score=None):
-        """TopicKernelScoreInfo.add() --- add info about score after
+        """TopicKernelScoreTracker.add() --- add info about score after
         synchronization
 
         Args:
@@ -517,22 +516,21 @@ class TopicKernelScoreInfo(object):
             _data = score.master.retrieve_score(score._model, score.name)
 
             self._topic_info.append({})
-            index = len(self._topic_info) - 1
             for topic_index, topic_name in enumerate(_data.topic_name.value):
                 tokens = [token for token in _data.kernel_tokens[topic_index].value]
                 coherence = -1
                 if len(_data.coherence.value) > 0:
                     coherence = _data.coherence.value[topic_index]
-                self._topic_info[index][topic_name] = \
+                self._topic_info[-1][topic_name] = \
                     collections.namedtuple('TopicKernelScoreTuple',
                                            ['tokens', 'size', 'contrast', 'purity', 'coherence'])
-                self._topic_info[index][topic_name].tokens = tokens
-                self._topic_info[index][topic_name].size = _data.kernel_size.value[topic_index]
-                self._topic_info[index][topic_name].contrast = \
+                self._topic_info[-1][topic_name].tokens = tokens
+                self._topic_info[-1][topic_name].size = _data.kernel_size.value[topic_index]
+                self._topic_info[-1][topic_name].contrast = \
                     _data.kernel_purity.value[topic_index]
-                self._topic_info[index][topic_name].purity = \
+                self._topic_info[-1][topic_name].purity = \
                     _data.kernel_contrast.value[topic_index]
-                self._topic_info[index][topic_name].coherence = coherence
+                self._topic_info[-1][topic_name].coherence = coherence
 
             self._average_coherence.append(_data.average_coherence)
             self._average_size.append(_data.average_kernel_size)
@@ -617,7 +615,7 @@ class TopicKernelScoreInfo(object):
           - *.topic_info[topic_name].coherence --- the coherency of
             topic due to it's kernel
         """
-        return self._topic_info[len(self._topic_info) - 1]
+        return self._topic_info[-1]
 
     @property
     def last_average_coherence(self):
@@ -625,7 +623,7 @@ class TopicKernelScoreInfo(object):
           double: average coherence of kernel tokens in all requested
           topics on the last synchronization
         """
-        return self._average_coherence[len(self._average_coherence) - 1]
+        return self._average_coherence[-1]
 
     @property
     def last_average_size(self):
@@ -633,7 +631,7 @@ class TopicKernelScoreInfo(object):
           double: average kernel size of all requested topics on
           the last synchronization
         """
-        return self._average_size[len(self._average_size) - 1]
+        return self._average_size[-1]
 
     @property
     def last_average_contrast(self):
@@ -641,7 +639,7 @@ class TopicKernelScoreInfo(object):
           double: average kernel contrast of all requested topics on
           the last synchronization
         """
-        return self._average_contrast[len(self._average_contrast) - 1]
+        return self._average_contrast[-1]
 
     @property
     def last_average_purity(self):
@@ -649,12 +647,12 @@ class TopicKernelScoreInfo(object):
           double: average kernel purity of all requested topics on
           the last synchronization
         """
-        return self._average_purity[len(self._average_purity) - 1]
+        return self._average_purity[-1]
 
 
 ###################################################################################################
-class ThetaSnippetScoreInfo(object):
-    """ThetaSnippetScoreInfo represents a result of counting
+class ThetaSnippetScoreTracker(object):
+    """ThetaSnippetScoreTracker represents a result of counting
     ThetaSnippetScore (private class)
 
     Args:
@@ -667,7 +665,7 @@ class ThetaSnippetScoreInfo(object):
         self._snippet = []
 
     def add(self, score=None):
-        """ThetaSnippetScoreInfo.add() --- add info about score after
+        """ThetaSnippetScoreTracker.add() --- add info about score after
         synchronization
 
         Args:
