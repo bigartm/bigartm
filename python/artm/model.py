@@ -200,36 +200,6 @@ class ARTM(object):
         else:
             self._class_ids = class_ids
 
-    # ========== PRIVATE ==========
-    def _parse_collection_inline(self, target_folder, data_path, data_format,
-                                 collection_name=None, batches=None, batch_size=None):
-        batches_list = []
-        if data_format == 'batches':
-            if batches is None:
-                batches_list = glob.glob(os.path.join(data_path, '*.batch'))
-                if len(batches_list) < 1:
-                    raise RuntimeError('No batches were found')
-            else:
-                batches_list = [os.path.join(data_path, batch) for batch in batches]
-
-        elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
-            collection_parser_config = bu._create_parser_config(
-                data_path=data_path,
-                collection_name=collection_name,
-                target_folder=target_folder,
-                batch_size=batch_size,
-                data_format=data_format)
-
-            self._lib.ArtmParseCollection(self._master.master_id, collection_parser_config)
-            batches_list = glob.glob(os.path.join(target_folder, '*.batch'))
-
-        elif data_format == 'plain_text':
-            raise NotImplementedError()
-        else:
-            raise IOError('Unknown data format')
-
-        return batches_list
-
     # ========== METHODS ==========
     def load_dictionary(self, dictionary_name=None, dictionary_path=None):
         """ARTM.load_dictionary() --- load the BigARTM dictionary of
@@ -259,25 +229,13 @@ class ARTM(object):
         else:
             raise IOError('dictionary_name is None')
 
-    def fit_offline(self, collection_name=None, batches=None, data_path='',
-                    num_collection_passes=1, decay_weight=0.0, apply_weight=1.0,
-                    reset_theta_scores=False, data_format='batches', batch_size=1000):
+    def fit_offline(self, batch_vectorizer=None, num_collection_passes=1, decay_weight=0.0,
+                    apply_weight=1.0, reset_theta_scores=False):
         """ARTM.fit_offline() --- proceed the learning of
         topic model in off-line mode
 
         Args:
-          collection_name (str): the name of text collection (required if
-          data_format == 'bow_uci'), default=None
-          batches (list of str): list of file names of batches to be processed.
-          If not None, than data_format should be 'batches'. Format --- '*.batch',
-          default=None
-          data_path (str):
-          1) if data_format == 'batches' => folder containing batches and dictionary;
-          2) if data_format == 'bow_uci' => folder containing
-            docword.collection_name.txt and vocab.collection_name.txt files;
-          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;
-          4) if data_format == 'plain_text' => file with text;
-          default=''
+          batch_vectorizer: an instance of BatchVectorizer class
           num_collection_passes (int): number of iterations over whole given
           collection, default=1
           decay_weight (int): coefficient for applying old n_wt counters,
@@ -286,114 +244,76 @@ class ARTM(object):
           default=1.0 (apply_weight + decay_weight = 1.0)
           reset_theta_scores (bool): reset accumulated Theta scores
           before learning, default=False
-          data_format (str): the type of input data;
-          1) 'batches' --- the data in format of BigARTM;
-          2) 'bow_uci' --- Bag-Of-Words in UCI format;
-          3) 'vowpal_wabbit' --- Vowpal Wabbit format;
-          4) 'plain_text' --- source text;
-          default='batches'
-
-          Next argument has sense only if data_format is not 'batches'
-          (e.g. parsing is necessary).
-            batch_size (int): number of documents to be stored ineach batch,
-            default=1000
 
         Note:
           ARTM.initialize() should be proceed before first call
           ARTM.fit_offline(), or it will be initialized by dictionary
           during first call.
         """
-        if collection_name is None and data_format == 'bow_uci':
-            raise IOError('No collection name was given')
+        if batch_vectorizer is None:
+            raise IOError('No batches were given for processing')
 
-        target_folder = data_path
-        if not data_format == 'batches':
-            target_folder = tempfile.mkdtemp()
-        try:
-            batches_list = self._parse_collection_inline(target_folder=target_folder,
-                                                         data_path=data_path,
-                                                         data_format=data_format,
-                                                         collection_name=collection_name,
-                                                         batches=batches,
-                                                         batch_size=batch_size)
+        if not self._initialized:
+            dictionary_name = bu.DICTIONARY_NAME + str(uuid.uuid4())
+            self.master.import_dictionary(
+                self,
+                dictionary_name=dictionary_name,
+                file_name=os.path.join(batch_vectorizer.data_path, bu.DICTIONARY_NAME))
 
-            if not self._initialized:
-                dictionary_name = bu.DICTIONARY_NAME + str(uuid.uuid4())
-                self.master.import_dictionary(
-                    self,
-                    dictionary_name=dictionary_name,
-                    file_name=os.path.join(target_folder, bu.DICTIONARY_NAME))
+            self.initialize(dictionary_name=dictionary_name)
+            self.remove_dictionary(dictionary_name)
 
-                self.initialize(dictionary_name=dictionary_name)
-                self.remove_dictionary(dictionary_name)
+        theta_reg_name, theta_reg_tau, phi_reg_name, phi_reg_tau = [], [], [], []
+        for name, config in self._regularizers.data.iteritems():
+            if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
+                theta_reg_name.append(name)
+                theta_reg_tau.append(config.tau)
+            else:
+                phi_reg_name.append(name)
+                phi_reg_tau.append(config.tau)
 
-            theta_reg_name, theta_reg_tau, phi_reg_name, phi_reg_tau = [], [], [], []
-            for name, config in self._regularizers.data.iteritems():
-                if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
-                    theta_reg_name.append(name)
-                    theta_reg_tau.append(config.tau)
-                else:
-                    phi_reg_name.append(name)
-                    phi_reg_tau.append(config.tau)
+        batches_list = [batch.__str__() for batch in batch_vectorizer.batches_list]
+        for _ in xrange(num_collection_passes):
+            self.master.process_batches(pwt=self.model,
+                                        batches=batches_list,
+                                        nwt='nwt_hat',
+                                        regularizer_name=theta_reg_name,
+                                        regularizer_tau=theta_reg_tau,
+                                        num_inner_iterations=self._num_document_passes,
+                                        class_ids=self._class_ids,
+                                        reset_scores=reset_theta_scores)
+            self._synchronizations_processed += 1
+            if self._synchronizations_processed == 1:
+                self.master.merge_model({self.model: decay_weight, 'nwt_hat': apply_weight},
+                                        nwt='nwt', topic_names=self._topic_names)
+            else:
+                self.master.merge_model({'nwt': decay_weight, 'nwt_hat': apply_weight},
+                                        nwt='nwt', topic_names=self._topic_names)
 
-            for _ in xrange(num_collection_passes):
-                self.master.process_batches(pwt=self.model,
-                                            batches=batches_list,
-                                            nwt='nwt_hat',
-                                            regularizer_name=theta_reg_name,
-                                            regularizer_tau=theta_reg_tau,
-                                            num_inner_iterations=self._num_document_passes,
-                                            class_ids=self._class_ids,
-                                            reset_scores=reset_theta_scores)
-                self._synchronizations_processed += 1
-                if self._synchronizations_processed == 1:
-                    self.master.merge_model({self.model: decay_weight, 'nwt_hat': apply_weight},
-                                            nwt='nwt', topic_names=self._topic_names)
-                else:
-                    self.master.merge_model({'nwt': decay_weight, 'nwt_hat': apply_weight},
-                                            nwt='nwt', topic_names=self._topic_names)
+            self.master.regularize_model(pwt=self.model,
+                                         nwt='nwt',
+                                         rwt='rwt',
+                                         regularizer_name=phi_reg_name,
+                                         regularizer_tau=phi_reg_tau)
+            self.master.normalize_model(nwt='nwt', pwt=self.model, rwt='rwt')
 
-                self.master.regularize_model(pwt=self.model,
-                                             nwt='nwt',
-                                             rwt='rwt',
-                                             regularizer_name=phi_reg_name,
-                                             regularizer_tau=phi_reg_tau)
-                self.master.normalize_model(nwt='nwt', pwt=self.model, rwt='rwt')
+            for name in self.scores.data.keys():
+                if name not in self.score_tracker:
+                    self.score_tracker[name] =\
+                        SCORE_TRACKER[self.scores[name].type](self.scores[name])
 
-                for name in self.scores.data.keys():
-                    if name not in self.score_tracker:
-                        self.score_tracker[name] =\
-                            SCORE_TRACKER[self.scores[name].type](self.scores[name])
+                    for _ in xrange(self._synchronizations_processed - 1):
+                        self.score_tracker[name].add()
 
-                        for _ in xrange(self._synchronizations_processed - 1):
-                            self.score_tracker[name].add()
+                self.score_tracker[name].add(self.scores[name])
 
-                    self.score_tracker[name].add(self.scores[name])
-
-        finally:
-            # Remove temp batches folder if it necessary
-            if not data_format == 'batches':
-                shutil.rmtree(target_folder)
-
-    def fit_online(self, collection_name=None, batches=None, data_path='',
-                   tau0=1024.0, kappa=0.7, update_every=1, reset_theta_scores=False,
-                   data_format='batches', batch_size=1000):
+    def fit_online(self, batch_vectorizer=None, tau0=1024.0, kappa=0.7,
+                   update_every=1, reset_theta_scores=False):
         """ARTM.fit_online() --- proceed the learning of topic model
         in on-line mode
 
         Args:
-          collection_name (str): the name of text collection (required if
-          data_format == 'bow_uci'), default=None
-          batches (list of str): list of file names of batches to be processed.
-          If not None, than data_format should be 'batches'. Format --- '*.batch',
-          default=None
-          data_path (str):
-          1) if data_format == 'batches' => folder containing batches and dictionary;
-          2) if data_format == 'bow_uci' => folder containing
-            docword.collection_name.txt and vocab.collection_name.txt files;
-          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;
-          4) if data_format == 'plain_text' => file with text;
-          default=''
+          batch_vectorizer: an instance of BatchVectorizer class
           update_every (int): the number of batches; model will be updated once per it,
           default=1
           tau0 (float): coefficient (see kappa), default=1024.0
@@ -407,106 +327,84 @@ class ARTM(object):
 
           reset_theta_scores (bool): reset accumulated Theta scores
           before learning, default=False
-          data_format (str): the type of input data;
-          1) 'batches' --- the data in format of BigARTM;
-          2) 'bow_uci' --- Bag-Of-Words in UCI format;
-          3) 'vowpal_wabbit' --- Vowpal Wabbit format;
-          4) 'plain_text' --- source text;
-          default='batches'
-
-          Next argument has sense only if data_format is not 'batches'
-          (e.g. parsing is necessary).
-            batch_size (int): number of documents to be stored ineach batch,
-            default=1000
 
         Note:
           ARTM.initialize() should be proceed before first call
           ARTM.fit_online(), or it will be initialized by dictionary
           during first call.
         """
-        target_folder = data_path
-        if not data_format == 'batches':
-            target_folder = tempfile.mkdtemp()
-        try:
-            batches_list = self._parse_collection_inline(target_folder=target_folder,
-                                                         data_path=data_path,
-                                                         data_format=data_format,
-                                                         collection_name=collection_name,
-                                                         batches=batches,
-                                                         batch_size=batch_size)
+        if batch_vectorizer is None:
+            raise IOError('No batches were given for processing')
 
-            if not self._initialized:
-                dictionary_name = bu.DICTIONARY_NAME + str(uuid.uuid4())
-                self.master.import_dictionary(
-                    self,
-                    dictionary_name=dictionary_name,
-                    file_name=os.path.join(target_folder, bu.DICTIONARY_NAME))
+        if not self._initialized:
+            dictionary_name = bu.DICTIONARY_NAME + str(uuid.uuid4())
+            self.master.import_dictionary(
+                self,
+                dictionary_name=dictionary_name,
+                file_name=os.path.join(batch_vectorizer.data_path, bu.DICTIONARY_NAME))
 
-                self.initialize(dictionary_name=dictionary_name)
-                self.remove_dictionary(dictionary_name)
+            self.initialize(dictionary_name=dictionary_name)
+            self.remove_dictionary(dictionary_name)
 
-            theta_reg_name, theta_reg_tau, phi_reg_name, phi_reg_tau = [], [], [], []
-            for name, config in self._regularizers.data.iteritems():
-                if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
-                    theta_reg_name.append(name)
-                    theta_reg_tau.append(config.tau)
+        theta_reg_name, theta_reg_tau, phi_reg_name, phi_reg_tau = [], [], [], []
+        for name, config in self._regularizers.data.iteritems():
+            if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
+                theta_reg_name.append(name)
+                theta_reg_tau.append(config.tau)
+            else:
+                phi_reg_name.append(name)
+                phi_reg_tau.append(config.tau)
+
+        batches_list = [batch.__str__() for batch in batch_vectorizer.batches_list]
+        batches_to_process = []
+        cur_processed_docs = 0
+        for batch_idx, batch_filename in enumerate(batches_list):
+            batches_to_process.append(batch_filename)
+            if ((batch_idx + 1) % update_every == 0) or ((batch_idx + 1) == len(batches_list)):
+                self.master.process_batches(pwt=self.model,
+                                            batches=batches_to_process,
+                                            nwt='nwt_hat',
+                                            regularizer_name=theta_reg_name,
+                                            regularizer_tau=theta_reg_tau,
+                                            num_inner_iterations=self._num_document_passes,
+                                            class_ids=self._class_ids,
+                                            reset_scores=reset_theta_scores)
+
+                cur_processed_docs += batch_vectorizer.batch_size * update_every
+                update_count = cur_processed_docs / (batch_vectorizer.batch_size * update_every)
+                rho = pow(tau0 + update_count, -kappa)
+                decay_weight, apply_weight = 1 - rho, rho
+
+                self._synchronizations_processed += 1
+                if self._synchronizations_processed == 1:
+                    self.master.merge_model(
+                        models={self.model: decay_weight, 'nwt_hat': apply_weight},
+                        nwt='nwt',
+                        topic_names=self._topic_names)
                 else:
-                    phi_reg_name.append(name)
-                    phi_reg_tau.append(config.tau)
+                    self.master.merge_model(
+                        models={'nwt': decay_weight, 'nwt_hat': apply_weight},
+                        nwt='nwt',
+                        topic_names=self._topic_names)
 
-            batches_to_process = []
-            current_processed_documents = 0
-            for batch_idx, batch_filename in enumerate(batches_list):
-                batches_to_process.append(batch_filename)
-                if ((batch_idx + 1) % update_every == 0) or ((batch_idx + 1) == len(batches_list)):
-                    self.master.process_batches(pwt=self.model,
-                                                batches=batches_to_process,
-                                                nwt='nwt_hat',
-                                                regularizer_name=theta_reg_name,
-                                                regularizer_tau=theta_reg_tau,
-                                                num_inner_iterations=self._num_document_passes,
-                                                class_ids=self._class_ids,
-                                                reset_scores=reset_theta_scores)
+                self.master.regularize_model(pwt=self.model,
+                                             nwt='nwt',
+                                             rwt='rwt',
+                                             regularizer_name=phi_reg_name,
+                                             regularizer_tau=phi_reg_tau)
 
-                    current_processed_documents += batch_size * update_every
-                    update_count = current_processed_documents / (batch_size * update_every)
-                    rho = pow(tau0 + update_count, -kappa)
-                    decay_weight, apply_weight = 1 - rho, rho
+                self.master.normalize_model(nwt='nwt', pwt=self.model, rwt='rwt')
+                batches_to_process = []
 
-                    self._synchronizations_processed += 1
-                    if self._synchronizations_processed == 1:
-                        self.master.merge_model(
-                            models={self.model: decay_weight, 'nwt_hat': apply_weight},
-                            nwt='nwt',
-                            topic_names=self._topic_names)
-                    else:
-                        self.master.merge_model(
-                            models={'nwt': decay_weight, 'nwt_hat': apply_weight},
-                            nwt='nwt',
-                            topic_names=self._topic_names)
+                for name in self.scores.data.keys():
+                    if name not in self.score_tracker:
+                        self.score_tracker[name] =\
+                            SCORE_TRACKER[self.scores[name].type](self.scores[name])
 
-                    self.master.regularize_model(pwt=self.model,
-                                                 nwt='nwt',
-                                                 rwt='rwt',
-                                                 regularizer_name=phi_reg_name,
-                                                 regularizer_tau=phi_reg_tau)
+                        for _ in xrange(self._synchronizations_processed - 1):
+                            self.score_tracker[name].add()
 
-                    self.master.normalize_model(nwt='nwt', pwt=self.model, rwt='rwt')
-                    batches_to_process = []
-
-                    for name in self.scores.data.keys():
-                        if name not in self.score_tracker:
-                            self.score_tracker[name] =\
-                                SCORE_TRACKER[self.scores[name].type](self.scores[name])
-
-                            for _ in xrange(self._synchronizations_processed - 1):
-                                self.score_tracker[name].add()
-
-                        self.score_tracker[name].add(self.scores[name])
-        finally:
-            # Remove temp batches folder if it necessary
-            if not data_format == 'batches':
-                shutil.rmtree(target_folder)
+                    self.score_tracker[name].add(self.scores[name])
 
     def save(self, file_name='artm_model'):
         """ARTM.save() --- save the topic model to disk
@@ -612,32 +510,13 @@ class ARTM(object):
         theta_data_frame = DataFrame(data=nd_array.transpose(),
                                      columns=document_ids,
                                      index=use_topic_names)
-
         return theta_data_frame
 
-    def transform(self, batches=None, collection_name=None, data_path='', data_format='batches'):
+    def transform(self, batch_vectorizer=None):
         """ARTM.transform() --- find Theta matrix for new documents
 
         Args:
-          collection_name (str): the name of text collection (required if
-          data_format == 'bow_uci'), default=None
-          batches (list of str): list of file names of batches to be processed;
-          if not None, than data_format should be 'batches'; format '*.batch',
-          default=None
-          data_path (str):
-          1) if data_format == 'batches' =>
-          folder containing batches and dictionary;
-          2) if data_format == 'bow_uci' =>
-          folder containing docword.txt and vocab.txt files;
-          3) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;
-          4) if data_format == 'plain_text' => file with text;
-          default=''
-          data_format (str): the type of input data;
-          1) 'batches' --- the data in format of BigARTM;
-          2) 'bow_uci' --- Bag-Of-Words in UCI format;
-          3) 'vowpal_wabbit' --- Vowpal Wabbit format;
-          4) 'plain_text' --- source text;
-          default='batches'
+          batch_vectorizer: an instance of BatchVectorizer class
 
         Returns:
           pandas.DataFrame: (data, columns, rows), where:
@@ -647,43 +526,26 @@ class ARTM(object):
           used to create Theta
           3) data --- content of Theta matrix.
         """
-        if collection_name is None and data_format == 'bow_uci':
-            raise IOError('No collection name was given')
+        if batch_vectorizer is None:
+            raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            raise RuntimeError("Model does not exist yet. Use " +
-                               "ARTM.initialize()/ARTM.fit_*()")
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        target_folder = data_path
-        if not data_format == 'batches':
-            target_folder = tempfile.mkdtemp()
-        try:
-            batches_list = self._parse_collection_inline(target_folder=target_folder,
-                                                         data_path=data_path,
-                                                         data_format=data_format,
-                                                         collection_name=collection_name,
-                                                         batches=batches,
-                                                         batch_size=1000)
+        batches_list = [batch.__str__() for batch in batch_vectorizer.batches_list]
+        theta_info, nd_array = self.master.process_batches(
+                                    pwt=self.model,
+                                    batches=batches_list,
+                                    nwt='nwt_hat',
+                                    num_inner_iterations=self._num_document_passes,
+                                    class_ids=self._class_ids,
+                                    find_theta=True)
 
-            theta_info, nd_array = self.master.process_batches(
-                        pwt=self.model,
-                        batches=batches_list,
-                        nwt='nwt_hat',
-                        num_inner_iterations=self._num_document_passes,
-                        class_ids=self._class_ids,
-                        find_theta=True)
-
-            document_ids = [item_id for item_id in theta_info.item_id]
-            topic_names = [topic_name for topic_name in theta_info.topic_name]
-            theta_data_frame = DataFrame(data=nd_array.transpose(),
-                                         columns=document_ids,
-                                         index=topic_names)
-
-        finally:
-            # Remove temp batches folder if necessary
-            if not data_format == 'batches':
-                shutil.rmtree(target_folder)
-
+        document_ids = [item_id for item_id in theta_info.item_id]
+        topic_names = [topic_name for topic_name in theta_info.topic_name]
+        theta_data_frame = DataFrame(data=nd_array.transpose(),
+                                     columns=document_ids,
+                                     index=topic_names)
         return theta_data_frame
 
     def initialize(self, data_path=None, dictionary_name=None):
