@@ -43,6 +43,7 @@ class Instance {
   ~Instance();
 
   std::shared_ptr<Instance> Duplicate() const;
+  void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
   std::shared_ptr<InstanceSchema> schema() const { return schema_.get(); }
   ProcessorQueue* processor_queue() { return &processor_queue_; }

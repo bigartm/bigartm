@@ -25,6 +25,18 @@ CacheManager::~CacheManager() {
   }
 }
 
+void CacheManager::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
+  for (auto& key : cache_.keys()) {
+    std::shared_ptr<DataLoaderCacheEntry> entry = cache_.get(key);
+    if (entry == nullptr)
+      continue;
+
+    MasterComponentInfo::CacheEntryInfo* info = master_info->add_cache_entry();
+    info->set_key(boost::lexical_cast<std::string>(key.first) + "|" + key.second);
+    info->set_byte_size(entry->ByteSize());
+  }
+}
+
 void CacheManager::DisposeModel(ModelName model_name) {
   auto keys = cache_.keys();
   for (auto &key : keys) {

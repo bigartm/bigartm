@@ -625,3 +625,45 @@ message CopyRequestResultArgs {
 
 message DuplicateMasterComponentArgs {
 }
+
+message GetMasterComponentInfoArgs {
+}
+
+message MasterComponentInfo {
+  message RegularizerInfo {
+    optional string name = 1;
+	optional string type = 2;
+  }
+
+  message ScoreInfo {
+    optional string name = 1;
+	optional string type = 2;
+  }
+
+  message DictionaryInfo {
+    optional string name = 1;
+	optional int64 entries_count = 2;
+  }
+
+  message ModelInfo {
+    optional string name = 1;
+	optional string type = 2;
+	optional int32 topics_count = 3;
+	optional int32 token_count = 4;
+  }
+
+  message CacheEntryInfo {
+    optional string key = 1;
+	optional int32 byte_size = 2;
+  }
+
+  optional int32 master_id = 1;
+  optional MasterComponentConfig config = 2;
+  repeated RegularizerInfo regularizer = 3;
+  repeated ScoreInfo score = 4;
+  repeated DictionaryInfo dictionary = 5;
+  repeated ModelInfo model = 6;
+  repeated CacheEntryInfo cache_entry = 7;
+  optional int32 merger_queue_size = 8;
+  optional int32 processor_queue_size = 9;
+}

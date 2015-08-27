@@ -24,6 +24,7 @@ class CacheManager : boost::noncopyable {
   explicit CacheManager();
   virtual ~CacheManager();
 
+  void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
   void DisposeModel(ModelName model_name);
   bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                           ::artm::ThetaMatrix* theta_matrix) const;

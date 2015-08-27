@@ -252,6 +252,12 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
   return true;
 }
 
+void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
+  std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
+  master_info->set_master_id(master_id_);
+  this->instance_->RequestMasterComponentInfo(master_info);
+}
+
 void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                             ProcessBatchesResult* process_batches_result) {
   LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);

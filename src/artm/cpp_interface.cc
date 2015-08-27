@@ -277,6 +277,20 @@ std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& ar
   return score_data;
 }
 
+std::shared_ptr<MasterComponentInfo> MasterComponent::info() const {
+  GetMasterComponentInfoArgs args;
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int length = HandleErrorCode(ArtmRequestMasterComponentInfo(id(), args_blob.size(), args_blob.c_str()));
+  std::string blob;
+  blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));
+
+  std::shared_ptr<MasterComponentInfo> master_component_info(new MasterComponentInfo());
+  master_component_info->ParseFromString(blob);
+  return master_component_info;
+}
+
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)
     : master_id_(master_component.id()),
       config_(config) {

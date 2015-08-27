@@ -46,6 +46,7 @@ class MasterComponent : boost::noncopyable {
                           ::artm::ThetaMatrix* theta_matrix);
   bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData* score_data);
+  void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
   void RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                              ProcessBatchesResult* process_batches_result);

@@ -129,6 +129,8 @@ class MasterComponent {
   template <typename T>
   std::shared_ptr<T> GetScoreAs(const Model& model, const std::string& score_name);
 
+  std::shared_ptr<MasterComponentInfo> info() const;
+
   std::shared_ptr<ProcessBatchesResultObject> ProcessBatches(const ProcessBatchesArgs& args);
   void MergeModel(const MergeModelArgs& args);
   void NormalizeModel(const NormalizeModelArgs& args);

@@ -412,6 +412,15 @@ int ArtmRequestScore(int master_id, int length, const char* get_score_args) {
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmRequestMasterComponentInfo(int master_id, int length, const char* /*get_master_info_args*/) {
+  try {
+    ::artm::MasterComponentInfo master_component_info;
+    master_component(master_id)->RequestMasterComponentInfo(&master_component_info);
+    master_component_info.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) {
   try {
     artm::TopicModel topic_model_object;

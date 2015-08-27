@@ -60,6 +60,7 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestTopicModelExternal(int master_id, int length, const char* get_model_args);
   DLL_PUBLIC int ArtmRequestRegularizerState(int master_id, const char* regularizer_name);
   DLL_PUBLIC int ArtmRequestScore(int master_id, int length, const char* get_score_args);
+  DLL_PUBLIC int ArtmRequestMasterComponentInfo(int master_id, int length, const char* get_master_info_args);
   DLL_PUBLIC int ArtmRequestParseCollection(int length, const char* collection_parser_config);
   DLL_PUBLIC int ArtmRequestLoadDictionary(const char* filename);
   DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);
