@@ -103,6 +103,8 @@ class ARTM(object):
         self._score_tracker = {}
         self._synchronizations_processed = 0
         self._initialized = False
+        self._phi = None  # This field will be set during get_phi() call
+        self._phi_synchronization = -1
 
     # ========== PROPERTIES ==========
     @property
@@ -152,6 +154,13 @@ class ARTM(object):
     @property
     def num_phi_updates(self):
         return self._synchronizations_processed
+
+    @property
+    def phi_(self):
+        if self._phi is None or not self._phi_synchronization == self._synchronizations_processed:
+            self._phi = self.get_phi()
+            self._phi_synchronization = self._synchronizations_processed
+        return self._phi
 
     # ========== SETTERS ==========
     @num_processors.setter
@@ -443,7 +452,9 @@ class ARTM(object):
         self._synchronizations_processed = 0
 
     def get_phi(self, topic_names=None, class_ids=None):
-        """ARTM.get_phi() --- get Phi matrix of model
+        """ARTM.get_phi() --- get custom Phi matrix of model. The
+                              extraction of the whole Phi matrix expects
+                              ARTM.phi_ call.
 
         Args:
           topic_names (list of str): list with topics to extract,
