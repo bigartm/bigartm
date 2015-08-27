@@ -156,8 +156,7 @@ Python code on Windows
 
   This 2 failures are OK to ignore.
 
-At this point you should be able to run BigARTM tests for Python, located here:
-``$(BIGARTM_ROOT)/src/python_tests/python_tests.py``.
+At this point you should be able to run BigARTM tests for Python, located under ``$(BIGARTM_ROOT)/python/tests/``.
 
 * [Optional] Download and add to MSVS Python Tools 2.0.
   All necessary instructions can be found at https://pytools.codeplex.com/.
@@ -167,27 +166,8 @@ At this point you should be able to run BigARTM tests for Python, located here:
 Build C++ code on Linux
 -----------------------
 
-Simply run CMake on from the root of the project.
 
-The following script had been tested in Ubuntu.
-
-.. code-block:: bash
-
-   sudo apt-get install git make cmake build-essential libboost-all-dev -q -y
-   git clone https://github.com/bigartm/bigartm
-   cd ~/bigartm
-   mkdir build
-   cd build
-   cmake ..
-   make -j8
-
-   ~/bigartm/build/src/artm_tests/artm_tests
-
-It is also possible to use BigARTM from Python on Linux.
-Just make sure to setup protobuf library as described
-``$(BIGARTM_ROOT)/3rdparty/protobuf/python/README``,
-and then you can simply run python scripts under ``$(BIGARTM_ROOT)/python_tests/``
-or ``$(BIGARTM_ROOT)/python_client/``.
+Refer to :doc:`/tutorials/linux_basic`.
 
 
 Compiling .proto files on Windows
