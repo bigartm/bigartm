@@ -129,23 +129,23 @@ Running BigARTM from Python API
 
 Folder ``C:\BigARTM\python\examples`` contains several toy examples:
 
-    * `example01_synthetic_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example01_synthetic_collection.py>`_
-    * `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example02_parse_collection.py>`_
-    * `example03_concurrency.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example03_concurrency.py>`_
-    * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example04_online_algorithm.py>`_
-    * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example05_train_and_test_stream.py>`_
-    * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
-    * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example09_regularizers.py>`_
-    * `example10_multimodal.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example10_multimodal.py>`_
-    * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example11_get_theta_matrix.py>`_
-    * `example12_get_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example12_get_topic_model.py>`_
-    * `example13_overwrite_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example13_overwrite_topic_model.py>`_
-    * `example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example14_initialize_topic_model.py>`_
-    * `example15_import_export_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example15_import_export_topic_model.py>`_
-    * `example17_process_batches.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example17_process_batches.py>`_
-    * `example18_merge_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example18_merge_model.py>`_
-    * `example19_regularize_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example19_regularize_model.py>`_
-    * `example20_attach_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example20_attach_model.py>`_
+    * `example01_synthetic_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example01_synthetic_collection.py>`_
+    * `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example02_parse_collection.py>`_
+    * `example03_concurrency.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example03_concurrency.py>`_
+    * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example04_online_algorithm.py>`_
+    * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example05_train_and_test_stream.py>`_
+    * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example06_use_dictionaries.py>`_
+    * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example09_regularizers.py>`_
+    * `example10_multimodal.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example10_multimodal.py>`_
+    * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example11_get_theta_matrix.py>`_
+    * `example12_get_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example12_get_topic_model.py>`_
+    * `example13_overwrite_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example13_overwrite_topic_model.py>`_
+    * `example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example14_initialize_topic_model.py>`_
+    * `example15_import_export_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example15_import_export_topic_model.py>`_
+    * `example17_process_batches.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example17_process_batches.py>`_
+    * `example18_merge_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example18_merge_model.py>`_
+    * `example19_regularize_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example19_regularize_model.py>`_
+    * `example20_attach_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example20_attach_model.py>`_
 
 
 All examples does not have any parameters, and you may run them without arguments:

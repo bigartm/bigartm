@@ -33,7 +33,7 @@ class TokenCollection {
   std::vector<Token> token_id_to_token_;
 };
 
-class SpinLock {
+class SpinLock : boost::noncopyable {
  public:
   SpinLock() : state_(kUnlocked) { }
   void Lock();
@@ -69,6 +69,9 @@ class PhiMatrixFrame : public PhiMatrix {
 
   void Swap(PhiMatrixFrame* rhs);
 
+  PhiMatrixFrame(const PhiMatrixFrame& rhs);
+  PhiMatrixFrame& operator=(const PhiMatrixFrame&);
+
  private:
   ModelName model_name_;
   std::vector<std::string> topic_name_;
@@ -77,12 +80,17 @@ class PhiMatrixFrame : public PhiMatrix {
   std::vector<std::shared_ptr<SpinLock> > spin_locks_;
 };
 
-class DensePhiMatrix : boost::noncopyable, public PhiMatrixFrame {
+class DensePhiMatrix;
+class AttachedPhiMatrix;
+
+class DensePhiMatrix : public PhiMatrixFrame {
  public:
   explicit DensePhiMatrix(const ModelName& model_name,
                           const google::protobuf::RepeatedPtrField<std::string>& topic_name);
 
   virtual ~DensePhiMatrix() { Clear(); }
+
+  virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
   virtual float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
   virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
@@ -97,6 +105,11 @@ class DensePhiMatrix : boost::noncopyable, public PhiMatrixFrame {
   void Reshape(const PhiMatrix& phi_matrix);
 
  private:
+  friend class AttachedPhiMatrix;
+  DensePhiMatrix(const DensePhiMatrix& rhs);
+  explicit DensePhiMatrix(const AttachedPhiMatrix& rhs);
+  DensePhiMatrix& operator=(const PhiMatrixFrame&);
+
   std::vector<float*> values_;
 };
 
@@ -104,6 +117,8 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
  public:
   AttachedPhiMatrix(int address_length, float* address, PhiMatrixFrame* source);
   virtual ~AttachedPhiMatrix() { values_.clear(); }  // DO NOT delete this memory; AttachedPhiMatrix do not own it.
+
+  virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
   virtual float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
   virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
@@ -115,6 +130,7 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
   virtual void RemoveTokens(const std::vector<Token>& tokens);
 
  private:
+  friend class DensePhiMatrix;
   std::vector<float*> values_;
 };
 

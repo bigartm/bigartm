@@ -42,7 +42,7 @@ which allows you to work with BigARTM interactively from Python command line.
 ArtmModel exposes most of BigARTM functionality,
 and it should be sufficiently powerful to cover 95% of all BigARTM use-cases.
 However, for the most advanced scenarios you might still need to go through the previous API
-(`artm.library <https://github.com/bigartm/bigartm/blob/master/src/python/artm/library.py>`_).
+(`artm.library <https://github.com/bigartm/bigartm/blob/master/python/artm/library.py>`_).
 When in doubt which API to use, ask `bigartm-users@googlegroups.com <https://groups.google.com/forum/#!forum/bigartm-users>`_ --- we are there to help!
 
 Coding Phi-regularizers in Python code
@@ -51,8 +51,8 @@ Coding Phi-regularizers in Python code
 This is of course one of those very advanced scenarios where you need to go down to the old API :)
 Take a look at this example:
 
-* `example19_regularize_model <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example19_regularize_model.py>`_
-* `example20_attach_model <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example20_attach_model.py>`_
+* `example19_regularize_model <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example19_regularize_model.py>`_
+* `example20_attach_model <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example20_attach_model.py>`_
 
 First one tells how to use Phi regularizers, built into BigARTM.
 Second one provides a new capability to manipulate Phi matrix from Python.
@@ -112,8 +112,8 @@ Breaking changes
 
   Updated examples:
 
-  * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example11_get_theta_matrix.py>`_
-  * `example12_get_topic_model <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example12_get_topic_model.py>`_
+  * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example11_get_theta_matrix.py>`_
+  * `example12_get_topic_model <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example12_get_topic_model.py>`_
 
   .. warning::
 
@@ -128,4 +128,4 @@ Breaking changes
 
   * Use ParseCollection method to convert collection into a set of batches
   * Use MasterComponent.ImportDictionary to load dictionary into BigARTM
-  * Updated example: `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example06_use_dictionaries.py>`_
+  * Updated example: `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example06_use_dictionaries.py>`_

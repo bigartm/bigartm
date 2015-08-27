@@ -33,12 +33,15 @@ namespace artm {
 namespace core {
 
 MasterComponent::MasterComponent(int id, const MasterComponentConfig& config)
-    : is_configured_(false),
-      master_id_(id),
-      config_(std::make_shared<MasterComponentConfig>(config)),
-      instance_(nullptr) {
+    : master_id_(id),
+      instance_(std::make_shared<Instance>(config)) {
   LOG(INFO) << "Creating MasterComponent (id=" << master_id_ << ")...";
-  Reconfigure(config);
+}
+
+MasterComponent::MasterComponent(int id, const MasterComponent& rhs)
+  : master_id_(id),
+    instance_(rhs.instance_->Duplicate()) {
+  LOG(INFO) << "Copying MasterComponent (id=" << rhs.id() << " to id=" << master_id_ << ")...";
 }
 
 MasterComponent::~MasterComponent() {
@@ -217,25 +220,13 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   instance_->merger()->InitializeModel(args);
 }
 
-void MasterComponent::Reconfigure(const MasterComponentConfig& user_config) {
-  LOG(INFO) << "MasterComponent::Reconfigure() with " << Helpers::Describe(user_config);
-  ValidateConfig(user_config);
+void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
+  LOG(INFO) << "MasterComponent::Reconfigure() with " << Helpers::Describe(config);
 
-  MasterComponentConfig config(user_config);  // make a copy
-  if (!config.has_processor_queue_max_size()) {
-    // The default setting for processor queue max size is to use the number of processors.
-    config.set_processor_queue_max_size(config.processors_count());
-  }
+  if (instance_->schema()->config().disk_path() != config.disk_path())
+    BOOST_THROW_EXCEPTION(InvalidOperation("Changing disk_path is not supported."));
 
-  config_.set(std::make_shared<MasterComponentConfig>(config));
-
-  if (!is_configured_) {
-    // First configuration
-    instance_.reset(new Instance(config));
-    is_configured_ = true;
-  } else {
-    instance_->Reconfigure(config);
-  }
+  instance_->Reconfigure(config);
 }
 
 bool MasterComponent::RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
@@ -261,11 +252,17 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
   return true;
 }
 
+void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
+  std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
+  master_info->set_master_id(master_id_);
+  this->instance_->RequestMasterComponentInfo(master_info);
+}
+
 void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                             ProcessBatchesResult* process_batches_result) {
   LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
-  std::shared_ptr<MasterComponentConfig> config = config_.get();
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
+  const MasterComponentConfig& config = schema->config();
 
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
@@ -321,10 +318,10 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   if (args.reset_scores())
     scores_merger->ResetScores(model_name);
 
-  if (args.batch_filename_size() < config->processors_count()) {
+  if (args.batch_filename_size() < config.processors_count()) {
     LOG_FIRST_N(INFO, 1) << "Batches count (=" << args.batch_filename_size()
                          << ") is smaller than processors threads count (="
-                         << config->processors_count()
+                         << config.processors_count()
                          << "), which may cause suboptimal performance.";
   }
 
@@ -354,8 +351,8 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   }
 
   process_batches_result->Clear();
-  for (int score_index = 0; score_index < config->score_config_size(); ++score_index) {
-    ScoreName score_name = config->score_config(score_index).name();
+  for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
+    ScoreName score_name = config.score_config(score_index).name();
     ScoreData score_data;
     if (scores_merger->RequestScore(schema, model_name, score_name, &score_data))
       process_batches_result->add_score_data()->Swap(&score_data);
@@ -529,16 +526,6 @@ bool MasterComponent::AddBatch(const AddBatchArgs& args) {
     instance_->merger()->ForceResetScores(ModelName());
 
   return instance_->data_loader()->AddBatch(args);
-}
-
-void MasterComponent::ValidateConfig(const MasterComponentConfig& config) {
-  if (is_configured_) {
-    std::shared_ptr<MasterComponentConfig> current_config = config_.get();
-    if (current_config->disk_path() != config.disk_path()) {
-      std::string message = "Changing disk_path is not supported.";
-      BOOST_THROW_EXCEPTION(InvalidOperation(message));
-    }
-  }
 }
 
 }  // namespace core

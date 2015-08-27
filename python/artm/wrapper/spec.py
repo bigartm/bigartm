@@ -27,6 +27,11 @@ ARTM_API = [
         result=ctypes.c_int,
     ),
     CallSpec(
+        'ArtmDuplicateMasterComponent',
+        [('master_id', int), ('config', messages.DuplicateMasterComponentArgs)],
+        result=ctypes.c_int,
+    ),
+    CallSpec(
         'ArtmReconfigureMasterComponent',
         [('master_id', int), ('config', messages.MasterComponentConfig)],
     ),
@@ -182,6 +187,11 @@ ARTM_API = [
         'ArtmRequestScore',
         [('master_id', int), ('args', messages.GetScoreValueArgs)],
         request=messages.ScoreData,
+    ),
+    CallSpec(
+        'ArtmRequestMasterComponentInfo',
+        [('master_id', int), ('args', messages.GetMasterComponentInfoArgs)],
+        request=messages.MasterComponentInfo,
     ),
     CallSpec(
         'ArtmRequestParseCollection',

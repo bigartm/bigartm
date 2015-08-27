@@ -25,6 +25,7 @@ struct TokenCoocInfo {
 class Dictionary {
  public:
   explicit Dictionary(const artm::DictionaryConfig& config);
+  std::shared_ptr<Dictionary> Duplicate() const;
 
   inline int total_items_count() const { return total_items_count_; }
   int cooc_size(const Token& token) const;

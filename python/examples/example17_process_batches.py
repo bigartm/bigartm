@@ -37,3 +37,10 @@ with artm.library.MasterComponent() as master:
 
     # Visualize top token in each topic
     artm.library.Visualizers.PrintTopTokensScore(top_tokens_score.GetValue(pwt_model))
+
+    # Print status information for the master component
+    print master.info()
+
+    # Create a deep clone of the master component
+    master2 = master.Duplicate()
+    print master2.info()

@@ -492,6 +492,11 @@ void Helpers::Fix(::artm::MasterComponentConfig* message) {
       message->set_processors_count(n);
     }
   }
+
+  if (!message->has_processor_queue_max_size()) {
+    // The default setting for processor queue max size is to use the number of processors.
+    message->set_processor_queue_max_size(message->processors_count());
+  }
 }
 
 bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_error) {

@@ -232,6 +232,18 @@ int ArtmCreateMasterComponent(int length, const char* master_component_config) {
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicate_master_args) {
+  try {
+    EnableLogging();
+
+    std::shared_ptr< ::artm::core::MasterComponent> master = master_component(master_id);
+    auto& mcm = artm::core::MasterComponentManager::singleton();
+    int retval = mcm.Create< ::artm::core::MasterComponent, ::artm::core::MasterComponent>(*master);
+    assert(retval > 0);
+    return retval;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmCreateModel(int master_id, int length, const char* model_config) {
   return ArtmReconfigureModel(master_id, length, model_config);
 }
@@ -396,6 +408,15 @@ int ArtmRequestScore(int master_id, int length, const char* get_score_args) {
     ::artm::core::Helpers::FixAndValidate(&args,  /* throw_error =*/ true);
     master_component(master_id)->RequestScore(args, &score_data);
     score_data.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmRequestMasterComponentInfo(int master_id, int length, const char* /*get_master_info_args*/) {
+  try {
+    ::artm::MasterComponentInfo master_component_info;
+    master_component(master_id)->RequestMasterComponentInfo(&master_component_info);
+    master_component_info.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
 }

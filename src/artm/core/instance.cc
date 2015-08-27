@@ -1,5 +1,6 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -78,7 +79,71 @@ Instance::Instance(const MasterComponentConfig& config)
   Reconfigure(config);
 }
 
+Instance::Instance(const Instance& rhs)
+    : is_configured_(false),
+      schema_(rhs.schema()->Duplicate()),
+      dictionaries_(),
+      processor_queue_(),
+      merger_queue_(),
+      cache_manager_(),
+      batch_manager_(),
+      data_loader_(nullptr),
+      merger_(),
+      processors_() {
+  Reconfigure(schema_.get()->config());
+
+  std::vector<std::string> dict_name = rhs.dictionaries_.keys();
+  for (auto& key : dict_name) {
+    std::shared_ptr<Dictionary> value = rhs.dictionaries_.get(key);
+    if (value != nullptr)
+      dictionaries_.set(key, value->Duplicate());
+  }
+
+  std::vector<ModelName> model_name = rhs.merger_->model_name();
+  for (auto& key : model_name) {
+    std::shared_ptr<const PhiMatrix> value = rhs.merger_->GetPhiMatrix(key);
+    if (value != nullptr)
+      merger_->SetPhiMatrix(key, value->Duplicate());
+  }
+}
+
 Instance::~Instance() {}
+
+std::shared_ptr<Instance> Instance::Duplicate() const {
+  return std::shared_ptr<Instance>(new Instance(*this));
+}
+
+void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
+  schema_.get()->RequestMasterComponentInfo(master_info);
+  cache_manager_->RequestMasterComponentInfo(master_info);
+
+  for (auto& name : dictionaries_.keys()) {
+    std::shared_ptr<Dictionary> dict = dictionaries_.get(name);
+    if (dict == nullptr)
+      continue;
+
+    MasterComponentInfo::DictionaryInfo* info = master_info->add_dictionary();
+    info->set_name(name);
+    info->set_entries_count(dict->size());
+  }
+
+  for (auto& name : merger_->model_name()) {
+    std::shared_ptr<const PhiMatrix> phi_matrix = merger_->GetPhiMatrix(name);
+    std::shared_ptr<const TopicModel> topic_model = merger_->GetLatestTopicModel(name);
+    if (phi_matrix == nullptr && topic_model == nullptr)
+      continue;
+    const PhiMatrix& p_wt = topic_model != nullptr ? topic_model->GetPwt() : *phi_matrix;
+
+    MasterComponentInfo::ModelInfo* info = master_info->add_model();
+    info->set_name(p_wt.model_name());
+    info->set_token_count(p_wt.token_size());
+    info->set_topics_count(p_wt.topic_size());
+    info->set_type(topic_model != nullptr ? typeid(*topic_model).name() : typeid(*phi_matrix).name());
+  }
+
+  master_info->set_merger_queue_size(merger_queue_.size());
+  master_info->set_processor_queue_size(processor_queue_.size());
+}
 
 DataLoader* Instance::data_loader() {
   return data_loader_.get();

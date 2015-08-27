@@ -113,7 +113,7 @@ def HandleErrorCode(lib, artm_error_code):
 #################################################################################
 
 
-class Library:
+class Library(object):
     def __init__(self, artm_shared_library=""):
         if sys.platform.count('linux') == 1:
             default_artm_shared_library = 'libartm.so'
@@ -203,7 +203,7 @@ class Library:
 #################################################################################
 
 
-class MasterComponent:
+class MasterComponent(object):
     def __init__(self, config=None, lib=None, disk_path=None):
         if lib is None:
             lib = Library().lib_
@@ -266,6 +266,28 @@ class MasterComponent:
     def Dispose(self):
         self.lib_.ArtmDisposeMasterComponent(self.id_)
         self.id_ = -1
+
+    def Duplicate(self):
+        duplicate = MasterComponent.__new__(MasterComponent)
+        duplicate.lib_ = self.lib_
+        duplicate.config_ = self.config_
+
+        args = messages_pb2.DuplicateMasterComponentArgs()
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        duplicate.id_ = HandleErrorCode(self.lib_, self.lib_.ArtmDuplicateMasterComponent(self.id_, len(blob), blob_p))
+        return duplicate
+
+    def info(self):
+        args = messages_pb2.GetMasterComponentInfoArgs()
+        blob = args.SerializeToString()
+        blob_p = ctypes.create_string_buffer(blob)
+        length = HandleErrorCode(self.lib_, self.lib_.ArtmRequestMasterComponentInfo(self.id_, len(blob), blob_p))
+        result_blob = ctypes.create_string_buffer(length)
+        HandleErrorCode(self.lib_, self.lib_.ArtmCopyRequestResult(length, result_blob))
+        result = messages_pb2.MasterComponentInfo()
+        result.ParseFromString(result_blob)
+        return result
 
     def config(self):
         return self.config_
@@ -859,7 +881,7 @@ class MasterComponent:
 
 #################################################################################
 
-class Model:
+class Model(object):
     def __init__(self, master_component, config):
         self.lib_ = master_component.lib_
         self.master_id_ = master_component.id_
@@ -974,7 +996,7 @@ class Model:
 
 #################################################################################
 
-class Regularizer:
+class Regularizer(object):
     def __init__(self, master_component, config):
         self.lib_ = master_component.lib_
         self.master_id_ = master_component.id_
@@ -1014,7 +1036,7 @@ class Regularizer:
 
 #################################################################################
 
-class Dictionary:
+class Dictionary(object):
     def __init__(self, master_component, config):
         self.lib_ = master_component.lib_
         self.master_id_ = master_component.id_
@@ -1059,7 +1081,7 @@ class Dictionary:
 #################################################################################
 
 
-class Score:
+class Score(object):
     def __init__(self, master_component, score_name):
         self.master_id_ = master_component.id_
         self.lib_ = master_component.lib_

@@ -266,6 +266,16 @@ bool Merger::RequestScore(const GetScoreValueArgs& args,
   return true;
 }
 
+std::vector<ModelName> Merger::model_name() const {
+  std::vector<ModelName> new_models = topic_model_.keys();
+  std::vector<ModelName> old_models = phi_matrix_.keys();
+
+  std::vector<ModelName> retval;
+  retval.insert(retval.begin(), new_models.begin(), new_models.end());
+  retval.insert(retval.begin(), old_models.begin(), old_models.end());
+  return retval;
+}
+
 void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
                               float apply_weight, bool invoke_regularizers) {
   std::stringstream ss;

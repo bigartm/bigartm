@@ -24,6 +24,8 @@ class InstanceSchema {
   InstanceSchema();
   explicit InstanceSchema(const InstanceSchema& schema);
   explicit InstanceSchema(const MasterComponentConfig& config);
+  std::shared_ptr<InstanceSchema> Duplicate() const;
+  void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
   const MasterComponentConfig& config() const;
   void set_config(const MasterComponentConfig& config);

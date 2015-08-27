@@ -36,6 +36,7 @@ void BasicTest() {
   // Create master component
   std::unique_ptr<artm::MasterComponent> master_component;
   master_component.reset(new ::artm::MasterComponent(master_config));
+  EXPECT_EQ(master_component->info()->score_size(), 1);
 
   // Create regularizers
   std::string reg_decor_name = "decorrelator";
@@ -55,6 +56,8 @@ void BasicTest() {
   reg_multilang_config.set_config(multilang_config.SerializeAsString());
   std::shared_ptr<artm::Regularizer> multilanguage_reg(
     new artm::Regularizer(*(master_component.get()), reg_multilang_config));
+
+  EXPECT_EQ(master_component->info()->regularizer_size(), 2);
 
   // Create model
   artm::ModelConfig model_config;
@@ -499,6 +502,10 @@ TEST(CppInterface, ProcessBatchesApi) {
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
+  std::shared_ptr< ::artm::MasterComponentInfo> master_info = master.info();
+  ASSERT_EQ(master_info->model_size(), 1);  // "pwt0"
+  EXPECT_EQ(master_info->model(0).name(), "pwt0");
+  EXPECT_EQ(master_info->model(0).topics_count(), nTopics);
 
   std::shared_ptr< ::artm::TopicModel> pwt_model = master.GetTopicModel("pwt0");
   ASSERT_NE(pwt_model, nullptr);
@@ -517,6 +524,7 @@ TEST(CppInterface, ProcessBatchesApi) {
 
   master.ExportModel(export_model_args);
   master.ImportModel(import_model_args);
+  ASSERT_EQ(master.info()->model_size(), 2);  // "pwt0", "import_pwt"
   bool ok2 = false;
   ::artm::test::Helpers::CompareTopicModels(*master.GetTopicModel("pwt0"), *master.GetTopicModel("import_pwt"), &ok2);
   if (!ok2) {
@@ -525,6 +533,9 @@ TEST(CppInterface, ProcessBatchesApi) {
     std::cout << "Imported topic model:\n"
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("import_pwt"));
   }
+
+  master.DisposeModel("import_pwt");
+  ASSERT_EQ(master.info()->model_size(), 1);  // "pwt0"
   /////////////////////////////////////////////
 
   std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
@@ -550,6 +561,8 @@ TEST(CppInterface, ProcessBatchesApi) {
     master.NormalizeModel(normalize_model_args);
   }
 
+  ASSERT_EQ(master.info()->model_size(), 3);  // "pwt0", "pwt", "nwt_hat"
+
   EXPECT_NE(perplexity_score, nullptr);
   EXPECT_NE(perplexity_score->value(), 0.0);
 
@@ -571,6 +584,29 @@ TEST(CppInterface, ProcessBatchesApi) {
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt"));
     std::cout << "Old-tuned topic model:\n"
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
+  }
+
+  ::artm::DictionaryConfig dict_config;
+  dict_config.set_name("My dictionary");
+  ::artm::DictionaryEntry* de1 = dict_config.add_entry();
+  de1->set_key_token("my_tok_1");
+  ::artm::Dictionary dict(master, dict_config);
+  master_info = master.info();
+  ASSERT_EQ(master_info->dictionary_size(), 1);
+  EXPECT_EQ(master_info->dictionary(0).entries_count(), 1);
+
+  {
+    artm::MasterComponent master_clone(master);
+    std::shared_ptr< ::artm::MasterComponentInfo> clone_master_info = master_clone.info();
+    ASSERT_EQ(clone_master_info->model_size(), 2);  // "pwt", "nwt_hat"; "pwt0" is not cloned (old-style model)
+    ASSERT_EQ(clone_master_info->dictionary_size(), 1);
+    EXPECT_EQ(clone_master_info->dictionary(0).entries_count(), 1);
+    ASSERT_EQ(clone_master_info->score_size(), master_info->score_size());
+    ASSERT_EQ(clone_master_info->regularizer_size(), master_info->regularizer_size());
+
+    ::artm::test::Helpers::CompareTopicModels(*master_clone.GetTopicModel("pwt"),
+                                              *master.GetTopicModel("pwt"), &ok);
+    ASSERT_TRUE(ok);
   }
 
   // Verify that we may call ProcessBatches without nwt_target
@@ -657,6 +693,14 @@ TEST(CppInterface, AttachModel) {
       EXPECT_EQ(updated_model->token_weights(token_index).value(topic_index),
                 2.0f * token_index + 3.0f * topic_index);
     }
+  }
+
+  {
+    bool ok = false;
+    artm::MasterComponent master_clone(master);
+    ::artm::test::Helpers::CompareTopicModels(*master_clone.GetTopicModel("nwt_merge"),
+      *master.GetTopicModel("nwt_merge"), &ok);
+    ASSERT_TRUE(ok);
   }
 
   // Good practice is to dispose model once its attachment is gone.

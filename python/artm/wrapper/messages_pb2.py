@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='artm/messages.proto',
   package='artm',
-  serialized_pb='\n\x13\x61rtm/messages.proto\x12\x04\x61rtm\" \n\x0b\x44oubleArray\x12\x11\n\x05value\x18\x01 \x03(\x01\x42\x02\x10\x01\"\x1f\n\nFloatArray\x12\x11\n\x05value\x18\x01 \x03(\x02\x42\x02\x10\x01\"\x1e\n\tBoolArray\x12\x11\n\x05value\x18\x01 \x03(\x08\x42\x02\x10\x01\"\x1d\n\x08IntArray\x12\x11\n\x05value\x18\x01 \x03(\x05\x42\x02\x10\x01\"\x1c\n\x0bStringArray\x12\r\n\x05value\x18\x01 \x03(\t\"=\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x1a\n\x05\x66ield\x18\x02 \x03(\x0b\x32\x0b.artm.Field\x12\r\n\x05title\x18\x03 \x01(\t\"\x95\x02\n\x05\x46ield\x12\x13\n\x04name\x18\x01 \x01(\t:\x05@body\x12\x10\n\x08token_id\x18\x02 \x03(\x05\x12\x13\n\x0btoken_count\x18\x03 \x03(\x05\x12\x14\n\x0ctoken_offset\x18\x04 \x03(\x05\x12\x14\n\x0cstring_value\x18\x05 \x01(\t\x12\x11\n\tint_value\x18\x06 \x01(\x03\x12\x14\n\x0c\x64ouble_value\x18\x07 \x01(\x01\x12\x12\n\ndate_value\x18\x08 \x01(\t\x12\x14\n\x0cstring_array\x18\x10 \x03(\t\x12\x11\n\tint_array\x18\x11 \x03(\x03\x12\x14\n\x0c\x64ouble_array\x18\x12 \x03(\x01\x12\x12\n\ndate_array\x18\x13 \x03(\t\x12\x14\n\x0ctoken_weight\x18\x14 \x03(\x02\"c\n\x05\x42\x61tch\x12\r\n\x05token\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x18\n\x04item\x18\x03 \x03(\x0b\x32\n.artm.Item\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\n\n\x02id\x18\x05 \x01(\t\"\x93\x01\n\x06Stream\x12\'\n\x04type\x18\x01 \x01(\x0e\x32\x11.artm.Stream.Type:\x06Global\x12\x15\n\x04name\x18\x02 \x01(\t:\x07@global\x12\x0f\n\x07modulus\x18\x03 \x01(\x05\x12\x11\n\tresiduals\x18\x04 \x03(\x05\"%\n\x04Type\x12\n\n\x06Global\x10\x00\x12\x11\n\rItemIdModulus\x10\x01\"\xd0\x02\n\x15MasterComponentConfig\x12\x11\n\tdisk_path\x18\x02 \x01(\t\x12\x1c\n\x06stream\x18\x03 \x03(\x0b\x32\x0c.artm.Stream\x12\x1d\n\x0f\x63ompact_batches\x18\x04 \x01(\x08:\x04true\x12\x1a\n\x0b\x63\x61\x63he_theta\x18\x05 \x01(\x08:\x05\x66\x61lse\x12\x18\n\x10processors_count\x18\x06 \x01(\x05\x12$\n\x18processor_queue_max_size\x18\x07 \x01(\x05:\x02\x31\x30\x12!\n\x15merger_queue_max_size\x18\x08 \x01(\x05:\x02\x31\x30\x12\'\n\x0cscore_config\x18\t \x03(\x0b\x32\x11.artm.ScoreConfig\x12&\n\x17online_batch_processing\x18\r \x01(\x08:\x05\x66\x61lse\x12\x17\n\x0f\x64isk_cache_path\x18\x0f \x01(\t\"d\n\x13RegularizerSettings\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03tau\x18\x02 \x01(\x01\x12#\n\x1buse_relative_regularization\x18\x03 \x01(\x08\x12\r\n\x05gamma\x18\x04 \x01(\x01\"\x81\x04\n\x0bModelConfig\x12\x14\n\x04name\x18\x01 \x01(\t:\x06@model\x12\x18\n\x0ctopics_count\x18\x02 \x01(\x05:\x02\x33\x32\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\x15\n\x07\x65nabled\x18\x04 \x01(\x08:\x04true\x12\"\n\x16inner_iterations_count\x18\x05 \x01(\x05:\x02\x31\x30\x12\x19\n\nfield_name\x18\x06 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x07 \x01(\t:\x07@global\x12\x12\n\nscore_name\x18\x08 \x03(\t\x12\x1a\n\x0breuse_theta\x18\t \x01(\x08:\x05\x66\x61lse\x12\x18\n\x10regularizer_name\x18\n \x03(\t\x12\x17\n\x0fregularizer_tau\x18\x0b \x03(\x01\x12\x10\n\x08\x63lass_id\x18\x0c \x03(\t\x12\x14\n\x0c\x63lass_weight\x18\r \x03(\x02\x12\x1c\n\x0euse_sparse_bow\x18\x0e \x01(\x08:\x04true\x12\x1f\n\x10use_random_theta\x18\x0f \x01(\x08:\x05\x66\x61lse\x12\x1c\n\x0euse_new_tokens\x18\x10 \x01(\x08:\x04true\x12\x19\n\x0bopt_for_avx\x18\x11 \x01(\x08:\x04true\x12\x37\n\x14regularizer_settings\x18\x12 \x03(\x0b\x32\x19.artm.RegularizerSettings\"\x8a\x02\n\x11RegularizerConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12*\n\x04type\x18\x02 \x01(\x0e\x32\x1c.artm.RegularizerConfig.Type\x12\x0e\n\x06\x63onfig\x18\x03 \x01(\x0c\"\xaa\x01\n\x04Type\x12\x15\n\x11SmoothSparseTheta\x10\x00\x12\x13\n\x0fSmoothSparsePhi\x10\x01\x12\x13\n\x0f\x44\x65\x63orrelatorPhi\x10\x02\x12\x14\n\x10MultiLanguagePhi\x10\x03\x12\x1a\n\x16LabelRegularizationPhi\x10\x04\x12\x16\n\x12SpecifiedSparsePhi\x10\x05\x12\x17\n\x13ImproveCoherencePhi\x10\x06\"A\n\x17SmoothSparseThetaConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x12\n\nalpha_iter\x18\x02 \x03(\x02\"V\n\x15SmoothSparsePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"=\n\x15\x44\x65\x63orrelatorPhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\"\x18\n\x16MultiLanguagePhiConfig\"]\n\x1cLabelRegularizationPhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"\x82\x02\n\x18SpecifiedSparsePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x1e\n\x12max_elements_count\x18\x03 \x01(\x05:\x02\x32\x30\x12#\n\x15probability_threshold\x18\x04 \x01(\x02:\x04\x30.99\x12?\n\x04mode\x18\x05 \x01(\x0e\x32#.artm.SpecifiedSparsePhiConfig.Mode:\x0cSparseTopics\"*\n\x04Mode\x12\x10\n\x0cSparseTopics\x10\x00\x12\x10\n\x0cSparseTokens\x10\x01\"Z\n\x19ImproveCoherencePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"\x87\x01\n\x18RegularizerInternalState\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x04type\x18\x02 \x01(\x0e\x32#.artm.RegularizerInternalState.Type\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\"\x1c\n\x04Type\x12\x14\n\x10MultiLanguagePhi\x10\x03\"C\n\x1dMultiLanguagePhiInternalState\x12\"\n\x17no_regularization_calls\x18\x01 \x01(\x05:\x01\x30\"\xd1\x01\n\x10\x44ictionaryConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x05\x65ntry\x18\x02 \x03(\x0b\x32\x15.artm.DictionaryEntry\x12\x19\n\x11total_token_count\x18\x03 \x01(\x05\x12\x19\n\x11total_items_count\x18\x04 \x01(\x05\x12\x37\n\x0c\x63ooc_entries\x18\x05 \x01(\x0b\x32!.artm.DictionaryCoocurenceEntries\x12\x1a\n\x12total_token_weight\x18\x06 \x01(\x02\"\xbd\x01\n\x0f\x44ictionaryEntry\x12\x11\n\tkey_token\x18\x01 \x01(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\x02\x12\x14\n\x0cvalue_tokens\x18\x04 \x03(\t\x12 \n\x06values\x18\x05 \x01(\x0b\x32\x10.artm.FloatArray\x12\x13\n\x0btoken_count\x18\x06 \x01(\x05\x12\x13\n\x0bitems_count\x18\x07 \x01(\x05\x12\x14\n\x0ctoken_weight\x18\x08 \x01(\x02\"W\n\x1b\x44ictionaryCoocurenceEntries\x12\x13\n\x0b\x66irst_index\x18\x01 \x03(\x05\x12\x14\n\x0csecond_index\x18\x02 \x03(\x05\x12\r\n\x05value\x18\x03 \x03(\x02\"\xd4\x01\n\x0bScoreConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x04type\x18\x02 \x01(\x0e\x32\x16.artm.ScoreConfig.Type\x12\x0e\n\x06\x63onfig\x18\x03 \x01(\x0c\"\x80\x01\n\x04Type\x12\x0e\n\nPerplexity\x10\x00\x12\x11\n\rSparsityTheta\x10\x01\x12\x0f\n\x0bSparsityPhi\x10\x02\x12\x12\n\x0eItemsProcessed\x10\x03\x12\r\n\tTopTokens\x10\x04\x12\x10\n\x0cThetaSnippet\x10\x05\x12\x0f\n\x0bTopicKernel\x10\x06\"\xce\x01\n\tScoreData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\"\n\x04type\x18\x02 \x01(\x0e\x32\x14.artm.ScoreData.Type\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\"\x80\x01\n\x04Type\x12\x0e\n\nPerplexity\x10\x00\x12\x11\n\rSparsityTheta\x10\x01\x12\x0f\n\x0bSparsityPhi\x10\x02\x12\x12\n\x0eItemsProcessed\x10\x03\x12\r\n\tTopTokens\x10\x04\x12\x10\n\x0cThetaSnippet\x10\x05\x12\x0f\n\x0bTopicKernel\x10\x06\"\xcc\x02\n\x15PerplexityScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x02 \x01(\t:\x07@global\x12J\n\nmodel_type\x18\x03 \x01(\x0e\x32 .artm.PerplexityScoreConfig.Type:\x14UnigramDocumentModel\x12\x17\n\x0f\x64ictionary_name\x18\x04 \x01(\t\x12\"\n\x12theta_sparsity_eps\x18\x05 \x01(\x02:\x06\x31\x65-037\x12!\n\x19theta_sparsity_topic_name\x18\x06 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x07 \x03(\t\"<\n\x04Type\x12\x18\n\x14UnigramDocumentModel\x10\x00\x12\x1a\n\x16UnigramCollectionModel\x10\x01\"\xbc\x01\n\x0fPerplexityScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x0b\n\x03raw\x18\x02 \x01(\x01\x12\x12\n\nnormalizer\x18\x03 \x01(\x01\x12\x12\n\nzero_words\x18\x04 \x01(\x05\x12\x1c\n\x14theta_sparsity_value\x18\x05 \x01(\x01\x12\"\n\x1atheta_sparsity_zero_topics\x18\x06 \x01(\x05\x12#\n\x1btheta_sparsity_total_topics\x18\x07 \x01(\x05\"|\n\x18SparsityThetaScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x02 \x01(\t:\x07@global\x12\x13\n\x03\x65ps\x18\x03 \x01(\x02:\x06\x31\x65-037\x12\x12\n\ntopic_name\x18\x04 \x03(\t\"N\n\x12SparsityThetaScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x13\n\x0bzero_topics\x18\x02 \x01(\x05\x12\x14\n\x0ctotal_topics\x18\x03 \x01(\x05\"c\n\x16SparsityPhiScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\"L\n\x10SparsityPhiScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x13\n\x0bzero_tokens\x18\x02 \x01(\x05\x12\x14\n\x0ctotal_tokens\x18\x03 \x01(\x05\"T\n\x19ItemsProcessedScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x02 \x01(\t:\x07@global\"$\n\x13ItemsProcessedScore\x12\r\n\x05value\x18\x01 \x01(\x05\"\x8a\x01\n\x14TopTokensScoreConfig\x12\x16\n\nnum_tokens\x18\x01 \x01(\x05:\x02\x31\x30\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12$\n\x1c\x63ooccurrence_dictionary_name\x18\x04 \x01(\t\"\xad\x01\n\x0eTopTokensScore\x12\x13\n\x0bnum_entries\x18\x01 \x01(\x05\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\x13\n\x0btopic_index\x18\x03 \x03(\x05\x12\r\n\x05token\x18\x04 \x03(\t\x12\x0e\n\x06weight\x18\x05 \x03(\x02\x12#\n\tcoherence\x18\x06 \x01(\x0b\x32\x10.artm.FloatArray\x12\x19\n\x11\x61verage_coherence\x18\x07 \x01(\x02\"\x7f\n\x17ThetaSnippetScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x02 \x01(\t:\x07@global\x12\x13\n\x07item_id\x18\x03 \x03(\x05\x42\x02\x10\x01\x12\x16\n\nitem_count\x18\x04 \x01(\x05:\x02\x31\x30\"F\n\x11ThetaSnippetScore\x12\x0f\n\x07item_id\x18\x01 \x03(\x05\x12 \n\x06values\x18\x02 \x03(\x0b\x32\x10.artm.FloatArray\"\xb2\x01\n\x16TopicKernelScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\'\n\x1aprobability_mass_threshold\x18\x04 \x01(\x01:\x03\x30.1\x12$\n\x1c\x63ooccurrence_dictionary_name\x18\x05 \x01(\t\"\xff\x02\n\x10TopicKernelScore\x12&\n\x0bkernel_size\x18\x01 \x01(\x0b\x32\x11.artm.DoubleArray\x12(\n\rkernel_purity\x18\x02 \x01(\x0b\x32\x11.artm.DoubleArray\x12*\n\x0fkernel_contrast\x18\x03 \x01(\x0b\x32\x11.artm.DoubleArray\x12\x1b\n\x13\x61verage_kernel_size\x18\x04 \x01(\x01\x12\x1d\n\x15\x61verage_kernel_purity\x18\x05 \x01(\x01\x12\x1f\n\x17\x61verage_kernel_contrast\x18\x06 \x01(\x01\x12$\n\tcoherence\x18\x07 \x01(\x0b\x32\x11.artm.DoubleArray\x12\x19\n\x11\x61verage_coherence\x18\x08 \x01(\x02\x12(\n\rkernel_tokens\x18\t \x03(\x0b\x32\x11.artm.StringArray\x12%\n\ntopic_name\x18\n \x01(\x0b\x32\x11.artm.StringArray\"\x94\x03\n\nTopicModel\x12\x14\n\x04name\x18\x01 \x01(\t:\x06@model\x12\x14\n\x0ctopics_count\x18\x02 \x01(\x05\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\r\n\x05token\x18\x04 \x03(\t\x12\'\n\rtoken_weights\x18\x05 \x03(\x0b\x32\x10.artm.FloatArray\x12\x10\n\x08\x63lass_id\x18\x06 \x03(\t\x12\x11\n\tinternals\x18\x07 \x01(\x0c\x12#\n\x0btopic_index\x18\x08 \x03(\x0b\x32\x0e.artm.IntArray\x12\x36\n\x0eoperation_type\x18\t \x03(\x0e\x32\x1e.artm.TopicModel.OperationType\x1a\x35\n\x13TopicModelInternals\x12\x1e\n\x04n_wt\x18\x01 \x03(\x0b\x32\x10.artm.FloatArray\"U\n\rOperationType\x12\x0e\n\nInitialize\x10\x00\x12\r\n\tIncrement\x10\x01\x12\r\n\tOverwrite\x10\x02\x12\n\n\x06Remove\x10\x03\x12\n\n\x06Ignore\x10\x04\"\xc5\x01\n\x0bThetaMatrix\x12\x1a\n\nmodel_name\x18\x01 \x01(\t:\x06@model\x12\x0f\n\x07item_id\x18\x02 \x03(\x05\x12&\n\x0citem_weights\x18\x03 \x03(\x0b\x32\x10.artm.FloatArray\x12\x12\n\ntopic_name\x18\x04 \x03(\t\x12\x14\n\x0ctopics_count\x18\x05 \x01(\x05\x12\x12\n\nitem_title\x18\x06 \x03(\t\x12#\n\x0btopic_index\x18\x07 \x03(\x0b\x32\x0e.artm.IntArray\"\xb9\x03\n\x16\x43ollectionParserConfig\x12\x42\n\x06\x66ormat\x18\x01 \x01(\x0e\x32#.artm.CollectionParserConfig.Format:\rBagOfWordsUci\x12\x19\n\x11\x64ocword_file_path\x18\x02 \x01(\t\x12\x17\n\x0fvocab_file_path\x18\x03 \x01(\t\x12\x15\n\rtarget_folder\x18\x04 \x01(\t\x12\x1c\n\x14\x64ictionary_file_name\x18\x05 \x01(\t\x12!\n\x13num_items_per_batch\x18\x06 \x01(\x05:\x04\x31\x30\x30\x30\x12\x1a\n\x12\x63ooccurrence_token\x18\x07 \x03(\t\x12%\n\x17use_unity_based_indices\x18\x08 \x01(\x08:\x04true\x12\x1a\n\x0bgather_cooc\x18\t \x01(\x08:\x05\x66\x61lse\x12\x1d\n\x15\x63ooccurrence_class_id\x18\n \x03(\t\"Q\n\x06\x46ormat\x12\x11\n\rBagOfWordsUci\x10\x00\x12\x10\n\x0cMatrixMarket\x10\x01\x12\x10\n\x0cVowpalWabbit\x10\x02\x12\x10\n\x0c\x43ooccurrence\x10\x03\"\x7f\n\x14SynchronizeModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x17\n\x0c\x64\x65\x63\x61y_weight\x18\x02 \x01(\x02:\x01\x30\x12!\n\x13invoke_regularizers\x18\x03 \x01(\x08:\x04true\x12\x17\n\x0c\x61pply_weight\x18\x04 \x01(\x02:\x01\x31\"\xcb\x03\n\x13InitializeModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\x12\x45\n\x0bsource_type\x18\x03 \x01(\x0e\x32$.artm.InitializeModelArgs.SourceType:\nDictionary\x12\x11\n\tdisk_path\x18\x04 \x01(\t\x12\x30\n\x06\x66ilter\x18\x05 \x03(\x0b\x32 .artm.InitializeModelArgs.Filter\x12\x14\n\x0ctopics_count\x18\x06 \x01(\x05\x12\x12\n\ntopic_name\x18\x07 \x03(\t\x1a\xa5\x01\n\x06\x46ilter\x12\x10\n\x08\x63lass_id\x18\x01 \x01(\t\x12\x16\n\x0emin_percentage\x18\x02 \x01(\x02\x12\x16\n\x0emax_percentage\x18\x03 \x01(\x02\x12\x11\n\tmin_items\x18\x04 \x01(\x05\x12\x11\n\tmax_items\x18\x05 \x01(\x05\x12\x17\n\x0fmin_total_count\x18\x06 \x01(\x05\x12\x1a\n\x12min_one_item_count\x18\x07 \x01(\x05\")\n\nSourceType\x12\x0e\n\nDictionary\x10\x00\x12\x0b\n\x07\x42\x61tches\x10\x01\"\xf4\x02\n\x11GetTopicModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\r\n\x05token\x18\x03 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x04 \x03(\t\x12\x19\n\x11use_sparse_format\x18\x05 \x01(\x08\x12\x13\n\x03\x65ps\x18\x06 \x01(\x02:\x06\x31\x65-037\x12>\n\x0crequest_type\x18\x07 \x01(\x0e\x32#.artm.GetTopicModelArgs.RequestType:\x03Pwt\x12\x42\n\rmatrix_layout\x18\x08 \x01(\x0e\x32$.artm.GetTopicModelArgs.MatrixLayout:\x05\x44\x65nse\";\n\x0bRequestType\x12\x07\n\x03Pwt\x10\x00\x12\x07\n\x03Nwt\x10\x01\x12\x0e\n\nTopicNames\x10\x02\x12\n\n\x06Tokens\x10\x03\"%\n\x0cMatrixLayout\x12\t\n\x05\x44\x65nse\x10\x00\x12\n\n\x06Sparse\x10\x01\"\xa5\x02\n\x12GetThetaMatrixArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x1a\n\x05\x62\x61tch\x18\x02 \x01(\x0b\x32\x0b.artm.Batch\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\x13\n\x0btopic_index\x18\x04 \x03(\x05\x12\x1a\n\x0b\x63lean_cache\x18\x05 \x01(\x08:\x05\x66\x61lse\x12\x19\n\x11use_sparse_format\x18\x06 \x01(\x08\x12\x13\n\x03\x65ps\x18\x07 \x01(\x02:\x06\x31\x65-037\x12\x43\n\rmatrix_layout\x18\x08 \x01(\x0e\x32%.artm.GetThetaMatrixArgs.MatrixLayout:\x05\x44\x65nse\"%\n\x0cMatrixLayout\x12\t\n\x05\x44\x65nse\x10\x00\x12\n\n\x06Sparse\x10\x01\"W\n\x11GetScoreValueArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x12\n\nscore_name\x18\x02 \x01(\t\x12\x1a\n\x05\x62\x61tch\x18\x03 \x01(\x0b\x32\x0b.artm.Batch\"\x82\x01\n\x0c\x41\x64\x64\x42\x61tchArgs\x12\x1a\n\x05\x62\x61tch\x18\x01 \x01(\x0b\x32\x0b.artm.Batch\x12 \n\x14timeout_milliseconds\x18\x02 \x01(\x05:\x02-1\x12\x1b\n\x0creset_scores\x18\x03 \x01(\x08:\x05\x66\x61lse\x12\x17\n\x0f\x62\x61tch_file_name\x18\x04 \x01(\t\"a\n\x13InvokeIterationArgs\x12\x1b\n\x10iterations_count\x18\x01 \x01(\x05:\x01\x31\x12\x1a\n\x0creset_scores\x18\x02 \x01(\x08:\x04true\x12\x11\n\tdisk_path\x18\x03 \x01(\t\"0\n\x0cWaitIdleArgs\x12 \n\x14timeout_milliseconds\x18\x01 \x01(\x05:\x02-1\"8\n\x0f\x45xportModelArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x12\n\nmodel_name\x18\x02 \x01(\t\"8\n\x0fImportModelArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x12\n\nmodel_name\x18\x02 \x01(\t\"%\n\x0f\x41ttachModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\"\x8d\x04\n\x12ProcessBatchesArgs\x12\x17\n\x0fnwt_target_name\x18\x01 \x01(\t\x12\x16\n\x0e\x62\x61tch_filename\x18\x02 \x03(\t\x12\x17\n\x0fpwt_source_name\x18\x03 \x01(\t\x12\"\n\x16inner_iterations_count\x18\x04 \x01(\x05:\x02\x31\x30\x12\x1c\n\x0bstream_name\x18\x05 \x01(\t:\x07@global\x12\x18\n\x10regularizer_name\x18\x06 \x03(\t\x12\x17\n\x0fregularizer_tau\x18\x07 \x03(\x01\x12\x10\n\x08\x63lass_id\x18\x08 \x03(\t\x12\x14\n\x0c\x63lass_weight\x18\t \x03(\x02\x12\x1a\n\x0breuse_theta\x18\n \x01(\x08:\x05\x66\x61lse\x12\x19\n\x0bopt_for_avx\x18\x0b \x01(\x08:\x04true\x12\x1c\n\x0euse_sparse_bow\x18\x0c \x01(\x08:\x04true\x12\x1a\n\x0creset_scores\x18\r \x01(\x08:\x04true\x12J\n\x11theta_matrix_type\x18\x0e \x01(\x0e\x32(.artm.ProcessBatchesArgs.ThetaMatrixType:\x05\x43\x61\x63he\x12\x14\n\x0c\x62\x61tch_weight\x18\x0f \x03(\x02\"=\n\x0fThetaMatrixType\x12\x08\n\x04None\x10\x00\x12\t\n\x05\x44\x65nse\x10\x01\x12\n\n\x06Sparse\x10\x02\x12\t\n\x05\x43\x61\x63he\x10\x03\"d\n\x14ProcessBatchesResult\x12#\n\nscore_data\x18\x01 \x03(\x0b\x32\x0f.artm.ScoreData\x12\'\n\x0ctheta_matrix\x18\x02 \x01(\x0b\x32\x11.artm.ThetaMatrix\"m\n\x0eMergeModelArgs\x12\x17\n\x0fnwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x02 \x03(\t\x12\x15\n\rsource_weight\x18\x03 \x03(\x02\x12\x12\n\ntopic_name\x18\x04 \x03(\t\"\x99\x01\n\x13RegularizeModelArgs\x12\x17\n\x0frwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fpwt_source_name\x18\x02 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x03 \x01(\t\x12\x37\n\x14regularizer_settings\x18\x04 \x03(\x0b\x32\x19.artm.RegularizerSettings\"_\n\x12NormalizeModelArgs\x12\x17\n\x0fpwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x02 \x01(\t\x12\x17\n\x0frwt_source_name\x18\x03 \x01(\t\"B\n\x14ImportDictionaryArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\"\xc1\x01\n\x15\x43opyRequestResultArgs\x12Q\n\x0crequest_type\x18\x01 \x01(\x0e\x32\'.artm.CopyRequestResultArgs.RequestType:\x12\x44\x65\x66\x61ultRequestType\"U\n\x0bRequestType\x12\x16\n\x12\x44\x65\x66\x61ultRequestType\x10\x00\x12\x16\n\x12GetThetaSecondPass\x10\x01\x12\x16\n\x12GetModelSecondPass\x10\x02')
+  serialized_pb='\n\x13\x61rtm/messages.proto\x12\x04\x61rtm\" \n\x0b\x44oubleArray\x12\x11\n\x05value\x18\x01 \x03(\x01\x42\x02\x10\x01\"\x1f\n\nFloatArray\x12\x11\n\x05value\x18\x01 \x03(\x02\x42\x02\x10\x01\"\x1e\n\tBoolArray\x12\x11\n\x05value\x18\x01 \x03(\x08\x42\x02\x10\x01\"\x1d\n\x08IntArray\x12\x11\n\x05value\x18\x01 \x03(\x05\x42\x02\x10\x01\"\x1c\n\x0bStringArray\x12\r\n\x05value\x18\x01 \x03(\t\"=\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x1a\n\x05\x66ield\x18\x02 \x03(\x0b\x32\x0b.artm.Field\x12\r\n\x05title\x18\x03 \x01(\t\"\x95\x02\n\x05\x46ield\x12\x13\n\x04name\x18\x01 \x01(\t:\x05@body\x12\x10\n\x08token_id\x18\x02 \x03(\x05\x12\x13\n\x0btoken_count\x18\x03 \x03(\x05\x12\x14\n\x0ctoken_offset\x18\x04 \x03(\x05\x12\x14\n\x0cstring_value\x18\x05 \x01(\t\x12\x11\n\tint_value\x18\x06 \x01(\x03\x12\x14\n\x0c\x64ouble_value\x18\x07 \x01(\x01\x12\x12\n\ndate_value\x18\x08 \x01(\t\x12\x14\n\x0cstring_array\x18\x10 \x03(\t\x12\x11\n\tint_array\x18\x11 \x03(\x03\x12\x14\n\x0c\x64ouble_array\x18\x12 \x03(\x01\x12\x12\n\ndate_array\x18\x13 \x03(\t\x12\x14\n\x0ctoken_weight\x18\x14 \x03(\x02\"c\n\x05\x42\x61tch\x12\r\n\x05token\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x18\n\x04item\x18\x03 \x03(\x0b\x32\n.artm.Item\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\n\n\x02id\x18\x05 \x01(\t\"\x93\x01\n\x06Stream\x12\'\n\x04type\x18\x01 \x01(\x0e\x32\x11.artm.Stream.Type:\x06Global\x12\x15\n\x04name\x18\x02 \x01(\t:\x07@global\x12\x0f\n\x07modulus\x18\x03 \x01(\x05\x12\x11\n\tresiduals\x18\x04 \x03(\x05\"%\n\x04Type\x12\n\n\x06Global\x10\x00\x12\x11\n\rItemIdModulus\x10\x01\"\xd0\x02\n\x15MasterComponentConfig\x12\x11\n\tdisk_path\x18\x02 \x01(\t\x12\x1c\n\x06stream\x18\x03 \x03(\x0b\x32\x0c.artm.Stream\x12\x1d\n\x0f\x63ompact_batches\x18\x04 \x01(\x08:\x04true\x12\x1a\n\x0b\x63\x61\x63he_theta\x18\x05 \x01(\x08:\x05\x66\x61lse\x12\x18\n\x10processors_count\x18\x06 \x01(\x05\x12$\n\x18processor_queue_max_size\x18\x07 \x01(\x05:\x02\x31\x30\x12!\n\x15merger_queue_max_size\x18\x08 \x01(\x05:\x02\x31\x30\x12\'\n\x0cscore_config\x18\t \x03(\x0b\x32\x11.artm.ScoreConfig\x12&\n\x17online_batch_processing\x18\r \x01(\x08:\x05\x66\x61lse\x12\x17\n\x0f\x64isk_cache_path\x18\x0f \x01(\t\"d\n\x13RegularizerSettings\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03tau\x18\x02 \x01(\x01\x12#\n\x1buse_relative_regularization\x18\x03 \x01(\x08\x12\r\n\x05gamma\x18\x04 \x01(\x01\"\x81\x04\n\x0bModelConfig\x12\x14\n\x04name\x18\x01 \x01(\t:\x06@model\x12\x18\n\x0ctopics_count\x18\x02 \x01(\x05:\x02\x33\x32\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\x15\n\x07\x65nabled\x18\x04 \x01(\x08:\x04true\x12\"\n\x16inner_iterations_count\x18\x05 \x01(\x05:\x02\x31\x30\x12\x19\n\nfield_name\x18\x06 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x07 \x01(\t:\x07@global\x12\x12\n\nscore_name\x18\x08 \x03(\t\x12\x1a\n\x0breuse_theta\x18\t \x01(\x08:\x05\x66\x61lse\x12\x18\n\x10regularizer_name\x18\n \x03(\t\x12\x17\n\x0fregularizer_tau\x18\x0b \x03(\x01\x12\x10\n\x08\x63lass_id\x18\x0c \x03(\t\x12\x14\n\x0c\x63lass_weight\x18\r \x03(\x02\x12\x1c\n\x0euse_sparse_bow\x18\x0e \x01(\x08:\x04true\x12\x1f\n\x10use_random_theta\x18\x0f \x01(\x08:\x05\x66\x61lse\x12\x1c\n\x0euse_new_tokens\x18\x10 \x01(\x08:\x04true\x12\x19\n\x0bopt_for_avx\x18\x11 \x01(\x08:\x04true\x12\x37\n\x14regularizer_settings\x18\x12 \x03(\x0b\x32\x19.artm.RegularizerSettings\"\x8a\x02\n\x11RegularizerConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12*\n\x04type\x18\x02 \x01(\x0e\x32\x1c.artm.RegularizerConfig.Type\x12\x0e\n\x06\x63onfig\x18\x03 \x01(\x0c\"\xaa\x01\n\x04Type\x12\x15\n\x11SmoothSparseTheta\x10\x00\x12\x13\n\x0fSmoothSparsePhi\x10\x01\x12\x13\n\x0f\x44\x65\x63orrelatorPhi\x10\x02\x12\x14\n\x10MultiLanguagePhi\x10\x03\x12\x1a\n\x16LabelRegularizationPhi\x10\x04\x12\x16\n\x12SpecifiedSparsePhi\x10\x05\x12\x17\n\x13ImproveCoherencePhi\x10\x06\"A\n\x17SmoothSparseThetaConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x12\n\nalpha_iter\x18\x02 \x03(\x02\"V\n\x15SmoothSparsePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"=\n\x15\x44\x65\x63orrelatorPhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\"\x18\n\x16MultiLanguagePhiConfig\"]\n\x1cLabelRegularizationPhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"\x82\x02\n\x18SpecifiedSparsePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x1e\n\x12max_elements_count\x18\x03 \x01(\x05:\x02\x32\x30\x12#\n\x15probability_threshold\x18\x04 \x01(\x02:\x04\x30.99\x12?\n\x04mode\x18\x05 \x01(\x0e\x32#.artm.SpecifiedSparsePhiConfig.Mode:\x0cSparseTopics\"*\n\x04Mode\x12\x10\n\x0cSparseTopics\x10\x00\x12\x10\n\x0cSparseTokens\x10\x01\"Z\n\x19ImproveCoherencePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"\x87\x01\n\x18RegularizerInternalState\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x04type\x18\x02 \x01(\x0e\x32#.artm.RegularizerInternalState.Type\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\"\x1c\n\x04Type\x12\x14\n\x10MultiLanguagePhi\x10\x03\"C\n\x1dMultiLanguagePhiInternalState\x12\"\n\x17no_regularization_calls\x18\x01 \x01(\x05:\x01\x30\"\xd1\x01\n\x10\x44ictionaryConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x05\x65ntry\x18\x02 \x03(\x0b\x32\x15.artm.DictionaryEntry\x12\x19\n\x11total_token_count\x18\x03 \x01(\x05\x12\x19\n\x11total_items_count\x18\x04 \x01(\x05\x12\x37\n\x0c\x63ooc_entries\x18\x05 \x01(\x0b\x32!.artm.DictionaryCoocurenceEntries\x12\x1a\n\x12total_token_weight\x18\x06 \x01(\x02\"\xbd\x01\n\x0f\x44ictionaryEntry\x12\x11\n\tkey_token\x18\x01 \x01(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\x02\x12\x14\n\x0cvalue_tokens\x18\x04 \x03(\t\x12 \n\x06values\x18\x05 \x01(\x0b\x32\x10.artm.FloatArray\x12\x13\n\x0btoken_count\x18\x06 \x01(\x05\x12\x13\n\x0bitems_count\x18\x07 \x01(\x05\x12\x14\n\x0ctoken_weight\x18\x08 \x01(\x02\"W\n\x1b\x44ictionaryCoocurenceEntries\x12\x13\n\x0b\x66irst_index\x18\x01 \x03(\x05\x12\x14\n\x0csecond_index\x18\x02 \x03(\x05\x12\r\n\x05value\x18\x03 \x03(\x02\"\xd4\x01\n\x0bScoreConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x04type\x18\x02 \x01(\x0e\x32\x16.artm.ScoreConfig.Type\x12\x0e\n\x06\x63onfig\x18\x03 \x01(\x0c\"\x80\x01\n\x04Type\x12\x0e\n\nPerplexity\x10\x00\x12\x11\n\rSparsityTheta\x10\x01\x12\x0f\n\x0bSparsityPhi\x10\x02\x12\x12\n\x0eItemsProcessed\x10\x03\x12\r\n\tTopTokens\x10\x04\x12\x10\n\x0cThetaSnippet\x10\x05\x12\x0f\n\x0bTopicKernel\x10\x06\"\xce\x01\n\tScoreData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\"\n\x04type\x18\x02 \x01(\x0e\x32\x14.artm.ScoreData.Type\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\"\x80\x01\n\x04Type\x12\x0e\n\nPerplexity\x10\x00\x12\x11\n\rSparsityTheta\x10\x01\x12\x0f\n\x0bSparsityPhi\x10\x02\x12\x12\n\x0eItemsProcessed\x10\x03\x12\r\n\tTopTokens\x10\x04\x12\x10\n\x0cThetaSnippet\x10\x05\x12\x0f\n\x0bTopicKernel\x10\x06\"\xcc\x02\n\x15PerplexityScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x02 \x01(\t:\x07@global\x12J\n\nmodel_type\x18\x03 \x01(\x0e\x32 .artm.PerplexityScoreConfig.Type:\x14UnigramDocumentModel\x12\x17\n\x0f\x64ictionary_name\x18\x04 \x01(\t\x12\"\n\x12theta_sparsity_eps\x18\x05 \x01(\x02:\x06\x31\x65-037\x12!\n\x19theta_sparsity_topic_name\x18\x06 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x07 \x03(\t\"<\n\x04Type\x12\x18\n\x14UnigramDocumentModel\x10\x00\x12\x1a\n\x16UnigramCollectionModel\x10\x01\"\xbc\x01\n\x0fPerplexityScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x0b\n\x03raw\x18\x02 \x01(\x01\x12\x12\n\nnormalizer\x18\x03 \x01(\x01\x12\x12\n\nzero_words\x18\x04 \x01(\x05\x12\x1c\n\x14theta_sparsity_value\x18\x05 \x01(\x01\x12\"\n\x1atheta_sparsity_zero_topics\x18\x06 \x01(\x05\x12#\n\x1btheta_sparsity_total_topics\x18\x07 \x01(\x05\"|\n\x18SparsityThetaScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x02 \x01(\t:\x07@global\x12\x13\n\x03\x65ps\x18\x03 \x01(\x02:\x06\x31\x65-037\x12\x12\n\ntopic_name\x18\x04 \x03(\t\"N\n\x12SparsityThetaScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x13\n\x0bzero_topics\x18\x02 \x01(\x05\x12\x14\n\x0ctotal_topics\x18\x03 \x01(\x05\"c\n\x16SparsityPhiScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\"L\n\x10SparsityPhiScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x13\n\x0bzero_tokens\x18\x02 \x01(\x05\x12\x14\n\x0ctotal_tokens\x18\x03 \x01(\x05\"T\n\x19ItemsProcessedScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x02 \x01(\t:\x07@global\"$\n\x13ItemsProcessedScore\x12\r\n\x05value\x18\x01 \x01(\x05\"\x8a\x01\n\x14TopTokensScoreConfig\x12\x16\n\nnum_tokens\x18\x01 \x01(\x05:\x02\x31\x30\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12$\n\x1c\x63ooccurrence_dictionary_name\x18\x04 \x01(\t\"\xad\x01\n\x0eTopTokensScore\x12\x13\n\x0bnum_entries\x18\x01 \x01(\x05\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\x13\n\x0btopic_index\x18\x03 \x03(\x05\x12\r\n\x05token\x18\x04 \x03(\t\x12\x0e\n\x06weight\x18\x05 \x03(\x02\x12#\n\tcoherence\x18\x06 \x01(\x0b\x32\x10.artm.FloatArray\x12\x19\n\x11\x61verage_coherence\x18\x07 \x01(\x02\"\x7f\n\x17ThetaSnippetScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x1c\n\x0bstream_name\x18\x02 \x01(\t:\x07@global\x12\x13\n\x07item_id\x18\x03 \x03(\x05\x42\x02\x10\x01\x12\x16\n\nitem_count\x18\x04 \x01(\x05:\x02\x31\x30\"F\n\x11ThetaSnippetScore\x12\x0f\n\x07item_id\x18\x01 \x03(\x05\x12 \n\x06values\x18\x02 \x03(\x0b\x32\x10.artm.FloatArray\"\xb2\x01\n\x16TopicKernelScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\'\n\x1aprobability_mass_threshold\x18\x04 \x01(\x01:\x03\x30.1\x12$\n\x1c\x63ooccurrence_dictionary_name\x18\x05 \x01(\t\"\xff\x02\n\x10TopicKernelScore\x12&\n\x0bkernel_size\x18\x01 \x01(\x0b\x32\x11.artm.DoubleArray\x12(\n\rkernel_purity\x18\x02 \x01(\x0b\x32\x11.artm.DoubleArray\x12*\n\x0fkernel_contrast\x18\x03 \x01(\x0b\x32\x11.artm.DoubleArray\x12\x1b\n\x13\x61verage_kernel_size\x18\x04 \x01(\x01\x12\x1d\n\x15\x61verage_kernel_purity\x18\x05 \x01(\x01\x12\x1f\n\x17\x61verage_kernel_contrast\x18\x06 \x01(\x01\x12$\n\tcoherence\x18\x07 \x01(\x0b\x32\x11.artm.DoubleArray\x12\x19\n\x11\x61verage_coherence\x18\x08 \x01(\x02\x12(\n\rkernel_tokens\x18\t \x03(\x0b\x32\x11.artm.StringArray\x12%\n\ntopic_name\x18\n \x01(\x0b\x32\x11.artm.StringArray\"\x94\x03\n\nTopicModel\x12\x14\n\x04name\x18\x01 \x01(\t:\x06@model\x12\x14\n\x0ctopics_count\x18\x02 \x01(\x05\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\r\n\x05token\x18\x04 \x03(\t\x12\'\n\rtoken_weights\x18\x05 \x03(\x0b\x32\x10.artm.FloatArray\x12\x10\n\x08\x63lass_id\x18\x06 \x03(\t\x12\x11\n\tinternals\x18\x07 \x01(\x0c\x12#\n\x0btopic_index\x18\x08 \x03(\x0b\x32\x0e.artm.IntArray\x12\x36\n\x0eoperation_type\x18\t \x03(\x0e\x32\x1e.artm.TopicModel.OperationType\x1a\x35\n\x13TopicModelInternals\x12\x1e\n\x04n_wt\x18\x01 \x03(\x0b\x32\x10.artm.FloatArray\"U\n\rOperationType\x12\x0e\n\nInitialize\x10\x00\x12\r\n\tIncrement\x10\x01\x12\r\n\tOverwrite\x10\x02\x12\n\n\x06Remove\x10\x03\x12\n\n\x06Ignore\x10\x04\"\xc5\x01\n\x0bThetaMatrix\x12\x1a\n\nmodel_name\x18\x01 \x01(\t:\x06@model\x12\x0f\n\x07item_id\x18\x02 \x03(\x05\x12&\n\x0citem_weights\x18\x03 \x03(\x0b\x32\x10.artm.FloatArray\x12\x12\n\ntopic_name\x18\x04 \x03(\t\x12\x14\n\x0ctopics_count\x18\x05 \x01(\x05\x12\x12\n\nitem_title\x18\x06 \x03(\t\x12#\n\x0btopic_index\x18\x07 \x03(\x0b\x32\x0e.artm.IntArray\"\xb9\x03\n\x16\x43ollectionParserConfig\x12\x42\n\x06\x66ormat\x18\x01 \x01(\x0e\x32#.artm.CollectionParserConfig.Format:\rBagOfWordsUci\x12\x19\n\x11\x64ocword_file_path\x18\x02 \x01(\t\x12\x17\n\x0fvocab_file_path\x18\x03 \x01(\t\x12\x15\n\rtarget_folder\x18\x04 \x01(\t\x12\x1c\n\x14\x64ictionary_file_name\x18\x05 \x01(\t\x12!\n\x13num_items_per_batch\x18\x06 \x01(\x05:\x04\x31\x30\x30\x30\x12\x1a\n\x12\x63ooccurrence_token\x18\x07 \x03(\t\x12%\n\x17use_unity_based_indices\x18\x08 \x01(\x08:\x04true\x12\x1a\n\x0bgather_cooc\x18\t \x01(\x08:\x05\x66\x61lse\x12\x1d\n\x15\x63ooccurrence_class_id\x18\n \x03(\t\"Q\n\x06\x46ormat\x12\x11\n\rBagOfWordsUci\x10\x00\x12\x10\n\x0cMatrixMarket\x10\x01\x12\x10\n\x0cVowpalWabbit\x10\x02\x12\x10\n\x0c\x43ooccurrence\x10\x03\"\x7f\n\x14SynchronizeModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x17\n\x0c\x64\x65\x63\x61y_weight\x18\x02 \x01(\x02:\x01\x30\x12!\n\x13invoke_regularizers\x18\x03 \x01(\x08:\x04true\x12\x17\n\x0c\x61pply_weight\x18\x04 \x01(\x02:\x01\x31\"\xcb\x03\n\x13InitializeModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\x12\x45\n\x0bsource_type\x18\x03 \x01(\x0e\x32$.artm.InitializeModelArgs.SourceType:\nDictionary\x12\x11\n\tdisk_path\x18\x04 \x01(\t\x12\x30\n\x06\x66ilter\x18\x05 \x03(\x0b\x32 .artm.InitializeModelArgs.Filter\x12\x14\n\x0ctopics_count\x18\x06 \x01(\x05\x12\x12\n\ntopic_name\x18\x07 \x03(\t\x1a\xa5\x01\n\x06\x46ilter\x12\x10\n\x08\x63lass_id\x18\x01 \x01(\t\x12\x16\n\x0emin_percentage\x18\x02 \x01(\x02\x12\x16\n\x0emax_percentage\x18\x03 \x01(\x02\x12\x11\n\tmin_items\x18\x04 \x01(\x05\x12\x11\n\tmax_items\x18\x05 \x01(\x05\x12\x17\n\x0fmin_total_count\x18\x06 \x01(\x05\x12\x1a\n\x12min_one_item_count\x18\x07 \x01(\x05\")\n\nSourceType\x12\x0e\n\nDictionary\x10\x00\x12\x0b\n\x07\x42\x61tches\x10\x01\"\xf4\x02\n\x11GetTopicModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\r\n\x05token\x18\x03 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x04 \x03(\t\x12\x19\n\x11use_sparse_format\x18\x05 \x01(\x08\x12\x13\n\x03\x65ps\x18\x06 \x01(\x02:\x06\x31\x65-037\x12>\n\x0crequest_type\x18\x07 \x01(\x0e\x32#.artm.GetTopicModelArgs.RequestType:\x03Pwt\x12\x42\n\rmatrix_layout\x18\x08 \x01(\x0e\x32$.artm.GetTopicModelArgs.MatrixLayout:\x05\x44\x65nse\";\n\x0bRequestType\x12\x07\n\x03Pwt\x10\x00\x12\x07\n\x03Nwt\x10\x01\x12\x0e\n\nTopicNames\x10\x02\x12\n\n\x06Tokens\x10\x03\"%\n\x0cMatrixLayout\x12\t\n\x05\x44\x65nse\x10\x00\x12\n\n\x06Sparse\x10\x01\"\xa5\x02\n\x12GetThetaMatrixArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x1a\n\x05\x62\x61tch\x18\x02 \x01(\x0b\x32\x0b.artm.Batch\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\x13\n\x0btopic_index\x18\x04 \x03(\x05\x12\x1a\n\x0b\x63lean_cache\x18\x05 \x01(\x08:\x05\x66\x61lse\x12\x19\n\x11use_sparse_format\x18\x06 \x01(\x08\x12\x13\n\x03\x65ps\x18\x07 \x01(\x02:\x06\x31\x65-037\x12\x43\n\rmatrix_layout\x18\x08 \x01(\x0e\x32%.artm.GetThetaMatrixArgs.MatrixLayout:\x05\x44\x65nse\"%\n\x0cMatrixLayout\x12\t\n\x05\x44\x65nse\x10\x00\x12\n\n\x06Sparse\x10\x01\"W\n\x11GetScoreValueArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x12\n\nscore_name\x18\x02 \x01(\t\x12\x1a\n\x05\x62\x61tch\x18\x03 \x01(\x0b\x32\x0b.artm.Batch\"\x82\x01\n\x0c\x41\x64\x64\x42\x61tchArgs\x12\x1a\n\x05\x62\x61tch\x18\x01 \x01(\x0b\x32\x0b.artm.Batch\x12 \n\x14timeout_milliseconds\x18\x02 \x01(\x05:\x02-1\x12\x1b\n\x0creset_scores\x18\x03 \x01(\x08:\x05\x66\x61lse\x12\x17\n\x0f\x62\x61tch_file_name\x18\x04 \x01(\t\"a\n\x13InvokeIterationArgs\x12\x1b\n\x10iterations_count\x18\x01 \x01(\x05:\x01\x31\x12\x1a\n\x0creset_scores\x18\x02 \x01(\x08:\x04true\x12\x11\n\tdisk_path\x18\x03 \x01(\t\"0\n\x0cWaitIdleArgs\x12 \n\x14timeout_milliseconds\x18\x01 \x01(\x05:\x02-1\"8\n\x0f\x45xportModelArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x12\n\nmodel_name\x18\x02 \x01(\t\"8\n\x0fImportModelArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x12\n\nmodel_name\x18\x02 \x01(\t\"%\n\x0f\x41ttachModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\"\x8d\x04\n\x12ProcessBatchesArgs\x12\x17\n\x0fnwt_target_name\x18\x01 \x01(\t\x12\x16\n\x0e\x62\x61tch_filename\x18\x02 \x03(\t\x12\x17\n\x0fpwt_source_name\x18\x03 \x01(\t\x12\"\n\x16inner_iterations_count\x18\x04 \x01(\x05:\x02\x31\x30\x12\x1c\n\x0bstream_name\x18\x05 \x01(\t:\x07@global\x12\x18\n\x10regularizer_name\x18\x06 \x03(\t\x12\x17\n\x0fregularizer_tau\x18\x07 \x03(\x01\x12\x10\n\x08\x63lass_id\x18\x08 \x03(\t\x12\x14\n\x0c\x63lass_weight\x18\t \x03(\x02\x12\x1a\n\x0breuse_theta\x18\n \x01(\x08:\x05\x66\x61lse\x12\x19\n\x0bopt_for_avx\x18\x0b \x01(\x08:\x04true\x12\x1c\n\x0euse_sparse_bow\x18\x0c \x01(\x08:\x04true\x12\x1a\n\x0creset_scores\x18\r \x01(\x08:\x04true\x12J\n\x11theta_matrix_type\x18\x0e \x01(\x0e\x32(.artm.ProcessBatchesArgs.ThetaMatrixType:\x05\x43\x61\x63he\x12\x14\n\x0c\x62\x61tch_weight\x18\x0f \x03(\x02\"=\n\x0fThetaMatrixType\x12\x08\n\x04None\x10\x00\x12\t\n\x05\x44\x65nse\x10\x01\x12\n\n\x06Sparse\x10\x02\x12\t\n\x05\x43\x61\x63he\x10\x03\"d\n\x14ProcessBatchesResult\x12#\n\nscore_data\x18\x01 \x03(\x0b\x32\x0f.artm.ScoreData\x12\'\n\x0ctheta_matrix\x18\x02 \x01(\x0b\x32\x11.artm.ThetaMatrix\"m\n\x0eMergeModelArgs\x12\x17\n\x0fnwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x02 \x03(\t\x12\x15\n\rsource_weight\x18\x03 \x03(\x02\x12\x12\n\ntopic_name\x18\x04 \x03(\t\"\x99\x01\n\x13RegularizeModelArgs\x12\x17\n\x0frwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fpwt_source_name\x18\x02 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x03 \x01(\t\x12\x37\n\x14regularizer_settings\x18\x04 \x03(\x0b\x32\x19.artm.RegularizerSettings\"_\n\x12NormalizeModelArgs\x12\x17\n\x0fpwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x02 \x01(\t\x12\x17\n\x0frwt_source_name\x18\x03 \x01(\t\"B\n\x14ImportDictionaryArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\"\xc1\x01\n\x15\x43opyRequestResultArgs\x12Q\n\x0crequest_type\x18\x01 \x01(\x0e\x32\'.artm.CopyRequestResultArgs.RequestType:\x12\x44\x65\x66\x61ultRequestType\"U\n\x0bRequestType\x12\x16\n\x12\x44\x65\x66\x61ultRequestType\x10\x00\x12\x16\n\x12GetThetaSecondPass\x10\x01\x12\x16\n\x12GetModelSecondPass\x10\x02\"\x1e\n\x1c\x44uplicateMasterComponentArgs\"\x1c\n\x1aGetMasterComponentInfoArgs\"\xc8\x05\n\x13MasterComponentInfo\x12\x11\n\tmaster_id\x18\x01 \x01(\x05\x12+\n\x06\x63onfig\x18\x02 \x01(\x0b\x32\x1b.artm.MasterComponentConfig\x12>\n\x0bregularizer\x18\x03 \x03(\x0b\x32).artm.MasterComponentInfo.RegularizerInfo\x12\x32\n\x05score\x18\x04 \x03(\x0b\x32#.artm.MasterComponentInfo.ScoreInfo\x12<\n\ndictionary\x18\x05 \x03(\x0b\x32(.artm.MasterComponentInfo.DictionaryInfo\x12\x32\n\x05model\x18\x06 \x03(\x0b\x32#.artm.MasterComponentInfo.ModelInfo\x12=\n\x0b\x63\x61\x63he_entry\x18\x07 \x03(\x0b\x32(.artm.MasterComponentInfo.CacheEntryInfo\x12\x19\n\x11merger_queue_size\x18\x08 \x01(\x05\x12\x1c\n\x14processor_queue_size\x18\t \x01(\x05\x1a-\n\x0fRegularizerInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x1a\'\n\tScoreInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x1a\x35\n\x0e\x44ictionaryInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rentries_count\x18\x02 \x01(\x03\x1aR\n\tModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x14\n\x0ctopics_count\x18\x03 \x01(\x05\x12\x13\n\x0btoken_count\x18\x04 \x01(\x05\x1a\x30\n\x0e\x43\x61\x63heEntryInfo\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tbyte_size\x18\x02 \x01(\x05')
 
 
 
@@ -3745,6 +3745,316 @@ _COPYREQUESTRESULTARGS = _descriptor.Descriptor(
   serialized_end=10040,
 )
 
+
+_DUPLICATEMASTERCOMPONENTARGS = _descriptor.Descriptor(
+  name='DuplicateMasterComponentArgs',
+  full_name='artm.DuplicateMasterComponentArgs',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=10042,
+  serialized_end=10072,
+)
+
+
+_GETMASTERCOMPONENTINFOARGS = _descriptor.Descriptor(
+  name='GetMasterComponentInfoArgs',
+  full_name='artm.GetMasterComponentInfoArgs',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=10074,
+  serialized_end=10102,
+)
+
+
+_MASTERCOMPONENTINFO_REGULARIZERINFO = _descriptor.Descriptor(
+  name='RegularizerInfo',
+  full_name='artm.MasterComponentInfo.RegularizerInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='artm.MasterComponentInfo.RegularizerInfo.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='type', full_name='artm.MasterComponentInfo.RegularizerInfo.type', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=10542,
+  serialized_end=10587,
+)
+
+_MASTERCOMPONENTINFO_SCOREINFO = _descriptor.Descriptor(
+  name='ScoreInfo',
+  full_name='artm.MasterComponentInfo.ScoreInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='artm.MasterComponentInfo.ScoreInfo.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='type', full_name='artm.MasterComponentInfo.ScoreInfo.type', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=10589,
+  serialized_end=10628,
+)
+
+_MASTERCOMPONENTINFO_DICTIONARYINFO = _descriptor.Descriptor(
+  name='DictionaryInfo',
+  full_name='artm.MasterComponentInfo.DictionaryInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='artm.MasterComponentInfo.DictionaryInfo.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='entries_count', full_name='artm.MasterComponentInfo.DictionaryInfo.entries_count', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=10630,
+  serialized_end=10683,
+)
+
+_MASTERCOMPONENTINFO_MODELINFO = _descriptor.Descriptor(
+  name='ModelInfo',
+  full_name='artm.MasterComponentInfo.ModelInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='artm.MasterComponentInfo.ModelInfo.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='type', full_name='artm.MasterComponentInfo.ModelInfo.type', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='topics_count', full_name='artm.MasterComponentInfo.ModelInfo.topics_count', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='token_count', full_name='artm.MasterComponentInfo.ModelInfo.token_count', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=10685,
+  serialized_end=10767,
+)
+
+_MASTERCOMPONENTINFO_CACHEENTRYINFO = _descriptor.Descriptor(
+  name='CacheEntryInfo',
+  full_name='artm.MasterComponentInfo.CacheEntryInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='artm.MasterComponentInfo.CacheEntryInfo.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='byte_size', full_name='artm.MasterComponentInfo.CacheEntryInfo.byte_size', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=10769,
+  serialized_end=10817,
+)
+
+_MASTERCOMPONENTINFO = _descriptor.Descriptor(
+  name='MasterComponentInfo',
+  full_name='artm.MasterComponentInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='master_id', full_name='artm.MasterComponentInfo.master_id', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='config', full_name='artm.MasterComponentInfo.config', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='regularizer', full_name='artm.MasterComponentInfo.regularizer', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='score', full_name='artm.MasterComponentInfo.score', index=3,
+      number=4, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='dictionary', full_name='artm.MasterComponentInfo.dictionary', index=4,
+      number=5, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='model', full_name='artm.MasterComponentInfo.model', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='cache_entry', full_name='artm.MasterComponentInfo.cache_entry', index=6,
+      number=7, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='merger_queue_size', full_name='artm.MasterComponentInfo.merger_queue_size', index=7,
+      number=8, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='processor_queue_size', full_name='artm.MasterComponentInfo.processor_queue_size', index=8,
+      number=9, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[_MASTERCOMPONENTINFO_REGULARIZERINFO, _MASTERCOMPONENTINFO_SCOREINFO, _MASTERCOMPONENTINFO_DICTIONARYINFO, _MASTERCOMPONENTINFO_MODELINFO, _MASTERCOMPONENTINFO_CACHEENTRYINFO, ],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=10105,
+  serialized_end=10817,
+)
+
 _ITEM.fields_by_name['field'].message_type = _FIELD
 _BATCH.fields_by_name['item'].message_type = _ITEM
 _STREAM.fields_by_name['type'].enum_type = _STREAM_TYPE
@@ -3805,6 +4115,17 @@ _PROCESSBATCHESRESULT.fields_by_name['theta_matrix'].message_type = _THETAMATRIX
 _REGULARIZEMODELARGS.fields_by_name['regularizer_settings'].message_type = _REGULARIZERSETTINGS
 _COPYREQUESTRESULTARGS.fields_by_name['request_type'].enum_type = _COPYREQUESTRESULTARGS_REQUESTTYPE
 _COPYREQUESTRESULTARGS_REQUESTTYPE.containing_type = _COPYREQUESTRESULTARGS;
+_MASTERCOMPONENTINFO_REGULARIZERINFO.containing_type = _MASTERCOMPONENTINFO;
+_MASTERCOMPONENTINFO_SCOREINFO.containing_type = _MASTERCOMPONENTINFO;
+_MASTERCOMPONENTINFO_DICTIONARYINFO.containing_type = _MASTERCOMPONENTINFO;
+_MASTERCOMPONENTINFO_MODELINFO.containing_type = _MASTERCOMPONENTINFO;
+_MASTERCOMPONENTINFO_CACHEENTRYINFO.containing_type = _MASTERCOMPONENTINFO;
+_MASTERCOMPONENTINFO.fields_by_name['config'].message_type = _MASTERCOMPONENTCONFIG
+_MASTERCOMPONENTINFO.fields_by_name['regularizer'].message_type = _MASTERCOMPONENTINFO_REGULARIZERINFO
+_MASTERCOMPONENTINFO.fields_by_name['score'].message_type = _MASTERCOMPONENTINFO_SCOREINFO
+_MASTERCOMPONENTINFO.fields_by_name['dictionary'].message_type = _MASTERCOMPONENTINFO_DICTIONARYINFO
+_MASTERCOMPONENTINFO.fields_by_name['model'].message_type = _MASTERCOMPONENTINFO_MODELINFO
+_MASTERCOMPONENTINFO.fields_by_name['cache_entry'].message_type = _MASTERCOMPONENTINFO_CACHEENTRYINFO
 DESCRIPTOR.message_types_by_name['DoubleArray'] = _DOUBLEARRAY
 DESCRIPTOR.message_types_by_name['FloatArray'] = _FLOATARRAY
 DESCRIPTOR.message_types_by_name['BoolArray'] = _BOOLARRAY
@@ -3867,6 +4188,9 @@ DESCRIPTOR.message_types_by_name['RegularizeModelArgs'] = _REGULARIZEMODELARGS
 DESCRIPTOR.message_types_by_name['NormalizeModelArgs'] = _NORMALIZEMODELARGS
 DESCRIPTOR.message_types_by_name['ImportDictionaryArgs'] = _IMPORTDICTIONARYARGS
 DESCRIPTOR.message_types_by_name['CopyRequestResultArgs'] = _COPYREQUESTRESULTARGS
+DESCRIPTOR.message_types_by_name['DuplicateMasterComponentArgs'] = _DUPLICATEMASTERCOMPONENTARGS
+DESCRIPTOR.message_types_by_name['GetMasterComponentInfoArgs'] = _GETMASTERCOMPONENTINFOARGS
+DESCRIPTOR.message_types_by_name['MasterComponentInfo'] = _MASTERCOMPONENTINFO
 
 class DoubleArray(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
@@ -4251,6 +4575,54 @@ class CopyRequestResultArgs(_message.Message):
   DESCRIPTOR = _COPYREQUESTRESULTARGS
 
   # @@protoc_insertion_point(class_scope:artm.CopyRequestResultArgs)
+
+class DuplicateMasterComponentArgs(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _DUPLICATEMASTERCOMPONENTARGS
+
+  # @@protoc_insertion_point(class_scope:artm.DuplicateMasterComponentArgs)
+
+class GetMasterComponentInfoArgs(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _GETMASTERCOMPONENTINFOARGS
+
+  # @@protoc_insertion_point(class_scope:artm.GetMasterComponentInfoArgs)
+
+class MasterComponentInfo(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+
+  class RegularizerInfo(_message.Message):
+    __metaclass__ = _reflection.GeneratedProtocolMessageType
+    DESCRIPTOR = _MASTERCOMPONENTINFO_REGULARIZERINFO
+
+    # @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.RegularizerInfo)
+
+  class ScoreInfo(_message.Message):
+    __metaclass__ = _reflection.GeneratedProtocolMessageType
+    DESCRIPTOR = _MASTERCOMPONENTINFO_SCOREINFO
+
+    # @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.ScoreInfo)
+
+  class DictionaryInfo(_message.Message):
+    __metaclass__ = _reflection.GeneratedProtocolMessageType
+    DESCRIPTOR = _MASTERCOMPONENTINFO_DICTIONARYINFO
+
+    # @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.DictionaryInfo)
+
+  class ModelInfo(_message.Message):
+    __metaclass__ = _reflection.GeneratedProtocolMessageType
+    DESCRIPTOR = _MASTERCOMPONENTINFO_MODELINFO
+
+    # @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.ModelInfo)
+
+  class CacheEntryInfo(_message.Message):
+    __metaclass__ = _reflection.GeneratedProtocolMessageType
+    DESCRIPTOR = _MASTERCOMPONENTINFO_CACHEENTRYINFO
+
+    # @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.CacheEntryInfo)
+  DESCRIPTOR = _MASTERCOMPONENTINFO
+
+  # @@protoc_insertion_point(class_scope:artm.MasterComponentInfo)
 
 
 _DOUBLEARRAY.fields_by_name['value'].has_options = True

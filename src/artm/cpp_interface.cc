@@ -97,6 +97,13 @@ MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), 
     config_blob.size(), StringAsArray(&config_blob)));
 }
 
+MasterComponent::MasterComponent(const MasterComponent& rhs) : id_(0), config_(rhs.config_) {
+  ::artm::DuplicateMasterComponentArgs args;
+  std::string config_blob;
+  args.SerializeToString(&config_blob);
+  id_ = HandleErrorCode(ArtmDuplicateMasterComponent(rhs.id_, config_blob.size(), StringAsArray(&config_blob)));
+}
+
 MasterComponent::~MasterComponent() {
   ArtmDisposeMasterComponent(id());
 }
@@ -268,6 +275,20 @@ std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& ar
   std::shared_ptr<ScoreData> score_data(new ScoreData());
   score_data->ParseFromString(blob);
   return score_data;
+}
+
+std::shared_ptr<MasterComponentInfo> MasterComponent::info() const {
+  GetMasterComponentInfoArgs args;
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int length = HandleErrorCode(ArtmRequestMasterComponentInfo(id(), args_blob.size(), args_blob.c_str()));
+  std::string blob;
+  blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));
+
+  std::shared_ptr<MasterComponentInfo> master_component_info(new MasterComponentInfo());
+  master_component_info->ParseFromString(blob);
+  return master_component_info;
 }
 
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)

@@ -34,6 +34,7 @@ class MasterComponent : boost::noncopyable {
   ~MasterComponent();
 
   int id() const;
+  std::shared_ptr<MasterComponentConfig> config() const;
 
   // Retrieves topic model.
   // Returns true if succeeded, and false if model_name hasn't been found.
@@ -45,6 +46,7 @@ class MasterComponent : boost::noncopyable {
                           ::artm::ThetaMatrix* theta_matrix);
   bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData* score_data);
+  void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
   void RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                              ProcessBatchesResult* process_batches_result);
@@ -76,19 +78,15 @@ class MasterComponent : boost::noncopyable {
   void InitializeModel(const InitializeModelArgs& args);
   bool AddBatch(const AddBatchArgs& args);
 
-  // Throws InvalidOperation exception if new config is invalid.
-  void ValidateConfig(const MasterComponentConfig& config);
-
  private:
   friend class TemplateManager<MasterComponent>;
 
   // All master components must be created via TemplateManager.
   MasterComponent(int id, const MasterComponentConfig& config);
-
-  bool is_configured_;
+  MasterComponent(int id, const MasterComponent& rhs);
+  MasterComponent& operator=(const MasterComponent&);
 
   int master_id_;
-  ThreadSafeHolder<MasterComponentConfig> config_;
 
   std::shared_ptr<Instance> instance_;
 };

@@ -2,7 +2,7 @@ Typical python example
 ======================
 
 This section describe all steps, included in a typical BigARTM script
-(for example `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example02_parse_collection.py>`_).
+(for example `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example02_parse_collection.py>`_).
 
 Parse collection
 ----------------

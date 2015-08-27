@@ -37,9 +37,9 @@ In addition, new version consumes less memory.
 
 Refer to the following examples that demonstrate usage of new APIs for offline, online and regularized topic modelling:
 
-* `example17_process_batches.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example17_process_batches.py>`_
-* `example18_merge_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example18_merge_model.py>`_
-* `example19_regularize_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example19_regularize_model.py>`_
+* `example17_process_batches.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example17_process_batches.py>`_
+* `example18_merge_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example18_merge_model.py>`_
+* `example19_regularize_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example19_regularize_model.py>`_
 
 Models, tuned with the new API are referred to as *new-style models*,
 as opposite to *old-style models* inferred with AddBatch, InvokeIteration, WaitIdle and SynchronizeModel APIs.
@@ -188,4 +188,4 @@ Coherence regularizer and scores (experimental)
 -----------------------------------------------
 
 Refer to example in 
-`example16_coherence_score.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example16_coherence_score.py>`_.
+`example16_coherence_score.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example16_coherence_score.py>`_.
