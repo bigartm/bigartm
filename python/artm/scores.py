@@ -1,7 +1,7 @@
 import uuid
 
 from wrapper import messages_pb2 as messages
-from wrapper import constants
+from wrapper import constants as const
 
 
 GLOB_EPS = 1e-37
@@ -83,18 +83,23 @@ class Scores(object):
 
 
 class BaseScore(object):
+
+    _config_message = None
+
     def __init__(self, name, class_id, topic_names):
+        if self._config_message is None:
+            raise NotImplementedError()
         config = self._config_message()
-        self._class_id = '@default_class'
-        self._topic_names = []
 
         if name is None:
             name = str(self._type) + uuid.uuid1().urn
 
+        self._class_id = '@default_class'
         if class_id is not None:
             config.class_id = class_id
             self._class_id = class_id
 
+        self._topic_names = []
         if topic_names is not None:
             config.ClearField('topic_name')
             for topic_name in topic_names:
@@ -163,7 +168,7 @@ class SparsityPhiScore(BaseScore):
     """
 
     _config_message = messages.SparsityPhiScoreConfig
-    _type = constants.ScoreConfig_Type_SparsityPhi
+    _type = const.ScoreConfig_Type_SparsityPhi
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
         BaseScore.__init__(self,
@@ -197,7 +202,7 @@ class SparsityThetaScore(BaseScore):
     """
 
     _config_message = messages.SparsityThetaScoreConfig
-    _type = constants.ScoreConfig_Type_SparsityTheta
+    _type = const.ScoreConfig_Type_SparsityTheta
 
     def __init__(self, name=None, topic_names=None, eps=None):
         BaseScore.__init__(self,
@@ -244,7 +249,7 @@ class PerplexityScore(BaseScore):
     """
 
     _config_message = messages.PerplexityScoreConfig
-    _type = constants.ScoreConfig_Type_Perplexity
+    _type = const.ScoreConfig_Type_Perplexity
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, use_unigram_document_model=None):
@@ -267,9 +272,9 @@ class PerplexityScore(BaseScore):
         if use_unigram_document_model is not None:
             self._use_unigram_document_model = use_unigram_document_model
             if use_unigram_document_model is True:
-                self._config.model_type = lib.PerplexityScoreConfig_Type_UnigramDocumentModel
+                self._config.model_type = const.PerplexityScoreConfig_Type_UnigramDocumentModel
             else:
-                self._config.model_type = lib.PerplexityScoreConfig_Type_UnigramCollectionModel
+                self._config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
 
     @property
     def eps(self):
@@ -297,9 +302,9 @@ class PerplexityScore(BaseScore):
         score_config = messages.PerplexityScoreConfig()
         score_config.CopyFrom(self._config)
         if use_unigram_document_model is True:
-            score_config.model_type = lib.PerplexityScoreConfig_Type_UnigramDocumentModel
+            score_config.model_type = const.PerplexityScoreConfig_Type_UnigramDocumentModel
         else:
-            score_config.model_type = lib.PerplexityScoreConfig_Type_UnigramCollectionModel
+            score_config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
         _reconfigure_score_in_master(self._master, score_config, self._name)
 
 
@@ -311,7 +316,7 @@ class ItemsProcessedScore(BaseScore):
     """
 
     _config_message = messages.ItemsProcessedScoreConfig
-    _type = constants.ScoreConfig_Type_ItemsProcessed
+    _type = const.ScoreConfig_Type_ItemsProcessed
 
     def __init__(self, name=None):
         BaseScore.__init__(self,
@@ -351,7 +356,7 @@ class TopTokensScore(BaseScore):
     """
 
     _config_message = messages.TopTokensScoreConfig
-    _type = constants.ScoreConfig_Type_TopTokens
+    _type = const.ScoreConfig_Type_TopTokens
 
     def __init__(self, name=None, class_id=None, topic_names=None,
                  num_tokens=None, dictionary_name=None):
@@ -399,7 +404,7 @@ class ThetaSnippetScore(BaseScore):
     """
 
     _config_message = messages.ThetaSnippetScoreConfig
-    _type = constants.ScoreConfig_Type_ThetaSnippet
+    _type = const.ScoreConfig_Type_ThetaSnippet
 
     def __init__(self, name=None, item_ids=None, num_items=None):
         BaseScore.__init__(self,
@@ -469,7 +474,7 @@ class TopicKernelScore(BaseScore):
     """
 
     _config_message = messages.TopicKernelScoreConfig
-    _type = constants.ScoreConfig_Type_TopicKernel
+    _type = const.ScoreConfig_Type_TopicKernel
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, probability_mass_threshold=None):

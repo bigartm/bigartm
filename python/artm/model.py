@@ -8,22 +8,22 @@ import tempfile
 from pandas import DataFrame
 
 from . import wrapper
-from wrapper import constants
+from wrapper import constants as const
 from . import master_component as mc
 
-from . import batches_utils as bu
-from . import regularizers as rg
-from . import scores as sc
-from . import score_tracker as st
+from .batches_utils import DICTIONARY_NAME
+from .regularizers import Regularizers
+from .scores import Scores
+from . import score_tracker
 
 SCORE_TRACKER = {
-    constants.ScoreConfig_Type_SparsityPhi: st.SparsityPhiScoreTracker,
-    constants.ScoreConfig_Type_SparsityTheta: st.SparsityThetaScoreTracker,
-    constants.ScoreConfig_Type_Perplexity: st.PerplexityScoreTracker,
-    constants.ScoreConfig_Type_ThetaSnippet: st.ThetaSnippetScoreTracker,
-    constants.ScoreConfig_Type_ItemsProcessed: st.ItemsProcessedScoreTracker,
-    constants.ScoreConfig_Type_TopTokens: st.TopTokensScoreTracker,
-    constants.ScoreConfig_Type_TopicKernel: st.TopicKernelScoreTracker
+    const.ScoreConfig_Type_SparsityPhi: score_tracker.SparsityPhiScoreTracker,
+    const.ScoreConfig_Type_SparsityTheta: score_tracker.SparsityThetaScoreTracker,
+    const.ScoreConfig_Type_Perplexity: score_tracker.PerplexityScoreTracker,
+    const.ScoreConfig_Type_ThetaSnippet: score_tracker.ThetaSnippetScoreTracker,
+    const.ScoreConfig_Type_ItemsProcessed: score_tracker.ItemsProcessedScoreTracker,
+    const.ScoreConfig_Type_TopTokens: score_tracker.TopTokensScoreTracker,
+    const.ScoreConfig_Type_TopicKernel: score_tracker.TopicKernelScoreTracker
 }
 
 
@@ -101,8 +101,8 @@ class ARTM(object):
                                           cache_theta=self._cache_theta)
 
         self._model = 'pwt'
-        self._regularizers = rg.Regularizers(self._master)
-        self._scores = sc.Scores(self._master, self._model)
+        self._regularizers = Regularizers(self._master)
+        self._scores = Scores(self._master, self._model)
 
         # add scores and regularizers if necessary
         if scores is not None:
@@ -115,7 +115,7 @@ class ARTM(object):
         self._score_tracker = {}
         self._synchronizations_processed = 0
         self._initialized = False
-        self._phi = None  # This field will be set during .phi_ call
+        self._phi_cached = None  # This field will be set during .phi_ call
         self._phi_synchronization = -1
 
     # ========== PROPERTIES ==========
@@ -169,10 +169,11 @@ class ARTM(object):
 
     @property
     def phi_(self):
-        if self._phi is None or not self._phi_synchronization == self._synchronizations_processed:
-            self._phi = self.get_phi()
+        if (self._phi_cached is None or
+                self._phi_synchronization != self._synchronizations_processed):
+            self._phi_cached = self.get_phi()
             self._phi_synchronization = self._synchronizations_processed
-        return self._phi
+        return self._phi_cached
 
     # ========== SETTERS ==========
     @num_processors.setter
@@ -231,7 +232,7 @@ class ARTM(object):
           dictionary_path (str): full file name of the dictionary, default=None
         """
         if dictionary_path is not None and dictionary_name is not None:
-            self.master.import_dictionary(file_name=dictionary_path,
+            self.master.import_dictionary(filename=dictionary_path,
                                           dictionary_name=dictionary_name)
         elif dictionary_path is None:
             raise IOError('dictionary_path is None')
@@ -275,11 +276,11 @@ class ARTM(object):
             raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            dictionary_name = bu.DICTIONARY_NAME + str(uuid.uuid4())
+            dictionary_name = DICTIONARY_NAME + str(uuid.uuid4())
             self.master.import_dictionary(
                 self,
                 dictionary_name=dictionary_name,
-                file_name=os.path.join(batch_vectorizer.data_path, bu.DICTIONARY_NAME))
+                filename=os.path.join(batch_vectorizer.data_path, DICTIONARY_NAME))
 
             self.initialize(dictionary_name=dictionary_name)
             self.remove_dictionary(dictionary_name)
@@ -293,7 +294,7 @@ class ARTM(object):
                 phi_reg_name.append(name)
                 phi_reg_tau.append(config.tau)
 
-        batches_list = [batch.__str__() for batch in batch_vectorizer.batches_list]
+        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         for _ in xrange(num_collection_passes):
             self.master.process_batches(pwt=self.model,
                                         batches=batches_list,
@@ -358,11 +359,11 @@ class ARTM(object):
             raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            dictionary_name = bu.DICTIONARY_NAME + str(uuid.uuid4())
+            dictionary_name = DICTIONARY_NAME + str(uuid.uuid4())
             self.master.import_dictionary(
                 self,
                 dictionary_name=dictionary_name,
-                file_name=os.path.join(batch_vectorizer.data_path, bu.DICTIONARY_NAME))
+                filename=os.path.join(batch_vectorizer.data_path, DICTIONARY_NAME))
 
             self.initialize(dictionary_name=dictionary_name)
             self.remove_dictionary(dictionary_name)
@@ -376,7 +377,7 @@ class ARTM(object):
                 phi_reg_name.append(name)
                 phi_reg_tau.append(config.tau)
 
-        batches_list = [batch.__str__() for batch in batch_vectorizer.batches_list]
+        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         batches_to_process = []
         cur_processed_docs = 0
         for batch_idx, batch_filename in enumerate(batches_list):
@@ -427,33 +428,33 @@ class ARTM(object):
 
                     self.score_tracker[name].add(self.scores[name])
 
-    def save(self, file_name='artm_model'):
+    def save(self, filename='artm_model'):
         """ARTM.save() --- save the topic model to disk
 
         Args:
-          file_name (str): the name of file to store model, default='artm_model'
+          filename (str): the name of file to store model, default='artm_model'
         """
         if not self._initialized:
             raise RuntimeError("Model does not exist yet. Use " +
                                "ARTM.initialize()/ARTM.fit_*()")
 
-        if os.path.isfile(file_name):
-            os.remove(file_name)
-        self.master.export_model(self.model, file_name)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        self.master.export_model(self.model, filename)
 
-    def load(self, file_name):
+    def load(self, filename):
         """ARTM.load() --- load the topic model,
         saved by ARTM.save(), from disk
 
         Args:
-          file_name (str) --- the name of file containing model, no default
+          filename (str) --- the name of file containing model, no default
 
         Note:
           Loaded model will overwrite ARTM.topic_names and
           ARTM.num_topics fields. Also it will empty
           ARTM.score_tracker.
         """
-        self.master.import_model(self.model, file_name)
+        self.master.import_model(self.model, filename)
         self._initialized = True
         topic_model = self.master.get_phi_info(model=self.model)
         self._topic_names = [topic_name for topic_name in topic_model.topic_name]
@@ -555,7 +556,7 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        batches_list = [batch.__str__() for batch in batch_vectorizer.batches_list]
+        batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         theta_info, nd_array = self.master.process_batches(
                                     pwt=self.model,
                                     batches=batches_list,

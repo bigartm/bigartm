@@ -2,18 +2,22 @@ import os
 import glob
 
 from . import wrapper
-from wrapper import constants
+from wrapper import constants as const
 from wrapper import messages_pb2 as messages
 
 DICTIONARY_NAME = 'dictionary'
 
 
 class Batch(object):
-    def __init__(self, file_name):
-        self._file_name = file_name
+    def __init__(self, filename):
+        self._filename = os.path.abspath(filename)
 
-    def __str__(self):
-        return self._file_name
+    def __repr__(self):
+        return 'Batch({0})'.format(self._filename)
+
+    @property
+    def filename(self):
+        return self._filename
 
 
 class BatchVectorizer(object):
@@ -48,8 +52,8 @@ class BatchVectorizer(object):
         self._batches_list = []
         if data_format == 'batches':
             if batches is None:
-                batch_str = glob.glob(os.path.join(data_path, '*.batch'))
-                self._batches_list = [Batch(batch) for batch in batch_str]
+                batch_filenames = glob.glob(os.path.join(data_path, '*.batch'))
+                self._batches_list = [Batch(filename) for filename in batch_filenames]
                 if len(self._batches_list) < 1:
                     raise RuntimeError('No batches were found')
             else:
@@ -59,21 +63,21 @@ class BatchVectorizer(object):
             parser_config = messages.CollectionParserConfig()
             parser_config.num_items_per_batch = batch_size
             if data_format == 'bow_uci':
-                parser_config.docword_file_path =\
-                    os.path.join(data_path, 'docword.' + collection_name + '.txt')
-                parser_config.vocab_file_path =\
-                    os.path.join(data_path, 'vocab.' + collection_name + '.txt')
-                parser_config.format = constants.CollectionParserConfig_Format_BagOfWordsUci
+                parser_config.docword_file_path = os.path.join(
+                    data_path, 'docword.{0}.txt'.format(collection_name))
+                parser_config.vocab_file_path = os.path.join(
+                    data_path, 'vocab.{0}.txt'.format(collection_name))
+                parser_config.format = const.CollectionParserConfig_Format_BagOfWordsUci
             elif data_format == 'vowpal_wabbit':
                 parser_config.docword_file_path = data_path
-                parser_config.format = constants.CollectionParserConfig_Format_VowpalWabbit
+                parser_config.format = const.CollectionParserConfig_Format_VowpalWabbit
             parser_config.target_folder = target_folder
             parser_config.dictionary_file_name = dictionary_name
 
             lib = wrapper.LibArtm()
             lib.ArtmParseCollection(parser_config)
-            batch_str = glob.glob(os.path.join(target_folder, '*.batch'))
-            self._batches_list = [Batch(batch) for batch in batch_str]
+            batch_filenames = glob.glob(os.path.join(target_folder, '*.batch'))
+            self._batches_list = [Batch(filename) for filename in batch_filenames]
 
         elif data_format == 'plain_text':
             raise NotImplementedError()

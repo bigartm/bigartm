@@ -2,7 +2,7 @@ import uuid
 import random
 
 from wrapper import messages_pb2 as messages
-from wrapper import constants
+from wrapper import constants as const
 
 
 __all__ = [
@@ -72,7 +72,12 @@ class Regularizers(object):
 
 
 class BaseRegularizer(object):
+
+    _config_message = None
+
     def __init__(self, name, tau, topic_names):
+        if self._config_message is None:
+            raise NotImplementedError()
         config = self._config_message()
 
         if name is None:
@@ -192,7 +197,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
     """
 
     _config_message = messages.SmoothSparsePhiConfig
-    _type = constants.RegularizerConfig_Type_SmoothSparsePhi
+    _type = const.RegularizerConfig_Type_SmoothSparsePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
@@ -218,7 +223,7 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
     """
 
     _config_message = messages.SmoothSparseThetaConfig
-    _type = constants.RegularizerConfig_Type_SmoothSparseTheta
+    _type = const.RegularizerConfig_Type_SmoothSparseTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None):
         BaseRegularizerTheta.__init__(self,
@@ -241,7 +246,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
     """
 
     _config_message = messages.DecorrelatorPhiConfig
-    _type = constants.RegularizerConfig_Type_DecorrelatorPhi
+    _type = const.RegularizerConfig_Type_DecorrelatorPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None):
         BaseRegularizerPhi.__init__(self,
@@ -275,7 +280,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
     """
 
     _config_message = messages.LabelRegularizationPhiConfig
-    _type = constants.RegularizerConfig_Type_LabelRegularizationPhi
+    _type = const.RegularizerConfig_Type_LabelRegularizationPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):
@@ -305,7 +310,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
     """
 
     _config_message = messages.SpecifiedSparsePhiConfig
-    _type = constants.RegularizerConfig_Type_SpecifiedSparsePhi
+    _type = const.RegularizerConfig_Type_SpecifiedSparsePhi
 
     def __init__(self, name=None, tau=1.0, topic_names=None, class_id=None,
                  num_max_elements=None, probability_threshold=None, sparse_by_columns=True):
@@ -334,10 +339,10 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         self._sparse_by_columns = True
         if sparse_by_columns is not None:
             if sparse_by_columns is True:
-                self._config.mode = lib.SpecifiedSparsePhiConfig_Mode_SparseTopics
+                self._config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTopics
                 self._sparse_by_columns = True
             else:
-                self._config.mode = lib.SpecifiedSparsePhiConfig_Mode_SparseTokens
+                self._config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTokens
                 self._sparse_by_columns = False
 
     @property
@@ -382,9 +387,9 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         config = messages.SpecifiedSparseRegularizationPhiConfig()
         config.CopyFrom(self._config)
         if sparse_by_columns is True:
-            config.mode = lib.SpecifiedSparsePhiConfig_Mode_SparseTopics
+            config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTopics
         else:
-            config.mode = lib.SpecifiedSparsePhiConfig_Mode_SparseTokens
+            config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTokens
         self.regularizer.Reconfigure(self.regularizer.config_.type, config)
 
     @class_ids.setter
@@ -411,7 +416,7 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
     """
 
     _config_message = messages.ImproveCoherencePhiConfig
-    _type = constants.RegularizerConfig_Type_ImproveCoherencePhi
+    _type = const.RegularizerConfig_Type_ImproveCoherencePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None):

@@ -59,14 +59,14 @@ class MasterComponent(object):
         self._config = config
         self._lib.ArtmReconfigureMasterComponent(self.master_id, master_config)
 
-    def import_dictionary(self, file_name, dictionary_name):
+    def import_dictionary(self, filename, dictionary_name):
         """Args:
-           - file_name(str): full name of dictionary file
+           - filename(str): full name of dictionary file
            - dictionary_name(str): name of imported dictionary
         """
         args = messages.ImportDictionaryArgs()
         args.dictionary_name = dictionary_name
-        args.file_name = file_name
+        args.file_name = filename
 
         self._lib.ArtmImportDictionary(self.master_id, args)
 
@@ -489,20 +489,20 @@ class MasterComponent(object):
 
         return numpy_ndarray
 
-    def export_model(self, model, file_name):
+    def export_model(self, model, filename):
         args = messages.ExportModelArgs()
         args.model_name = model
-        args.file_name = file_name
+        args.file_name = filename
 
         result = self._lib.ArtmExportModel(self.master_id, args)
 
-    def import_model(self, model, file_name):
+    def import_model(self, model, filename):
         """Args:
            - model(str): name of matrix in BigARTM
-           - file_name(str): the name of file to load model from binary format
+           - filename(str): the name of file to load model from binary format
         """
         args = messages.ImportModelArgs()
         args.model_name = model
-        args.file_name = file_name
+        args.file_name = filename
 
         result = self._lib.ArtmImportModel(self.master_id, args)
