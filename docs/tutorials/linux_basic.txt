@@ -48,7 +48,7 @@ We recommend to use 'protobuf 2.5.1-pre', included in bigartm/3rdparty.
 .. code-block:: bash
 
    # Step 1 - add BigARTM python bindings to PYTHONPATH
-   export PYTHONPATH=~/bigartm/src/python:$PYTHONPATH
+   export PYTHONPATH=~/bigartm/python:$PYTHONPATH
 
    # Step 2 - install google protobuf
    cd ~/bigartm
@@ -61,14 +61,14 @@ We recommend to use 'protobuf 2.5.1-pre', included in bigartm/3rdparty.
    export ARTM_SHARED_LIBRARY=~/bigartm/build/src/artm/libartm.so        # for linux
    export ARTM_SHARED_LIBRARY=~/bigartm/build/src/artm/libartm.dylib     # for Mac OS X
 
-At this point you may run examples under ``~/bigartm/src/python/examples``.
+At this point you may run examples under ``~/bigartm/python/examples``.
 
 Troubleshooting
 ---------------
 
 .. code-block:: bash
 
-   ubuntu@192.168.0.1:~/bigartm/src/python/examples$ python example01_synthetic_collection.py
+   ubuntu@192.168.0.1:~/bigartm/python/examples$ python example01_synthetic_collection.py
    Traceback (most recent call last):
      File "example01_synthetic_collection.py", line 6, in <module>
        import artm.messages_pb2, artm.library, random, uuid
@@ -79,29 +79,29 @@ Please verify if you executed ``Step #1`` in the instructions above.
 
 .. code-block:: bash
 
-   ubuntu@192.168.0.1:~/bigartm/src/python/examples$ python example01_synthetic_collection.py
+   ubuntu@192.168.0.1:~/bigartm/python/examples$ python example01_synthetic_collection.py
    Traceback (most recent call last):
      File "example01_synthetic_collection.py", line 6, in <module>
        import artm.messages_pb2, artm.library, random, uuid
-     File "/home/ubuntu/bigartm/src/python/artm/messages_pb2.py", line 4, in <module>
+     File "/home/ubuntu/bigartm/python/messages_pb2.py", line 4, in <module>
        from google.protobuf import descriptor as _descriptor
    ImportError: No module named google.protobuf
 
 This error indicated that python is unable to locate protobuf library.
 Please verify if you executed ``Step #2`` in the instructions above.
 If you do not have permissions to execute ``sudo python setup.py install`` step, you may also try to update PYTHONPATH manually:
-``PYTHONPATH="/home/ubuntu/bigartm/3rdparty/protobuf/python:/home/ubuntu/bigartm/src/python:$PYTHONPATH"``.
+``PYTHONPATH="/home/ubuntu/bigartm/3rdparty/protobuf/python:/home/ubuntu/bigartm/python:$PYTHONPATH"``.
 
 .. code-block:: bash
 
-   ubuntu@192.168.0.1:~/bigartm/src/python/examples$ python example01_synthetic_collection.py
+   ubuntu@192.168.0.1:~/bigartm/python/examples$ python example01_synthetic_collection.py
    libartm.so: cannot open shared object file: No such file or directory, fall back to ARTM_SHARED_LIBRARY environment variable
    Traceback (most recent call last):
      File "example01_synthetic_collection.py", line 27, in <module>
        with artm.library.MasterComponent() as master:
-     File "/home/ubuntu/bigartm/src/python/artm/library.py", line 179, in __init__
+     File "/home/ubuntu/bigartm/python/artm/library.py", line 179, in __init__
        lib = Library().lib_
-     File "/home/ubuntu/bigartm/src/python/artm/library.py", line 107, in __init__
+     File "/home/ubuntu/bigartm/python/artm/library.py", line 107, in __init__
        self.lib_ = ctypes.CDLL(os.environ['ARTM_SHARED_LIBRARY'])
      File "/usr/lib/python2.7/UserDict.py", line 23, in __getitem__
        raise KeyError(key)

@@ -2,7 +2,7 @@ Enabling Basic BigARTM Regularizers
 ===================================
 
 This paper describes the experiment with topic model regularization in BigARTM library using 
-`experiment02_artm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/experiments/experiment02_artm.py>`_.
+`experiment02_artm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/experiments/experiment02_artm.py>`_.
 The script provides the possibility to learn topic model with three regularizers
 (sparsing Phi, sparsing Theta and pairwise topic decorrelation in Phi).
 It also allows the monitoring of learning process by using quality measures as hold-out perplexity,
