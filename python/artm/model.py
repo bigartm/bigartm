@@ -187,8 +187,7 @@ class ARTM(object):
     @num_document_passes.setter
     def num_document_passes(self, num_document_passes):
         if num_document_passes <= 0 or not isinstance(num_document_passes, int):
-            raise IOError("Number of passes through documents" +
-                          "should be a positive integer")
+            raise IOError('Number of passes through documents should be a positive integer')
         else:
             self._num_document_passes = num_document_passes
 
@@ -276,7 +275,7 @@ class ARTM(object):
             raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            dictionary_name = DICTIONARY_NAME + str(uuid.uuid4())
+            dictionary_name = '{0}:{1}'.format(DICTIONARY_NAME, str(uuid.uuid4()))
             self.master.import_dictionary(
                 self,
                 dictionary_name=dictionary_name,
@@ -359,7 +358,7 @@ class ARTM(object):
             raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            dictionary_name = DICTIONARY_NAME + str(uuid.uuid4())
+            dictionary_name = '{0}:{1}'.format(DICTIONARY_NAME, str(uuid.uuid4()))
             self.master.import_dictionary(
                 self,
                 dictionary_name=dictionary_name,
@@ -435,8 +434,7 @@ class ARTM(object):
           filename (str): the name of file to store model, default='artm_model'
         """
         if not self._initialized:
-            raise RuntimeError("Model does not exist yet. Use " +
-                               "ARTM.initialize()/ARTM.fit_*()")
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
         if os.path.isfile(filename):
             os.remove(filename)
@@ -482,8 +480,7 @@ class ARTM(object):
           3) data --- content of Phi matrix
         """
         if not self._initialized:
-            raise RuntimeError("Model does not exist yet. Use " +
-                               "ARTM.initialize()/ARTM.fit_*()")
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
         phi_info = self.master.get_phi_info(model=self.model)
         nd_array = self.master.get_phi_matrix(model=self.model,
@@ -519,8 +516,7 @@ class ARTM(object):
         if self.cache_theta is False:
             raise ValueError('cache_theta == False. Set ARTM.cache_theta = True')
         if not self._initialized:
-            raise RuntimeError("Model does not exist yet. Use " +
-                               "ARTM.initialize()/ARTM.fit_*()")
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
         theta_info = self.master.get_theta_info(model=self.model)
 

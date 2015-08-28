@@ -20,7 +20,7 @@ __all__ = [
 def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     if proto_field_name is None:
         proto_field_name = field_name
-    setattr(obj, '_' + field_name, field)
+    setattr(obj, '_{0}'.format(field_name), field)
 
     score_config = obj._config_message()
     score_config.CopyFrom(obj._config)
@@ -59,7 +59,7 @@ class Scores(object):
           score: an object of ***Scores class, no default
         """
         if score.name in self._data:
-            raise ValueError('Score with name ' + str(score.name) + ' is already exist')
+            raise ValueError('Score with name {0} is already exist'.format(score.name))
         else:
             self._master.create_score(score.name, score.type, score.config)
             score._model = self._model
@@ -75,7 +75,7 @@ class Scores(object):
         if name in self._data:
             return self._data[name]
         else:
-            raise KeyError('No score with name ' + name)
+            raise KeyError('No score with name {0}'.format(name))
 
     @property
     def data(self):
@@ -92,7 +92,7 @@ class BaseScore(object):
         config = self._config_message()
 
         if name is None:
-            name = str(self._type) + uuid.uuid1().urn
+            name = '{0}:{1}'.format(self._type, uuid.uuid1().urn)
 
         self._class_id = '@default_class'
         if class_id is not None:
