@@ -18,7 +18,7 @@ __all__ = [
 def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     if proto_field_name is None:
         proto_field_name = field_name
-    setattr(obj, '_' + field_name, field)
+    setattr(obj, '_{0}'.format(field_name), field)
 
     config = obj._config_message()
     config.CopyFrom(obj._config)
@@ -49,7 +49,7 @@ class Regularizers(object):
           regularizer: an object of ***Regularizer class, no default
         """
         if regularizer.name in self._data:
-            raise ValueError('Regularizer with name ' + str(regularizer.name) + ' is already exist')
+            raise ValueError('Regularizer with name {0} is already exist'.format(regularizer.name))
         else:
             self._master.create_regularizer(regularizer.name, regularizer.type, regularizer.config)
             regularizer._master = self._master
@@ -64,7 +64,7 @@ class Regularizers(object):
         if name in self._data:
             return self._data[name]
         else:
-            raise KeyError('No regularizer with name ' + name)
+            raise KeyError('No regularizer with name {0}'.format(name))
 
     @property
     def data(self):
@@ -81,7 +81,7 @@ class BaseRegularizer(object):
         config = self._config_message()
 
         if name is None:
-            name = str(self._type) + ': ' + uuid.uuid1().urn
+            name = '{0}:{1}'.format(self._type, uuid.uuid1().urn)
 
         self._topic_names = []
         if topic_names is not None:
