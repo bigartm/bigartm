@@ -10,7 +10,7 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
-import helpers
+import artm.master_component as mc
 
 def _print_top_tokens(top_tokens_score, expected_values_topic, tolerance):
     top_tokens_triplets = zip(top_tokens_score.topic_index,
@@ -149,9 +149,8 @@ def test_func():
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
 
         # Save batch and dictionary on the disk
         lib.ArtmSaveBatch(batches_folder, batch)
@@ -165,26 +164,27 @@ def test_func():
                   ('SparsityPhiEng', messages.SparsityPhiScoreConfig(class_id = english_class)),
                   ('TopTokensRus', messages.TopTokensScoreConfig(class_id=russian_class)),
                   ('TopTokensEng', messages.TopTokensScoreConfig(class_id = english_class))]
-        helper.master_id = helper.create_master_component(scores=scores)
+        master = mc.MasterComponent(lib, scores=scores)
 
         # Import the collection dictionary
-        helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
+        master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
         # Initialize model
-        helper.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
+        master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
-            helper.process_batches(pwt, nwt, num_inner_iterations, batches_folder,
+            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder,
                                    class_ids=[russian_class, english_class],
-                                   class_weights=[russian_class_weight, english_class_weight])
-            helper.normalize_model(pwt, nwt)    
+                                   class_weights=[russian_class_weight, english_class_weight],
+                                   reset_scores=True)
+            master.normalize_model(pwt, nwt)    
 
         # Retrieve and print scores
-        top_tokens_rus = helper.retrieve_score(pwt, 'TopTokensRus')
-        top_tokens_eng = helper.retrieve_score(pwt, 'TopTokensEng')
-        sp_phi_rus = helper.retrieve_score(pwt, 'SparsityPhiRus')
-        sp_phi_eng = helper.retrieve_score(pwt, 'SparsityPhiEng')
+        top_tokens_rus = master.retrieve_score(pwt, 'TopTokensRus')
+        top_tokens_eng = master.retrieve_score(pwt, 'TopTokensEng')
+        sp_phi_rus = master.retrieve_score(pwt, 'SparsityPhiRus')
+        sp_phi_eng = master.retrieve_score(pwt, 'SparsityPhiEng')
 
         print 'Top tokens per russian topic:'
         _print_top_tokens(top_tokens_rus, expected_values_rus_topic, tolerance)

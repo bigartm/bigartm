@@ -6,7 +6,7 @@ import pytest
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
-import helpers
+import artm.master_component as mc
 
 def test_func():
     # Set some constants
@@ -55,35 +55,32 @@ def test_func():
                 target_topics = num_topics if (token_id < 40) and ((token_id % 10) == (item_id % 10)) else 0
                 field.token_count.append(background_count + target_topics)
 
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
 
         # Save batch on the disk
         lib.ArtmSaveBatch(batches_folder, batch)
 
         # Create master component and scores
-        config = messages.TopTokensScoreConfig()
-        config.num_tokens = num_top_tokens
         scores = [('PerplexityScore', messages.PerplexityScoreConfig()),
-                  ('TopTokensScore', config)]
-        helper.master_id = helper.create_master_component(scores=scores)
+                  ('TopTokensScore', messages.TopTokensScoreConfig(num_tokens = num_top_tokens))]
+        master = mc.MasterComponent(lib, scores=scores)
 
         # Initialize model
-        helper.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)
+        master.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi
-            helper.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
-            helper.normalize_model(pwt, nwt)
+            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder, reset_scores=True)
+            master.normalize_model(pwt, nwt)
 
             # Retrieve and print perplexity score
-            perplexity_score = helper.retrieve_score(pwt, 'PerplexityScore')
+            perplexity_score = master.retrieve_score(pwt, 'PerplexityScore')
             assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < perplexity_tol
             print 'Iteration#{0} : Perplexity = {1:.3f}'.format(iter, perplexity_score.value)
 
         # Retrieve and print top tokens score
-        top_tokens_score = helper.retrieve_score(pwt, 'TopTokensScore')
+        top_tokens_score = master.retrieve_score(pwt, 'TopTokensScore')
 
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))

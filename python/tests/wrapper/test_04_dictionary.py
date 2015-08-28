@@ -6,7 +6,7 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
-import helpers
+import artm.master_component as mc
 
 def test_func():
     # Set some constants
@@ -58,15 +58,15 @@ def test_func():
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
-        helper.parse_collection_uci(os.path.join(os.getcwd(), docword),
-                                    os.path.join(os.getcwd(), vocab),
-                                    batches_folder,
-                                    dictionary_name)
+        lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
+                                 'docword_file_path': os.path.join(os.getcwd(), docword),
+                                 'vocab_file_path': os.path.join(os.getcwd(), vocab),
+                                 'target_folder': batches_folder,
+                                 'dictionary_file_name': dictionary_name})
 
         # Create master component and scores
         perplexity_config = messages.PerplexityScoreConfig()
@@ -75,32 +75,33 @@ def test_func():
         
         scores = [('PerplexityDoc', messages.PerplexityScoreConfig()),
                   ('PerplexityCol', perplexity_config)]
-        helper.master_id = helper.create_master_component(scores=scores)
+        master = mc.MasterComponent(lib, scores=scores)
 
         # Import the collection dictionary
-        helper.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
+        master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
 
         # Configure basic regularizers
-        helper.create_smooth_sparse_phi_regularizer('SmoothSparsePhi', dictionary_name=dictionary_name)
-        helper.create_smooth_sparse_theta_regularizer('SmoothSparseTheta')
+        master.create_smooth_sparse_phi_regularizer(name='SmoothSparsePhi', dictionary_name=dictionary_name)
+        master.create_smooth_sparse_theta_regularizer(name='SmoothSparseTheta')
 
         # Initialize model
-        helper.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
+        master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
-            helper.process_batches(pwt=pwt,
+            master.process_batches(pwt=pwt,
                                    nwt=nwt,
                                    num_inner_iterations=num_inner_iterations,
                                    batches_folder=batches_folder,
                                    regularizer_name=['SmoothSparseTheta'],
-                                   regularizer_tau=[smsp_theta_tau])
-            helper.regularize_model(pwt, nwt, rwt, ['SmoothSparsePhi'], [smsp_phi_tau])
-            helper.normalize_model(pwt, nwt, rwt)  
+                                   regularizer_tau=[smsp_theta_tau],
+                                   reset_scores=True)
+            master.regularize_model(pwt, nwt, rwt, ['SmoothSparsePhi'], [smsp_phi_tau])
+            master.normalize_model(pwt, nwt, rwt)  
 
             # Retrieve perplexity score
-            perplexity_doc_score = helper.retrieve_score(pwt, 'PerplexityDoc')
-            perplexity_col_score = helper.retrieve_score(pwt, 'PerplexityCol')
+            perplexity_doc_score = master.retrieve_score(pwt, 'PerplexityDoc')
+            perplexity_col_score = master.retrieve_score(pwt, 'PerplexityCol')
 
             # Assert and print scores
             string = 'Iter#{0}'.format(iter)

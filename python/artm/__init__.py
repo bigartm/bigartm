@@ -1,18 +1,5 @@
-from artm_model import (
-    ArtmModel,
-
-    DecorrelatorPhiRegularizer,
-    ImproveCoherencePhiRegularizer,
-    LabelRegularizationPhiRegularizer,
-    SmoothSparsePhiRegularizer,
-    SmoothSparseThetaRegularizer,
-    SpecifiedSparsePhiRegularizer,
-
-    SparsityPhiScore,
-    ItemsProcessedScore,
-    PerplexityScore,
-    SparsityThetaScore,
-    ThetaSnippetScore,
-    TopicKernelScore,
-    TopTokensScore,
-)
+from model import ARTM
+from regularizers import *
+from scores import *
+from batches_utils import *
+from master_component import MasterComponent

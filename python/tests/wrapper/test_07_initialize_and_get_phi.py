@@ -7,7 +7,7 @@ import pytest
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
-import helpers
+import artm.master_component as mc
 
 def test_func():
     # Set some constants
@@ -21,18 +21,18 @@ def test_func():
 
     batches_folder = tempfile.mkdtemp()
     try:
-        # Create the instance of low-level API and helper object
+        # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        helper = helpers.TestHelper(lib)
         
         # Parse collection from disk
-        helper.parse_collection_uci(os.path.join(os.getcwd(), docword),
-                                    os.path.join(os.getcwd(), vocab),
-                                    batches_folder,
-                                    dictionary_name)
+        lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
+                                 'docword_file_path': os.path.join(os.getcwd(), docword),
+                                 'vocab_file_path': os.path.join(os.getcwd(), vocab),
+                                 'target_folder': batches_folder,
+                                 'dictionary_file_name': dictionary_name})
 
         # Create master component
-        helper.master_id = helper.create_master_component()
+        master = mc.MasterComponent(lib)
 
         init_args = messages.InitializeModelArgs()
         init_args.model_name = pwt
@@ -54,11 +54,11 @@ def test_func():
         # init_filter.min_one_item_count = 5  # use tokens only if they are present 5 or more times in a single item
 
         # Initialize topic model
-        helper.initialize_model(args=init_args)
+        master.initialize_model(args=init_args)
 
         # Extract topic model and print extracted data
-        info = helper.get_phi_info(model=pwt)
-        matrix = helper.get_phi_matrix(model=pwt)
+        info = master.get_phi_info(model=pwt)
+        matrix = master.get_phi_matrix(model=pwt)
         assert len(info.token) == num_tokens
         assert numpy.count_nonzero(matrix) == matrix.size
         print 'Number of tokens in Phi matrix = {0}'.format(len(info.token))
