@@ -487,8 +487,10 @@ class ARTM(object):
                                               topic_names=topic_names,
                                               class_ids=class_ids)
 
-        tokens = [token for token in phi_info.token]
-        topic_names = [topic_name for topic_name in phi_info.topic_name]
+        tokens = [token for token, class_id in zip(phi_info.token, phi_info.class_id)
+                  if class_ids is None or class_id in class_ids]
+        topic_names = [topic_name for topic_name in phi_info.topic_name
+                       if topic_names is None or topic_name in topic_names]
         phi_data_frame = DataFrame(data=nd_array,
                                    columns=topic_names,
                                    index=tokens)
