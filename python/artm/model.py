@@ -293,6 +293,11 @@ class ARTM(object):
                 phi_reg_name.append(name)
                 phi_reg_tau.append(config.tau)
 
+        class_ids, class_weights = [], []
+        for class_id, class_weight in self._class_ids.iteritems():
+            class_ids.append(class_id)
+            class_weights.append(class_weight)
+
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         for _ in xrange(num_collection_passes):
             self.master.process_batches(pwt=self.model,
@@ -301,7 +306,8 @@ class ARTM(object):
                                         regularizer_name=theta_reg_name,
                                         regularizer_tau=theta_reg_tau,
                                         num_inner_iterations=self._num_document_passes,
-                                        class_ids=self._class_ids,
+                                        class_ids=class_ids,
+                                        class_weights=class_weights,
                                         reset_scores=reset_theta_scores)
             self._synchronizations_processed += 1
             if self._synchronizations_processed == 1:
@@ -376,6 +382,11 @@ class ARTM(object):
                 phi_reg_name.append(name)
                 phi_reg_tau.append(config.tau)
 
+        class_ids, class_weights = [], []
+        for class_id, class_weight in self._class_ids.iteritems():
+            class_ids.append(class_id)
+            class_weights.append(class_weight)
+
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         batches_to_process = []
         cur_processed_docs = 0
@@ -388,7 +399,8 @@ class ARTM(object):
                                             regularizer_name=theta_reg_name,
                                             regularizer_tau=theta_reg_tau,
                                             num_inner_iterations=self._num_document_passes,
-                                            class_ids=self._class_ids,
+                                            class_ids=class_ids,
+                                            class_weights=class_weights,
                                             reset_scores=reset_theta_scores)
 
                 cur_processed_docs += batch_vectorizer.batch_size * update_every
@@ -487,8 +499,10 @@ class ARTM(object):
                                               topic_names=topic_names,
                                               class_ids=class_ids)
 
-        tokens = [token for token in phi_info.token]
-        topic_names = [topic_name for topic_name in phi_info.topic_name]
+        tokens = [token for token, class_id in zip(phi_info.token, phi_info.class_id)
+                  if class_ids is None or class_id in class_ids]
+        topic_names = [topic_name for topic_name in phi_info.topic_name
+                       if topic_names is None or topic_name in topic_names]
         phi_data_frame = DataFrame(data=nd_array,
                                    columns=topic_names,
                                    index=tokens)
@@ -552,13 +566,19 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
+        class_ids, class_weights = [], []
+        for class_id, class_weight in self._class_ids.iteritems():
+            class_ids.append(class_id)
+            class_weights.append(class_weight)
+
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         theta_info, nd_array = self.master.process_batches(
                                     pwt=self.model,
                                     batches=batches_list,
                                     nwt='nwt_hat',
                                     num_inner_iterations=self._num_document_passes,
-                                    class_ids=self._class_ids,
+                                    class_ids=class_ids,
+                                    class_weights=class_weights,
                                     find_theta=True)
 
         document_ids = [item_id for item_id in theta_info.item_id]
