@@ -53,6 +53,7 @@ extern "C" {
 
   DLL_PUBLIC int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args);
   DLL_PUBLIC int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* process_batches_args);
+  DLL_PUBLIC int ArtmAsyncRequestProcessBatches(int master_id, int length, const char* process_batches_args);
   DLL_PUBLIC int ArtmMergeModel(int master_id, int length, const char* merge_model_args);
   DLL_PUBLIC int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args);
   DLL_PUBLIC int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args);
@@ -69,6 +70,8 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int ArtmCopyRequestResult(int length, char* address);
   DLL_PUBLIC int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args);
+
+  DLL_PUBLIC int ArtmAwaitOperation(int operation_id, int length, const char* await_operation_args);
 
   DLL_PUBLIC int ArtmSaveBatch(const char* disk_path, int length, const char* batch);
   DLL_PUBLIC const char* ArtmGetLastErrorMessage();

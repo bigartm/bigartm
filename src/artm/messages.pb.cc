@@ -270,6 +270,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* DisposeBatchesArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   DisposeBatchesArgs_reflection_ = NULL;
+const ::google::protobuf::Descriptor* AwaitOperationArgs_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  AwaitOperationArgs_reflection_ = NULL;
 
 }  // namespace
 
@@ -1709,6 +1712,21 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DisposeBatchesArgs));
+  AwaitOperationArgs_descriptor_ = file->message_type(70);
+  static const int AwaitOperationArgs_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AwaitOperationArgs, timeout_milliseconds_),
+  };
+  AwaitOperationArgs_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      AwaitOperationArgs_descriptor_,
+      AwaitOperationArgs::default_instance_,
+      AwaitOperationArgs_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AwaitOperationArgs, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AwaitOperationArgs, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(AwaitOperationArgs));
 }
 
 namespace {
@@ -1877,6 +1895,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     ImportBatchesArgs_descriptor_, &ImportBatchesArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     DisposeBatchesArgs_descriptor_, &DisposeBatchesArgs::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    AwaitOperationArgs_descriptor_, &AwaitOperationArgs::default_instance());
 }
 
 }  // namespace
@@ -2059,6 +2079,8 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete ImportBatchesArgs_reflection_;
   delete DisposeBatchesArgs::default_instance_;
   delete DisposeBatchesArgs_reflection_;
+  delete AwaitOperationArgs::default_instance_;
+  delete AwaitOperationArgs_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fmessages_2eproto() {
@@ -2358,7 +2380,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "_size\030\002 \001(\005\"C\n\021ImportBatchesArgs\022\022\n\nbatc"
     "h_name\030\001 \003(\t\022\032\n\005batch\030\003 \003(\0132\013.artm.Batch"
     "\"(\n\022DisposeBatchesArgs\022\022\n\nbatch_name\030\001 \003"
-    "(\t", 11602);
+    "(\t\"6\n\022AwaitOperationArgs\022 \n\024timeout_mill"
+    "iseconds\030\001 \001(\005:\002-1", 11658);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -2481,6 +2504,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   MasterComponentInfo_CacheEntryInfo::default_instance_ = new MasterComponentInfo_CacheEntryInfo();
   ImportBatchesArgs::default_instance_ = new ImportBatchesArgs();
   DisposeBatchesArgs::default_instance_ = new DisposeBatchesArgs();
+  AwaitOperationArgs::default_instance_ = new AwaitOperationArgs();
   DoubleArray::default_instance_->InitAsDefaultInstance();
   FloatArray::default_instance_->InitAsDefaultInstance();
   BoolArray::default_instance_->InitAsDefaultInstance();
@@ -2559,6 +2583,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   MasterComponentInfo_CacheEntryInfo::default_instance_->InitAsDefaultInstance();
   ImportBatchesArgs::default_instance_->InitAsDefaultInstance();
   DisposeBatchesArgs::default_instance_->InitAsDefaultInstance();
+  AwaitOperationArgs::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fmessages_2eproto);
 }
 
@@ -31044,6 +31069,214 @@ void DisposeBatchesArgs::Swap(DisposeBatchesArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = DisposeBatchesArgs_descriptor_;
   metadata.reflection = DisposeBatchesArgs_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int AwaitOperationArgs::kTimeoutMillisecondsFieldNumber;
+#endif  // !_MSC_VER
+
+AwaitOperationArgs::AwaitOperationArgs()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void AwaitOperationArgs::InitAsDefaultInstance() {
+}
+
+AwaitOperationArgs::AwaitOperationArgs(const AwaitOperationArgs& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void AwaitOperationArgs::SharedCtor() {
+  _cached_size_ = 0;
+  timeout_milliseconds_ = -1;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+AwaitOperationArgs::~AwaitOperationArgs() {
+  SharedDtor();
+}
+
+void AwaitOperationArgs::SharedDtor() {
+  if (this != default_instance_) {
+  }
+}
+
+void AwaitOperationArgs::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* AwaitOperationArgs::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return AwaitOperationArgs_descriptor_;
+}
+
+const AwaitOperationArgs& AwaitOperationArgs::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
+  return *default_instance_;
+}
+
+AwaitOperationArgs* AwaitOperationArgs::default_instance_ = NULL;
+
+AwaitOperationArgs* AwaitOperationArgs::New() const {
+  return new AwaitOperationArgs;
+}
+
+void AwaitOperationArgs::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    timeout_milliseconds_ = -1;
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool AwaitOperationArgs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional int32 timeout_milliseconds = 1 [default = -1];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &timeout_milliseconds_)));
+          set_has_timeout_milliseconds();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void AwaitOperationArgs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional int32 timeout_milliseconds = 1 [default = -1];
+  if (has_timeout_milliseconds()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->timeout_milliseconds(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* AwaitOperationArgs::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional int32 timeout_milliseconds = 1 [default = -1];
+  if (has_timeout_milliseconds()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->timeout_milliseconds(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int AwaitOperationArgs::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional int32 timeout_milliseconds = 1 [default = -1];
+    if (has_timeout_milliseconds()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->timeout_milliseconds());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void AwaitOperationArgs::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const AwaitOperationArgs* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const AwaitOperationArgs*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void AwaitOperationArgs::MergeFrom(const AwaitOperationArgs& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_timeout_milliseconds()) {
+      set_timeout_milliseconds(from.timeout_milliseconds());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void AwaitOperationArgs::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void AwaitOperationArgs::CopyFrom(const AwaitOperationArgs& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool AwaitOperationArgs::IsInitialized() const {
+
+  return true;
+}
+
+void AwaitOperationArgs::Swap(AwaitOperationArgs* other) {
+  if (other != this) {
+    std::swap(timeout_milliseconds_, other->timeout_milliseconds_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata AwaitOperationArgs::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = AwaitOperationArgs_descriptor_;
+  metadata.reflection = AwaitOperationArgs_reflection_;
   return metadata;
 }
 

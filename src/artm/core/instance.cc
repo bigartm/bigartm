@@ -17,7 +17,6 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/processor.h"
 #include "artm/core/merger.h"
-#include "artm/core/template_manager.h"
 #include "artm/core/topic_model.h"
 #include "artm/core/instance_schema.h"
 

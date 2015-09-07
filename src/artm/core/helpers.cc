@@ -857,6 +857,22 @@ std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token) {
   return GenerateRandomVector(size, h);
 }
 
+bool Helpers::Await(std::function<bool()> is_ready, int timeout_milliseconds) {
+  auto time_start = boost::posix_time::microsec_clock::local_time();
+  for (;;) {
+    if (is_ready())
+      return true;
+
+    boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
+    auto time_end = boost::posix_time::microsec_clock::local_time();
+    if (timeout_milliseconds >= 0) {
+      if ((time_end - time_start).total_milliseconds() >= timeout_milliseconds) return false;
+    }
+  }
+
+  return true;
+}
+
 // Return the filenames of all files that have the specified extension
 // in the specified directory.
 std::vector<std::string> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {

@@ -16,7 +16,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
-#include "artm/core/template_manager.h"
 #include "artm/core/thread_safe_holder.h"
 
 namespace artm {
@@ -33,8 +32,10 @@ class MasterComponent : boost::noncopyable {
  public:
   ~MasterComponent();
 
-  int id() const;
   std::shared_ptr<MasterComponentConfig> config() const;
+
+  explicit MasterComponent(const MasterComponentConfig& config);
+  std::shared_ptr<MasterComponent> Duplicate() const;
 
   // Retrieves topic model.
   // Returns true if succeeded, and false if model_name hasn't been found.
@@ -48,8 +49,7 @@ class MasterComponent : boost::noncopyable {
                     ScoreData* score_data);
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
-  void RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
-                             ProcessBatchesResult* process_batches_result);
+  ProcessBatchesResult RequestProcessBatches(const ProcessBatchesArgs& process_batches_args);
   void MergeModel(const MergeModelArgs& merge_model_args);
   void RegularizeModel(const RegularizeModelArgs& regularize_model_args);
   void NormalizeModel(const NormalizeModelArgs& normalize_model_args);
@@ -82,19 +82,11 @@ class MasterComponent : boost::noncopyable {
   bool AddBatch(const AddBatchArgs& args);
 
  private:
-  friend class TemplateManager<MasterComponent>;
-
-  // All master components must be created via TemplateManager.
-  MasterComponent(int id, const MasterComponentConfig& config);
-  MasterComponent(int id, const MasterComponent& rhs);
+  MasterComponent(const MasterComponent& rhs);
   MasterComponent& operator=(const MasterComponent&);
-
-  int master_id_;
 
   std::shared_ptr<Instance> instance_;
 };
-
-typedef TemplateManager<MasterComponent> MasterComponentManager;
 
 }  // namespace core
 }  // namespace artm

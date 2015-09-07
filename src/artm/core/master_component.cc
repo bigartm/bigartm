@@ -32,24 +32,18 @@
 namespace artm {
 namespace core {
 
-MasterComponent::MasterComponent(int id, const MasterComponentConfig& config)
-    : master_id_(id),
-      instance_(std::make_shared<Instance>(config)) {
-  LOG(INFO) << "Creating MasterComponent (id=" << master_id_ << ")...";
+MasterComponent::MasterComponent(const MasterComponentConfig& config)
+    : instance_(std::make_shared<Instance>(config)) {
 }
 
-MasterComponent::MasterComponent(int id, const MasterComponent& rhs)
-  : master_id_(id),
-    instance_(rhs.instance_->Duplicate()) {
-  LOG(INFO) << "Copying MasterComponent (id=" << rhs.id() << " to id=" << master_id_ << ")...";
+MasterComponent::MasterComponent(const MasterComponent& rhs)
+    : instance_(rhs.instance_->Duplicate()) {
 }
 
-MasterComponent::~MasterComponent() {
-  LOG(INFO) << "Disposing MasterComponent (id=" << master_id_ << ")...";
-}
+MasterComponent::~MasterComponent() {}
 
-int MasterComponent::id() const {
-  return master_id_;
+std::shared_ptr<MasterComponent> MasterComponent::Duplicate() const {
+  return std::shared_ptr<MasterComponent>(new MasterComponent(*this));
 }
 
 void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
@@ -271,12 +265,10 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
 
 void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
   std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
-  master_info->set_master_id(master_id_);
   this->instance_->RequestMasterComponentInfo(master_info);
 }
 
-void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
-                                            ProcessBatchesResult* process_batches_result) {
+ProcessBatchesResult MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args) {
   LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
   const MasterComponentConfig& config = schema->config();
@@ -378,12 +370,12 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
   }
 
-  process_batches_result->Clear();
+  ProcessBatchesResult process_batches_result;
   for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
     ScoreName score_name = config.score_config(score_index).name();
     ScoreData score_data;
     if (scores_merger->RequestScore(schema, model_name, score_name, &score_data))
-      process_batches_result->add_score_data()->Swap(&score_data);
+      process_batches_result.add_score_data()->Swap(&score_data);
   }
 
   GetThetaMatrixArgs get_theta_matrix_args;
@@ -400,7 +392,9 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   }
 
   if (args.has_theta_matrix_type())
-    cache_manager.RequestThetaMatrix(get_theta_matrix_args, process_batches_result->mutable_theta_matrix());
+    cache_manager.RequestThetaMatrix(get_theta_matrix_args, process_batches_result.mutable_theta_matrix());
+
+  return std::move(process_batches_result);
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {

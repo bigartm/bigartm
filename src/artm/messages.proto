@@ -719,3 +719,7 @@ message ImportBatchesArgs {
 message DisposeBatchesArgs {
   repeated string batch_name = 1;
 }
+
+message AwaitOperationArgs {
+  optional int32 timeout_milliseconds = 1 [default = -1];
+}
