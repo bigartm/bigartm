@@ -2,11 +2,12 @@
 
 #include "artm/c_interface.h"
 
+#include <chrono>
+#include <future>
 #include <string>
 #include <iostream>  // NOLINT
 
 #include "boost/thread/tss.hpp"
-#include "boost/thread/future.hpp"
 
 #include "glog/logging.h"
 
@@ -20,7 +21,7 @@
 #include "artm/core/collection_parser.h"
 
 typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterComponent>> MasterComponentManager;
-typedef artm::core::TemplateManager<boost::shared_future< ::artm::ProcessBatchesResult>> ProcessBatchesResultManager;
+typedef artm::core::TemplateManager<std::shared_future< ::artm::ProcessBatchesResult>> ProcessBatchesResultManager;
 
 // Never use the following variables explicitly (only through the corresponding methods).
 // It might be good idea to make them a private members of a new singleton class.
@@ -311,7 +312,7 @@ int ArtmAsyncRequestProcessBatches(int master_id, int length, const char* proces
     ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
     std::shared_ptr< ::artm::core::MasterComponent> master = master_component(master_id);
 
-    boost::shared_future<artm::ProcessBatchesResult> future = boost::move(boost::async([master, args]() {
+    std::shared_future<artm::ProcessBatchesResult> future = std::move(std::async([master, args]() {
         return master->RequestProcessBatches(args);
     }));
 
@@ -328,9 +329,13 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
     ParseFromArray(await_operation_args, length, &args);
 
     ProcessBatchesResultManager& manager = ProcessBatchesResultManager::singleton();
-    boost::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
+    std::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
 
-    if (!artm::core::Helpers::Await([&](){return future.is_ready(); }, args.timeout_milliseconds())) {
+    bool is_ready = artm::core::Helpers::Await(
+      [&](){return future.wait_for(std::chrono::seconds(0)) == std::future_status::ready; },
+      args.timeout_milliseconds());
+
+    if (!is_ready) {
       set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
       return ARTM_STILL_WORKING;
     }
