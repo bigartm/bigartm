@@ -305,7 +305,7 @@ int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* pro
   return ImplRequestProcessBatches(master_id, length, process_batches_args, /* external =*/ true);
 }
 
-int ArtmAsyncRequestProcessBatches(int master_id, int length, const char* process_batches_args) {
+int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batches_args) {
   try {
     artm::ProcessBatchesArgs args;
     ParseFromArray(process_batches_args, length, &args);
@@ -331,14 +331,23 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
     ProcessBatchesResultManager& manager = ProcessBatchesResultManager::singleton();
     std::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
 
-    bool is_ready = artm::core::Helpers::Await(
-      [&](){return future.wait_for(std::chrono::seconds(0)) == std::future_status::ready; },
-      args.timeout_milliseconds());
-
-    if (!is_ready) {
-      set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
-      return ARTM_STILL_WORKING;
+    if (args.timeout_milliseconds() >= 0) {
+      if (future.wait_for(std::chrono::milliseconds(args.timeout_milliseconds())) != std::future_status::ready) {
+        set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
+        return ARTM_STILL_WORKING;
+      }
+    } else {
+      future.wait();
     }
+
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmRequestOperationResult(int operation_id) {
+  try {
+    ProcessBatchesResultManager& manager = ProcessBatchesResultManager::singleton();
+    std::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
 
     future.get().SerializeToString(last_message());
     manager.Erase(operation_id);

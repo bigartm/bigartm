@@ -99,11 +99,11 @@ std::shared_ptr<ProcessBatchesResultObject> Future::Await(int timeout_millisecon
   args.set_timeout_milliseconds(timeout_milliseconds);
   std::string args_blob;
   args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmAwaitOperation(operation_id_, args_blob.size(), StringAsArray(&args_blob)));
-
-  if (length == ARTM_STILL_WORKING)
+  int code = HandleErrorCode(ArtmAwaitOperation(operation_id_, args_blob.size(), StringAsArray(&args_blob)));
+  if (code == ARTM_STILL_WORKING)
     return nullptr;
 
+  int length = HandleErrorCode(ArtmRequestOperationResult(operation_id_));
   std::string message_blob;
   message_blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&message_blob)));
@@ -586,7 +586,7 @@ std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(cons
 Future MasterComponent::AsyncProcessBatches(const ProcessBatchesArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
-  int operation_id = HandleErrorCode(ArtmAsyncRequestProcessBatches(id(), args_blob.size(), args_blob.c_str()));
+  int operation_id = HandleErrorCode(ArtmAsyncProcessBatches(id(), args_blob.size(), args_blob.c_str()));
   return Future(operation_id);
 }
 

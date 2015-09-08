@@ -29,8 +29,6 @@ class Helpers {
   static std::vector<float> GenerateRandomVector(int size, size_t seed);
   static std::vector<float> GenerateRandomVector(int size, const Token& token);
 
-  static bool Await(std::function<bool()> is_ready, int timeout_milliseconds);
-
   static void Fix(::artm::CollectionParserConfig* message);
   static bool Validate(const ::artm::CollectionParserConfig& message, bool throw_error = true);
   static bool FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error = true);
