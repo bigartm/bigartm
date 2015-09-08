@@ -2,12 +2,13 @@
 
 #include "artm/c_interface.h"
 
-#include <chrono>
-#include <future>
 #include <string>
 #include <iostream>  // NOLINT
 
+#include "boost/chrono.hpp"
+#include "boost/date_time.hpp"
 #include "boost/thread/tss.hpp"
+#include "boost/thread/future.hpp"
 
 #include "glog/logging.h"
 
@@ -21,7 +22,7 @@
 #include "artm/core/collection_parser.h"
 
 typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterComponent>> MasterComponentManager;
-typedef artm::core::TemplateManager<std::shared_future< ::artm::ProcessBatchesResult>> ProcessBatchesResultManager;
+typedef artm::core::TemplateManager<boost::shared_future< ::artm::ProcessBatchesResult>> ProcessBatchesResultManager;
 
 // Never use the following variables explicitly (only through the corresponding methods).
 // It might be good idea to make them a private members of a new singleton class.
@@ -312,7 +313,7 @@ int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batch
     ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
     std::shared_ptr< ::artm::core::MasterComponent> master = master_component(master_id);
 
-    std::shared_future<artm::ProcessBatchesResult> future = std::move(std::async([master, args]() {
+    boost::shared_future<artm::ProcessBatchesResult> future = boost::move(boost::async([master, args]() {
         return master->RequestProcessBatches(args);
     }));
 
@@ -329,10 +330,10 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
     ParseFromArray(await_operation_args, length, &args);
 
     ProcessBatchesResultManager& manager = ProcessBatchesResultManager::singleton();
-    std::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
+    boost::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
 
     if (args.timeout_milliseconds() >= 0) {
-      if (future.wait_for(std::chrono::milliseconds(args.timeout_milliseconds())) != std::future_status::ready) {
+      if (!future.timed_wait(boost::posix_time::milliseconds(args.timeout_milliseconds()))) {
         set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
         return ARTM_STILL_WORKING;
       }
@@ -347,7 +348,7 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
 int ArtmRequestOperationResult(int operation_id) {
   try {
     ProcessBatchesResultManager& manager = ProcessBatchesResultManager::singleton();
-    std::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
+    boost::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
 
     future.get().SerializeToString(last_message());
     manager.Erase(operation_id);
