@@ -1,4 +1,0 @@
-Tutorial
-========
-
-Please refer to :doc:`/tutorials/windows_basic` or :doc:`/tutorials/linux_basic` depending on your operating system.
