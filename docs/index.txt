@@ -13,16 +13,40 @@ Welcome to BigARTM's documentation!
 
    <a href="https://github.com/bigartm/bigartm"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
 
+.. sidebar:: Getting help
+
+  Having trouble? We'd like to help!
+
+  * Learn more about BigARTM from our interactive notebooks (in `English`_ or in `Russian`_), `NLPub.ru`_, `MachineLearning.ru`_ and several :doc:`publications`.
+
+  * Search for information in the archives of the `bigartm-users`_ mailing list, or
+    `post a question`_.
+
+  * Report bugs with BigARTM in our `ticket tracker`_.
+
+  * Try the :doc:`FAQ <faq>` -- it's got answers to many common questions.
+
+  * Looking for specific information? Try the :ref:`genindex`,
+    or :ref:`search`.
+
+
+  .. _bigartm-users: https://groups.google.com/group/bigartm-users
+  .. _post a question: https://groups.google.com/d/forum/bigartm-users
+  .. _ticket tracker: https://github.com/bigartm/bigartm/issues
+  .. _English: http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/Topic_Modeling_with_BigARTM.ipynb
+  .. _Russian: http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/Topic_Modeling_with_BigARTM_RU.ipynb
+  .. _NLPub.ru: https://nlpub.ru/BigARTM
+  .. _MachineLearning.ru: http://www.machinelearning.ru/wiki/index.php?title=BigARTM
+   
 .. toctree::
    :maxdepth: 2
 
    intro
    download
+   formats
    tutorials/index
-   stories/index
    faq
    devguide
-   ref/index
    release_notes/index
    publications
    legacy_pages

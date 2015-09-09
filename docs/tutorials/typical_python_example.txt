@@ -1,11 +1,82 @@
 Typical python example
 ======================
 
-This section describe all steps, included in a typical BigARTM script
-(for example `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example02_parse_collection.py>`_).
+This page is obsolete, please use the high-level API described in
+ARTM notebook 
+(`in Russian <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_RU.ipynb>`_
+or `in English <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb>`_).
 
-Parse collection
-----------------
+Examples of low-level API
+-------------------------
+
+
+Folder ``C:\BigARTM\python\examples`` contains several toy examples:
+
+    * `example01_synthetic_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example01_synthetic_collection.py>`_
+    * `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example02_parse_collection.py>`_
+    * `example03_concurrency.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example03_concurrency.py>`_
+    * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example04_online_algorithm.py>`_
+    * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example05_train_and_test_stream.py>`_
+    * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example06_use_dictionaries.py>`_
+    * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example09_regularizers.py>`_
+    * `example10_multimodal.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example10_multimodal.py>`_
+    * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example11_get_theta_matrix.py>`_
+    * `example12_get_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example12_get_topic_model.py>`_
+    * `example13_overwrite_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example13_overwrite_topic_model.py>`_
+    * `example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example14_initialize_topic_model.py>`_
+    * `example15_import_export_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example15_import_export_topic_model.py>`_
+    * `example17_process_batches.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example17_process_batches.py>`_
+    * `example18_merge_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example18_merge_model.py>`_
+    * `example19_regularize_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example19_regularize_model.py>`_
+    * `example20_attach_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example20_attach_model.py>`_
+
+
+All examples does not have any parameters, and you may run them without arguments:
+
+.. code-block:: bash
+
+   C:\BigARTM\python\examples>python example02_parse_collection.py
+
+    No batches found, parsing them from textual collection...  OK.
+    Iter#0 : Perplexity = 6885.223 , Phi sparsity = 0.050 , Theta sparsity = 0.012
+    Iter#1 : Perplexity = 2409.510 , Phi sparsity = 0.113 , Theta sparsity = 0.063
+    Iter#2 : Perplexity = 2075.445 , Phi sparsity = 0.203 , Theta sparsity = 0.174
+    Iter#3 : Perplexity = 1855.196 , Phi sparsity = 0.293 , Theta sparsity = 0.261
+    Iter#4 : Perplexity = 1728.749 , Phi sparsity = 0.370 , Theta sparsity = 0.302
+    Iter#5 : Perplexity = 1661.044 , Phi sparsity = 0.429 , Theta sparsity = 0.317
+    Iter#6 : Perplexity = 1621.851 , Phi sparsity = 0.475 , Theta sparsity = 0.327
+    Iter#7 : Perplexity = 1596.965 , Phi sparsity = 0.511 , Theta sparsity = 0.331
+
+    Top tokens per topic:
+    Topic#1: poll(0.05) iraq(0.04) people(0.02) news(0.02) john(0.01) media(0.01)
+    Topic#2: republican(0.02) party(0.02) state(0.02) general(0.01) democrats(0.01)
+    Topic#3: dean(0.04) edwards(0.02) percent(0.02) primary(0.02) clark(0.02)
+    Topic#4: forces(0.01) baghdad(0.01) iraqis(0.01) coburn(0.01) carson(0.01)
+    Topic#5: military(0.01) officials(0.01) intelligence(0.01) american(0.01)
+    Topic#6: electoral(0.04) labor(0.02) culture(0.02) exit(0.02) scoop(0.01)
+    Topic#7: law(0.01) court(0.01) marriage(0.01) gay(0.01) amendment(0.01)
+    Topic#8: president(0.03) administration(0.02) campaign(0.01) million(0.01)
+    Topic#9: years(0.01) ballot(0.01) rights(0.01) nader(0.01) life(0.01)
+    Topic#10: house(0.08) war(0.03) republicans(0.02) voting(0.02) vote(0.02)
+
+    Snippet of theta matrix:
+    Item#3000: 0.432 0.507 0.059 0.000 0.000 0.000 0.000 0.000 0.002 0.000
+    Item#2991: 0.249 0.382 0.269 0.000 0.000 0.025 0.016 0.034 0.000 0.026
+    Item#2992: 0.000 0.001 0.000 0.000 0.000 0.000 0.000 0.851 0.000 0.147
+    Item#2993: 0.358 0.058 0.030 0.141 0.152 0.000 0.002 0.248 0.000 0.010
+    Item#2994: 0.051 0.142 0.056 0.000 0.000 0.146 0.000 0.000 0.000 0.604
+    Item#2995: 0.004 0.593 0.000 0.000 0.128 0.005 0.168 0.040 0.030 0.033
+    Item#2996: 0.069 0.063 0.054 0.000 0.000 0.107 0.008 0.004 0.000 0.696
+    Item#2997: 0.000 0.194 0.000 0.000 0.043 0.000 0.471 0.228 0.062 0.002
+    Item#2998: 0.026 0.085 0.042 0.001 0.180 0.000 0.146 0.485 0.022 0.012
+    Item#2999: 0.312 0.547 0.099 0.000 0.000 0.004 0.008 0.017 0.013 0.000  
+
+This simple example loads a text collection from disk and uses iterative scans over the collection to infer a topic model.
+Then it outputs top words in each topic and topic distributions of last processed documents.
+For further information about this example refer to :doc:`typical_python_example`.
+
+Parse collection step
+---------------------
 
 The following python script parses ``docword.kos.txt`` and ``vocab.kos.txt`` files
 and converts them into a set of binary-serialized :ref:`batches <Batch>`, stored on disk.

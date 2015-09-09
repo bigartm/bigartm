@@ -11,7 +11,6 @@ BigARTM Reference
 .. toctree::
    :maxdepth: 2
 
-   algorithm
    messages
    python_interface
    c_interface

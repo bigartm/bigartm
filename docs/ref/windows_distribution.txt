@@ -4,7 +4,7 @@ Windows distribution
 
 This chapter describes content of BigARTM distribution package for Windows, available at https://github.com/bigartm/bigartm/releases.
 
-=========================== ==========================================================
+=========================== =================================================================
 ``bin/``                    | Precompiled binaries of BigARTM for Windows.
                             | This folder must be added to ``PATH`` system variable.
 
@@ -35,26 +35,6 @@ This chapter describes content of BigARTM distribution package for Windows, avai
 
 ``python/examples/``        | Python examples of how to use BigARTM:
 
-                            * `example01_synthetic_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example01_synthetic_collection.py>`_
-
-                            * `example02_parse_collection.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example02_parse_collection.py>`_
-
-                            * `example03_concurrency.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example03_concurrency.py>`_
-
-                            * `example04_online_algorithm.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example04_online_algorithm.py>`_
-
-                            * `example05_train_and_test_stream.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example05_train_and_test_stream.py>`_
-
-                            * `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example06_use_dictionaries.py>`_
-
-                            * `example09_regularizers.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example09_regularizers.py>`_
-
-                            * `example10_multimodal.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example10_multimodal.py>`_
-
-                            * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example11_get_theta_matrix.py>`_
-
-                            * `example12_get_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example12_get_topic_model.py>`_
-
                             | Files ``docword.kos.txt`` and ``vocab.kos.txt`` represent
                             | a simple collection of text files in Bag-Of-Words format.
                             | The files are taken from UCI Machine Learning Repository
@@ -72,4 +52,4 @@ This chapter describes content of BigARTM distribution package for Windows, avai
                             | API of BigARTM. Documented :doc:`here </ref/messages>`.
 
 ``LICENSE``                 License file of BigARTM.
-=========================== ==========================================================
+=========================== =================================================================

@@ -3,8 +3,8 @@ Downloads
 
 * **Windows**
 
-  * Latest 32 bit release: https://github.com/bigartm/bigartm/releases/download/v0.7.1/BigARTM_v0.7.1_win32.7z
-  * Latest 64 bit release: https://github.com/bigartm/bigartm/releases/download/v0.7.1/BigARTM_v0.7.1_x64.7z
+  * Latest 32 bit release: `BigARTM_v0.7.2_win32 <https://github.com/bigartm/bigartm/releases/download/v0.7.2/BigARTM_v0.7.2_win32.7z>`_
+  * Latest 64 bit release: `BigARTM_v0.7.2_x64 <https://github.com/bigartm/bigartm/releases/download/v0.7.2/BigARTM_v0.7.2_x64.7z>`_
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
   Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
@@ -16,6 +16,10 @@ Downloads
   :doc:`tutorials/linux_basic`.
 
 * **Datasets**
+
+  Download one of the following datasets to start experimenting with BigARTM.
+  See :doc:`formats` page for the description of input data formats.
+  
 
     ========= ========= ======= ======= ==================================================================================================================
     Task      Source    #Words  #Items  Files
@@ -48,11 +52,11 @@ Downloads
 
     wiki      `Gensim`_ 100000  3665223 * `enwiki-20141208_10k (1.2 GB)   <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_10k.7z>`_
                                         * `enwiki-20141208_1k (1.4 GB)    <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_1k.7z>`_
-                                        * `enwiki-20141208_dictionary (3.6 MB) <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_dictionary>`_
+                                        * `enwiki-20141208_dictionary (4 MB) <https://s3-eu-west-1.amazonaws.com/artm/enwiki-20141208_dictionary>`_
 
     wiki_enru `Wiki`_   196749  216175  * `wiki_enru (282 MB)  <https://s3-eu-west-1.amazonaws.com/artm/wiki_enru.7z>`_
                                         * `wiki_enru_dictionary (5.3 MB)  <https://s3-eu-west-1.amazonaws.com/artm/wiki_enru_dictionary>`_
-                                        * class_id(s): ``@english``, ``@russian``
+                                        * namespaces: ``@english``, ``@russian``
 
     lastfm    `lastfm`_         1k,     * `lastfm_1k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_1k.7z>`_ (VW format)
                                 360k    * `lastfm_360k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_360k.7z>`_ (VW format)
