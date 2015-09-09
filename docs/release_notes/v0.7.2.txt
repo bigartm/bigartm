@@ -1,0 +1,54 @@
+BigARTM v0.7.2 Release notes
+============================
+
+We are happy to introduce BigARTM v0.7.2, which brings you the following changes:
+
+* Enhancements in high-level python API (``ArtmModel`` -> ``ARTM``)
+* Enhancements in low-level python API (``library.py`` -> ``master_component.py``)
+* Enhancements in CLI interface (``cpp_client``)
+* Status and information retrievals from BigARTM
+* Allow float token counts (``token_count`` -> ``token_weight``)
+* Allow custom weights for each batch (``ProcessBatchesArgs.batch_weight``)
+* Bug fixes and cleanup in the online documentation
+
+
+Enhancements in Python APIs
+---------------------------
+
+Note that ``ArtmModel`` had been renamed to ``ARTM``.
+The naming conventions follow the same pattern as in `scikit learn <http://scikit-learn.org>`_
+(e.g. ``fit``, ``transform`` and ``fit_transform`` methods).
+
+Also note that all input data is now handled by ``BatchVectorizer`` class.
+
+Refer to noteboods in `English <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb>`_
+and in `Russian <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_RU.ipynb>`_
+for further details about ``ARTM`` interface.
+
+Also note that previous low-level python API ``library.py`` is superseeded by a new API ``master_component.py``.
+For now both APIs are available, but the old one will be removed in future releases.
+Refer to `this folder <https://github.com/bigartm/bigartm/tree/master/python/tests/wrapper>`_ for futher examples of the new low-level python API.
+
+Remember that any use of low-level APIs is discouraged. Our recommendation is to always use the high-level python API ``ARTM``,
+and e-mail us know if some functionality is not exposed there.
+
+
+Enhancements in CLI interface
+-----------------------------
+
+BigARTM command line interface ``cpp_client`` had been enhanced with the following options:
+
+* ``--load_model`` - to load model from file before processing
+* ``--save_model`` - to save the model to binary file after processing
+* ``--write_model_readable`` - to output the model in a human-readable format (CSV)
+* ``--write_predictions`` - to write prediction in a human-readable format (CSV)
+* ``--dictionary_min_df`` - to filter out tokens present in less than N documents / less than P% of documents
+* ``--dictionary_max_df`` - filter out tokens present in less than N documents / less than P% of documents
+* ``--tau0`` - an option of the online algorith, describing the weight parameter in the online update formula. Optional, defaults to ``1024``.
+* ``--kappa`` - an option of the online algorithm, describing the exponent parameter in the online update formula. Optional, defaults to ``0.7``.
+
+Note that for ``--dictionary_min_df`` and ``--dictionary_max_df`` can be treated as number, fraction, percent.
+
+* Use a percentage ``%`` sign to specify percentage value
+* Use a floating value in ``[0, 1)`` range to specify a fraction
+* Use an integer value (``1`` or greater) to indicate a number
