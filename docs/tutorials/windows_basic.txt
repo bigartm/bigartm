@@ -124,6 +124,10 @@ Configure BigARTM Python API
     For further details about protobuf installation refer to `protobuf/python/README
     <https://raw.githubusercontent.com/bigartm/bigartm/master/3rdparty/protobuf/python/README.txt>`_.
 
+If you are getting errors when configuring or using Python API,
+please refer to Troubleshooting chapter in :doc:`/tutorials/linux_basic`.
+The list of issues is common between Windows and Linux.
+
 Running BigARTM from Python API
 -------------------------------
 
