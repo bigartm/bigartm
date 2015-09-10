@@ -34,8 +34,9 @@ More datasets are available through :doc:`/download` page.
 
    cd ~/bigartm
    mkdir datasets && cd datasets
-   wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz && gunzip docword.kos.txt.gz
+   wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz
    wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
+   gunzip docword.kos.txt.gz
    ~/bigartm/build/src/cpp_client/cpp_client -d docword.kos.txt -v vocab.kos.txt
 
 Configure BigARTM Python API
@@ -68,6 +69,20 @@ Troubleshooting
 
 .. code-block:: bash
 
+  >python setup.py build
+    File "setup.py", line 52
+	  print "Generating %s..." % output
+
+  SyntaxError: Missing parentheses in call to `print`
+
+This error may happen during google protobuf installation.
+It indicates that you are using ``Python 3``, which is not supported by BigARTM.
+(see `this <http://stackoverflow.com/questions/826948/syntax-error-on-print-with-python-3>`_ 
+question on StackOverflow for more details on the error around `print`).
+Please use ``Python 2.7.9`` to workaround this issue.
+ 
+.. code-block:: bash
+
    ubuntu@192.168.0.1:~/bigartm/python/examples$ python example01_synthetic_collection.py
    Traceback (most recent call last):
      File "example01_synthetic_collection.py", line 6, in <module>
@@ -95,7 +110,8 @@ If you do not have permissions to execute ``sudo python setup.py install`` step,
 .. code-block:: bash
 
    ubuntu@192.168.0.1:~/bigartm/python/examples$ python example01_synthetic_collection.py
-   libartm.so: cannot open shared object file: No such file or directory, fall back to ARTM_SHARED_LIBRARY environment variable
+   libartm.so: cannot open shared object file: No such file or directory,
+   fall back to ARTM_SHARED_LIBRARY environment variable
    Traceback (most recent call last):
      File "example01_synthetic_collection.py", line 27, in <module>
        with artm.library.MasterComponent() as master:
