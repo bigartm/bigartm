@@ -11,6 +11,8 @@
 
 #include "boost/lexical_cast.hpp"
 
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/predicate.hpp"
 #include "boost/uuid/uuid.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 #include "boost/uuid/uuid_io.hpp"
@@ -102,6 +104,58 @@ bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
   return true;
 }
 
+template<typename T>
+std::vector<std::pair<std::string, T>> parseKeyValuePairs(const std::string& input) {
+  std::vector<std::pair<std::string, T>> retval;
+  try {
+    // Handle the case when "input" simply has an instance of typename T
+    T single_value = boost::lexical_cast<T>(input);
+    retval.push_back(std::make_pair(std::string(), single_value));
+    return retval;
+  } catch (...) {}
+
+  // Handle the case when "input" is a set of "group:value" pairs, separated by ; or ,
+  std::vector<std::string> strs;
+  boost::split(strs, input, boost::is_any_of(";,"));
+  for (int elem_index = 0; elem_index < strs.size(); ++elem_index) {
+    std::string elem = strs[elem_index];
+    T elem_size = 0;
+    size_t split_index = elem.find(':');
+    if (split_index == 0 || (split_index == elem.size() - 1))
+      split_index = std::string::npos;
+
+    if (split_index != std::string::npos) {
+      try {
+        elem_size = boost::lexical_cast<T>(elem.substr(split_index + 1));
+        elem = elem.substr(0, split_index);
+      } catch (...) {
+        split_index = std::string::npos;
+      }
+    }
+
+    retval.push_back(std::make_pair(elem, elem_size));
+  }
+
+  return retval;
+}
+
+std::vector<std::string> parseTopics(const std::string& topics) {
+  std::vector<std::string> result;
+  std::vector<std::pair<std::string, int>> pairs = parseKeyValuePairs<int>(topics);
+  for (auto& pair : pairs) {
+    const std::string group = pair.first.empty() ? "topic" : pair.first;
+    const int group_size = pair.second == 0 ? 1 : pair.second;
+    if (group_size == 1) {
+      result.push_back(group);
+    } else {
+      for (int i = 0; i < group_size; ++i)
+        result.push_back(group + "_" + boost::lexical_cast<std::string>(i));
+    }
+  }
+
+  return result;
+}
+
 struct artm_options {
   std::string docword;
   std::string vocab;
@@ -114,7 +168,7 @@ struct artm_options {
   std::string write_predictions;
   std::string dictionary_min_df;
   std::string dictionary_max_df;
-  int num_topics;
+  std::string topics;
   int num_processors;
   int num_iters;
   int num_inner_iters;
@@ -123,15 +177,13 @@ struct artm_options {
   int parsing_format;
   float tau0;
   float kappa;
-  float tau_phi;
-  float tau_theta;
-  float tau_decor;
   bool b_paused;
   bool b_no_scores;
   bool b_reuse_theta;
   bool b_disable_avx_opt;
   bool b_use_dense_bow;
   std::vector<std::string> class_id;
+  std::vector<std::string> regularizer;
 };
 
 void configureStreams(artm::MasterComponentConfig* master_config) {
@@ -231,46 +283,88 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   master_config->add_score_config()->CopyFrom(score_config);
 }
 
-artm::RegularizerConfig configurePhiRegularizer(float tau, ModelConfig* model_config) {
-  RegularizerConfig regularizer_config;
-  std::string name = "regularizer_smsp_phi";
-  regularizer_config.set_name(name);
-  regularizer_config.set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
-  regularizer_config.set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
+void configureRegularizer(const std::string& regularizer, RegularizeModelArgs* regularize_model_args,
+                          ProcessBatchesArgs* process_batches_args, artm::RegularizerConfig* config) {
+  std::vector<std::string> strs;
+  boost::split(strs, regularizer, boost::is_any_of("\t "));
+  if (strs.size() < 2)
+    throw std::invalid_argument(std::string("Invalid regularizer: " + regularizer));
+  float tau;
+  try {
+    tau = boost::lexical_cast<float>(strs[0]);
+  } catch (...) {
+    throw std::invalid_argument(std::string("Invalid regularizer: " + regularizer));
+  }
 
-  model_config->add_regularizer_name(name);
-  model_config->add_regularizer_tau(tau);
-  return regularizer_config;
-}
+  std::vector<std::pair<std::string, float>> class_ids;
+  std::vector<std::string> topic_names;
+  std::string dictionary_name;
+  for (int i = 2; i < strs.size(); ++i) {
+    std::string elem = strs[i];
+    if (elem.empty())
+      continue;
+    if (elem[0] == '#')
+      topic_names = parseTopics(elem.substr(1, elem.size() - 1));
+    else if (elem[0] == '@')
+      class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
+    else if (elem[0] == '!')
+      dictionary_name = elem.substr(1, elem.size() - 1);
+  }
 
-artm::RegularizerConfig configureThetaRegularizer(float tau, ModelConfig* model_config) {
-  RegularizerConfig regularizer_config;
-  std::string name = "regularizer_smsp_theta";
-  regularizer_config.set_name(name);
-  regularizer_config.set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
-  regularizer_config.set_config(::artm::SmoothSparseThetaConfig().SerializeAsString());
-  model_config->add_regularizer_name(name);
-  model_config->add_regularizer_tau(tau);
-  return regularizer_config;
-}
+  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation
+  std::string regularizer_type = boost::to_lower_copy(strs[1]);
+  if (regularizer_type == "smooththeta" || regularizer_type == "sparsetheta") {
+    ::artm::SmoothSparseThetaConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
 
-artm::RegularizerConfig configureDecorRegularizer(float tau, ModelConfig* model_config) {
-  RegularizerConfig regularizer_config;
-  std::string name = "regularizer_decor_phi";
-  regularizer_config.set_name(name);
-  regularizer_config.set_type(::artm::RegularizerConfig_Type_DecorrelatorPhi);
-  regularizer_config.set_config(::artm::DecorrelatorPhiConfig().SerializeAsString());
-  model_config->add_regularizer_name(name);
-  model_config->add_regularizer_tau(tau);
-  return regularizer_config;
-}
+    if (regularizer_type == "sparsetheta") tau = -tau;
 
-void configureItemsProcessedScore(artm::MasterComponentConfig* master_config, ModelConfig* model_config) {
-  ::artm::ScoreConfig score_config;
-  score_config.set_config(::artm::ItemsProcessedScoreConfig().SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_ItemsProcessed);
-  score_config.set_name("items_processed");
-  master_config->add_score_config()->CopyFrom(score_config);
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
+    config->set_config(specific_config.SerializeAsString());
+
+    process_batches_args->add_regularizer_name(regularizer);
+    process_batches_args->add_regularizer_tau(tau);
+  }
+  else if (regularizer_type == "smoothphi" || regularizer_type == "sparsephi") {
+    ::artm::SmoothSparsePhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    if (regularizer_type == "sparsephi") tau = -tau;
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+    config->set_config(specific_config.SerializeAsString());
+
+    artm::RegularizerSettings* settings = regularize_model_args->add_regularizer_settings();
+    settings->set_name(regularizer);
+    settings->set_tau(tau);
+    settings->set_use_relative_regularization(false);
+  }
+  else if (regularizer_type == "decorrelation") {
+    ::artm::DecorrelatorPhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerConfig_Type_DecorrelatorPhi);
+    config->set_config(specific_config.SerializeAsString());
+
+    artm::RegularizerSettings* settings = regularize_model_args->add_regularizer_settings();
+    settings->set_name(regularizer);
+    settings->set_tau(tau);
+    settings->set_use_relative_regularization(false);
+  } else {
+    throw std::invalid_argument(std::string("Unknown regularizer type: " + strs[1]));
+  }
 }
 
 void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class_id) {
@@ -312,6 +406,8 @@ int execute(const artm_options& options) {
     getchar();
   }
 
+  std::vector<std::string> topic_names = parseTopics(options.topics);
+
   // There are options for data handling:
   // 1. User provides docword, vocab and batch_folder => cpp_client parses collection and stores it in batch_folder
   // 2. User provides docword, vocab, no batch_folder => cpp_client parses collection and stores it in temp folder
@@ -330,7 +426,8 @@ int execute(const artm_options& options) {
   if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
 
   ModelConfig model_config;
-  model_config.set_topics_count(options.num_topics);
+  for (auto& topic_name : topic_names)
+    model_config.add_topic_name(topic_name);
   model_config.set_inner_iterations_count(options.num_inner_iters);
   model_config.set_stream_name("train_stream");
   model_config.set_opt_for_avx(!options.b_disable_avx_opt);
@@ -427,34 +524,18 @@ int execute(const artm_options& options) {
 
   // Step 4. Configure regularizers.
   std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
-  if (options.tau_theta != 0) {
-    regularizers.push_back(std::make_shared<artm::Regularizer>(
-      *master_component, configureThetaRegularizer(options.tau_theta, &model_config)));
-    process_batches_args.add_regularizer_name(regularizers.back()->config().name());
-    process_batches_args.add_regularizer_tau(options.tau_theta);
-  }
-  if (options.tau_phi != 0) {
-    regularizers.push_back(std::make_shared<artm::Regularizer>(
-      *master_component, configurePhiRegularizer(options.tau_phi, &model_config)));
-    ::artm::RegularizerSettings* settings = regularize_model_args.add_regularizer_settings();
-    settings->set_name(regularizers.back()->config().name());
-    settings->set_tau(options.tau_phi);
-    settings->set_use_relative_regularization(false);
-  }
-  if (options.tau_decor != 0) {
-    regularizers.push_back(std::make_shared<artm::Regularizer>(
-      *master_component, configureDecorRegularizer(options.tau_decor, &model_config)));
-    ::artm::RegularizerSettings* settings = regularize_model_args.add_regularizer_settings();
-    settings->set_name(regularizers.back()->config().name());
-    settings->set_tau(options.tau_decor);
-    settings->set_use_relative_regularization(false);
+  for (auto& regularizer : options.regularizer) {
+    ::artm::RegularizerConfig regularizer_config;
+    configureRegularizer(regularizer, &regularize_model_args, &process_batches_args, &regularizer_config);
+    regularizers.push_back(std::make_shared<artm::Regularizer>(*master_component, regularizer_config));
   }
 
   // Step 5. Create and initialize model.
   if (options.load_model.empty()) {
     InitializeModelArgs initialize_model_args;
     initialize_model_args.set_model_name(pwt_model_name);
-    initialize_model_args.set_topics_count(model_config.topics_count());
+    for (auto& topic_name : topic_names)
+      initialize_model_args.add_topic_name(topic_name);
     if (use_dictionary) {
       ProgressScope scope(std::string("Initializing random model from dictionary ") + options.dictionary_file);
       initialize_model_args.set_dictionary_name(dictionary_name);
@@ -699,7 +780,7 @@ int execute(const artm_options& options) {
       std::cerr << train_theta_snippet->item_id(item_index);
     }
     std::cerr << "):\n";
-    for (int topic_index = 0; topic_index < options.num_topics; topic_index++) {
+    for (int topic_index = 0; topic_index < topic_names.size(); topic_index++) {
       std::cerr << "Topic" << topic_index << ": ";
       for (int item_index = 0; item_index < docs_to_show; item_index++) {
         float weight = train_theta_snippet.get()->values(item_index).value(topic_index);
@@ -731,7 +812,7 @@ int main(int argc, char * argv[]) {
       ("batch_folder,b", po::value(&options.batch_folder)->default_value(""),
         "If docword or vocab arguments are not provided, cpp_client will try to read pre-parsed batches from batch_folder location. "
         "Otherwise, if both docword and vocab arguments are provided, cpp_client will parse the data and store batches in batch_folder location. ")
-      ("num_topic,t", po::value(&options.num_topics)->default_value(16), "number of topics")
+      ("topics,t", po::value(&options.topics)->default_value("16"), "number of topics")
       ("num_processors,p", po::value(&options.num_processors)->default_value(0), "number of concurrent processors (default: auto-detect)")
       ("num_iters,i", po::value(&options.num_iters)->default_value(10), "number of outer iterations")
       ("load_model", po::value(&options.load_model)->default_value(""), "load model from file before processing")
@@ -743,17 +824,13 @@ int main(int argc, char * argv[]) {
       ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
       ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary"), "filename of dictionary file")
       ("items_per_batch", po::value(&options.items_per_batch)->default_value(500), "number of items per batch")
-      ("tau_phi", po::value(&options.tau_phi)->default_value(0.0f), "regularization coefficient for PHI matrix")
-      ("tau_theta", po::value(&options.tau_theta)->default_value(0.0f), "regularization coefficient for THETA matrix")
-      ("tau_decor", po::value(&options.tau_decor)->default_value(0.0f),
-        "regularization coefficient for topics decorrelation "
-        "(use with care, since this value heavily depends on the size of the dataset)")
       ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
       ("update_every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market, 2 - vowpal wabbit)")
       ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
+      ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers")
     ;
 
     po::options_description experimental_options("Experimental options");
