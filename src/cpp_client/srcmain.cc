@@ -121,7 +121,6 @@ struct artm_options {
   int items_per_batch;
   int update_every;
   int parsing_format;
-  int merger_queue_size;
   float tau0;
   float kappa;
   float tau_phi;
@@ -131,7 +130,6 @@ struct artm_options {
   bool b_no_scores;
   bool b_reuse_theta;
   bool b_disable_avx_opt;
-  bool b_use_old_models;
   bool b_use_dense_bow;
   std::vector<std::string> class_id;
 };
@@ -303,6 +301,12 @@ void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class
 int execute(const artm_options& options) {
   bool online = (options.update_every > 0);
 
+  const std::string dictionary_name = "dictionary";
+  const std::string pwt_model_name = "pwt";
+  const std::string nwt_model_name = "nwt";
+  const std::string rwt_model_name = "rwt";
+  const std::string nwt_hat_model_name = "nwt_hat";
+
   if (options.b_paused) {
     std::cerr << "Press any key to continue. ";
     getchar();
@@ -322,7 +326,6 @@ int execute(const artm_options& options) {
   MasterComponentConfig master_config;
   master_config.set_disk_path(working_batch_folder);
   master_config.set_processors_count(options.num_processors);
-  master_config.set_merger_queue_max_size(options.merger_queue_size);
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
   if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
 
@@ -349,12 +352,7 @@ int execute(const artm_options& options) {
   if (!options.b_no_scores)
     configureScores(&master_config, &model_config, options);
 
-  if (options.b_use_old_models && online)
-    configureItemsProcessedScore(&master_config, &model_config);
-
   // Step 2. Collection parsing
-
-  std::shared_ptr<DictionaryConfig> unique_tokens;
   if (parse_collection) {
     if (fs::exists(fs::path(working_batch_folder)) && !fs::is_empty(fs::path(working_batch_folder))) {
       std::cerr << "Can not parse collection, target batch directory is not empty: " << working_batch_folder;
@@ -392,15 +390,12 @@ int execute(const artm_options& options) {
     collection_parser_config.set_dictionary_file_name(options.dictionary_file);
     collection_parser_config.set_target_folder(working_batch_folder);
     collection_parser_config.set_num_items_per_batch(options.items_per_batch);
-    unique_tokens = ::artm::ParseCollection(collection_parser_config);
-    if (!options.b_use_old_models)
-      unique_tokens = nullptr;  // drop the dictionary for new-style models
+    ::artm::ParseCollection(collection_parser_config);
   } else {
     if (!fs::exists(fs::path(working_batch_folder))) {
       std::cerr << "Unable to find batch folder: " << working_batch_folder;
       return 1;
     }
-
 
     int batch_files_count = findFilesInDirectory(working_batch_folder, ".batch").size();
     if (batch_files_count == 0) {
@@ -409,22 +404,26 @@ int execute(const artm_options& options) {
     }
 
     std::cerr << "Using " << batch_files_count << " batch found in folder '" << working_batch_folder << "'\n";
-    std::string dictionary_full_filename = (fs::path(working_batch_folder) / options.dictionary_file).string();
-    if (fs::exists(dictionary_full_filename)) {
-      ProgressScope scope(std::string("Loading dictionary file from") + dictionary_full_filename);
-      unique_tokens = ::artm::LoadDictionary(dictionary_full_filename);
-    } else {
-      std::cerr << "Dictionary file " << dictionary_full_filename << " does not exist; BigARTM will use all tokens from batches.\n";
-    }
   }
 
   // Step 3. Create master component.
   std::shared_ptr<MasterComponent> master_component;
   master_component.reset(new MasterComponent(master_config));
 
-  std::shared_ptr<Dictionary> dictionary;
-  if (unique_tokens != nullptr)
-    dictionary.reset(new Dictionary(*master_component, *unique_tokens));
+  // Step 3.1. Import dictionary
+  bool use_dictionary = false;
+  std::string dictionary_full_filename = (fs::path(working_batch_folder) / options.dictionary_file).string();
+  if (fs::exists(dictionary_full_filename)) {
+    ProgressScope scope(std::string("Loading dictionary file from") + dictionary_full_filename);
+    ImportDictionaryArgs import_dictionary_args;
+    import_dictionary_args.set_file_name(dictionary_full_filename);
+    import_dictionary_args.set_dictionary_name(dictionary_name);
+    master_component->ImportDictionary(import_dictionary_args);
+    use_dictionary = true;
+  }
+  else {
+    std::cerr << "Dictionary file " << dictionary_full_filename << " does not exist; BigARTM will use all tokens from batches.\n";
+  }
 
   // Step 4. Configure regularizers.
   std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
@@ -452,66 +451,56 @@ int execute(const artm_options& options) {
   }
 
   // Step 5. Create and initialize model.
-  std::shared_ptr<Model> model;
-  if (options.b_use_old_models) {
-    model = std::make_shared<Model>(*master_component, model_config);
-    if (dictionary != nullptr)
-      model->Initialize(*dictionary);
-  } else {
-    if (options.load_model.empty()) {
-      InitializeModelArgs initialize_model_args;
-      initialize_model_args.set_model_name("pwt");
-      initialize_model_args.set_topics_count(model_config.topics_count());
-      if (dictionary != nullptr) {
-        ProgressScope scope(std::string("Initializing random model from dictionary ") + options.dictionary_file);
-        initialize_model_args.set_dictionary_name(dictionary->name());
-        initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Dictionary);
-      }
-      else {
-        bool fraction;
-        double value;
-        if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
-          ::artm::InitializeModelArgs_Filter* filter = initialize_model_args.add_filter();
-          if (fraction) filter->set_min_percentage(value);
-          else filter->set_min_items(value);
-        } else {
-          if (!options.dictionary_min_df.empty())
-            std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
-        }
-        if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
-          ::artm::InitializeModelArgs_Filter* filter = initialize_model_args.add_filter();
-          if (fraction) filter->set_max_percentage(value);
-          else filter->set_max_items(value);
-        }
-        else {
-          if (!options.dictionary_max_df.empty())
-            std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
-        }
-
-        ProgressScope scope(std::string("Initializing random model from batches in folder ") +
-                            (options.batch_folder.empty() ? "<temp>" : working_batch_folder));
-        initialize_model_args.set_disk_path(working_batch_folder);
-        initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Batches);
-      }
-      master_component->InitializeModel(initialize_model_args);
+  if (options.load_model.empty()) {
+    InitializeModelArgs initialize_model_args;
+    initialize_model_args.set_model_name(pwt_model_name);
+    initialize_model_args.set_topics_count(model_config.topics_count());
+    if (use_dictionary) {
+      ProgressScope scope(std::string("Initializing random model from dictionary ") + options.dictionary_file);
+      initialize_model_args.set_dictionary_name(dictionary_name);
+      initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Dictionary);
     }
     else {
-      ProgressScope scope(std::string("Loading model from ") + options.load_model);
-      ImportModelArgs import_model_args;
-      import_model_args.set_model_name("pwt");
-      import_model_args.set_file_name(options.load_model);
-      master_component->ImportModel(import_model_args);
-    }
-  }
-  std::string score_model_name = model != nullptr ? model->name() : "pwt";
+      bool fraction;
+      double value;
+      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
+        ::artm::InitializeModelArgs_Filter* filter = initialize_model_args.add_filter();
+        if (fraction) filter->set_min_percentage(value);
+        else filter->set_min_items(value);
+      } else {
+        if (!options.dictionary_min_df.empty())
+          std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
+      }
+      if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
+        ::artm::InitializeModelArgs_Filter* filter = initialize_model_args.add_filter();
+        if (fraction) filter->set_max_percentage(value);
+        else filter->set_max_items(value);
+      }
+      else {
+        if (!options.dictionary_max_df.empty())
+          std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
+      }
 
-  if (!options.b_use_old_models) {
-    ::artm::GetTopicModelArgs get_model_args;
-    get_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Tokens);
-    get_model_args.set_model_name("pwt");
-    std::shared_ptr< ::artm::TopicModel> topic_model = master_component->GetTopicModel(get_model_args);
-    std::cerr << "Number of tokens in the model: " << topic_model->token_size() << std::endl;
+      ProgressScope scope(std::string("Initializing random model from batches in folder ") +
+                          (options.batch_folder.empty() ? "<temp>" : working_batch_folder));
+      initialize_model_args.set_disk_path(working_batch_folder);
+      initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Batches);
+    }
+    master_component->InitializeModel(initialize_model_args);
   }
+  else {
+    ProgressScope scope(std::string("Loading model from ") + options.load_model);
+    ImportModelArgs import_model_args;
+    import_model_args.set_model_name(pwt_model_name);
+    import_model_args.set_file_name(options.load_model);
+    master_component->ImportModel(import_model_args);
+  }
+
+  ::artm::GetTopicModelArgs get_model_args;
+  get_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Tokens);
+  get_model_args.set_model_name(pwt_model_name);
+  std::shared_ptr< ::artm::TopicModel> topic_model = master_component->GetTopicModel(get_model_args);
+  std::cerr << "Number of tokens in the model: " << topic_model->token_size() << std::endl;
 
   std::vector<std::string> batch_file_names = findFilesInDirectory(working_batch_folder, ".batch");
   int update_count = 0;
@@ -519,101 +508,74 @@ int execute(const artm_options& options) {
     {
       CuckooWatch timer("Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
 
-      master_component->InvokeIteration(1);
+      if (!online) {
+        process_batches_args.set_pwt_source_name(pwt_model_name);
+        process_batches_args.set_nwt_target_name(nwt_hat_model_name);
+        for (auto& batch_filename : batch_file_names)
+          process_batches_args.add_batch_filename(batch_filename);
+        master_component->ProcessBatches(process_batches_args);
+        process_batches_args.clear_batch_filename();
 
-      if (model != nullptr) {
-        if (!online) {
-          master_component->WaitIdle();
-          model->Synchronize(0.0);
-        } else {
-          bool done = false;
-          bool first_sync = true;
-          int next_items_processed = options.update_every;
-          while (!done) {
-            done = master_component->WaitIdle(10);  // wait 10 ms
-            int current_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(*model, "items_processed")->value();
-            if (done || (current_items_processed >= next_items_processed)) {
-              update_count = current_items_processed / options.update_every;
-              next_items_processed = current_items_processed + options.update_every;
-              double rho = pow(options.tau0 + update_count, -options.kappa);
-              double decay_weight = first_sync ? 0.0 : 1.0 - rho;
-              model->Synchronize(decay_weight, rho, true);
-              first_sync = false;
-              std::cerr << ".";
-            }
-          }
-
-          std::cerr << " ";
+        if (regularize_model_args.regularizer_settings_size() > 0) {
+          regularize_model_args.set_nwt_source_name(nwt_hat_model_name);
+          regularize_model_args.set_pwt_source_name(pwt_model_name);
+          regularize_model_args.set_rwt_target_name(rwt_model_name);
+          master_component->RegularizeModel(regularize_model_args);
+          normalize_model_args.set_rwt_source_name(rwt_model_name);
         }
-      } else {
-        if (!online) {
-          process_batches_args.set_pwt_source_name("pwt");
-          process_batches_args.set_nwt_target_name("nwt_hat");
-          for (auto& batch_filename : batch_file_names)
-            process_batches_args.add_batch_filename(batch_filename);
-          master_component->ProcessBatches(process_batches_args);
-          process_batches_args.clear_batch_filename();
 
-          if (regularize_model_args.regularizer_settings_size() > 0) {
-            regularize_model_args.set_nwt_source_name("nwt_hat");
-            regularize_model_args.set_pwt_source_name("pwt");
-            regularize_model_args.set_rwt_target_name("rwt");
-            master_component->RegularizeModel(regularize_model_args);
-            normalize_model_args.set_rwt_source_name("rwt");
-          }
+        normalize_model_args.set_nwt_source_name(nwt_hat_model_name);
+        normalize_model_args.set_pwt_target_name(pwt_model_name);
+        master_component->NormalizeModel(normalize_model_args);
+      } else {  // online
+        for (int i = 0; i < batch_file_names.size(); ++i) {
+          process_batches_args.set_reset_scores(i == 0);  // reset scores at the beginning of each iteration
+          process_batches_args.add_batch_filename(batch_file_names[i]);
+          int size = process_batches_args.batch_filename_size();
+          if (size >= options.update_every || (i + 1) == batch_file_names.size()) {
+            update_count++;
+            process_batches_args.set_pwt_source_name(pwt_model_name);
+            process_batches_args.set_nwt_target_name(nwt_hat_model_name);
+            master_component->ProcessBatches(process_batches_args);
 
-          normalize_model_args.set_nwt_source_name("nwt_hat");
-          normalize_model_args.set_pwt_target_name("pwt");
-          master_component->NormalizeModel(normalize_model_args);
-        } else {  // online
-          for (int i = 0; i < batch_file_names.size(); ++i) {
-            process_batches_args.set_reset_scores(i == 0);  // reset scores at the beginning of each iteration
-            process_batches_args.add_batch_filename(batch_file_names[i]);
-            int size = process_batches_args.batch_filename_size();
-            if (size >= options.update_every || (i + 1) == batch_file_names.size()) {
-              update_count++;
-              process_batches_args.set_pwt_source_name("pwt");
-              process_batches_args.set_nwt_target_name("nwt_hat");
-              master_component->ProcessBatches(process_batches_args);
+            double apply_weight = (update_count == 1) ? 1.0 : pow(options.tau0 + update_count, -options.kappa);
+            double decay_weight = 1.0 - apply_weight;
 
-              double apply_weight = (update_count == 1) ? 1.0 : pow(options.tau0 + update_count, -options.kappa);
-              double decay_weight = 1.0 - apply_weight;
+            MergeModelArgs merge_model_args;
+            merge_model_args.add_nwt_source_name(nwt_model_name);
+            merge_model_args.add_source_weight(decay_weight);
+            merge_model_args.add_nwt_source_name(nwt_hat_model_name);
+            merge_model_args.add_source_weight(apply_weight);
+            merge_model_args.set_nwt_target_name(nwt_model_name);
+            master_component->MergeModel(merge_model_args);
 
-              MergeModelArgs merge_model_args;
-              merge_model_args.add_nwt_source_name("nwt");
-              merge_model_args.add_source_weight(decay_weight);
-              merge_model_args.add_nwt_source_name("nwt_hat");
-              merge_model_args.add_source_weight(apply_weight);
-              merge_model_args.set_nwt_target_name("nwt");
-              master_component->MergeModel(merge_model_args);
-
-              if (regularize_model_args.regularizer_settings_size() > 0) {
-                regularize_model_args.set_nwt_source_name("nwt");
-                regularize_model_args.set_pwt_source_name("pwt");
-                regularize_model_args.set_rwt_target_name("rwt");
-                master_component->RegularizeModel(regularize_model_args);
-                normalize_model_args.set_rwt_source_name("rwt");
-              }
-
-              normalize_model_args.set_nwt_source_name("nwt");
-              normalize_model_args.set_pwt_target_name("pwt");
-              master_component->NormalizeModel(normalize_model_args);
-              process_batches_args.clear_batch_filename();
+            if (regularize_model_args.regularizer_settings_size() > 0) {
+              regularize_model_args.set_nwt_source_name(nwt_model_name);
+              regularize_model_args.set_pwt_source_name(pwt_model_name);
+              regularize_model_args.set_rwt_target_name(rwt_model_name);
+              master_component->RegularizeModel(regularize_model_args);
+              normalize_model_args.set_rwt_source_name(rwt_model_name);
             }
+
+            normalize_model_args.set_nwt_source_name(nwt_model_name);
+            normalize_model_args.set_pwt_target_name(pwt_model_name);
+            master_component->NormalizeModel(normalize_model_args);
+            process_batches_args.clear_batch_filename();
           }
         }
+
       }
     }
 
     if (!options.b_no_scores) {
-      auto test_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(score_model_name, "test_perplexity");
-      auto train_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(score_model_name, "train_perplexity");
-      auto test_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(score_model_name, "test_sparsity_theta");
-      auto train_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(score_model_name, "train_sparsity_theta");
-      auto sparsity_phi = master_component->GetScoreAs< ::artm::SparsityPhiScore>(score_model_name, "sparsity_phi");
-      auto test_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(score_model_name, "test_items_processed");
-      auto train_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(score_model_name, "train_items_processed");
-      auto topic_kernel = master_component->GetScoreAs< ::artm::TopicKernelScore>(score_model_name, "topic_kernel");
+      auto test_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(pwt_model_name, "test_perplexity");
+      auto train_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(pwt_model_name, "train_perplexity");
+      auto test_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(pwt_model_name, "test_sparsity_theta");
+      auto train_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(pwt_model_name, "train_sparsity_theta");
+      auto sparsity_phi = master_component->GetScoreAs< ::artm::SparsityPhiScore>(pwt_model_name, "sparsity_phi");
+      auto test_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(pwt_model_name, "test_items_processed");
+      auto train_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(pwt_model_name, "train_items_processed");
+      auto topic_kernel = master_component->GetScoreAs< ::artm::TopicKernelScore>(pwt_model_name, "topic_kernel");
 
       std::cerr
         <<   "\tTest perplexity = " << test_perplexity->value() << ", "
@@ -629,18 +591,18 @@ int execute(const artm_options& options) {
     }
   }
 
-  if (!options.save_model.empty() && !options.b_use_old_models) {
+  if (!options.save_model.empty()) {
     ProgressScope scope(std::string("Saving model to ") + options.save_model);
     ExportModelArgs export_model_args;
-    export_model_args.set_model_name("pwt");
+    export_model_args.set_model_name(pwt_model_name);
     export_model_args.set_file_name(options.save_model);
     master_component->ExportModel(export_model_args);
   }
 
-  if (!options.write_model_readable.empty() && !options.b_use_old_models) {
+  if (!options.write_model_readable.empty()) {
     ProgressScope scope(std::string("Saving model in readable format to ") + options.write_model_readable);
     ::artm::Matrix matrix;
-    std::shared_ptr< ::artm::TopicModel> model = master_component->GetTopicModel("pwt", &matrix);
+    std::shared_ptr< ::artm::TopicModel> model = master_component->GetTopicModel(pwt_model_name, &matrix);
     if (matrix.no_columns() != model->topics_count())
       throw "internal error (matrix.no_columns() != theta->topics_count())";
 
@@ -667,14 +629,14 @@ int execute(const artm_options& options) {
     }
   }
 
-  if (!options.write_predictions.empty() && !options.b_use_old_models) {
+  if (!options.write_predictions.empty()) {
     ProgressScope scope(std::string("Generating model predictions into ") + options.write_predictions);
     if (!master_config.cache_theta()) {
       master_config.set_cache_theta(true);
       master_component->Reconfigure(master_config);
     }
 
-    process_batches_args.set_pwt_source_name("pwt");
+    process_batches_args.set_pwt_source_name(pwt_model_name);
     process_batches_args.clear_nwt_target_name();
 
     for (auto& batch_filename : batch_file_names)
@@ -683,7 +645,7 @@ int execute(const artm_options& options) {
     process_batches_args.clear_batch_filename();
 
     ::artm::Matrix matrix;
-    std::shared_ptr< ::artm::ThetaMatrix> theta = master_component->GetThetaMatrix("pwt", &matrix);
+    std::shared_ptr< ::artm::ThetaMatrix> theta = master_component->GetThetaMatrix(pwt_model_name, &matrix);
     if (matrix.no_columns() != theta->topics_count())
       throw "internal error (matrix.no_columns() != theta->topics_count())";
 
@@ -720,16 +682,16 @@ int execute(const artm_options& options) {
     std::cerr << std::endl;
 
     if (options.class_id.empty()) {
-      auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(score_model_name, "top_tokens");
+      auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(pwt_model_name, "top_tokens");
       showTopTokenScore(*top_tokens, "@default_class");
     } else {
       for (const std::string& class_id : options.class_id) {
-        auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(score_model_name, class_id + "_top_tokens");
+        auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(pwt_model_name, class_id + "_top_tokens");
         showTopTokenScore(*top_tokens, class_id);
       }
     }
 
-    auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(score_model_name, "train_theta_snippet");
+    auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(pwt_model_name, "train_theta_snippet");
     int docs_to_show = train_theta_snippet.get()->values_size();
     std::cerr << "\nThetaMatrix (last " << docs_to_show << " processed documents, ids = ";
     for (int item_index = 0; item_index < train_theta_snippet->item_id_size(); ++item_index) {
@@ -779,7 +741,6 @@ int main(int argc, char * argv[]) {
       ("dictionary_min_df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary_max_df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
-      ("reuse_theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
       ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary"), "filename of dictionary file")
       ("items_per_batch", po::value(&options.items_per_batch)->default_value(500), "number of items per batch")
       ("tau_phi", po::value(&options.tau_phi)->default_value(0.0f), "regularization coefficient for PHI matrix")
@@ -787,20 +748,25 @@ int main(int argc, char * argv[]) {
       ("tau_decor", po::value(&options.tau_decor)->default_value(0.0f),
         "regularization coefficient for topics decorrelation "
         "(use with care, since this value heavily depends on the size of the dataset)")
-      ("paused", po::bool_switch(&options.b_paused)->default_value(false), "wait for keystroke (allows to attach a debugger)")
       ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
       ("update_every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market, 2 - vowpal wabbit)")
-      ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
-      ("merger_queue_size", po::value(&options.merger_queue_size), "size of the merger queue")
       ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
+    ;
+
+    po::options_description experimental_options("Experimental options");
+    experimental_options.add_options()
+      ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
+      ("reuse_theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
+      ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("disable_avx_opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
-      ("use_old_models", po::bool_switch(&options.b_use_old_models)->default_value(false), "old implementation based on InvokeIteration, WaitIdle and SynchronizeModel")
       ("use_dense_bow", po::bool_switch(&options.b_use_dense_bow)->default_value(false), "use dense representation of bag-of-words data in processors")
     ;
+
     all_options.add(basic_options);
+    all_options.add(experimental_options);
 
     po::variables_map vm;
     store(po::command_line_parser(argc, argv).options(all_options).run(), vm);
@@ -815,9 +781,6 @@ int main(int argc, char * argv[]) {
     // Show help if user neither provided batch folder, nor docword/vocab files
     if (options.docword.empty() && options.batch_folder.empty())
       show_help = true;
-
-    if (vm.count("merger_queue_size") == 0)
-      options.merger_queue_size = options.num_processors;  // by default set queue size based on the number of processors
 
     if (show_help) {
       std::cerr << all_options;
