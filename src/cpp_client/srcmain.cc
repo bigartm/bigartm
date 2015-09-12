@@ -618,9 +618,9 @@ int execute(const artm_options& options) {
       std::cerr
         <<   "\tTest perplexity = " << test_perplexity->value() << ", "
         << "\n\tTrain perplexity = " << train_perplexity->value() << ", "
-        << "\n\tTest spatsity theta = " << test_sparsity_theta->value() << ", "
+        << "\n\tTest sparsity theta = " << test_sparsity_theta->value() << ", "
         << "\n\tTrain sparsity theta = " << train_sparsity_theta->value() << ", "
-        << "\n\tSpatsity phi = " << sparsity_phi->value() << ", "
+        << "\n\tSparsity phi = " << sparsity_phi->value() << ", "
         << "\n\tTest items processed = " << test_items_processed->value() << ", "
         << "\n\tTrain items processed = " << train_items_processed->value() << ", "
         << "\n\tKernel size = " << topic_kernel->average_kernel_size() << ", "
