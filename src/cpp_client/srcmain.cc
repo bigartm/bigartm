@@ -194,35 +194,46 @@ std::vector<std::string> parseTopics(const std::string& topics, const std::strin
 }
 
 struct artm_options {
+  // Corpus / batches
   std::string docword;
   std::string vocab;
   std::string batch_folder;
-  std::string disk_cache_folder;
+  int batch_size;
+  std::string corpus_format;
+
+  // Dictionary
   std::string dictionary_file;
+  std::string dictionary_min_df;
+  std::string dictionary_max_df;
+
+  // Model
   std::string load_model;
+  std::string topics;
+  std::string use_modality;
+
+  // Learning
+  int passes;
+  int inner_iterations_count;
+  int update_every;
+  float tau0;
+  float kappa;
+  std::vector<std::string> regularizer;
+  bool b_reuse_theta;
+  int threads;
+
+  // Output
   std::string save_model;
   std::string write_model_readable;
   std::string write_predictions;
-  std::string dictionary_min_df;
-  std::string dictionary_max_df;
-  std::string topics;
-  std::string use_modality;
-  int num_processors;
-  int num_iters;
-  int num_inner_iters;
-  int items_per_batch;
-  int update_every;
-  int parsing_format;
   int score_level;
-  float tau0;
-  float kappa;
-  bool b_paused;
-  bool b_reuse_theta;
-  bool b_disable_avx_opt;
-  bool b_use_dense_bow;
-  std::vector<std::string> regularizer;
   std::vector<std::string> score;
   std::vector<std::string> final_score;
+
+  // Other options
+  std::string disk_cache_folder;
+  bool b_paused;
+  bool b_disable_avx_opt;
+  bool b_use_dense_bow;
 };
 
 void fixScoreLevel(artm_options* options) {
@@ -531,12 +542,12 @@ int execute(const artm_options& options) {
   // Step 1. Configuration
   MasterComponentConfig master_config;
   master_config.set_disk_path(working_batch_folder);
-  master_config.set_processors_count(options.num_processors);
+  master_config.set_processors_count(options.threads);
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
   if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
 
   ProcessBatchesArgs process_batches_args;
-  process_batches_args.set_inner_iterations_count(options.num_inner_iters);
+  process_batches_args.set_inner_iterations_count(options.inner_iterations_count);
   process_batches_args.set_opt_for_avx(!options.b_disable_avx_opt);
   process_batches_args.set_use_sparse_bow(!options.b_use_dense_bow);
   if (options.b_reuse_theta) process_batches_args.set_reuse_theta(true);
@@ -566,18 +577,18 @@ int execute(const artm_options& options) {
 
     ProgressScope scope("Parsing text collection");
     ::artm::CollectionParserConfig collection_parser_config;
-    if (options.parsing_format == 0) {
+    if (options.corpus_format == "bow") {
       collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
-    } else if (options.parsing_format == 1) {
+    } else if (options.corpus_format == "mm") {
       collection_parser_config.set_format(CollectionParserConfig_Format_MatrixMarket);
-    } else if (options.parsing_format == 2) {
+    } else if (options.corpus_format == "vw") {
       collection_parser_config.set_format(CollectionParserConfig_Format_VowpalWabbit);
     } else {
-      std::cerr << "Invalid parsing format options: " << options.parsing_format;
+      std::cerr << "Invalid parsing format options: " << options.corpus_format;
       return 1;
     }
 
-    if (options.parsing_format != 2 && !options.docword.empty() && options.vocab.empty()) {
+    if (options.corpus_format != "vw" && !options.docword.empty() && options.vocab.empty()) {
       std::cerr << "Error: no vocab file was specified. All formats except Vowpal Wabbit require both docword and vocab files.";
       return 1;
     }
@@ -587,7 +598,7 @@ int execute(const artm_options& options) {
       collection_parser_config.set_vocab_file_path(options.vocab);
     collection_parser_config.set_dictionary_file_name(options.dictionary_file);
     collection_parser_config.set_target_folder(working_batch_folder);
-    collection_parser_config.set_num_items_per_batch(options.items_per_batch);
+    collection_parser_config.set_num_items_per_batch(options.batch_size);
     ::artm::ParseCollection(collection_parser_config);
   } else {
     if (!fs::exists(fs::path(working_batch_folder))) {
@@ -693,7 +704,7 @@ int execute(const artm_options& options) {
   std::vector<std::string> batch_file_names = findFilesInDirectory(working_batch_folder, ".batch");
   int update_count = 0;
   std::cerr << "================= Processing started.\n";
-  for (int iter = 0; iter < options.num_iters; ++iter) {
+  for (int iter = 0; iter < options.passes; ++iter) {
     CuckooWatch timer("================= Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
 
     if (!online) {
@@ -859,48 +870,66 @@ int main(int argc, char * argv[]) {
 
     po::options_description all_options("BigARTM - library for advanced topic modeling (http://bigartm.org)");
 
-    po::options_description basic_options("Basic options");
-    basic_options.add_options()
-      ("help,h", "display this help message")
+    po::options_description input_data_options("Input data");
+    input_data_options.add_options()
+      ("corpus-format,f", po::value(&options.corpus_format)->default_value("bow"), "corpus format (vw, bow, mm)")
       ("docword,d", po::value(&options.docword), "docword file in UCI format")
       ("vocab,v", po::value(&options.vocab), "vocab file in UCI format")
-      ("batch_folder,b", po::value(&options.batch_folder)->default_value(""),
-        "If docword or vocab arguments are not provided, cpp_client will try to read pre-parsed batches from batch_folder location. "
-        "Otherwise, if both docword and vocab arguments are provided, cpp_client will parse the data and store batches in batch_folder location. ")
+      ("batch-folder,b", po::value(&options.batch_folder)->default_value(""), "batch folder"),
+      ("batch-size", po::value(&options.batch_size)->default_value(500), "number of items per batch")
+    ;
+
+    po::options_description dictionary_options("Dictionary");
+    dictionary_options.add_options()
+      ("dictionary-file", po::value(&options.dictionary_file)->default_value("dictionary"), "filename of dictionary file")
+      ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
+      ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
+    ;
+
+    po::options_description model_options("Model");
+    model_options.add_options()
+      ("load-model", po::value(&options.load_model)->default_value(""), "load model from file before processing")
       ("topics,t", po::value(&options.topics)->default_value("16"), "number of topics")
-      ("num_processors,p", po::value(&options.num_processors)->default_value(0), "number of concurrent processors (default: auto-detect)")
-      ("num_iters,i", po::value(&options.num_iters)->default_value(10), "number of outer iterations")
-      ("load_model", po::value(&options.load_model)->default_value(""), "load model from file before processing")
-      ("save_model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
-      ("write_model_readable", po::value(&options.write_model_readable)->default_value(""), "output the model in a human-readable format")
-      ("write_predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
-      ("dictionary_min_df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
-      ("dictionary_max_df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
-      ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
-      ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary"), "filename of dictionary file")
-      ("items_per_batch", po::value(&options.items_per_batch)->default_value(500), "number of items per batch")
-      ("update_every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
+      ("use-modality", po::value< std::string >(&options.use_modality)->default_value(""), "modalities (class_ids) and their weights")
+    ;
+
+    po::options_description learning_options("Learning");
+    learning_options.add_options()
+      ("passes,p", po::value(&options.passes)->default_value(10), "number of outer iterations")
+      ("inner-iterations-count", po::value(&options.inner_iterations_count)->default_value(10), "number of inner iterations")
+      ("update-every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
-      ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market, 2 - vowpal wabbit)")
-      ("use_modality", po::value< std::string >(&options.use_modality)->default_value(""), "modalities (class_ids) and their weights")
+      ("reuse-theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers")
+      ("threads", po::value(&options.threads)->default_value(0), "number of concurrent processors (default: auto-detect)")
+    ;
+
+    po::options_description output_options("Output");
+    output_options.add_options()
+      ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
+      ("write-model-readable", po::value(&options.write_model_readable)->default_value(""), "output the model in a human-readable format")
+      ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
+      ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level")
       ("score", po::value< std::vector<std::string> >(&options.score)->multitoken(), "scores")
-      ("final_score", po::value< std::vector<std::string> >(&options.final_score)->multitoken(), "final scores")
-      ("score_level", po::value< int >(&options.score_level)->default_value(2), "score level")
+      ("final-score", po::value< std::vector<std::string> >(&options.final_score)->multitoken(), "final scores")
     ;
 
-    po::options_description experimental_options("Experimental options");
-    experimental_options.add_options()
+    po::options_description ohter_options("Other options");
+    ohter_options.add_options()
+      ("help,h", "display this help message")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
-      ("reuse_theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
-      ("disk_cache_folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
-      ("disable_avx_opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
-      ("use_dense_bow", po::bool_switch(&options.b_use_dense_bow)->default_value(false), "use dense representation of bag-of-words data in processors")
+      ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
+      ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
+      ("use-dense-bow", po::bool_switch(&options.b_use_dense_bow)->default_value(false), "use dense representation of bag-of-words data in processors")
     ;
 
-    all_options.add(basic_options);
-    all_options.add(experimental_options);
+    all_options.add(input_data_options);
+    all_options.add(dictionary_options);
+    all_options.add(model_options);
+    all_options.add(learning_options);
+    all_options.add(output_options);
+    all_options.add(ohter_options);
 
     po::variables_map vm;
     store(po::command_line_parser(argc, argv).options(all_options).run(), vm);
