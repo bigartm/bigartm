@@ -63,9 +63,8 @@ class ARTM(object):
     """
 
     # ========== CONSTRUCTOR ==========
-    def __init__(self, num_processors=0, topic_names=None, num_topics=10,
-                 class_ids=None, cache_theta=True,
-                 scores=None, regularizers=None):
+    def __init__(self, num_processors=0, topic_names=None, num_topics=10, class_ids=None,
+                 cache_theta=True, scores=None, regularizers=None):
         self._num_processors = 0
         self._num_topics = 10
         self._cache_theta = True
@@ -116,10 +115,6 @@ class ARTM(object):
     @property
     def num_processors(self):
         return self._num_processors
-
-    @property
-    def num_document_passes(self):
-        return self._num_document_passes
 
     @property
     def cache_theta(self):
@@ -177,13 +172,6 @@ class ARTM(object):
         else:
             self.master.reconfigure(num_processors=num_processors)
             self._num_processors = num_processors
-
-    @num_document_passes.setter
-    def num_document_passes(self, num_document_passes):
-        if num_document_passes <= 0 or not isinstance(num_document_passes, int):
-            raise IOError('Number of passes through documents should be a positive integer')
-        else:
-            self._num_document_passes = num_document_passes
 
     @cache_theta.setter
     def cache_theta(self, cache_theta):
@@ -534,11 +522,13 @@ class ARTM(object):
                                      index=use_topic_names)
         return theta_data_frame
 
-    def transform(self, batch_vectorizer=None):
+    def transform(self, batch_vectorizer=None, num_document_passes=1):
         """ARTM.transform() --- find Theta matrix for new documents
 
         Args:
           batch_vectorizer: an instance of BatchVectorizer class
+          num_document_passes (int): number of inner iterations over each document
+          for inferring theta, default = 1
 
         Returns:
           pandas.DataFrame: (data, columns, rows), where:
@@ -564,7 +554,7 @@ class ARTM(object):
                                     pwt=self.model,
                                     batches=batches_list,
                                     nwt='nwt_hat',
-                                    num_inner_iterations=self._num_document_passes,
+                                    num_inner_iterations=num_document_passes,
                                     class_ids=class_ids,
                                     class_weights=class_weights,
                                     find_theta=True)
