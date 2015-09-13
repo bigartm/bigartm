@@ -10,7 +10,7 @@
 #include <fstream>
 
 #include "boost/lexical_cast.hpp"
-
+#include "boost/tokenizer.hpp"
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
 #include "boost/uuid/uuid.hpp"
@@ -72,6 +72,14 @@ class ProgressScope {
      }
    }
 };
+
+std::pair<std::string, std::string> at_option_parser(std::string const& s)
+{
+  if (!s.empty() && ('@' == s[0]))
+    return std::make_pair(std::string("response-file"), s.substr(1));
+  else
+    return std::pair<std::string, std::string>();
+}
 
 bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
   if (str.empty())
@@ -231,6 +239,7 @@ struct artm_options {
 
   // Other options
   std::string disk_cache_folder;
+  std::string response_file;
   bool b_paused;
   bool b_disable_avx_opt;
   bool b_use_dense_bow;
@@ -875,7 +884,7 @@ int main(int argc, char * argv[]) {
       ("corpus-format,f", po::value(&options.corpus_format)->default_value("bow"), "corpus format (vw, bow, mm)")
       ("docword,d", po::value(&options.docword), "docword file in UCI format")
       ("vocab,v", po::value(&options.vocab), "vocab file in UCI format")
-      ("batch-folder,b", po::value(&options.batch_folder)->default_value(""), "batch folder"),
+      ("batch-folder,b", po::value(&options.batch_folder)->default_value(""), "batch folder")
       ("batch-size", po::value(&options.batch_size)->default_value(500), "number of items per batch")
     ;
 
@@ -918,6 +927,7 @@ int main(int argc, char * argv[]) {
     po::options_description ohter_options("Other options");
     ohter_options.add_options()
       ("help,h", "display this help message")
+      ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response-file; can be specified with '@name', too")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
@@ -932,7 +942,7 @@ int main(int argc, char * argv[]) {
     all_options.add(ohter_options);
 
     po::variables_map vm;
-    store(po::command_line_parser(argc, argv).options(all_options).run(), vm);
+    store(po::command_line_parser(argc, argv).options(all_options).extra_parser(at_option_parser).run(), vm);
     notify(vm);
 
     // Uncomment next two lines to override commandline settings by code. DON'T COMMIT such change to git.
@@ -952,6 +962,29 @@ int main(int argc, char * argv[]) {
       std::cerr << "\tcpp_client -d docword.kos.txt -v vocab.kos.txt\n";
       std::cerr << "\tset GLOG_logtostderr=1 & cpp_client -d docword.kos.txt -v vocab.kos.txt\n";
       return 1;
+    }
+
+    if (vm.count("response-file") && !options.response_file.empty()) {
+      // Load the file and tokenize it
+      std::ifstream ifs(vm["response-file"].as<std::string>().c_str());
+      if (!ifs) {
+        std::cerr << "Could not open the response file\n";
+        return 1;
+      }
+
+      // Read the whole file into a string
+      std::stringstream ss;
+      ss << ifs.rdbuf();
+
+      // Split the file content
+      boost::char_separator<char> sep(" \n\r");
+      std::string ResponsefileContents(ss.str());
+      boost::tokenizer<boost::char_separator<char> > tok(ResponsefileContents, sep);
+      std::vector<std::string> args;
+      copy(tok.begin(), tok.end(), back_inserter(args));
+
+      // Parse the file and store the options
+      store(po::command_line_parser(args).options(all_options).run(), vm);
     }
 
     fixScoreLevel(&options);
