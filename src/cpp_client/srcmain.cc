@@ -170,9 +170,11 @@ std::vector<std::string> parseTopics(const std::string& topics) {
   return result;
 }
 
-std::vector<std::string> expandTopics(const std::vector<std::string>& topic_names, const std::string& topic_groups) {
+std::vector<std::string> parseTopics(const std::string& topics, const std::string& topic_groups) {
   std::vector<std::string> result;
+
   std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topic_groups);
+  std::vector<std::string> topic_names = parseTopics(topics);
   for (auto& topic_name : topic_names) {
     bool found = false;
     for (auto& pair : pairs) {
@@ -190,7 +192,6 @@ std::vector<std::string> expandTopics(const std::vector<std::string>& topic_name
 
   return result;
 }
-
 
 struct artm_options {
   std::string docword;
@@ -211,112 +212,39 @@ struct artm_options {
   int items_per_batch;
   int update_every;
   int parsing_format;
+  int score_level;
   float tau0;
   float kappa;
   bool b_paused;
-  bool b_no_scores;
   bool b_reuse_theta;
   bool b_disable_avx_opt;
   bool b_use_dense_bow;
   std::vector<std::string> class_id;
   std::vector<std::string> regularizer;
+  std::vector<std::string> score;
+  std::vector<std::string> final_score;
 };
 
-void configureStreams(artm::MasterComponentConfig* master_config) {
-  // Configure train and test streams
-  Stream* train_stream = master_config->add_stream();
-  Stream* test_stream  = master_config->add_stream();
-  train_stream->set_name("train_stream");
-  train_stream->set_type(Stream_Type_ItemIdModulus);
-  train_stream->set_modulus(10);
-  for (int i = 0; i <= 8; ++i) {
-    train_stream->add_residuals(i);
+void fixScoreLevel(artm_options* options) {
+  if (!options->score.empty() || !options->final_score.empty()) {
+    options->score_level = 0;
+    return;
   }
 
-  test_stream->set_name("test_stream");
-  test_stream->set_type(Stream_Type_ItemIdModulus);
-  test_stream->set_modulus(10);
-  test_stream->add_residuals(9);
-}
-
-void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* model_config, const artm_options& options) {
-  ::artm::ScoreConfig score_config;
-  ::artm::PerplexityScoreConfig perplexity_config;
-  perplexity_config.set_stream_name("test_stream");
-  score_config.set_config(perplexity_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
-  score_config.set_name("test_perplexity");
-  master_config->add_score_config()->CopyFrom(score_config);
-
-  perplexity_config.set_stream_name("train_stream");
-  score_config.set_config(perplexity_config.SerializeAsString());
-  score_config.set_name("train_perplexity");
-  master_config->add_score_config()->CopyFrom(score_config);
-
-  ::artm::SparsityThetaScoreConfig sparsity_theta_config;
-  sparsity_theta_config.set_stream_name("test_stream");
-  score_config.set_config(sparsity_theta_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_SparsityTheta);
-  score_config.set_name("test_sparsity_theta");
-  master_config->add_score_config()->CopyFrom(score_config);
-
-  sparsity_theta_config.set_stream_name("train_stream");
-  score_config.set_config(sparsity_theta_config.SerializeAsString());
-  score_config.set_name("train_sparsity_theta");
-  master_config->add_score_config()->CopyFrom(score_config);
-
-  ::artm::SparsityPhiScoreConfig sparsity_phi_config;
-  score_config.set_config(sparsity_phi_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_SparsityPhi);
-  score_config.set_name("sparsity_phi");
-  master_config->add_score_config()->CopyFrom(score_config);
-
-  ::artm::ItemsProcessedScoreConfig items_processed_config;
-  items_processed_config.set_stream_name("test_stream");
-  score_config.set_config(items_processed_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_ItemsProcessed);
-  score_config.set_name("test_items_processed");
-  master_config->add_score_config()->CopyFrom(score_config);
-
-  items_processed_config.set_stream_name("train_stream");
-  score_config.set_config(items_processed_config.SerializeAsString());
-  score_config.set_name("train_items_processed");
-  master_config->add_score_config()->CopyFrom(score_config);
-
-  if (options.class_id.empty()) {
-    ::artm::TopTokensScoreConfig top_tokens_config;
-    top_tokens_config.set_num_tokens(6);
-    score_config.set_config(top_tokens_config.SerializeAsString());
-    score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
-    score_config.set_name("top_tokens");
-    master_config->add_score_config()->CopyFrom(score_config);
-  }
-  else {
-    for (const std::string& class_id : options.class_id) {
-      ::artm::TopTokensScoreConfig top_tokens_config;
-      top_tokens_config.set_num_tokens(6);
-      top_tokens_config.set_class_id(class_id);
-      score_config.set_config(top_tokens_config.SerializeAsString());
-      score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
-      score_config.set_name(class_id + "_top_tokens");
-      master_config->add_score_config()->CopyFrom(score_config);
-    }
+  if (options->score_level >= 1) {
+    options->score.push_back("Perplexity");
+    options->score.push_back("SparsityPhi");
+    options->score.push_back("SparsityTheta");
   }
 
-  ::artm::ThetaSnippetScoreConfig theta_snippet_config;
-  theta_snippet_config.set_stream_name("train_stream");
-  theta_snippet_config.set_item_count(7);
-  score_config.set_config(theta_snippet_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
-  score_config.set_name("train_theta_snippet");
-  master_config->add_score_config()->CopyFrom(score_config);
+  if (options->score_level >= 2) {
+    options->final_score.push_back("TopTokens");
+    options->final_score.push_back("ThetaSnippet");
+  }
 
-  ::artm::TopicKernelScoreConfig topic_kernel_config;
-  std::string tr = topic_kernel_config.SerializeAsString();
-  score_config.set_config(topic_kernel_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreConfig_Type_TopicKernel);
-  score_config.set_name("topic_kernel");
-  master_config->add_score_config()->CopyFrom(score_config);
+  if (options->score_level >= 3) {
+    options->score.push_back("TopicKernel");
+  }
 }
 
 void configureRegularizer(const std::string& regularizer, const std::string& topics,
@@ -340,14 +268,12 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     std::string elem = strs[i];
     if (elem.empty())
       continue;
-    if (elem[0] == '#') {
-      topic_names = parseTopics(elem.substr(1, elem.size() - 1));
-      topic_names = expandTopics(topic_names, topics);
-    } else if (elem[0] == '@') {
+    if (elem[0] == '#')
+      topic_names = parseTopics(elem.substr(1, elem.size() - 1), topics);
+    else if (elem[0] == '@')
       class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
-    } else if (elem[0] == '!') {
+    else if (elem[0] == '!')
       dictionary_name = elem.substr(1, elem.size() - 1);
-    }
   }
 
   // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation
@@ -406,18 +332,175 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   }
 }
 
-void showTopTokenScore(const artm::TopTokensScore& top_tokens, std::string class_id) {
-  std::cerr << "\nTop tokens for " << class_id << ":";
-  int topic_index = -1;
-  for (int i = 0; i < top_tokens.num_entries(); i++) {
-    if (top_tokens.topic_index(i) != topic_index) {
-      topic_index = top_tokens.topic_index(i);
-      std::cerr << "\n#" << (topic_index + 1) << ": ";
-    }
+class ScoreHelper {
+ private:
+   ::artm::MasterComponent* master_;
+   std::vector<std::pair<std::string, ::artm::ScoreConfig_Type>> score_name_;
+ public:
+   ScoreHelper(::artm::MasterComponent* master) : master_(master) {}
 
-    std::cerr << top_tokens.token(i) << "(" << std::setw(2) << std::setprecision(2) << top_tokens.weight(i) << ") ";
-  }
-}
+   void addScore(const std::string& score, const std::string& topics) {
+     std::vector<std::string> strs;
+     boost::split(strs, score, boost::is_any_of("\t "));
+     if (strs.size() < 1)
+       throw std::invalid_argument(std::string("Invalid score: " + score));
+
+     std::vector<std::pair<std::string, float>> class_ids;
+     std::vector<std::string> topic_names;
+     std::string dictionary_name;
+     for (int i = 1; i < strs.size(); ++i) {
+       std::string elem = strs[i];
+       if (elem.empty())
+         continue;
+       if (elem[0] == '#')
+         topic_names = parseTopics(elem.substr(1, elem.size() - 1), topics);
+       else if (elem[0] == '@')
+         class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
+       else if (elem[0] == '!')
+         dictionary_name = elem.substr(1, elem.size() - 1);
+     }
+
+     // Perplexity,SparsityTheta,SparsityPhi,TopTokens,ThetaSnippet,TopicKernel
+     std::string score_type = boost::to_lower_copy(strs[0]);
+     size_t langle = score_type.find('(');
+     size_t rangle = score_type.find(')');
+     float score_arg = 0;
+     if (langle != std::string::npos && rangle != std::string::npos && (rangle - langle) >= 2) {
+       try {
+         score_arg = boost::lexical_cast<float>(score_type.substr(langle + 1, rangle - langle - 1));
+         score_type = score_type.substr(0, langle);
+       }
+       catch (...) {}
+     }
+
+     ::artm::ScoreConfig score_config;
+     std::shared_ptr< ::google::protobuf::Message> specific_config;
+     score_config.set_name(score);
+     if (score_type == "perplexity") {
+       PerplexityScoreConfig specific_config;
+       for (auto& class_id : class_ids) specific_config.add_class_id(class_id.first);
+       if (dictionary_name.empty()) {
+         specific_config.set_model_type(PerplexityScoreConfig_Type_UnigramDocumentModel);
+       } else {
+         specific_config.set_model_type(PerplexityScoreConfig_Type_UnigramCollectionModel);
+         specific_config.set_dictionary_name(dictionary_name);
+       }
+       score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
+       score_config.set_config(specific_config.SerializeAsString());
+     }
+     else if (score_type == "sparsitytheta") {
+       SparsityThetaScoreConfig specific_config;
+       for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
+       score_config.set_type(::artm::ScoreConfig_Type_SparsityTheta);
+       score_config.set_config(specific_config.SerializeAsString());
+     }
+     else if (score_type == "sparsityphi") {
+       SparsityPhiScoreConfig specific_config;
+       for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
+       for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
+       score_config.set_type(::artm::ScoreConfig_Type_SparsityPhi);
+       score_config.set_config(specific_config.SerializeAsString());
+     }
+     else if (score_type == "toptokens") {
+       TopTokensScoreConfig specific_config;
+       if (score_arg != 0) specific_config.set_num_tokens(static_cast<int>(score_arg));
+       for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
+       for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
+       if (!dictionary_name.empty()) specific_config.set_cooccurrence_dictionary_name(dictionary_name);
+       score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
+       score_config.set_config(specific_config.SerializeAsString());
+     }
+     else if (score_type == "thetasnippet") {
+       ThetaSnippetScoreConfig specific_config;
+       if (score_arg != 0) specific_config.set_item_count(score_arg);
+       score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
+       score_config.set_config(specific_config.SerializeAsString());
+     }
+     else if (score_type == "topickernel") {
+       TopicKernelScoreConfig specific_config;
+       if (score_arg != 0) specific_config.set_probability_mass_threshold(score_arg);
+       for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
+       for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
+       if (!dictionary_name.empty()) specific_config.set_cooccurrence_dictionary_name(dictionary_name);
+       score_config.set_type(::artm::ScoreConfig_Type_TopicKernel);
+       score_config.set_config(specific_config.SerializeAsString());
+     }
+     else {
+       throw std::invalid_argument(std::string("Unknown regularizer type: " + strs[0]));
+     }
+     master_->mutable_config()->add_score_config()->CopyFrom(score_config);
+     master_->Reconfigure(master_->config());
+     score_name_.push_back(std::make_pair(score, score_config.type()));
+   }
+
+   void showScore(const std::string model_name, std::string& score_name, ::artm::ScoreConfig_Type type) {
+     if (type == ::artm::ScoreConfig_Type_Perplexity) {
+       auto score_data = master_->GetScoreAs< ::artm::PerplexityScore>(model_name, score_name);
+       std::cerr << "Perplexity      = " << score_data->value();
+       if (boost::to_lower_copy(score_name) != "perplexity") std::cerr << "\t(" << score_name << ")";
+       std::cerr << "\n";
+     }
+     else if (type == ::artm::ScoreConfig_Type_SparsityTheta) {
+       auto score_data = master_->GetScoreAs< ::artm::SparsityThetaScore>(model_name, score_name);
+       std::cerr << "SparsityTheta   = " << score_data->value();
+       if (boost::to_lower_copy(score_name) != "sparsitytheta") std::cerr << "\t(" << score_name << ")";
+       std::cerr << "\n";
+     }
+     else if (type == ::artm::ScoreConfig_Type_SparsityPhi) {
+       auto score_data = master_->GetScoreAs< ::artm::SparsityPhiScore>(model_name, score_name);
+       std::cerr << "SparsityPhi     = " << score_data->value();
+       if (boost::to_lower_copy(score_name) != "sparsityphi") std::cerr << "\t(" << score_name << ")";
+       std::cerr << "\n";
+     }
+     else if (type == ::artm::ScoreConfig_Type_TopTokens) {
+       auto score_data = master_->GetScoreAs< ::artm::TopTokensScore>(model_name, score_name);
+       std::cerr << "TopTokens (" << score_name << "):";
+       int topic_index = -1;
+       for (int i = 0; i < score_data->num_entries(); i++) {
+         if (score_data->topic_index(i) != topic_index) {
+           topic_index = score_data->topic_index(i);
+           std::cerr << "\n#" << (topic_index + 1) << ": ";
+         }
+
+         std::cerr << score_data->token(i) << "(" << std::setw(2) << std::setprecision(2) << score_data->weight(i) << ") ";
+       }
+       std::cerr << "\n";
+     }
+     else if (type == ::artm::ScoreConfig_Type_ThetaSnippet) {
+       auto score_data = master_->GetScoreAs< ::artm::ThetaSnippetScore>(model_name, score_name);
+       int docs_to_show = score_data->values_size();
+       std::cerr << "ThetaSnippet (" << score_name << ")\n";
+       for (int item_index = 0; item_index < score_data->values_size(); ++item_index) {
+         std::cerr << "ItemID=" << score_data->item_id(item_index) << ": ";
+         const FloatArray& values = score_data->values(item_index);
+         for (int topic_index = 0; topic_index < values.value_size(); ++topic_index) {
+           float weight = values.value(topic_index);
+           std::cerr << std::fixed << std::setw(4) << std::setprecision(5) << weight << " ";
+         }
+         std::cerr << "\n";
+       }
+     }
+     else if (type == ::artm::ScoreConfig_Type_TopicKernel) {
+       auto score_data = master_->GetScoreAs< ::artm::TopicKernelScore>(model_name, score_name);
+       std::stringstream suffix;
+       if (boost::to_lower_copy(score_name) != "topickernel") suffix << "\t(" << score_name << ")";
+
+       std::cerr << "KernelSize      = " << score_data->average_kernel_size() << suffix.str() << "\n";
+       std::cerr << "KernelPurity    = " << score_data->average_kernel_purity() << suffix.str() << "\n";
+       std::cerr << "KernelContrast  = " << score_data->average_kernel_contrast() << suffix.str() << "\n";
+       if (score_data->has_average_coherence())
+         std::cerr << "KernelCoherence = " << score_data->average_kernel_contrast() << suffix.str() << "\n";
+     }
+     else {
+       throw std::invalid_argument("Unknown score config type: " + boost::lexical_cast<std::string>(type));
+     }
+   }
+
+   void showScores(const std::string model_name) {
+     for (auto& score_name : score_name_)
+       showScore(model_name, score_name.first, score_name.second);
+   }
+};
 
 ::artm::ProcessBatchesArgs ExtractProcessBatchesArgs(const ModelConfig& model_config) {
   ::artm::ProcessBatchesArgs args;
@@ -468,7 +551,6 @@ int execute(const artm_options& options) {
   for (auto& topic_name : topic_names)
     model_config.add_topic_name(topic_name);
   model_config.set_inner_iterations_count(options.num_inner_iters);
-  model_config.set_stream_name("train_stream");
   model_config.set_opt_for_avx(!options.b_disable_avx_opt);
   model_config.set_use_sparse_bow(!options.b_use_dense_bow);
   if (options.b_reuse_theta) model_config.set_reuse_theta(true);
@@ -483,10 +565,6 @@ int execute(const artm_options& options) {
   ProcessBatchesArgs process_batches_args = ExtractProcessBatchesArgs(model_config);
   RegularizeModelArgs regularize_model_args;
   NormalizeModelArgs normalize_model_args;
-
-  configureStreams(&master_config);
-  if (!options.b_no_scores)
-    configureScores(&master_config, &model_config, options);
 
   // Step 2. Collection parsing
   if (parse_collection) {
@@ -569,6 +647,12 @@ int execute(const artm_options& options) {
     regularizers.push_back(std::make_shared<artm::Regularizer>(*master_component, regularizer_config));
   }
 
+  // Step 4.1. Configure scores.
+  ScoreHelper score_helper(master_component.get());
+  ScoreHelper final_score_helper(master_component.get());
+  for (auto& score : options.score) score_helper.addScore(score, options.topics);
+  for (auto& score : options.final_score) final_score_helper.addScore(score, options.topics);
+
   // Step 5. Create and initialize model.
   if (options.load_model.empty()) {
     InitializeModelArgs initialize_model_args;
@@ -624,92 +708,69 @@ int execute(const artm_options& options) {
 
   std::vector<std::string> batch_file_names = findFilesInDirectory(working_batch_folder, ".batch");
   int update_count = 0;
+  std::cerr << "================= Processing started.\n";
   for (int iter = 0; iter < options.num_iters; ++iter) {
-    {
-      CuckooWatch timer("Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
+    CuckooWatch timer("================= Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
 
-      if (!online) {
-        process_batches_args.set_pwt_source_name(pwt_model_name);
-        process_batches_args.set_nwt_target_name(nwt_hat_model_name);
-        for (auto& batch_filename : batch_file_names)
-          process_batches_args.add_batch_filename(batch_filename);
-        master_component->ProcessBatches(process_batches_args);
-        process_batches_args.clear_batch_filename();
+    if (!online) {
+      process_batches_args.set_pwt_source_name(pwt_model_name);
+      process_batches_args.set_nwt_target_name(nwt_hat_model_name);
+      for (auto& batch_filename : batch_file_names)
+        process_batches_args.add_batch_filename(batch_filename);
+      master_component->ProcessBatches(process_batches_args);
+      process_batches_args.clear_batch_filename();
 
-        if (regularize_model_args.regularizer_settings_size() > 0) {
-          regularize_model_args.set_nwt_source_name(nwt_hat_model_name);
-          regularize_model_args.set_pwt_source_name(pwt_model_name);
-          regularize_model_args.set_rwt_target_name(rwt_model_name);
-          master_component->RegularizeModel(regularize_model_args);
-          normalize_model_args.set_rwt_source_name(rwt_model_name);
-        }
-
-        normalize_model_args.set_nwt_source_name(nwt_hat_model_name);
-        normalize_model_args.set_pwt_target_name(pwt_model_name);
-        master_component->NormalizeModel(normalize_model_args);
-      } else {  // online
-        for (int i = 0; i < batch_file_names.size(); ++i) {
-          process_batches_args.set_reset_scores(i == 0);  // reset scores at the beginning of each iteration
-          process_batches_args.add_batch_filename(batch_file_names[i]);
-          int size = process_batches_args.batch_filename_size();
-          if (size >= options.update_every || (i + 1) == batch_file_names.size()) {
-            update_count++;
-            process_batches_args.set_pwt_source_name(pwt_model_name);
-            process_batches_args.set_nwt_target_name(nwt_hat_model_name);
-            master_component->ProcessBatches(process_batches_args);
-
-            double apply_weight = (update_count == 1) ? 1.0 : pow(options.tau0 + update_count, -options.kappa);
-            double decay_weight = 1.0 - apply_weight;
-
-            MergeModelArgs merge_model_args;
-            merge_model_args.add_nwt_source_name(nwt_model_name);
-            merge_model_args.add_source_weight(decay_weight);
-            merge_model_args.add_nwt_source_name(nwt_hat_model_name);
-            merge_model_args.add_source_weight(apply_weight);
-            merge_model_args.set_nwt_target_name(nwt_model_name);
-            master_component->MergeModel(merge_model_args);
-
-            if (regularize_model_args.regularizer_settings_size() > 0) {
-              regularize_model_args.set_nwt_source_name(nwt_model_name);
-              regularize_model_args.set_pwt_source_name(pwt_model_name);
-              regularize_model_args.set_rwt_target_name(rwt_model_name);
-              master_component->RegularizeModel(regularize_model_args);
-              normalize_model_args.set_rwt_source_name(rwt_model_name);
-            }
-
-            normalize_model_args.set_nwt_source_name(nwt_model_name);
-            normalize_model_args.set_pwt_target_name(pwt_model_name);
-            master_component->NormalizeModel(normalize_model_args);
-            process_batches_args.clear_batch_filename();
-          }
-        }
-
+      if (regularize_model_args.regularizer_settings_size() > 0) {
+        regularize_model_args.set_nwt_source_name(nwt_hat_model_name);
+        regularize_model_args.set_pwt_source_name(pwt_model_name);
+        regularize_model_args.set_rwt_target_name(rwt_model_name);
+        master_component->RegularizeModel(regularize_model_args);
+        normalize_model_args.set_rwt_source_name(rwt_model_name);
       }
-    }
 
-    if (!options.b_no_scores) {
-      auto test_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(pwt_model_name, "test_perplexity");
-      auto train_perplexity = master_component->GetScoreAs< ::artm::PerplexityScore>(pwt_model_name, "train_perplexity");
-      auto test_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(pwt_model_name, "test_sparsity_theta");
-      auto train_sparsity_theta = master_component->GetScoreAs< ::artm::SparsityThetaScore>(pwt_model_name, "train_sparsity_theta");
-      auto sparsity_phi = master_component->GetScoreAs< ::artm::SparsityPhiScore>(pwt_model_name, "sparsity_phi");
-      auto test_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(pwt_model_name, "test_items_processed");
-      auto train_items_processed = master_component->GetScoreAs< ::artm::ItemsProcessedScore>(pwt_model_name, "train_items_processed");
-      auto topic_kernel = master_component->GetScoreAs< ::artm::TopicKernelScore>(pwt_model_name, "topic_kernel");
+      normalize_model_args.set_nwt_source_name(nwt_hat_model_name);
+      normalize_model_args.set_pwt_target_name(pwt_model_name);
+      master_component->NormalizeModel(normalize_model_args);
+    } else {  // online
+      for (int i = 0; i < batch_file_names.size(); ++i) {
+        process_batches_args.set_reset_scores(i == 0);  // reset scores at the beginning of each iteration
+        process_batches_args.add_batch_filename(batch_file_names[i]);
+        int size = process_batches_args.batch_filename_size();
+        if (size >= options.update_every || (i + 1) == batch_file_names.size()) {
+          update_count++;
+          process_batches_args.set_pwt_source_name(pwt_model_name);
+          process_batches_args.set_nwt_target_name(nwt_hat_model_name);
+          master_component->ProcessBatches(process_batches_args);
 
-      std::cerr
-        <<   "\tTest perplexity = " << test_perplexity->value() << ", "
-        << "\n\tTrain perplexity = " << train_perplexity->value() << ", "
-        << "\n\tTest sparsity theta = " << test_sparsity_theta->value() << ", "
-        << "\n\tTrain sparsity theta = " << train_sparsity_theta->value() << ", "
-        << "\n\tSparsity phi = " << sparsity_phi->value() << ", "
-        << "\n\tTest items processed = " << test_items_processed->value() << ", "
-        << "\n\tTrain items processed = " << train_items_processed->value() << ", "
-        << "\n\tKernel size = " << topic_kernel->average_kernel_size() << ", "
-        << "\n\tKernel purity = " << topic_kernel->average_kernel_purity() << ", "
-        << "\n\tKernel contrast = " << topic_kernel->average_kernel_contrast() << std::endl;
-    }
-  }
+          double apply_weight = (update_count == 1) ? 1.0 : pow(options.tau0 + update_count, -options.kappa);
+          double decay_weight = 1.0 - apply_weight;
+
+          MergeModelArgs merge_model_args;
+          merge_model_args.add_nwt_source_name(nwt_model_name);
+          merge_model_args.add_source_weight(decay_weight);
+          merge_model_args.add_nwt_source_name(nwt_hat_model_name);
+          merge_model_args.add_source_weight(apply_weight);
+          merge_model_args.set_nwt_target_name(nwt_model_name);
+          master_component->MergeModel(merge_model_args);
+
+          if (regularize_model_args.regularizer_settings_size() > 0) {
+            regularize_model_args.set_nwt_source_name(nwt_model_name);
+            regularize_model_args.set_pwt_source_name(pwt_model_name);
+            regularize_model_args.set_rwt_target_name(rwt_model_name);
+            master_component->RegularizeModel(regularize_model_args);
+            normalize_model_args.set_rwt_source_name(rwt_model_name);
+          }
+
+          normalize_model_args.set_nwt_source_name(nwt_model_name);
+          normalize_model_args.set_pwt_target_name(pwt_model_name);
+          master_component->NormalizeModel(normalize_model_args);
+          process_batches_args.clear_batch_filename();
+        }
+      }  // for batch_file_names
+    }  // online
+
+    score_helper.showScores(pwt_model_name);
+  }  // iter
 
   if (!options.save_model.empty()) {
     ProgressScope scope(std::string("Saving model to ") + options.save_model);
@@ -798,36 +859,7 @@ int execute(const artm_options& options) {
     }
   }
 
-  if (!options.b_no_scores) {
-    std::cerr << std::endl;
-
-    if (options.class_id.empty()) {
-      auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(pwt_model_name, "top_tokens");
-      showTopTokenScore(*top_tokens, "@default_class");
-    } else {
-      for (const std::string& class_id : options.class_id) {
-        auto top_tokens = master_component->GetScoreAs< ::artm::TopTokensScore>(pwt_model_name, class_id + "_top_tokens");
-        showTopTokenScore(*top_tokens, class_id);
-      }
-    }
-
-    auto train_theta_snippet = master_component->GetScoreAs< ::artm::ThetaSnippetScore>(pwt_model_name, "train_theta_snippet");
-    int docs_to_show = train_theta_snippet.get()->values_size();
-    std::cerr << "\nThetaMatrix (last " << docs_to_show << " processed documents, ids = ";
-    for (int item_index = 0; item_index < train_theta_snippet->item_id_size(); ++item_index) {
-      if (item_index != 0) std::cerr << ",";
-      std::cerr << train_theta_snippet->item_id(item_index);
-    }
-    std::cerr << "):\n";
-    for (int topic_index = 0; topic_index < topic_names.size(); topic_index++) {
-      std::cerr << "Topic" << topic_index << ": ";
-      for (int item_index = 0; item_index < docs_to_show; item_index++) {
-        float weight = train_theta_snippet.get()->values(item_index).value(topic_index);
-        std::cerr << std::fixed << std::setw(4) << std::setprecision(5) << weight << " ";
-      }
-      std::cerr << std::endl;
-    }
-  }
+  final_score_helper.showScores(pwt_model_name);
 
   if (options.batch_folder.empty()) {
     try { boost::filesystem::remove_all(working_batch_folder); }
@@ -863,13 +895,15 @@ int main(int argc, char * argv[]) {
       ("num_inner_iters", po::value(&options.num_inner_iters)->default_value(10), "number of inner iterations")
       ("dictionary_file", po::value(&options.dictionary_file)->default_value("dictionary"), "filename of dictionary file")
       ("items_per_batch", po::value(&options.items_per_batch)->default_value(500), "number of items per batch")
-      ("no_scores", po::bool_switch(&options.b_no_scores)->default_value(false), "disable calculation of all scores")
       ("update_every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market, 2 - vowpal wabbit)")
       ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers")
+      ("score", po::value< std::vector<std::string> >(&options.score)->multitoken(), "scores")
+      ("final_score", po::value< std::vector<std::string> >(&options.final_score)->multitoken(), "final scores")
+      ("score_level", po::value< int >(&options.score_level)->default_value(2), "score level")
     ;
 
     po::options_description experimental_options("Experimental options");
@@ -907,6 +941,7 @@ int main(int argc, char * argv[]) {
       return 1;
     }
 
+    fixScoreLevel(&options);
     return execute(options);
   } catch (std::exception& e) {
     std::cerr << "Exception  : " << e.what() << "\n";
