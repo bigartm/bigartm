@@ -206,6 +206,7 @@ struct artm_options {
   std::string dictionary_min_df;
   std::string dictionary_max_df;
   std::string topics;
+  std::string use_modality;
   int num_processors;
   int num_iters;
   int num_inner_iters;
@@ -219,7 +220,6 @@ struct artm_options {
   bool b_reuse_theta;
   bool b_disable_avx_opt;
   bool b_use_dense_bow;
-  std::vector<std::string> class_id;
   std::vector<std::string> regularizer;
   std::vector<std::string> score;
   std::vector<std::string> final_score;
@@ -555,11 +555,11 @@ int execute(const artm_options& options) {
   model_config.set_use_sparse_bow(!options.b_use_dense_bow);
   if (options.b_reuse_theta) model_config.set_reuse_theta(true);
   model_config.set_name("15081980-90a7-4767-ab85-7cb551c39339");  // randomly generated GUID
-  if (options.class_id.size() > 0) {
-    for (const std::string& class_id : options.class_id) {
-      model_config.add_class_id(class_id);
-      model_config.add_class_weight(1.0f);
-    }
+
+  std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options.use_modality);
+  for (auto& class_id : class_ids) {
+    model_config.add_class_id(class_id.first);
+    model_config.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
   }
 
   ProcessBatchesArgs process_batches_args = ExtractProcessBatchesArgs(model_config);
@@ -899,7 +899,7 @@ int main(int argc, char * argv[]) {
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
       ("parsing_format", po::value(&options.parsing_format)->default_value(0), "parsing format (0 - UCI, 1 - matrix market, 2 - vowpal wabbit)")
-      ("class_id", po::value< std::vector<std::string> >(&options.class_id)->multitoken(), "class_id(s) for multiclass datasets")
+      ("use_modality", po::value< std::string >(&options.use_modality)->default_value(""), "modalities (class_ids) and their weights")
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers")
       ("score", po::value< std::vector<std::string> >(&options.score)->multitoken(), "scores")
       ("final_score", po::value< std::vector<std::string> >(&options.final_score)->multitoken(), "final scores")
