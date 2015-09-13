@@ -40,8 +40,6 @@ class ARTM(object):
       class_ids (dict): list of class_ids and their weights to be used in model,
       key --- class_id, value --- weight, if not specified then all class_ids
       will be used
-      num_document_passes (int): number of iterations over each document
-      during processing, default=10
       cache_theta (bool): save or not the Theta matrix in model. Necessary
       if ARTM.get_theta() usage expects, default=True
       scores(list): list of scores (objects of artm.***Score classes), default=None
@@ -66,11 +64,10 @@ class ARTM(object):
 
     # ========== CONSTRUCTOR ==========
     def __init__(self, num_processors=0, topic_names=None, num_topics=10,
-                 class_ids=None, num_document_passes=10, cache_theta=True,
+                 class_ids=None, cache_theta=True,
                  scores=None, regularizers=None):
         self._num_processors = 0
         self._num_topics = 10
-        self._num_document_passes = 10
         self._cache_theta = True
 
         if topic_names is None or not topic_names:
@@ -88,9 +85,6 @@ class ARTM(object):
 
         if num_processors > 0:
             self._num_processors = num_processors
-
-        if num_document_passes > 0:
-            self._num_document_passes = num_document_passes
 
         if isinstance(cache_theta, bool):
             self._cache_theta = cache_theta
@@ -250,21 +244,19 @@ class ARTM(object):
         else:
             raise IOError('dictionary_name is None')
 
-    def fit_offline(self, batch_vectorizer=None, num_collection_passes=1, decay_weight=0.0,
-                    apply_weight=1.0, reset_theta_scores=False):
+    def fit_offline(self, batch_vectorizer=None, num_collection_passes=20,
+                    num_document_passes=1, reuse_theta=True):
         """ARTM.fit_offline() --- proceed the learning of
         topic model in off-line mode
 
         Args:
           batch_vectorizer: an instance of BatchVectorizer class
           num_collection_passes (int): number of iterations over whole given
-          collection, default=1
-          decay_weight (int): coefficient for applying old n_wt counters,
-          default=0.0 (apply_weight + decay_weight = 1.0)
-          apply_weight (int): coefficient for applying new n_wt counters,
-          default=1.0 (apply_weight + decay_weight = 1.0)
-          reset_theta_scores (bool): reset accumulated Theta scores
-          before learning, default=False
+          collection, default=20
+          num_document_passes (int): number of inner iterations over each document
+          for inferring theta, default=1
+          reuse_theta (bool): using theta from previous pass of the collection,
+          defaul=True
 
         Note:
           ARTM.initialize() should be proceed before first call
@@ -302,21 +294,15 @@ class ARTM(object):
         for _ in xrange(num_collection_passes):
             self.master.process_batches(pwt=self.model,
                                         batches=batches_list,
-                                        nwt='nwt_hat',
+                                        nwt='nwt',
                                         regularizer_name=theta_reg_name,
                                         regularizer_tau=theta_reg_tau,
-                                        num_inner_iterations=self._num_document_passes,
+                                        num_inner_iterations=num_document_passes,
                                         class_ids=class_ids,
                                         class_weights=class_weights,
-                                        reset_scores=reset_theta_scores)
+                                        reset_scores=True,
+                                        reuse_theta=reuse_theta)
             self._synchronizations_processed += 1
-            if self._synchronizations_processed == 1:
-                self.master.merge_model({self.model: decay_weight, 'nwt_hat': apply_weight},
-                                        nwt='nwt', topic_names=self._topic_names)
-            else:
-                self.master.merge_model({'nwt': decay_weight, 'nwt_hat': apply_weight},
-                                        nwt='nwt', topic_names=self._topic_names)
-
             self.master.regularize_model(pwt=self.model,
                                          nwt='nwt',
                                          rwt='rwt',
@@ -335,7 +321,7 @@ class ARTM(object):
                 self.score_tracker[name].add(self.scores[name])
 
     def fit_online(self, batch_vectorizer=None, tau0=1024.0, kappa=0.7,
-                   update_every=1, reset_theta_scores=False):
+                   update_every=1, num_document_passes=10, reset_theta_scores=False):
         """ARTM.fit_online() --- proceed the learning of topic model
         in on-line mode
 
@@ -352,6 +338,8 @@ class ARTM(object):
           decay_weight = 1-rho
           apply_weight = rho
 
+          num_document_passes (int): number of inner iterations over each document
+          for inferring theta, default=10
           reset_theta_scores (bool): reset accumulated Theta scores
           before learning, default=False
 
@@ -398,7 +386,7 @@ class ARTM(object):
                                             nwt='nwt_hat',
                                             regularizer_name=theta_reg_name,
                                             regularizer_tau=theta_reg_tau,
-                                            num_inner_iterations=self._num_document_passes,
+                                            num_inner_iterations=num_document_passes,
                                             class_ids=class_ids,
                                             class_weights=class_weights,
                                             reset_scores=reset_theta_scores)

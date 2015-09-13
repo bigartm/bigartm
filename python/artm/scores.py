@@ -490,8 +490,8 @@ class TopicKernelScore(BaseScore):
 
         self._dictionary_name = ''
         if dictionary_name is not None:
-            self._self._dictionary_name = dictionary_name
-            config.cooccurrence_dictionary_name = dictionary_name
+            self._dictionary_name = dictionary_name
+            self.config.cooccurrence_dictionary_name = dictionary_name
 
         self._probability_mass_threshold = 0.1
         if probability_mass_threshold is not None:
