@@ -563,6 +563,8 @@ int execute(const artm_options& options) {
 
   std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options.use_modality);
   for (auto& class_id : class_ids) {
+    if (class_id.first.empty())
+      continue;
     process_batches_args.add_class_id(class_id.first);
     process_batches_args.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
   }
@@ -910,7 +912,7 @@ int main(int argc, char * argv[]) {
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
       ("reuse-theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
-      ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers")
+      ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
       ("threads", po::value(&options.threads)->default_value(0), "number of concurrent processors (default: auto-detect)")
     ;
 
@@ -919,9 +921,9 @@ int main(int argc, char * argv[]) {
       ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
       ("write-model-readable", po::value(&options.write_model_readable)->default_value(""), "output the model in a human-readable format")
       ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
-      ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level")
-      ("score", po::value< std::vector<std::string> >(&options.score)->multitoken(), "scores")
-      ("final-score", po::value< std::vector<std::string> >(&options.final_score)->multitoken(), "final scores")
+      ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level (0, 1, 2, or 3")
+      ("score", po::value< std::vector<std::string> >(&options.score)->multitoken(), "scores (Perplexity, SparsityTheta, SparsityPhi, TopTokens, ThetaSnippet, or TopicKernel)")
+      ("final-score", po::value< std::vector<std::string> >(&options.final_score)->multitoken(), "final scores (same as scores)")
     ;
 
     po::options_description ohter_options("Other options");
@@ -945,6 +947,35 @@ int main(int argc, char * argv[]) {
     store(po::command_line_parser(argc, argv).options(all_options).extra_parser(at_option_parser).run(), vm);
     notify(vm);
 
+    if (vm.count("response-file") && !options.response_file.empty()) {
+      // Load the file and tokenize it
+      std::ifstream ifs(vm["response-file"].as<std::string>().c_str());
+      if (!ifs) {
+        std::cerr << "Could not open the response file\n";
+        return 1;
+      }
+
+      // Read the whole file into a string
+      std::stringstream ss;
+      ss << ifs.rdbuf();
+
+      // Split the file content
+      // http://stackoverflow.com/questions/541561/using-boost-tokenizer-escaped-list-separator-with-different-parameters
+      std::string separator1("");//dont let quoted arguments escape themselves
+      std::string separator2(" \n\r");//split on spaces and new lines
+      std::string separator3("\"\'");//let it have quoted arguments
+      boost::escaped_list_separator<char> els(separator1, separator2, separator3);
+
+      std::string ResponsefileContents(ss.str());
+      boost::tokenizer<boost::escaped_list_separator<char>> tok(ResponsefileContents, els);
+      std::vector<std::string> args;
+      copy(tok.begin(), tok.end(), back_inserter(args));
+
+      // Parse the file and store the options
+      store(po::command_line_parser(args).options(all_options).run(), vm);
+      notify(vm);
+    }
+
     // Uncomment next two lines to override commandline settings by code. DON'T COMMIT such change to git.
     // options.docword = "D:\\datasets\\docword.kos.txt";
     // options.vocab   = "D:\\datasets\\vocab.kos.txt";
@@ -962,29 +993,6 @@ int main(int argc, char * argv[]) {
       std::cerr << "\tcpp_client -d docword.kos.txt -v vocab.kos.txt\n";
       std::cerr << "\tset GLOG_logtostderr=1 & cpp_client -d docword.kos.txt -v vocab.kos.txt\n";
       return 1;
-    }
-
-    if (vm.count("response-file") && !options.response_file.empty()) {
-      // Load the file and tokenize it
-      std::ifstream ifs(vm["response-file"].as<std::string>().c_str());
-      if (!ifs) {
-        std::cerr << "Could not open the response file\n";
-        return 1;
-      }
-
-      // Read the whole file into a string
-      std::stringstream ss;
-      ss << ifs.rdbuf();
-
-      // Split the file content
-      boost::char_separator<char> sep(" \n\r");
-      std::string ResponsefileContents(ss.str());
-      boost::tokenizer<boost::char_separator<char> > tok(ResponsefileContents, sep);
-      std::vector<std::string> args;
-      copy(tok.begin(), tok.end(), back_inserter(args));
-
-      // Parse the file and store the options
-      store(po::command_line_parser(args).options(all_options).run(), vm);
     }
 
     fixScoreLevel(&options);
