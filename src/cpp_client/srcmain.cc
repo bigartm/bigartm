@@ -502,18 +502,6 @@ class ScoreHelper {
    }
 };
 
-::artm::ProcessBatchesArgs ExtractProcessBatchesArgs(const ModelConfig& model_config) {
-  ::artm::ProcessBatchesArgs args;
-  args.set_inner_iterations_count(model_config.inner_iterations_count());
-  args.set_stream_name(model_config.stream_name());
-  if (model_config.has_opt_for_avx()) args.set_opt_for_avx(model_config.opt_for_avx());
-  if (model_config.has_reuse_theta()) args.set_reuse_theta(model_config.reuse_theta());
-  if (model_config.has_use_sparse_bow()) args.set_use_sparse_bow(model_config.use_sparse_bow());
-  args.mutable_class_id()->CopyFrom(model_config.class_id());
-  args.mutable_class_weight()->CopyFrom(model_config.class_weight());
-  return args;
-}
-
 int execute(const artm_options& options) {
   bool online = (options.update_every > 0);
 
@@ -547,22 +535,18 @@ int execute(const artm_options& options) {
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
   if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
 
-  ModelConfig model_config;
-  for (auto& topic_name : topic_names)
-    model_config.add_topic_name(topic_name);
-  model_config.set_inner_iterations_count(options.num_inner_iters);
-  model_config.set_opt_for_avx(!options.b_disable_avx_opt);
-  model_config.set_use_sparse_bow(!options.b_use_dense_bow);
-  if (options.b_reuse_theta) model_config.set_reuse_theta(true);
-  model_config.set_name("15081980-90a7-4767-ab85-7cb551c39339");  // randomly generated GUID
+  ProcessBatchesArgs process_batches_args;
+  process_batches_args.set_inner_iterations_count(options.num_inner_iters);
+  process_batches_args.set_opt_for_avx(!options.b_disable_avx_opt);
+  process_batches_args.set_use_sparse_bow(!options.b_use_dense_bow);
+  if (options.b_reuse_theta) process_batches_args.set_reuse_theta(true);
 
   std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options.use_modality);
   for (auto& class_id : class_ids) {
-    model_config.add_class_id(class_id.first);
-    model_config.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
+    process_batches_args.add_class_id(class_id.first);
+    process_batches_args.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
   }
 
-  ProcessBatchesArgs process_batches_args = ExtractProcessBatchesArgs(model_config);
   RegularizeModelArgs regularize_model_args;
   NormalizeModelArgs normalize_model_args;
 
