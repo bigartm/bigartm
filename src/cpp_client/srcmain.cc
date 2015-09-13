@@ -139,22 +139,58 @@ std::vector<std::pair<std::string, T>> parseKeyValuePairs(const std::string& inp
   return retval;
 }
 
-std::vector<std::string> parseTopics(const std::string& topics) {
-  std::vector<std::string> result;
+std::vector<std::pair<std::string, std::vector<std::string>>> parseTopicGroups(const std::string& topics) {
+  std::vector<std::pair<std::string, std::vector<std::string>>> result;
   std::vector<std::pair<std::string, int>> pairs = parseKeyValuePairs<int>(topics);
   for (auto& pair : pairs) {
     const std::string group = pair.first.empty() ? "topic" : pair.first;
     const int group_size = pair.second == 0 ? 1 : pair.second;
+    std::vector<std::string> group_list;
     if (group_size == 1) {
-      result.push_back(group);
-    } else {
-      for (int i = 0; i < group_size; ++i)
-        result.push_back(group + "_" + boost::lexical_cast<std::string>(i));
+      group_list.push_back(group);
     }
+    else {
+      for (int i = 0; i < group_size; ++i)
+        group_list.push_back(group + "_" + boost::lexical_cast<std::string>(i));
+    }
+    result.push_back(std::make_pair(group, group_list));
+  }
+
+  return result;
+
+}
+
+std::vector<std::string> parseTopics(const std::string& topics) {
+  std::vector<std::string> result;
+  std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topics);
+  for (auto& pair : pairs)
+    for (auto& topic_name : pair.second)
+      result.push_back(topic_name);
+
+  return result;
+}
+
+std::vector<std::string> expandTopics(const std::vector<std::string>& topic_names, const std::string& topic_groups) {
+  std::vector<std::string> result;
+  std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topic_groups);
+  for (auto& topic_name : topic_names) {
+    bool found = false;
+    for (auto& pair : pairs) {
+      if (pair.first == topic_name) {
+        for (auto& group_topic : pair.second)
+          result.push_back(group_topic);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+      result.push_back(topic_name);
   }
 
   return result;
 }
+
 
 struct artm_options {
   std::string docword;
@@ -283,7 +319,8 @@ void configureScores(artm::MasterComponentConfig* master_config, ModelConfig* mo
   master_config->add_score_config()->CopyFrom(score_config);
 }
 
-void configureRegularizer(const std::string& regularizer, RegularizeModelArgs* regularize_model_args,
+void configureRegularizer(const std::string& regularizer, const std::string& topics,
+                          RegularizeModelArgs* regularize_model_args,
                           ProcessBatchesArgs* process_batches_args, artm::RegularizerConfig* config) {
   std::vector<std::string> strs;
   boost::split(strs, regularizer, boost::is_any_of("\t "));
@@ -303,12 +340,14 @@ void configureRegularizer(const std::string& regularizer, RegularizeModelArgs* r
     std::string elem = strs[i];
     if (elem.empty())
       continue;
-    if (elem[0] == '#')
+    if (elem[0] == '#') {
       topic_names = parseTopics(elem.substr(1, elem.size() - 1));
-    else if (elem[0] == '@')
+      topic_names = expandTopics(topic_names, topics);
+    } else if (elem[0] == '@') {
       class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
-    else if (elem[0] == '!')
+    } else if (elem[0] == '!') {
       dictionary_name = elem.substr(1, elem.size() - 1);
+    }
   }
 
   // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation
@@ -526,7 +565,7 @@ int execute(const artm_options& options) {
   std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
   for (auto& regularizer : options.regularizer) {
     ::artm::RegularizerConfig regularizer_config;
-    configureRegularizer(regularizer, &regularize_model_args, &process_batches_args, &regularizer_config);
+    configureRegularizer(regularizer, options.topics, &regularize_model_args, &process_batches_args, &regularizer_config);
     regularizers.push_back(std::make_shared<artm::Regularizer>(*master_component, regularizer_config));
   }
 
