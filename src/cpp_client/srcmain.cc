@@ -73,14 +73,6 @@ class ProgressScope {
    }
 };
 
-std::pair<std::string, std::string> at_option_parser(std::string const& s)
-{
-  if (!s.empty() && ('@' == s[0]))
-    return std::make_pair(std::string("response-file"), s.substr(1));
-  else
-    return std::pair<std::string, std::string>();
-}
-
 bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
   if (str.empty())
     return false;
@@ -203,14 +195,14 @@ std::vector<std::string> parseTopics(const std::string& topics, const std::strin
 
 struct artm_options {
   // Corpus / batches
-  std::string docword;
-  std::string vocab;
-  std::string batch_folder;
+  std::string read_uci_docword;
+  std::string read_uci_vocab;
+  std::string read_vw_corpus;
+  std::string use_batches;
   int batch_size;
-  std::string corpus_format;
 
   // Dictionary
-  std::string dictionary_file;
+  std::string use_dictionary;
   std::string dictionary_min_df;
   std::string dictionary_max_df;
 
@@ -231,6 +223,8 @@ struct artm_options {
 
   // Output
   std::string save_model;
+  std::string save_dictionary;
+  std::string save_batches;
   std::string write_model_readable;
   std::string write_predictions;
   int score_level;
@@ -522,6 +516,78 @@ class ScoreHelper {
    }
 };
 
+class BatchVectorizer {
+ private:
+  std::string batch_folder_;
+  const artm_options& options_;
+  std::string cleanup_folder_;
+
+ public:
+  BatchVectorizer(const artm_options& options) : batch_folder_(), options_(options), cleanup_folder_() {
+    const bool parse_vw_format = !options.read_vw_corpus.empty();
+    const bool parse_uci_format = !options.read_uci_docword.empty();
+    const bool use_batches = !options.use_batches.empty();
+
+    if (((int)parse_vw_format + (int)parse_uci_format + (int)use_batches) >= 2)
+      throw std::invalid_argument("--read_vw_format, --read-uci-docword, --use-batches must not be used together");
+    if (parse_uci_format && options.read_uci_vocab.empty())
+      throw std::invalid_argument("--read-uci-vocab option must be specified together with --read-uci-docword\n");
+
+    if (parse_vw_format || parse_uci_format) {
+      if (options.save_batches.empty()) {
+        batch_folder_ = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
+        cleanup_folder_ = batch_folder_;
+      }
+      else {
+        batch_folder_ = options.save_batches;
+      }
+
+      if (fs::exists(fs::path(batch_folder_)) && !fs::is_empty(fs::path(batch_folder_)))
+        throw std::runtime_error(std::string("Can not parse collection (--save-batches folder already exists: ") + batch_folder_ + ")");
+
+      boost::system::error_code error;
+      fs::create_directories(batch_folder_, error);
+      if (error)
+        throw std::runtime_error(std::string("Unable to create batch folder: ") + batch_folder_);
+
+      ProgressScope scope("Parsing text collection");
+      ::artm::CollectionParserConfig collection_parser_config;
+      if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
+      else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_Format_VowpalWabbit);
+      else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_Format");
+
+      collection_parser_config.set_docword_file_path(parse_vw_format ? options.read_vw_corpus : options.read_uci_docword);
+      if (!options.read_uci_vocab.empty())
+        collection_parser_config.set_vocab_file_path(options.read_uci_vocab);
+      if (!options.save_dictionary.empty())
+        collection_parser_config.set_dictionary_file_name(options.save_dictionary);
+      collection_parser_config.set_target_folder(batch_folder_);
+      collection_parser_config.set_num_items_per_batch(options.batch_size);
+      ::artm::ParseCollection(collection_parser_config);
+    }
+    else {
+      batch_folder_ = options.use_batches;
+      if (!fs::exists(fs::path(batch_folder_)))
+        throw std::runtime_error(std::string("Unable to find batch folder: ") + batch_folder_);
+
+      int batch_files_count = findFilesInDirectory(batch_folder_, ".batch").size();
+      if (batch_files_count == 0)
+        throw std::runtime_error(std::string("No batches found in batch folder: ") + batch_folder_);
+
+      std::cerr << "Using " << batch_files_count << " batches from '" << batch_folder_ << "'\n";
+    }
+  }
+
+  ~BatchVectorizer() {
+    if (options_.save_batches.empty()) {
+      try { boost::filesystem::remove_all(cleanup_folder_); }
+      catch (...) {}
+    }
+  }
+
+  const std::string& batch_folder() { return batch_folder_; }
+};
+
 int execute(const artm_options& options) {
   bool online = (options.update_every > 0);
 
@@ -538,19 +604,8 @@ int execute(const artm_options& options) {
 
   std::vector<std::string> topic_names = parseTopics(options.topics);
 
-  // There are options for data handling:
-  // 1. User provides docword, vocab and batch_folder => cpp_client parses collection and stores it in batch_folder
-  // 2. User provides docword, vocab, no batch_folder => cpp_client parses collection and stores it in temp folder
-  // 3. User provides batch_folder, but no docword/vocab => cpp_client uses batches from batch_folder
-
-  bool parse_collection = (!options.docword.empty());
-  std::string working_batch_folder = options.batch_folder;
-  if (options.batch_folder.empty())
-    working_batch_folder = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
-
   // Step 1. Configuration
   MasterComponentConfig master_config;
-  master_config.set_disk_path(working_batch_folder);
   master_config.set_processors_count(options.threads);
   if (options.b_reuse_theta) master_config.set_cache_theta(true);
   if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
@@ -573,76 +628,21 @@ int execute(const artm_options& options) {
   NormalizeModelArgs normalize_model_args;
 
   // Step 2. Collection parsing
-  if (parse_collection) {
-    if (fs::exists(fs::path(working_batch_folder)) && !fs::is_empty(fs::path(working_batch_folder))) {
-      std::cerr << "Can not parse collection, target batch directory is not empty: " << working_batch_folder;
-      return 1;
-    }
-
-    boost::system::error_code error;
-    fs::create_directories(working_batch_folder, error);
-    if (error) {
-      std::cerr << "Unable to create batch folder: " << working_batch_folder;
-      return 1;
-    }
-
-    ProgressScope scope("Parsing text collection");
-    ::artm::CollectionParserConfig collection_parser_config;
-    if (options.corpus_format == "bow") {
-      collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
-    } else if (options.corpus_format == "mm") {
-      collection_parser_config.set_format(CollectionParserConfig_Format_MatrixMarket);
-    } else if (options.corpus_format == "vw") {
-      collection_parser_config.set_format(CollectionParserConfig_Format_VowpalWabbit);
-    } else {
-      std::cerr << "Invalid parsing format options: " << options.corpus_format;
-      return 1;
-    }
-
-    if (options.corpus_format != "vw" && !options.docword.empty() && options.vocab.empty()) {
-      std::cerr << "Error: no vocab file was specified. All formats except Vowpal Wabbit require both docword and vocab files.";
-      return 1;
-    }
-
-    collection_parser_config.set_docword_file_path(options.docword);
-    if (!options.vocab.empty())
-      collection_parser_config.set_vocab_file_path(options.vocab);
-    collection_parser_config.set_dictionary_file_name(options.dictionary_file);
-    collection_parser_config.set_target_folder(working_batch_folder);
-    collection_parser_config.set_num_items_per_batch(options.batch_size);
-    ::artm::ParseCollection(collection_parser_config);
-  } else {
-    if (!fs::exists(fs::path(working_batch_folder))) {
-      std::cerr << "Unable to find batch folder: " << working_batch_folder;
-      return 1;
-    }
-
-    int batch_files_count = findFilesInDirectory(working_batch_folder, ".batch").size();
-    if (batch_files_count == 0) {
-      std::cerr << "No batches found in " << working_batch_folder;
-      return 1;
-    }
-
-    std::cerr << "Using " << batch_files_count << " batch found in folder '" << working_batch_folder << "'\n";
-  }
+  BatchVectorizer batch_vectorizer(options);
 
   // Step 3. Create master component.
   std::shared_ptr<MasterComponent> master_component;
   master_component.reset(new MasterComponent(master_config));
 
   // Step 3.1. Import dictionary
-  bool use_dictionary = false;
-  std::string dictionary_full_filename = (fs::path(working_batch_folder) / options.dictionary_file).string();
-  if (fs::exists(dictionary_full_filename)) {
-    ProgressScope scope(std::string("Loading dictionary file from") + dictionary_full_filename);
+  bool initialize_from_dictionary = false;
+  if (!options.use_dictionary.empty()) {
+    ProgressScope scope(std::string("Loading dictionary file from") + options.use_dictionary);
     ImportDictionaryArgs import_dictionary_args;
-    import_dictionary_args.set_file_name(dictionary_full_filename);
+    import_dictionary_args.set_file_name(options.use_dictionary);
     import_dictionary_args.set_dictionary_name(dictionary_name);
     master_component->ImportDictionary(import_dictionary_args);
-    use_dictionary = true;
-  }
-  else {
-    std::cerr << "Dictionary file " << dictionary_full_filename << " does not exist; BigARTM will use all tokens from batches.\n";
+    initialize_from_dictionary = true;
   }
 
   // Step 4. Configure regularizers.
@@ -665,8 +665,8 @@ int execute(const artm_options& options) {
     initialize_model_args.set_model_name(pwt_model_name);
     for (auto& topic_name : topic_names)
       initialize_model_args.add_topic_name(topic_name);
-    if (use_dictionary) {
-      ProgressScope scope(std::string("Initializing random model from dictionary ") + options.dictionary_file);
+    if (initialize_from_dictionary) {
+      ProgressScope scope(std::string("Initializing random model from dictionary ") + options.use_dictionary);
       initialize_model_args.set_dictionary_name(dictionary_name);
       initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Dictionary);
     }
@@ -691,9 +691,8 @@ int execute(const artm_options& options) {
           std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
       }
 
-      ProgressScope scope(std::string("Initializing random model from batches in folder ") +
-                          (options.batch_folder.empty() ? "<temp>" : working_batch_folder));
-      initialize_model_args.set_disk_path(working_batch_folder);
+      ProgressScope scope(std::string("Initializing random model from batches in folder ") + batch_vectorizer.batch_folder());
+      initialize_model_args.set_disk_path(batch_vectorizer.batch_folder());
       initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Batches);
     }
     master_component->InitializeModel(initialize_model_args);
@@ -712,7 +711,7 @@ int execute(const artm_options& options) {
   std::shared_ptr< ::artm::TopicModel> topic_model = master_component->GetTopicModel(get_model_args);
   std::cerr << "Number of tokens in the model: " << topic_model->token_size() << std::endl;
 
-  std::vector<std::string> batch_file_names = findFilesInDirectory(working_batch_folder, ".batch");
+  std::vector<std::string> batch_file_names = findFilesInDirectory(batch_vectorizer.batch_folder(), ".batch");
   int update_count = 0;
   std::cerr << "================= Processing started.\n";
   for (int iter = 0; iter < options.passes; ++iter) {
@@ -867,11 +866,6 @@ int execute(const artm_options& options) {
 
   final_score_helper.showScores(pwt_model_name);
 
-  if (options.batch_folder.empty()) {
-    try { boost::filesystem::remove_all(working_batch_folder); }
-    catch (...) {}
-  }
-
   return 0;
 }
 
@@ -883,18 +877,18 @@ int main(int argc, char * argv[]) {
 
     po::options_description input_data_options("Input data");
     input_data_options.add_options()
-      ("corpus-format,f", po::value(&options.corpus_format)->default_value("bow"), "corpus format (vw, bow, mm)")
-      ("docword,d", po::value(&options.docword), "docword file in UCI format")
-      ("vocab,v", po::value(&options.vocab), "vocab file in UCI format")
-      ("batch-folder,b", po::value(&options.batch_folder)->default_value(""), "batch folder")
+      ("read-vw-corpus,c", po::value(&options.read_vw_corpus), "Raw corpus in Vowpal Wabbit format")
+      ("read-uci-docword,d", po::value(&options.read_uci_docword), "docword file in UCI format")
+      ("read-uci-vocab,v", po::value(&options.read_uci_vocab), "vocab file in UCI format")
       ("batch-size", po::value(&options.batch_size)->default_value(500), "number of items per batch")
+      ("use-batches", po::value(&options.use_batches), "folder with batches to use")
     ;
 
     po::options_description dictionary_options("Dictionary");
     dictionary_options.add_options()
-      ("dictionary-file", po::value(&options.dictionary_file)->default_value("dictionary"), "filename of dictionary file")
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
+      ("use-dictionary", po::value(&options.use_dictionary)->default_value(""), "filename of binary dictionary file to use")
     ;
 
     po::options_description model_options("Model");
@@ -919,6 +913,8 @@ int main(int argc, char * argv[]) {
     po::options_description output_options("Output");
     output_options.add_options()
       ("save-model", po::value(&options.save_model)->default_value(""), "save the model to binary file after processing")
+      ("save-batches", po::value(&options.save_batches)->default_value(""), "batch folder")
+      ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
       ("write-model-readable", po::value(&options.write_model_readable)->default_value(""), "output the model in a human-readable format")
       ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
       ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level (0, 1, 2, or 3")
@@ -929,7 +925,7 @@ int main(int argc, char * argv[]) {
     po::options_description ohter_options("Other options");
     ohter_options.add_options()
       ("help,h", "display this help message")
-      ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response-file; can be specified with '@name', too")
+      ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response file")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
@@ -944,7 +940,7 @@ int main(int argc, char * argv[]) {
     all_options.add(ohter_options);
 
     po::variables_map vm;
-    store(po::command_line_parser(argc, argv).options(all_options).extra_parser(at_option_parser).run(), vm);
+    store(po::command_line_parser(argc, argv).options(all_options).run(), vm);
     notify(vm);
 
     if (vm.count("response-file") && !options.response_file.empty()) {
@@ -977,13 +973,13 @@ int main(int argc, char * argv[]) {
     }
 
     // Uncomment next two lines to override commandline settings by code. DON'T COMMIT such change to git.
-    // options.docword = "D:\\datasets\\docword.kos.txt";
-    // options.vocab   = "D:\\datasets\\vocab.kos.txt";
+    // options.read_uci_docword = "D:\\datasets\\docword.kos.txt";
+    // options.read_uci_vocab   = "D:\\datasets\\vocab.kos.txt";
 
     bool show_help = (vm.count("help") > 0);
 
     // Show help if user neither provided batch folder, nor docword/vocab files
-    if (options.docword.empty() && options.batch_folder.empty())
+    if (options.read_vw_corpus.empty() && options.read_uci_docword.empty() && options.use_batches.empty())
       show_help = true;
 
     if (show_help) {
