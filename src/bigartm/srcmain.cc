@@ -986,8 +986,8 @@ int main(int argc, char * argv[]) {
       std::cerr << all_options;
 
       std::cerr << "\nExamples:\n";
-      std::cerr << "\tcpp_client -d docword.kos.txt -v vocab.kos.txt\n";
-      std::cerr << "\tset GLOG_logtostderr=1 & cpp_client -d docword.kos.txt -v vocab.kos.txt\n";
+      std::cerr << "\tbigartm -d docword.kos.txt -v vocab.kos.txt\n";
+      std::cerr << "\tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt\n";
       return 1;
     }
 

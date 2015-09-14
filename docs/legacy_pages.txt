@@ -21,5 +21,4 @@ Legacy pages are kept to preserve existing user's links (favourites in browser, 
    ref/python_interface
    ref/c_interface
    ref/cpp_interface
-   ref/cpp_client
    ref/windows_distribution
