@@ -337,7 +337,7 @@ class MasterComponent(object):
                                 config=config)
 
     def reconfigure_regularizer(self, name, type, config):
-        cfg = messages_pb2.RegularizerConfig(name=name,
+        cfg = messages.RegularizerConfig(name=name,
                                              type=type,
                                              config=config.SerializeToString())
         self._lib.ArtmReconfigureRegularizer(self.master_id, cfg)
