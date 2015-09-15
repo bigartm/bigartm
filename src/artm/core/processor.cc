@@ -871,8 +871,9 @@ void Processor::ThreadFunction() {
         const Mask* stream_mask = (model_stream_index != -1) ? &stream_masks.stream_mask(model_stream_index) : nullptr;
 
         if (model_config.use_sparse_bow()) {
-          CuckooWatch cuckoo2("InferThetaSparse", &cuckoo, kTimeLoggingThreshold);
+          CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
           InferThetaSparse(model_config, batch, *schema, *sparse_ndw, p_wt, theta_matrix.get(), blas);
+          UpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw, p_wt, *theta_matrix, nwt_writer.get(), blas);
         } else {
           CuckooWatch cuckoo2("InferThetaAndUpdateNwtDense", &cuckoo, kTimeLoggingThreshold);
           InferThetaAndUpdateNwtDense(model_config, batch, part->batch_weight(), stream_mask, *schema, *dense_ndw,
@@ -946,15 +947,6 @@ void Processor::ThreadFunction() {
           }
         }
 
-        merger_queue_->reserve();
-        if (model_config.use_sparse_bow()) {
-          // Keep UpdateNwtSparse as further down in the code as possible,
-          // because it consumes a lot of memory to transfer increments to merger.
-          CuckooWatch cuckoo2("UpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
-          UpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw, p_wt,
-            *theta_matrix, nwt_writer.get(), blas);
-        }
-        merger_queue_->release();
         if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
       }
     }
