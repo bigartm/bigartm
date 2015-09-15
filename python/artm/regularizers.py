@@ -28,7 +28,7 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
             getattr(config, proto_field_name).append(value)
     else:
         setattr(config, proto_field_name, field)
-    obj._master.reconfigure_regularizer(obj.name, obj.config.type, config)
+    obj._master.reconfigure_regularizer(obj.name, obj.type, config)
 
 
 class Regularizers(object):
