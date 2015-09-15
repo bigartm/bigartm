@@ -337,9 +337,9 @@ class MasterComponent(object):
                                 config=config)
 
     def reconfigure_regularizer(self, name, type, config):
-        cfg = messages_pb2.RegularizerConfig(name=name,
-                                             type=type,
-                                             config=config.SerializeToString())
+        cfg = messages.RegularizerConfig(name=name,
+                                         type=type,
+                                         config=config.SerializeToString())
         self._lib.ArtmReconfigureRegularizer(self.master_id, cfg)
 
     def retrieve_score(self, model_name, score_name):
