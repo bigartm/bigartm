@@ -111,21 +111,14 @@ float Dictionary::cooc_value(const Token& token_1, const Token& token_2) const {
   return cooc_map_iter_2->second;
 }
 
-const std::vector<TokenCoocInfo> Dictionary::cooc_info(const Token& token) const {
-  auto retval = std::vector<TokenCoocInfo>();
-
+const std::unordered_map<int, float>* Dictionary::cooc_info(const Token& token) const {
   auto index_iter = token_index_.find(token);
-  if (index_iter == token_index_.end()) return retval;
+  if (index_iter == token_index_.end()) return nullptr;
 
   auto cooc_map_iter = cooc_values_.find(index_iter->second);
-  if (cooc_map_iter == cooc_values_.end()) return retval;
+  if (cooc_map_iter == cooc_values_.end()) return nullptr;
 
-  for (auto iter = cooc_map_iter->second.begin(); iter != cooc_map_iter->second.end(); ++iter) {
-    TokenCoocInfo token_cooc_info = TokenCoocInfo(&index_token_.find(iter->first)->second, iter->second);
-    retval.push_back(token_cooc_info);
-  }
-
-  return retval;
+  return &(cooc_map_iter->second);
 }
 
 const DictionaryEntry* Dictionary::entry(const Token& token) const {

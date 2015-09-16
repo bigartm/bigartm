@@ -48,12 +48,9 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
       float value = 0.0f;
-      auto& cooc_tokens_info = dictionary_ptr->cooc_info(token);
-      for (int cooc_token_id = 0; cooc_token_id < dictionary_ptr->cooc_size(token); ++cooc_token_id) {
-        if (cooc_tokens_info[cooc_token_id].token->class_id != token.class_id) continue;
-
-        value += n_wt.get(n_wt.token_index(*cooc_tokens_info[cooc_token_id].token), topic_id) *
-                 dictionary_ptr->cooc_value(token, cooc_token_id);
+      auto cooc_tokens_info = dictionary_ptr->cooc_info(token);
+      for (auto& elem : *cooc_tokens_info) {
+        value += n_wt.get(elem.first, topic_id) * elem.second;
       }
       result->set(token_id, topic_id, value);
     }
