@@ -124,6 +124,8 @@ const std::vector<TokenCoocInfo> Dictionary::cooc_info(const Token& token) const
     TokenCoocInfo token_cooc_info = TokenCoocInfo(&index_token_.find(iter->first)->second, iter->second);
     retval.push_back(token_cooc_info);
   }
+
+  return retval;
 }
 
 const DictionaryEntry* Dictionary::entry(const Token& token) const {
