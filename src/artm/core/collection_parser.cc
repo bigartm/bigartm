@@ -329,6 +329,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenM
   bool last_line = false;
   retval->clear_cooc_entries();
   artm::DictionaryCoocurenceEntries* cooc_entries = retval->mutable_cooc_entries();
+  cooc_entries->set_symmetric_cooc_values(config_.use_symmetric_cooc_values());
   while (!user_cooc_data.eof()) {
     if (last_line) {
       std::stringstream ss;

@@ -36,18 +36,20 @@ Dictionary::Dictionary(const artm::DictionaryConfig& config) {
           first_cooc_iter = cooc_values_.find(first_index_iter->second);
         }
 
-        auto second_cooc_iter = cooc_values_.find(second_index_iter->second);
-        if (second_cooc_iter == cooc_values_.end()) {
-          cooc_values_.insert(std::make_pair(second_index_iter->second, std::unordered_map<int, float>()));
-          second_cooc_iter = cooc_values_.find(second_index_iter->second);
-        }
-
-        // std::map::insert() ignores attempts to write multiply pairs with same key
-        // the data representation is symmetric for both first and second tokens in cooc pair
+        // std::map::insert() ignores attempts to write several pairs with same key
         first_cooc_iter->second.insert(std::make_pair(second_index_iter->second,
                                                       config.cooc_entries().value(i)));
-        second_cooc_iter->second.insert(std::make_pair(first_index_iter->second,
-                                                       config.cooc_entries().value(i)));
+
+        if (config.cooc_entries().symmetric_cooc_values()) {
+          auto second_cooc_iter = cooc_values_.find(second_index_iter->second);
+          if (second_cooc_iter == cooc_values_.end()) {
+            cooc_values_.insert(std::make_pair(second_index_iter->second, std::unordered_map<int, float>()));
+            second_cooc_iter = cooc_values_.find(second_index_iter->second);
+          }
+
+          second_cooc_iter->second.insert(std::make_pair(first_index_iter->second,
+                                                         config.cooc_entries().value(i)));
+        }
       }
     }
   }

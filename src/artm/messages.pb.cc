@@ -703,10 +703,11 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DictionaryEntry));
   DictionaryCoocurenceEntries_descriptor_ = file->message_type(24);
-  static const int DictionaryCoocurenceEntries_offsets_[3] = {
+  static const int DictionaryCoocurenceEntries_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryCoocurenceEntries, first_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryCoocurenceEntries, second_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryCoocurenceEntries, value_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryCoocurenceEntries, symmetric_cooc_values_),
   };
   DictionaryCoocurenceEntries_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1075,7 +1076,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ThetaMatrix));
   CollectionParserConfig_descriptor_ = file->message_type(43);
-  static const int CollectionParserConfig_offsets_[10] = {
+  static const int CollectionParserConfig_offsets_[11] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, format_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, docword_file_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, vocab_file_path_),
@@ -1086,6 +1087,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, use_unity_based_indices_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, gather_cooc_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, cooccurrence_class_id_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, use_symmetric_cooc_values_),
   };
   CollectionParserConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -2001,97 +2003,99 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\010class_id\030\002 \001(\t\022\r\n\005value\030\003 \001(\002\022\024\n\014value_"
     "tokens\030\004 \003(\t\022 \n\006values\030\005 \001(\0132\020.artm.Floa"
     "tArray\022\023\n\013token_count\030\006 \001(\005\022\023\n\013items_cou"
-    "nt\030\007 \001(\005\022\024\n\014token_weight\030\010 \001(\002\"W\n\033Dictio"
+    "nt\030\007 \001(\005\022\024\n\014token_weight\030\010 \001(\002\"}\n\033Dictio"
     "naryCoocurenceEntries\022\023\n\013first_index\030\001 \003"
-    "(\005\022\024\n\014second_index\030\002 \003(\005\022\r\n\005value\030\003 \003(\002\""
-    "\324\001\n\013ScoreConfig\022\014\n\004name\030\001 \001(\t\022$\n\004type\030\002 "
-    "\001(\0162\026.artm.ScoreConfig.Type\022\016\n\006config\030\003 "
-    "\001(\014\"\200\001\n\004Type\022\016\n\nPerplexity\020\000\022\021\n\rSparsity"
-    "Theta\020\001\022\017\n\013SparsityPhi\020\002\022\022\n\016ItemsProcess"
-    "ed\020\003\022\r\n\tTopTokens\020\004\022\020\n\014ThetaSnippet\020\005\022\017\n"
-    "\013TopicKernel\020\006\"\316\001\n\tScoreData\022\014\n\004name\030\001 \001"
-    "(\t\022\"\n\004type\030\002 \001(\0162\024.artm.ScoreData.Type\022\014"
-    "\n\004data\030\003 \001(\014\"\200\001\n\004Type\022\016\n\nPerplexity\020\000\022\021\n"
-    "\rSparsityTheta\020\001\022\017\n\013SparsityPhi\020\002\022\022\n\016Ite"
-    "msProcessed\020\003\022\r\n\tTopTokens\020\004\022\020\n\014ThetaSni"
-    "ppet\020\005\022\017\n\013TopicKernel\020\006\"\314\002\n\025PerplexitySc"
-    "oreConfig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013"
-    "stream_name\030\002 \001(\t:\007@global\022J\n\nmodel_type"
-    "\030\003 \001(\0162 .artm.PerplexityScoreConfig.Type"
-    ":\024UnigramDocumentModel\022\027\n\017dictionary_nam"
-    "e\030\004 \001(\t\022\"\n\022theta_sparsity_eps\030\005 \001(\002:\0061e-"
-    "037\022!\n\031theta_sparsity_topic_name\030\006 \003(\t\022\020"
-    "\n\010class_id\030\007 \003(\t\"<\n\004Type\022\030\n\024UnigramDocum"
-    "entModel\020\000\022\032\n\026UnigramCollectionModel\020\001\"\274"
-    "\001\n\017PerplexityScore\022\r\n\005value\030\001 \001(\001\022\013\n\003raw"
-    "\030\002 \001(\001\022\022\n\nnormalizer\030\003 \001(\001\022\022\n\nzero_words"
-    "\030\004 \001(\005\022\034\n\024theta_sparsity_value\030\005 \001(\001\022\"\n\032"
-    "theta_sparsity_zero_topics\030\006 \001(\005\022#\n\033thet"
-    "a_sparsity_total_topics\030\007 \001(\005\"|\n\030Sparsit"
-    "yThetaScoreConfig\022\031\n\nfield_name\030\001 \001(\t:\005@"
-    "body\022\034\n\013stream_name\030\002 \001(\t:\007@global\022\023\n\003ep"
-    "s\030\003 \001(\002:\0061e-037\022\022\n\ntopic_name\030\004 \003(\t\"N\n\022S"
-    "parsityThetaScore\022\r\n\005value\030\001 \001(\001\022\023\n\013zero"
-    "_topics\030\002 \001(\005\022\024\n\014total_topics\030\003 \001(\005\"c\n\026S"
-    "parsityPhiScoreConfig\022\023\n\003eps\030\001 \001(\002:\0061e-0"
-    "37\022 \n\010class_id\030\002 \001(\t:\016@default_class\022\022\n\n"
-    "topic_name\030\003 \003(\t\"L\n\020SparsityPhiScore\022\r\n\005"
-    "value\030\001 \001(\001\022\023\n\013zero_tokens\030\002 \001(\005\022\024\n\014tota"
-    "l_tokens\030\003 \001(\005\"T\n\031ItemsProcessedScoreCon"
-    "fig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013stream"
-    "_name\030\002 \001(\t:\007@global\"$\n\023ItemsProcessedSc"
-    "ore\022\r\n\005value\030\001 \001(\005\"\212\001\n\024TopTokensScoreCon"
-    "fig\022\026\n\nnum_tokens\030\001 \001(\005:\00210\022 \n\010class_id\030"
-    "\002 \001(\t:\016@default_class\022\022\n\ntopic_name\030\003 \003("
-    "\t\022$\n\034cooccurrence_dictionary_name\030\004 \001(\t\""
-    "\255\001\n\016TopTokensScore\022\023\n\013num_entries\030\001 \001(\005\022"
-    "\022\n\ntopic_name\030\002 \003(\t\022\023\n\013topic_index\030\003 \003(\005"
-    "\022\r\n\005token\030\004 \003(\t\022\016\n\006weight\030\005 \003(\002\022#\n\tcoher"
-    "ence\030\006 \001(\0132\020.artm.FloatArray\022\031\n\021average_"
-    "coherence\030\007 \001(\002\"\177\n\027ThetaSnippetScoreConf"
-    "ig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013stream_"
-    "name\030\002 \001(\t:\007@global\022\023\n\007item_id\030\003 \003(\005B\002\020\001"
-    "\022\026\n\nitem_count\030\004 \001(\005:\00210\"F\n\021ThetaSnippet"
-    "Score\022\017\n\007item_id\030\001 \003(\005\022 \n\006values\030\002 \003(\0132\020"
-    ".artm.FloatArray\"\262\001\n\026TopicKernelScoreCon"
-    "fig\022\023\n\003eps\030\001 \001(\002:\0061e-037\022 \n\010class_id\030\002 \001"
-    "(\t:\016@default_class\022\022\n\ntopic_name\030\003 \003(\t\022\'"
-    "\n\032probability_mass_threshold\030\004 \001(\001:\0030.1\022"
-    "$\n\034cooccurrence_dictionary_name\030\005 \001(\t\"\377\002"
-    "\n\020TopicKernelScore\022&\n\013kernel_size\030\001 \001(\0132"
-    "\021.artm.DoubleArray\022(\n\rkernel_purity\030\002 \001("
-    "\0132\021.artm.DoubleArray\022*\n\017kernel_contrast\030"
-    "\003 \001(\0132\021.artm.DoubleArray\022\033\n\023average_kern"
-    "el_size\030\004 \001(\001\022\035\n\025average_kernel_purity\030\005"
-    " \001(\001\022\037\n\027average_kernel_contrast\030\006 \001(\001\022$\n"
-    "\tcoherence\030\007 \001(\0132\021.artm.DoubleArray\022\031\n\021a"
-    "verage_coherence\030\010 \001(\002\022(\n\rkernel_tokens\030"
-    "\t \003(\0132\021.artm.StringArray\022%\n\ntopic_name\030\n"
-    " \001(\0132\021.artm.StringArray\"\224\003\n\nTopicModel\022\024"
-    "\n\004name\030\001 \001(\t:\006@model\022\024\n\014topics_count\030\002 \001"
-    "(\005\022\022\n\ntopic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n"
-    "\rtoken_weights\030\005 \003(\0132\020.artm.FloatArray\022\020"
-    "\n\010class_id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\022#\n\013t"
-    "opic_index\030\010 \003(\0132\016.artm.IntArray\0226\n\016oper"
-    "ation_type\030\t \003(\0162\036.artm.TopicModel.Opera"
-    "tionType\0325\n\023TopicModelInternals\022\036\n\004n_wt\030"
-    "\001 \003(\0132\020.artm.FloatArray\"U\n\rOperationType"
-    "\022\016\n\nInitialize\020\000\022\r\n\tIncrement\020\001\022\r\n\tOverw"
-    "rite\020\002\022\n\n\006Remove\020\003\022\n\n\006Ignore\020\004\"\305\001\n\013Theta"
-    "Matrix\022\032\n\nmodel_name\030\001 \001(\t:\006@model\022\017\n\007it"
-    "em_id\030\002 \003(\005\022&\n\014item_weights\030\003 \003(\0132\020.artm"
-    ".FloatArray\022\022\n\ntopic_name\030\004 \003(\t\022\024\n\014topic"
-    "s_count\030\005 \001(\005\022\022\n\nitem_title\030\006 \003(\t\022#\n\013top"
-    "ic_index\030\007 \003(\0132\016.artm.IntArray\"\271\003\n\026Colle"
-    "ctionParserConfig\022B\n\006format\030\001 \001(\0162#.artm"
-    ".CollectionParserConfig.Format:\rBagOfWor"
-    "dsUci\022\031\n\021docword_file_path\030\002 \001(\t\022\027\n\017voca"
-    "b_file_path\030\003 \001(\t\022\025\n\rtarget_folder\030\004 \001(\t"
-    "\022\034\n\024dictionary_file_name\030\005 \001(\t\022!\n\023num_it"
-    "ems_per_batch\030\006 \001(\005:\0041000\022\032\n\022cooccurrenc"
-    "e_token\030\007 \003(\t\022%\n\027use_unity_based_indices"
-    "\030\010 \001(\010:\004true\022\032\n\013gather_cooc\030\t \001(\010:\005false"
-    "\022\035\n\025cooccurrence_class_id\030\n \003(\t\"Q\n\006Forma"
+    "(\005\022\024\n\014second_index\030\002 \003(\005\022\r\n\005value\030\003 \003(\002\022"
+    "$\n\025symmetric_cooc_values\030\004 \001(\010:\005false\"\324\001"
+    "\n\013ScoreConfig\022\014\n\004name\030\001 \001(\t\022$\n\004type\030\002 \001("
+    "\0162\026.artm.ScoreConfig.Type\022\016\n\006config\030\003 \001("
+    "\014\"\200\001\n\004Type\022\016\n\nPerplexity\020\000\022\021\n\rSparsityTh"
+    "eta\020\001\022\017\n\013SparsityPhi\020\002\022\022\n\016ItemsProcessed"
+    "\020\003\022\r\n\tTopTokens\020\004\022\020\n\014ThetaSnippet\020\005\022\017\n\013T"
+    "opicKernel\020\006\"\316\001\n\tScoreData\022\014\n\004name\030\001 \001(\t"
+    "\022\"\n\004type\030\002 \001(\0162\024.artm.ScoreData.Type\022\014\n\004"
+    "data\030\003 \001(\014\"\200\001\n\004Type\022\016\n\nPerplexity\020\000\022\021\n\rS"
+    "parsityTheta\020\001\022\017\n\013SparsityPhi\020\002\022\022\n\016Items"
+    "Processed\020\003\022\r\n\tTopTokens\020\004\022\020\n\014ThetaSnipp"
+    "et\020\005\022\017\n\013TopicKernel\020\006\"\314\002\n\025PerplexityScor"
+    "eConfig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013st"
+    "ream_name\030\002 \001(\t:\007@global\022J\n\nmodel_type\030\003"
+    " \001(\0162 .artm.PerplexityScoreConfig.Type:\024"
+    "UnigramDocumentModel\022\027\n\017dictionary_name\030"
+    "\004 \001(\t\022\"\n\022theta_sparsity_eps\030\005 \001(\002:\0061e-03"
+    "7\022!\n\031theta_sparsity_topic_name\030\006 \003(\t\022\020\n\010"
+    "class_id\030\007 \003(\t\"<\n\004Type\022\030\n\024UnigramDocumen"
+    "tModel\020\000\022\032\n\026UnigramCollectionModel\020\001\"\274\001\n"
+    "\017PerplexityScore\022\r\n\005value\030\001 \001(\001\022\013\n\003raw\030\002"
+    " \001(\001\022\022\n\nnormalizer\030\003 \001(\001\022\022\n\nzero_words\030\004"
+    " \001(\005\022\034\n\024theta_sparsity_value\030\005 \001(\001\022\"\n\032th"
+    "eta_sparsity_zero_topics\030\006 \001(\005\022#\n\033theta_"
+    "sparsity_total_topics\030\007 \001(\005\"|\n\030SparsityT"
+    "hetaScoreConfig\022\031\n\nfield_name\030\001 \001(\t:\005@bo"
+    "dy\022\034\n\013stream_name\030\002 \001(\t:\007@global\022\023\n\003eps\030"
+    "\003 \001(\002:\0061e-037\022\022\n\ntopic_name\030\004 \003(\t\"N\n\022Spa"
+    "rsityThetaScore\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_t"
+    "opics\030\002 \001(\005\022\024\n\014total_topics\030\003 \001(\005\"c\n\026Spa"
+    "rsityPhiScoreConfig\022\023\n\003eps\030\001 \001(\002:\0061e-037"
+    "\022 \n\010class_id\030\002 \001(\t:\016@default_class\022\022\n\nto"
+    "pic_name\030\003 \003(\t\"L\n\020SparsityPhiScore\022\r\n\005va"
+    "lue\030\001 \001(\001\022\023\n\013zero_tokens\030\002 \001(\005\022\024\n\014total_"
+    "tokens\030\003 \001(\005\"T\n\031ItemsProcessedScoreConfi"
+    "g\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013stream_n"
+    "ame\030\002 \001(\t:\007@global\"$\n\023ItemsProcessedScor"
+    "e\022\r\n\005value\030\001 \001(\005\"\212\001\n\024TopTokensScoreConfi"
+    "g\022\026\n\nnum_tokens\030\001 \001(\005:\00210\022 \n\010class_id\030\002 "
+    "\001(\t:\016@default_class\022\022\n\ntopic_name\030\003 \003(\t\022"
+    "$\n\034cooccurrence_dictionary_name\030\004 \001(\t\"\255\001"
+    "\n\016TopTokensScore\022\023\n\013num_entries\030\001 \001(\005\022\022\n"
+    "\ntopic_name\030\002 \003(\t\022\023\n\013topic_index\030\003 \003(\005\022\r"
+    "\n\005token\030\004 \003(\t\022\016\n\006weight\030\005 \003(\002\022#\n\tcoheren"
+    "ce\030\006 \001(\0132\020.artm.FloatArray\022\031\n\021average_co"
+    "herence\030\007 \001(\002\"\177\n\027ThetaSnippetScoreConfig"
+    "\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013stream_na"
+    "me\030\002 \001(\t:\007@global\022\023\n\007item_id\030\003 \003(\005B\002\020\001\022\026"
+    "\n\nitem_count\030\004 \001(\005:\00210\"F\n\021ThetaSnippetSc"
+    "ore\022\017\n\007item_id\030\001 \003(\005\022 \n\006values\030\002 \003(\0132\020.a"
+    "rtm.FloatArray\"\262\001\n\026TopicKernelScoreConfi"
+    "g\022\023\n\003eps\030\001 \001(\002:\0061e-037\022 \n\010class_id\030\002 \001(\t"
+    ":\016@default_class\022\022\n\ntopic_name\030\003 \003(\t\022\'\n\032"
+    "probability_mass_threshold\030\004 \001(\001:\0030.1\022$\n"
+    "\034cooccurrence_dictionary_name\030\005 \001(\t\"\377\002\n\020"
+    "TopicKernelScore\022&\n\013kernel_size\030\001 \001(\0132\021."
+    "artm.DoubleArray\022(\n\rkernel_purity\030\002 \001(\0132"
+    "\021.artm.DoubleArray\022*\n\017kernel_contrast\030\003 "
+    "\001(\0132\021.artm.DoubleArray\022\033\n\023average_kernel"
+    "_size\030\004 \001(\001\022\035\n\025average_kernel_purity\030\005 \001"
+    "(\001\022\037\n\027average_kernel_contrast\030\006 \001(\001\022$\n\tc"
+    "oherence\030\007 \001(\0132\021.artm.DoubleArray\022\031\n\021ave"
+    "rage_coherence\030\010 \001(\002\022(\n\rkernel_tokens\030\t "
+    "\003(\0132\021.artm.StringArray\022%\n\ntopic_name\030\n \001"
+    "(\0132\021.artm.StringArray\"\224\003\n\nTopicModel\022\024\n\004"
+    "name\030\001 \001(\t:\006@model\022\024\n\014topics_count\030\002 \001(\005"
+    "\022\022\n\ntopic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rt"
+    "oken_weights\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010"
+    "class_id\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\022#\n\013top"
+    "ic_index\030\010 \003(\0132\016.artm.IntArray\0226\n\016operat"
+    "ion_type\030\t \003(\0162\036.artm.TopicModel.Operati"
+    "onType\0325\n\023TopicModelInternals\022\036\n\004n_wt\030\001 "
+    "\003(\0132\020.artm.FloatArray\"U\n\rOperationType\022\016"
+    "\n\nInitialize\020\000\022\r\n\tIncrement\020\001\022\r\n\tOverwri"
+    "te\020\002\022\n\n\006Remove\020\003\022\n\n\006Ignore\020\004\"\305\001\n\013ThetaMa"
+    "trix\022\032\n\nmodel_name\030\001 \001(\t:\006@model\022\017\n\007item"
+    "_id\030\002 \003(\005\022&\n\014item_weights\030\003 \003(\0132\020.artm.F"
+    "loatArray\022\022\n\ntopic_name\030\004 \003(\t\022\024\n\014topics_"
+    "count\030\005 \001(\005\022\022\n\nitem_title\030\006 \003(\t\022#\n\013topic"
+    "_index\030\007 \003(\0132\016.artm.IntArray\"\343\003\n\026Collect"
+    "ionParserConfig\022B\n\006format\030\001 \001(\0162#.artm.C"
+    "ollectionParserConfig.Format:\rBagOfWords"
+    "Uci\022\031\n\021docword_file_path\030\002 \001(\t\022\027\n\017vocab_"
+    "file_path\030\003 \001(\t\022\025\n\rtarget_folder\030\004 \001(\t\022\034"
+    "\n\024dictionary_file_name\030\005 \001(\t\022!\n\023num_item"
+    "s_per_batch\030\006 \001(\005:\0041000\022\032\n\022cooccurrence_"
+    "token\030\007 \003(\t\022%\n\027use_unity_based_indices\030\010"
+    " \001(\010:\004true\022\032\n\013gather_cooc\030\t \001(\010:\005false\022\035"
+    "\n\025cooccurrence_class_id\030\n \003(\t\022(\n\031use_sym"
+    "metric_cooc_values\030\013 \001(\010:\005false\"Q\n\006Forma"
     "t\022\021\n\rBagOfWordsUci\020\000\022\020\n\014MatrixMarket\020\001\022\020"
     "\n\014VowpalWabbit\020\002\022\020\n\014Cooccurrence\020\003\"\177\n\024Sy"
     "nchronizeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027"
@@ -2189,7 +2193,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\001(\003\032R\n\tModelInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002"
     " \001(\t\022\024\n\014topics_count\030\003 \001(\005\022\023\n\013token_coun"
     "t\030\004 \001(\005\0320\n\016CacheEntryInfo\022\013\n\003key\030\001 \001(\t\022\021"
-    "\n\tbyte_size\030\002 \001(\005", 10817);
+    "\n\tbyte_size\030\002 \001(\005", 10897);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -11244,6 +11248,7 @@ void DictionaryEntry::Swap(DictionaryEntry* other) {
 const int DictionaryCoocurenceEntries::kFirstIndexFieldNumber;
 const int DictionaryCoocurenceEntries::kSecondIndexFieldNumber;
 const int DictionaryCoocurenceEntries::kValueFieldNumber;
+const int DictionaryCoocurenceEntries::kSymmetricCoocValuesFieldNumber;
 #endif  // !_MSC_VER
 
 DictionaryCoocurenceEntries::DictionaryCoocurenceEntries()
@@ -11262,6 +11267,7 @@ DictionaryCoocurenceEntries::DictionaryCoocurenceEntries(const DictionaryCoocure
 
 void DictionaryCoocurenceEntries::SharedCtor() {
   _cached_size_ = 0;
+  symmetric_cooc_values_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -11296,6 +11302,9 @@ DictionaryCoocurenceEntries* DictionaryCoocurenceEntries::New() const {
 }
 
 void DictionaryCoocurenceEntries::Clear() {
+  if (_has_bits_[3 / 32] & (0xffu << (3 % 32))) {
+    symmetric_cooc_values_ = false;
+  }
   first_index_.Clear();
   second_index_.Clear();
   value_.Clear();
@@ -11371,6 +11380,22 @@ bool DictionaryCoocurenceEntries::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(29)) goto parse_value;
+        if (input->ExpectTag(32)) goto parse_symmetric_cooc_values;
+        break;
+      }
+
+      // optional bool symmetric_cooc_values = 4 [default = false];
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_symmetric_cooc_values:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &symmetric_cooc_values_)));
+          set_has_symmetric_cooc_values();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -11411,6 +11436,11 @@ void DictionaryCoocurenceEntries::SerializeWithCachedSizes(
       3, this->value(i), output);
   }
 
+  // optional bool symmetric_cooc_values = 4 [default = false];
+  if (has_symmetric_cooc_values()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(4, this->symmetric_cooc_values(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -11437,6 +11467,11 @@ void DictionaryCoocurenceEntries::SerializeWithCachedSizes(
       WriteFloatToArray(3, this->value(i), target);
   }
 
+  // optional bool symmetric_cooc_values = 4 [default = false];
+  if (has_symmetric_cooc_values()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(4, this->symmetric_cooc_values(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -11447,6 +11482,13 @@ void DictionaryCoocurenceEntries::SerializeWithCachedSizes(
 int DictionaryCoocurenceEntries::ByteSize() const {
   int total_size = 0;
 
+  if (_has_bits_[3 / 32] & (0xffu << (3 % 32))) {
+    // optional bool symmetric_cooc_values = 4 [default = false];
+    if (has_symmetric_cooc_values()) {
+      total_size += 1 + 1;
+    }
+
+  }
   // repeated int32 first_index = 1;
   {
     int data_size = 0;
@@ -11502,6 +11544,11 @@ void DictionaryCoocurenceEntries::MergeFrom(const DictionaryCoocurenceEntries& f
   first_index_.MergeFrom(from.first_index_);
   second_index_.MergeFrom(from.second_index_);
   value_.MergeFrom(from.value_);
+  if (from._has_bits_[3 / 32] & (0xffu << (3 % 32))) {
+    if (from.has_symmetric_cooc_values()) {
+      set_symmetric_cooc_values(from.symmetric_cooc_values());
+    }
+  }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -11527,6 +11574,7 @@ void DictionaryCoocurenceEntries::Swap(DictionaryCoocurenceEntries* other) {
     first_index_.Swap(&other->first_index_);
     second_index_.Swap(&other->second_index_);
     value_.Swap(&other->value_);
+    std::swap(symmetric_cooc_values_, other->symmetric_cooc_values_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -18811,6 +18859,7 @@ const int CollectionParserConfig::kCooccurrenceTokenFieldNumber;
 const int CollectionParserConfig::kUseUnityBasedIndicesFieldNumber;
 const int CollectionParserConfig::kGatherCoocFieldNumber;
 const int CollectionParserConfig::kCooccurrenceClassIdFieldNumber;
+const int CollectionParserConfig::kUseSymmetricCoocValuesFieldNumber;
 #endif  // !_MSC_VER
 
 CollectionParserConfig::CollectionParserConfig()
@@ -18837,6 +18886,7 @@ void CollectionParserConfig::SharedCtor() {
   num_items_per_batch_ = 1000;
   use_unity_based_indices_ = true;
   gather_cooc_ = false;
+  use_symmetric_cooc_values_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -18910,6 +18960,7 @@ void CollectionParserConfig::Clear() {
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     gather_cooc_ = false;
+    use_symmetric_cooc_values_ = false;
   }
   cooccurrence_token_.Clear();
   cooccurrence_class_id_.Clear();
@@ -19093,6 +19144,22 @@ bool CollectionParserConfig::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(82)) goto parse_cooccurrence_class_id;
+        if (input->ExpectTag(88)) goto parse_use_symmetric_cooc_values;
+        break;
+      }
+
+      // optional bool use_symmetric_cooc_values = 11 [default = false];
+      case 11: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_use_symmetric_cooc_values:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &use_symmetric_cooc_values_)));
+          set_has_use_symmetric_cooc_values();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -19190,6 +19257,11 @@ void CollectionParserConfig::SerializeWithCachedSizes(
       10, this->cooccurrence_class_id(i), output);
   }
 
+  // optional bool use_symmetric_cooc_values = 11 [default = false];
+  if (has_use_symmetric_cooc_values()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(11, this->use_symmetric_cooc_values(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -19277,6 +19349,11 @@ void CollectionParserConfig::SerializeWithCachedSizes(
       WriteStringToArray(10, this->cooccurrence_class_id(i), target);
   }
 
+  // optional bool use_symmetric_cooc_values = 11 [default = false];
+  if (has_use_symmetric_cooc_values()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(11, this->use_symmetric_cooc_values(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -19338,6 +19415,11 @@ int CollectionParserConfig::ByteSize() const {
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     // optional bool gather_cooc = 9 [default = false];
     if (has_gather_cooc()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool use_symmetric_cooc_values = 11 [default = false];
+    if (has_use_symmetric_cooc_values()) {
       total_size += 1 + 1;
     }
 
@@ -19410,6 +19492,9 @@ void CollectionParserConfig::MergeFrom(const CollectionParserConfig& from) {
     if (from.has_gather_cooc()) {
       set_gather_cooc(from.gather_cooc());
     }
+    if (from.has_use_symmetric_cooc_values()) {
+      set_use_symmetric_cooc_values(from.use_symmetric_cooc_values());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -19443,6 +19528,7 @@ void CollectionParserConfig::Swap(CollectionParserConfig* other) {
     std::swap(use_unity_based_indices_, other->use_unity_based_indices_);
     std::swap(gather_cooc_, other->gather_cooc_);
     cooccurrence_class_id_.Swap(&other->cooccurrence_class_id_);
+    std::swap(use_symmetric_cooc_values_, other->use_symmetric_cooc_values_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -227,6 +227,7 @@ message DictionaryCoocurenceEntries {
   repeated int32 first_index = 1;  // index of token in entry field
   repeated int32 second_index = 2; // index of token in entry field
   repeated float value = 3;
+  optional bool symmetric_cooc_values = 4 [default = false];
 }
 
 // Represents a configuration of a general score
@@ -442,6 +443,7 @@ message CollectionParserConfig {
   optional bool use_unity_based_indices = 8 [default = true];
   optional bool gather_cooc = 9 [default = false];
   repeated string cooccurrence_class_id = 10;
+  optional bool use_symmetric_cooc_values = 11 [default = false];
 }
 
 // Represents an argument of 'synchronize model' operation

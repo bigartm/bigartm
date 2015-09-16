@@ -3680,17 +3680,27 @@ class DictionaryCoocurenceEntries : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_value();
 
+  // optional bool symmetric_cooc_values = 4 [default = false];
+  inline bool has_symmetric_cooc_values() const;
+  inline void clear_symmetric_cooc_values();
+  static const int kSymmetricCoocValuesFieldNumber = 4;
+  inline bool symmetric_cooc_values() const;
+  inline void set_symmetric_cooc_values(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.DictionaryCoocurenceEntries)
  private:
+  inline void set_has_symmetric_cooc_values();
+  inline void clear_has_symmetric_cooc_values();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > first_index_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > second_index_;
   ::google::protobuf::RepeatedField< float > value_;
+  bool symmetric_cooc_values_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6477,6 +6487,13 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_class_id() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_class_id();
 
+  // optional bool use_symmetric_cooc_values = 11 [default = false];
+  inline bool has_use_symmetric_cooc_values() const;
+  inline void clear_use_symmetric_cooc_values();
+  static const int kUseSymmetricCoocValuesFieldNumber = 11;
+  inline bool use_symmetric_cooc_values() const;
+  inline void set_use_symmetric_cooc_values(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.CollectionParserConfig)
  private:
   inline void set_has_format();
@@ -6495,6 +6512,8 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline void clear_has_use_unity_based_indices();
   inline void set_has_gather_cooc();
   inline void clear_has_gather_cooc();
+  inline void set_has_use_symmetric_cooc_values();
+  inline void clear_has_use_symmetric_cooc_values();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6508,9 +6527,10 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_class_id_;
   bool use_unity_based_indices_;
   bool gather_cooc_;
+  bool use_symmetric_cooc_values_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -14028,6 +14048,28 @@ DictionaryCoocurenceEntries::mutable_value() {
   return &value_;
 }
 
+// optional bool symmetric_cooc_values = 4 [default = false];
+inline bool DictionaryCoocurenceEntries::has_symmetric_cooc_values() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void DictionaryCoocurenceEntries::set_has_symmetric_cooc_values() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void DictionaryCoocurenceEntries::clear_has_symmetric_cooc_values() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void DictionaryCoocurenceEntries::clear_symmetric_cooc_values() {
+  symmetric_cooc_values_ = false;
+  clear_has_symmetric_cooc_values();
+}
+inline bool DictionaryCoocurenceEntries::symmetric_cooc_values() const {
+  return symmetric_cooc_values_;
+}
+inline void DictionaryCoocurenceEntries::set_symmetric_cooc_values(bool value) {
+  set_has_symmetric_cooc_values();
+  symmetric_cooc_values_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // ScoreConfig
@@ -17867,6 +17909,28 @@ CollectionParserConfig::cooccurrence_class_id() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 CollectionParserConfig::mutable_cooccurrence_class_id() {
   return &cooccurrence_class_id_;
+}
+
+// optional bool use_symmetric_cooc_values = 11 [default = false];
+inline bool CollectionParserConfig::has_use_symmetric_cooc_values() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void CollectionParserConfig::set_has_use_symmetric_cooc_values() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void CollectionParserConfig::clear_has_use_symmetric_cooc_values() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void CollectionParserConfig::clear_use_symmetric_cooc_values() {
+  use_symmetric_cooc_values_ = false;
+  clear_has_use_symmetric_cooc_values();
+}
+inline bool CollectionParserConfig::use_symmetric_cooc_values() const {
+  return use_symmetric_cooc_values_;
+}
+inline void CollectionParserConfig::set_use_symmetric_cooc_values(bool value) {
+  set_has_use_symmetric_cooc_values();
+  use_symmetric_cooc_values_ = value;
 }
 
 // -------------------------------------------------------------------
