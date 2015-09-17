@@ -36,7 +36,7 @@ class Dictionary {
   float cooc_value(const Token& token_1, const Token& token_2) const;
 
   // general method to return all cooc tokens with their values for given token
-  const std::vector<TokenCoocInfo> cooc_info(const Token& token) const;
+  const std::unordered_map<int, float>* cooc_info(const Token& token) const;
 
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;

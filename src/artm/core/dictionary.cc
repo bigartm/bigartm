@@ -36,18 +36,20 @@ Dictionary::Dictionary(const artm::DictionaryConfig& config) {
           first_cooc_iter = cooc_values_.find(first_index_iter->second);
         }
 
-        auto second_cooc_iter = cooc_values_.find(second_index_iter->second);
-        if (second_cooc_iter == cooc_values_.end()) {
-          cooc_values_.insert(std::make_pair(second_index_iter->second, std::unordered_map<int, float>()));
-          second_cooc_iter = cooc_values_.find(second_index_iter->second);
-        }
-
-        // std::map::insert() ignores attempts to write multiply pairs with same key
-        // the data representation is symmetric for both first and second tokens in cooc pair
+        // std::map::insert() ignores attempts to write several pairs with same key
         first_cooc_iter->second.insert(std::make_pair(second_index_iter->second,
                                                       config.cooc_entries().value(i)));
-        second_cooc_iter->second.insert(std::make_pair(first_index_iter->second,
-                                                       config.cooc_entries().value(i)));
+
+        if (config.cooc_entries().symmetric_cooc_values()) {
+          auto second_cooc_iter = cooc_values_.find(second_index_iter->second);
+          if (second_cooc_iter == cooc_values_.end()) {
+            cooc_values_.insert(std::make_pair(second_index_iter->second, std::unordered_map<int, float>()));
+            second_cooc_iter = cooc_values_.find(second_index_iter->second);
+          }
+
+          second_cooc_iter->second.insert(std::make_pair(first_index_iter->second,
+                                                         config.cooc_entries().value(i)));
+        }
       }
     }
   }
@@ -111,21 +113,14 @@ float Dictionary::cooc_value(const Token& token_1, const Token& token_2) const {
   return cooc_map_iter_2->second;
 }
 
-const std::vector<TokenCoocInfo> Dictionary::cooc_info(const Token& token) const {
-  auto retval = std::vector<TokenCoocInfo>();
-
+const std::unordered_map<int, float>* Dictionary::cooc_info(const Token& token) const {
   auto index_iter = token_index_.find(token);
-  if (index_iter == token_index_.end()) return retval;
+  if (index_iter == token_index_.end()) return nullptr;
 
   auto cooc_map_iter = cooc_values_.find(index_iter->second);
-  if (cooc_map_iter == cooc_values_.end()) return retval;
+  if (cooc_map_iter == cooc_values_.end()) return nullptr;
 
-  for (auto iter = cooc_map_iter->second.begin(); iter != cooc_map_iter->second.end(); ++iter) {
-    TokenCoocInfo token_cooc_info = TokenCoocInfo(&index_token_.find(iter->first)->second, iter->second);
-    retval.push_back(token_cooc_info);
-  }
-
-  return retval;
+  return &(cooc_map_iter->second);
 }
 
 const DictionaryEntry* Dictionary::entry(const Token& token) const {
