@@ -116,6 +116,7 @@ message ModelConfig {
   optional bool use_new_tokens = 16 [default = true];
   optional bool opt_for_avx = 17 [default = true];
   repeated RegularizerSettings regularizer_settings = 18;
+  optional bool use_ptdw_matrix = 19 [default = false];
 }
 
 // Represents a configuration of a general regularizer
@@ -598,6 +599,7 @@ message ProcessBatchesArgs {
   optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
+  optional bool use_ptdw_matrix = 16 [default = false];
 }
 
 message ProcessBatchesResult {

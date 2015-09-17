@@ -73,6 +73,7 @@ void BasicTest() {
   model_config.add_regularizer_name(reg_multilang_name);
   model_config.add_regularizer_tau(1);
   model_config.set_name("model_config1");
+  model_config.set_use_ptdw_matrix(true);  // temporary switch tests into use_ptdw_matrix mode
   artm::Model model(*master_component, model_config);
 
   // Load doc-token matrix
