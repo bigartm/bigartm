@@ -159,7 +159,8 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   topic_kernel_score->set_average_kernel_size(average_kernel_size);
   topic_kernel_score->set_average_kernel_purity(average_kernel_purity);
   topic_kernel_score->set_average_kernel_contrast(average_kernel_contrast);
-  topic_kernel_score->set_average_coherence(average_kernel_coherence);
+  if (count_coherence)
+    topic_kernel_score->set_average_coherence(average_kernel_coherence);
 
   return retval;
 }

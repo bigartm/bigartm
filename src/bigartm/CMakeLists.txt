@@ -1,4 +1,4 @@
-project(cpp_client)
+project(bigartm)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 
@@ -8,7 +8,7 @@ set(SRC_LIST
 	${CMAKE_SOURCE_DIR}/src/artm/messages.pb.cc
 )
 
-add_executable(cpp_client ${SRC_LIST})
-target_link_libraries(cpp_client artm ${Boost_LIBRARIES})
+add_executable(bigartm ${SRC_LIST})
+target_link_libraries(bigartm artm ${Boost_LIBRARIES})
 
-install(TARGETS cpp_client DESTINATION bin)
+install(TARGETS bigartm DESTINATION bin)
