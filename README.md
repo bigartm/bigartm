@@ -53,23 +53,56 @@ $ make
 
 ### Command-line interface
 
-**TODO** Command line interface is under construction. Check out [documentation for `cpp_client`](http://docs.bigartm.org/en/latest/ref/cpp_client.html) — the old CLI.
+Check out [documentation for `bigartm`](http://docs.bigartm.org/en/latest/tutorials/bigartm_cli.html).
+
+Examples:
+
+* Basic model (20 topics, outputed to CSV-file, infered in 10 passes)
 
 ```bash
-$ bigartm learn --format bow -d docword.kos.txt -v vocab.kos.txt
+bigartm.exe -d docword.kos.txt -v vocab.kos.txt --write-model-readable model.txt
+--passes 10 --batch-size 50 --topics 20
+```
+
+* Basic model with less tokens (filtered extreme values based on token's frequency)
+```bash
+bigartm.exe -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2
+--passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt
+```
+
+* Simple regularized model (increase sparsity up to 60-70%)
+```bash
+bigartm.exe -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2
+--passes 10 --batch-size 50 --topics 20  --write-model-readable model.txt 
+--regularizer "0.05 SparsePhi" "0.05 SparseTheta"
+```
+
+* More advanced regularize model, with 10 sparse objective topics, and 2 smooth background topics
+```bash
+bigartm.exe -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2
+--passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt
+--regularizer "0.05 SparsePhi #obj"
+--regularizer "0.05 SparseTheta #obj"
+--regularizer "0.25 SmoothPhi #background"
+--regularizer "0.25 SmoothTheta #background" 
 ```
 
 ### Interactive Python interface
 
-**TODO** Python API is under construction, see [documentation for the old Python interface](http://docs.bigartm.org/en/latest/tutorials/typical_python_example.html) and [examples of using BigARTM from python](src/python/examples).
+Check out the documentation for the ARTM Python interface 
+[in English](http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb) and
+[in Russian](http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_RU.ipynb) 
+
+Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/index.html) for details on how to install and start using Python interface.
 
 ```python
 # A stub
 import bigartm
 
-model = bigartm.Model()
-model.em_iterations(batches, n_iters=5)
-model.show()
+model = bigartm.ARTM(num_topics=15
+batch_vectorizer = artm.BatchVectorizer(data_format='bow_uci', collection_name='kos', target_folder='kos'))
+model.fit_offline(batches, passes=5)
+print model.phi_
 ```
 
 ### Low-level API
