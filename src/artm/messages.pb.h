@@ -75,6 +75,8 @@ class ThetaSnippetScoreConfig;
 class ThetaSnippetScore;
 class TopicKernelScoreConfig;
 class TopicKernelScore;
+class TopicMassPhiScoreConfig;
+class TopicMassPhiScore;
 class TopicModel;
 class TopicModel_TopicModelInternals;
 class ThetaMatrix;
@@ -194,11 +196,12 @@ enum ScoreConfig_Type {
   ScoreConfig_Type_ItemsProcessed = 3,
   ScoreConfig_Type_TopTokens = 4,
   ScoreConfig_Type_ThetaSnippet = 5,
-  ScoreConfig_Type_TopicKernel = 6
+  ScoreConfig_Type_TopicKernel = 6,
+  ScoreConfig_Type_TopicMassPhi = 7
 };
 bool ScoreConfig_Type_IsValid(int value);
 const ScoreConfig_Type ScoreConfig_Type_Type_MIN = ScoreConfig_Type_Perplexity;
-const ScoreConfig_Type ScoreConfig_Type_Type_MAX = ScoreConfig_Type_TopicKernel;
+const ScoreConfig_Type ScoreConfig_Type_Type_MAX = ScoreConfig_Type_TopicMassPhi;
 const int ScoreConfig_Type_Type_ARRAYSIZE = ScoreConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ScoreConfig_Type_descriptor();
@@ -218,11 +221,12 @@ enum ScoreData_Type {
   ScoreData_Type_ItemsProcessed = 3,
   ScoreData_Type_TopTokens = 4,
   ScoreData_Type_ThetaSnippet = 5,
-  ScoreData_Type_TopicKernel = 6
+  ScoreData_Type_TopicKernel = 6,
+  ScoreData_Type_TopicMassPhi = 7
 };
 bool ScoreData_Type_IsValid(int value);
 const ScoreData_Type ScoreData_Type_Type_MIN = ScoreData_Type_Perplexity;
-const ScoreData_Type ScoreData_Type_Type_MAX = ScoreData_Type_TopicKernel;
+const ScoreData_Type ScoreData_Type_Type_MAX = ScoreData_Type_TopicMassPhi;
 const int ScoreData_Type_Type_ARRAYSIZE = ScoreData_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ScoreData_Type_descriptor();
@@ -3771,6 +3775,7 @@ class ScoreConfig : public ::google::protobuf::Message {
   static const Type TopTokens = ScoreConfig_Type_TopTokens;
   static const Type ThetaSnippet = ScoreConfig_Type_ThetaSnippet;
   static const Type TopicKernel = ScoreConfig_Type_TopicKernel;
+  static const Type TopicMassPhi = ScoreConfig_Type_TopicMassPhi;
   static inline bool Type_IsValid(int value) {
     return ScoreConfig_Type_IsValid(value);
   }
@@ -3912,6 +3917,7 @@ class ScoreData : public ::google::protobuf::Message {
   static const Type TopTokens = ScoreData_Type_TopTokens;
   static const Type ThetaSnippet = ScoreData_Type_ThetaSnippet;
   static const Type TopicKernel = ScoreData_Type_TopicKernel;
+  static const Type TopicMassPhi = ScoreData_Type_TopicMassPhi;
   static inline bool Type_IsValid(int value) {
     return ScoreData_Type_IsValid(value);
   }
@@ -5810,6 +5816,233 @@ class TopicKernelScore : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static TopicKernelScore* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class TopicMassPhiScoreConfig : public ::google::protobuf::Message {
+ public:
+  TopicMassPhiScoreConfig();
+  virtual ~TopicMassPhiScoreConfig();
+
+  TopicMassPhiScoreConfig(const TopicMassPhiScoreConfig& from);
+
+  inline TopicMassPhiScoreConfig& operator=(const TopicMassPhiScoreConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TopicMassPhiScoreConfig& default_instance();
+
+  void Swap(TopicMassPhiScoreConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  TopicMassPhiScoreConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TopicMassPhiScoreConfig& from);
+  void MergeFrom(const TopicMassPhiScoreConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional float eps = 1 [default = 1e-037];
+  inline bool has_eps() const;
+  inline void clear_eps();
+  static const int kEpsFieldNumber = 1;
+  inline float eps() const;
+  inline void set_eps(float value);
+
+  // optional string class_id = 2 [default = "@default_class"];
+  inline bool has_class_id() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id() const;
+  inline void set_class_id(const ::std::string& value);
+  inline void set_class_id(const char* value);
+  inline void set_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_class_id();
+  inline ::std::string* release_class_id();
+  inline void set_allocated_class_id(::std::string* class_id);
+
+  // repeated string topic_name = 3;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 3;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // @@protoc_insertion_point(class_scope:artm.TopicMassPhiScoreConfig)
+ private:
+  inline void set_has_eps();
+  inline void clear_has_eps();
+  inline void set_has_class_id();
+  inline void clear_has_class_id();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* class_id_;
+  static ::std::string* _default_class_id_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  float eps_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static TopicMassPhiScoreConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class TopicMassPhiScore : public ::google::protobuf::Message {
+ public:
+  TopicMassPhiScore();
+  virtual ~TopicMassPhiScore();
+
+  TopicMassPhiScore(const TopicMassPhiScore& from);
+
+  inline TopicMassPhiScore& operator=(const TopicMassPhiScore& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TopicMassPhiScore& default_instance();
+
+  void Swap(TopicMassPhiScore* other);
+
+  // implements Message ----------------------------------------------
+
+  TopicMassPhiScore* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TopicMassPhiScore& from);
+  void MergeFrom(const TopicMassPhiScore& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional double value = 1;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 1;
+  inline double value() const;
+  inline void set_value(double value);
+
+  // repeated string topic_name = 2;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 2;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated double topic_mass = 3;
+  inline int topic_mass_size() const;
+  inline void clear_topic_mass();
+  static const int kTopicMassFieldNumber = 3;
+  inline double topic_mass(int index) const;
+  inline void set_topic_mass(int index, double value);
+  inline void add_topic_mass(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      topic_mass() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_topic_mass();
+
+  // @@protoc_insertion_point(class_scope:artm.TopicMassPhiScore)
+ private:
+  inline void set_has_value();
+  inline void clear_has_value();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  double value_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedField< double > topic_mass_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static TopicMassPhiScore* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -16785,6 +17018,241 @@ inline void TopicKernelScore::set_allocated_topic_name(::artm::StringArray* topi
   } else {
     clear_has_topic_name();
   }
+}
+
+// -------------------------------------------------------------------
+
+// TopicMassPhiScoreConfig
+
+// optional float eps = 1 [default = 1e-037];
+inline bool TopicMassPhiScoreConfig::has_eps() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void TopicMassPhiScoreConfig::set_has_eps() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void TopicMassPhiScoreConfig::clear_has_eps() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void TopicMassPhiScoreConfig::clear_eps() {
+  eps_ = 1e-037f;
+  clear_has_eps();
+}
+inline float TopicMassPhiScoreConfig::eps() const {
+  return eps_;
+}
+inline void TopicMassPhiScoreConfig::set_eps(float value) {
+  set_has_eps();
+  eps_ = value;
+}
+
+// optional string class_id = 2 [default = "@default_class"];
+inline bool TopicMassPhiScoreConfig::has_class_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void TopicMassPhiScoreConfig::set_has_class_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void TopicMassPhiScoreConfig::clear_has_class_id() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void TopicMassPhiScoreConfig::clear_class_id() {
+  if (class_id_ != _default_class_id_) {
+    class_id_->assign(*_default_class_id_);
+  }
+  clear_has_class_id();
+}
+inline const ::std::string& TopicMassPhiScoreConfig::class_id() const {
+  return *class_id_;
+}
+inline void TopicMassPhiScoreConfig::set_class_id(const ::std::string& value) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void TopicMassPhiScoreConfig::set_class_id(const char* value) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void TopicMassPhiScoreConfig::set_class_id(const char* value, size_t size) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicMassPhiScoreConfig::mutable_class_id() {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string(*_default_class_id_);
+  }
+  return class_id_;
+}
+inline ::std::string* TopicMassPhiScoreConfig::release_class_id() {
+  clear_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    return NULL;
+  } else {
+    ::std::string* temp = class_id_;
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
+    return temp;
+  }
+}
+inline void TopicMassPhiScoreConfig::set_allocated_class_id(::std::string* class_id) {
+  if (class_id_ != _default_class_id_) {
+    delete class_id_;
+  }
+  if (class_id) {
+    set_has_class_id();
+    class_id_ = class_id;
+  } else {
+    clear_has_class_id();
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
+  }
+}
+
+// repeated string topic_name = 3;
+inline int TopicMassPhiScoreConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void TopicMassPhiScoreConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& TopicMassPhiScoreConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* TopicMassPhiScoreConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void TopicMassPhiScoreConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicMassPhiScoreConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicMassPhiScoreConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicMassPhiScoreConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void TopicMassPhiScoreConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicMassPhiScoreConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicMassPhiScoreConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopicMassPhiScoreConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopicMassPhiScoreConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// -------------------------------------------------------------------
+
+// TopicMassPhiScore
+
+// optional double value = 1;
+inline bool TopicMassPhiScore::has_value() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void TopicMassPhiScore::set_has_value() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void TopicMassPhiScore::clear_has_value() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void TopicMassPhiScore::clear_value() {
+  value_ = 0;
+  clear_has_value();
+}
+inline double TopicMassPhiScore::value() const {
+  return value_;
+}
+inline void TopicMassPhiScore::set_value(double value) {
+  set_has_value();
+  value_ = value;
+}
+
+// repeated string topic_name = 2;
+inline int TopicMassPhiScore::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void TopicMassPhiScore::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& TopicMassPhiScore::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* TopicMassPhiScore::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void TopicMassPhiScore::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicMassPhiScore::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicMassPhiScore::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicMassPhiScore::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void TopicMassPhiScore::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicMassPhiScore::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicMassPhiScore::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopicMassPhiScore::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopicMassPhiScore::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated double topic_mass = 3;
+inline int TopicMassPhiScore::topic_mass_size() const {
+  return topic_mass_.size();
+}
+inline void TopicMassPhiScore::clear_topic_mass() {
+  topic_mass_.Clear();
+}
+inline double TopicMassPhiScore::topic_mass(int index) const {
+  return topic_mass_.Get(index);
+}
+inline void TopicMassPhiScore::set_topic_mass(int index, double value) {
+  topic_mass_.Set(index, value);
+}
+inline void TopicMassPhiScore::add_topic_mass(double value) {
+  topic_mass_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+TopicMassPhiScore::topic_mass() const {
+  return topic_mass_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+TopicMassPhiScore::mutable_topic_mass() {
+  return &topic_mass_;
 }
 
 // -------------------------------------------------------------------

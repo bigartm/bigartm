@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "artm/core/exceptions.h"
+#include "artm/core/protobuf_helpers.h"
 
 #include "artm/score/sparsity_theta.h"
 
@@ -16,32 +17,19 @@ void SparsityTheta::AppendScore(
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_count = p_wt.topic_size();
-  auto topic_name = p_wt.topic_name();
+  int topic_size = p_wt.topic_size();
+
   std::vector<bool> topics_to_score;
-  int topics_to_score_size = 0;
-
-  if (config_.topic_name_size() > 0) {
-    for (int i = 0; i < topics_count; ++i)
-      topics_to_score.push_back(false);
-
-    for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
-      for (int real_topic_id = 0; real_topic_id < topics_count; ++real_topic_id) {
-        if (topic_name.Get(real_topic_id) == config_.topic_name(topic_id)) {
-          topics_to_score[real_topic_id] = true;
-          topics_to_score_size++;
-          break;
-        }
-      }
-    }
+  int topics_to_score_size = topic_size;
+  if (config_.topic_name_size() == 0) {
+    topics_to_score.assign(topic_size, true);
   } else {
-    topics_to_score_size = topics_count;
-    for (int i = 0; i < topics_count; ++i)
-      topics_to_score.push_back(true);
+    topics_to_score = core::is_member(p_wt.topic_name(), config_.topic_name());
+    topics_to_score_size = config_.topic_name_size();
   }
 
   int zero_topics_count = 0;
-  for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     if ((fabs(theta[topic_index]) < config_.eps()) &&
         topics_to_score[topic_index]) {
       ++zero_topics_count;

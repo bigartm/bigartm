@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "artm/core/exceptions.h"
+#include "artm/core/protobuf_helpers.h"
 
 #include "artm/score/perplexity.h"
 
@@ -29,34 +30,20 @@ void Perplexity::AppendScore(
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_size = p_wt.topic_size();
+  int topic_size = p_wt.topic_size();
 
   // the following code counts sparsity of theta
-  auto topic_name = p_wt.topic_name();
   std::vector<bool> topics_to_score;
-  int topics_to_score_size = 0;
-
-  if (config_.theta_sparsity_topic_name_size() > 0) {
-    for (int i = 0; i < topics_size; ++i)
-      topics_to_score.push_back(false);
-
-    for (int topic_id = 0; topic_id < config_.theta_sparsity_topic_name_size(); ++topic_id) {
-      for (int real_topic_id = 0; real_topic_id < topics_size; ++real_topic_id) {
-        if (topic_name.Get(real_topic_id) == config_.theta_sparsity_topic_name(topic_id)) {
-          topics_to_score[real_topic_id] = true;
-          topics_to_score_size++;
-          break;
-        }
-      }
-    }
+  int topics_to_score_size = topic_size;
+  if (config_.theta_sparsity_topic_name_size() == 0) {
+    topics_to_score.assign(topic_size, true);
   } else {
-    topics_to_score_size = topics_size;
-    for (int i = 0; i < topics_size; ++i)
-      topics_to_score.push_back(true);
+    topics_to_score = core::is_member(p_wt.topic_name(), config_.theta_sparsity_topic_name());
+    topics_to_score_size = config_.theta_sparsity_topic_name_size();
   }
 
   int zero_topics_count = 0;
-  for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     if ((fabs(theta[topic_index]) < config_.theta_sparsity_eps()) &&
         topics_to_score[topic_index]) {
       ++zero_topics_count;
@@ -138,7 +125,7 @@ void Perplexity::AppendScore(
 
       int p_wt_token_index = p_wt.token_index(token);
       if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
-        for (int topic_index = 0; topic_index < topics_size; topic_index++) {
+        for (int topic_index = 0; topic_index < topic_size; topic_index++) {
           sum += theta[topic_index] * p_wt.get(p_wt_token_index, topic_index);
         }
       }

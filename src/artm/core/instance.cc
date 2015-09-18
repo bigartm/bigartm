@@ -37,6 +37,7 @@
 #include "artm/score/topic_kernel.h"
 #include "artm/score/theta_snippet.h"
 #include "artm/score/perplexity.h"
+#include "artm/score/topic_mass_phi.h"
 
 #define CREATE_OR_RECONFIGURE_REGULARIZER(ConfigType, RegularizerType) {                      \
   ConfigType regularizer_config;                                                              \
@@ -316,6 +317,12 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
     case artm::ScoreConfig_Type_TopicKernel: {
       CREATE_SCORE_CALCULATOR(::artm::TopicKernelScoreConfig,
                               ::artm::score::TopicKernel);
+      break;
+    }
+
+    case artm::ScoreConfig_Type_TopicMassPhi: {
+      CREATE_SCORE_CALCULATOR(::artm::TopicMassPhiScoreConfig,
+                              ::artm::score::TopicMassPhi);
       break;
     }
 
