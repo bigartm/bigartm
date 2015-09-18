@@ -100,7 +100,9 @@ Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/index.html) for
 import bigartm
 
 model = bigartm.ARTM(num_topics=15
-batch_vectorizer = artm.BatchVectorizer(data_format='bow_uci', collection_name='kos', target_folder='kos'))
+batch_vectorizer = artm.BatchVectorizer(data_format='bow_uci',
+                                        collection_name='kos',
+                                        target_folder='kos'))
 model.fit_offline(batches, passes=5)
 print model.phi_
 ```
