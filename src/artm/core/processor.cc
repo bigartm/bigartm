@@ -59,30 +59,15 @@ class ModelIncrementWriter : public NwtWriteAdapter {
   virtual void Store(int batch_token_id, int pwt_token_id, const std::vector<float>& nwt_vector) {
     const int topics_count = nwt_vector.size();
     FloatArray* hat_n_wt_cur = model_increment_->mutable_topic_model()->mutable_token_weights(batch_token_id);
-    IntArray* topic_indices = model_increment_->mutable_topic_model()->mutable_topic_index(batch_token_id);
-    assert(hat_n_wt_cur->value_size() == 0);
-    int nnz_values = 0;
-    for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
-      if (nwt_vector[topic_index] >= kProcessorEps) nnz_values++;  // Find nnz_values
-    }
 
-    if (nnz_values < (topics_count / 2)) {
-      // Use sparse format
-      hat_n_wt_cur->mutable_value()->Reserve(nnz_values);
-      topic_indices->mutable_value()->Reserve(nnz_values);
-      for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
-        // The next line needs to be consistent with "Find nnz_values" line above
-        if (nwt_vector[topic_index] >= kProcessorEps) {
-          hat_n_wt_cur->mutable_value()->Add(nwt_vector[topic_index]);
-          topic_indices->mutable_value()->Add(topic_index);
-        }
-      }
-    } else {
-      // Use dense format
+    if (hat_n_wt_cur->value_size() == 0) {
       hat_n_wt_cur->mutable_value()->Reserve(topics_count);
-      for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+      for (int topic_index = 0; topic_index < topics_count; ++topic_index)
         hat_n_wt_cur->add_value(nwt_vector[topic_index]);
-      }
+    } else {
+      assert(hat_n_wt_cur->value_size() == nwt_vector.size());
+      for (int topic_index = 0; topic_index < topics_count; ++topic_index)
+        hat_n_wt_cur->set_value(topic_index, hat_n_wt_cur->value(topic_index) + nwt_vector[topic_index]);
     }
   }
 
@@ -522,7 +507,8 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 
     if (!item_has_tokens) continue;  // continue to the next item
 
-    for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
+    for (int inner_iter = 0; inner_iter <= model_config.inner_iterations_count(); ++inner_iter) {
+      const bool last_iteration = (inner_iter == model_config.inner_iterations_count());
       for (int i = begin_index; i < end_index; ++i) {
         const float* phi_ptr = &local_phi(i - begin_index, 0);
         float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
@@ -541,59 +527,41 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
       }
 
       // ToDo: Apply ptdw regularizer here (if needed)
+      // For now ust put the code here.
+      // Later we may do via regularizer's framework like this:
       // ptdw_agents->Apply(d, inner_iter, topics_count, local_ptdw)
 
-      for (int k = 0; k < topics_count; ++k)
-        ntd_ptr[k] = 0.0f;
-      for (int i = begin_index; i < end_index; ++i) {
-        const float n_dw = sparse_ndw.val()[i];
-        const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+      if (!last_iteration) {  // update theta matrix (except for the last iteration)
         for (int k = 0; k < topics_count; ++k)
-          ntd_ptr[k] += n_dw * ptdw_ptr[k];
+          ntd_ptr[k] = 0.0f;
+        for (int i = begin_index; i < end_index; ++i) {
+          const float n_dw = sparse_ndw.val()[i];
+          const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+          for (int k = 0; k < topics_count; ++k)
+            ntd_ptr[k] += n_dw * ptdw_ptr[k];
+        }
+
+        for (int k = 0; k < topics_count; ++k)
+          theta_ptr[k] = ntd_ptr[k];
+
+        agents->Apply(d, inner_iter, topics_count, theta_ptr);
+      } else {  // update n_wt matrix (on the last iteration)
+        const bool in_mask = (mask == nullptr || mask->value(d));
+        if (nwt_writer != nullptr && in_mask) {
+          std::vector<float> values(topics_count, 0.0f);
+          for (int i = begin_index; i < end_index; ++i) {
+            const float n_dw = batch_weight * sparse_ndw.val()[i];
+            const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+
+            for (int k = 0; k < topics_count; ++k)
+              values[k] = ptdw_ptr[k] * n_dw;
+
+            int w = sparse_ndw.col_ind()[i];
+            nwt_writer->Store(w, token_id[w], values);
+          }
+        }
       }
-
-      for (int k = 0; k < topics_count; ++k)
-        theta_ptr[k] = ntd_ptr[k];
-
-      agents->Apply(d, inner_iter, topics_count, theta_ptr);
     }
-  }
-
-  if (nwt_writer == nullptr)
-    return;
-
-  // ToDo: figure out how to apply latest ptdw in the next step.
-
-  CsrMatrix<float> sparse_nwd(sparse_ndw);
-  sparse_nwd.Transpose(blas);
-
-  // n_wt should be count for items, that have corresponding true-value in stream mask
-  // from batch. Or for all items, if such mask doesn't exist
-  std::vector<float> p_wt_local(topics_count, 0.0f);
-  std::vector<float> n_wt_local(topics_count, 0.0f);
-  for (int w = 0; w < tokens_count; ++w) {
-    if (token_id[w] == -1) continue;
-    if (nwt_writer->Skip(w)) continue;
-    for (int k = 0; k < topics_count; ++k)
-      p_wt_local[k] = p_wt.get(token_id[w], k);
-
-    for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
-      int d = sparse_nwd.col_ind()[i];
-      if ((mask != nullptr) && (mask->value(d) == false)) continue;
-      float p_wd_val = blas->sdot(topics_count, &p_wt_local[0], 1, &(*theta_matrix)(0, d), 1);  // NOLINT
-      if (p_wd_val == 0) continue;
-      blas->saxpy(topics_count, sparse_nwd.val()[i] / p_wd_val,
-        &(*theta_matrix)(0, d), 1, &n_wt_local[0], 1);  // NOLINT
-    }
-
-    std::vector<float> values(topics_count, 0.0f);
-    for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
-      values[topic_index] = p_wt_local[topic_index] * n_wt_local[topic_index];
-      n_wt_local[topic_index] = 0.0f;
-    }
-
-    for (float& value : values) value *= batch_weight;
-    nwt_writer->Store(w, token_id[w], values);
   }
 }
 
