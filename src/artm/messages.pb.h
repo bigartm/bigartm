@@ -2060,6 +2060,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
       mutable_regularizer_settings();
 
+  // optional bool use_ptdw_matrix = 19 [default = false];
+  inline bool has_use_ptdw_matrix() const;
+  inline void clear_use_ptdw_matrix();
+  static const int kUsePtdwMatrixFieldNumber = 19;
+  inline bool use_ptdw_matrix() const;
+  inline void set_use_ptdw_matrix(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2084,6 +2091,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_new_tokens();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
+  inline void set_has_use_ptdw_matrix();
+  inline void clear_has_use_ptdw_matrix();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2100,17 +2109,18 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
   bool use_new_tokens_;
   bool opt_for_avx_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
+  bool use_ptdw_matrix_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8607,6 +8617,13 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_batch_weight();
 
+  // optional bool use_ptdw_matrix = 16 [default = false];
+  inline bool has_use_ptdw_matrix() const;
+  inline void clear_use_ptdw_matrix();
+  static const int kUsePtdwMatrixFieldNumber = 16;
+  inline bool use_ptdw_matrix() const;
+  inline void set_use_ptdw_matrix(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8627,6 +8644,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_reset_scores();
   inline void set_has_theta_matrix_type();
   inline void clear_has_theta_matrix_type();
+  inline void set_has_use_ptdw_matrix();
+  inline void clear_has_use_ptdw_matrix();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8646,9 +8665,10 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool reset_scores_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
   int theta_matrix_type_;
+  bool use_ptdw_matrix_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12483,6 +12503,28 @@ ModelConfig::regularizer_settings() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
 ModelConfig::mutable_regularizer_settings() {
   return &regularizer_settings_;
+}
+
+// optional bool use_ptdw_matrix = 19 [default = false];
+inline bool ModelConfig::has_use_ptdw_matrix() const {
+  return (_has_bits_[0] & 0x00040000u) != 0;
+}
+inline void ModelConfig::set_has_use_ptdw_matrix() {
+  _has_bits_[0] |= 0x00040000u;
+}
+inline void ModelConfig::clear_has_use_ptdw_matrix() {
+  _has_bits_[0] &= ~0x00040000u;
+}
+inline void ModelConfig::clear_use_ptdw_matrix() {
+  use_ptdw_matrix_ = false;
+  clear_has_use_ptdw_matrix();
+}
+inline bool ModelConfig::use_ptdw_matrix() const {
+  return use_ptdw_matrix_;
+}
+inline void ModelConfig::set_use_ptdw_matrix(bool value) {
+  set_has_use_ptdw_matrix();
+  use_ptdw_matrix_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -21037,6 +21079,28 @@ ProcessBatchesArgs::batch_weight() const {
 inline ::google::protobuf::RepeatedField< float >*
 ProcessBatchesArgs::mutable_batch_weight() {
   return &batch_weight_;
+}
+
+// optional bool use_ptdw_matrix = 16 [default = false];
+inline bool ProcessBatchesArgs::has_use_ptdw_matrix() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_use_ptdw_matrix() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void ProcessBatchesArgs::clear_has_use_ptdw_matrix() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void ProcessBatchesArgs::clear_use_ptdw_matrix() {
+  use_ptdw_matrix_ = false;
+  clear_has_use_ptdw_matrix();
+}
+inline bool ProcessBatchesArgs::use_ptdw_matrix() const {
+  return use_ptdw_matrix_;
+}
+inline void ProcessBatchesArgs::set_use_ptdw_matrix(bool value) {
+  set_has_use_ptdw_matrix();
+  use_ptdw_matrix_ = value;
 }
 
 // -------------------------------------------------------------------

@@ -141,7 +141,9 @@ TEST(MultipleClasses, BasicTest) {
 
   // Create model
   artm::ModelConfig model_config1, model_config2, model_config3;
+
   model_config1.set_name("model1"); model_config1.set_topics_count(nTopics);
+  model_config1.set_use_ptdw_matrix(true);   // temporary switch tests into use_ptdw_matrix mode
   model_config2.set_name("model2"); model_config2.set_topics_count(nTopics); model_config2.set_use_sparse_bow(false);
   model_config3.set_name("model3"); model_config3.set_topics_count(nTopics);
   model_config3.add_class_id("@default_class"); model_config3.add_class_weight(0.5f);

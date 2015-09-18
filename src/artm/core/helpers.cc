@@ -721,6 +721,7 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", use_random_theta=" << (message.use_random_theta() ? "yes" : "no");
   ss << ", use_new_tokens=" << (message.use_new_tokens() ? "yes" : "no");
+  ss << ", use_ptdw_matrix=" << (message.use_ptdw_matrix() ? "yes" : "no");
   return ss.str();
 }
 
@@ -774,6 +775,7 @@ std::string Helpers::Describe(const ::artm::ProcessBatchesArgs& message) {
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", reset_scores=" << (message.reset_scores() ? "yes" : "no");
+  ss << ", use_ptdw_matrix=" << (message.use_ptdw_matrix() ? "yes" : "no");
   return ss.str();
 }
 

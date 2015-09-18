@@ -277,6 +277,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   if (args.has_reuse_theta()) model_config.set_reuse_theta(args.reuse_theta());
   if (args.has_opt_for_avx()) model_config.set_opt_for_avx(args.opt_for_avx());
   if (args.has_use_sparse_bow()) model_config.set_use_sparse_bow(args.use_sparse_bow());
+  if (args.has_use_ptdw_matrix()) model_config.set_use_ptdw_matrix(args.use_ptdw_matrix());
 
   std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
