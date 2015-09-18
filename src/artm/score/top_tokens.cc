@@ -13,8 +13,8 @@ namespace artm {
 namespace score {
 
 std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  int topics_size = p_wt.topic_size();
-  int tokens_size = p_wt.token_size();
+  int topic_size = p_wt.topic_size();
+  int token_size = p_wt.token_size();
 
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
   if (config_.has_cooccurrence_dictionary_name())
@@ -24,7 +24,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
   std::vector<int> topic_ids;
   google::protobuf::RepeatedPtrField<std::string> topic_name = p_wt.topic_name();
   if (config_.topic_name_size() == 0) {
-    for (int i = 0; i < topics_size; ++i) {
+    for (int i = 0; i < topic_size; ++i) {
       topic_ids.push_back(i);
     }
   } else {
@@ -43,7 +43,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     class_id = config_.class_id();
 
   std::vector<artm::core::Token> tokens;
-  for (int token_index = 0; token_index < tokens_size; token_index++) {
+  for (int token_index = 0; token_index < token_size; token_index++) {
     auto token = p_wt.token(token_index);
     if (token.class_id == class_id)
       tokens.push_back(token);
@@ -59,7 +59,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     std::vector<std::pair<float, int>> p_wt_local;
     p_wt_local.reserve(tokens.size());
 
-    for (int token_index = 0; token_index < tokens_size; token_index++) {
+    for (int token_index = 0; token_index < token_size; token_index++) {
       auto token = p_wt.token(token_index);
       if (token.class_id != class_id)
         continue;

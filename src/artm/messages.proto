@@ -240,6 +240,7 @@ message ScoreConfig {
     TopTokens = 4;
     ThetaSnippet = 5;
     TopicKernel = 6;
+    TopicMassPhi = 7;
   }
 
   optional string name = 1;
@@ -257,6 +258,7 @@ message ScoreData {
     TopTokens = 4;
     ThetaSnippet = 5;
     TopicKernel = 6;
+    TopicMassPhi = 7;
   }
 
   optional string name = 1;
@@ -385,6 +387,20 @@ message TopicKernelScore {
   optional float average_coherence = 8;
   repeated StringArray kernel_tokens = 9;
   optional StringArray topic_name = 10;
+}
+
+// Represents a configuration of a topic part in nwt score
+message TopicMassPhiScoreConfig {
+  optional float eps = 1 [default = 1e-37];
+  optional string class_id = 2 [default = "@default_class"];
+  repeated string topic_name = 3;
+}
+
+// Represents a result of calculation of a topic part in nwt score
+message TopicMassPhiScore {
+  optional double value = 1;
+  repeated string topic_name = 2;
+  repeated double topic_mass = 3;
 }
 
 // Represents a topic model (or an operation on topic model)

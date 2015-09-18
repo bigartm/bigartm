@@ -31,6 +31,7 @@ src/artm/score/items_processed.cc
 src/artm/score/top_tokens.cc
 src/artm/score/theta_snippet.cc
 src/artm/score/topic_kernel.cc
+src/artm/score/topic_mass_phi.cc
 src/artm/utility/ice.cc
 src/artm/utility/blas.cc
 src/artm_tests/boost_thread_test.cc
@@ -86,5 +87,6 @@ src/artm/score/items_processed.h
 src/artm/score/top_tokens.h
 src/artm/score/theta_snippet.h
 src/artm/score/topic_kernel.h
+src/artm/score/topic_mass_phi.h
 src/artm/utility/ice.h
 src/artm/utility/blas.h
