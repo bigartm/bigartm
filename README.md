@@ -24,8 +24,6 @@ Here are some examples of when you could use BigARTM:
   - Query similar documents on different languages.
 
 
-Put here some defails of ARTM approach, regularizers and essential theoretical background.
-
 ### References
 
 1. Vorontsov K., Potapenko A., Plavin A. [Additive Regularization of Topic Models for Topic Selection and Sparse Factorization.](https://s3-eu-west-1.amazonaws.com/artm/voron15slds.pdf) // Statistical Learning and Data Sciences. 2015 — pp. 193-202.
