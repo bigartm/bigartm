@@ -401,7 +401,8 @@ message TopicMassPhiScoreConfig {
 message TopicMassPhiScore {
   optional double value = 1;
   repeated string topic_name = 2;
-  repeated double topic_mass = 3;
+  repeated double topic_ratio = 3;
+  repeated double topic_mass = 4;
 }
 
 // Represents a topic model (or an operation on topic model)

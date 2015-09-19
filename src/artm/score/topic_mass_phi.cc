@@ -16,29 +16,34 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
 
   // parameters preparation
   std::vector<bool> topics_to_score;
-  if (config_.topic_name_size() == 0)
+  int topics_to_score_size = topic_size;
+  if (config_.topic_name_size() == 0) {
     topics_to_score.assign(topic_size, true);
-  else
+  } else {
     topics_to_score = core::is_member(p_wt.topic_name(), config_.topic_name());
+    topics_to_score_size = config_.topic_name_size();
+  }
 
   ::artm::core::ClassId class_id = ::artm::core::DefaultClass;
   if (config_.has_class_id())
     class_id = config_.class_id();
 
   std::vector<double> topic_mass;
-  topic_mass.assign(topic_size, 0.0);
+  topic_mass.assign(topics_to_score_size, 0.0);
   double denominator = 0.0;
   double numerator = 0.0;
 
   for (int token_index = 0; token_index < token_size; token_index++) {
     if (p_wt.token(token_index).class_id == class_id) {
+      int real_topic_index = 0;
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         double value = p_wt.get(token_index, topic_index);
         denominator += value;
-        topic_mass[topic_index] += value;
 
-        if (topics_to_score[topic_index])
+        if (topics_to_score[topic_index]) {
           numerator += value;
+          topic_mass[real_topic_index++] += value;
+        }
       }
     }
   }
@@ -51,11 +56,16 @@ std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix&
     value = static_cast<double>(numerator / denominator);
   topic_mass_score->set_value(value);
 
-  for (auto& name : p_wt.topic_name())
-      topic_mass_score->add_topic_name(name);
+  for (int i = 0; i < topic_size; ++i) {
+    if (topics_to_score[i])
+      topic_mass_score->add_topic_name(p_wt.topic_name(i));
+  }
 
-  for (double elem : topic_mass)
+  for (double elem : topic_mass) {
+    // don't check denominator value: if it's near zero the 'value' will show it
     topic_mass_score->add_topic_mass(elem);
+    topic_mass_score->add_topic_ratio(static_cast<double>(elem / denominator));
+  }
 
   return retval;
 }
