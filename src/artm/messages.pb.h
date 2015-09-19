@@ -6021,10 +6021,22 @@ class TopicMassPhiScore : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
-  // repeated double topic_mass = 3;
+  // repeated double topic_ratio = 3;
+  inline int topic_ratio_size() const;
+  inline void clear_topic_ratio();
+  static const int kTopicRatioFieldNumber = 3;
+  inline double topic_ratio(int index) const;
+  inline void set_topic_ratio(int index, double value);
+  inline void add_topic_ratio(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      topic_ratio() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_topic_ratio();
+
+  // repeated double topic_mass = 4;
   inline int topic_mass_size() const;
   inline void clear_topic_mass();
-  static const int kTopicMassFieldNumber = 3;
+  static const int kTopicMassFieldNumber = 4;
   inline double topic_mass(int index) const;
   inline void set_topic_mass(int index, double value);
   inline void add_topic_mass(double value);
@@ -6042,10 +6054,11 @@ class TopicMassPhiScore : public ::google::protobuf::Message {
 
   double value_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedField< double > topic_ratio_;
   ::google::protobuf::RepeatedField< double > topic_mass_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -17272,7 +17285,32 @@ TopicMassPhiScore::mutable_topic_name() {
   return &topic_name_;
 }
 
-// repeated double topic_mass = 3;
+// repeated double topic_ratio = 3;
+inline int TopicMassPhiScore::topic_ratio_size() const {
+  return topic_ratio_.size();
+}
+inline void TopicMassPhiScore::clear_topic_ratio() {
+  topic_ratio_.Clear();
+}
+inline double TopicMassPhiScore::topic_ratio(int index) const {
+  return topic_ratio_.Get(index);
+}
+inline void TopicMassPhiScore::set_topic_ratio(int index, double value) {
+  topic_ratio_.Set(index, value);
+}
+inline void TopicMassPhiScore::add_topic_ratio(double value) {
+  topic_ratio_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+TopicMassPhiScore::topic_ratio() const {
+  return topic_ratio_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+TopicMassPhiScore::mutable_topic_ratio() {
+  return &topic_ratio_;
+}
+
+// repeated double topic_mass = 4;
 inline int TopicMassPhiScore::topic_mass_size() const {
   return topic_mass_.size();
 }

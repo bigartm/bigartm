@@ -13,7 +13,8 @@ __all__ = [
     'SparsityThetaScore',
     'ThetaSnippetScore',
     'TopicKernelScore',
-    'TopTokensScore'
+    'TopTokensScore',
+    'TopicMassPhiScore'
 ]
 
 
@@ -522,3 +523,38 @@ class TopicKernelScore(BaseScore):
     @probability_mass_threshold.setter
     def probability_mass_threshold(self, probability_mass_threshold):
         _reconfigure_field(self, probability_mass_threshold, 'probability_mass_threshold')
+
+
+class TopicMassPhiScore(BaseScore):
+    """TopicMassPhiScore is a score in ArtmModel (public class)
+
+    Args:
+      name (str): the identifier of score, will be auto-generated if not specified
+      class_id (str): class_id to score, default=None
+      topic_names (list of str): list of names of topics to regularize, will
+      score all topics if not specified
+      eps (double): the tolerance const, if sum_t n_t < eps the
+      result is 0, default=1e-37
+    """
+
+    _config_message = messages.TopicMassPhiScoreConfig
+    _type = const.ScoreConfig_Type_TopicMassPhi
+
+    def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
+        BaseScore.__init__(self,
+                           name=name,
+                           class_id=class_id,
+                           topic_names=topic_names)
+
+        self._eps = GLOB_EPS
+        if eps is not None:
+            self._config.eps = eps
+            self._eps = eps
+
+    @property
+    def eps(self):
+        return self._eps
+
+    @eps.setter
+    def eps(self, eps):
+        _reconfigure_field(self, eps, 'eps')

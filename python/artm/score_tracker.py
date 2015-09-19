@@ -8,7 +8,8 @@ __all__ = [
     'SparsityThetaScoreTracker',
     'ThetaSnippetScoreTracker',
     'TopicKernelScoreTracker',
-    'TopTokensScoreTracker'
+    'TopTokensScoreTracker',
+    'TopicMassPhiScoreTracker'
 ]
 
 
@@ -396,7 +397,7 @@ class TopTokensScoreTracker(object):
             self._num_tokens.append(_data.num_entries)
 
             self._topic_info.append({})
-            for top_idx, top_name in enumerate(collections.OrderedDict.fromkeys(_data.topic_name)):
+            for top_idx, top_name in enumerate(_data.topic_name):
                 tokens = []
                 weights = []
                 for i in xrange(_data.num_entries):
@@ -719,3 +720,81 @@ class ThetaSnippetScoreTracker(object):
           list of int: ids of documents in snippet on the last synchronization
         """
         return self._document_ids
+
+
+###################################################################################################
+class TopicMassPhiScoreTracker(object):
+    """TopicMassPhiScoreTracker represents a result of counting
+    TopicMassPhiScore (private class)
+
+    Args:
+      score (reference): reference to Score object, no default
+    """
+
+    def __init__(self, score):
+        self._name = score.name
+        self._value = []
+        self._topic_info = []
+
+    def add(self, score=None):
+        """TopicMassPhiScoreTracker.add() --- add info about score after synchronization
+
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
+        """
+        if score is not None:
+            _data = score.master.retrieve_score(score._model, score.name)
+
+            self._value.append(_data.value)
+
+            self._topic_info.append({})
+
+            for top_idx, top_name in enumerate(_data.topic_name):
+                self._topic_info[-1][top_name] = \
+                    collections.namedtuple('TopicMassPhiScoreTuple', ['topic_mass', 'topic_ratio'])
+                self._topic_info[-1][top_name].topic_mass = _data.topic_mass[top_idx]
+                self._topic_info[-1][top_name].topic_ratio = _data.topic_ratio[top_idx]
+        else:
+            self._value.append(None)
+            self._topic_info.append(None)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def value(self):
+        """Returns:
+          list of double: mass of given topics in Phi on synchronizations
+        """
+        return self._value
+
+    @property
+    def topic_info(self):
+        """Returns:
+          list of sets: information about topic mass per topic on
+          synchronizations; each set contains information
+          about topics, key --- name of topic, value --- named tuple:
+          - *.topic_info[sync_index][topic_name].topic_mass --- n_t value
+          - *.topic_info[sync_index][topic_name].topic_ratio --- p_t value
+        """
+        return self._topic_info
+
+    @property
+    def last_value(self):
+        """Returns:
+        double: mass of given topics in Phi on last synchronization
+        """
+        return self._value[-1]
+
+    @property
+    def last_topic_info(self):
+        """Returns:
+          list of sets: information about topic mass per topic on last
+          synchronization; each set contains information
+          about topics, key --- name of topic, value --- named tuple:
+          - *.topic_info[sync_index][topic_name].topic_mass --- n_t value
+          - *.topic_info[sync_index][topic_name].topic_ratio --- p_t value
+        """
+        return self._topic_info[-1]
