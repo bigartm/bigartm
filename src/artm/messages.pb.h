@@ -106,8 +106,11 @@ class MasterComponentInfo;
 class MasterComponentInfo_RegularizerInfo;
 class MasterComponentInfo_ScoreInfo;
 class MasterComponentInfo_DictionaryInfo;
+class MasterComponentInfo_BatchInfo;
 class MasterComponentInfo_ModelInfo;
 class MasterComponentInfo_CacheEntryInfo;
+class ImportBatchesArgs;
+class DisposeBatchesArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -7219,6 +7222,22 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
+  // repeated string batch_filename = 8;
+  inline int batch_filename_size() const;
+  inline void clear_batch_filename();
+  static const int kBatchFilenameFieldNumber = 8;
+  inline const ::std::string& batch_filename(int index) const;
+  inline ::std::string* mutable_batch_filename(int index);
+  inline void set_batch_filename(int index, const ::std::string& value);
+  inline void set_batch_filename(int index, const char* value);
+  inline void set_batch_filename(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_filename();
+  inline void add_batch_filename(const ::std::string& value);
+  inline void add_batch_filename(const char* value);
+  inline void add_batch_filename(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
+
   // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs)
  private:
   inline void set_has_model_name();
@@ -7241,9 +7260,10 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::int32 topics_count_;
   ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter > filter_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9824,6 +9844,113 @@ class MasterComponentInfo_DictionaryInfo : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class MasterComponentInfo_BatchInfo : public ::google::protobuf::Message {
+ public:
+  MasterComponentInfo_BatchInfo();
+  virtual ~MasterComponentInfo_BatchInfo();
+
+  MasterComponentInfo_BatchInfo(const MasterComponentInfo_BatchInfo& from);
+
+  inline MasterComponentInfo_BatchInfo& operator=(const MasterComponentInfo_BatchInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterComponentInfo_BatchInfo& default_instance();
+
+  void Swap(MasterComponentInfo_BatchInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterComponentInfo_BatchInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterComponentInfo_BatchInfo& from);
+  void MergeFrom(const MasterComponentInfo_BatchInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // optional int32 items_count = 2;
+  inline bool has_items_count() const;
+  inline void clear_items_count();
+  static const int kItemsCountFieldNumber = 2;
+  inline ::google::protobuf::int32 items_count() const;
+  inline void set_items_count(::google::protobuf::int32 value);
+
+  // optional int32 token_count = 3;
+  inline bool has_token_count() const;
+  inline void clear_token_count();
+  static const int kTokenCountFieldNumber = 3;
+  inline ::google::protobuf::int32 token_count() const;
+  inline void set_token_count(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.BatchInfo)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_items_count();
+  inline void clear_has_items_count();
+  inline void set_has_token_count();
+  inline void clear_has_token_count();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  ::google::protobuf::int32 items_count_;
+  ::google::protobuf::int32 token_count_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterComponentInfo_BatchInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class MasterComponentInfo_ModelInfo : public ::google::protobuf::Message {
  public:
   MasterComponentInfo_ModelInfo();
@@ -10098,6 +10225,7 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   typedef MasterComponentInfo_RegularizerInfo RegularizerInfo;
   typedef MasterComponentInfo_ScoreInfo ScoreInfo;
   typedef MasterComponentInfo_DictionaryInfo DictionaryInfo;
+  typedef MasterComponentInfo_BatchInfo BatchInfo;
   typedef MasterComponentInfo_ModelInfo ModelInfo;
   typedef MasterComponentInfo_CacheEntryInfo CacheEntryInfo;
 
@@ -10193,6 +10321,18 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 processor_queue_size() const;
   inline void set_processor_queue_size(::google::protobuf::int32 value);
 
+  // repeated .artm.MasterComponentInfo.BatchInfo batch = 10;
+  inline int batch_size() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 10;
+  inline const ::artm::MasterComponentInfo_BatchInfo& batch(int index) const;
+  inline ::artm::MasterComponentInfo_BatchInfo* mutable_batch(int index);
+  inline ::artm::MasterComponentInfo_BatchInfo* add_batch();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo >&
+      batch() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo >*
+      mutable_batch();
+
   // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo)
  private:
   inline void set_has_master_id();
@@ -10214,10 +10354,11 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_DictionaryInfo > dictionary_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ModelInfo > model_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo > cache_entry_;
+  ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo > batch_;
   ::google::protobuf::int32 processor_queue_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -10225,6 +10366,197 @@ class MasterComponentInfo : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static MasterComponentInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ImportBatchesArgs : public ::google::protobuf::Message {
+ public:
+  ImportBatchesArgs();
+  virtual ~ImportBatchesArgs();
+
+  ImportBatchesArgs(const ImportBatchesArgs& from);
+
+  inline ImportBatchesArgs& operator=(const ImportBatchesArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ImportBatchesArgs& default_instance();
+
+  void Swap(ImportBatchesArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ImportBatchesArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ImportBatchesArgs& from);
+  void MergeFrom(const ImportBatchesArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string batch_name = 1;
+  inline int batch_name_size() const;
+  inline void clear_batch_name();
+  static const int kBatchNameFieldNumber = 1;
+  inline const ::std::string& batch_name(int index) const;
+  inline ::std::string* mutable_batch_name(int index);
+  inline void set_batch_name(int index, const ::std::string& value);
+  inline void set_batch_name(int index, const char* value);
+  inline void set_batch_name(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_name();
+  inline void add_batch_name(const ::std::string& value);
+  inline void add_batch_name(const char* value);
+  inline void add_batch_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_name();
+
+  // repeated .artm.Batch batch = 3;
+  inline int batch_size() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 3;
+  inline const ::artm::Batch& batch(int index) const;
+  inline ::artm::Batch* mutable_batch(int index);
+  inline ::artm::Batch* add_batch();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::Batch >&
+      batch() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
+      mutable_batch();
+
+  // @@protoc_insertion_point(class_scope:artm.ImportBatchesArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_name_;
+  ::google::protobuf::RepeatedPtrField< ::artm::Batch > batch_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ImportBatchesArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class DisposeBatchesArgs : public ::google::protobuf::Message {
+ public:
+  DisposeBatchesArgs();
+  virtual ~DisposeBatchesArgs();
+
+  DisposeBatchesArgs(const DisposeBatchesArgs& from);
+
+  inline DisposeBatchesArgs& operator=(const DisposeBatchesArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DisposeBatchesArgs& default_instance();
+
+  void Swap(DisposeBatchesArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  DisposeBatchesArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DisposeBatchesArgs& from);
+  void MergeFrom(const DisposeBatchesArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string batch_name = 1;
+  inline int batch_name_size() const;
+  inline void clear_batch_name();
+  static const int kBatchNameFieldNumber = 1;
+  inline const ::std::string& batch_name(int index) const;
+  inline ::std::string* mutable_batch_name(int index);
+  inline void set_batch_name(int index, const ::std::string& value);
+  inline void set_batch_name(int index, const char* value);
+  inline void set_batch_name(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_name();
+  inline void add_batch_name(const ::std::string& value);
+  inline void add_batch_name(const char* value);
+  inline void add_batch_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_name();
+
+  // @@protoc_insertion_point(class_scope:artm.DisposeBatchesArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static DisposeBatchesArgs* default_instance_;
 };
 // ===================================================================
 
@@ -19155,6 +19487,50 @@ InitializeModelArgs::mutable_topic_name() {
   return &topic_name_;
 }
 
+// repeated string batch_filename = 8;
+inline int InitializeModelArgs::batch_filename_size() const {
+  return batch_filename_.size();
+}
+inline void InitializeModelArgs::clear_batch_filename() {
+  batch_filename_.Clear();
+}
+inline const ::std::string& InitializeModelArgs::batch_filename(int index) const {
+  return batch_filename_.Get(index);
+}
+inline ::std::string* InitializeModelArgs::mutable_batch_filename(int index) {
+  return batch_filename_.Mutable(index);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const ::std::string& value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const char* value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const char* value, size_t size) {
+  batch_filename_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* InitializeModelArgs::add_batch_filename() {
+  return batch_filename_.Add();
+}
+inline void InitializeModelArgs::add_batch_filename(const ::std::string& value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void InitializeModelArgs::add_batch_filename(const char* value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void InitializeModelArgs::add_batch_filename(const char* value, size_t size) {
+  batch_filename_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+InitializeModelArgs::batch_filename() const {
+  return batch_filename_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+InitializeModelArgs::mutable_batch_filename() {
+  return &batch_filename_;
+}
+
 // -------------------------------------------------------------------
 
 // GetTopicModelArgs
@@ -22413,6 +22789,124 @@ inline void MasterComponentInfo_DictionaryInfo::set_entries_count(::google::prot
 
 // -------------------------------------------------------------------
 
+// MasterComponentInfo_BatchInfo
+
+// optional string name = 1;
+inline bool MasterComponentInfo_BatchInfo::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MasterComponentInfo_BatchInfo::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& MasterComponentInfo_BatchInfo::name() const {
+  return *name_;
+}
+inline void MasterComponentInfo_BatchInfo::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_BatchInfo::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_BatchInfo::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_BatchInfo::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* MasterComponentInfo_BatchInfo::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_BatchInfo::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional int32 items_count = 2;
+inline bool MasterComponentInfo_BatchInfo::has_items_count() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MasterComponentInfo_BatchInfo::set_has_items_count() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_has_items_count() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_items_count() {
+  items_count_ = 0;
+  clear_has_items_count();
+}
+inline ::google::protobuf::int32 MasterComponentInfo_BatchInfo::items_count() const {
+  return items_count_;
+}
+inline void MasterComponentInfo_BatchInfo::set_items_count(::google::protobuf::int32 value) {
+  set_has_items_count();
+  items_count_ = value;
+}
+
+// optional int32 token_count = 3;
+inline bool MasterComponentInfo_BatchInfo::has_token_count() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void MasterComponentInfo_BatchInfo::set_has_token_count() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_has_token_count() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_token_count() {
+  token_count_ = 0;
+  clear_has_token_count();
+}
+inline ::google::protobuf::int32 MasterComponentInfo_BatchInfo::token_count() const {
+  return token_count_;
+}
+inline void MasterComponentInfo_BatchInfo::set_token_count(::google::protobuf::int32 value) {
+  set_has_token_count();
+  token_count_ = value;
+}
+
+// -------------------------------------------------------------------
+
 // MasterComponentInfo_ModelInfo
 
 // optional string name = 1;
@@ -22926,6 +23420,152 @@ inline ::google::protobuf::int32 MasterComponentInfo::processor_queue_size() con
 inline void MasterComponentInfo::set_processor_queue_size(::google::protobuf::int32 value) {
   set_has_processor_queue_size();
   processor_queue_size_ = value;
+}
+
+// repeated .artm.MasterComponentInfo.BatchInfo batch = 10;
+inline int MasterComponentInfo::batch_size() const {
+  return batch_.size();
+}
+inline void MasterComponentInfo::clear_batch() {
+  batch_.Clear();
+}
+inline const ::artm::MasterComponentInfo_BatchInfo& MasterComponentInfo::batch(int index) const {
+  return batch_.Get(index);
+}
+inline ::artm::MasterComponentInfo_BatchInfo* MasterComponentInfo::mutable_batch(int index) {
+  return batch_.Mutable(index);
+}
+inline ::artm::MasterComponentInfo_BatchInfo* MasterComponentInfo::add_batch() {
+  return batch_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo >&
+MasterComponentInfo::batch() const {
+  return batch_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo >*
+MasterComponentInfo::mutable_batch() {
+  return &batch_;
+}
+
+// -------------------------------------------------------------------
+
+// ImportBatchesArgs
+
+// repeated string batch_name = 1;
+inline int ImportBatchesArgs::batch_name_size() const {
+  return batch_name_.size();
+}
+inline void ImportBatchesArgs::clear_batch_name() {
+  batch_name_.Clear();
+}
+inline const ::std::string& ImportBatchesArgs::batch_name(int index) const {
+  return batch_name_.Get(index);
+}
+inline ::std::string* ImportBatchesArgs::mutable_batch_name(int index) {
+  return batch_name_.Mutable(index);
+}
+inline void ImportBatchesArgs::set_batch_name(int index, const ::std::string& value) {
+  batch_name_.Mutable(index)->assign(value);
+}
+inline void ImportBatchesArgs::set_batch_name(int index, const char* value) {
+  batch_name_.Mutable(index)->assign(value);
+}
+inline void ImportBatchesArgs::set_batch_name(int index, const char* value, size_t size) {
+  batch_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportBatchesArgs::add_batch_name() {
+  return batch_name_.Add();
+}
+inline void ImportBatchesArgs::add_batch_name(const ::std::string& value) {
+  batch_name_.Add()->assign(value);
+}
+inline void ImportBatchesArgs::add_batch_name(const char* value) {
+  batch_name_.Add()->assign(value);
+}
+inline void ImportBatchesArgs::add_batch_name(const char* value, size_t size) {
+  batch_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ImportBatchesArgs::batch_name() const {
+  return batch_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ImportBatchesArgs::mutable_batch_name() {
+  return &batch_name_;
+}
+
+// repeated .artm.Batch batch = 3;
+inline int ImportBatchesArgs::batch_size() const {
+  return batch_.size();
+}
+inline void ImportBatchesArgs::clear_batch() {
+  batch_.Clear();
+}
+inline const ::artm::Batch& ImportBatchesArgs::batch(int index) const {
+  return batch_.Get(index);
+}
+inline ::artm::Batch* ImportBatchesArgs::mutable_batch(int index) {
+  return batch_.Mutable(index);
+}
+inline ::artm::Batch* ImportBatchesArgs::add_batch() {
+  return batch_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::Batch >&
+ImportBatchesArgs::batch() const {
+  return batch_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
+ImportBatchesArgs::mutable_batch() {
+  return &batch_;
+}
+
+// -------------------------------------------------------------------
+
+// DisposeBatchesArgs
+
+// repeated string batch_name = 1;
+inline int DisposeBatchesArgs::batch_name_size() const {
+  return batch_name_.size();
+}
+inline void DisposeBatchesArgs::clear_batch_name() {
+  batch_name_.Clear();
+}
+inline const ::std::string& DisposeBatchesArgs::batch_name(int index) const {
+  return batch_name_.Get(index);
+}
+inline ::std::string* DisposeBatchesArgs::mutable_batch_name(int index) {
+  return batch_name_.Mutable(index);
+}
+inline void DisposeBatchesArgs::set_batch_name(int index, const ::std::string& value) {
+  batch_name_.Mutable(index)->assign(value);
+}
+inline void DisposeBatchesArgs::set_batch_name(int index, const char* value) {
+  batch_name_.Mutable(index)->assign(value);
+}
+inline void DisposeBatchesArgs::set_batch_name(int index, const char* value, size_t size) {
+  batch_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DisposeBatchesArgs::add_batch_name() {
+  return batch_name_.Add();
+}
+inline void DisposeBatchesArgs::add_batch_name(const ::std::string& value) {
+  batch_name_.Add()->assign(value);
+}
+inline void DisposeBatchesArgs::add_batch_name(const char* value) {
+  batch_name_.Add()->assign(value);
+}
+inline void DisposeBatchesArgs::add_batch_name(const char* value, size_t size) {
+  batch_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DisposeBatchesArgs::batch_name() const {
+  return batch_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DisposeBatchesArgs::mutable_batch_name() {
+  return &batch_name_;
 }
 
 

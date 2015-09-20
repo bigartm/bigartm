@@ -544,6 +544,24 @@ int ArtmImportDictionary(int master_id, int length, const char* dictionary_args)
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmImportBatches(int master_id, int length, const char* import_batches_args) {
+  try {
+    artm::ImportBatchesArgs args;
+    ParseFromArray(import_batches_args, length, &args);
+    master_component(master_id)->ImportBatches(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmDisposeBatches(int master_id, int length, const char* dispose_batches_args) {
+  try {
+    artm::DisposeBatchesArgs args;
+    ParseFromArray(dispose_batches_args, length, &args);
+    master_component(master_id)->DisposeBatches(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmRequestParseCollection(int length, const char* collection_parser_config) {
   try {
     EnableLogging();

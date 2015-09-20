@@ -70,6 +70,7 @@ Instance::Instance(const MasterComponentConfig& config)
     : is_configured_(false),
       schema_(std::make_shared<InstanceSchema>(config)),
       dictionaries_(),
+      batches_(),
       processor_queue_(),
       merger_queue_(),
       cache_manager_(),
@@ -84,6 +85,7 @@ Instance::Instance(const Instance& rhs)
     : is_configured_(false),
       schema_(rhs.schema()->Duplicate()),
       dictionaries_(),
+      batches_(),
       processor_queue_(),
       merger_queue_(),
       cache_manager_(),
@@ -98,6 +100,13 @@ Instance::Instance(const Instance& rhs)
     std::shared_ptr<Dictionary> value = rhs.dictionaries_.get(key);
     if (value != nullptr)
       dictionaries_.set(key, value->Duplicate());
+  }
+
+  std::vector<std::string> batch_name = rhs.batches_.keys();
+  for (auto& key : batch_name) {
+    std::shared_ptr<Batch> value = rhs.batches_.get(key);
+    if (value != nullptr)
+      batches_.set(key, value);  // store same batch as rhs (OK as batches here are read-only)
   }
 
   std::vector<ModelName> model_name = rhs.merger_->model_name();
@@ -126,6 +135,17 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     MasterComponentInfo::DictionaryInfo* info = master_info->add_dictionary();
     info->set_name(name);
     info->set_entries_count(dict->size());
+  }
+
+  for (auto& name : batches_.keys()) {
+    std::shared_ptr<Batch> batch = batches_.get(name);
+    if (batch == nullptr)
+      continue;
+
+    MasterComponentInfo::BatchInfo* info = master_info->add_batch();
+    info->set_name(name);
+    info->set_token_count(batch->token_size());
+    info->set_items_count(batch->item_size());
   }
 
   for (auto& name : merger_->model_name()) {
@@ -370,7 +390,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     cache_manager_.reset(new CacheManager());
     batch_manager_.reset(new BatchManager());
     data_loader_.reset(new DataLoader(this));
-    merger_.reset(new Merger(&merger_queue_, &schema_, &dictionaries_));
+    merger_.reset(new Merger(&merger_queue_, &schema_, &batches_, &dictionaries_));
 
     is_configured_  = true;
   }
@@ -386,6 +406,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
         std::shared_ptr<Processor>(new Processor(
           &processor_queue_,
           &merger_queue_,
+          batches_,
           *merger_,
           schema_)));
     }

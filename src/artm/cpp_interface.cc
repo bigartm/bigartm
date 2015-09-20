@@ -584,4 +584,16 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   HandleErrorCode(ArtmInitializeModel(id(), blob.size(), blob.c_str()));
 }
 
+void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmImportBatches(id(), blob.size(), blob.c_str()));
+}
+
+void MasterComponent::DisposeBatches(const DisposeBatchesArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmDisposeBatches(id(), blob.size(), blob.c_str()));
+}
+
 }  // namespace artm

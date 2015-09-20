@@ -94,12 +94,14 @@ class PhiMatrixWriter : public NwtWriteAdapter {
   PhiMatrix* n_wt_;
 };
 
-Processor::Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >*  processor_queue,
+Processor::Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
                      ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
+                     const ThreadSafeCollectionHolder<std::string, Batch>& batches,
                      const Merger& merger,
                      const ThreadSafeHolder<InstanceSchema>& schema)
     : processor_queue_(processor_queue),
       merger_queue_(merger_queue),
+      batches_(batches),
       merger_(merger),
       schema_(schema),
       is_stopping(false),
@@ -846,13 +848,16 @@ void Processor::ThreadFunction() {
 
       std::shared_ptr<Batch> batch_ptr;
       if (part->has_batch_filename()) {
-        try {
-          CuckooWatch cuckoo2("LoadMessage", &cuckoo, kTimeLoggingThreshold);
-          batch_ptr.reset(new Batch());
-          ::artm::core::BatchHelpers::LoadMessage(part->batch_filename(), batch_ptr.get());
-        } catch (std::exception& ex) {
-          LOG(ERROR) << ex.what() << ", the batch will be skipped.";
-          continue;
+        batch_ptr = batches_.get(part->batch_filename());
+        if (batch_ptr == nullptr) {
+          try {
+            CuckooWatch cuckoo2("LoadMessage", &cuckoo, kTimeLoggingThreshold);
+            batch_ptr.reset(new Batch());
+            ::artm::core::BatchHelpers::LoadMessage(part->batch_filename(), batch_ptr.get());
+          } catch (std::exception& ex) {
+            LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+            continue;
+          }
         }
       }
 

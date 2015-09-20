@@ -554,7 +554,9 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
   }
 
   if (message.source_type() == InitializeModelArgs_SourceType_Batches) {
-    if (!message.has_disk_path() || message.disk_path().empty()) {
+    const bool has_disk_path = message.has_disk_path() && !message.disk_path().empty();
+    const bool has_batch_filename = message.batch_filename_size() > 0;
+    if (!has_disk_path && !has_batch_filename) {
       ss << "InitializeModelArgs.disk_path is required together with SourceType.Batches; ";
     }
   }
