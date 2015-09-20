@@ -40,6 +40,8 @@ class MasterComponent(object):
                     ref_score_config.type = constants.ScoreConfig_Type_ThetaSnippet
                 elif isinstance(config, messages.TopicKernelScoreConfig):
                     ref_score_config.type = constants.ScoreConfig_Type_TopicKernel
+                elif isinstance(config, messages.TopicMassPhiScoreConfig):
+                    ref_score_config.type = constants.ScoreConfig_Type_TopicMassPhi
 
                 ref_score_config.config = config.SerializeToString()
 
@@ -371,6 +373,8 @@ class MasterComponent(object):
             score_info = messages.ThetaSnippetScore()
         elif score_data.type == constants.ScoreData_Type_TopicKernel:
             score_info = messages.TopicKernelScore()
+        elif score_data.type == constants.ScoreData_Type_TopicMassPhi:
+            score_info = messages.TopicMassPhiScore()
 
         score_info.ParseFromString(score_data.data)
         return score_info

@@ -397,7 +397,7 @@ class TopTokensScoreTracker(object):
             self._num_tokens.append(_data.num_entries)
 
             self._topic_info.append({})
-            for top_idx, top_name in enumerate(_data.topic_name):
+            for top_idx, top_name in enumerate(collections.OrderedDict.fromkeys(_data.topic_name)):
                 tokens = []
                 weights = []
                 for i in xrange(_data.num_entries):
@@ -750,7 +750,7 @@ class TopicMassPhiScoreTracker(object):
 
             self._topic_info.append({})
 
-            for top_idx, top_name in enumerate(_data.topic_name):
+            for top_idx, top_name in enumerate(collections.OrderedDict.fromkeys(_data.topic_name)):
                 self._topic_info[-1][top_name] = \
                     collections.namedtuple('TopicMassPhiScoreTuple', ['topic_mass', 'topic_ratio'])
                 self._topic_info[-1][top_name].topic_mass = _data.topic_mass[top_idx]
