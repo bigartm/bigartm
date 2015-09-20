@@ -48,10 +48,12 @@ class Scores(object):
       master (reference): reference to MasterComponent object, no default
     """
 
-    def __init__(self, master, model):
+    def __init__(self, master, model_pwt, model_nwt, model_rwt):
         self._data = {}
         self._master = master
-        self._model = model
+        self._model_pwt = model_pwt
+        self._model_nwt = model_nwt
+        self._model_rwt = model_rwt
 
     def add(self, score):
         """Scores.add() --- add score into ArtmModel.
@@ -63,7 +65,9 @@ class Scores(object):
             raise ValueError('Score with name {0} is already exist'.format(score.name))
         else:
             self._master.create_score(score.name, score.type, score.config)
-            score._model = self._model
+            score._model_pwt = self._model_pwt
+            score._model_nwt = self._model_nwt
+            score._model_rwt = self._model_rwt
             score._master = self._master
             self._data[score.name] = score
 
@@ -109,7 +113,9 @@ class BaseScore(object):
 
         self._name = name
         self._config = config
-        self._model = None  # Reserve place for the model
+        self._model_pwt = None  # Reserve place for the model
+        self._model_nwt = None  # Reserve place for the model
+        self._model_rwt = None  # Reserve place for the model
         self._master = None  # Reserve place for the master (to reconfigure Scores)
 
     @property
@@ -133,8 +139,16 @@ class BaseScore(object):
         return self._topic_names
 
     @property
-    def model(self):
-        return self._model
+    def model_pwt(self):
+        return self._model_pwt
+
+    @property
+    def model_nwt(self):
+        return self._model_nwt
+
+    @property
+    def model_rwt(self):
+        return self._model_rwt
 
     @property
     def score(self):

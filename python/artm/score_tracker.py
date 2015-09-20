@@ -35,7 +35,7 @@ class SparsityPhiScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.retrieve_score(score._model, score.name)
+            _data = score.master.retrieve_score(score.model_pwt, score.name)
 
             self._value.append(_data.value)
             self._zero_tokens.append(_data.zero_tokens)
@@ -116,7 +116,7 @@ class SparsityThetaScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.retrieve_score(score._model, score.name)
+            _data = score.master.retrieve_score(score.model_pwt, score.name)
 
             self._value.append(_data.value)
             self._zero_topics.append(_data.zero_topics)
@@ -201,7 +201,7 @@ class PerplexityScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.retrieve_score(score._model, score.name)
+            _data = score.master.retrieve_score(score.model_pwt, score.name)
 
             self._value.append(_data.value)
             self._raw.append(_data.raw)
@@ -344,7 +344,7 @@ class ItemsProcessedScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.retrieve_score(score._model, score.name)
+            _data = score.master.retrieve_score(score.model_pwt, score.name)
             self._value.append(_data.value)
         else:
             self._value.append(None)
@@ -392,7 +392,7 @@ class TopTokensScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.retrieve_score(score._model, score.name)
+            _data = score.master.retrieve_score(score.model_pwt, score.name)
 
             self._num_tokens.append(_data.num_entries)
 
@@ -514,7 +514,7 @@ class TopicKernelScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.retrieve_score(score._model, score.name)
+            _data = score.master.retrieve_score(score.model_pwt, score.name)
 
             self._topic_info.append({})
             for topic_index, topic_name in enumerate(_data.topic_name.value):
@@ -674,7 +674,7 @@ class ThetaSnippetScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.retrieve_score(score._model, score.name)
+            _data = score.master.retrieve_score(score.model_pwt, score.name)
 
             self._document_ids.append([item_id for item_id in _data.item_id])
             self._snippet.append(
@@ -744,7 +744,7 @@ class TopicMassPhiScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.retrieve_score(score._model, score.name)
+            _data = score.master.retrieve_score(score.model_nwt, score.name)
 
             self._value.append(_data.value)
 
@@ -766,14 +766,14 @@ class TopicMassPhiScoreTracker(object):
     @property
     def value(self):
         """Returns:
-          list of double: mass of given topics in Phi on synchronizations
+          list of double: mass of given topics in Nwt on synchronizations
         """
         return self._value
 
     @property
     def topic_info(self):
         """Returns:
-          list of sets: information about topic mass per topic on
+          list of sets: information about topic mass in Nwt per topic on
           synchronizations; each set contains information
           about topics, key --- name of topic, value --- named tuple:
           - *.topic_info[sync_index][topic_name].topic_mass --- n_t value
@@ -784,15 +784,15 @@ class TopicMassPhiScoreTracker(object):
     @property
     def last_value(self):
         """Returns:
-        double: mass of given topics in Phi on last synchronization
+        double: mass of given topics in Nwt on last synchronization
         """
         return self._value[-1]
 
     @property
     def last_topic_info(self):
         """Returns:
-          list of sets: information about topic mass per topic on last
-          synchronization; each set contains information
+          list of sets: information about topic mass per topic in Nwt
+          on last synchronization; each set contains information
           about topics, key --- name of topic, value --- named tuple:
           - *.topic_info[sync_index][topic_name].topic_mass --- n_t value
           - *.topic_info[sync_index][topic_name].topic_ratio --- p_t value
