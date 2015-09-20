@@ -360,9 +360,27 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenM
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
 
-    cooc_entries->add_first_index(std::stoi(strs[0]));
-    cooc_entries->add_second_index(std::stoi(strs[1]));
-    cooc_entries->add_value(std::stof(strs[2]));
+    int first_index = std::stoi(strs[0]);
+    int second_index = std::stoi(strs[1]);
+    float value = std::stof(strs[2]);
+
+    if (config_.use_unity_based_indices()) {
+      first_index--;  // convert 1-based to zero-based index
+      second_index--;
+    }
+
+    if (first_index == -1 || second_index == -1) {
+      std::stringstream ss;
+      ss << ". TokenIndex columns appear to be zero-based in the cooc data file being parsed. "
+         << "The format defines TokenIndex column to be unity-based. "
+         << "Please, set CollectionParserConfig.use_unity_based_indices=false "
+         << "or increase both TokenIndex columns by one in your input data";
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
+
+    cooc_entries->add_first_index(first_index);
+    cooc_entries->add_second_index(second_index);
+    cooc_entries->add_value(value);
   }
 
   if (config_.has_dictionary_file_name()) {

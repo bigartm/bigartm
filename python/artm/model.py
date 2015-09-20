@@ -94,9 +94,12 @@ class ARTM(object):
                                           num_processors=self._num_processors,
                                           cache_theta=self._cache_theta)
 
-        self._model = 'pwt'
+        self._model_pwt = 'pwt'
+        self._model_nwt = 'nwt'
+        self._model_rwt = 'rwt'
+
         self._regularizers = Regularizers(self._master)
-        self._scores = Scores(self._master, self._model)
+        self._scores = Scores(self._master, self._model_pwt, self._model_nwt, self._model_rwt)
 
         # add scores and regularizers if necessary
         if scores is not None:
@@ -150,8 +153,16 @@ class ARTM(object):
         return self._master
 
     @property
-    def model(self):
-        return self._model
+    def model_pwt(self):
+        return self._model_pwt
+
+    @property
+    def model_nwt(self):
+        return self._model_nwt
+
+    @property
+    def model_rwt(self):
+        return self._model_rwt
 
     @property
     def num_phi_updates(self):
@@ -281,9 +292,9 @@ class ARTM(object):
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         for _ in xrange(num_collection_passes):
-            self.master.process_batches(pwt=self.model,
+            self.master.process_batches(pwt=self.model_pwt,
                                         batches=batches_list,
-                                        nwt='nwt',
+                                        nwt=self.model_nwt,
                                         regularizer_name=theta_reg_name,
                                         regularizer_tau=theta_reg_tau,
                                         num_inner_iterations=num_document_passes,
@@ -292,12 +303,12 @@ class ARTM(object):
                                         reset_scores=True,
                                         reuse_theta=reuse_theta)
             self._synchronizations_processed += 1
-            self.master.regularize_model(pwt=self.model,
-                                         nwt='nwt',
-                                         rwt='rwt',
+            self.master.regularize_model(pwt=self.model_pwt,
+                                         nwt=self.model_nwt,
+                                         rwt=self.model_rwt,
                                          regularizer_name=phi_reg_name,
                                          regularizer_tau=phi_reg_tau)
-            self.master.normalize_model(nwt='nwt', pwt=self.model, rwt='rwt')
+            self.master.normalize_model(nwt=self.model_nwt, pwt=self.model_pwt, rwt=self.model_rwt)
 
             for name in self.scores.data.keys():
                 if name not in self.score_tracker:
@@ -370,7 +381,7 @@ class ARTM(object):
         for batch_idx, batch_filename in enumerate(batches_list):
             batches_to_process.append(batch_filename)
             if ((batch_idx + 1) % update_every == 0) or ((batch_idx + 1) == len(batches_list)):
-                self.master.process_batches(pwt=self.model,
+                self.master.process_batches(pwt=self.model_pwt,
                                             batches=batches_to_process,
                                             nwt='nwt_hat',
                                             regularizer_name=theta_reg_name,
@@ -388,22 +399,24 @@ class ARTM(object):
                 self._synchronizations_processed += 1
                 if self._synchronizations_processed == 1:
                     self.master.merge_model(
-                        models={self.model: decay_weight, 'nwt_hat': apply_weight},
-                        nwt='nwt',
+                        models={self.model_pwt: decay_weight, 'nwt_hat': apply_weight},
+                        nwt=self.model_nwt,
                         topic_names=self._topic_names)
                 else:
                     self.master.merge_model(
-                        models={'nwt': decay_weight, 'nwt_hat': apply_weight},
-                        nwt='nwt',
+                        models={self.model_nwt: decay_weight, 'nwt_hat': apply_weight},
+                        nwt=self.model_nwt,
                         topic_names=self._topic_names)
 
-                self.master.regularize_model(pwt=self.model,
-                                             nwt='nwt',
-                                             rwt='rwt',
+                self.master.regularize_model(pwt=self.model_pwt,
+                                             nwt=self.model_nwt,
+                                             rwt=self.model_rwt,
                                              regularizer_name=phi_reg_name,
                                              regularizer_tau=phi_reg_tau)
 
-                self.master.normalize_model(nwt='nwt', pwt=self.model, rwt='rwt')
+                self.master.normalize_model(nwt=self.model_nwt,
+                                            pwt=self.model_pwt,
+                                            rwt=self.model_rwt)
                 batches_to_process = []
 
                 for name in self.scores.data.keys():
@@ -427,7 +440,7 @@ class ARTM(object):
 
         if os.path.isfile(filename):
             os.remove(filename)
-        self.master.export_model(self.model, filename)
+        self.master.export_model(self.model_pwt, filename)
 
     def load(self, filename):
         """ARTM.load() --- load the topic model,
@@ -441,9 +454,9 @@ class ARTM(object):
           ARTM.num_topics fields. Also it will empty
           ARTM.score_tracker.
         """
-        self.master.import_model(self.model, filename)
+        self.master.import_model(self.model_pwt, filename)
         self._initialized = True
-        topic_model = self.master.get_phi_info(model=self.model)
+        topic_model = self.master.get_phi_info(model=self.model_pwt)
         self._topic_names = [topic_name for topic_name in topic_model.topic_name]
         self._num_topics = topic_model.topics_count
 
@@ -471,8 +484,8 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        phi_info = self.master.get_phi_info(model=self.model)
-        nd_array = self.master.get_phi_matrix(model=self.model,
+        phi_info = self.master.get_phi_info(model=self.model_pwt)
+        nd_array = self.master.get_phi_matrix(model=self.model_pwt,
                                               topic_names=topic_names,
                                               class_ids=class_ids)
 
@@ -509,12 +522,12 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        theta_info = self.master.get_theta_info(model=self.model)
+        theta_info = self.master.get_theta_info(model=self.model_pwt)
 
         document_ids = [item_id for item_id in theta_info.item_id]
         all_topic_names = [topic_name for topic_name in theta_info.topic_name]
         use_topic_names = topic_names if topic_names is not None else all_topic_names
-        nd_array = self.master.get_theta_matrix(model=self.model,
+        nd_array = self.master.get_theta_matrix(model=self.model_pwt,
                                                 topic_names=use_topic_names,
                                                 clean_cache=remove_theta)
 
@@ -552,7 +565,7 @@ class ARTM(object):
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         theta_info, nd_array = self.master.process_batches(
-                                    pwt=self.model,
+                                    pwt=self.model_pwt,
                                     batches=batches_list,
                                     nwt='nwt_hat',
                                     num_inner_iterations=num_document_passes,
@@ -581,19 +594,19 @@ class ARTM(object):
           2) dictionary
         """
         if data_path is not None:
-            self.master.initialize_model(model_name=self.model,
+            self.master.initialize_model(model_name=self.model_pwt,
                                          disk_path=data_path,
                                          num_topics=self._num_topics,
                                          topic_names=self._topic_names,
                                          source_type='batches')
         else:
-            self.master.initialize_model(model_name=self.model,
+            self.master.initialize_model(model_name=self.model_pwt,
                                          dictionary_name=dictionary_name,
                                          num_topics=self._num_topics,
                                          topic_names=self._topic_names,
                                          source_type='dictionary')
 
-        phi_info = self.master.get_phi_info(model=self.model)
+        phi_info = self.master.get_phi_info(model=self.model_pwt)
         self._topic_names = [topic_name for topic_name in phi_info.topic_name]
         self._initialized = True
 
