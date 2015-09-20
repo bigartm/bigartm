@@ -41,6 +41,43 @@ const float kProcessorEps = 1e-16;
 namespace artm {
 namespace core {
 
+static void CreateThetaCacheEntry(std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr,
+                                  std::shared_ptr<DenseMatrix<float> > theta_matrix,
+                                  const Batch& batch,
+                                  const ModelName model_name,
+                                  std::shared_ptr<ModelIncrement> model_increment,
+                                  int topic_size) {
+  if (new_cache_entry_ptr != nullptr) {
+    new_cache_entry_ptr->set_batch_uuid(batch.id());
+    new_cache_entry_ptr->set_model_name(model_name);
+    new_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
+    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+      const Item& item = batch.item(item_index);
+      new_cache_entry_ptr->add_item_id(item.id());
+      new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
+      FloatArray* cached_theta = new_cache_entry_ptr->add_theta();
+      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+        cached_theta->add_value((*theta_matrix)(topic_index, item_index));
+      }
+    }
+  }
+}
+
+static void SaveCache(std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr,
+                      const MasterComponentConfig& master_config) {
+  std::string disk_cache_path = master_config.disk_cache_path();
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
+  try {
+    BatchHelpers::SaveMessage(file.string(), disk_cache_path, *new_cache_entry_ptr);
+    new_cache_entry_ptr->set_filename((fs::path(disk_cache_path) / file).string());
+    new_cache_entry_ptr->clear_theta();
+    new_cache_entry_ptr->clear_item_id();
+  } catch (...) {
+    LOG(ERROR) << "Unable to save cache entry to " << master_config.disk_cache_path();
+  }
+}
+
 class NwtWriteAdapter {
  public:
   virtual bool Skip(int batch_token_id) const = 0;
@@ -967,32 +1004,10 @@ void Processor::ThreadFunction() {
         if (part->has_cache_manager()) {
           // Update theta cache
           std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(new DataLoaderCacheEntry());
-          DataLoaderCacheEntry& new_cache_entry = *new_cache_entry_ptr;
-          new_cache_entry.set_batch_uuid(batch.id());
-          new_cache_entry.set_model_name(model_name);
-          new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
-          for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-            const Item& item = batch.item(item_index);
-            new_cache_entry.add_item_id(item.id());
-            new_cache_entry.add_item_title(item.has_title() ? item.title() : std::string());
-            FloatArray* cached_theta = new_cache_entry.add_theta();
-            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-              cached_theta->add_value((*theta_matrix)(topic_index, item_index));
-            }
-          }
+          CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, model_name, model_increment, topic_size);
 
           if (master_config.has_disk_cache_path()) {
-            std::string disk_cache_path = master_config.disk_cache_path();
-            boost::uuids::uuid uuid = boost::uuids::random_generator()();
-            fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
-            try {
-              BatchHelpers::SaveMessage(file.string(), disk_cache_path, new_cache_entry);
-              new_cache_entry.set_filename((fs::path(disk_cache_path) / file).string());
-              new_cache_entry.clear_theta();
-              new_cache_entry.clear_item_id();
-            } catch (...) {
-              LOG(ERROR) << "Unable to save cache entry to " << master_config.disk_cache_path();
-            }
+            SaveCache(new_cache_entry_ptr, master_config);
           }
 
           part->cache_manager()->UpdateCacheEntry(new_cache_entry_ptr);
