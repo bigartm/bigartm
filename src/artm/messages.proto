@@ -498,6 +498,8 @@ message InitializeModelArgs {
 
   optional int32 topics_count = 6;
   repeated string topic_name = 7;
+
+  repeated string batch_filename = 8;
 }
 
 message GetTopicModelArgs {
@@ -666,6 +668,12 @@ message MasterComponentInfo {
 	optional int64 entries_count = 2;
   }
 
+  message BatchInfo {
+    optional string name = 1;
+    optional int32 items_count = 2;
+    optional int32 token_count = 3;
+  }
+
   message ModelInfo {
     optional string name = 1;
 	optional string type = 2;
@@ -687,4 +695,14 @@ message MasterComponentInfo {
   repeated CacheEntryInfo cache_entry = 7;
   optional int32 merger_queue_size = 8;
   optional int32 processor_queue_size = 9;
+  repeated BatchInfo batch = 10;
+}
+
+message ImportBatchesArgs {
+  repeated string batch_name = 1;
+  repeated Batch batch = 3;
+}
+
+message DisposeBatchesArgs {
+  repeated string batch_name = 1;
 }

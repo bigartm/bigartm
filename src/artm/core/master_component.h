@@ -68,6 +68,9 @@ class MasterComponent : boost::noncopyable {
   void DisposeDictionary(const std::string& name);
   void ImportDictionary(const ImportDictionaryArgs& args);
 
+  void ImportBatches(const ImportBatchesArgs& args);
+  void DisposeBatches(const DisposeBatchesArgs& args);
+
   // Returns false if BigARTM is still processing the collection, otherwise true.
   bool WaitIdle(const WaitIdleArgs& args);
   void InvokeIteration(const InvokeIterationArgs& args);

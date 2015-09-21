@@ -492,13 +492,25 @@ TEST(CppInterface, ProcessBatchesApi) {
   score_config->set_config(perplexity_score_config.SerializeAsString());
   artm::MasterComponent master(master_config);
 
+  std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
+  ASSERT_EQ(all_batches.size(), nBatches);
+
+  artm::ImportBatchesArgs import_batches_args;
+  for (auto& batch_path : all_batches) {
+    std::shared_ptr< ::artm::Batch> batch = artm::LoadBatch(batch_path);
+    import_batches_args.add_batch()->CopyFrom(*batch);
+    import_batches_args.add_batch_name(batch->id());
+  }
+  master.ImportBatches(import_batches_args);
+
   ::artm::ModelConfig model_config;
   model_config.set_name("pwt0");
   model_config.set_topics_count(nTopics);
   ::artm::Model model(master, model_config);
 
   artm::InitializeModelArgs initialize_model_args;
-  initialize_model_args.set_disk_path(target_folder);
+  for (auto& batch_name : import_batches_args.batch_name())
+    initialize_model_args.add_batch_filename(batch_name);
   initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
@@ -539,10 +551,8 @@ TEST(CppInterface, ProcessBatchesApi) {
   ASSERT_EQ(master.info()->model_size(), 1);  // "pwt0"
   /////////////////////////////////////////////
 
-  std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
-  ASSERT_EQ(all_batches.size(), nBatches);
   artm::ProcessBatchesArgs process_batches_args;
-  for (std::string& batch_name : all_batches)
+  for (auto& batch_name : import_batches_args.batch_name())
     process_batches_args.add_batch_filename(batch_name);
   process_batches_args.set_nwt_target_name("nwt_hat");
 

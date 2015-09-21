@@ -140,6 +140,9 @@ class MasterComponent {
   void ImportModel(const ImportModelArgs& args);
   void DisposeModel(const std::string& model_name);
 
+  void ImportBatches(const ImportBatchesArgs& args);
+  void DisposeBatches(const DisposeBatchesArgs &args);
+
   void ImportDictionary(const ImportDictionaryArgs& args);
 
   void Reconfigure(const MasterComponentConfig& config);

@@ -32,6 +32,7 @@ class Merger;
 class InstanceSchema;
 class Dictionary;
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
+typedef ThreadSafeCollectionHolder<std::string, Batch> ThreadSafeBatchCollection;
 typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
 typedef ThreadSafeQueue<std::shared_ptr<ModelIncrement>> MergerQueue;
 
@@ -48,6 +49,7 @@ class Instance {
   std::shared_ptr<InstanceSchema> schema() const { return schema_.get(); }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
   MergerQueue* merger_queue() { return &merger_queue_; }
+  ThreadSafeBatchCollection* batches() { return &batches_; }
 
   DataLoader* data_loader();
   BatchManager* batch_manager();
@@ -77,6 +79,7 @@ class Instance {
 
   ThreadSafeHolder<InstanceSchema> schema_;
   ThreadSafeDictionaryCollection dictionaries_;
+  ThreadSafeBatchCollection batches_;
 
   ProcessorQueue processor_queue_;
 

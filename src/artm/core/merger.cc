@@ -31,6 +31,7 @@ namespace core {
 
 Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
+               const ::artm::core::ThreadSafeBatchCollection* batches,
                const ::artm::core::ThreadSafeDictionaryCollection* dictionaries)
     : topic_model_(),
       topic_model_inc_(),
@@ -40,6 +41,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
       scores_merger_(),
       is_idle_(true),
       merger_queue_(merger_queue),
+      batches_(batches),
       dictionaries_(dictionaries),
       is_stopping(false),
       thread_() {
@@ -422,18 +424,29 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     std::unordered_map<Token, TokenInfo, TokenHasher> token_freq_map;
     size_t total_items_count = 0;
     float total_token_weight = 0.0f;
-    std::vector<std::string> batches = BatchHelpers::ListAllBatches(args.disk_path());
-    LOG(INFO) << "Found " << batches.size() << " batches in '" << args.disk_path() << "' folder";
+    std::vector<std::string> batches;
+    if (args.has_disk_path()) {
+      batches = BatchHelpers::ListAllBatches(args.disk_path());
+      LOG(INFO) << "Found " << batches.size() << " batches in '" << args.disk_path() << "' folder";
+    } else {
+      for (auto& batch : args.batch_filename())
+        batches.push_back(batch);
+    }
 
     for (const std::string& batch_file : batches) {
-      Batch batch;
-      try {
-        ::artm::core::BatchHelpers::LoadMessage(batch_file, &batch);
+      std::shared_ptr<Batch> batch_ptr = batches_->get(batch_file);
+      if (batch_ptr == nullptr) {
+        try {
+          batch_ptr = std::make_shared<Batch>();
+          ::artm::core::BatchHelpers::LoadMessage(batch_file, batch_ptr.get());
+        }
+        catch (std::exception& ex) {
+          LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+          continue;
+        }
       }
-      catch (std::exception& ex) {
-        LOG(ERROR) << ex.what() << ", the batch will be skipped.";
-        continue;
-      }
+
+      const Batch& batch = *batch_ptr;
 
       std::vector<char> token_mask(batch.token_size(), 0);
       for (int item_id = 0; item_id < batch.item_size(); ++item_id) {

@@ -94,6 +94,23 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   LOG(INFO) << "Dictionary import completed";
 }
 
+void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
+  if (args.batch_name_size() != args.batch_size())
+    BOOST_THROW_EXCEPTION(InvalidOperation("ImportBatchesArgs: batch_name_size() != batch_size()"));
+
+  for (int i = 0; i < args.batch_name_size(); ++i) {
+    std::shared_ptr<Batch> batch = std::make_shared<Batch>(args.batch(i));
+    Helpers::FixAndValidate(batch.get(), /* throw_error =*/ true);
+    instance_->batches()->set(args.batch_name(i), batch);
+  }
+}
+
+void MasterComponent::DisposeBatches(const DisposeBatchesArgs& args) {
+  for (auto& batch_name : args.batch_name())
+    instance_->batches()->erase(batch_name);
+}
+
+
 void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
   instance_->merger()->ForceSynchronizeModel(args);
 }

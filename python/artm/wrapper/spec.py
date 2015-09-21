@@ -90,6 +90,14 @@ ARTM_API = [
         'ArtmParseCollection',
         [('config', messages.CollectionParserConfig)],
     ),
+    CallSpec(
+        'ArtmImportBatches',
+        [('master_id', int), ('args', messages.ImportBatchesArgs)],
+    ),
+    CallSpec(
+        'ArtmDisposeBatches',
+        [('master_id', int), ('args', messages.DisposeBatchesArgs)],
+    ),
 
     ## deprecated
     #CallSpec(
