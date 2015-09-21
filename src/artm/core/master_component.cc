@@ -28,6 +28,7 @@
 #include "artm/core/scores_merger.h"
 #include "artm/core/merger.h"
 #include "artm/core/dense_phi_matrix.h"
+#include "artm/core/template_manager.h"
 
 namespace artm {
 namespace core {
@@ -268,7 +269,20 @@ void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_inf
   this->instance_->RequestMasterComponentInfo(master_info);
 }
 
-ProcessBatchesResult MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args) {
+void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                                            ProcessBatchesResult* process_batches_result) {
+  BatchManager batch_manager;
+  RequestProcessBatchesImpl(process_batches_args, &batch_manager, /* async =*/ false, process_batches_result);
+}
+
+void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                                                 BatchManager *batch_manager) {
+  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* async =*/ true, nullptr);
+}
+
+void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
+                                                BatchManager* batch_manager, bool async,
+                                                ProcessBatchesResult* process_batches_result) {
   LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
   const MasterComponentConfig& config = schema->config();
@@ -307,7 +321,6 @@ ProcessBatchesResult MasterComponent::RequestProcessBatches(const ProcessBatches
   model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
   Helpers::FixAndValidate(&model_config, /* throw_error =*/ true);
 
-  BatchManager batch_manager;
   CacheManager cache_manager;
   ScoresMerger* scores_merger = instance_->merger()->scores_merger();
 
@@ -343,10 +356,10 @@ ProcessBatchesResult MasterComponent::RequestProcessBatches(const ProcessBatches
 
   for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
-    batch_manager.Add(task_id, std::string(), model_name);
+    batch_manager->Add(task_id, std::string(), model_name);
 
     auto pi = std::make_shared<ProcessorInput>();
-    pi->set_notifiable(&batch_manager);
+    pi->set_notifiable(batch_manager);
     pi->set_scores_merger(scores_merger);
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
@@ -366,16 +379,18 @@ ProcessBatchesResult MasterComponent::RequestProcessBatches(const ProcessBatches
     instance_->processor_queue()->push(pi);
   }
 
-  while (!batch_manager.IsEverythingProcessed()) {
+  if (async)
+    return;
+
+  while (!batch_manager->IsEverythingProcessed()) {
     boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
   }
 
-  ProcessBatchesResult process_batches_result;
   for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
     ScoreName score_name = config.score_config(score_index).name();
     ScoreData score_data;
     if (scores_merger->RequestScore(schema, model_name, score_name, &score_data))
-      process_batches_result.add_score_data()->Swap(&score_data);
+      process_batches_result->add_score_data()->Swap(&score_data);
   }
 
   GetThetaMatrixArgs get_theta_matrix_args;
@@ -392,9 +407,7 @@ ProcessBatchesResult MasterComponent::RequestProcessBatches(const ProcessBatches
   }
 
   if (args.has_theta_matrix_type())
-    cache_manager.RequestThetaMatrix(get_theta_matrix_args, process_batches_result.mutable_theta_matrix());
-
-  return std::move(process_batches_result);
+    cache_manager.RequestThetaMatrix(get_theta_matrix_args, process_batches_result->mutable_theta_matrix());
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {

@@ -756,18 +756,18 @@ TEST(CppInterface, AsyncProcessBatches) {
   std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
   ASSERT_EQ(all_batches.size(), nBatches);
 
-  std::vector<artm::Future> futures;
+  std::vector<int> operation_ids;
   for (int i = 0; i < all_batches.size(); ++i) {
     std::string& batch_name = all_batches[i];
     artm::ProcessBatchesArgs process_batches_args;
     process_batches_args.add_batch_filename(batch_name);
     process_batches_args.set_pwt_source_name(std::string("pwt0"));
     process_batches_args.set_nwt_target_name(std::string("nwt_hat") + boost::lexical_cast<std::string>(i));
-    futures.push_back(master.AsyncProcessBatches(process_batches_args));
+    operation_ids.push_back(master.AsyncProcessBatches(process_batches_args));
   }
 
-  for (int i = 0; i < futures.size(); ++i) {
-    futures[i].Await();
+  for (int i = 0; i < operation_ids.size(); ++i) {
+    master.AwaitOperation(operation_ids[i]);
 
     ::artm::MergeModelArgs merge_model_args;
     std::string name = std::string("nwt_hat") + boost::lexical_cast<std::string>(i);

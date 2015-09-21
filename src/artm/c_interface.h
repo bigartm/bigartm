@@ -72,7 +72,6 @@ extern "C" {
   DLL_PUBLIC int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args);
 
   DLL_PUBLIC int ArtmAwaitOperation(int operation_id, int length, const char* await_operation_args);
-  DLL_PUBLIC int ArtmRequestOperationResult(int operation_id);
 
   DLL_PUBLIC int ArtmSaveBatch(const char* disk_path, int length, const char* batch);
   DLL_PUBLIC const char* ArtmGetLastErrorMessage();

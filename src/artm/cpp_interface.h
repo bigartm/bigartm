@@ -100,15 +100,6 @@ class Matrix {
   DISALLOW_COPY_AND_ASSIGN(Matrix);
 };
 
-class Future {
- private:
-  int operation_id_;
-
- public:
-  explicit Future(int operation_id) : operation_id_(operation_id) {}
-  std::shared_ptr<ProcessBatchesResultObject> Await(int timeout_milliseconds = -1) const;
-};
-
 class MasterComponent {
  public:
   explicit MasterComponent(const MasterComponentConfig& config);
@@ -141,7 +132,8 @@ class MasterComponent {
   std::shared_ptr<MasterComponentInfo> info() const;
 
   std::shared_ptr<ProcessBatchesResultObject> ProcessBatches(const ProcessBatchesArgs& args);
-  Future AsyncProcessBatches(const ProcessBatchesArgs& args);
+  int AsyncProcessBatches(const ProcessBatchesArgs& args);
+  int AwaitOperation(int operation_id);
 
   void MergeModel(const MergeModelArgs& args);
   void NormalizeModel(const NormalizeModelArgs& args);

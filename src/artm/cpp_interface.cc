@@ -94,25 +94,6 @@ std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& 
   return dictionary;
 }
 
-std::shared_ptr<ProcessBatchesResultObject> Future::Await(int timeout_milliseconds) const {
-  ::artm::AwaitOperationArgs args;
-  args.set_timeout_milliseconds(timeout_milliseconds);
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  int code = HandleErrorCode(ArtmAwaitOperation(operation_id_, args_blob.size(), StringAsArray(&args_blob)));
-  if (code == ARTM_STILL_WORKING)
-    return nullptr;
-
-  int length = HandleErrorCode(ArtmRequestOperationResult(operation_id_));
-  std::string message_blob;
-  message_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&message_blob)));
-
-  ProcessBatchesResult result;
-  result.ParseFromString(message_blob);
-  return std::shared_ptr<ProcessBatchesResultObject>(new ProcessBatchesResultObject(result));
-}
-
 MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), config_(config) {
   std::string config_blob;
   config.SerializeToString(&config_blob);
@@ -583,11 +564,21 @@ std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(cons
   return retval;
 }
 
-Future MasterComponent::AsyncProcessBatches(const ProcessBatchesArgs& args) {
+int MasterComponent::AsyncProcessBatches(const ProcessBatchesArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
-  int operation_id = HandleErrorCode(ArtmAsyncProcessBatches(id(), args_blob.size(), args_blob.c_str()));
-  return Future(operation_id);
+  return HandleErrorCode(ArtmAsyncProcessBatches(id(), args_blob.size(), args_blob.c_str()));
+}
+
+int MasterComponent::AwaitOperation(int operation_id) {
+  ::artm::AwaitOperationArgs args;
+  // args.set_timeout_milliseconds(timeout_milliseconds);
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int code = HandleErrorCode(ArtmAwaitOperation(operation_id, args_blob.size(), StringAsArray(&args_blob)));
+  if (code == ARTM_STILL_WORKING)
+    return false;
+  return true;
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& args) {

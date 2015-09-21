@@ -27,6 +27,7 @@ namespace core {
 class Instance;
 class TopicModel;
 class Score;
+class BatchManager;
 
 class MasterComponent : boost::noncopyable {
  public:
@@ -49,7 +50,16 @@ class MasterComponent : boost::noncopyable {
                     ScoreData* score_data);
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
-  ProcessBatchesResult RequestProcessBatches(const ProcessBatchesArgs& process_batches_args);
+  void RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                             ProcessBatchesResult* process_batches_result);
+
+  void AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                                  BatchManager *batch_manager);
+
+  void RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
+                                 BatchManager* batch_manager, bool async,
+                                 ProcessBatchesResult* process_batches_result);
+
   void MergeModel(const MergeModelArgs& merge_model_args);
   void RegularizeModel(const RegularizeModelArgs& regularize_model_args);
   void NormalizeModel(const NormalizeModelArgs& normalize_model_args);

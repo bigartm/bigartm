@@ -5,10 +5,7 @@
 #include <string>
 #include <iostream>  // NOLINT
 
-#include "boost/chrono.hpp"
-#include "boost/date_time.hpp"
 #include "boost/thread/tss.hpp"
-#include "boost/thread/future.hpp"
 
 #include "glog/logging.h"
 
@@ -20,9 +17,10 @@
 #include "artm/core/master_component.h"
 #include "artm/core/template_manager.h"
 #include "artm/core/collection_parser.h"
+#include "artm/core/batch_manager.h"
 
 typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterComponent>> MasterComponentManager;
-typedef artm::core::TemplateManager<boost::shared_future< ::artm::ProcessBatchesResult>> ProcessBatchesResultManager;
+typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::BatchManager>> AsyncProcessBatchesManager;
 
 // Never use the following variables explicitly (only through the corresponding methods).
 // It might be good idea to make them a private members of a new singleton class.
@@ -288,7 +286,8 @@ static int ImplRequestProcessBatches(int master_id, int length, const char* proc
       return ARTM_INVALID_OPERATION;
     }
 
-    artm::ProcessBatchesResult result = master_component(master_id)->RequestProcessBatches(args);
+    artm::ProcessBatchesResult result;
+    master_component(master_id)->RequestProcessBatches(args, &result);
 
     if (external)
       HandleExternalThetaMatrixRequest(result.mutable_theta_matrix());
@@ -313,11 +312,9 @@ int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batch
     ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
     std::shared_ptr< ::artm::core::MasterComponent> master = master_component(master_id);
 
-    boost::shared_future<artm::ProcessBatchesResult> future = boost::move(boost::async([master, args]() {
-        return master->RequestProcessBatches(args);
-    }));
-
-    int retval = ProcessBatchesResultManager::singleton().Store(future);
+    std::shared_ptr< ::artm::core::BatchManager> batch_manager = std::make_shared< ::artm::core::BatchManager>();
+    master->AsyncRequestProcessBatches(args, batch_manager.get());
+    int retval = AsyncProcessBatchesManager::singleton().Store(batch_manager);
 
     LOG(INFO) << "Creating async operation (id=" << retval << ")...";
     return retval;
@@ -329,30 +326,16 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
     artm::AwaitOperationArgs args;
     ParseFromArray(await_operation_args, length, &args);
 
-    ProcessBatchesResultManager& manager = ProcessBatchesResultManager::singleton();
-    boost::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
+    AsyncProcessBatchesManager& manager = AsyncProcessBatchesManager::singleton();
+    std::shared_ptr<artm::core::BatchManager> batch_manager = manager.Get(operation_id);
 
-    if (args.timeout_milliseconds() >= 0) {
-      if (!future.timed_wait(boost::posix_time::milliseconds(args.timeout_milliseconds()))) {
-        set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
-        return ARTM_STILL_WORKING;
-      }
-    } else {
-      future.wait();
+    // ToDo: args.timeout_milliseconds
+    if (!batch_manager->IsEverythingProcessed()) {
+      set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
+      return ARTM_STILL_WORKING;
     }
 
     return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRequestOperationResult(int operation_id) {
-  try {
-    ProcessBatchesResultManager& manager = ProcessBatchesResultManager::singleton();
-    boost::shared_future<artm::ProcessBatchesResult> future = manager.Get(operation_id);
-
-    future.get().SerializeToString(last_message());
-    manager.Erase(operation_id);
-    return last_message()->size();
   } CATCH_EXCEPTIONS;
 }
 
