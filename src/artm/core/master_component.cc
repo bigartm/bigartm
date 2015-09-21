@@ -321,17 +321,22 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   ScoresMerger* scores_merger = instance_->merger()->scores_merger();
 
   bool return_theta = false;
-  CacheManager* cache_manager_ptr = nullptr;
+  bool return_ptdw = false;
+  CacheManager* ptdw_cache_manager_ptr = nullptr;
+  CacheManager* theta_cache_manager_ptr = nullptr;
   switch (args.theta_matrix_type()) {
     case ProcessBatchesArgs_ThetaMatrixType_Cache:
       if (instance_->schema()->config().cache_theta())
-        cache_manager_ptr = instance_->cache_manager();
+        theta_cache_manager_ptr = instance_->cache_manager();
       break;
     case ProcessBatchesArgs_ThetaMatrixType_Dense:
     case ProcessBatchesArgs_ThetaMatrixType_Sparse:
-    case ProcessBatchesArgs_ThetaMatrixType_Ptdw:
-      cache_manager_ptr = &cache_manager;
+      theta_cache_manager_ptr = &cache_manager;
       return_theta = true;
+      break;
+    case ProcessBatchesArgs_ThetaMatrixType_Ptdw:
+      ptdw_cache_manager_ptr = &cache_manager;
+      return_ptdw = true;
   }
 
   if (args.reset_scores())
@@ -351,7 +356,8 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(&batch_manager);
     pi->set_scores_merger(scores_merger);
-    pi->set_cache_manager(cache_manager_ptr);
+    pi->set_cache_manager(theta_cache_manager_ptr);
+    pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
     pi->set_batch_filename(args.batch_filename(batch_index));
     pi->set_batch_weight(args.batch_weight(batch_index));
