@@ -622,8 +622,8 @@ TEST(CppInterface, ProcessBatchesApi) {
 
   // Verify that we may call ProcessBatches without nwt_target
   process_batches_args.clear_nwt_target_name();
-  std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
-  perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
+  std::shared_ptr< ::artm::ProcessBatchesResultObject> result_1 = master.ProcessBatches(process_batches_args);
+  perplexity_score = result_1->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
   EXPECT_NE(perplexity_score, nullptr);
   EXPECT_NE(perplexity_score->value(), 0.0);
 
@@ -655,6 +655,23 @@ TEST(CppInterface, ProcessBatchesApi) {
   std::shared_ptr< ::artm::TopicModel> rwt = master.GetTopicModel("rwt");
   ASSERT_NE(rwt, nullptr);
   ASSERT_EQ(rwt->topics_count(), nTopics);
+
+  process_batches_args.set_use_ptdw_matrix(true);
+  process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Ptdw);
+  std::shared_ptr< ::artm::ProcessBatchesResultObject> result_2 = master.ProcessBatches(process_batches_args);
+  auto& theta = result_2->GetThetaMatrix();
+  //for (auto& item : theta.item_id()) {
+  //  std::cout << "item " << item << ' ';
+  //}
+  //std::cout << std::endl;
+
+  /*for (auto& value : theta.item_weights(0).value()) {
+    std::cout << "value " << value << ' ';
+  }
+  std::cout << std::endl;*/
+  std::cout << theta.topics_count() << ' ' << theta.item_weights_size() << std::endl;
+
+  //EXPECT_NE(perplexity_score->value(), 0.0);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

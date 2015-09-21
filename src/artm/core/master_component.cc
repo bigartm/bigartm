@@ -383,10 +383,10 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
       process_batches_result->add_score_data()->Swap(&score_data);
   }
 
-  if (return_theta) {
+  if (return_theta || return_ptdw) {
     GetThetaMatrixArgs gta;
     gta.set_model_name(model_name);
-    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse)
+    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse || return_ptdw)
       gta.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
     cache_manager.RequestThetaMatrix(gta, process_batches_result->mutable_theta_matrix());
   }
