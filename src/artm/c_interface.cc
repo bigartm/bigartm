@@ -6,6 +6,8 @@
 #include <iostream>  // NOLINT
 
 #include "boost/thread/tss.hpp"
+#include "boost/thread/thread.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "glog/logging.h"
 
@@ -329,13 +331,23 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
     AsyncProcessBatchesManager& manager = AsyncProcessBatchesManager::singleton();
     std::shared_ptr<artm::core::BatchManager> batch_manager = manager.Get(operation_id);
 
-    // ToDo: args.timeout_milliseconds
-    if (!batch_manager->IsEverythingProcessed()) {
-      set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
-      return ARTM_STILL_WORKING;
+    const int timeout = args.timeout_milliseconds();
+    auto time_start = boost::posix_time::microsec_clock::local_time();
+    for (;;) {
+      if (batch_manager->IsEverythingProcessed())
+        return ARTM_SUCCESS;
+
+      boost::this_thread::sleep(boost::posix_time::milliseconds(::artm::core::kIdleLoopFrequency));
+      auto time_end = boost::posix_time::microsec_clock::local_time();
+      if (timeout >= 0) {
+        if ((time_end - time_start).total_milliseconds() >= timeout)
+          break;
+      }
     }
 
-    return ARTM_SUCCESS;
+    set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
+    return ARTM_STILL_WORKING;
+
   } CATCH_EXCEPTIONS;
 }
 
