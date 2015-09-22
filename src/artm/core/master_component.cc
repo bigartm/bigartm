@@ -321,6 +321,13 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
   Helpers::FixAndValidate(&model_config, /* throw_error =*/ true);
 
+  if (async && args.theta_matrix_type() != ProcessBatchesArgs_ThetaMatrixType_None)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "ArtmAsyncProcessBatches require ProcessBatchesArgs.theta_matrix_type to be set to None"));
+
+  // The code below must not use cache_manger in async mode.
+  // Since cache_manager lives on stack it will be destroyed once we return from this function.
+  // Therefore, no pointers to cache_manager should exist upon return from RequestProcessBatchesImpl.
   CacheManager cache_manager;
   ScoresMerger* scores_merger = instance_->merger()->scores_merger();
 

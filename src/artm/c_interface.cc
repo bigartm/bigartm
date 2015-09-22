@@ -347,7 +347,6 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
 
     set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
     return ARTM_STILL_WORKING;
-
   } CATCH_EXCEPTIONS;
 }
 

@@ -763,6 +763,7 @@ TEST(CppInterface, AsyncProcessBatches) {
     process_batches_args.add_batch_filename(batch_name);
     process_batches_args.set_pwt_source_name(std::string("pwt0"));
     process_batches_args.set_nwt_target_name(std::string("nwt_hat") + boost::lexical_cast<std::string>(i));
+    process_batches_args.set_theta_matrix_type(::artm::ProcessBatchesArgs_ThetaMatrixType_None);
     operation_ids.push_back(master.AsyncProcessBatches(process_batches_args));
   }
 
