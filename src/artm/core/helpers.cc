@@ -1017,6 +1017,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
   auto& args_topic_name = get_theta_args.topic_name();
   auto& args_topic_index = get_theta_args.topic_index();
   const bool has_sparse_format = get_theta_args.matrix_layout() == GetThetaMatrixArgs_MatrixLayout_Sparse;
+  const bool sparse_cache = cache.topic_index_size() > 0;
 
   std::vector<int> topics_to_use;
   if (args_topic_index.size() > 0) {
@@ -1080,16 +1081,29 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
 
     const artm::FloatArray& item_theta = cache.theta(item_index);
     if (!has_sparse_format) {
+      // save theta dense matrix
       for (int topic_index : topics_to_use)
         theta_vec->add_value(item_theta.value(topic_index));
     } else {
       ::artm::IntArray* sparse_topic_index = theta_matrix->add_topic_index();
-      for (int topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
-        int topic_index = topics_to_use[topics_to_use_index];
-        float value = item_theta.value(topic_index);
-        if (value >= get_theta_args.eps()) {
-          theta_vec->add_value(item_theta.value(topic_index));
-          sparse_topic_index->add_value(topics_to_use_index);
+      if (sparse_cache) {
+        // save ptdw matrix
+        for (int index = 0; index < cache.topic_index(item_index).value_size(); ++index) {
+          float value = item_theta.value(index);
+          if (value >= get_theta_args.eps()) {
+            theta_vec->add_value(value);
+            sparse_topic_index->add_value(cache.topic_index(item_index).value(index));
+          }
+        }
+      } else {
+        // save theta sparse matrix
+        for (int index = 0; index < topics_to_use.size(); index++) {
+          int topic_index = topics_to_use[index];
+          float value = item_theta.value(topic_index);
+          if (value >= get_theta_args.eps()) {
+            theta_vec->add_value(value);
+            sparse_topic_index->add_value(index);
+          }
         }
       }
     }

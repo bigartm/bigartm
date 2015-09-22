@@ -656,22 +656,19 @@ TEST(CppInterface, ProcessBatchesApi) {
   ASSERT_NE(rwt, nullptr);
   ASSERT_EQ(rwt->topics_count(), nTopics);
 
+  // Test to verify Ptdw extraction
   process_batches_args.set_use_ptdw_matrix(true);
   process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Ptdw);
   std::shared_ptr< ::artm::ProcessBatchesResultObject> result_2 = master.ProcessBatches(process_batches_args);
-  auto& theta = result_2->GetThetaMatrix();
-  //for (auto& item : theta.item_id()) {
-  //  std::cout << "item " << item << ' ';
-  //}
-  //std::cout << std::endl;
-
-  /*for (auto& value : theta.item_weights(0).value()) {
-    std::cout << "value " << value << ' ';
+  auto& theta_matrix = result_2->GetThetaMatrix();
+  ASSERT_EQ(theta_matrix.item_id_size(), 79);
+  ASSERT_EQ(theta_matrix.topic_index_size(), 79);
+  ASSERT_EQ(theta_matrix.item_weights_size(), 79);
+  for (int index = 0; index < theta_matrix.item_id_size(); ++index) {
+    ASSERT_GE(theta_matrix.topic_index(index).value_size(), 0);
+    ASSERT_GE(theta_matrix.item_weights(index).value_size(), 0);
+    ASSERT_EQ(theta_matrix.topic_index(index).value_size(), theta_matrix.item_weights(index).value_size());
   }
-  std::cout << std::endl;*/
-  std::cout << theta.topics_count() << ' ' << theta.item_weights_size() << std::endl;
-
-  //EXPECT_NE(perplexity_score->value(), 0.0);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

@@ -73,8 +73,7 @@ static void CreatePtdwCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
 
   new_cache_entry_ptr->add_item_title(std::string());
   for (int token_index = 0; token_index < ptdw_matrix->no_rows(); ++token_index) {
-    //new_cache_entry_ptr->add_item_id(item_id);
-    std::cout << new_cache_entry_ptr->item_id_size() << std::endl;
+    new_cache_entry_ptr->add_item_id(item_id);
     auto non_zero_topic_values = new_cache_entry_ptr->add_theta();
     auto non_zero_topic_indices = new_cache_entry_ptr->add_topic_index();
 
@@ -92,18 +91,18 @@ static void CreatePtdwCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
 
 static void SaveCache(std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr,
                       const MasterComponentConfig& master_config) {
-  if (new_cache_entry_ptr != nullptr) {
-    std::string disk_cache_path = master_config.disk_cache_path();
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
-    try {
-      BatchHelpers::SaveMessage(file.string(), disk_cache_path, *new_cache_entry_ptr);
-      new_cache_entry_ptr->set_filename((fs::path(disk_cache_path) / file).string());
-      new_cache_entry_ptr->clear_theta();
-      new_cache_entry_ptr->clear_item_id();
-    } catch (...) {
-      LOG(ERROR) << "Unable to save cache entry to " << master_config.disk_cache_path();
-    }
+  if (new_cache_entry_ptr == nullptr) return;
+
+  std::string disk_cache_path = master_config.disk_cache_path();
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
+  try {
+    BatchHelpers::SaveMessage(file.string(), disk_cache_path, *new_cache_entry_ptr);
+    new_cache_entry_ptr->set_filename((fs::path(disk_cache_path) / file).string());
+    new_cache_entry_ptr->clear_theta();
+    new_cache_entry_ptr->clear_item_id();
+  } catch (...) {
+    LOG(ERROR) << "Unable to save cache entry to " << master_config.disk_cache_path();
   }
 }
 
