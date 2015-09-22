@@ -661,9 +661,11 @@ TEST(CppInterface, ProcessBatchesApi) {
   process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Ptdw);
   std::shared_ptr< ::artm::ProcessBatchesResultObject> result_2 = master.ProcessBatches(process_batches_args);
   auto& theta_matrix = result_2->GetThetaMatrix();
-  ASSERT_EQ(theta_matrix.item_id_size(), 79);
-  ASSERT_EQ(theta_matrix.topic_index_size(), 79);
-  ASSERT_EQ(theta_matrix.item_weights_size(), 79);
+
+  const int expected_combined_items_length = 154;
+  ASSERT_EQ(theta_matrix.item_id_size(), expected_combined_items_length);
+  ASSERT_EQ(theta_matrix.topic_index_size(), expected_combined_items_length);
+  ASSERT_EQ(theta_matrix.item_weights_size(), expected_combined_items_length);
   for (int index = 0; index < theta_matrix.item_id_size(); ++index) {
     ASSERT_GE(theta_matrix.topic_index(index).value_size(), 0);
     ASSERT_GE(theta_matrix.item_weights(index).value_size(), 0);
