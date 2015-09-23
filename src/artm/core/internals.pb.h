@@ -274,6 +274,18 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& item_title() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_item_title();
 
+  // repeated .artm.IntArray topic_index = 8;
+  inline int topic_index_size() const;
+  inline void clear_topic_index();
+  static const int kTopicIndexFieldNumber = 8;
+  inline const ::artm::IntArray& topic_index(int index) const;
+  inline ::artm::IntArray* mutable_topic_index(int index);
+  inline ::artm::IntArray* add_topic_index();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::IntArray >&
+      topic_index() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
+      mutable_topic_index();
+
   // @@protoc_insertion_point(class_scope:artm.core.DataLoaderCacheEntry)
  private:
   inline void set_has_model_name();
@@ -292,9 +304,10 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::std::string* filename_;
   ::google::protobuf::RepeatedPtrField< ::std::string> item_title_;
+  ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -871,6 +884,31 @@ DataLoaderCacheEntry::item_title() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 DataLoaderCacheEntry::mutable_item_title() {
   return &item_title_;
+}
+
+// repeated .artm.IntArray topic_index = 8;
+inline int DataLoaderCacheEntry::topic_index_size() const {
+  return topic_index_.size();
+}
+inline void DataLoaderCacheEntry::clear_topic_index() {
+  topic_index_.Clear();
+}
+inline const ::artm::IntArray& DataLoaderCacheEntry::topic_index(int index) const {
+  return topic_index_.Get(index);
+}
+inline ::artm::IntArray* DataLoaderCacheEntry::mutable_topic_index(int index) {
+  return topic_index_.Mutable(index);
+}
+inline ::artm::IntArray* DataLoaderCacheEntry::add_topic_index() {
+  return topic_index_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::IntArray >&
+DataLoaderCacheEntry::topic_index() const {
+  return topic_index_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::IntArray >*
+DataLoaderCacheEntry::mutable_topic_index() {
+  return &topic_index_;
 }
 
 // -------------------------------------------------------------------

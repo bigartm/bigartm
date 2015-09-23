@@ -37,7 +37,6 @@ RegularizerConfig TestMother::GenerateRegularizerConfig() const {
 
 void TestMother::GenerateBatches(int batches_size, int nTokens,
                                  std::vector<std::shared_ptr< ::artm::Batch>>* batches) {
-  srand(1);
   for (int iBatch = 0; iBatch < batches_size; ++iBatch) {
     ::artm::Batch batch;
     batch.set_id(artm::test::Helpers::getUniqueString());
@@ -53,7 +52,8 @@ void TestMother::GenerateBatches(int batches_size, int nTokens,
     item->set_id(iBatch);  // one item per batch
     artm::Field* field = item->add_field();
     for (int iToken = 0; iToken < nTokens; ++iToken) {
-      if (iToken == 0 || rand() % 3 == 0) {  // NOLINT
+      const int somewhat_random = iToken + iBatch + (iToken + 1)*(iBatch + 1);
+      if (iToken == 0 || somewhat_random % 3 == 0) {  // NOLINT
         field->add_token_id(iToken);
         field->add_token_weight(1.0);
       }

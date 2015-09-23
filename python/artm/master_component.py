@@ -110,8 +110,8 @@ class MasterComponent(object):
 
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
-                        class_ids=None, class_weights=None,
-                        find_theta=False, reset_scores=False, reuse_theta=False):
+                        class_ids=None, class_weights=None, find_theta=False,
+                        reset_scores=False, reuse_theta=False, find_ptdw=False):
         """Args:
            - pwt(str): name of pwt matrix in BigARTM
            - nwt(str): name of nwt matrix in BigARTM
@@ -122,9 +122,10 @@ class MasterComponent(object):
            - regularizer_tau(list of double): list of tau coefficients for Theta regularizers
            - class_ids(list of str): list of class ids to use during processing
            - class_weights(list of double): list of corresponding weights of class ids
-           - find_theat(bool): find theta matrix for 'batches' (if alternative 2)
+           - find_theta(bool): find theta matrix for 'batches' (if alternative 2)
            - reset_scores(bool): reset scores after iterations or not
            - reuse_theta(bool): initialize by theta from previous collection pass
+           - find_ptdw(bool): count and return Ptdw matrix or not (works if find_theta == False)
            Returns:
            - tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta (find_theta==True)
            - messages.ThetaMatrix --- the info about Theta (find_theta==False)
@@ -158,8 +159,10 @@ class MasterComponent(object):
                 args.class_weight.append(weight)
 
         func = None
-        if find_theta:
+        if find_theta or find_ptdw:
             args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_Dense
+            if find_ptdw:
+                args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_DensePtdw
             func = self._lib.ArtmRequestProcessBatchesExternal
         elif not find_theta or find_theta is None:
             func = self._lib.ArtmRequestProcessBatches
@@ -169,7 +172,7 @@ class MasterComponent(object):
         result = messages.ProcessBatchesResult()
         result.ParseFromString(retval)
 
-        if not find_theta:
+        if not find_theta and not find_ptdw:
             return result.theta_matrix
 
         num_rows = len(result.theta_matrix.item_id)

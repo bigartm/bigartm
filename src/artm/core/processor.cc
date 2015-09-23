@@ -41,6 +41,64 @@ const float kProcessorEps = 1e-16;
 namespace artm {
 namespace core {
 
+static void CreateThetaCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
+                                  DenseMatrix<float>* theta_matrix,
+                                  const Batch& batch,
+                                  int topic_size) {
+  if (new_cache_entry_ptr == nullptr) return;
+
+  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+    const Item& item = batch.item(item_index);
+    new_cache_entry_ptr->add_item_id(item.id());
+    new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
+    FloatArray* cached_theta = new_cache_entry_ptr->add_theta();
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+      cached_theta->add_value((*theta_matrix)(topic_index, item_index));
+    }
+  }
+}
+
+static void CreatePtdwCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
+                                 DenseMatrix<float>* ptdw_matrix,
+                                 int item_id,
+                                 int topic_size) {
+  if (new_cache_entry_ptr == nullptr) return;
+
+  new_cache_entry_ptr->add_item_title(std::string());
+  for (int token_index = 0; token_index < ptdw_matrix->no_rows(); ++token_index) {
+    new_cache_entry_ptr->add_item_id(item_id);
+    auto non_zero_topic_values = new_cache_entry_ptr->add_theta();
+    auto non_zero_topic_indices = new_cache_entry_ptr->add_topic_index();
+
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+      float value = ptdw_matrix->operator()(token_index, topic_index);
+      if (std::fabs(value) > kProcessorEps) {
+        // store not-null values p(t|d,w) for given d and w
+        non_zero_topic_values->add_value(value);
+        // store indices of these not-null values
+        non_zero_topic_indices->add_value(topic_index);
+      }
+    }
+  }
+}
+
+static void SaveCache(std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr,
+                      const MasterComponentConfig& master_config) {
+  if (new_cache_entry_ptr == nullptr) return;
+
+  std::string disk_cache_path = master_config.disk_cache_path();
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
+  try {
+    BatchHelpers::SaveMessage(file.string(), disk_cache_path, *new_cache_entry_ptr);
+    new_cache_entry_ptr->set_filename((fs::path(disk_cache_path) / file).string());
+    new_cache_entry_ptr->clear_theta();
+    new_cache_entry_ptr->clear_item_id();
+  } catch (...) {
+    LOG(ERROR) << "Unable to save cache entry to " << master_config.disk_cache_path();
+  }
+}
+
 class NwtWriteAdapter {
  public:
   virtual bool Skip(int batch_token_id) const = 0;
@@ -348,7 +406,8 @@ static void
 InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
                              const InstanceSchema& schema, const CsrMatrix<float>& sparse_ndw,
                              const ::artm::core::PhiMatrix& p_wt, DenseMatrix<float>* theta_matrix,
-                             NwtWriteAdapter* nwt_writer, util::Blas* blas) {
+                             NwtWriteAdapter* nwt_writer, util::Blas* blas,
+                             DataLoaderCacheEntry* new_cache_entry_ptr = nullptr) {
   DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
   const int topics_count = model_config.topics_count();
   const int docs_count = theta_matrix->no_columns();
@@ -469,13 +528,17 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
     for (float& value : values) value *= batch_weight;
     nwt_writer->Store(w, token_id[w], values);
   }
+
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
 }
 
 static void
 InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
                             const InstanceSchema& schema, const CsrMatrix<float>& sparse_ndw,
                             const ::artm::core::PhiMatrix& p_wt, DenseMatrix<float>* theta_matrix,
-                            NwtWriteAdapter* nwt_writer, util::Blas* blas) {
+                            NwtWriteAdapter* nwt_writer, util::Blas* blas,
+                            DataLoaderCacheEntry* new_cache_entry_ptr = nullptr,
+                            DataLoaderCacheEntry* new_ptdw_cache_entry_ptr = nullptr) {
   DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
   const int topics_count = model_config.topics_count();
   const int docs_count = theta_matrix->no_columns();
@@ -564,14 +627,17 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
         }
       }
     }
+    CreatePtdwCacheEntry(new_ptdw_cache_entry_ptr, &local_ptdw, batch.item(d).id(), topics_count);
   }
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
 }
 
 static void
 InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
                             const InstanceSchema& schema, const DenseMatrix<float>& dense_ndw,
                             const ::artm::core::PhiMatrix& p_wt, DenseMatrix<float>* theta_matrix,
-                            NwtWriteAdapter* nwt_writer, util::Blas* blas) {
+                            NwtWriteAdapter* nwt_writer, util::Blas* blas,
+                            DataLoaderCacheEntry* new_cache_entry_ptr = nullptr) {
   std::shared_ptr<DenseMatrix<float>> phi_matrix_ptr = InitializePhi(batch, model_config, p_wt);
   if (phi_matrix_ptr == nullptr) return;
   const DenseMatrix<float>& phi_matrix = *phi_matrix_ptr;
@@ -672,6 +738,8 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
       nwt_writer->Store(token_index, token_id, values);
     }
   }
+
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
 }
 
 static std::shared_ptr<Score>
@@ -950,53 +1018,51 @@ void Processor::ThreadFunction() {
         int model_stream_index = repeated_field_index_of(stream_masks.stream_name(), model_config.stream_name());
         const Mask* stream_mask = (model_stream_index != -1) ? &stream_masks.stream_mask(model_stream_index) : nullptr;
 
+        std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(nullptr);
+        if (part->has_cache_manager())
+          new_cache_entry_ptr.reset(new DataLoaderCacheEntry());
+
+        std::shared_ptr<DataLoaderCacheEntry> new_ptdw_cache_entry_ptr(nullptr);
+        if (part->has_ptdw_cache_manager())
+          new_ptdw_cache_entry_ptr.reset(new DataLoaderCacheEntry());
+
+        if (new_cache_entry_ptr != nullptr) {
+          new_cache_entry_ptr->set_batch_uuid(batch.id());
+          new_cache_entry_ptr->set_model_name(model_name);
+          new_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
+        }
+
+        if (new_ptdw_cache_entry_ptr != nullptr) {
+          new_ptdw_cache_entry_ptr->set_batch_uuid(batch.id());
+          new_ptdw_cache_entry_ptr->set_model_name(model_name);
+          new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
+        }
+
         if (model_config.use_sparse_bow() && model_config.use_ptdw_matrix()) {
           CuckooWatch cuckoo2("InferPtdwAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
           InferPtdwAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *schema, *sparse_ndw,
-                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas);
+                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas, new_cache_entry_ptr.get(),
+                                      new_ptdw_cache_entry_ptr.get());
         } else if (model_config.use_sparse_bow()) {
           CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
           InferThetaAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *schema, *sparse_ndw,
-                                       p_wt, theta_matrix.get(), nwt_writer.get(), blas);
+                                       p_wt, theta_matrix.get(), nwt_writer.get(), blas, new_cache_entry_ptr.get());
         } else {
           CuckooWatch cuckoo2("InferThetaAndUpdateNwtDense", &cuckoo, kTimeLoggingThreshold);
           InferThetaAndUpdateNwtDense(model_config, batch, part->batch_weight(), stream_mask, *schema, *dense_ndw,
-                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas);
+                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas, new_cache_entry_ptr.get());
         }
 
-        if (part->has_cache_manager()) {
-          // Update theta cache
-          std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(new DataLoaderCacheEntry());
-          DataLoaderCacheEntry& new_cache_entry = *new_cache_entry_ptr;
-          new_cache_entry.set_batch_uuid(batch.id());
-          new_cache_entry.set_model_name(model_name);
-          new_cache_entry.mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
-          for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-            const Item& item = batch.item(item_index);
-            new_cache_entry.add_item_id(item.id());
-            new_cache_entry.add_item_title(item.has_title() ? item.title() : std::string());
-            FloatArray* cached_theta = new_cache_entry.add_theta();
-            for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-              cached_theta->add_value((*theta_matrix)(topic_index, item_index));
-            }
-          }
+        if (master_config.has_disk_cache_path()) {
+          SaveCache(new_ptdw_cache_entry_ptr, master_config);
+          SaveCache(new_cache_entry_ptr, master_config);
+        }
 
-          if (master_config.has_disk_cache_path()) {
-            std::string disk_cache_path = master_config.disk_cache_path();
-            boost::uuids::uuid uuid = boost::uuids::random_generator()();
-            fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
-            try {
-              BatchHelpers::SaveMessage(file.string(), disk_cache_path, new_cache_entry);
-              new_cache_entry.set_filename((fs::path(disk_cache_path) / file).string());
-              new_cache_entry.clear_theta();
-              new_cache_entry.clear_item_id();
-            } catch (...) {
-              LOG(ERROR) << "Unable to save cache entry to " << master_config.disk_cache_path();
-            }
-          }
-
+        if (new_cache_entry_ptr != nullptr)
           part->cache_manager()->UpdateCacheEntry(new_cache_entry_ptr);
-        }
+
+        if (new_ptdw_cache_entry_ptr != nullptr)
+          part->ptdw_cache_manager()->UpdateCacheEntry(new_ptdw_cache_entry_ptr);
 
         for (int score_index = 0; score_index < master_config.score_config_size(); ++score_index) {
           const ScoreName& score_name = master_config.score_config(score_index).name();

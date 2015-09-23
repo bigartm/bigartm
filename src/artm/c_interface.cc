@@ -274,7 +274,9 @@ static int ImplRequestProcessBatches(int master_id, int length, const char* proc
     ParseFromArray(process_batches_args, length, &args);
     ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
 
-    if (external && args.theta_matrix_type() != artm::ProcessBatchesArgs_ThetaMatrixType_Dense) {
+    const bool is_dense_theta = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_Dense;
+    const bool is_dense_ptdw = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_DensePtdw;
+    if (external && !is_dense_theta && !is_dense_ptdw) {
       set_last_error("Dense matrix format is required for ArtmRequestProcessBatchesExternal");
       return ARTM_INVALID_OPERATION;
     }
