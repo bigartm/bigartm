@@ -334,7 +334,8 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
       theta_cache_manager_ptr = &cache_manager;
       return_theta = true;
       break;
-    case ProcessBatchesArgs_ThetaMatrixType_Ptdw:
+    case ProcessBatchesArgs_ThetaMatrixType_DensePtdw:
+    case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
       ptdw_cache_manager_ptr = &cache_manager;
       return_ptdw = true;
   }
@@ -365,7 +366,8 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);
 
-    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse)
+    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_DensePtdw ||
+        args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_SparsePtdw)
       pi->mutable_model_config()->set_use_ptdw_matrix(true);
 
     if (args.has_nwt_target_name())
@@ -386,13 +388,21 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
       process_batches_result->add_score_data()->Swap(&score_data);
   }
 
-  if (return_theta || return_ptdw) {
-    GetThetaMatrixArgs gta;
-    gta.set_model_name(model_name);
-    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse || return_ptdw)
-      gta.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
-    cache_manager.RequestThetaMatrix(gta, process_batches_result->mutable_theta_matrix());
+  GetThetaMatrixArgs get_theta_matrix_args;
+  get_theta_matrix_args.set_model_name(model_name);
+  switch (args.theta_matrix_type()) {
+    case ProcessBatchesArgs_ThetaMatrixType_Dense:
+    case ProcessBatchesArgs_ThetaMatrixType_DensePtdw:
+      get_theta_matrix_args.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Dense);
+      break;
+    case ProcessBatchesArgs_ThetaMatrixType_Sparse:
+    case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
+      get_theta_matrix_args.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
+      break;
   }
+
+  if (args.has_theta_matrix_type())
+    cache_manager.RequestThetaMatrix(get_theta_matrix_args, process_batches_result->mutable_theta_matrix());
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {

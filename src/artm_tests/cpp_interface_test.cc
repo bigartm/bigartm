@@ -658,7 +658,7 @@ TEST(CppInterface, ProcessBatchesApi) {
 
   // Test to verify Ptdw extraction
   process_batches_args.set_use_ptdw_matrix(true);
-  process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Ptdw);
+  process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_SparsePtdw);
   std::shared_ptr< ::artm::ProcessBatchesResultObject> result_2 = master.ProcessBatches(process_batches_args);
   auto& theta_matrix = result_2->GetThetaMatrix();
 

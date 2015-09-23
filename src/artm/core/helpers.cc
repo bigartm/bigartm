@@ -1005,6 +1005,8 @@ void BatchHelpers::SaveMessage(const std::string& full_filename,
   fout.close();
 }
 
+// ToDo(sashafrey): this method has grown too big and complicated.
+// It needs to be refactored.
 bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     const DataLoaderCacheEntry& cache,
     const GetThetaMatrixArgs& get_theta_args,
@@ -1087,7 +1089,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
         // dense output -- sparse cache
         for (int index = 0; index < topics_to_use.size(); ++index) {
           int topic_index = repeated_field_index_of(cache.topic_index(item_index).value(), topics_to_use[index]);
-          theta_vec->add_value(item_theta.value(topic_index != -1 ? topic_index : 0.0f));
+          theta_vec->add_value(topic_index != -1 ? item_theta.value(topic_index) : 0.0f);
         }
       } else {
         // dense output -- dense cache

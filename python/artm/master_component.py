@@ -162,7 +162,7 @@ class MasterComponent(object):
         if find_theta or find_ptdw:
             args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_Dense
             if find_ptdw:
-                args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_Ptdw
+                args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_DensePtdw
             func = self._lib.ArtmRequestProcessBatchesExternal
         elif not find_theta or find_theta is None:
             func = self._lib.ArtmRequestProcessBatches
