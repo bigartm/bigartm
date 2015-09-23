@@ -1017,6 +1017,8 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
   auto& args_topic_name = get_theta_args.topic_name();
   auto& args_topic_index = get_theta_args.topic_index();
   const bool has_sparse_format = get_theta_args.matrix_layout() == GetThetaMatrixArgs_MatrixLayout_Sparse;
+  const bool sparse_cache = cache.topic_index_size() > 0;
+  bool use_all_topics = false;
 
   std::vector<int> topics_to_use;
   if (args_topic_index.size() > 0) {
@@ -1046,6 +1048,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     assert(cache.topic_name_size() > 0);
     for (int i = 0; i < cache.topic_name_size(); ++i)
       topics_to_use.push_back(i);
+    use_all_topics = true;
   }
 
   // Populate topics_count and topic_name fields in the resulting message
@@ -1080,16 +1083,45 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
 
     const artm::FloatArray& item_theta = cache.theta(item_index);
     if (!has_sparse_format) {
-      for (int topic_index : topics_to_use)
-        theta_vec->add_value(item_theta.value(topic_index));
+      if (sparse_cache) {
+        // dense output -- sparse cache
+        for (int index = 0; index < topics_to_use.size(); ++index) {
+          int topic_index = repeated_field_index_of(cache.topic_index(item_index).value(), topics_to_use[index]);
+          theta_vec->add_value(item_theta.value(topic_index != -1 ? topic_index : 0.0f));
+        }
+      } else {
+        // dense output -- dense cache
+        for (int topic_index : topics_to_use)
+          theta_vec->add_value(item_theta.value(topic_index));
+      }
     } else {
       ::artm::IntArray* sparse_topic_index = theta_matrix->add_topic_index();
-      for (int topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
-        int topic_index = topics_to_use[topics_to_use_index];
-        float value = item_theta.value(topic_index);
-        if (value >= get_theta_args.eps()) {
-          theta_vec->add_value(item_theta.value(topic_index));
-          sparse_topic_index->add_value(topics_to_use_index);
+      if (sparse_cache) {
+        // sparse output -- sparse cache
+        for (int index = 0; index < cache.topic_index(item_index).value_size(); ++index) {
+          int topic_index = cache.topic_index(item_index).value(index);
+          if (use_all_topics) {
+            theta_vec->add_value(item_theta.value(index));
+            sparse_topic_index->add_value(topic_index);
+          } else {
+            for (int i = 0; i < topics_to_use.size(); ++i) {
+              if (topics_to_use[i] == topic_index) {
+                theta_vec->add_value(item_theta.value(index));
+                sparse_topic_index->add_value(topic_index);
+                break;
+              }
+            }
+          }
+        }
+      } else {
+        // sparse output -- dense cache
+        for (int index = 0; index < topics_to_use.size(); index++) {
+          int topic_index = topics_to_use[index];
+          float value = item_theta.value(topic_index);
+          if (value >= get_theta_args.eps()) {
+            theta_vec->add_value(value);
+            sparse_topic_index->add_value(index);
+          }
         }
       }
     }

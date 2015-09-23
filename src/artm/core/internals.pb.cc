@@ -59,7 +59,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Mask));
   DataLoaderCacheEntry_descriptor_ = file->message_type(1);
-  static const int DataLoaderCacheEntry_offsets_[7] = {
+  static const int DataLoaderCacheEntry_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, batch_uuid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, item_id_),
@@ -67,6 +67,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, topic_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, item_title_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, topic_index_),
   };
   DataLoaderCacheEntry_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -155,14 +156,15 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\031artm/core/internals.proto\022\tartm.core\032\023"
     "artm/messages.proto\"\031\n\004Mask\022\021\n\005value\030\001 \003"
-    "(\010B\002\020\001\"\252\001\n\024DataLoaderCacheEntry\022\022\n\nmodel"
+    "(\010B\002\020\001\"\317\001\n\024DataLoaderCacheEntry\022\022\n\nmodel"
     "_name\030\001 \001(\t\022\022\n\nbatch_uuid\030\002 \001(\t\022\017\n\007item_"
     "id\030\003 \003(\005\022\037\n\005theta\030\004 \003(\0132\020.artm.FloatArra"
     "y\022\022\n\ntopic_name\030\005 \003(\t\022\020\n\010filename\030\006 \001(\t\022"
-    "\022\n\nitem_title\030\007 \003(\t\"H\n\013StreamMasks\022$\n\013st"
-    "ream_mask\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stre"
-    "am_name\030\005 \003(\t\"7\n\016ModelIncrement\022%\n\013topic"
-    "_model\030\001 \001(\0132\020.artm.TopicModel", 390);
+    "\022\n\nitem_title\030\007 \003(\t\022#\n\013topic_index\030\010 \003(\013"
+    "2\016.artm.IntArray\"H\n\013StreamMasks\022$\n\013strea"
+    "m_mask\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stream_"
+    "name\030\005 \003(\t\"7\n\016ModelIncrement\022%\n\013topic_mo"
+    "del\030\001 \001(\0132\020.artm.TopicModel", 427);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
@@ -418,6 +420,7 @@ const int DataLoaderCacheEntry::kThetaFieldNumber;
 const int DataLoaderCacheEntry::kTopicNameFieldNumber;
 const int DataLoaderCacheEntry::kFilenameFieldNumber;
 const int DataLoaderCacheEntry::kItemTitleFieldNumber;
+const int DataLoaderCacheEntry::kTopicIndexFieldNumber;
 #endif  // !_MSC_VER
 
 DataLoaderCacheEntry::DataLoaderCacheEntry()
@@ -503,6 +506,7 @@ void DataLoaderCacheEntry::Clear() {
   theta_.Clear();
   topic_name_.Clear();
   item_title_.Clear();
+  topic_index_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -634,6 +638,21 @@ bool DataLoaderCacheEntry::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(58)) goto parse_item_title;
+        if (input->ExpectTag(66)) goto parse_topic_index;
+        break;
+      }
+
+      // repeated .artm.IntArray topic_index = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_topic_index:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+                input, add_topic_index()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(66)) goto parse_topic_index;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -713,6 +732,12 @@ void DataLoaderCacheEntry::SerializeWithCachedSizes(
       7, this->item_title(i), output);
   }
 
+  // repeated .artm.IntArray topic_index = 8;
+  for (int i = 0; i < this->topic_index_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      8, this->topic_index(i), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -782,6 +807,13 @@ void DataLoaderCacheEntry::SerializeWithCachedSizes(
       WriteStringToArray(7, this->item_title(i), target);
   }
 
+  // repeated .artm.IntArray topic_index = 8;
+  for (int i = 0; i < this->topic_index_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        8, this->topic_index(i), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -847,6 +879,14 @@ int DataLoaderCacheEntry::ByteSize() const {
       this->item_title(i));
   }
 
+  // repeated .artm.IntArray topic_index = 8;
+  total_size += 1 * this->topic_index_size();
+  for (int i = 0; i < this->topic_index_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->topic_index(i));
+  }
+
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -876,6 +916,7 @@ void DataLoaderCacheEntry::MergeFrom(const DataLoaderCacheEntry& from) {
   theta_.MergeFrom(from.theta_);
   topic_name_.MergeFrom(from.topic_name_);
   item_title_.MergeFrom(from.item_title_);
+  topic_index_.MergeFrom(from.topic_index_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_model_name()) {
       set_model_name(from.model_name());
@@ -916,6 +957,7 @@ void DataLoaderCacheEntry::Swap(DataLoaderCacheEntry* other) {
     topic_name_.Swap(&other->topic_name_);
     std::swap(filename_, other->filename_);
     item_title_.Swap(&other->item_title_);
+    topic_index_.Swap(&other->topic_index_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

@@ -386,11 +386,12 @@ enum ProcessBatchesArgs_ThetaMatrixType {
   ProcessBatchesArgs_ThetaMatrixType_None = 0,
   ProcessBatchesArgs_ThetaMatrixType_Dense = 1,
   ProcessBatchesArgs_ThetaMatrixType_Sparse = 2,
-  ProcessBatchesArgs_ThetaMatrixType_Cache = 3
+  ProcessBatchesArgs_ThetaMatrixType_Cache = 3,
+  ProcessBatchesArgs_ThetaMatrixType_Ptdw = 4
 };
 bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value);
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MIN = ProcessBatchesArgs_ThetaMatrixType_None;
-const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_Cache;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_Ptdw;
 const int ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_ARRAYSIZE = ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ProcessBatchesArgs_ThetaMatrixType_descriptor();
@@ -8465,6 +8466,7 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   static const ThetaMatrixType Dense = ProcessBatchesArgs_ThetaMatrixType_Dense;
   static const ThetaMatrixType Sparse = ProcessBatchesArgs_ThetaMatrixType_Sparse;
   static const ThetaMatrixType Cache = ProcessBatchesArgs_ThetaMatrixType_Cache;
+  static const ThetaMatrixType Ptdw = ProcessBatchesArgs_ThetaMatrixType_Ptdw;
   static inline bool ThetaMatrixType_IsValid(int value) {
     return ProcessBatchesArgs_ThetaMatrixType_IsValid(value);
   }

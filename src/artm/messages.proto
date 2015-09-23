@@ -584,6 +584,7 @@ message ProcessBatchesArgs {
     Dense = 1;
     Sparse = 2;
     Cache = 3;
+    Ptdw = 4;
   }
 
   optional string nwt_target_name = 1;
