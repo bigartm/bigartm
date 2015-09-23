@@ -365,6 +365,9 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);
 
+    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse)
+      pi->mutable_model_config()->set_use_ptdw_matrix(true);
+
     if (args.has_nwt_target_name())
       pi->set_nwt_target_name(args.nwt_target_name());
 
