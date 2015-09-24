@@ -60,13 +60,15 @@ static void CreateThetaCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
 
 static void CreatePtdwCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
                                  DenseMatrix<float>* ptdw_matrix,
-                                 int item_id,
+                                 const Batch& batch,
+                                 int item_index,
                                  int topic_size) {
   if (new_cache_entry_ptr == nullptr) return;
 
-  new_cache_entry_ptr->add_item_title(std::string());
+  const Item& item = batch.item(item_index);
   for (int token_index = 0; token_index < ptdw_matrix->no_rows(); ++token_index) {
-    new_cache_entry_ptr->add_item_id(item_id);
+    new_cache_entry_ptr->add_item_id(item.id());
+    new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
     auto non_zero_topic_values = new_cache_entry_ptr->add_theta();
     auto non_zero_topic_indices = new_cache_entry_ptr->add_topic_index();
 
@@ -627,7 +629,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
         }
       }
     }
-    CreatePtdwCacheEntry(new_ptdw_cache_entry_ptr, &local_ptdw, batch.item(d).id(), topics_count);
+    CreatePtdwCacheEntry(new_ptdw_cache_entry_ptr, &local_ptdw, batch, d, topics_count);
   }
   CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
 }
