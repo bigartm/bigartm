@@ -443,7 +443,7 @@ class TopTokensScoreTracker(object):
           - *.topic_info[sync_index][topic_name].weights --- list of weights
             (probabilities), corresponds the tokens
           - *.topic_info[sync_index][topic_name].coherence --- the coherency
-            of topic due to it's top tokens
+            of topic due to it's non-zero top tokens
         """
         return self._topic_info
 

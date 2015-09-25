@@ -84,7 +84,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
       top_tokens_score->add_topic_name(topic_name.Get(topic_ids[i]));
       num_entries++;
 
-      if (count_coherence) tokens_for_coherence.push_back(token);
+      if (count_coherence && weight > 0.0f) tokens_for_coherence.push_back(token);
     }
 
     if (count_coherence) {
