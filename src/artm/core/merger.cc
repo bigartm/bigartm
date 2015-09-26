@@ -256,7 +256,8 @@ bool Merger::RequestScore(const GetScoreValueArgs& args,
 
   auto score_calculator = schema->score_calculator(args.score_name());
   if (score_calculator == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Attempt to request non-existing score"));
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      std::string("Attempt to request non-existing score: " + args.score_name())));
 
   if (score_calculator->is_cumulative())
     return false;
@@ -389,8 +390,6 @@ struct TokenInfo {
 };
 
 void Merger::InitializeModel(const InitializeModelArgs& args) {
-  int token_duplicates = 0;
-
   auto schema = schema_->get();
   const ModelConfig* model_config = nullptr;
   if (schema->has_model_config(args.model_name()))
@@ -448,36 +447,38 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
 
       const Batch& batch = *batch_ptr;
 
-      std::vector<char> token_mask(batch.token_size(), 0);
+      std::vector<float> token_weight_in_item(batch.token_size(), 0);
       for (int item_id = 0; item_id < batch.item_size(); ++item_id) {
         total_items_count++;
+
+        // Find cumulative weight for each token in item
+        // (assume that token might have multiple occurence in each item)
         for (const Field& field : batch.item(item_id).field()) {
           for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
             const float token_weight = field.token_weight(token_index);
             const int token_id = field.token_id(token_index);
-
+            token_weight_in_item[token_id] += token_weight;
             total_token_weight += token_weight;
-            if (!token_mask[token_id]) {
-              token_mask[token_id] = 1;
-              Token token(batch.class_id(token_id), batch.token(token_id));
-              TokenInfo& token_info = token_freq_map[token];
-              token_info.num_items++;
-              token_info.num_total_count += token_weight;
-              if (token_info.max_one_item_weight < token_weight)
-                token_info.max_one_item_weight = token_weight;
-            } else {
-              LOG_IF(WARNING, token_duplicates == 0)
-                << "Token (" << batch.token(token_id) << ", " << batch.class_id(token_id)
-                << ") has multiple entries in item_id=" << batch.item(item_id).id()
-                << ", batch_id=" << batch.id();
-              token_duplicates++;
-            }
           }
         }
 
-        for (const Field& field : batch.item(item_id).field())
-          for (int token_id : field.token_id())
-            token_mask[token_id] = 0;
+        for (const Field& field : batch.item(item_id).field()) {
+          for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
+            const int token_id = field.token_id(token_index);
+            const float token_weight = token_weight_in_item[token_id];
+            if (token_weight == 0)  //  The token already had been processed -- see line (*) below
+              continue;
+
+            Token token(batch.class_id(token_id), batch.token(token_id));
+            TokenInfo& token_info = token_freq_map[token];
+            token_info.num_items++;
+            token_info.num_total_count += token_weight;
+            if (token_info.max_one_item_weight < token_weight)
+              token_info.max_one_item_weight = token_weight;
+
+            token_weight_in_item[token_id] = 0;  // (*) Makes sure each token is processed only once per item
+          }
+        }
       }
     }
 

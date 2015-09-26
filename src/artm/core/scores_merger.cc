@@ -61,7 +61,8 @@ bool ScoresMerger::RequestScore(std::shared_ptr<InstanceSchema> schema,
                                 ScoreData *score_data) const {
   auto score_calculator = schema->score_calculator(score_name);
   if (score_calculator == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Attempt to request non-existing score"));
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      std::string("Attempt to request non-existing score: " + score_name)));
 
   if (!score_calculator->is_cumulative())
     return false;
