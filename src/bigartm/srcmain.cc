@@ -827,6 +827,8 @@ int execute(const artm_options& options) {
     score_helper.showScores(pwt_model_name);
   }  // iter
 
+  final_score_helper.showScores(pwt_model_name);
+
   if (!options.save_model.empty()) {
     ProgressScope scope(std::string("Saving model to ") + options.save_model);
     ExportModelArgs export_model_args;
@@ -917,8 +919,6 @@ int execute(const artm_options& options) {
       output << std::endl;
     }
   }
-
-  final_score_helper.showScores(pwt_model_name);
 
   return 0;
 }
