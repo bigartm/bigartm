@@ -227,6 +227,7 @@ struct artm_options {
   std::string save_batches;
   std::string write_model_readable;
   std::string write_predictions;
+  std::string csv_separator;
   int score_level;
   std::vector<std::string> score;
   std::vector<std::string> final_score;
@@ -238,6 +239,11 @@ struct artm_options {
   bool b_disable_avx_opt;
   bool b_use_dense_bow;
 };
+
+void fixOptions(artm_options* options) {
+  if (boost::to_lower_copy(options->csv_separator) == "tab")
+    options->csv_separator = "\t";
+}
 
 void fixScoreLevel(artm_options* options) {
   if (!options->score.empty() || !options->final_score.empty()) {
@@ -811,23 +817,24 @@ int execute(const artm_options& options) {
       throw "internal error (matrix.no_columns() != theta->topics_count())";
 
     std::ofstream output(options.write_model_readable);
+    const std::string sep = options.csv_separator;
 
     // header
-    output << "token;class_id;";
+    output << "token" << sep << "class_id";
     for (int j = 0; j < model->topics_count(); ++j) {
       if (model->topic_name_size() > 0)
-        output << model->topic_name(j) << ";";
+        output << sep << model->topic_name(j);
       else
-        output << "topic" << j << ";";
+        output << sep << "topic" << j;
     }
     output << std::endl;
 
     // bulk
     for (int i = 0; i < model->token_size(); ++i) {
-      output << model->token(i) << ";";
-      output << (model->class_id_size() == 0 ? "" : model->class_id(i)) << ";";
+      output << model->token(i) << sep;
+      output << (model->class_id_size() == 0 ? "" : model->class_id(i));
       for (int j = 0; j < model->topics_count(); ++j) {
-        output << matrix(i, j) << ";";
+        output << sep << matrix(i, j);
       }
       output << std::endl;
     }
@@ -854,14 +861,15 @@ int execute(const artm_options& options) {
       throw "internal error (matrix.no_columns() != theta->topics_count())";
 
     std::ofstream output(options.write_predictions);
+    const std::string sep = options.csv_separator;
 
     // header
-    output << "id;title;";
+    output << "id" << sep << "title";
     for (int j = 0; j < theta->topics_count(); ++j) {
       if (theta->topic_name_size() > 0)
-        output << theta->topic_name(j) << ";";
+        output << sep << theta->topic_name(j);
       else
-        output << "topic" << j << ";";
+        output << sep << "topic" << j;
     }
     output << std::endl;
 
@@ -873,10 +881,10 @@ int execute(const artm_options& options) {
     // bulk
     for (int i = 0; i < theta->item_id_size(); ++i) {
       int index = id_to_index[i].second;
-      output << theta->item_id(index) << ";";
-      output << (theta->item_title_size() == 0 ? "" : theta->item_title(index)) << ";";
+      output << theta->item_id(index) << sep;
+      output << (theta->item_title_size() == 0 ? "" : theta->item_title(index));
       for (int j = 0; j < theta->topics_count(); ++j) {
-        output << matrix(index, j) << ";";
+        output << sep << matrix(index, j);
       }
       output << std::endl;
     }
@@ -935,6 +943,7 @@ int main(int argc, char * argv[]) {
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
       ("write-model-readable", po::value(&options.write_model_readable)->default_value(""), "output the model in a human-readable format")
       ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
+      ("csv-separator", po::value(&options.csv_separator)->default_value(";"), "columns separator for --write-model-readable and --write-predictions. Use \\t or TAB to indicate tab.")
       ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level (0, 1, 2, or 3")
       ("score", po::value< std::vector<std::string> >(&options.score)->multitoken(), "scores (Perplexity, SparsityTheta, SparsityPhi, TopTokens, ThetaSnippet, or TopicKernel)")
       ("final-score", po::value< std::vector<std::string> >(&options.final_score)->multitoken(), "final scores (same as scores)")
@@ -1010,6 +1019,8 @@ int main(int argc, char * argv[]) {
     }
 
     fixScoreLevel(&options);
+    fixOptions(&options);
+
     return execute(options);
   } catch (std::exception& e) {
     std::cerr << "Exception  : " << e.what() << "\n";
