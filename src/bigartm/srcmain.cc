@@ -58,6 +58,32 @@ std::vector<std::string> findFilesInDirectory(std::string root, std::string ext)
   return retval;
 }
 
+class CsvEscape {
+ private:
+  char delimiter_;
+
+ public:
+  explicit CsvEscape(char delimiter) : delimiter_(delimiter) {}
+
+  std::string apply(const std::string& in) {
+    if (delimiter_ == '\0')
+      return in;
+
+    if (in.find(delimiter_) == std::string::npos)
+      return in;
+
+    std::stringstream ss;
+    ss << "\"";
+    for (int i = 0; i < in.size(); ++i) {
+      if (in[i] == '"') ss << "\"\"";
+      else ss << in[i];
+    }
+    ss << "\"";
+
+    return ss.str();
+  }
+};
+
 class ProgressScope {
  public:
    explicit ProgressScope(const std::string& message)  {
@@ -811,6 +837,7 @@ int execute(const artm_options& options) {
 
   if (!options.write_model_readable.empty()) {
     ProgressScope scope(std::string("Saving model in readable format to ") + options.write_model_readable);
+    CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
     ::artm::Matrix matrix;
     std::shared_ptr< ::artm::TopicModel> model = master_component->GetTopicModel(pwt_model_name, &matrix);
     if (matrix.no_columns() != model->topics_count())
@@ -823,7 +850,7 @@ int execute(const artm_options& options) {
     output << "token" << sep << "class_id";
     for (int j = 0; j < model->topics_count(); ++j) {
       if (model->topic_name_size() > 0)
-        output << sep << model->topic_name(j);
+        output << sep << escape.apply(model->topic_name(j));
       else
         output << sep << "topic" << j;
     }
@@ -831,8 +858,8 @@ int execute(const artm_options& options) {
 
     // bulk
     for (int i = 0; i < model->token_size(); ++i) {
-      output << model->token(i) << sep;
-      output << (model->class_id_size() == 0 ? "" : model->class_id(i));
+      output << escape.apply(model->token(i)) << sep;
+      output << (model->class_id_size() == 0 ? "" : escape.apply(model->class_id(i)));
       for (int j = 0; j < model->topics_count(); ++j) {
         output << sep << matrix(i, j);
       }
@@ -842,6 +869,7 @@ int execute(const artm_options& options) {
 
   if (!options.write_predictions.empty()) {
     ProgressScope scope(std::string("Generating model predictions into ") + options.write_predictions);
+    CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
     if (!master_config.cache_theta()) {
       master_config.set_cache_theta(true);
       master_component->Reconfigure(master_config);
@@ -867,7 +895,7 @@ int execute(const artm_options& options) {
     output << "id" << sep << "title";
     for (int j = 0; j < theta->topics_count(); ++j) {
       if (theta->topic_name_size() > 0)
-        output << sep << theta->topic_name(j);
+        output << sep << escape.apply(theta->topic_name(j));
       else
         output << sep << "topic" << j;
     }
@@ -882,7 +910,7 @@ int execute(const artm_options& options) {
     for (int i = 0; i < theta->item_id_size(); ++i) {
       int index = id_to_index[i].second;
       output << theta->item_id(index) << sep;
-      output << (theta->item_title_size() == 0 ? "" : theta->item_title(index));
+      output << (theta->item_title_size() == 0 ? "" : escape.apply(theta->item_title(index)));
       for (int j = 0; j < theta->topics_count(); ++j) {
         output << sep << matrix(index, j);
       }
