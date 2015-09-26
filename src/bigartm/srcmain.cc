@@ -245,14 +245,32 @@ void fixScoreLevel(artm_options* options) {
     return;
   }
 
+  std::vector<std::pair<std::string, float>> class_ids_map = parseKeyValuePairs<float>(options->use_modality);
+  std::vector<std::string> class_ids;
+
+  for (auto& class_id : class_ids_map) {
+    if (!class_id.first.empty()) {
+      std::stringstream ss;
+      ss << " @" << class_id.first;
+      class_ids.push_back(ss.str());
+    } else {
+      class_ids.push_back(std::string());
+    }
+  }
+
+  if (class_ids.empty())
+    class_ids.push_back(std::string());
+
   if (options->score_level >= 1) {
     options->score.push_back("Perplexity");
-    options->score.push_back("SparsityPhi");
+    for (auto& class_id : class_ids)
+      options->score.push_back(std::string("SparsityPhi") + class_id);
     options->score.push_back("SparsityTheta");
   }
 
   if (options->score_level >= 2) {
-    options->final_score.push_back("TopTokens");
+    for (auto& class_id : class_ids)
+      options->final_score.push_back(std::string("TopTokens") + class_id);
     options->final_score.push_back("ThetaSnippet");
   }
 
