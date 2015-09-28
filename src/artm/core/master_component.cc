@@ -370,6 +370,9 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
         args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_SparsePtdw)
       pi->mutable_model_config()->set_use_ptdw_matrix(true);
 
+    if (args.reuse_theta())
+      pi->set_reuse_theta_cache_manager(instance_->cache_manager());
+
     if (args.has_nwt_target_name())
       pi->set_nwt_target_name(args.nwt_target_name());
 
