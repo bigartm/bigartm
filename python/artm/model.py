@@ -536,7 +536,7 @@ class ARTM(object):
                                      index=use_topic_names)
         return theta_data_frame
 
-    def transform(self, batch_vectorizer=None, num_document_passes=1):
+    def transform(self, batch_vectorizer=None, num_document_passes=1, find_ptdw=False):
         """ARTM.transform() --- find Theta matrix for new documents
 
         Args:
@@ -558,6 +558,12 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
+        theta_reg_name, theta_reg_tau = [], []
+        for name, config in self._regularizers.data.iteritems():
+            if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
+                theta_reg_name.append(name)
+                theta_reg_tau.append(config.tau)
+
         class_ids, class_weights = [], []
         for class_id, class_weight in self._class_ids.iteritems():
             class_ids.append(class_id)
@@ -567,11 +573,14 @@ class ARTM(object):
         theta_info, nd_array = self.master.process_batches(
                                     pwt=self.model_pwt,
                                     batches=batches_list,
-                                    nwt='nwt_hat',
+                                    nwt=None,
+                                    regularizer_name=theta_reg_name,
+                                    regularizer_tau=theta_reg_tau,
                                     num_inner_iterations=num_document_passes,
                                     class_ids=class_ids,
                                     class_weights=class_weights,
-                                    find_theta=True)
+                                    find_theta=not find_ptdw,
+                                    find_ptdw=find_ptdw)
 
         document_ids = [item_id for item_id in theta_info.item_id]
         topic_names = [topic_name for topic_name in theta_info.topic_name]
