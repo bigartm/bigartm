@@ -993,8 +993,8 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<DataLoaderCacheEntry> cache;
         boost::uuids::uuid batch_uuid = boost::lexical_cast<boost::uuids::uuid>(batch.id());
-        if (part->has_cache_manager())
-          cache = part->cache_manager()->FindCacheEntry(batch_uuid, model_config.name());
+        if (part->has_reuse_theta_cache_manager())
+          cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch_uuid, model_config.name());
         std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache.get());
 
         std::shared_ptr<ModelIncrement> model_increment;
