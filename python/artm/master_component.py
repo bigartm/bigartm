@@ -108,7 +108,7 @@ class MasterComponent(object):
 
         self._lib.ArtmInitializeModel(self.master_id, init_args)
 
-    def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
+    def process_batches(self, pwt, nwt=None, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None, find_theta=False,
                         reset_scores=False, reuse_theta=False, find_ptdw=False):
@@ -132,7 +132,8 @@ class MasterComponent(object):
         """
         args = messages.ProcessBatchesArgs()
         args.pwt_source_name = pwt
-        args.nwt_target_name = nwt
+        if nwt is not None:
+            args.nwt_target_name = nwt
         if batches_folder is not None:
             for name in os.listdir(batches_folder):
                 _, extension = os.path.splitext(name)

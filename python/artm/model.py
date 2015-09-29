@@ -43,6 +43,8 @@ class ARTM(object):
       will be used
       cache_theta (bool): save or not the Theta matrix in model. Necessary
       if ARTM.get_theta() usage expects, default=True
+      reuse_theta (bool): using theta from previous pass of the collection,
+      default=True
       scores(list): list of scores (objects of artm.***Score classes), default=None
       regularizers(list): list with regularizers (objects of
       artm.***Regularizer classes), default=None
@@ -65,7 +67,7 @@ class ARTM(object):
 
     # ========== CONSTRUCTOR ==========
     def __init__(self, num_processors=0, topic_names=None, num_topics=10, class_ids=None,
-                 cache_theta=True, scores=None, regularizers=None):
+                 cache_theta=True, reuse_theta=True, scores=None, regularizers=None):
         self._num_processors = 0
         self._num_topics = 10
         self._cache_theta = True
@@ -245,7 +247,7 @@ class ARTM(object):
             raise IOError('dictionary_name is None')
 
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=20,
-                    num_document_passes=1, reuse_theta=True):
+                    num_document_passes=1):
         """ARTM.fit_offline() --- proceed the learning of
         topic model in off-line mode
 
@@ -255,8 +257,6 @@ class ARTM(object):
           collection, default=20
           num_document_passes (int): number of inner iterations over each document
           for inferring theta, default=1
-          reuse_theta (bool): using theta from previous pass of the collection,
-          defaul=True
 
         Note:
           ARTM.initialize() should be proceed before first call
@@ -301,7 +301,7 @@ class ARTM(object):
                                         class_ids=class_ids,
                                         class_weights=class_weights,
                                         reset_scores=True,
-                                        reuse_theta=reuse_theta)
+                                        reuse_theta=self._reuse_theta)
             self._synchronizations_processed += 1
             self.master.regularize_model(pwt=self.model_pwt,
                                          nwt=self.model_nwt,
@@ -536,7 +536,7 @@ class ARTM(object):
                                      index=use_topic_names)
         return theta_data_frame
 
-    def transform(self, batch_vectorizer=None, num_document_passes=1):
+    def transform(self, batch_vectorizer=None, num_document_passes=1, find_ptdw=False):
         """ARTM.transform() --- find Theta matrix for new documents
 
         Args:
@@ -558,6 +558,12 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
+        theta_reg_name, theta_reg_tau = [], []
+        for name, config in self._regularizers.data.iteritems():
+            if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
+                theta_reg_name.append(name)
+                theta_reg_tau.append(config.tau)
+
         class_ids, class_weights = [], []
         for class_id, class_weight in self._class_ids.iteritems():
             class_ids.append(class_id)
@@ -567,11 +573,15 @@ class ARTM(object):
         theta_info, nd_array = self.master.process_batches(
                                     pwt=self.model_pwt,
                                     batches=batches_list,
-                                    nwt='nwt_hat',
+                                    nwt=None,
+                                    regularizer_name=theta_reg_name,
+                                    regularizer_tau=theta_reg_tau,
                                     num_inner_iterations=num_document_passes,
                                     class_ids=class_ids,
                                     class_weights=class_weights,
-                                    find_theta=True)
+                                    find_theta=not find_ptdw,
+                                    find_ptdw=find_ptdw,
+                                    reuse_theta=self._reuse_theta)
 
         document_ids = [item_id for item_id in theta_info.item_id]
         topic_names = [topic_name for topic_name in theta_info.topic_name]
