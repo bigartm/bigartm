@@ -24,6 +24,25 @@ InstanceSchema::InstanceSchema(const InstanceSchema& schema)
 InstanceSchema::InstanceSchema(const MasterComponentConfig& config)
     : config_(config), regularizers_(), models_config_(), score_calculators_() {}
 
+std::shared_ptr<InstanceSchema> InstanceSchema::Duplicate() const {
+  return std::shared_ptr<InstanceSchema>(new InstanceSchema(*this));
+}
+
+void InstanceSchema::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
+  master_info->mutable_config()->CopyFrom(config_);
+  for (auto& regularizer : regularizers_) {
+    MasterComponentInfo::RegularizerInfo* info = master_info->add_regularizer();
+    info->set_name(regularizer.first);
+    info->set_type(typeid(*regularizer.second).name());
+  }
+
+  for (auto& score : score_calculators_) {
+    MasterComponentInfo::ScoreInfo* info = master_info->add_score();
+    info->set_name(score.first);
+    info->set_type(typeid(*score.second).name());
+  }
+}
+
 void InstanceSchema::set_config(const MasterComponentConfig& config) {
   config_.CopyFrom(config);
 }

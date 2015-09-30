@@ -93,7 +93,7 @@ artm::Batch GenerateBatch(int nTokens, int nDocs, std::string class1, std::strin
       field->add_token_id(iToken);
       int background_count = (iToken > 40) ? (1 + rand() % 5) : 0;  // NOLINT
       int topical_count = ((iToken < 40) && ((iToken % 10) == (iDoc % 10))) ? 10 : 0;
-      field->add_token_count(background_count + topical_count);
+      field->add_token_weight(static_cast<float>(background_count + topical_count));
     }
   }
 
@@ -141,7 +141,9 @@ TEST(MultipleClasses, BasicTest) {
 
   // Create model
   artm::ModelConfig model_config1, model_config2, model_config3;
+
   model_config1.set_name("model1"); model_config1.set_topics_count(nTopics);
+  model_config1.set_use_ptdw_matrix(true);   // temporary switch tests into use_ptdw_matrix mode
   model_config2.set_name("model2"); model_config2.set_topics_count(nTopics); model_config2.set_use_sparse_bow(false);
   model_config3.set_name("model3"); model_config3.set_topics_count(nTopics);
   model_config3.add_class_id("@default_class"); model_config3.add_class_weight(0.5f);
@@ -206,6 +208,24 @@ TEST(MultipleClasses, BasicTest) {
   ShowTopicModel(*topic_model2);
   ShowTopicModel(*topic_model3);
   ShowTopicModel(*topic_model_reg);
+
+  ::artm::Matrix matrix_phi, matrix_theta;
+  std::shared_ptr< ::artm::TopicModel> model_ex1 = master_component.GetTopicModel(model1.name(), &matrix_phi);
+  std::shared_ptr< ::artm::ThetaMatrix> theta_ex1 = master_component.GetThetaMatrix(model1.name(), &matrix_theta);
+  EXPECT_EQ(theta_ex1->item_weights_size(), 0);
+  EXPECT_EQ(model_ex1->token_weights_size(), 0);
+  ASSERT_EQ(matrix_phi.no_rows(), nTokens);
+  ASSERT_EQ(matrix_phi.no_columns(), nTopics);
+  ASSERT_EQ(matrix_theta.no_rows(), nDocs);
+  ASSERT_EQ(matrix_theta.no_columns(), nTopics);
+  for (int token_index = 0; token_index < nTokens; ++token_index)
+    for (int topic_index = 0; topic_index < nTopics; ++topic_index)
+      EXPECT_EQ(matrix_phi(token_index, topic_index), topic_model1->token_weights(token_index).value(topic_index));
+  for (int topic_index = 0; topic_index < nTopics; ++topic_index)
+    for (int item_index = 0; item_index < nDocs; ++item_index)
+      EXPECT_EQ(matrix_theta(item_index, topic_index), theta_matrix1->item_weights(item_index).value(topic_index));
+
+  // ToDo: validate matrix_phi and matrix_theta
 
   // ShowThetaMatrix(*theta_matrix1);
   // ShowThetaMatrix(*theta_matrix1_explicit);
@@ -351,11 +371,11 @@ TEST(MultipleClasses, WithoutDefaultClass) {
 
 void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::artm::MasterComponent* master) {
   ::artm::GetTopicModelArgs args_dense(args);
-  args_dense.set_use_sparse_format(false);;
+  args_dense.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_Dense);
   auto tm_dense = master->GetTopicModel(args_dense);
 
   ::artm::GetTopicModelArgs args_sparse(args);
-  args_sparse.set_use_sparse_format(true);
+  args_sparse.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_Sparse);
   auto tm_sparse = master->GetTopicModel(args_sparse);
 
   ::artm::GetTopicModelArgs args_all;
@@ -424,11 +444,11 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
 
 void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, ::artm::MasterComponent* master) {
   ::artm::GetThetaMatrixArgs args_dense(args);
-  args_dense.set_use_sparse_format(false);;
+  args_dense.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_Dense);
   auto tm_dense = master->GetThetaMatrix(args_dense);
 
   ::artm::GetThetaMatrixArgs args_sparse(args);
-  args_sparse.set_use_sparse_format(true);
+  args_sparse.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_Sparse);
   auto tm_sparse = master->GetThetaMatrix(args_sparse);
 
   ::artm::GetThetaMatrixArgs args_all;

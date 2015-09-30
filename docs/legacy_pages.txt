@@ -13,4 +13,12 @@ Legacy pages are kept to preserve existing user's links (favourites in browser, 
 .. toctree::
    :maxdepth: 2
 
-   tutorial
+   tutorials/typical_python_example
+   stories/experiment02_artm
+   stories/cloud_service
+   ref/algorithm
+   ref/messages
+   ref/python_interface
+   ref/c_interface
+   ref/cpp_interface
+   ref/windows_distribution

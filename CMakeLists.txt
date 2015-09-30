@@ -92,5 +92,8 @@ if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
 endif()
 
 add_subdirectory(src)
+add_subdirectory(python)
 
-install(FILES LICENSE DESTINATION .)
+if(MSVC)
+  install(FILES LICENSE DESTINATION .)
+endif()

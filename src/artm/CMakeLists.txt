@@ -80,8 +80,8 @@ set(SRC_LIST
 	score/top_tokens.h
 	score/topic_kernel.cc
 	score/topic_kernel.h
-	score/coherence_plugin.cc
-	score/coherence_plugin.h
+	score/topic_mass_phi.cc
+	score/topic_mass_phi.h
 	utility/ice.cc
 	utility/ice.h
 	utility/blas.cc
@@ -127,5 +127,12 @@ add_library(artm SHARED ${SRC_LIST})
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 
-install(TARGETS artm DESTINATION bin)
-install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
+if(MSVC)
+  install(TARGETS artm DESTINATION bin)
+  install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
+else()
+  install(TARGETS artm DESTINATION lib)
+  # FIXME: install headers to /usr/include, protobuf and compiled messages --- to appropriate path
+  #install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
+endif()
+

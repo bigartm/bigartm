@@ -5,26 +5,28 @@
 #include "artm/messages.pb.h"
 #include "artm/core/master_component.h"
 #include "artm/core/template_manager.h"
+#include "artm/core/helpers.h"
 
 using ::artm::core::MasterComponentManager;
 
 // To run this particular test:
 // artm_tests.exe --gtest_filter=TemplateManager.*
 TEST(TemplateManager, Basic) {
+  ::artm::MasterComponentConfig config;
+  ::artm::core::Helpers::FixAndValidate(&config, /* throw_error=*/ true);
+
   auto& mcm = MasterComponentManager::singleton();
-  int id = mcm.Create< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(
-    ::artm::MasterComponentConfig());
+  int id = mcm.Create< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(config);
 
   EXPECT_EQ(mcm.Get(id)->id(), id);
 
-  int id2 = mcm.Create< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(
-    ::artm::MasterComponentConfig());
+  int id2 = mcm.Create< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(config);
 
   EXPECT_EQ(id2, id+1);
   EXPECT_EQ(mcm.Get(id2)->id(), id2);
 
-  bool succeeded = mcm.TryCreate< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(
-    id2, ::artm::MasterComponentConfig());
+  bool succeeded = mcm.TryCreate< ::artm::core::MasterComponent,
+                                  ::artm::MasterComponentConfig>(id2, config);
   EXPECT_FALSE(succeeded);
 
   mcm.Erase(id);

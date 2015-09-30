@@ -3,18 +3,18 @@
 #include <algorithm>
 #include <utility>
 
+#include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
 
-#include "artm/score/coherence_plugin.h"
 #include "artm/score/top_tokens.h"
 
 namespace artm {
 namespace score {
 
 std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  int topics_size = p_wt.topic_size();
-  int tokens_size = p_wt.token_size();
+  int topic_size = p_wt.topic_size();
+  int token_size = p_wt.token_size();
 
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
   if (config_.has_cooccurrence_dictionary_name())
@@ -24,7 +24,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
   std::vector<int> topic_ids;
   google::protobuf::RepeatedPtrField<std::string> topic_name = p_wt.topic_name();
   if (config_.topic_name_size() == 0) {
-    for (int i = 0; i < topics_size; ++i) {
+    for (int i = 0; i < topic_size; ++i) {
       topic_ids.push_back(i);
     }
   } else {
@@ -43,7 +43,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     class_id = config_.class_id();
 
   std::vector<artm::core::Token> tokens;
-  for (int token_index = 0; token_index < tokens_size; token_index++) {
+  for (int token_index = 0; token_index < token_size; token_index++) {
     auto token = p_wt.token(token_index);
     if (token.class_id == class_id)
       tokens.push_back(token);
@@ -59,7 +59,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     std::vector<std::pair<float, int>> p_wt_local;
     p_wt_local.reserve(tokens.size());
 
-    for (int token_index = 0; token_index < tokens_size; token_index++) {
+    for (int token_index = 0; token_index < token_size; token_index++) {
       auto token = p_wt.token(token_index);
       if (token.class_id != class_id)
         continue;
@@ -84,11 +84,11 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
       top_tokens_score->add_topic_name(topic_name.Get(topic_ids[i]));
       num_entries++;
 
-      if (count_coherence) tokens_for_coherence.push_back(token);
+      if (count_coherence && weight > 0.0f) tokens_for_coherence.push_back(token);
     }
 
     if (count_coherence) {
-      float topic_coherence = CountTopicCoherence(dictionary_ptr, tokens_for_coherence);
+      float topic_coherence = dictionary_ptr->CountTopicCoherence(tokens_for_coherence);
       average_coherence += topic_coherence;
       coherence->add_value(topic_coherence);
     }

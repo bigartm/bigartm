@@ -31,6 +31,7 @@ namespace core {
 
 Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
+               const ::artm::core::ThreadSafeBatchCollection* batches,
                const ::artm::core::ThreadSafeDictionaryCollection* dictionaries)
     : topic_model_(),
       topic_model_inc_(),
@@ -40,6 +41,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
       scores_merger_(),
       is_idle_(true),
       merger_queue_(merger_queue),
+      batches_(batches),
       dictionaries_(dictionaries),
       is_stopping(false),
       thread_() {
@@ -254,7 +256,8 @@ bool Merger::RequestScore(const GetScoreValueArgs& args,
 
   auto score_calculator = schema->score_calculator(args.score_name());
   if (score_calculator == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Attempt to request non-existing score"));
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      std::string("Attempt to request non-existing score: " + args.score_name())));
 
   if (score_calculator->is_cumulative())
     return false;
@@ -264,6 +267,16 @@ bool Merger::RequestScore(const GetScoreValueArgs& args,
   score_data->set_type(score_calculator->score_type());
   score_data->set_name(args.score_name());
   return true;
+}
+
+std::vector<ModelName> Merger::model_name() const {
+  std::vector<ModelName> new_models = topic_model_.keys();
+  std::vector<ModelName> old_models = phi_matrix_.keys();
+
+  std::vector<ModelName> retval;
+  retval.insert(retval.begin(), new_models.begin(), new_models.end());
+  retval.insert(retval.begin(), old_models.begin(), old_models.end());
+  return retval;
 }
 
 void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
@@ -370,15 +383,13 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
 
 struct TokenInfo {
  public:
-  TokenInfo() : num_items(0), num_total_count(0), max_one_item_count(0) {}
+  TokenInfo() : num_items(0), num_total_count(0), max_one_item_weight(0) {}
   int num_items;  // number of items containing this token
   int num_total_count;  // total number of token' occurencies in the collection
-  int max_one_item_count;  // max number of token's toccurencies in one item
+  float max_one_item_weight;  // max number of token's toccurencies in one item
 };
 
 void Merger::InitializeModel(const InitializeModelArgs& args) {
-  int token_duplicates = 0;
-
   auto schema = schema_->get();
   const ModelConfig* model_config = nullptr;
   if (schema->has_model_config(args.model_name()))
@@ -410,51 +421,64 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     }
   } else if (args.source_type() == InitializeModelArgs_SourceType_Batches) {
     std::unordered_map<Token, TokenInfo, TokenHasher> token_freq_map;
-    size_t total_items_count = 0, total_token_count = 0;
-    std::vector<std::string> batches = BatchHelpers::ListAllBatches(args.disk_path());
-    LOG(INFO) << "Found " << batches.size() << " batches in '" << args.disk_path() << "' folder";
+    size_t total_items_count = 0;
+    float total_token_weight = 0.0f;
+    std::vector<std::string> batches;
+    if (args.has_disk_path()) {
+      batches = BatchHelpers::ListAllBatches(args.disk_path());
+      LOG(INFO) << "Found " << batches.size() << " batches in '" << args.disk_path() << "' folder";
+    } else {
+      for (auto& batch : args.batch_filename())
+        batches.push_back(batch);
+    }
 
     for (const std::string& batch_file : batches) {
-      Batch batch;
-      try {
-        ::artm::core::BatchHelpers::LoadMessage(batch_file, &batch);
-      }
-      catch (std::exception& ex) {
-        LOG(ERROR) << ex.what() << ", the batch will be skipped.";
-        continue;
+      std::shared_ptr<Batch> batch_ptr = batches_->get(batch_file);
+      if (batch_ptr == nullptr) {
+        try {
+          batch_ptr = std::make_shared<Batch>();
+          ::artm::core::BatchHelpers::LoadMessage(batch_file, batch_ptr.get());
+        }
+        catch (std::exception& ex) {
+          LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+          continue;
+        }
       }
 
-      std::vector<char> token_mask(batch.token_size(), 0);
+      const Batch& batch = *batch_ptr;
+
+      std::vector<float> token_weight_in_item(batch.token_size(), 0);
       for (int item_id = 0; item_id < batch.item_size(); ++item_id) {
         total_items_count++;
-        total_token_count++;
-        for (const Field& field : batch.item(item_id).field()) {
-          for (int token_index = 0; token_index < field.token_count_size(); ++token_index) {
-            const int token_count = field.token_count(token_index);
-            const int token_id = field.token_id(token_index);
 
-            total_token_count += token_count;
-            if (!token_mask[token_id]) {
-              token_mask[token_id] = 1;
-              Token token(batch.class_id(token_id), batch.token(token_id));
-              TokenInfo& token_info = token_freq_map[token];
-              token_info.num_items++;
-              token_info.num_total_count += token_count;
-              if (token_info.max_one_item_count < token_count)
-                token_info.max_one_item_count = token_count;
-            } else {
-              LOG_IF(WARNING, token_duplicates == 0)
-                << "Token (" << batch.token(token_id) << ", " << batch.class_id(token_id)
-                << ") has multiple entries in item_id=" << batch.item(item_id).id()
-                << ", batch_id=" << batch.id();
-              token_duplicates++;
-            }
+        // Find cumulative weight for each token in item
+        // (assume that token might have multiple occurence in each item)
+        for (const Field& field : batch.item(item_id).field()) {
+          for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
+            const float token_weight = field.token_weight(token_index);
+            const int token_id = field.token_id(token_index);
+            token_weight_in_item[token_id] += token_weight;
+            total_token_weight += token_weight;
           }
         }
 
-        for (const Field& field : batch.item(item_id).field())
-          for (int token_id : field.token_id())
-            token_mask[token_id] = 0;
+        for (const Field& field : batch.item(item_id).field()) {
+          for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
+            const int token_id = field.token_id(token_index);
+            const float token_weight = token_weight_in_item[token_id];
+            if (token_weight == 0)  //  The token already had been processed -- see line (*) below
+              continue;
+
+            Token token(batch.class_id(token_id), batch.token(token_id));
+            TokenInfo& token_info = token_freq_map[token];
+            token_info.num_items++;
+            token_info.num_total_count += token_weight;
+            if (token_info.max_one_item_weight < token_weight)
+              token_info.max_one_item_weight = token_weight;
+
+            token_weight_in_item[token_id] = 0;  // (*) Makes sure each token is processed only once per item
+          }
+        }
       }
     }
 
@@ -462,24 +486,25 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
       << token_freq_map.size() << " unique tokens in "
       << total_items_count << " items, average token frequency is "
       << std::fixed << std::setw(4) << std::setprecision(5)
-      << static_cast<double>(total_token_count) / total_items_count << ".";
+      << static_cast<double>(total_token_weight) / total_items_count << ".";
 
     for (auto& filter : args.filter()) {
       int max_freq = INT_MAX, min_freq = -1;
-      int min_total_count = -1, min_one_item_count = -1;
+      int min_total_count = -1;
+      float min_one_item_weight = -1;
       if (filter.has_max_percentage()) max_freq = total_items_count * filter.max_percentage();
       if (filter.has_min_percentage()) min_freq = total_items_count * filter.min_percentage();
       if (filter.has_max_items() && (max_freq > filter.max_items())) max_freq = filter.max_items();
       if (filter.has_min_items() && (min_freq < filter.min_items())) min_freq = filter.min_items();
       if (filter.has_min_total_count()) min_total_count = filter.min_total_count();
-      if (filter.has_min_one_item_count()) min_one_item_count = filter.min_one_item_count();
+      if (filter.has_min_one_item_count()) min_one_item_weight = filter.min_one_item_count();
 
       for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
         if (filter.has_class_id() && iter->first.class_id != filter.class_id())
           continue;
         if (iter->second.num_items > max_freq) iter->second.num_items = -1;
         if (iter->second.num_items < min_freq) iter->second.num_items = -1;
-        if (iter->second.max_one_item_count < min_one_item_count) iter->second.num_items = -1;
+        if (iter->second.max_one_item_weight < min_one_item_weight) iter->second.num_items = -1;
         if (iter->second.num_total_count < min_total_count) iter->second.num_items = -1;
       }
     }
@@ -503,11 +528,18 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
       "InitializeModelArgs.source_type", args.source_type()));
   }
 
-  auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
-  PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
+  if (model_config != nullptr) {
+    auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
+    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
 
-  new_ttm->CalcPwt();   // calculate pwt matrix
-  topic_model_.set(args.model_name(), new_ttm);
+    new_ttm->CalcPwt();   // calculate pwt matrix
+    topic_model_.set(args.model_name(), new_ttm);
+  } else {
+    auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), topic_model.topic_name());
+    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm.get());
+    PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
+    SetPhiMatrix(args.model_name(), new_ttm);
+  }
 }
 
 }  // namespace core

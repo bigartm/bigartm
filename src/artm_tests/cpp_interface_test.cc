@@ -36,6 +36,7 @@ void BasicTest() {
   // Create master component
   std::unique_ptr<artm::MasterComponent> master_component;
   master_component.reset(new ::artm::MasterComponent(master_config));
+  EXPECT_EQ(master_component->info()->score_size(), 1);
 
   // Create regularizers
   std::string reg_decor_name = "decorrelator";
@@ -56,6 +57,8 @@ void BasicTest() {
   std::shared_ptr<artm::Regularizer> multilanguage_reg(
     new artm::Regularizer(*(master_component.get()), reg_multilang_config));
 
+  EXPECT_EQ(master_component->info()->regularizer_size(), 2);
+
   // Create model
   artm::ModelConfig model_config;
   model_config.set_topics_count(nTopics);
@@ -70,6 +73,7 @@ void BasicTest() {
   model_config.add_regularizer_name(reg_multilang_name);
   model_config.add_regularizer_tau(1);
   model_config.set_name("model_config1");
+  model_config.set_use_ptdw_matrix(true);  // temporary switch tests into use_ptdw_matrix mode
   artm::Model model(*master_component, model_config);
 
   // Load doc-token matrix
@@ -95,7 +99,7 @@ void BasicTest() {
     artm::Field* field = item->add_field();
     for (int iToken = 0; iToken < nTokens; ++iToken) {
       field->add_token_id(iToken);
-      field->add_token_count(iDoc + iToken + 1);
+      field->add_token_weight(static_cast<float>(iDoc + iToken + 1));
     }
   }
 
@@ -402,7 +406,7 @@ TEST(CppInterface, WaitIdleTimeout) {
     ::artm::Item* item = batch.add_item();
     ::artm::Field* field = item->add_field();
     field->add_token_id(i);
-    field->add_token_count(i + 1);
+    field->add_token_weight(static_cast<float>(i + 1));
     batch.add_token(artm::test::Helpers::getUniqueString());
   }
 
@@ -434,7 +438,7 @@ TEST(CppInterface, GatherNewTokens) {
   ::artm::Item* item = batch.add_item();
   ::artm::Field* field = item->add_field();
   field->add_token_id(0);
-  field->add_token_count(1);
+  field->add_token_weight(1.0f);
 
   // Process batch and expect that token is automatically picked up by the model
   master.AddBatch(batch);
@@ -488,17 +492,33 @@ TEST(CppInterface, ProcessBatchesApi) {
   score_config->set_config(perplexity_score_config.SerializeAsString());
   artm::MasterComponent master(master_config);
 
+  std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
+  ASSERT_EQ(all_batches.size(), nBatches);
+
+  artm::ImportBatchesArgs import_batches_args;
+  for (auto& batch_path : all_batches) {
+    std::shared_ptr< ::artm::Batch> batch = artm::LoadBatch(batch_path);
+    import_batches_args.add_batch()->CopyFrom(*batch);
+    import_batches_args.add_batch_name(batch->id());
+  }
+  master.ImportBatches(import_batches_args);
+
   ::artm::ModelConfig model_config;
   model_config.set_name("pwt0");
   model_config.set_topics_count(nTopics);
   ::artm::Model model(master, model_config);
 
   artm::InitializeModelArgs initialize_model_args;
-  initialize_model_args.set_disk_path(target_folder);
+  for (auto& batch_name : import_batches_args.batch_name())
+    initialize_model_args.add_batch_filename(batch_name);
   initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
+  std::shared_ptr< ::artm::MasterComponentInfo> master_info = master.info();
+  ASSERT_EQ(master_info->model_size(), 1);  // "pwt0"
+  EXPECT_EQ(master_info->model(0).name(), "pwt0");
+  EXPECT_EQ(master_info->model(0).topics_count(), nTopics);
 
   std::shared_ptr< ::artm::TopicModel> pwt_model = master.GetTopicModel("pwt0");
   ASSERT_NE(pwt_model, nullptr);
@@ -517,6 +537,7 @@ TEST(CppInterface, ProcessBatchesApi) {
 
   master.ExportModel(export_model_args);
   master.ImportModel(import_model_args);
+  ASSERT_EQ(master.info()->model_size(), 2);  // "pwt0", "import_pwt"
   bool ok2 = false;
   ::artm::test::Helpers::CompareTopicModels(*master.GetTopicModel("pwt0"), *master.GetTopicModel("import_pwt"), &ok2);
   if (!ok2) {
@@ -525,12 +546,13 @@ TEST(CppInterface, ProcessBatchesApi) {
     std::cout << "Imported topic model:\n"
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("import_pwt"));
   }
+
+  master.DisposeModel("import_pwt");
+  ASSERT_EQ(master.info()->model_size(), 1);  // "pwt0"
   /////////////////////////////////////////////
 
-  std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
-  ASSERT_EQ(all_batches.size(), nBatches);
   artm::ProcessBatchesArgs process_batches_args;
-  for (std::string& batch_name : all_batches)
+  for (auto& batch_name : import_batches_args.batch_name())
     process_batches_args.add_batch_filename(batch_name);
   process_batches_args.set_nwt_target_name("nwt_hat");
 
@@ -539,6 +561,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   normalize_model_args.set_nwt_source_name("nwt_hat");
 
   std::shared_ptr< ::artm::PerplexityScore> perplexity_score;
+  std::shared_ptr< ::artm::Matrix> attached_phi;
   for (int i = 0; i < 10; ++i) {  // 10 iterations
     process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
     process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Dense);
@@ -548,6 +571,8 @@ TEST(CppInterface, ProcessBatchesApi) {
     EXPECT_EQ(result->GetThetaMatrix().item_id_size(), nBatches);  // assuming that each batch has just one document
     master.NormalizeModel(normalize_model_args);
   }
+
+  ASSERT_EQ(master.info()->model_size(), 3);  // "pwt0", "pwt", "nwt_hat"
 
   EXPECT_NE(perplexity_score, nullptr);
   EXPECT_NE(perplexity_score->value(), 0.0);
@@ -572,10 +597,33 @@ TEST(CppInterface, ProcessBatchesApi) {
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
   }
 
+  ::artm::DictionaryConfig dict_config;
+  dict_config.set_name("My dictionary");
+  ::artm::DictionaryEntry* de1 = dict_config.add_entry();
+  de1->set_key_token("my_tok_1");
+  ::artm::Dictionary dict(master, dict_config);
+  master_info = master.info();
+  ASSERT_EQ(master_info->dictionary_size(), 1);
+  EXPECT_EQ(master_info->dictionary(0).entries_count(), 1);
+
+  {
+    artm::MasterComponent master_clone(master);
+    std::shared_ptr< ::artm::MasterComponentInfo> clone_master_info = master_clone.info();
+    ASSERT_EQ(clone_master_info->model_size(), 2);  // "pwt", "nwt_hat"; "pwt0" is not cloned (old-style model)
+    ASSERT_EQ(clone_master_info->dictionary_size(), 1);
+    EXPECT_EQ(clone_master_info->dictionary(0).entries_count(), 1);
+    ASSERT_EQ(clone_master_info->score_size(), master_info->score_size());
+    ASSERT_EQ(clone_master_info->regularizer_size(), master_info->regularizer_size());
+
+    ::artm::test::Helpers::CompareTopicModels(*master_clone.GetTopicModel("pwt"),
+                                              *master.GetTopicModel("pwt"), &ok);
+    ASSERT_TRUE(ok);
+  }
+
   // Verify that we may call ProcessBatches without nwt_target
   process_batches_args.clear_nwt_target_name();
-  std::shared_ptr< ::artm::ProcessBatchesResultObject> result = master.ProcessBatches(process_batches_args);
-  perplexity_score = result->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
+  std::shared_ptr< ::artm::ProcessBatchesResultObject> result_1 = master.ProcessBatches(process_batches_args);
+  perplexity_score = result_1->GetScoreAs< ::artm::PerplexityScore>("Perplexity");
   EXPECT_NE(perplexity_score, nullptr);
   EXPECT_NE(perplexity_score->value(), 0.0);
 
@@ -607,6 +655,85 @@ TEST(CppInterface, ProcessBatchesApi) {
   std::shared_ptr< ::artm::TopicModel> rwt = master.GetTopicModel("rwt");
   ASSERT_NE(rwt, nullptr);
   ASSERT_EQ(rwt->topics_count(), nTopics);
+
+  // Test to verify Ptdw extraction
+  process_batches_args.set_use_ptdw_matrix(true);
+  process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_SparsePtdw);
+  std::shared_ptr< ::artm::ProcessBatchesResultObject> result_2 = master.ProcessBatches(process_batches_args);
+  auto& theta_matrix = result_2->GetThetaMatrix();
+
+  const int expected_combined_items_length = 154;
+  ASSERT_EQ(theta_matrix.item_id_size(), expected_combined_items_length);
+  ASSERT_EQ(theta_matrix.topic_index_size(), expected_combined_items_length);
+  ASSERT_EQ(theta_matrix.item_weights_size(), expected_combined_items_length);
+  for (int index = 0; index < theta_matrix.item_id_size(); ++index) {
+    ASSERT_GE(theta_matrix.topic_index(index).value_size(), 0);
+    ASSERT_GE(theta_matrix.item_weights(index).value_size(), 0);
+    ASSERT_EQ(theta_matrix.topic_index(index).value_size(), theta_matrix.item_weights(index).value_size());
+  }
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.AttachModel
+TEST(CppInterface, AttachModel) {
+  int nTopics = 17, nBatches = 5;
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+  ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
+  artm::MasterComponentConfig master_config;
+  artm::MasterComponent master(master_config);
+
+  // Verify that it is possible to attach immediatelly after Initialize()
+  artm::InitializeModelArgs initialize_model_args;
+  initialize_model_args.set_disk_path(target_folder);
+  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_topics_count(nTopics);
+  initialize_model_args.set_model_name("pwt0");
+  master.InitializeModel(initialize_model_args);
+  std::shared_ptr< ::artm::Matrix> attached_pwt = master.AttachTopicModel("pwt0");
+  std::shared_ptr< ::artm::TopicModel> pwt0_model = master.GetTopicModel("pwt0");
+  ASSERT_EQ(attached_pwt->no_rows(), pwt0_model->token_size());
+  ASSERT_EQ(attached_pwt->no_columns(), pwt0_model->topics_count());
+
+  ::artm::MergeModelArgs merge_model_args;
+  merge_model_args.add_nwt_source_name("pwt0"); merge_model_args.add_source_weight(1.0f);
+  merge_model_args.set_nwt_target_name("nwt_merge");
+  master.MergeModel(merge_model_args);
+  std::shared_ptr< ::artm::Matrix> attached_nwt_merge = master.AttachTopicModel("nwt_merge");
+  std::shared_ptr< ::artm::TopicModel> nwt_merge_model = master.GetTopicModel("nwt_merge");
+  ASSERT_EQ(attached_nwt_merge->no_rows(), nwt_merge_model->token_size());
+  ASSERT_EQ(attached_nwt_merge->no_columns(), nwt_merge_model->topics_count());
+
+  // Verify that it is possible to modify the attached matrix
+  for (int token_index = 0; token_index < nwt_merge_model->token_size(); ++token_index) {
+    for (int topic_index = 0; topic_index < nwt_merge_model->topics_count(); ++topic_index) {
+      EXPECT_EQ((*attached_nwt_merge)(token_index, topic_index),
+                nwt_merge_model->token_weights(token_index).value(topic_index));
+      (*attached_nwt_merge)(token_index, topic_index) = 2.0f * token_index + 3.0f * topic_index;
+    }
+  }
+
+  std::shared_ptr< ::artm::TopicModel> updated_model = master.GetTopicModel("nwt_merge");
+  for (int token_index = 0; token_index < nwt_merge_model->token_size(); ++token_index) {
+    for (int topic_index = 0; topic_index < nwt_merge_model->topics_count(); ++topic_index) {
+      EXPECT_EQ(updated_model->token_weights(token_index).value(topic_index),
+                2.0f * token_index + 3.0f * topic_index);
+    }
+  }
+
+  {
+    bool ok = false;
+    artm::MasterComponent master_clone(master);
+    ::artm::test::Helpers::CompareTopicModels(*master_clone.GetTopicModel("nwt_merge"),
+      *master.GetTopicModel("nwt_merge"), &ok);
+    ASSERT_TRUE(ok);
+  }
+
+  // Good practice is to dispose model once its attachment is gone.
+  master.DisposeModel("pwt");
+  master.DisposeModel("nwt_merge");
+
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

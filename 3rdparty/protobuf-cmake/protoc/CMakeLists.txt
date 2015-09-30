@@ -18,6 +18,6 @@ endif()
 
 set(PROTOBUF_PROTOC_EXECUTABLE protoc CACHE INTERNAL "protoc build")
 
-install(TARGETS protoc
-    RUNTIME DESTINATION ${BIN_DIR}
-    )
+if(MSVC)
+  install(TARGETS protoc RUNTIME DESTINATION ${BIN_DIR})
+endif()

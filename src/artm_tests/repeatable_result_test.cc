@@ -6,6 +6,7 @@
 #include "boost/filesystem.hpp"
 
 #include "artm/cpp_interface.h"
+#include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/messages.pb.h"
@@ -14,6 +15,9 @@
 #include "artm/core/call_on_destruction.h"
 
 #include "artm_tests/test_mother.h"
+
+using artm::core::Helpers;
+using artm::core::Token;
 
 std::string runOfflineTest() {
   const int nTopics = 5;
@@ -80,7 +84,19 @@ TEST(RepeatableResult, RandomGenerator) {
   }
 }
 
-void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_type, bool use_sparse_format) {
+// artm_tests.exe --gtest_filter=RepeatableResult.TokenHasher
+TEST(RepeatableResult, TokenHasher) {
+  auto token_hasher = artm::core::TokenHasher();
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_1", ""))[0], 0.245338);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("1_class_id", ""))[0], 0.319662);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("", "token_1"))[0], 0.341962);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("", "1_token"))[0], 0.315842);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_1", "token_1"))[0], 0.318573);
+  ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_2", "token_2"))[0], 0.410061);
+}
+
+void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_type,
+                                  ::artm::GetTopicModelArgs_MatrixLayout matrix_layout) {
   const int nTopics = 16;
 
   ::artm::MasterComponentConfig master_config;
@@ -141,7 +157,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
     ::artm::GetTopicModelArgs get_topic_model_args;
     get_topic_model_args.set_model_name(model.name());
     get_topic_model_args.set_request_type(request_type);
-    get_topic_model_args.set_use_sparse_format(use_sparse_format);
+    get_topic_model_args.set_matrix_layout(matrix_layout);
     for (int topic_index = i; topic_index < nTopics; topic_index += slices) {
       get_topic_model_args.add_topic_name(model_config.topic_name(topic_index));
     }
@@ -223,11 +239,11 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_dense
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_dense) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, false);
+  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, artm::GetTopicModelArgs_MatrixLayout_Dense);
 }
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_sparse
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_sparse) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, true);
+  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, artm::GetTopicModelArgs_MatrixLayout_Sparse);
 }
 

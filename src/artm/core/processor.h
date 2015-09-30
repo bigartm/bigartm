@@ -34,6 +34,7 @@ class Processor : boost::noncopyable {
  public:
   Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
             ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
+            const ThreadSafeCollectionHolder<std::string, Batch>& batches,
             const Merger& merger,
             const ThreadSafeHolder<InstanceSchema>& schema);
 
@@ -47,6 +48,7 @@ class Processor : boost::noncopyable {
   ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue_;
   ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
   const Merger& merger_;
+  const ThreadSafeCollectionHolder<std::string, Batch>& batches_;
   const ThreadSafeHolder<InstanceSchema>& schema_;
 
   mutable std::atomic<bool> is_stopping;

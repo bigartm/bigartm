@@ -27,6 +27,11 @@ class Helpers {
   // (thread_id == -1 stands for the current thread)
   static void SetThreadName(int thread_id, const char* thread_name);
   static std::vector<float> GenerateRandomVector(int size, size_t seed);
+  static std::vector<float> GenerateRandomVector(int size, const Token& token);
+
+  static void Fix(::artm::CollectionParserConfig* message);
+  static bool Validate(const ::artm::CollectionParserConfig& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error = true);
 
   static void Fix(::artm::TopicModel* message);
   static bool Validate(const ::artm::TopicModel& message, bool throw_error = true);
@@ -40,6 +45,14 @@ class Helpers {
   static bool Validate(const ::artm::ThetaMatrix& message, bool throw_error = true);
   static bool FixAndValidate(::artm::ThetaMatrix* message, bool throw_error = true);
 
+  static void Fix(::artm::GetThetaMatrixArgs* message);
+  static bool Validate(const ::artm::GetThetaMatrixArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::GetThetaMatrixArgs* message, bool throw_error = true);
+
+  static void Fix(::artm::GetTopicModelArgs* message);
+  static bool Validate(const ::artm::GetTopicModelArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::GetTopicModelArgs* message, bool throw_error = true);
+
   static void Fix(::artm::Batch* message);
   static bool Validate(const ::artm::Batch& message, bool throw_error = true);
   static bool FixAndValidate(::artm::Batch* message, bool throw_error = true);
@@ -48,15 +61,25 @@ class Helpers {
   static bool Validate(const ::artm::GetScoreValueArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::GetScoreValueArgs* message, bool throw_error = true);
 
+  static void Fix(::artm::MasterComponentConfig* message);
   static bool Validate(const ::artm::MasterComponentConfig& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::MasterComponentConfig* message, bool throw_error = true);
 
   static void Fix(::artm::InitializeModelArgs* message);
   static bool Validate(const ::artm::InitializeModelArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::InitializeModelArgs* message, bool throw_error = true);
 
+  static void Fix(::artm::DictionaryConfig* message);
+  static bool Validate(const ::artm::DictionaryConfig& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::DictionaryConfig* message, bool throw_error = true);
+
+  static void Fix(::artm::ProcessBatchesArgs* message);
+  static bool Validate(const ::artm::ProcessBatchesArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::ProcessBatchesArgs* message, bool throw_error = true);
+
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportModelArgs& message, bool throw_error = true);
-  static bool Validate(const ::artm::DictionaryConfig& message, bool throw_error = true);
+  static bool Validate(const ::artm::ImportDictionaryArgs& message, bool throw_error = true);
 
   static std::string Describe(const ::artm::ModelConfig& message);
   static std::string Describe(const ::artm::MasterComponentConfig& message);

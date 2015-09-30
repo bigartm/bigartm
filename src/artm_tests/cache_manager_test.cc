@@ -24,6 +24,7 @@ void RunTest(bool disk_cache) {
   master_config.set_cache_theta(true);
   if (disk_cache) master_config.set_disk_cache_path(target_path);
   ::artm::MasterComponent master_component(master_config);
+  EXPECT_TRUE(master_component.info()->config().cache_theta());
 
   const int nTopics = 8;
   artm::ModelConfig model_config;
@@ -39,6 +40,7 @@ void RunTest(bool disk_cache) {
     model.Synchronize(0.0);
   }
 
+  EXPECT_GT(master_component.info()->cache_entry_size(), 0);
   std::shared_ptr< ::artm::ThetaMatrix> theta1 = master_component.GetThetaMatrix(model.name());
   EXPECT_EQ(theta1->topics_count(), nTopics);
   EXPECT_GE(theta1->item_id_size(), 1);

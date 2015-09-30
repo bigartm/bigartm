@@ -22,7 +22,23 @@ namespace core {
 void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix,
                                                      const ::artm::GetTopicModelArgs& get_model_args,
                                                      ::artm::TopicModel* topic_model) {
-  const bool use_sparse_format = get_model_args.use_sparse_format();
+  if (get_model_args.request_type() == GetTopicModelArgs_RequestType_TopicNames) {
+    for (auto& topic_name : phi_matrix.topic_name())
+      topic_model->add_topic_name(topic_name);
+    topic_model->set_topics_count(phi_matrix.topic_size());
+    return;
+  }
+
+  if (get_model_args.request_type() == GetTopicModelArgs_RequestType_Tokens) {
+    for (int token_index = 0; token_index < phi_matrix.token_size(); token_index++) {
+      const Token& current_token = phi_matrix.token(token_index);
+      topic_model->add_token(current_token.keyword);
+      topic_model->add_class_id(current_token.class_id);
+    }
+    return;
+  }
+
+  const bool has_sparse_format = (get_model_args.matrix_layout() == GetTopicModelArgs_MatrixLayout_Sparse);
 
   std::vector<int> tokens_to_use;
   if (get_model_args.token_size() > 0) {
@@ -99,7 +115,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
 
     ::artm::FloatArray *target = topic_model->add_token_weights();
 
-    if (!use_sparse_format) {
+    if (!has_sparse_format) {
       target->mutable_value()->Reserve(topics_to_use.size());
       for (int topic_index : topics_to_use)
         target->add_value(phi_matrix.get(token_index, topic_index));
@@ -121,7 +137,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
                                                    float apply_weight, PhiMatrix* phi_matrix) {
   if (!Helpers::Validate(topic_model, /* throw_error=*/ false)) return;
 
-  const bool use_sparse_format = (topic_model.topic_index_size() > 0);
+  const bool has_sparse_format = (topic_model.topic_index_size() > 0);
   const int this_topic_size = phi_matrix->topic_size();
   std::vector<int> target_topic_index;
   if (topic_model.topic_name_size() > 0) {
@@ -158,8 +174,8 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     const ClassId& class_id = topic_model.class_id(token_index);
     Token token(class_id, token_keyword);
     const FloatArray& counters = topic_model.token_weights(token_index);
-    const IntArray* sparse_topic_index = use_sparse_format ? &topic_model.topic_index(token_index) : nullptr;
-    const bool use_sparse_format_local = (sparse_topic_index != nullptr) && (sparse_topic_index->value_size() > 0);
+    const IntArray* sparse_topic_index = has_sparse_format ? &topic_model.topic_index(token_index) : nullptr;
+    const bool has_sparse_format_local = (sparse_topic_index != nullptr) && (sparse_topic_index->value_size() > 0);
 
     TopicModel_OperationType operation_type = topic_model.operation_type(token_index);
     int current_token_id = phi_matrix->token_index(token);
@@ -170,7 +186,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       // Add new tokens discovered by processor
       if (current_token_id == -1) {
         current_token_id = phi_matrix->AddToken(token);
-        std::vector<float> vec = Helpers::GenerateRandomVector(phi_matrix->topic_size(), TokenHasher()(token));
+        std::vector<float> vec = Helpers::GenerateRandomVector(phi_matrix->topic_size(), token);
         phi_matrix->increase(current_token_id, vec);
       }
       break;
@@ -179,14 +195,14 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       if (current_token_id == -1)
         current_token_id = phi_matrix->AddToken(token);
 
-      if (optimized_execution && !use_sparse_format_local && (counters.value_size() == this_topic_size)) {
+      if (optimized_execution && !has_sparse_format_local && (counters.value_size() == this_topic_size)) {
         for (int topic_index = 0; topic_index < this_topic_size; ++topic_index)
           phi_matrix->increase(current_token_id, topic_index, counters.value(topic_index));
         break;
       }
 
       for (int i = 0; i < counters.value_size(); ++i) {
-        int topic_index = use_sparse_format_local ? sparse_topic_index->value(i) : i;
+        int topic_index = has_sparse_format_local ? sparse_topic_index->value(i) : i;
         assert(topic_index < target_topic_index.size());
         if (target_topic_index[topic_index] == -1)
           continue;
@@ -198,7 +214,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       if (current_token_id == -1)
         current_token_id = phi_matrix->AddToken(token);
       for (int i = 0; i < counters.value_size(); ++i) {
-        int topic_index = use_sparse_format_local ? sparse_topic_index->value(i) : i;
+        int topic_index = has_sparse_format_local ? sparse_topic_index->value(i) : i;
         assert(topic_index < target_topic_index.size());
         if (target_topic_index[topic_index] == -1)
           continue;

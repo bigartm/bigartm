@@ -97,6 +97,13 @@ MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), 
     config_blob.size(), StringAsArray(&config_blob)));
 }
 
+MasterComponent::MasterComponent(const MasterComponent& rhs) : id_(0), config_(rhs.config_) {
+  ::artm::DuplicateMasterComponentArgs args;
+  std::string config_blob;
+  args.SerializeToString(&config_blob);
+  id_ = HandleErrorCode(ArtmDuplicateMasterComponent(rhs.id_, config_blob.size(), StringAsArray(&config_blob)));
+}
+
 MasterComponent::~MasterComponent() {
   ArtmDisposeMasterComponent(id());
 }
@@ -114,18 +121,83 @@ std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const std::string& mo
   return GetTopicModel(args);
 }
 
+std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const std::string& model_name, Matrix* matrix) {
+  ::artm::GetTopicModelArgs args;
+  args.set_model_name(model_name);
+  return GetTopicModel(args, matrix);
+}
+
 std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args) {
-  // Request model topics
+  return GetTopicModel(args, nullptr);
+}
+
+std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmRequestTopicModel(id(), args_blob.size(), args_blob.c_str()));
+  auto func = (matrix == nullptr) ? ArtmRequestTopicModel : ArtmRequestTopicModelExternal;
+  int length = HandleErrorCode(func(id(), args_blob.size(), args_blob.c_str()));
   std::string topic_model_blob;
   topic_model_blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&topic_model_blob)));
 
-  std::shared_ptr<TopicModel> topic_model(new TopicModel());
-  topic_model->ParseFromString(topic_model_blob);
-  return topic_model;
+  std::shared_ptr<TopicModel> retval(new TopicModel());
+  retval->ParseFromString(topic_model_blob);
+
+  if (matrix == nullptr)
+    return retval;
+
+  matrix->resize(retval->token_size(), retval->topics_count());
+
+  CopyRequestResultArgs copy_request_args;
+  copy_request_args.set_request_type(CopyRequestResultArgs_RequestType_GetModelSecondPass);
+
+  args_blob.clear();
+  copy_request_args.SerializeToString(&args_blob);
+
+  length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
+  HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
+    args_blob.size(), args_blob.c_str()));
+  return retval;
+}
+
+std::shared_ptr<Matrix> MasterComponent::AttachTopicModel(const std::string& model_name) {
+  return AttachTopicModel(model_name, nullptr);
+}
+
+std::shared_ptr<Matrix> MasterComponent::AttachTopicModel(const std::string& model_name, TopicModel* topic_model) {
+  GetTopicModelArgs topic_args;
+  topic_args.set_model_name(model_name);
+  topic_args.set_request_type(GetTopicModelArgs_RequestType_TopicNames);
+  std::shared_ptr<TopicModel> topics = GetTopicModel(topic_args);
+
+  GetTopicModelArgs token_args;
+  token_args.set_model_name(model_name);
+  token_args.set_request_type(GetTopicModelArgs_RequestType_Tokens);
+  std::shared_ptr<TopicModel> tokens = GetTopicModel(token_args);
+
+  AttachModelArgs attach_model_args;
+  attach_model_args.set_model_name(model_name);
+  std::string args_blob;
+  attach_model_args.SerializeToString(&args_blob);
+
+  if (topics->topics_count() == 0)
+    throw ArgumentOutOfRangeException("Unable to attach to topic model with zero topics");
+  if (tokens->token_size() == 0)
+    throw ArgumentOutOfRangeException("Unable to attach to topic model with zero tokens");
+
+  std::shared_ptr<Matrix> matrix = std::make_shared<Matrix>(tokens->token_size(), topics->topics_count());
+  int address_length = matrix->no_columns() * matrix->no_rows() * sizeof(float);
+  HandleErrorCode(ArtmAttachModel(id(), args_blob.size(), args_blob.c_str(),
+                  address_length, reinterpret_cast<char*>(matrix->get_data())));
+
+  if (topic_model != nullptr) {
+    topic_model->set_topics_count(topics->topics_count());
+    topic_model->mutable_topic_name()->CopyFrom(topics->topic_name());
+    topic_model->mutable_class_id()->CopyFrom(tokens->class_id());
+    topic_model->mutable_token()->CopyFrom(tokens->token());
+  }
+
+  return matrix;
 }
 
 std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(
@@ -146,6 +218,12 @@ std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& 
   return GetThetaMatrix(args);
 }
 
+std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& model_name, Matrix* matrix) {
+  ::artm::GetThetaMatrixArgs args;
+  args.set_model_name(model_name);
+  return GetThetaMatrix(args, matrix);
+}
+
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& model_name,
                                                              const ::artm::Batch& batch) {
   ::artm::GetThetaMatrixArgs args;
@@ -155,16 +233,35 @@ std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& 
 }
 
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args) {
+  return GetThetaMatrix(args, nullptr);
+}
+
+std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmRequestThetaMatrix(id(), args_blob.size(), args_blob.c_str()));
+  auto func = (matrix == nullptr) ? ArtmRequestThetaMatrix : ArtmRequestThetaMatrixExternal;
+  int length = HandleErrorCode(func(id(), args_blob.size(), args_blob.c_str()));
   std::string blob;
   blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));
 
-  std::shared_ptr<ThetaMatrix> theta_matrix(new ThetaMatrix());
-  theta_matrix->ParseFromString(blob);
-  return theta_matrix;
+  std::shared_ptr<ThetaMatrix> retval(new ThetaMatrix());
+  retval->ParseFromString(blob);
+
+  if (matrix == nullptr)
+    return retval;
+
+  matrix->resize(retval->item_id_size(), retval->topics_count());
+
+  CopyRequestResultArgs copy_request_args;
+  copy_request_args.set_request_type(CopyRequestResultArgs_RequestType_GetThetaSecondPass);
+  args_blob.clear();
+  copy_request_args.SerializeToString(&args_blob);
+
+  length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
+  HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
+                                          args_blob.size(), args_blob.c_str()));
+  return retval;
 }
 
 std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& args) {
@@ -178,6 +275,20 @@ std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& ar
   std::shared_ptr<ScoreData> score_data(new ScoreData());
   score_data->ParseFromString(blob);
   return score_data;
+}
+
+std::shared_ptr<MasterComponentInfo> MasterComponent::info() const {
+  GetMasterComponentInfoArgs args;
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int length = HandleErrorCode(ArtmRequestMasterComponentInfo(id(), args_blob.size(), args_blob.c_str()));
+  std::string blob;
+  blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));
+
+  std::shared_ptr<MasterComponentInfo> master_component_info(new MasterComponentInfo());
+  master_component_info->ParseFromString(blob);
+  return master_component_info;
 }
 
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)
@@ -328,6 +439,15 @@ void Dictionary::Reconfigure(const DictionaryConfig& config) {
   config_.CopyFrom(config);
 }
 
+void Dictionary::Import(const std::string& dictionary_name, const std::string& file_name) {
+  ImportDictionaryArgs args;
+  args.set_file_name(file_name);
+  args.set_dictionary_name(dictionary_name);
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmImportDictionary(master_id(), blob.size(), blob.c_str()));
+}
+
 bool MasterComponent::AddBatch(const Batch& batch) {
   return AddBatch(batch, /*bool reset_scores=*/ false);
 }
@@ -415,6 +535,16 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
   HandleErrorCode(ArtmImportModel(id_, blob.size(), blob.c_str()));
 }
 
+void MasterComponent::DisposeModel(const std::string& model_name) {
+  ArtmDisposeModel(id(), model_name.c_str());
+}
+
+void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmImportDictionary(id_, blob.size(), blob.c_str()));
+}
+
 std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
@@ -452,6 +582,18 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmInitializeModel(id(), blob.size(), blob.c_str()));
+}
+
+void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmImportBatches(id(), blob.size(), blob.c_str()));
+}
+
+void MasterComponent::DisposeBatches(const DisposeBatchesArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmDisposeBatches(id(), blob.size(), blob.c_str()));
 }
 
 }  // namespace artm

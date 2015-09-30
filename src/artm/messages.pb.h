@@ -75,6 +75,8 @@ class ThetaSnippetScoreConfig;
 class ThetaSnippetScore;
 class TopicKernelScoreConfig;
 class TopicKernelScore;
+class TopicMassPhiScoreConfig;
+class TopicMassPhiScore;
 class TopicModel;
 class TopicModel_TopicModelInternals;
 class ThetaMatrix;
@@ -90,11 +92,25 @@ class InvokeIterationArgs;
 class WaitIdleArgs;
 class ExportModelArgs;
 class ImportModelArgs;
+class AttachModelArgs;
 class ProcessBatchesArgs;
 class ProcessBatchesResult;
 class MergeModelArgs;
 class RegularizeModelArgs;
 class NormalizeModelArgs;
+class ImportDictionaryArgs;
+class CopyRequestResultArgs;
+class DuplicateMasterComponentArgs;
+class GetMasterComponentInfoArgs;
+class MasterComponentInfo;
+class MasterComponentInfo_RegularizerInfo;
+class MasterComponentInfo_ScoreInfo;
+class MasterComponentInfo_DictionaryInfo;
+class MasterComponentInfo_BatchInfo;
+class MasterComponentInfo_ModelInfo;
+class MasterComponentInfo_CacheEntryInfo;
+class ImportBatchesArgs;
+class DisposeBatchesArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -183,11 +199,12 @@ enum ScoreConfig_Type {
   ScoreConfig_Type_ItemsProcessed = 3,
   ScoreConfig_Type_TopTokens = 4,
   ScoreConfig_Type_ThetaSnippet = 5,
-  ScoreConfig_Type_TopicKernel = 6
+  ScoreConfig_Type_TopicKernel = 6,
+  ScoreConfig_Type_TopicMassPhi = 7
 };
 bool ScoreConfig_Type_IsValid(int value);
 const ScoreConfig_Type ScoreConfig_Type_Type_MIN = ScoreConfig_Type_Perplexity;
-const ScoreConfig_Type ScoreConfig_Type_Type_MAX = ScoreConfig_Type_TopicKernel;
+const ScoreConfig_Type ScoreConfig_Type_Type_MAX = ScoreConfig_Type_TopicMassPhi;
 const int ScoreConfig_Type_Type_ARRAYSIZE = ScoreConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ScoreConfig_Type_descriptor();
@@ -207,11 +224,12 @@ enum ScoreData_Type {
   ScoreData_Type_ItemsProcessed = 3,
   ScoreData_Type_TopTokens = 4,
   ScoreData_Type_ThetaSnippet = 5,
-  ScoreData_Type_TopicKernel = 6
+  ScoreData_Type_TopicKernel = 6,
+  ScoreData_Type_TopicMassPhi = 7
 };
 bool ScoreData_Type_IsValid(int value);
 const ScoreData_Type ScoreData_Type_Type_MIN = ScoreData_Type_Perplexity;
-const ScoreData_Type ScoreData_Type_Type_MAX = ScoreData_Type_TopicKernel;
+const ScoreData_Type ScoreData_Type_Type_MAX = ScoreData_Type_TopicMassPhi;
 const int ScoreData_Type_Type_ARRAYSIZE = ScoreData_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ScoreData_Type_descriptor();
@@ -268,11 +286,12 @@ inline bool TopicModel_OperationType_Parse(
 enum CollectionParserConfig_Format {
   CollectionParserConfig_Format_BagOfWordsUci = 0,
   CollectionParserConfig_Format_MatrixMarket = 1,
-  CollectionParserConfig_Format_VowpalWabbit = 2
+  CollectionParserConfig_Format_VowpalWabbit = 2,
+  CollectionParserConfig_Format_Cooccurrence = 3
 };
 bool CollectionParserConfig_Format_IsValid(int value);
 const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MIN = CollectionParserConfig_Format_BagOfWordsUci;
-const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MAX = CollectionParserConfig_Format_VowpalWabbit;
+const CollectionParserConfig_Format CollectionParserConfig_Format_Format_MAX = CollectionParserConfig_Format_Cooccurrence;
 const int CollectionParserConfig_Format_Format_ARRAYSIZE = CollectionParserConfig_Format_Format_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* CollectionParserConfig_Format_descriptor();
@@ -306,11 +325,13 @@ inline bool InitializeModelArgs_SourceType_Parse(
 }
 enum GetTopicModelArgs_RequestType {
   GetTopicModelArgs_RequestType_Pwt = 0,
-  GetTopicModelArgs_RequestType_Nwt = 1
+  GetTopicModelArgs_RequestType_Nwt = 1,
+  GetTopicModelArgs_RequestType_TopicNames = 2,
+  GetTopicModelArgs_RequestType_Tokens = 3
 };
 bool GetTopicModelArgs_RequestType_IsValid(int value);
 const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MIN = GetTopicModelArgs_RequestType_Pwt;
-const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MAX = GetTopicModelArgs_RequestType_Nwt;
+const GetTopicModelArgs_RequestType GetTopicModelArgs_RequestType_RequestType_MAX = GetTopicModelArgs_RequestType_Tokens;
 const int GetTopicModelArgs_RequestType_RequestType_ARRAYSIZE = GetTopicModelArgs_RequestType_RequestType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_RequestType_descriptor();
@@ -323,15 +344,55 @@ inline bool GetTopicModelArgs_RequestType_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<GetTopicModelArgs_RequestType>(
     GetTopicModelArgs_RequestType_descriptor(), name, value);
 }
+enum GetTopicModelArgs_MatrixLayout {
+  GetTopicModelArgs_MatrixLayout_Dense = 0,
+  GetTopicModelArgs_MatrixLayout_Sparse = 1
+};
+bool GetTopicModelArgs_MatrixLayout_IsValid(int value);
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MIN = GetTopicModelArgs_MatrixLayout_Dense;
+const GetTopicModelArgs_MatrixLayout GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX = GetTopicModelArgs_MatrixLayout_Sparse;
+const int GetTopicModelArgs_MatrixLayout_MatrixLayout_ARRAYSIZE = GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* GetTopicModelArgs_MatrixLayout_descriptor();
+inline const ::std::string& GetTopicModelArgs_MatrixLayout_Name(GetTopicModelArgs_MatrixLayout value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    GetTopicModelArgs_MatrixLayout_descriptor(), value);
+}
+inline bool GetTopicModelArgs_MatrixLayout_Parse(
+    const ::std::string& name, GetTopicModelArgs_MatrixLayout* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<GetTopicModelArgs_MatrixLayout>(
+    GetTopicModelArgs_MatrixLayout_descriptor(), name, value);
+}
+enum GetThetaMatrixArgs_MatrixLayout {
+  GetThetaMatrixArgs_MatrixLayout_Dense = 0,
+  GetThetaMatrixArgs_MatrixLayout_Sparse = 1
+};
+bool GetThetaMatrixArgs_MatrixLayout_IsValid(int value);
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MIN = GetThetaMatrixArgs_MatrixLayout_Dense;
+const GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX = GetThetaMatrixArgs_MatrixLayout_Sparse;
+const int GetThetaMatrixArgs_MatrixLayout_MatrixLayout_ARRAYSIZE = GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* GetThetaMatrixArgs_MatrixLayout_descriptor();
+inline const ::std::string& GetThetaMatrixArgs_MatrixLayout_Name(GetThetaMatrixArgs_MatrixLayout value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    GetThetaMatrixArgs_MatrixLayout_descriptor(), value);
+}
+inline bool GetThetaMatrixArgs_MatrixLayout_Parse(
+    const ::std::string& name, GetThetaMatrixArgs_MatrixLayout* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<GetThetaMatrixArgs_MatrixLayout>(
+    GetThetaMatrixArgs_MatrixLayout_descriptor(), name, value);
+}
 enum ProcessBatchesArgs_ThetaMatrixType {
   ProcessBatchesArgs_ThetaMatrixType_None = 0,
   ProcessBatchesArgs_ThetaMatrixType_Dense = 1,
   ProcessBatchesArgs_ThetaMatrixType_Sparse = 2,
-  ProcessBatchesArgs_ThetaMatrixType_Cache = 3
+  ProcessBatchesArgs_ThetaMatrixType_Cache = 3,
+  ProcessBatchesArgs_ThetaMatrixType_DensePtdw = 4,
+  ProcessBatchesArgs_ThetaMatrixType_SparsePtdw = 5
 };
 bool ProcessBatchesArgs_ThetaMatrixType_IsValid(int value);
 const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MIN = ProcessBatchesArgs_ThetaMatrixType_None;
-const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_Cache;
+const ProcessBatchesArgs_ThetaMatrixType ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX = ProcessBatchesArgs_ThetaMatrixType_SparsePtdw;
 const int ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_ARRAYSIZE = ProcessBatchesArgs_ThetaMatrixType_ThetaMatrixType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ProcessBatchesArgs_ThetaMatrixType_descriptor();
@@ -343,6 +404,26 @@ inline bool ProcessBatchesArgs_ThetaMatrixType_Parse(
     const ::std::string& name, ProcessBatchesArgs_ThetaMatrixType* value) {
   return ::google::protobuf::internal::ParseNamedEnum<ProcessBatchesArgs_ThetaMatrixType>(
     ProcessBatchesArgs_ThetaMatrixType_descriptor(), name, value);
+}
+enum CopyRequestResultArgs_RequestType {
+  CopyRequestResultArgs_RequestType_DefaultRequestType = 0,
+  CopyRequestResultArgs_RequestType_GetThetaSecondPass = 1,
+  CopyRequestResultArgs_RequestType_GetModelSecondPass = 2
+};
+bool CopyRequestResultArgs_RequestType_IsValid(int value);
+const CopyRequestResultArgs_RequestType CopyRequestResultArgs_RequestType_RequestType_MIN = CopyRequestResultArgs_RequestType_DefaultRequestType;
+const CopyRequestResultArgs_RequestType CopyRequestResultArgs_RequestType_RequestType_MAX = CopyRequestResultArgs_RequestType_GetModelSecondPass;
+const int CopyRequestResultArgs_RequestType_RequestType_ARRAYSIZE = CopyRequestResultArgs_RequestType_RequestType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* CopyRequestResultArgs_RequestType_descriptor();
+inline const ::std::string& CopyRequestResultArgs_RequestType_Name(CopyRequestResultArgs_RequestType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    CopyRequestResultArgs_RequestType_descriptor(), value);
+}
+inline bool CopyRequestResultArgs_RequestType_Parse(
+    const ::std::string& name, CopyRequestResultArgs_RequestType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<CopyRequestResultArgs_RequestType>(
+    CopyRequestResultArgs_RequestType_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -1085,6 +1166,18 @@ class Field : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& date_array() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_date_array();
 
+  // repeated float token_weight = 20;
+  inline int token_weight_size() const;
+  inline void clear_token_weight();
+  static const int kTokenWeightFieldNumber = 20;
+  inline float token_weight(int index) const;
+  inline void set_token_weight(int index, float value);
+  inline void add_token_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      token_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_token_weight();
+
   // @@protoc_insertion_point(class_scope:artm.Field)
  private:
   inline void set_has_name();
@@ -1113,9 +1206,10 @@ class Field : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< ::google::protobuf::int64 > int_array_;
   ::google::protobuf::RepeatedField< double > double_array_;
   ::google::protobuf::RepeatedPtrField< ::std::string> date_array_;
+  ::google::protobuf::RepeatedField< float > token_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(12 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -1512,7 +1606,7 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline bool cache_theta() const;
   inline void set_cache_theta(bool value);
 
-  // optional int32 processors_count = 6 [default = 1];
+  // optional int32 processors_count = 6;
   inline bool has_processors_count() const;
   inline void clear_processors_count();
   static const int kProcessorsCountFieldNumber = 6;
@@ -1971,6 +2065,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
       mutable_regularizer_settings();
 
+  // optional bool use_ptdw_matrix = 19 [default = false];
+  inline bool has_use_ptdw_matrix() const;
+  inline void clear_use_ptdw_matrix();
+  static const int kUsePtdwMatrixFieldNumber = 19;
+  inline bool use_ptdw_matrix() const;
+  inline void set_use_ptdw_matrix(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -1995,6 +2096,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_new_tokens();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
+  inline void set_has_use_ptdw_matrix();
+  inline void clear_has_use_ptdw_matrix();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2011,17 +2114,18 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
   bool use_new_tokens_;
   bool opt_for_avx_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
+  bool use_ptdw_matrix_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3293,6 +3397,13 @@ class DictionaryConfig : public ::google::protobuf::Message {
   inline ::artm::DictionaryCoocurenceEntries* release_cooc_entries();
   inline void set_allocated_cooc_entries(::artm::DictionaryCoocurenceEntries* cooc_entries);
 
+  // optional float total_token_weight = 6;
+  inline bool has_total_token_weight() const;
+  inline void clear_total_token_weight();
+  static const int kTotalTokenWeightFieldNumber = 6;
+  inline float total_token_weight() const;
+  inline void set_total_token_weight(float value);
+
   // @@protoc_insertion_point(class_scope:artm.DictionaryConfig)
  private:
   inline void set_has_name();
@@ -3303,6 +3414,8 @@ class DictionaryConfig : public ::google::protobuf::Message {
   inline void clear_has_total_items_count();
   inline void set_has_cooc_entries();
   inline void clear_has_cooc_entries();
+  inline void set_has_total_token_weight();
+  inline void clear_has_total_token_weight();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -3311,9 +3424,10 @@ class DictionaryConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 total_token_count_;
   ::google::protobuf::int32 total_items_count_;
   ::artm::DictionaryCoocurenceEntries* cooc_entries_;
+  float total_token_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3448,6 +3562,13 @@ class DictionaryEntry : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 items_count() const;
   inline void set_items_count(::google::protobuf::int32 value);
 
+  // optional float token_weight = 8;
+  inline bool has_token_weight() const;
+  inline void clear_token_weight();
+  static const int kTokenWeightFieldNumber = 8;
+  inline float token_weight() const;
+  inline void set_token_weight(float value);
+
   // @@protoc_insertion_point(class_scope:artm.DictionaryEntry)
  private:
   inline void set_has_key_token();
@@ -3462,6 +3583,8 @@ class DictionaryEntry : public ::google::protobuf::Message {
   inline void clear_has_token_count();
   inline void set_has_items_count();
   inline void clear_has_items_count();
+  inline void set_has_token_weight();
+  inline void clear_has_token_weight();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -3472,9 +3595,10 @@ class DictionaryEntry : public ::google::protobuf::Message {
   ::google::protobuf::int32 token_count_;
   ::artm::FloatArray* values_;
   ::google::protobuf::int32 items_count_;
+  float token_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3563,29 +3687,39 @@ class DictionaryCoocurenceEntries : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_second_index();
 
-  // repeated float items_count = 3;
-  inline int items_count_size() const;
-  inline void clear_items_count();
-  static const int kItemsCountFieldNumber = 3;
-  inline float items_count(int index) const;
-  inline void set_items_count(int index, float value);
-  inline void add_items_count(float value);
+  // repeated float value = 3;
+  inline int value_size() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 3;
+  inline float value(int index) const;
+  inline void set_value(int index, float value);
+  inline void add_value(float value);
   inline const ::google::protobuf::RepeatedField< float >&
-      items_count() const;
+      value() const;
   inline ::google::protobuf::RepeatedField< float >*
-      mutable_items_count();
+      mutable_value();
+
+  // optional bool symmetric_cooc_values = 4 [default = false];
+  inline bool has_symmetric_cooc_values() const;
+  inline void clear_symmetric_cooc_values();
+  static const int kSymmetricCoocValuesFieldNumber = 4;
+  inline bool symmetric_cooc_values() const;
+  inline void set_symmetric_cooc_values(bool value);
 
   // @@protoc_insertion_point(class_scope:artm.DictionaryCoocurenceEntries)
  private:
+  inline void set_has_symmetric_cooc_values();
+  inline void clear_has_symmetric_cooc_values();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > first_index_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > second_index_;
-  ::google::protobuf::RepeatedField< float > items_count_;
+  ::google::protobuf::RepeatedField< float > value_;
+  bool symmetric_cooc_values_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3656,6 +3790,7 @@ class ScoreConfig : public ::google::protobuf::Message {
   static const Type TopTokens = ScoreConfig_Type_TopTokens;
   static const Type ThetaSnippet = ScoreConfig_Type_ThetaSnippet;
   static const Type TopicKernel = ScoreConfig_Type_TopicKernel;
+  static const Type TopicMassPhi = ScoreConfig_Type_TopicMassPhi;
   static inline bool Type_IsValid(int value) {
     return ScoreConfig_Type_IsValid(value);
   }
@@ -3797,6 +3932,7 @@ class ScoreData : public ::google::protobuf::Message {
   static const Type TopTokens = ScoreData_Type_TopTokens;
   static const Type ThetaSnippet = ScoreData_Type_ThetaSnippet;
   static const Type TopicKernel = ScoreData_Type_TopicKernel;
+  static const Type TopicMassPhi = ScoreData_Type_TopicMassPhi;
   static inline bool Type_IsValid(int value) {
     return ScoreData_Type_IsValid(value);
   }
@@ -5643,6 +5779,15 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::StringArray >*
       mutable_kernel_tokens();
 
+  // optional .artm.StringArray topic_name = 10;
+  inline bool has_topic_name() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 10;
+  inline const ::artm::StringArray& topic_name() const;
+  inline ::artm::StringArray* mutable_topic_name();
+  inline ::artm::StringArray* release_topic_name();
+  inline void set_allocated_topic_name(::artm::StringArray* topic_name);
+
   // @@protoc_insertion_point(class_scope:artm.TopicKernelScore)
  private:
   inline void set_has_kernel_size();
@@ -5661,6 +5806,8 @@ class TopicKernelScore : public ::google::protobuf::Message {
   inline void clear_has_coherence();
   inline void set_has_average_coherence();
   inline void clear_has_average_coherence();
+  inline void set_has_topic_name();
+  inline void clear_has_topic_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -5672,10 +5819,11 @@ class TopicKernelScore : public ::google::protobuf::Message {
   double average_kernel_contrast_;
   ::artm::DoubleArray* coherence_;
   ::google::protobuf::RepeatedPtrField< ::artm::StringArray > kernel_tokens_;
+  ::artm::StringArray* topic_name_;
   float average_coherence_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5683,6 +5831,246 @@ class TopicKernelScore : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static TopicKernelScore* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class TopicMassPhiScoreConfig : public ::google::protobuf::Message {
+ public:
+  TopicMassPhiScoreConfig();
+  virtual ~TopicMassPhiScoreConfig();
+
+  TopicMassPhiScoreConfig(const TopicMassPhiScoreConfig& from);
+
+  inline TopicMassPhiScoreConfig& operator=(const TopicMassPhiScoreConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TopicMassPhiScoreConfig& default_instance();
+
+  void Swap(TopicMassPhiScoreConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  TopicMassPhiScoreConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TopicMassPhiScoreConfig& from);
+  void MergeFrom(const TopicMassPhiScoreConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional float eps = 1 [default = 1e-037];
+  inline bool has_eps() const;
+  inline void clear_eps();
+  static const int kEpsFieldNumber = 1;
+  inline float eps() const;
+  inline void set_eps(float value);
+
+  // optional string class_id = 2 [default = "@default_class"];
+  inline bool has_class_id() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id() const;
+  inline void set_class_id(const ::std::string& value);
+  inline void set_class_id(const char* value);
+  inline void set_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_class_id();
+  inline ::std::string* release_class_id();
+  inline void set_allocated_class_id(::std::string* class_id);
+
+  // repeated string topic_name = 3;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 3;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // @@protoc_insertion_point(class_scope:artm.TopicMassPhiScoreConfig)
+ private:
+  inline void set_has_eps();
+  inline void clear_has_eps();
+  inline void set_has_class_id();
+  inline void clear_has_class_id();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* class_id_;
+  static ::std::string* _default_class_id_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  float eps_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static TopicMassPhiScoreConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class TopicMassPhiScore : public ::google::protobuf::Message {
+ public:
+  TopicMassPhiScore();
+  virtual ~TopicMassPhiScore();
+
+  TopicMassPhiScore(const TopicMassPhiScore& from);
+
+  inline TopicMassPhiScore& operator=(const TopicMassPhiScore& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TopicMassPhiScore& default_instance();
+
+  void Swap(TopicMassPhiScore* other);
+
+  // implements Message ----------------------------------------------
+
+  TopicMassPhiScore* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TopicMassPhiScore& from);
+  void MergeFrom(const TopicMassPhiScore& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional double value = 1;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 1;
+  inline double value() const;
+  inline void set_value(double value);
+
+  // repeated string topic_name = 2;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 2;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated double topic_ratio = 3;
+  inline int topic_ratio_size() const;
+  inline void clear_topic_ratio();
+  static const int kTopicRatioFieldNumber = 3;
+  inline double topic_ratio(int index) const;
+  inline void set_topic_ratio(int index, double value);
+  inline void add_topic_ratio(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      topic_ratio() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_topic_ratio();
+
+  // repeated double topic_mass = 4;
+  inline int topic_mass_size() const;
+  inline void clear_topic_mass();
+  static const int kTopicMassFieldNumber = 4;
+  inline double topic_mass(int index) const;
+  inline void set_topic_mass(int index, double value);
+  inline void add_topic_mass(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      topic_mass() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_topic_mass();
+
+  // @@protoc_insertion_point(class_scope:artm.TopicMassPhiScore)
+ private:
+  inline void set_has_value();
+  inline void clear_has_value();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  double value_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedField< double > topic_ratio_;
+  ::google::protobuf::RepeatedField< double > topic_mass_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static TopicMassPhiScore* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -6228,6 +6616,7 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   static const Format BagOfWordsUci = CollectionParserConfig_Format_BagOfWordsUci;
   static const Format MatrixMarket = CollectionParserConfig_Format_MatrixMarket;
   static const Format VowpalWabbit = CollectionParserConfig_Format_VowpalWabbit;
+  static const Format Cooccurrence = CollectionParserConfig_Format_Cooccurrence;
   static inline bool Format_IsValid(int value) {
     return CollectionParserConfig_Format_IsValid(value);
   }
@@ -6343,6 +6732,29 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline bool gather_cooc() const;
   inline void set_gather_cooc(bool value);
 
+  // repeated string cooccurrence_class_id = 10;
+  inline int cooccurrence_class_id_size() const;
+  inline void clear_cooccurrence_class_id();
+  static const int kCooccurrenceClassIdFieldNumber = 10;
+  inline const ::std::string& cooccurrence_class_id(int index) const;
+  inline ::std::string* mutable_cooccurrence_class_id(int index);
+  inline void set_cooccurrence_class_id(int index, const ::std::string& value);
+  inline void set_cooccurrence_class_id(int index, const char* value);
+  inline void set_cooccurrence_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_cooccurrence_class_id();
+  inline void add_cooccurrence_class_id(const ::std::string& value);
+  inline void add_cooccurrence_class_id(const char* value);
+  inline void add_cooccurrence_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_class_id();
+
+  // optional bool use_symmetric_cooc_values = 11 [default = false];
+  inline bool has_use_symmetric_cooc_values() const;
+  inline void clear_use_symmetric_cooc_values();
+  static const int kUseSymmetricCoocValuesFieldNumber = 11;
+  inline bool use_symmetric_cooc_values() const;
+  inline void set_use_symmetric_cooc_values(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.CollectionParserConfig)
  private:
   inline void set_has_format();
@@ -6361,6 +6773,8 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline void clear_has_use_unity_based_indices();
   inline void set_has_gather_cooc();
   inline void clear_has_gather_cooc();
+  inline void set_has_use_symmetric_cooc_values();
+  inline void clear_has_use_symmetric_cooc_values();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6371,11 +6785,13 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   ::std::string* target_folder_;
   ::std::string* dictionary_file_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_token_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_class_id_;
   bool use_unity_based_indices_;
   bool gather_cooc_;
+  bool use_symmetric_cooc_values_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6808,6 +7224,22 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
 
+  // repeated string batch_filename = 8;
+  inline int batch_filename_size() const;
+  inline void clear_batch_filename();
+  static const int kBatchFilenameFieldNumber = 8;
+  inline const ::std::string& batch_filename(int index) const;
+  inline ::std::string* mutable_batch_filename(int index);
+  inline void set_batch_filename(int index, const ::std::string& value);
+  inline void set_batch_filename(int index, const char* value);
+  inline void set_batch_filename(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_filename();
+  inline void add_batch_filename(const ::std::string& value);
+  inline void add_batch_filename(const char* value);
+  inline void add_batch_filename(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
+
   // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs)
  private:
   inline void set_has_model_name();
@@ -6830,9 +7262,10 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::int32 topics_count_;
   ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter > filter_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6898,6 +7331,8 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   typedef GetTopicModelArgs_RequestType RequestType;
   static const RequestType Pwt = GetTopicModelArgs_RequestType_Pwt;
   static const RequestType Nwt = GetTopicModelArgs_RequestType_Nwt;
+  static const RequestType TopicNames = GetTopicModelArgs_RequestType_TopicNames;
+  static const RequestType Tokens = GetTopicModelArgs_RequestType_Tokens;
   static inline bool RequestType_IsValid(int value) {
     return GetTopicModelArgs_RequestType_IsValid(value);
   }
@@ -6917,6 +7352,30 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   static inline bool RequestType_Parse(const ::std::string& name,
       RequestType* value) {
     return GetTopicModelArgs_RequestType_Parse(name, value);
+  }
+
+  typedef GetTopicModelArgs_MatrixLayout MatrixLayout;
+  static const MatrixLayout Dense = GetTopicModelArgs_MatrixLayout_Dense;
+  static const MatrixLayout Sparse = GetTopicModelArgs_MatrixLayout_Sparse;
+  static inline bool MatrixLayout_IsValid(int value) {
+    return GetTopicModelArgs_MatrixLayout_IsValid(value);
+  }
+  static const MatrixLayout MatrixLayout_MIN =
+    GetTopicModelArgs_MatrixLayout_MatrixLayout_MIN;
+  static const MatrixLayout MatrixLayout_MAX =
+    GetTopicModelArgs_MatrixLayout_MatrixLayout_MAX;
+  static const int MatrixLayout_ARRAYSIZE =
+    GetTopicModelArgs_MatrixLayout_MatrixLayout_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  MatrixLayout_descriptor() {
+    return GetTopicModelArgs_MatrixLayout_descriptor();
+  }
+  static inline const ::std::string& MatrixLayout_Name(MatrixLayout value) {
+    return GetTopicModelArgs_MatrixLayout_Name(value);
+  }
+  static inline bool MatrixLayout_Parse(const ::std::string& name,
+      MatrixLayout* value) {
+    return GetTopicModelArgs_MatrixLayout_Parse(name, value);
   }
 
   // accessors -------------------------------------------------------
@@ -7002,6 +7461,13 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline ::artm::GetTopicModelArgs_RequestType request_type() const;
   inline void set_request_type(::artm::GetTopicModelArgs_RequestType value);
 
+  // optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Dense];
+  inline bool has_matrix_layout() const;
+  inline void clear_matrix_layout();
+  static const int kMatrixLayoutFieldNumber = 8;
+  inline ::artm::GetTopicModelArgs_MatrixLayout matrix_layout() const;
+  inline void set_matrix_layout(::artm::GetTopicModelArgs_MatrixLayout value);
+
   // @@protoc_insertion_point(class_scope:artm.GetTopicModelArgs)
  private:
   inline void set_has_model_name();
@@ -7012,6 +7478,8 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   inline void clear_has_eps();
   inline void set_has_request_type();
   inline void clear_has_request_type();
+  inline void set_has_matrix_layout();
+  inline void clear_has_matrix_layout();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -7022,9 +7490,10 @@ class GetTopicModelArgs : public ::google::protobuf::Message {
   bool use_sparse_format_;
   float eps_;
   int request_type_;
+  int matrix_layout_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7086,6 +7555,30 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
+
+  typedef GetThetaMatrixArgs_MatrixLayout MatrixLayout;
+  static const MatrixLayout Dense = GetThetaMatrixArgs_MatrixLayout_Dense;
+  static const MatrixLayout Sparse = GetThetaMatrixArgs_MatrixLayout_Sparse;
+  static inline bool MatrixLayout_IsValid(int value) {
+    return GetThetaMatrixArgs_MatrixLayout_IsValid(value);
+  }
+  static const MatrixLayout MatrixLayout_MIN =
+    GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MIN;
+  static const MatrixLayout MatrixLayout_MAX =
+    GetThetaMatrixArgs_MatrixLayout_MatrixLayout_MAX;
+  static const int MatrixLayout_ARRAYSIZE =
+    GetThetaMatrixArgs_MatrixLayout_MatrixLayout_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  MatrixLayout_descriptor() {
+    return GetThetaMatrixArgs_MatrixLayout_descriptor();
+  }
+  static inline const ::std::string& MatrixLayout_Name(MatrixLayout value) {
+    return GetThetaMatrixArgs_MatrixLayout_Name(value);
+  }
+  static inline bool MatrixLayout_Parse(const ::std::string& name,
+      MatrixLayout* value) {
+    return GetThetaMatrixArgs_MatrixLayout_Parse(name, value);
+  }
 
   // accessors -------------------------------------------------------
 
@@ -7159,6 +7652,13 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline float eps() const;
   inline void set_eps(float value);
 
+  // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Dense];
+  inline bool has_matrix_layout() const;
+  inline void clear_matrix_layout();
+  static const int kMatrixLayoutFieldNumber = 8;
+  inline ::artm::GetThetaMatrixArgs_MatrixLayout matrix_layout() const;
+  inline void set_matrix_layout(::artm::GetThetaMatrixArgs_MatrixLayout value);
+
   // @@protoc_insertion_point(class_scope:artm.GetThetaMatrixArgs)
  private:
   inline void set_has_model_name();
@@ -7171,6 +7671,8 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline void clear_has_use_sparse_format();
   inline void set_has_eps();
   inline void clear_has_eps();
+  inline void set_has_matrix_layout();
+  inline void clear_has_matrix_layout();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -7181,9 +7683,10 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   bool clean_cache_;
   bool use_sparse_format_;
   float eps_;
+  int matrix_layout_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7820,6 +8323,93 @@ class ImportModelArgs : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class AttachModelArgs : public ::google::protobuf::Message {
+ public:
+  AttachModelArgs();
+  virtual ~AttachModelArgs();
+
+  AttachModelArgs(const AttachModelArgs& from);
+
+  inline AttachModelArgs& operator=(const AttachModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const AttachModelArgs& default_instance();
+
+  void Swap(AttachModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  AttachModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const AttachModelArgs& from);
+  void MergeFrom(const AttachModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string model_name = 1;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 1;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
+  // @@protoc_insertion_point(class_scope:artm.AttachModelArgs)
+ private:
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* model_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static AttachModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class ProcessBatchesArgs : public ::google::protobuf::Message {
  public:
   ProcessBatchesArgs();
@@ -7877,6 +8467,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   static const ThetaMatrixType Dense = ProcessBatchesArgs_ThetaMatrixType_Dense;
   static const ThetaMatrixType Sparse = ProcessBatchesArgs_ThetaMatrixType_Sparse;
   static const ThetaMatrixType Cache = ProcessBatchesArgs_ThetaMatrixType_Cache;
+  static const ThetaMatrixType DensePtdw = ProcessBatchesArgs_ThetaMatrixType_DensePtdw;
+  static const ThetaMatrixType SparsePtdw = ProcessBatchesArgs_ThetaMatrixType_SparsePtdw;
   static inline bool ThetaMatrixType_IsValid(int value) {
     return ProcessBatchesArgs_ThetaMatrixType_IsValid(value);
   }
@@ -8050,6 +8642,25 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::artm::ProcessBatchesArgs_ThetaMatrixType theta_matrix_type() const;
   inline void set_theta_matrix_type(::artm::ProcessBatchesArgs_ThetaMatrixType value);
 
+  // repeated float batch_weight = 15;
+  inline int batch_weight_size() const;
+  inline void clear_batch_weight();
+  static const int kBatchWeightFieldNumber = 15;
+  inline float batch_weight(int index) const;
+  inline void set_batch_weight(int index, float value);
+  inline void add_batch_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      batch_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_batch_weight();
+
+  // optional bool use_ptdw_matrix = 16 [default = false];
+  inline bool has_use_ptdw_matrix() const;
+  inline void clear_use_ptdw_matrix();
+  static const int kUsePtdwMatrixFieldNumber = 16;
+  inline bool use_ptdw_matrix() const;
+  inline void set_use_ptdw_matrix(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8070,6 +8681,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_reset_scores();
   inline void set_has_theta_matrix_type();
   inline void clear_has_theta_matrix_type();
+  inline void set_has_use_ptdw_matrix();
+  inline void clear_has_use_ptdw_matrix();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8087,10 +8700,12 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool opt_for_avx_;
   bool use_sparse_bow_;
   bool reset_scores_;
+  ::google::protobuf::RepeatedField< float > batch_weight_;
   int theta_matrix_type_;
+  bool use_ptdw_matrix_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8576,6 +9191,1376 @@ class NormalizeModelArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static NormalizeModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ImportDictionaryArgs : public ::google::protobuf::Message {
+ public:
+  ImportDictionaryArgs();
+  virtual ~ImportDictionaryArgs();
+
+  ImportDictionaryArgs(const ImportDictionaryArgs& from);
+
+  inline ImportDictionaryArgs& operator=(const ImportDictionaryArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ImportDictionaryArgs& default_instance();
+
+  void Swap(ImportDictionaryArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ImportDictionaryArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ImportDictionaryArgs& from);
+  void MergeFrom(const ImportDictionaryArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string file_name = 1;
+  inline bool has_file_name() const;
+  inline void clear_file_name();
+  static const int kFileNameFieldNumber = 1;
+  inline const ::std::string& file_name() const;
+  inline void set_file_name(const ::std::string& value);
+  inline void set_file_name(const char* value);
+  inline void set_file_name(const char* value, size_t size);
+  inline ::std::string* mutable_file_name();
+  inline ::std::string* release_file_name();
+  inline void set_allocated_file_name(::std::string* file_name);
+
+  // optional string dictionary_name = 2;
+  inline bool has_dictionary_name() const;
+  inline void clear_dictionary_name();
+  static const int kDictionaryNameFieldNumber = 2;
+  inline const ::std::string& dictionary_name() const;
+  inline void set_dictionary_name(const ::std::string& value);
+  inline void set_dictionary_name(const char* value);
+  inline void set_dictionary_name(const char* value, size_t size);
+  inline ::std::string* mutable_dictionary_name();
+  inline ::std::string* release_dictionary_name();
+  inline void set_allocated_dictionary_name(::std::string* dictionary_name);
+
+  // @@protoc_insertion_point(class_scope:artm.ImportDictionaryArgs)
+ private:
+  inline void set_has_file_name();
+  inline void clear_has_file_name();
+  inline void set_has_dictionary_name();
+  inline void clear_has_dictionary_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* file_name_;
+  ::std::string* dictionary_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ImportDictionaryArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class CopyRequestResultArgs : public ::google::protobuf::Message {
+ public:
+  CopyRequestResultArgs();
+  virtual ~CopyRequestResultArgs();
+
+  CopyRequestResultArgs(const CopyRequestResultArgs& from);
+
+  inline CopyRequestResultArgs& operator=(const CopyRequestResultArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const CopyRequestResultArgs& default_instance();
+
+  void Swap(CopyRequestResultArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  CopyRequestResultArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const CopyRequestResultArgs& from);
+  void MergeFrom(const CopyRequestResultArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef CopyRequestResultArgs_RequestType RequestType;
+  static const RequestType DefaultRequestType = CopyRequestResultArgs_RequestType_DefaultRequestType;
+  static const RequestType GetThetaSecondPass = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
+  static const RequestType GetModelSecondPass = CopyRequestResultArgs_RequestType_GetModelSecondPass;
+  static inline bool RequestType_IsValid(int value) {
+    return CopyRequestResultArgs_RequestType_IsValid(value);
+  }
+  static const RequestType RequestType_MIN =
+    CopyRequestResultArgs_RequestType_RequestType_MIN;
+  static const RequestType RequestType_MAX =
+    CopyRequestResultArgs_RequestType_RequestType_MAX;
+  static const int RequestType_ARRAYSIZE =
+    CopyRequestResultArgs_RequestType_RequestType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  RequestType_descriptor() {
+    return CopyRequestResultArgs_RequestType_descriptor();
+  }
+  static inline const ::std::string& RequestType_Name(RequestType value) {
+    return CopyRequestResultArgs_RequestType_Name(value);
+  }
+  static inline bool RequestType_Parse(const ::std::string& name,
+      RequestType* value) {
+    return CopyRequestResultArgs_RequestType_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // optional .artm.CopyRequestResultArgs.RequestType request_type = 1 [default = DefaultRequestType];
+  inline bool has_request_type() const;
+  inline void clear_request_type();
+  static const int kRequestTypeFieldNumber = 1;
+  inline ::artm::CopyRequestResultArgs_RequestType request_type() const;
+  inline void set_request_type(::artm::CopyRequestResultArgs_RequestType value);
+
+  // @@protoc_insertion_point(class_scope:artm.CopyRequestResultArgs)
+ private:
+  inline void set_has_request_type();
+  inline void clear_has_request_type();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  int request_type_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static CopyRequestResultArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class DuplicateMasterComponentArgs : public ::google::protobuf::Message {
+ public:
+  DuplicateMasterComponentArgs();
+  virtual ~DuplicateMasterComponentArgs();
+
+  DuplicateMasterComponentArgs(const DuplicateMasterComponentArgs& from);
+
+  inline DuplicateMasterComponentArgs& operator=(const DuplicateMasterComponentArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DuplicateMasterComponentArgs& default_instance();
+
+  void Swap(DuplicateMasterComponentArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  DuplicateMasterComponentArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DuplicateMasterComponentArgs& from);
+  void MergeFrom(const DuplicateMasterComponentArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:artm.DuplicateMasterComponentArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[1];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static DuplicateMasterComponentArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class GetMasterComponentInfoArgs : public ::google::protobuf::Message {
+ public:
+  GetMasterComponentInfoArgs();
+  virtual ~GetMasterComponentInfoArgs();
+
+  GetMasterComponentInfoArgs(const GetMasterComponentInfoArgs& from);
+
+  inline GetMasterComponentInfoArgs& operator=(const GetMasterComponentInfoArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GetMasterComponentInfoArgs& default_instance();
+
+  void Swap(GetMasterComponentInfoArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  GetMasterComponentInfoArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const GetMasterComponentInfoArgs& from);
+  void MergeFrom(const GetMasterComponentInfoArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:artm.GetMasterComponentInfoArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[1];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static GetMasterComponentInfoArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class MasterComponentInfo_RegularizerInfo : public ::google::protobuf::Message {
+ public:
+  MasterComponentInfo_RegularizerInfo();
+  virtual ~MasterComponentInfo_RegularizerInfo();
+
+  MasterComponentInfo_RegularizerInfo(const MasterComponentInfo_RegularizerInfo& from);
+
+  inline MasterComponentInfo_RegularizerInfo& operator=(const MasterComponentInfo_RegularizerInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterComponentInfo_RegularizerInfo& default_instance();
+
+  void Swap(MasterComponentInfo_RegularizerInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterComponentInfo_RegularizerInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterComponentInfo_RegularizerInfo& from);
+  void MergeFrom(const MasterComponentInfo_RegularizerInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // optional string type = 2;
+  inline bool has_type() const;
+  inline void clear_type();
+  static const int kTypeFieldNumber = 2;
+  inline const ::std::string& type() const;
+  inline void set_type(const ::std::string& value);
+  inline void set_type(const char* value);
+  inline void set_type(const char* value, size_t size);
+  inline ::std::string* mutable_type();
+  inline ::std::string* release_type();
+  inline void set_allocated_type(::std::string* type);
+
+  // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.RegularizerInfo)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_type();
+  inline void clear_has_type();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  ::std::string* type_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterComponentInfo_RegularizerInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class MasterComponentInfo_ScoreInfo : public ::google::protobuf::Message {
+ public:
+  MasterComponentInfo_ScoreInfo();
+  virtual ~MasterComponentInfo_ScoreInfo();
+
+  MasterComponentInfo_ScoreInfo(const MasterComponentInfo_ScoreInfo& from);
+
+  inline MasterComponentInfo_ScoreInfo& operator=(const MasterComponentInfo_ScoreInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterComponentInfo_ScoreInfo& default_instance();
+
+  void Swap(MasterComponentInfo_ScoreInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterComponentInfo_ScoreInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterComponentInfo_ScoreInfo& from);
+  void MergeFrom(const MasterComponentInfo_ScoreInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // optional string type = 2;
+  inline bool has_type() const;
+  inline void clear_type();
+  static const int kTypeFieldNumber = 2;
+  inline const ::std::string& type() const;
+  inline void set_type(const ::std::string& value);
+  inline void set_type(const char* value);
+  inline void set_type(const char* value, size_t size);
+  inline ::std::string* mutable_type();
+  inline ::std::string* release_type();
+  inline void set_allocated_type(::std::string* type);
+
+  // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.ScoreInfo)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_type();
+  inline void clear_has_type();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  ::std::string* type_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterComponentInfo_ScoreInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class MasterComponentInfo_DictionaryInfo : public ::google::protobuf::Message {
+ public:
+  MasterComponentInfo_DictionaryInfo();
+  virtual ~MasterComponentInfo_DictionaryInfo();
+
+  MasterComponentInfo_DictionaryInfo(const MasterComponentInfo_DictionaryInfo& from);
+
+  inline MasterComponentInfo_DictionaryInfo& operator=(const MasterComponentInfo_DictionaryInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterComponentInfo_DictionaryInfo& default_instance();
+
+  void Swap(MasterComponentInfo_DictionaryInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterComponentInfo_DictionaryInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterComponentInfo_DictionaryInfo& from);
+  void MergeFrom(const MasterComponentInfo_DictionaryInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // optional int64 entries_count = 2;
+  inline bool has_entries_count() const;
+  inline void clear_entries_count();
+  static const int kEntriesCountFieldNumber = 2;
+  inline ::google::protobuf::int64 entries_count() const;
+  inline void set_entries_count(::google::protobuf::int64 value);
+
+  // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.DictionaryInfo)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_entries_count();
+  inline void clear_has_entries_count();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  ::google::protobuf::int64 entries_count_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterComponentInfo_DictionaryInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class MasterComponentInfo_BatchInfo : public ::google::protobuf::Message {
+ public:
+  MasterComponentInfo_BatchInfo();
+  virtual ~MasterComponentInfo_BatchInfo();
+
+  MasterComponentInfo_BatchInfo(const MasterComponentInfo_BatchInfo& from);
+
+  inline MasterComponentInfo_BatchInfo& operator=(const MasterComponentInfo_BatchInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterComponentInfo_BatchInfo& default_instance();
+
+  void Swap(MasterComponentInfo_BatchInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterComponentInfo_BatchInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterComponentInfo_BatchInfo& from);
+  void MergeFrom(const MasterComponentInfo_BatchInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // optional int32 items_count = 2;
+  inline bool has_items_count() const;
+  inline void clear_items_count();
+  static const int kItemsCountFieldNumber = 2;
+  inline ::google::protobuf::int32 items_count() const;
+  inline void set_items_count(::google::protobuf::int32 value);
+
+  // optional int32 token_count = 3;
+  inline bool has_token_count() const;
+  inline void clear_token_count();
+  static const int kTokenCountFieldNumber = 3;
+  inline ::google::protobuf::int32 token_count() const;
+  inline void set_token_count(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.BatchInfo)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_items_count();
+  inline void clear_has_items_count();
+  inline void set_has_token_count();
+  inline void clear_has_token_count();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  ::google::protobuf::int32 items_count_;
+  ::google::protobuf::int32 token_count_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterComponentInfo_BatchInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class MasterComponentInfo_ModelInfo : public ::google::protobuf::Message {
+ public:
+  MasterComponentInfo_ModelInfo();
+  virtual ~MasterComponentInfo_ModelInfo();
+
+  MasterComponentInfo_ModelInfo(const MasterComponentInfo_ModelInfo& from);
+
+  inline MasterComponentInfo_ModelInfo& operator=(const MasterComponentInfo_ModelInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterComponentInfo_ModelInfo& default_instance();
+
+  void Swap(MasterComponentInfo_ModelInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterComponentInfo_ModelInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterComponentInfo_ModelInfo& from);
+  void MergeFrom(const MasterComponentInfo_ModelInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // optional string type = 2;
+  inline bool has_type() const;
+  inline void clear_type();
+  static const int kTypeFieldNumber = 2;
+  inline const ::std::string& type() const;
+  inline void set_type(const ::std::string& value);
+  inline void set_type(const char* value);
+  inline void set_type(const char* value, size_t size);
+  inline ::std::string* mutable_type();
+  inline ::std::string* release_type();
+  inline void set_allocated_type(::std::string* type);
+
+  // optional int32 topics_count = 3;
+  inline bool has_topics_count() const;
+  inline void clear_topics_count();
+  static const int kTopicsCountFieldNumber = 3;
+  inline ::google::protobuf::int32 topics_count() const;
+  inline void set_topics_count(::google::protobuf::int32 value);
+
+  // optional int32 token_count = 4;
+  inline bool has_token_count() const;
+  inline void clear_token_count();
+  static const int kTokenCountFieldNumber = 4;
+  inline ::google::protobuf::int32 token_count() const;
+  inline void set_token_count(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.ModelInfo)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_type();
+  inline void clear_has_type();
+  inline void set_has_topics_count();
+  inline void clear_has_topics_count();
+  inline void set_has_token_count();
+  inline void clear_has_token_count();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  ::std::string* type_;
+  ::google::protobuf::int32 topics_count_;
+  ::google::protobuf::int32 token_count_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterComponentInfo_ModelInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class MasterComponentInfo_CacheEntryInfo : public ::google::protobuf::Message {
+ public:
+  MasterComponentInfo_CacheEntryInfo();
+  virtual ~MasterComponentInfo_CacheEntryInfo();
+
+  MasterComponentInfo_CacheEntryInfo(const MasterComponentInfo_CacheEntryInfo& from);
+
+  inline MasterComponentInfo_CacheEntryInfo& operator=(const MasterComponentInfo_CacheEntryInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterComponentInfo_CacheEntryInfo& default_instance();
+
+  void Swap(MasterComponentInfo_CacheEntryInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterComponentInfo_CacheEntryInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterComponentInfo_CacheEntryInfo& from);
+  void MergeFrom(const MasterComponentInfo_CacheEntryInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string key = 1;
+  inline bool has_key() const;
+  inline void clear_key();
+  static const int kKeyFieldNumber = 1;
+  inline const ::std::string& key() const;
+  inline void set_key(const ::std::string& value);
+  inline void set_key(const char* value);
+  inline void set_key(const char* value, size_t size);
+  inline ::std::string* mutable_key();
+  inline ::std::string* release_key();
+  inline void set_allocated_key(::std::string* key);
+
+  // optional int32 byte_size = 2;
+  inline bool has_byte_size() const;
+  inline void clear_byte_size();
+  static const int kByteSizeFieldNumber = 2;
+  inline ::google::protobuf::int32 byte_size() const;
+  inline void set_byte_size(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo.CacheEntryInfo)
+ private:
+  inline void set_has_key();
+  inline void clear_has_key();
+  inline void set_has_byte_size();
+  inline void clear_has_byte_size();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* key_;
+  ::google::protobuf::int32 byte_size_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterComponentInfo_CacheEntryInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class MasterComponentInfo : public ::google::protobuf::Message {
+ public:
+  MasterComponentInfo();
+  virtual ~MasterComponentInfo();
+
+  MasterComponentInfo(const MasterComponentInfo& from);
+
+  inline MasterComponentInfo& operator=(const MasterComponentInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterComponentInfo& default_instance();
+
+  void Swap(MasterComponentInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterComponentInfo* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterComponentInfo& from);
+  void MergeFrom(const MasterComponentInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef MasterComponentInfo_RegularizerInfo RegularizerInfo;
+  typedef MasterComponentInfo_ScoreInfo ScoreInfo;
+  typedef MasterComponentInfo_DictionaryInfo DictionaryInfo;
+  typedef MasterComponentInfo_BatchInfo BatchInfo;
+  typedef MasterComponentInfo_ModelInfo ModelInfo;
+  typedef MasterComponentInfo_CacheEntryInfo CacheEntryInfo;
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 master_id = 1;
+  inline bool has_master_id() const;
+  inline void clear_master_id();
+  static const int kMasterIdFieldNumber = 1;
+  inline ::google::protobuf::int32 master_id() const;
+  inline void set_master_id(::google::protobuf::int32 value);
+
+  // optional .artm.MasterComponentConfig config = 2;
+  inline bool has_config() const;
+  inline void clear_config();
+  static const int kConfigFieldNumber = 2;
+  inline const ::artm::MasterComponentConfig& config() const;
+  inline ::artm::MasterComponentConfig* mutable_config();
+  inline ::artm::MasterComponentConfig* release_config();
+  inline void set_allocated_config(::artm::MasterComponentConfig* config);
+
+  // repeated .artm.MasterComponentInfo.RegularizerInfo regularizer = 3;
+  inline int regularizer_size() const;
+  inline void clear_regularizer();
+  static const int kRegularizerFieldNumber = 3;
+  inline const ::artm::MasterComponentInfo_RegularizerInfo& regularizer(int index) const;
+  inline ::artm::MasterComponentInfo_RegularizerInfo* mutable_regularizer(int index);
+  inline ::artm::MasterComponentInfo_RegularizerInfo* add_regularizer();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_RegularizerInfo >&
+      regularizer() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_RegularizerInfo >*
+      mutable_regularizer();
+
+  // repeated .artm.MasterComponentInfo.ScoreInfo score = 4;
+  inline int score_size() const;
+  inline void clear_score();
+  static const int kScoreFieldNumber = 4;
+  inline const ::artm::MasterComponentInfo_ScoreInfo& score(int index) const;
+  inline ::artm::MasterComponentInfo_ScoreInfo* mutable_score(int index);
+  inline ::artm::MasterComponentInfo_ScoreInfo* add_score();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ScoreInfo >&
+      score() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ScoreInfo >*
+      mutable_score();
+
+  // repeated .artm.MasterComponentInfo.DictionaryInfo dictionary = 5;
+  inline int dictionary_size() const;
+  inline void clear_dictionary();
+  static const int kDictionaryFieldNumber = 5;
+  inline const ::artm::MasterComponentInfo_DictionaryInfo& dictionary(int index) const;
+  inline ::artm::MasterComponentInfo_DictionaryInfo* mutable_dictionary(int index);
+  inline ::artm::MasterComponentInfo_DictionaryInfo* add_dictionary();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_DictionaryInfo >&
+      dictionary() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_DictionaryInfo >*
+      mutable_dictionary();
+
+  // repeated .artm.MasterComponentInfo.ModelInfo model = 6;
+  inline int model_size() const;
+  inline void clear_model();
+  static const int kModelFieldNumber = 6;
+  inline const ::artm::MasterComponentInfo_ModelInfo& model(int index) const;
+  inline ::artm::MasterComponentInfo_ModelInfo* mutable_model(int index);
+  inline ::artm::MasterComponentInfo_ModelInfo* add_model();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ModelInfo >&
+      model() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ModelInfo >*
+      mutable_model();
+
+  // repeated .artm.MasterComponentInfo.CacheEntryInfo cache_entry = 7;
+  inline int cache_entry_size() const;
+  inline void clear_cache_entry();
+  static const int kCacheEntryFieldNumber = 7;
+  inline const ::artm::MasterComponentInfo_CacheEntryInfo& cache_entry(int index) const;
+  inline ::artm::MasterComponentInfo_CacheEntryInfo* mutable_cache_entry(int index);
+  inline ::artm::MasterComponentInfo_CacheEntryInfo* add_cache_entry();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo >&
+      cache_entry() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo >*
+      mutable_cache_entry();
+
+  // optional int32 merger_queue_size = 8;
+  inline bool has_merger_queue_size() const;
+  inline void clear_merger_queue_size();
+  static const int kMergerQueueSizeFieldNumber = 8;
+  inline ::google::protobuf::int32 merger_queue_size() const;
+  inline void set_merger_queue_size(::google::protobuf::int32 value);
+
+  // optional int32 processor_queue_size = 9;
+  inline bool has_processor_queue_size() const;
+  inline void clear_processor_queue_size();
+  static const int kProcessorQueueSizeFieldNumber = 9;
+  inline ::google::protobuf::int32 processor_queue_size() const;
+  inline void set_processor_queue_size(::google::protobuf::int32 value);
+
+  // repeated .artm.MasterComponentInfo.BatchInfo batch = 10;
+  inline int batch_size() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 10;
+  inline const ::artm::MasterComponentInfo_BatchInfo& batch(int index) const;
+  inline ::artm::MasterComponentInfo_BatchInfo* mutable_batch(int index);
+  inline ::artm::MasterComponentInfo_BatchInfo* add_batch();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo >&
+      batch() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo >*
+      mutable_batch();
+
+  // @@protoc_insertion_point(class_scope:artm.MasterComponentInfo)
+ private:
+  inline void set_has_master_id();
+  inline void clear_has_master_id();
+  inline void set_has_config();
+  inline void clear_has_config();
+  inline void set_has_merger_queue_size();
+  inline void clear_has_merger_queue_size();
+  inline void set_has_processor_queue_size();
+  inline void clear_has_processor_queue_size();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::artm::MasterComponentConfig* config_;
+  ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_RegularizerInfo > regularizer_;
+  ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ScoreInfo > score_;
+  ::google::protobuf::int32 master_id_;
+  ::google::protobuf::int32 merger_queue_size_;
+  ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_DictionaryInfo > dictionary_;
+  ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ModelInfo > model_;
+  ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo > cache_entry_;
+  ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo > batch_;
+  ::google::protobuf::int32 processor_queue_size_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterComponentInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ImportBatchesArgs : public ::google::protobuf::Message {
+ public:
+  ImportBatchesArgs();
+  virtual ~ImportBatchesArgs();
+
+  ImportBatchesArgs(const ImportBatchesArgs& from);
+
+  inline ImportBatchesArgs& operator=(const ImportBatchesArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ImportBatchesArgs& default_instance();
+
+  void Swap(ImportBatchesArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ImportBatchesArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ImportBatchesArgs& from);
+  void MergeFrom(const ImportBatchesArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string batch_name = 1;
+  inline int batch_name_size() const;
+  inline void clear_batch_name();
+  static const int kBatchNameFieldNumber = 1;
+  inline const ::std::string& batch_name(int index) const;
+  inline ::std::string* mutable_batch_name(int index);
+  inline void set_batch_name(int index, const ::std::string& value);
+  inline void set_batch_name(int index, const char* value);
+  inline void set_batch_name(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_name();
+  inline void add_batch_name(const ::std::string& value);
+  inline void add_batch_name(const char* value);
+  inline void add_batch_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_name();
+
+  // repeated .artm.Batch batch = 3;
+  inline int batch_size() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 3;
+  inline const ::artm::Batch& batch(int index) const;
+  inline ::artm::Batch* mutable_batch(int index);
+  inline ::artm::Batch* add_batch();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::Batch >&
+      batch() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
+      mutable_batch();
+
+  // @@protoc_insertion_point(class_scope:artm.ImportBatchesArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_name_;
+  ::google::protobuf::RepeatedPtrField< ::artm::Batch > batch_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ImportBatchesArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class DisposeBatchesArgs : public ::google::protobuf::Message {
+ public:
+  DisposeBatchesArgs();
+  virtual ~DisposeBatchesArgs();
+
+  DisposeBatchesArgs(const DisposeBatchesArgs& from);
+
+  inline DisposeBatchesArgs& operator=(const DisposeBatchesArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DisposeBatchesArgs& default_instance();
+
+  void Swap(DisposeBatchesArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  DisposeBatchesArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DisposeBatchesArgs& from);
+  void MergeFrom(const DisposeBatchesArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string batch_name = 1;
+  inline int batch_name_size() const;
+  inline void clear_batch_name();
+  static const int kBatchNameFieldNumber = 1;
+  inline const ::std::string& batch_name(int index) const;
+  inline ::std::string* mutable_batch_name(int index);
+  inline void set_batch_name(int index, const ::std::string& value);
+  inline void set_batch_name(int index, const char* value);
+  inline void set_batch_name(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_name();
+  inline void add_batch_name(const ::std::string& value);
+  inline void add_batch_name(const char* value);
+  inline void add_batch_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_name();
+
+  // @@protoc_insertion_point(class_scope:artm.DisposeBatchesArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static DisposeBatchesArgs* default_instance_;
 };
 // ===================================================================
 
@@ -9336,6 +11321,31 @@ Field::mutable_date_array() {
   return &date_array_;
 }
 
+// repeated float token_weight = 20;
+inline int Field::token_weight_size() const {
+  return token_weight_.size();
+}
+inline void Field::clear_token_weight() {
+  token_weight_.Clear();
+}
+inline float Field::token_weight(int index) const {
+  return token_weight_.Get(index);
+}
+inline void Field::set_token_weight(int index, float value) {
+  token_weight_.Set(index, value);
+}
+inline void Field::add_token_weight(float value) {
+  token_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+Field::token_weight() const {
+  return token_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+Field::mutable_token_weight() {
+  return &token_weight_;
+}
+
 // -------------------------------------------------------------------
 
 // Batch
@@ -9880,7 +11890,7 @@ inline void MasterComponentConfig::set_cache_theta(bool value) {
   cache_theta_ = value;
 }
 
-// optional int32 processors_count = 6 [default = 1];
+// optional int32 processors_count = 6;
 inline bool MasterComponentConfig::has_processors_count() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -9891,7 +11901,7 @@ inline void MasterComponentConfig::clear_has_processors_count() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void MasterComponentConfig::clear_processors_count() {
-  processors_count_ = 1;
+  processors_count_ = 0;
   clear_has_processors_count();
 }
 inline ::google::protobuf::int32 MasterComponentConfig::processors_count() const {
@@ -10842,6 +12852,28 @@ ModelConfig::regularizer_settings() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
 ModelConfig::mutable_regularizer_settings() {
   return &regularizer_settings_;
+}
+
+// optional bool use_ptdw_matrix = 19 [default = false];
+inline bool ModelConfig::has_use_ptdw_matrix() const {
+  return (_has_bits_[0] & 0x00040000u) != 0;
+}
+inline void ModelConfig::set_has_use_ptdw_matrix() {
+  _has_bits_[0] |= 0x00040000u;
+}
+inline void ModelConfig::clear_has_use_ptdw_matrix() {
+  _has_bits_[0] &= ~0x00040000u;
+}
+inline void ModelConfig::clear_use_ptdw_matrix() {
+  use_ptdw_matrix_ = false;
+  clear_has_use_ptdw_matrix();
+}
+inline bool ModelConfig::use_ptdw_matrix() const {
+  return use_ptdw_matrix_;
+}
+inline void ModelConfig::set_use_ptdw_matrix(bool value) {
+  set_has_use_ptdw_matrix();
+  use_ptdw_matrix_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -12225,6 +14257,28 @@ inline void DictionaryConfig::set_allocated_cooc_entries(::artm::DictionaryCoocu
   }
 }
 
+// optional float total_token_weight = 6;
+inline bool DictionaryConfig::has_total_token_weight() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void DictionaryConfig::set_has_total_token_weight() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void DictionaryConfig::clear_has_total_token_weight() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void DictionaryConfig::clear_total_token_weight() {
+  total_token_weight_ = 0;
+  clear_has_total_token_weight();
+}
+inline float DictionaryConfig::total_token_weight() const {
+  return total_token_weight_;
+}
+inline void DictionaryConfig::set_total_token_weight(float value) {
+  set_has_total_token_weight();
+  total_token_weight_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // DictionaryEntry
@@ -12517,6 +14571,28 @@ inline void DictionaryEntry::set_items_count(::google::protobuf::int32 value) {
   items_count_ = value;
 }
 
+// optional float token_weight = 8;
+inline bool DictionaryEntry::has_token_weight() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void DictionaryEntry::set_has_token_weight() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void DictionaryEntry::clear_has_token_weight() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void DictionaryEntry::clear_token_weight() {
+  token_weight_ = 0;
+  clear_has_token_weight();
+}
+inline float DictionaryEntry::token_weight() const {
+  return token_weight_;
+}
+inline void DictionaryEntry::set_token_weight(float value) {
+  set_has_token_weight();
+  token_weight_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // DictionaryCoocurenceEntries
@@ -12571,29 +14647,51 @@ DictionaryCoocurenceEntries::mutable_second_index() {
   return &second_index_;
 }
 
-// repeated float items_count = 3;
-inline int DictionaryCoocurenceEntries::items_count_size() const {
-  return items_count_.size();
+// repeated float value = 3;
+inline int DictionaryCoocurenceEntries::value_size() const {
+  return value_.size();
 }
-inline void DictionaryCoocurenceEntries::clear_items_count() {
-  items_count_.Clear();
+inline void DictionaryCoocurenceEntries::clear_value() {
+  value_.Clear();
 }
-inline float DictionaryCoocurenceEntries::items_count(int index) const {
-  return items_count_.Get(index);
+inline float DictionaryCoocurenceEntries::value(int index) const {
+  return value_.Get(index);
 }
-inline void DictionaryCoocurenceEntries::set_items_count(int index, float value) {
-  items_count_.Set(index, value);
+inline void DictionaryCoocurenceEntries::set_value(int index, float value) {
+  value_.Set(index, value);
 }
-inline void DictionaryCoocurenceEntries::add_items_count(float value) {
-  items_count_.Add(value);
+inline void DictionaryCoocurenceEntries::add_value(float value) {
+  value_.Add(value);
 }
 inline const ::google::protobuf::RepeatedField< float >&
-DictionaryCoocurenceEntries::items_count() const {
-  return items_count_;
+DictionaryCoocurenceEntries::value() const {
+  return value_;
 }
 inline ::google::protobuf::RepeatedField< float >*
-DictionaryCoocurenceEntries::mutable_items_count() {
-  return &items_count_;
+DictionaryCoocurenceEntries::mutable_value() {
+  return &value_;
+}
+
+// optional bool symmetric_cooc_values = 4 [default = false];
+inline bool DictionaryCoocurenceEntries::has_symmetric_cooc_values() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void DictionaryCoocurenceEntries::set_has_symmetric_cooc_values() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void DictionaryCoocurenceEntries::clear_has_symmetric_cooc_values() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void DictionaryCoocurenceEntries::clear_symmetric_cooc_values() {
+  symmetric_cooc_values_ = false;
+  clear_has_symmetric_cooc_values();
+}
+inline bool DictionaryCoocurenceEntries::symmetric_cooc_values() const {
+  return symmetric_cooc_values_;
+}
+inline void DictionaryCoocurenceEntries::set_symmetric_cooc_values(bool value) {
+  set_has_symmetric_cooc_values();
+  symmetric_cooc_values_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -15275,6 +17373,304 @@ TopicKernelScore::mutable_kernel_tokens() {
   return &kernel_tokens_;
 }
 
+// optional .artm.StringArray topic_name = 10;
+inline bool TopicKernelScore::has_topic_name() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void TopicKernelScore::set_has_topic_name() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void TopicKernelScore::clear_has_topic_name() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void TopicKernelScore::clear_topic_name() {
+  if (topic_name_ != NULL) topic_name_->::artm::StringArray::Clear();
+  clear_has_topic_name();
+}
+inline const ::artm::StringArray& TopicKernelScore::topic_name() const {
+  return topic_name_ != NULL ? *topic_name_ : *default_instance_->topic_name_;
+}
+inline ::artm::StringArray* TopicKernelScore::mutable_topic_name() {
+  set_has_topic_name();
+  if (topic_name_ == NULL) topic_name_ = new ::artm::StringArray;
+  return topic_name_;
+}
+inline ::artm::StringArray* TopicKernelScore::release_topic_name() {
+  clear_has_topic_name();
+  ::artm::StringArray* temp = topic_name_;
+  topic_name_ = NULL;
+  return temp;
+}
+inline void TopicKernelScore::set_allocated_topic_name(::artm::StringArray* topic_name) {
+  delete topic_name_;
+  topic_name_ = topic_name;
+  if (topic_name) {
+    set_has_topic_name();
+  } else {
+    clear_has_topic_name();
+  }
+}
+
+// -------------------------------------------------------------------
+
+// TopicMassPhiScoreConfig
+
+// optional float eps = 1 [default = 1e-037];
+inline bool TopicMassPhiScoreConfig::has_eps() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void TopicMassPhiScoreConfig::set_has_eps() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void TopicMassPhiScoreConfig::clear_has_eps() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void TopicMassPhiScoreConfig::clear_eps() {
+  eps_ = 1e-037f;
+  clear_has_eps();
+}
+inline float TopicMassPhiScoreConfig::eps() const {
+  return eps_;
+}
+inline void TopicMassPhiScoreConfig::set_eps(float value) {
+  set_has_eps();
+  eps_ = value;
+}
+
+// optional string class_id = 2 [default = "@default_class"];
+inline bool TopicMassPhiScoreConfig::has_class_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void TopicMassPhiScoreConfig::set_has_class_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void TopicMassPhiScoreConfig::clear_has_class_id() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void TopicMassPhiScoreConfig::clear_class_id() {
+  if (class_id_ != _default_class_id_) {
+    class_id_->assign(*_default_class_id_);
+  }
+  clear_has_class_id();
+}
+inline const ::std::string& TopicMassPhiScoreConfig::class_id() const {
+  return *class_id_;
+}
+inline void TopicMassPhiScoreConfig::set_class_id(const ::std::string& value) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void TopicMassPhiScoreConfig::set_class_id(const char* value) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void TopicMassPhiScoreConfig::set_class_id(const char* value, size_t size) {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicMassPhiScoreConfig::mutable_class_id() {
+  set_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    class_id_ = new ::std::string(*_default_class_id_);
+  }
+  return class_id_;
+}
+inline ::std::string* TopicMassPhiScoreConfig::release_class_id() {
+  clear_has_class_id();
+  if (class_id_ == _default_class_id_) {
+    return NULL;
+  } else {
+    ::std::string* temp = class_id_;
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
+    return temp;
+  }
+}
+inline void TopicMassPhiScoreConfig::set_allocated_class_id(::std::string* class_id) {
+  if (class_id_ != _default_class_id_) {
+    delete class_id_;
+  }
+  if (class_id) {
+    set_has_class_id();
+    class_id_ = class_id;
+  } else {
+    clear_has_class_id();
+    class_id_ = const_cast< ::std::string*>(_default_class_id_);
+  }
+}
+
+// repeated string topic_name = 3;
+inline int TopicMassPhiScoreConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void TopicMassPhiScoreConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& TopicMassPhiScoreConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* TopicMassPhiScoreConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void TopicMassPhiScoreConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicMassPhiScoreConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicMassPhiScoreConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicMassPhiScoreConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void TopicMassPhiScoreConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicMassPhiScoreConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicMassPhiScoreConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopicMassPhiScoreConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopicMassPhiScoreConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// -------------------------------------------------------------------
+
+// TopicMassPhiScore
+
+// optional double value = 1;
+inline bool TopicMassPhiScore::has_value() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void TopicMassPhiScore::set_has_value() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void TopicMassPhiScore::clear_has_value() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void TopicMassPhiScore::clear_value() {
+  value_ = 0;
+  clear_has_value();
+}
+inline double TopicMassPhiScore::value() const {
+  return value_;
+}
+inline void TopicMassPhiScore::set_value(double value) {
+  set_has_value();
+  value_ = value;
+}
+
+// repeated string topic_name = 2;
+inline int TopicMassPhiScore::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void TopicMassPhiScore::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& TopicMassPhiScore::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* TopicMassPhiScore::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void TopicMassPhiScore::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicMassPhiScore::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicMassPhiScore::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicMassPhiScore::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void TopicMassPhiScore::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicMassPhiScore::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicMassPhiScore::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopicMassPhiScore::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopicMassPhiScore::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated double topic_ratio = 3;
+inline int TopicMassPhiScore::topic_ratio_size() const {
+  return topic_ratio_.size();
+}
+inline void TopicMassPhiScore::clear_topic_ratio() {
+  topic_ratio_.Clear();
+}
+inline double TopicMassPhiScore::topic_ratio(int index) const {
+  return topic_ratio_.Get(index);
+}
+inline void TopicMassPhiScore::set_topic_ratio(int index, double value) {
+  topic_ratio_.Set(index, value);
+}
+inline void TopicMassPhiScore::add_topic_ratio(double value) {
+  topic_ratio_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+TopicMassPhiScore::topic_ratio() const {
+  return topic_ratio_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+TopicMassPhiScore::mutable_topic_ratio() {
+  return &topic_ratio_;
+}
+
+// repeated double topic_mass = 4;
+inline int TopicMassPhiScore::topic_mass_size() const {
+  return topic_mass_.size();
+}
+inline void TopicMassPhiScore::clear_topic_mass() {
+  topic_mass_.Clear();
+}
+inline double TopicMassPhiScore::topic_mass(int index) const {
+  return topic_mass_.Get(index);
+}
+inline void TopicMassPhiScore::set_topic_mass(int index, double value) {
+  topic_mass_.Set(index, value);
+}
+inline void TopicMassPhiScore::add_topic_mass(double value) {
+  topic_mass_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+TopicMassPhiScore::topic_mass() const {
+  return topic_mass_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+TopicMassPhiScore::mutable_topic_mass() {
+  return &topic_mass_;
+}
+
 // -------------------------------------------------------------------
 
 // TopicModel_TopicModelInternals
@@ -16355,6 +18751,72 @@ inline void CollectionParserConfig::set_gather_cooc(bool value) {
   gather_cooc_ = value;
 }
 
+// repeated string cooccurrence_class_id = 10;
+inline int CollectionParserConfig::cooccurrence_class_id_size() const {
+  return cooccurrence_class_id_.size();
+}
+inline void CollectionParserConfig::clear_cooccurrence_class_id() {
+  cooccurrence_class_id_.Clear();
+}
+inline const ::std::string& CollectionParserConfig::cooccurrence_class_id(int index) const {
+  return cooccurrence_class_id_.Get(index);
+}
+inline ::std::string* CollectionParserConfig::mutable_cooccurrence_class_id(int index) {
+  return cooccurrence_class_id_.Mutable(index);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const ::std::string& value) {
+  cooccurrence_class_id_.Mutable(index)->assign(value);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const char* value) {
+  cooccurrence_class_id_.Mutable(index)->assign(value);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const char* value, size_t size) {
+  cooccurrence_class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CollectionParserConfig::add_cooccurrence_class_id() {
+  return cooccurrence_class_id_.Add();
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const ::std::string& value) {
+  cooccurrence_class_id_.Add()->assign(value);
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const char* value) {
+  cooccurrence_class_id_.Add()->assign(value);
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const char* value, size_t size) {
+  cooccurrence_class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+CollectionParserConfig::cooccurrence_class_id() const {
+  return cooccurrence_class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+CollectionParserConfig::mutable_cooccurrence_class_id() {
+  return &cooccurrence_class_id_;
+}
+
+// optional bool use_symmetric_cooc_values = 11 [default = false];
+inline bool CollectionParserConfig::has_use_symmetric_cooc_values() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void CollectionParserConfig::set_has_use_symmetric_cooc_values() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void CollectionParserConfig::clear_has_use_symmetric_cooc_values() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void CollectionParserConfig::clear_use_symmetric_cooc_values() {
+  use_symmetric_cooc_values_ = false;
+  clear_has_use_symmetric_cooc_values();
+}
+inline bool CollectionParserConfig::use_symmetric_cooc_values() const {
+  return use_symmetric_cooc_values_;
+}
+inline void CollectionParserConfig::set_use_symmetric_cooc_values(bool value) {
+  set_has_use_symmetric_cooc_values();
+  use_symmetric_cooc_values_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // SynchronizeModelArgs
@@ -17029,6 +19491,50 @@ InitializeModelArgs::mutable_topic_name() {
   return &topic_name_;
 }
 
+// repeated string batch_filename = 8;
+inline int InitializeModelArgs::batch_filename_size() const {
+  return batch_filename_.size();
+}
+inline void InitializeModelArgs::clear_batch_filename() {
+  batch_filename_.Clear();
+}
+inline const ::std::string& InitializeModelArgs::batch_filename(int index) const {
+  return batch_filename_.Get(index);
+}
+inline ::std::string* InitializeModelArgs::mutable_batch_filename(int index) {
+  return batch_filename_.Mutable(index);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const ::std::string& value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const char* value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const char* value, size_t size) {
+  batch_filename_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* InitializeModelArgs::add_batch_filename() {
+  return batch_filename_.Add();
+}
+inline void InitializeModelArgs::add_batch_filename(const ::std::string& value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void InitializeModelArgs::add_batch_filename(const char* value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void InitializeModelArgs::add_batch_filename(const char* value, size_t size) {
+  batch_filename_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+InitializeModelArgs::batch_filename() const {
+  return batch_filename_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+InitializeModelArgs::mutable_batch_filename() {
+  return &batch_filename_;
+}
+
 // -------------------------------------------------------------------
 
 // GetTopicModelArgs
@@ -17302,6 +19808,29 @@ inline void GetTopicModelArgs::set_request_type(::artm::GetTopicModelArgs_Reques
   request_type_ = value;
 }
 
+// optional .artm.GetTopicModelArgs.MatrixLayout matrix_layout = 8 [default = Dense];
+inline bool GetTopicModelArgs::has_matrix_layout() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void GetTopicModelArgs::set_has_matrix_layout() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void GetTopicModelArgs::clear_has_matrix_layout() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void GetTopicModelArgs::clear_matrix_layout() {
+  matrix_layout_ = 0;
+  clear_has_matrix_layout();
+}
+inline ::artm::GetTopicModelArgs_MatrixLayout GetTopicModelArgs::matrix_layout() const {
+  return static_cast< ::artm::GetTopicModelArgs_MatrixLayout >(matrix_layout_);
+}
+inline void GetTopicModelArgs::set_matrix_layout(::artm::GetTopicModelArgs_MatrixLayout value) {
+  assert(::artm::GetTopicModelArgs_MatrixLayout_IsValid(value));
+  set_has_matrix_layout();
+  matrix_layout_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // GetThetaMatrixArgs
@@ -17547,6 +20076,29 @@ inline float GetThetaMatrixArgs::eps() const {
 inline void GetThetaMatrixArgs::set_eps(float value) {
   set_has_eps();
   eps_ = value;
+}
+
+// optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Dense];
+inline bool GetThetaMatrixArgs::has_matrix_layout() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void GetThetaMatrixArgs::set_has_matrix_layout() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void GetThetaMatrixArgs::clear_has_matrix_layout() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void GetThetaMatrixArgs::clear_matrix_layout() {
+  matrix_layout_ = 0;
+  clear_has_matrix_layout();
+}
+inline ::artm::GetThetaMatrixArgs_MatrixLayout GetThetaMatrixArgs::matrix_layout() const {
+  return static_cast< ::artm::GetThetaMatrixArgs_MatrixLayout >(matrix_layout_);
+}
+inline void GetThetaMatrixArgs::set_matrix_layout(::artm::GetThetaMatrixArgs_MatrixLayout value) {
+  assert(::artm::GetThetaMatrixArgs_MatrixLayout_IsValid(value));
+  set_has_matrix_layout();
+  matrix_layout_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -18321,6 +20873,80 @@ inline void ImportModelArgs::set_allocated_model_name(::std::string* model_name)
 
 // -------------------------------------------------------------------
 
+// AttachModelArgs
+
+// optional string model_name = 1;
+inline bool AttachModelArgs::has_model_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void AttachModelArgs::set_has_model_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void AttachModelArgs::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void AttachModelArgs::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& AttachModelArgs::model_name() const {
+  return *model_name_;
+}
+inline void AttachModelArgs::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void AttachModelArgs::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void AttachModelArgs::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* AttachModelArgs::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* AttachModelArgs::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void AttachModelArgs::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
 // ProcessBatchesArgs
 
 // optional string nwt_target_name = 1;
@@ -18846,6 +21472,53 @@ inline void ProcessBatchesArgs::set_theta_matrix_type(::artm::ProcessBatchesArgs
   assert(::artm::ProcessBatchesArgs_ThetaMatrixType_IsValid(value));
   set_has_theta_matrix_type();
   theta_matrix_type_ = value;
+}
+
+// repeated float batch_weight = 15;
+inline int ProcessBatchesArgs::batch_weight_size() const {
+  return batch_weight_.size();
+}
+inline void ProcessBatchesArgs::clear_batch_weight() {
+  batch_weight_.Clear();
+}
+inline float ProcessBatchesArgs::batch_weight(int index) const {
+  return batch_weight_.Get(index);
+}
+inline void ProcessBatchesArgs::set_batch_weight(int index, float value) {
+  batch_weight_.Set(index, value);
+}
+inline void ProcessBatchesArgs::add_batch_weight(float value) {
+  batch_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+ProcessBatchesArgs::batch_weight() const {
+  return batch_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+ProcessBatchesArgs::mutable_batch_weight() {
+  return &batch_weight_;
+}
+
+// optional bool use_ptdw_matrix = 16 [default = false];
+inline bool ProcessBatchesArgs::has_use_ptdw_matrix() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_use_ptdw_matrix() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void ProcessBatchesArgs::clear_has_use_ptdw_matrix() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void ProcessBatchesArgs::clear_use_ptdw_matrix() {
+  use_ptdw_matrix_ = false;
+  clear_has_use_ptdw_matrix();
+}
+inline bool ProcessBatchesArgs::use_ptdw_matrix() const {
+  return use_ptdw_matrix_;
+}
+inline void ProcessBatchesArgs::set_use_ptdw_matrix(bool value) {
+  set_has_use_ptdw_matrix();
+  use_ptdw_matrix_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -19555,6 +22228,1350 @@ inline void NormalizeModelArgs::set_allocated_rwt_source_name(::std::string* rwt
   }
 }
 
+// -------------------------------------------------------------------
+
+// ImportDictionaryArgs
+
+// optional string file_name = 1;
+inline bool ImportDictionaryArgs::has_file_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ImportDictionaryArgs::set_has_file_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ImportDictionaryArgs::clear_has_file_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ImportDictionaryArgs::clear_file_name() {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    file_name_->clear();
+  }
+  clear_has_file_name();
+}
+inline const ::std::string& ImportDictionaryArgs::file_name() const {
+  return *file_name_;
+}
+inline void ImportDictionaryArgs::set_file_name(const ::std::string& value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ImportDictionaryArgs::set_file_name(const char* value) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(value);
+}
+inline void ImportDictionaryArgs::set_file_name(const char* value, size_t size) {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  file_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportDictionaryArgs::mutable_file_name() {
+  set_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    file_name_ = new ::std::string;
+  }
+  return file_name_;
+}
+inline ::std::string* ImportDictionaryArgs::release_file_name() {
+  clear_has_file_name();
+  if (file_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = file_name_;
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImportDictionaryArgs::set_allocated_file_name(::std::string* file_name) {
+  if (file_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete file_name_;
+  }
+  if (file_name) {
+    set_has_file_name();
+    file_name_ = file_name;
+  } else {
+    clear_has_file_name();
+    file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string dictionary_name = 2;
+inline bool ImportDictionaryArgs::has_dictionary_name() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ImportDictionaryArgs::set_has_dictionary_name() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ImportDictionaryArgs::clear_has_dictionary_name() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ImportDictionaryArgs::clear_dictionary_name() {
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_->clear();
+  }
+  clear_has_dictionary_name();
+}
+inline const ::std::string& ImportDictionaryArgs::dictionary_name() const {
+  return *dictionary_name_;
+}
+inline void ImportDictionaryArgs::set_dictionary_name(const ::std::string& value) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(value);
+}
+inline void ImportDictionaryArgs::set_dictionary_name(const char* value) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(value);
+}
+inline void ImportDictionaryArgs::set_dictionary_name(const char* value, size_t size) {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportDictionaryArgs::mutable_dictionary_name() {
+  set_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_name_ = new ::std::string;
+  }
+  return dictionary_name_;
+}
+inline ::std::string* ImportDictionaryArgs::release_dictionary_name() {
+  clear_has_dictionary_name();
+  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = dictionary_name_;
+    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ImportDictionaryArgs::set_allocated_dictionary_name(::std::string* dictionary_name) {
+  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_name_;
+  }
+  if (dictionary_name) {
+    set_has_dictionary_name();
+    dictionary_name_ = dictionary_name;
+  } else {
+    clear_has_dictionary_name();
+    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// CopyRequestResultArgs
+
+// optional .artm.CopyRequestResultArgs.RequestType request_type = 1 [default = DefaultRequestType];
+inline bool CopyRequestResultArgs::has_request_type() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CopyRequestResultArgs::set_has_request_type() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CopyRequestResultArgs::clear_has_request_type() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void CopyRequestResultArgs::clear_request_type() {
+  request_type_ = 0;
+  clear_has_request_type();
+}
+inline ::artm::CopyRequestResultArgs_RequestType CopyRequestResultArgs::request_type() const {
+  return static_cast< ::artm::CopyRequestResultArgs_RequestType >(request_type_);
+}
+inline void CopyRequestResultArgs::set_request_type(::artm::CopyRequestResultArgs_RequestType value) {
+  assert(::artm::CopyRequestResultArgs_RequestType_IsValid(value));
+  set_has_request_type();
+  request_type_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// DuplicateMasterComponentArgs
+
+// -------------------------------------------------------------------
+
+// GetMasterComponentInfoArgs
+
+// -------------------------------------------------------------------
+
+// MasterComponentInfo_RegularizerInfo
+
+// optional string name = 1;
+inline bool MasterComponentInfo_RegularizerInfo::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MasterComponentInfo_RegularizerInfo::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MasterComponentInfo_RegularizerInfo::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void MasterComponentInfo_RegularizerInfo::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& MasterComponentInfo_RegularizerInfo::name() const {
+  return *name_;
+}
+inline void MasterComponentInfo_RegularizerInfo::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_RegularizerInfo::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_RegularizerInfo::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_RegularizerInfo::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* MasterComponentInfo_RegularizerInfo::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_RegularizerInfo::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string type = 2;
+inline bool MasterComponentInfo_RegularizerInfo::has_type() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MasterComponentInfo_RegularizerInfo::set_has_type() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MasterComponentInfo_RegularizerInfo::clear_has_type() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void MasterComponentInfo_RegularizerInfo::clear_type() {
+  if (type_ != &::google::protobuf::internal::GetEmptyString()) {
+    type_->clear();
+  }
+  clear_has_type();
+}
+inline const ::std::string& MasterComponentInfo_RegularizerInfo::type() const {
+  return *type_;
+}
+inline void MasterComponentInfo_RegularizerInfo::set_type(const ::std::string& value) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(value);
+}
+inline void MasterComponentInfo_RegularizerInfo::set_type(const char* value) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(value);
+}
+inline void MasterComponentInfo_RegularizerInfo::set_type(const char* value, size_t size) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_RegularizerInfo::mutable_type() {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  return type_;
+}
+inline ::std::string* MasterComponentInfo_RegularizerInfo::release_type() {
+  clear_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = type_;
+    type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_RegularizerInfo::set_allocated_type(::std::string* type) {
+  if (type_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete type_;
+  }
+  if (type) {
+    set_has_type();
+    type_ = type;
+  } else {
+    clear_has_type();
+    type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// MasterComponentInfo_ScoreInfo
+
+// optional string name = 1;
+inline bool MasterComponentInfo_ScoreInfo::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MasterComponentInfo_ScoreInfo::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MasterComponentInfo_ScoreInfo::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void MasterComponentInfo_ScoreInfo::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& MasterComponentInfo_ScoreInfo::name() const {
+  return *name_;
+}
+inline void MasterComponentInfo_ScoreInfo::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_ScoreInfo::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_ScoreInfo::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_ScoreInfo::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* MasterComponentInfo_ScoreInfo::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_ScoreInfo::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string type = 2;
+inline bool MasterComponentInfo_ScoreInfo::has_type() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MasterComponentInfo_ScoreInfo::set_has_type() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MasterComponentInfo_ScoreInfo::clear_has_type() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void MasterComponentInfo_ScoreInfo::clear_type() {
+  if (type_ != &::google::protobuf::internal::GetEmptyString()) {
+    type_->clear();
+  }
+  clear_has_type();
+}
+inline const ::std::string& MasterComponentInfo_ScoreInfo::type() const {
+  return *type_;
+}
+inline void MasterComponentInfo_ScoreInfo::set_type(const ::std::string& value) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(value);
+}
+inline void MasterComponentInfo_ScoreInfo::set_type(const char* value) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(value);
+}
+inline void MasterComponentInfo_ScoreInfo::set_type(const char* value, size_t size) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_ScoreInfo::mutable_type() {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  return type_;
+}
+inline ::std::string* MasterComponentInfo_ScoreInfo::release_type() {
+  clear_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = type_;
+    type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_ScoreInfo::set_allocated_type(::std::string* type) {
+  if (type_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete type_;
+  }
+  if (type) {
+    set_has_type();
+    type_ = type;
+  } else {
+    clear_has_type();
+    type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// MasterComponentInfo_DictionaryInfo
+
+// optional string name = 1;
+inline bool MasterComponentInfo_DictionaryInfo::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MasterComponentInfo_DictionaryInfo::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MasterComponentInfo_DictionaryInfo::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void MasterComponentInfo_DictionaryInfo::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& MasterComponentInfo_DictionaryInfo::name() const {
+  return *name_;
+}
+inline void MasterComponentInfo_DictionaryInfo::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_DictionaryInfo::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_DictionaryInfo::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_DictionaryInfo::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* MasterComponentInfo_DictionaryInfo::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_DictionaryInfo::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional int64 entries_count = 2;
+inline bool MasterComponentInfo_DictionaryInfo::has_entries_count() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MasterComponentInfo_DictionaryInfo::set_has_entries_count() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MasterComponentInfo_DictionaryInfo::clear_has_entries_count() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void MasterComponentInfo_DictionaryInfo::clear_entries_count() {
+  entries_count_ = GOOGLE_LONGLONG(0);
+  clear_has_entries_count();
+}
+inline ::google::protobuf::int64 MasterComponentInfo_DictionaryInfo::entries_count() const {
+  return entries_count_;
+}
+inline void MasterComponentInfo_DictionaryInfo::set_entries_count(::google::protobuf::int64 value) {
+  set_has_entries_count();
+  entries_count_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// MasterComponentInfo_BatchInfo
+
+// optional string name = 1;
+inline bool MasterComponentInfo_BatchInfo::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MasterComponentInfo_BatchInfo::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& MasterComponentInfo_BatchInfo::name() const {
+  return *name_;
+}
+inline void MasterComponentInfo_BatchInfo::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_BatchInfo::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_BatchInfo::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_BatchInfo::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* MasterComponentInfo_BatchInfo::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_BatchInfo::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional int32 items_count = 2;
+inline bool MasterComponentInfo_BatchInfo::has_items_count() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MasterComponentInfo_BatchInfo::set_has_items_count() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_has_items_count() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_items_count() {
+  items_count_ = 0;
+  clear_has_items_count();
+}
+inline ::google::protobuf::int32 MasterComponentInfo_BatchInfo::items_count() const {
+  return items_count_;
+}
+inline void MasterComponentInfo_BatchInfo::set_items_count(::google::protobuf::int32 value) {
+  set_has_items_count();
+  items_count_ = value;
+}
+
+// optional int32 token_count = 3;
+inline bool MasterComponentInfo_BatchInfo::has_token_count() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void MasterComponentInfo_BatchInfo::set_has_token_count() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_has_token_count() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void MasterComponentInfo_BatchInfo::clear_token_count() {
+  token_count_ = 0;
+  clear_has_token_count();
+}
+inline ::google::protobuf::int32 MasterComponentInfo_BatchInfo::token_count() const {
+  return token_count_;
+}
+inline void MasterComponentInfo_BatchInfo::set_token_count(::google::protobuf::int32 value) {
+  set_has_token_count();
+  token_count_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// MasterComponentInfo_ModelInfo
+
+// optional string name = 1;
+inline bool MasterComponentInfo_ModelInfo::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MasterComponentInfo_ModelInfo::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MasterComponentInfo_ModelInfo::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void MasterComponentInfo_ModelInfo::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& MasterComponentInfo_ModelInfo::name() const {
+  return *name_;
+}
+inline void MasterComponentInfo_ModelInfo::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_ModelInfo::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void MasterComponentInfo_ModelInfo::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_ModelInfo::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* MasterComponentInfo_ModelInfo::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_ModelInfo::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string type = 2;
+inline bool MasterComponentInfo_ModelInfo::has_type() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MasterComponentInfo_ModelInfo::set_has_type() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MasterComponentInfo_ModelInfo::clear_has_type() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void MasterComponentInfo_ModelInfo::clear_type() {
+  if (type_ != &::google::protobuf::internal::GetEmptyString()) {
+    type_->clear();
+  }
+  clear_has_type();
+}
+inline const ::std::string& MasterComponentInfo_ModelInfo::type() const {
+  return *type_;
+}
+inline void MasterComponentInfo_ModelInfo::set_type(const ::std::string& value) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(value);
+}
+inline void MasterComponentInfo_ModelInfo::set_type(const char* value) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(value);
+}
+inline void MasterComponentInfo_ModelInfo::set_type(const char* value, size_t size) {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  type_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_ModelInfo::mutable_type() {
+  set_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    type_ = new ::std::string;
+  }
+  return type_;
+}
+inline ::std::string* MasterComponentInfo_ModelInfo::release_type() {
+  clear_has_type();
+  if (type_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = type_;
+    type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_ModelInfo::set_allocated_type(::std::string* type) {
+  if (type_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete type_;
+  }
+  if (type) {
+    set_has_type();
+    type_ = type;
+  } else {
+    clear_has_type();
+    type_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional int32 topics_count = 3;
+inline bool MasterComponentInfo_ModelInfo::has_topics_count() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void MasterComponentInfo_ModelInfo::set_has_topics_count() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void MasterComponentInfo_ModelInfo::clear_has_topics_count() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void MasterComponentInfo_ModelInfo::clear_topics_count() {
+  topics_count_ = 0;
+  clear_has_topics_count();
+}
+inline ::google::protobuf::int32 MasterComponentInfo_ModelInfo::topics_count() const {
+  return topics_count_;
+}
+inline void MasterComponentInfo_ModelInfo::set_topics_count(::google::protobuf::int32 value) {
+  set_has_topics_count();
+  topics_count_ = value;
+}
+
+// optional int32 token_count = 4;
+inline bool MasterComponentInfo_ModelInfo::has_token_count() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void MasterComponentInfo_ModelInfo::set_has_token_count() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void MasterComponentInfo_ModelInfo::clear_has_token_count() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void MasterComponentInfo_ModelInfo::clear_token_count() {
+  token_count_ = 0;
+  clear_has_token_count();
+}
+inline ::google::protobuf::int32 MasterComponentInfo_ModelInfo::token_count() const {
+  return token_count_;
+}
+inline void MasterComponentInfo_ModelInfo::set_token_count(::google::protobuf::int32 value) {
+  set_has_token_count();
+  token_count_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// MasterComponentInfo_CacheEntryInfo
+
+// optional string key = 1;
+inline bool MasterComponentInfo_CacheEntryInfo::has_key() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MasterComponentInfo_CacheEntryInfo::set_has_key() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MasterComponentInfo_CacheEntryInfo::clear_has_key() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void MasterComponentInfo_CacheEntryInfo::clear_key() {
+  if (key_ != &::google::protobuf::internal::GetEmptyString()) {
+    key_->clear();
+  }
+  clear_has_key();
+}
+inline const ::std::string& MasterComponentInfo_CacheEntryInfo::key() const {
+  return *key_;
+}
+inline void MasterComponentInfo_CacheEntryInfo::set_key(const ::std::string& value) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::GetEmptyString()) {
+    key_ = new ::std::string;
+  }
+  key_->assign(value);
+}
+inline void MasterComponentInfo_CacheEntryInfo::set_key(const char* value) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::GetEmptyString()) {
+    key_ = new ::std::string;
+  }
+  key_->assign(value);
+}
+inline void MasterComponentInfo_CacheEntryInfo::set_key(const char* value, size_t size) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::GetEmptyString()) {
+    key_ = new ::std::string;
+  }
+  key_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterComponentInfo_CacheEntryInfo::mutable_key() {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::GetEmptyString()) {
+    key_ = new ::std::string;
+  }
+  return key_;
+}
+inline ::std::string* MasterComponentInfo_CacheEntryInfo::release_key() {
+  clear_has_key();
+  if (key_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = key_;
+    key_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterComponentInfo_CacheEntryInfo::set_allocated_key(::std::string* key) {
+  if (key_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete key_;
+  }
+  if (key) {
+    set_has_key();
+    key_ = key;
+  } else {
+    clear_has_key();
+    key_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional int32 byte_size = 2;
+inline bool MasterComponentInfo_CacheEntryInfo::has_byte_size() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MasterComponentInfo_CacheEntryInfo::set_has_byte_size() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MasterComponentInfo_CacheEntryInfo::clear_has_byte_size() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void MasterComponentInfo_CacheEntryInfo::clear_byte_size() {
+  byte_size_ = 0;
+  clear_has_byte_size();
+}
+inline ::google::protobuf::int32 MasterComponentInfo_CacheEntryInfo::byte_size() const {
+  return byte_size_;
+}
+inline void MasterComponentInfo_CacheEntryInfo::set_byte_size(::google::protobuf::int32 value) {
+  set_has_byte_size();
+  byte_size_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// MasterComponentInfo
+
+// optional int32 master_id = 1;
+inline bool MasterComponentInfo::has_master_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void MasterComponentInfo::set_has_master_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void MasterComponentInfo::clear_has_master_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void MasterComponentInfo::clear_master_id() {
+  master_id_ = 0;
+  clear_has_master_id();
+}
+inline ::google::protobuf::int32 MasterComponentInfo::master_id() const {
+  return master_id_;
+}
+inline void MasterComponentInfo::set_master_id(::google::protobuf::int32 value) {
+  set_has_master_id();
+  master_id_ = value;
+}
+
+// optional .artm.MasterComponentConfig config = 2;
+inline bool MasterComponentInfo::has_config() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void MasterComponentInfo::set_has_config() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void MasterComponentInfo::clear_has_config() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void MasterComponentInfo::clear_config() {
+  if (config_ != NULL) config_->::artm::MasterComponentConfig::Clear();
+  clear_has_config();
+}
+inline const ::artm::MasterComponentConfig& MasterComponentInfo::config() const {
+  return config_ != NULL ? *config_ : *default_instance_->config_;
+}
+inline ::artm::MasterComponentConfig* MasterComponentInfo::mutable_config() {
+  set_has_config();
+  if (config_ == NULL) config_ = new ::artm::MasterComponentConfig;
+  return config_;
+}
+inline ::artm::MasterComponentConfig* MasterComponentInfo::release_config() {
+  clear_has_config();
+  ::artm::MasterComponentConfig* temp = config_;
+  config_ = NULL;
+  return temp;
+}
+inline void MasterComponentInfo::set_allocated_config(::artm::MasterComponentConfig* config) {
+  delete config_;
+  config_ = config;
+  if (config) {
+    set_has_config();
+  } else {
+    clear_has_config();
+  }
+}
+
+// repeated .artm.MasterComponentInfo.RegularizerInfo regularizer = 3;
+inline int MasterComponentInfo::regularizer_size() const {
+  return regularizer_.size();
+}
+inline void MasterComponentInfo::clear_regularizer() {
+  regularizer_.Clear();
+}
+inline const ::artm::MasterComponentInfo_RegularizerInfo& MasterComponentInfo::regularizer(int index) const {
+  return regularizer_.Get(index);
+}
+inline ::artm::MasterComponentInfo_RegularizerInfo* MasterComponentInfo::mutable_regularizer(int index) {
+  return regularizer_.Mutable(index);
+}
+inline ::artm::MasterComponentInfo_RegularizerInfo* MasterComponentInfo::add_regularizer() {
+  return regularizer_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_RegularizerInfo >&
+MasterComponentInfo::regularizer() const {
+  return regularizer_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_RegularizerInfo >*
+MasterComponentInfo::mutable_regularizer() {
+  return &regularizer_;
+}
+
+// repeated .artm.MasterComponentInfo.ScoreInfo score = 4;
+inline int MasterComponentInfo::score_size() const {
+  return score_.size();
+}
+inline void MasterComponentInfo::clear_score() {
+  score_.Clear();
+}
+inline const ::artm::MasterComponentInfo_ScoreInfo& MasterComponentInfo::score(int index) const {
+  return score_.Get(index);
+}
+inline ::artm::MasterComponentInfo_ScoreInfo* MasterComponentInfo::mutable_score(int index) {
+  return score_.Mutable(index);
+}
+inline ::artm::MasterComponentInfo_ScoreInfo* MasterComponentInfo::add_score() {
+  return score_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ScoreInfo >&
+MasterComponentInfo::score() const {
+  return score_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ScoreInfo >*
+MasterComponentInfo::mutable_score() {
+  return &score_;
+}
+
+// repeated .artm.MasterComponentInfo.DictionaryInfo dictionary = 5;
+inline int MasterComponentInfo::dictionary_size() const {
+  return dictionary_.size();
+}
+inline void MasterComponentInfo::clear_dictionary() {
+  dictionary_.Clear();
+}
+inline const ::artm::MasterComponentInfo_DictionaryInfo& MasterComponentInfo::dictionary(int index) const {
+  return dictionary_.Get(index);
+}
+inline ::artm::MasterComponentInfo_DictionaryInfo* MasterComponentInfo::mutable_dictionary(int index) {
+  return dictionary_.Mutable(index);
+}
+inline ::artm::MasterComponentInfo_DictionaryInfo* MasterComponentInfo::add_dictionary() {
+  return dictionary_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_DictionaryInfo >&
+MasterComponentInfo::dictionary() const {
+  return dictionary_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_DictionaryInfo >*
+MasterComponentInfo::mutable_dictionary() {
+  return &dictionary_;
+}
+
+// repeated .artm.MasterComponentInfo.ModelInfo model = 6;
+inline int MasterComponentInfo::model_size() const {
+  return model_.size();
+}
+inline void MasterComponentInfo::clear_model() {
+  model_.Clear();
+}
+inline const ::artm::MasterComponentInfo_ModelInfo& MasterComponentInfo::model(int index) const {
+  return model_.Get(index);
+}
+inline ::artm::MasterComponentInfo_ModelInfo* MasterComponentInfo::mutable_model(int index) {
+  return model_.Mutable(index);
+}
+inline ::artm::MasterComponentInfo_ModelInfo* MasterComponentInfo::add_model() {
+  return model_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ModelInfo >&
+MasterComponentInfo::model() const {
+  return model_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ModelInfo >*
+MasterComponentInfo::mutable_model() {
+  return &model_;
+}
+
+// repeated .artm.MasterComponentInfo.CacheEntryInfo cache_entry = 7;
+inline int MasterComponentInfo::cache_entry_size() const {
+  return cache_entry_.size();
+}
+inline void MasterComponentInfo::clear_cache_entry() {
+  cache_entry_.Clear();
+}
+inline const ::artm::MasterComponentInfo_CacheEntryInfo& MasterComponentInfo::cache_entry(int index) const {
+  return cache_entry_.Get(index);
+}
+inline ::artm::MasterComponentInfo_CacheEntryInfo* MasterComponentInfo::mutable_cache_entry(int index) {
+  return cache_entry_.Mutable(index);
+}
+inline ::artm::MasterComponentInfo_CacheEntryInfo* MasterComponentInfo::add_cache_entry() {
+  return cache_entry_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo >&
+MasterComponentInfo::cache_entry() const {
+  return cache_entry_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo >*
+MasterComponentInfo::mutable_cache_entry() {
+  return &cache_entry_;
+}
+
+// optional int32 merger_queue_size = 8;
+inline bool MasterComponentInfo::has_merger_queue_size() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void MasterComponentInfo::set_has_merger_queue_size() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void MasterComponentInfo::clear_has_merger_queue_size() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void MasterComponentInfo::clear_merger_queue_size() {
+  merger_queue_size_ = 0;
+  clear_has_merger_queue_size();
+}
+inline ::google::protobuf::int32 MasterComponentInfo::merger_queue_size() const {
+  return merger_queue_size_;
+}
+inline void MasterComponentInfo::set_merger_queue_size(::google::protobuf::int32 value) {
+  set_has_merger_queue_size();
+  merger_queue_size_ = value;
+}
+
+// optional int32 processor_queue_size = 9;
+inline bool MasterComponentInfo::has_processor_queue_size() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void MasterComponentInfo::set_has_processor_queue_size() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void MasterComponentInfo::clear_has_processor_queue_size() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void MasterComponentInfo::clear_processor_queue_size() {
+  processor_queue_size_ = 0;
+  clear_has_processor_queue_size();
+}
+inline ::google::protobuf::int32 MasterComponentInfo::processor_queue_size() const {
+  return processor_queue_size_;
+}
+inline void MasterComponentInfo::set_processor_queue_size(::google::protobuf::int32 value) {
+  set_has_processor_queue_size();
+  processor_queue_size_ = value;
+}
+
+// repeated .artm.MasterComponentInfo.BatchInfo batch = 10;
+inline int MasterComponentInfo::batch_size() const {
+  return batch_.size();
+}
+inline void MasterComponentInfo::clear_batch() {
+  batch_.Clear();
+}
+inline const ::artm::MasterComponentInfo_BatchInfo& MasterComponentInfo::batch(int index) const {
+  return batch_.Get(index);
+}
+inline ::artm::MasterComponentInfo_BatchInfo* MasterComponentInfo::mutable_batch(int index) {
+  return batch_.Mutable(index);
+}
+inline ::artm::MasterComponentInfo_BatchInfo* MasterComponentInfo::add_batch() {
+  return batch_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo >&
+MasterComponentInfo::batch() const {
+  return batch_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo >*
+MasterComponentInfo::mutable_batch() {
+  return &batch_;
+}
+
+// -------------------------------------------------------------------
+
+// ImportBatchesArgs
+
+// repeated string batch_name = 1;
+inline int ImportBatchesArgs::batch_name_size() const {
+  return batch_name_.size();
+}
+inline void ImportBatchesArgs::clear_batch_name() {
+  batch_name_.Clear();
+}
+inline const ::std::string& ImportBatchesArgs::batch_name(int index) const {
+  return batch_name_.Get(index);
+}
+inline ::std::string* ImportBatchesArgs::mutable_batch_name(int index) {
+  return batch_name_.Mutable(index);
+}
+inline void ImportBatchesArgs::set_batch_name(int index, const ::std::string& value) {
+  batch_name_.Mutable(index)->assign(value);
+}
+inline void ImportBatchesArgs::set_batch_name(int index, const char* value) {
+  batch_name_.Mutable(index)->assign(value);
+}
+inline void ImportBatchesArgs::set_batch_name(int index, const char* value, size_t size) {
+  batch_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ImportBatchesArgs::add_batch_name() {
+  return batch_name_.Add();
+}
+inline void ImportBatchesArgs::add_batch_name(const ::std::string& value) {
+  batch_name_.Add()->assign(value);
+}
+inline void ImportBatchesArgs::add_batch_name(const char* value) {
+  batch_name_.Add()->assign(value);
+}
+inline void ImportBatchesArgs::add_batch_name(const char* value, size_t size) {
+  batch_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ImportBatchesArgs::batch_name() const {
+  return batch_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ImportBatchesArgs::mutable_batch_name() {
+  return &batch_name_;
+}
+
+// repeated .artm.Batch batch = 3;
+inline int ImportBatchesArgs::batch_size() const {
+  return batch_.size();
+}
+inline void ImportBatchesArgs::clear_batch() {
+  batch_.Clear();
+}
+inline const ::artm::Batch& ImportBatchesArgs::batch(int index) const {
+  return batch_.Get(index);
+}
+inline ::artm::Batch* ImportBatchesArgs::mutable_batch(int index) {
+  return batch_.Mutable(index);
+}
+inline ::artm::Batch* ImportBatchesArgs::add_batch() {
+  return batch_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::Batch >&
+ImportBatchesArgs::batch() const {
+  return batch_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
+ImportBatchesArgs::mutable_batch() {
+  return &batch_;
+}
+
+// -------------------------------------------------------------------
+
+// DisposeBatchesArgs
+
+// repeated string batch_name = 1;
+inline int DisposeBatchesArgs::batch_name_size() const {
+  return batch_name_.size();
+}
+inline void DisposeBatchesArgs::clear_batch_name() {
+  batch_name_.Clear();
+}
+inline const ::std::string& DisposeBatchesArgs::batch_name(int index) const {
+  return batch_name_.Get(index);
+}
+inline ::std::string* DisposeBatchesArgs::mutable_batch_name(int index) {
+  return batch_name_.Mutable(index);
+}
+inline void DisposeBatchesArgs::set_batch_name(int index, const ::std::string& value) {
+  batch_name_.Mutable(index)->assign(value);
+}
+inline void DisposeBatchesArgs::set_batch_name(int index, const char* value) {
+  batch_name_.Mutable(index)->assign(value);
+}
+inline void DisposeBatchesArgs::set_batch_name(int index, const char* value, size_t size) {
+  batch_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DisposeBatchesArgs::add_batch_name() {
+  return batch_name_.Add();
+}
+inline void DisposeBatchesArgs::add_batch_name(const ::std::string& value) {
+  batch_name_.Add()->assign(value);
+}
+inline void DisposeBatchesArgs::add_batch_name(const char* value) {
+  batch_name_.Add()->assign(value);
+}
+inline void DisposeBatchesArgs::add_batch_name(const char* value, size_t size) {
+  batch_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DisposeBatchesArgs::batch_name() const {
+  return batch_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DisposeBatchesArgs::mutable_batch_name() {
+  return &batch_name_;
+}
+
 
 // @@protoc_insertion_point(namespace_scope)
 
@@ -19609,8 +23626,20 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::GetTopicModelArgs_Reques
   return ::artm::GetTopicModelArgs_RequestType_descriptor();
 }
 template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::GetTopicModelArgs_MatrixLayout>() {
+  return ::artm::GetTopicModelArgs_MatrixLayout_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::GetThetaMatrixArgs_MatrixLayout>() {
+  return ::artm::GetThetaMatrixArgs_MatrixLayout_descriptor();
+}
+template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::ProcessBatchesArgs_ThetaMatrixType>() {
   return ::artm::ProcessBatchesArgs_ThetaMatrixType_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::CopyRequestResultArgs_RequestType>() {
+  return ::artm::CopyRequestResultArgs_RequestType_descriptor();
 }
 
 }  // namespace google

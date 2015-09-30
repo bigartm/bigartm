@@ -20,7 +20,9 @@ class InstanceTest : boost::noncopyable {
   std::shared_ptr<artm::core::Instance> instance() { return instance_; }
 
   InstanceTest() : instance_(nullptr) {
-    instance_.reset(new ::artm::core::Instance(::artm::MasterComponentConfig()));
+    ::artm::MasterComponentConfig config;
+    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error=*/ true);
+    instance_.reset(new ::artm::core::Instance(config));
   }
 
   ~InstanceTest() {}
@@ -50,7 +52,7 @@ class InstanceTest : boost::noncopyable {
       artm::Field* field = item->add_field();
       for (int i = 0; i <= iLength; ++i) {
         field->add_token_id(iToken);
-        field->add_token_count(iOccurences + 1);
+        field->add_token_weight(static_cast<float>(iOccurences + 1));
 
         iOccurences = (iOccurences + 1) % max_occurences;
         iToken = (iToken + 1) % n_tokens;
@@ -69,7 +71,9 @@ class InstanceTest : boost::noncopyable {
 
 // artm_tests.exe --gtest_filter=Instance.Basic
 TEST(Instance, Basic) {
-  auto instance = std::make_shared< ::artm::core::Instance>(::artm::MasterComponentConfig());
+  ::artm::MasterComponentConfig master_config;
+  ::artm::core::Helpers::FixAndValidate(&master_config, /* throw =*/ true);
+  auto instance = std::make_shared< ::artm::core::Instance>(master_config);
 
   artm::Batch batch1;
   batch1.set_id("c722e9bd-28f8-4af0-a4fe-790681982a87");
@@ -79,7 +83,7 @@ TEST(Instance, Basic) {
     artm::Item* item = batch1.add_item();
     artm::Field* field = item->add_field();
     field->add_token_id(i);
-    field->add_token_count(i+1);
+    field->add_token_weight(static_cast<float>(i+1));
   }
 
   ::artm::core::Helpers::Fix(&batch1);
@@ -94,7 +98,7 @@ TEST(Instance, Basic) {
   artm::Field* field = item->add_field();
   for (int iToken = 0; iToken < 2; ++iToken) {
     field->add_token_id(iToken);
-    field->add_token_count(iToken + 2);
+    field->add_token_weight(static_cast<float>(iToken + 2));
   }
 
   artm::AddBatchArgs args4;
@@ -159,6 +163,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   add_args.set_reset_scores(true);
 
   ::artm::MasterComponentConfig config;
+  ::artm::core::Helpers::FixAndValidate(&config, /* throw =*/ true);
   artm::Stream* s1 = config.add_stream();
   s1->set_type(artm::Stream_Type_ItemIdModulus);
   s1->set_modulus(2);

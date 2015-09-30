@@ -33,12 +33,15 @@ namespace artm {
 namespace core {
 
 MasterComponent::MasterComponent(int id, const MasterComponentConfig& config)
-    : is_configured_(false),
-      master_id_(id),
-      config_(std::make_shared<MasterComponentConfig>(config)),
-      instance_(nullptr) {
+    : master_id_(id),
+      instance_(std::make_shared<Instance>(config)) {
   LOG(INFO) << "Creating MasterComponent (id=" << master_id_ << ")...";
-  Reconfigure(config);
+}
+
+MasterComponent::MasterComponent(int id, const MasterComponent& rhs)
+  : master_id_(id),
+    instance_(rhs.instance_->Duplicate()) {
+  LOG(INFO) << "Copying MasterComponent (id=" << rhs.id() << " to id=" << master_id_ << ")...";
 }
 
 MasterComponent::~MasterComponent() {
@@ -81,6 +84,33 @@ void MasterComponent::DisposeDictionary(const std::string& name) {
   instance_->DisposeDictionary(name);
 }
 
+void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
+  DictionaryConfig config;
+  BatchHelpers::LoadMessage(args.file_name(), &config);
+  Helpers::FixAndValidate(&config, /* throw_error =*/ true);
+  config.set_name(args.dictionary_name());
+
+  instance_->CreateOrReconfigureDictionary(config);
+  LOG(INFO) << "Dictionary import completed";
+}
+
+void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
+  if (args.batch_name_size() != args.batch_size())
+    BOOST_THROW_EXCEPTION(InvalidOperation("ImportBatchesArgs: batch_name_size() != batch_size()"));
+
+  for (int i = 0; i < args.batch_name_size(); ++i) {
+    std::shared_ptr<Batch> batch = std::make_shared<Batch>(args.batch(i));
+    Helpers::FixAndValidate(batch.get(), /* throw_error =*/ true);
+    instance_->batches()->set(args.batch_name(i), batch);
+  }
+}
+
+void MasterComponent::DisposeBatches(const DisposeBatchesArgs& args) {
+  for (auto& batch_name : args.batch_name())
+    instance_->batches()->erase(batch_name);
+}
+
+
 void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
   instance_->merger()->ForceSynchronizeModel(args);
 }
@@ -110,7 +140,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   ::artm::GetTopicModelArgs get_topic_model_args;
   get_topic_model_args.set_model_name(args.model_name());
   get_topic_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Nwt);
-  get_topic_model_args.set_use_sparse_format(true);
+  get_topic_model_args.set_matrix_layout(::artm::GetTopicModelArgs_MatrixLayout_Sparse);
   get_topic_model_args.mutable_token()->Reserve(tokens_per_chunk);
   get_topic_model_args.mutable_class_id()->Reserve(tokens_per_chunk);
 
@@ -186,30 +216,34 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     << ", topic_size = " << target->topic_size();
 }
 
+void MasterComponent::AttachModel(const AttachModelArgs& args, int address_length, float* address) {
+  ModelName model_name = args.model_name();
+  LOG(INFO) << "Attaching model " << model_name << " to " << address << " (" << address_length << " bytes)";
+
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
+  if (phi_matrix == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
+
+  PhiMatrixFrame* frame = dynamic_cast<PhiMatrixFrame*>(const_cast<PhiMatrix*>(phi_matrix.get()));
+  if (frame == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Unable to attach to model " + model_name));
+
+  std::shared_ptr<AttachedPhiMatrix> attached = std::make_shared<AttachedPhiMatrix>(address_length, address, frame);
+  instance_->merger()->SetPhiMatrix(model_name, attached);
+}
+
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   LOG(INFO) << "MasterComponent::InitializeModel() with " << Helpers::Describe(args);
   instance_->merger()->InitializeModel(args);
 }
 
-void MasterComponent::Reconfigure(const MasterComponentConfig& user_config) {
-  LOG(INFO) << "MasterComponent::Reconfigure() with " << Helpers::Describe(user_config);
-  ValidateConfig(user_config);
+void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
+  LOG(INFO) << "MasterComponent::Reconfigure() with " << Helpers::Describe(config);
 
-  MasterComponentConfig config(user_config);  // make a copy
-  if (!config.has_processor_queue_max_size()) {
-    // The default setting for processor queue max size is to use the number of processors.
-    config.set_processor_queue_max_size(config.processors_count());
-  }
+  if (instance_->schema()->config().disk_path() != config.disk_path())
+    BOOST_THROW_EXCEPTION(InvalidOperation("Changing disk_path is not supported."));
 
-  config_.set(std::make_shared<MasterComponentConfig>(config));
-
-  if (!is_configured_) {
-    // First configuration
-    instance_.reset(new Instance(config));
-    is_configured_ = true;
-  } else {
-    instance_->Reconfigure(config);
-  }
+  instance_->Reconfigure(config);
 }
 
 bool MasterComponent::RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
@@ -235,9 +269,18 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
   return true;
 }
 
+void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
+  std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
+  master_info->set_master_id(master_id_);
+  this->instance_->RequestMasterComponentInfo(master_info);
+}
+
 void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                             ProcessBatchesResult* process_batches_result) {
   LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
+  std::shared_ptr<InstanceSchema> schema = instance_->schema();
+  const MasterComponentConfig& config = schema->config();
+
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
   ModelConfig model_config;
@@ -251,6 +294,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   if (args.has_reuse_theta()) model_config.set_reuse_theta(args.reuse_theta());
   if (args.has_opt_for_avx()) model_config.set_opt_for_avx(args.opt_for_avx());
   if (args.has_use_sparse_bow()) model_config.set_use_sparse_bow(args.use_sparse_bow());
+  if (args.has_use_ptdw_matrix()) model_config.set_use_ptdw_matrix(args.use_ptdw_matrix());
 
   std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
@@ -277,20 +321,35 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   ScoresMerger* scores_merger = instance_->merger()->scores_merger();
 
   bool return_theta = false;
-  CacheManager* cache_manager_ptr = nullptr;
+  bool return_ptdw = false;
+  CacheManager* ptdw_cache_manager_ptr = nullptr;
+  CacheManager* theta_cache_manager_ptr = nullptr;
   switch (args.theta_matrix_type()) {
     case ProcessBatchesArgs_ThetaMatrixType_Cache:
       if (instance_->schema()->config().cache_theta())
-        cache_manager_ptr = instance_->cache_manager();
+        theta_cache_manager_ptr = instance_->cache_manager();
       break;
     case ProcessBatchesArgs_ThetaMatrixType_Dense:
     case ProcessBatchesArgs_ThetaMatrixType_Sparse:
-      cache_manager_ptr = &cache_manager;
+      theta_cache_manager_ptr = &cache_manager;
       return_theta = true;
+      break;
+    case ProcessBatchesArgs_ThetaMatrixType_DensePtdw:
+    case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
+      ptdw_cache_manager_ptr = &cache_manager;
+      return_ptdw = true;
   }
 
   if (args.reset_scores())
     scores_merger->ResetScores(model_name);
+
+  if (args.batch_filename_size() < config.processors_count()) {
+    LOG_FIRST_N(INFO, 1) << "Batches count (=" << args.batch_filename_size()
+                         << ") is smaller than processors threads count (="
+                         << config.processors_count()
+                         << "), which may cause suboptimal performance.";
+  }
+
   for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
     batch_manager.Add(task_id, std::string(), model_name);
@@ -298,12 +357,21 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(&batch_manager);
     pi->set_scores_merger(scores_merger);
-    pi->set_cache_manager(cache_manager_ptr);
+    pi->set_cache_manager(theta_cache_manager_ptr);
+    pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
     pi->set_batch_filename(args.batch_filename(batch_index));
+    pi->set_batch_weight(args.batch_weight(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);
+
+    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_DensePtdw ||
+        args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_SparsePtdw)
+      pi->mutable_model_config()->set_use_ptdw_matrix(true);
+
+    if (args.reuse_theta())
+      pi->set_reuse_theta_cache_manager(instance_->cache_manager());
 
     if (args.has_nwt_target_name())
       pi->set_nwt_target_name(args.nwt_target_name());
@@ -316,21 +384,28 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   }
 
   process_batches_result->Clear();
-  std::shared_ptr<MasterComponentConfig> config = config_.get();
-  std::shared_ptr<InstanceSchema> schema = instance_->schema();
-  for (int score_index = 0; score_index < config->score_config_size(); ++score_index) {
-    ScoreName score_name = config->score_config(score_index).name();
+  for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
+    ScoreName score_name = config.score_config(score_index).name();
     ScoreData score_data;
     if (scores_merger->RequestScore(schema, model_name, score_name, &score_data))
       process_batches_result->add_score_data()->Swap(&score_data);
   }
 
-  if (return_theta) {
-    GetThetaMatrixArgs gta;
-    gta.set_model_name(model_name);
-    gta.set_use_sparse_format(args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_Sparse);
-    cache_manager.RequestThetaMatrix(gta, process_batches_result->mutable_theta_matrix());
+  GetThetaMatrixArgs get_theta_matrix_args;
+  get_theta_matrix_args.set_model_name(model_name);
+  switch (args.theta_matrix_type()) {
+    case ProcessBatchesArgs_ThetaMatrixType_Dense:
+    case ProcessBatchesArgs_ThetaMatrixType_DensePtdw:
+      get_theta_matrix_args.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Dense);
+      break;
+    case ProcessBatchesArgs_ThetaMatrixType_Sparse:
+    case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
+      get_theta_matrix_args.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
+      break;
   }
+
+  if (args.has_theta_matrix_type())
+    cache_manager.RequestThetaMatrix(get_theta_matrix_args, process_batches_result->mutable_theta_matrix());
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
@@ -492,16 +567,6 @@ bool MasterComponent::AddBatch(const AddBatchArgs& args) {
     instance_->merger()->ForceResetScores(ModelName());
 
   return instance_->data_loader()->AddBatch(args);
-}
-
-void MasterComponent::ValidateConfig(const MasterComponentConfig& config) {
-  if (is_configured_) {
-    std::shared_ptr<MasterComponentConfig> current_config = config_.get();
-    if (current_config->disk_path() != config.disk_path()) {
-      std::string message = "Changing disk_path is not supported.";
-      BOOST_THROW_EXCEPTION(InvalidOperation(message));
-    }
-  }
 }
 
 }  // namespace core

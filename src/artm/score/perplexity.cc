@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "artm/core/exceptions.h"
+#include "artm/core/protobuf_helpers.h"
 
 #include "artm/score/perplexity.h"
 
@@ -29,34 +30,20 @@ void Perplexity::AppendScore(
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_size = p_wt.topic_size();
+  int topic_size = p_wt.topic_size();
 
   // the following code counts sparsity of theta
-  auto topic_name = p_wt.topic_name();
   std::vector<bool> topics_to_score;
-  int topics_to_score_size = 0;
-
-  if (config_.theta_sparsity_topic_name_size() > 0) {
-    for (int i = 0; i < topics_size; ++i)
-      topics_to_score.push_back(false);
-
-    for (int topic_id = 0; topic_id < config_.theta_sparsity_topic_name_size(); ++topic_id) {
-      for (int real_topic_id = 0; real_topic_id < topics_size; ++real_topic_id) {
-        if (topic_name.Get(real_topic_id) == config_.theta_sparsity_topic_name(topic_id)) {
-          topics_to_score[real_topic_id] = true;
-          topics_to_score_size++;
-          break;
-        }
-      }
-    }
+  int topics_to_score_size = topic_size;
+  if (config_.theta_sparsity_topic_name_size() == 0) {
+    topics_to_score.assign(topic_size, true);
   } else {
-    topics_to_score_size = topics_size;
-    for (int i = 0; i < topics_size; ++i)
-      topics_to_score.push_back(true);
+    topics_to_score = core::is_member(p_wt.topic_name(), config_.theta_sparsity_topic_name());
+    topics_to_score_size = config_.theta_sparsity_topic_name_size();
   }
 
   int zero_topics_count = 0;
-  for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     if ((fabs(theta[topic_index]) < config_.theta_sparsity_eps()) &&
         topics_to_score[topic_index]) {
       ++zero_topics_count;
@@ -84,7 +71,7 @@ void Perplexity::AppendScore(
 
   float n_d = 0;
   for (auto& field : item.field()) {
-    for (int token_index = 0; token_index < field.token_count_size(); ++token_index) {
+    for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
       float class_weight = 1.0f;
       if (use_class_id) {
         ::artm::core::ClassId class_id = token_dict[field.token_id(token_index)].class_id;
@@ -94,7 +81,7 @@ void Perplexity::AppendScore(
         class_weight = iter->second;
       }
 
-      n_d += class_weight * static_cast<float>(field.token_count(token_index));
+      n_d += class_weight * field.token_weight(token_index);
     }
   }
 
@@ -121,7 +108,7 @@ void Perplexity::AppendScore(
   }
 
   for (auto& field : item.field()) {
-    for (int token_index = 0; token_index < field.token_count_size(); ++token_index) {
+    for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
       double sum = 0.0;
       const artm::core::Token& token = token_dict[field.token_id(token_index)];
 
@@ -133,19 +120,18 @@ void Perplexity::AppendScore(
         class_weight = iter->second;
       }
 
-      int token_count_int = field.token_count(token_index);
-      if (token_count_int == 0) continue;
-      double token_count = class_weight * static_cast<double>(token_count_int);
+      float token_weight = class_weight * field.token_weight(token_index);
+      if (token_weight == 0.0f) continue;
 
       int p_wt_token_index = p_wt.token_index(token);
       if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
-        for (int topic_index = 0; topic_index < topics_size; topic_index++) {
+        for (int topic_index = 0; topic_index < topic_size; topic_index++) {
           sum += theta[topic_index] * p_wt.get(p_wt_token_index, topic_index);
         }
       }
       if (sum == 0.0) {
         if (use_document_unigram_model) {
-          sum = token_count / n_d;
+          sum = token_weight / n_d;
         } else {
           auto entry_ptr = dictionary_ptr->entry(token);
           bool failed = true;
@@ -158,14 +144,14 @@ void Perplexity::AppendScore(
             LOG(INFO) << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
                       << ". Verify that the token exists in the dictionary and contains DictionaryEntry.value field. "
                       << "Document unigram model will be used for this token.";
-            sum = token_count / n_d;
+            sum = token_weight / n_d;
           }
         }
         zero_words++;
       }
 
-      normalizer += token_count;
-      raw        += token_count * log(sum);
+      normalizer += token_weight;
+      raw        += token_weight * log(sum);
     }
   }
 

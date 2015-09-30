@@ -37,7 +37,7 @@ message Item {
 message Field {
   optional string name = 1 [default = "@body"];
   repeated int32 token_id = 2;
-  repeated int32 token_count = 3;
+  repeated int32 token_count = 3;  // obsolete in BigARTM v0.7.2
   repeated int32 token_offset = 4;
 
   optional string string_value = 5;
@@ -49,6 +49,8 @@ message Field {
   repeated int64 int_array = 17;
   repeated double double_array = 18;
   repeated string date_array = 19;
+
+  repeated float token_weight = 20;
 }
 
 // Represents a set of items.
@@ -79,7 +81,7 @@ message MasterComponentConfig {
   repeated Stream stream = 3;
   optional bool compact_batches = 4 [default = true];
   optional bool cache_theta = 5 [default = false];
-  optional int32 processors_count = 6 [default = 1];
+  optional int32 processors_count = 6;
   optional int32 processor_queue_max_size = 7 [default = 10];
   optional int32 merger_queue_max_size = 8 [default = 10];
   repeated ScoreConfig score_config = 9;
@@ -114,6 +116,7 @@ message ModelConfig {
   optional bool use_new_tokens = 16 [default = true];
   optional bool opt_for_avx = 17 [default = true];
   repeated RegularizerSettings regularizer_settings = 18;
+  optional bool use_ptdw_matrix = 19 [default = false];
 }
 
 // Represents a configuration of a general regularizer
@@ -202,9 +205,10 @@ message MultiLanguagePhiInternalState {
 message DictionaryConfig {
   optional string name = 1;
   repeated DictionaryEntry entry = 2;
-  optional int32 total_token_count = 3;
+  optional int32 total_token_count = 3;  // obsolete in BigARTM v0.7.2
   optional int32 total_items_count = 4;
   optional DictionaryCoocurenceEntries cooc_entries = 5;
+  optional float total_token_weight = 6;
 }
 
 // Represents one entry in a static dictionary
@@ -214,15 +218,17 @@ message DictionaryEntry {
   optional float value = 3;
   repeated string value_tokens = 4;
   optional FloatArray values = 5;
-  optional int32 token_count = 6;
+  optional int32 token_count = 6;  // obsolete in BigARTM v0.7.2
   optional int32 items_count = 7;
+  optional float token_weight = 8;
 }
 
 // Represents the info about co-occurrence between one pair of tokens in a static dictionary
 message DictionaryCoocurenceEntries {
   repeated int32 first_index = 1;  // index of token in entry field
   repeated int32 second_index = 2; // index of token in entry field
-  repeated float items_count = 3;
+  repeated float value = 3;
+  optional bool symmetric_cooc_values = 4 [default = false];
 }
 
 // Represents a configuration of a general score
@@ -235,6 +241,7 @@ message ScoreConfig {
     TopTokens = 4;
     ThetaSnippet = 5;
     TopicKernel = 6;
+    TopicMassPhi = 7;
   }
 
   optional string name = 1;
@@ -252,6 +259,7 @@ message ScoreData {
     TopTokens = 4;
     ThetaSnippet = 5;
     TopicKernel = 6;
+    TopicMassPhi = 7;
   }
 
   optional string name = 1;
@@ -379,6 +387,22 @@ message TopicKernelScore {
   optional DoubleArray coherence = 7;
   optional float average_coherence = 8;
   repeated StringArray kernel_tokens = 9;
+  optional StringArray topic_name = 10;
+}
+
+// Represents a configuration of a topic part in nwt score
+message TopicMassPhiScoreConfig {
+  optional float eps = 1 [default = 1e-37];
+  optional string class_id = 2 [default = "@default_class"];
+  repeated string topic_name = 3;
+}
+
+// Represents a result of calculation of a topic part in nwt score
+message TopicMassPhiScore {
+  optional double value = 1;
+  repeated string topic_name = 2;
+  repeated double topic_ratio = 3;
+  repeated double topic_mass = 4;
 }
 
 // Represents a topic model (or an operation on topic model)
@@ -424,6 +448,7 @@ message CollectionParserConfig {
     BagOfWordsUci = 0;
     MatrixMarket = 1;
     VowpalWabbit = 2;
+    Cooccurrence = 3;
   }
 
   optional Format format = 1 [default = BagOfWordsUci];
@@ -435,6 +460,8 @@ message CollectionParserConfig {
   repeated string cooccurrence_token = 7;
   optional bool use_unity_based_indices = 8 [default = true];
   optional bool gather_cooc = 9 [default = false];
+  repeated string cooccurrence_class_id = 10;
+  optional bool use_symmetric_cooc_values = 11 [default = false];
 }
 
 // Represents an argument of 'synchronize model' operation
@@ -471,31 +498,47 @@ message InitializeModelArgs {
 
   optional int32 topics_count = 6;
   repeated string topic_name = 7;
+
+  repeated string batch_filename = 8;
 }
 
 message GetTopicModelArgs {
   enum RequestType {
     Pwt = 0;
     Nwt = 1;
+    TopicNames = 2;
+    Tokens = 3;
+  }
+
+  enum MatrixLayout {
+    Dense = 0;
+    Sparse = 1;
   }
 
   optional string model_name = 1;
   repeated string topic_name = 2;
   repeated string token = 3;
   repeated string class_id = 4;
-  optional bool use_sparse_format = 5;
+  optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
   optional RequestType request_type = 7 [default = Pwt];
+  optional MatrixLayout matrix_layout = 8 [default = Dense];
 }
 
 message GetThetaMatrixArgs {
+  enum MatrixLayout {
+    Dense = 0;
+    Sparse = 1;
+  }
+
   optional string model_name = 1;
   optional Batch batch = 2;
   repeated string topic_name = 3;
   repeated int32 topic_index = 4;
   optional bool clean_cache = 5 [default = false];
-  optional bool use_sparse_format = 6;
+  optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
+  optional MatrixLayout matrix_layout = 8 [default = Dense];
 }
 
 message GetScoreValueArgs {
@@ -531,12 +574,18 @@ message ImportModelArgs {
   optional string model_name = 2;
 }
 
+message AttachModelArgs {
+  optional string model_name = 1;
+}
+
 message ProcessBatchesArgs {
   enum ThetaMatrixType {
     None = 0;
     Dense = 1;
     Sparse = 2;
     Cache = 3;
+    DensePtdw = 4;
+    SparsePtdw = 5;
   }
 
   optional string nwt_target_name = 1;
@@ -554,6 +603,8 @@ message ProcessBatchesArgs {
   optional bool use_sparse_bow = 12 [default = true];
   optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
+  repeated float batch_weight = 15;
+  optional bool use_ptdw_matrix = 16 [default = false];
 }
 
 message ProcessBatchesResult {
@@ -580,4 +631,80 @@ message NormalizeModelArgs {
   optional string pwt_target_name = 1;
   optional string nwt_source_name = 2;
   optional string rwt_source_name = 3;
+}
+
+message ImportDictionaryArgs {
+  optional string file_name = 1;
+  optional string dictionary_name = 2;
+}
+
+message CopyRequestResultArgs {
+  enum RequestType {
+    DefaultRequestType = 0;
+    GetThetaSecondPass = 1;
+    GetModelSecondPass = 2;
+  }
+
+  optional RequestType request_type = 1 [default = DefaultRequestType];
+}
+
+message DuplicateMasterComponentArgs {
+}
+
+message GetMasterComponentInfoArgs {
+}
+
+message MasterComponentInfo {
+  message RegularizerInfo {
+    optional string name = 1;
+	optional string type = 2;
+  }
+
+  message ScoreInfo {
+    optional string name = 1;
+	optional string type = 2;
+  }
+
+  message DictionaryInfo {
+    optional string name = 1;
+	optional int64 entries_count = 2;
+  }
+
+  message BatchInfo {
+    optional string name = 1;
+    optional int32 items_count = 2;
+    optional int32 token_count = 3;
+  }
+
+  message ModelInfo {
+    optional string name = 1;
+	optional string type = 2;
+	optional int32 topics_count = 3;
+	optional int32 token_count = 4;
+  }
+
+  message CacheEntryInfo {
+    optional string key = 1;
+	optional int32 byte_size = 2;
+  }
+
+  optional int32 master_id = 1;
+  optional MasterComponentConfig config = 2;
+  repeated RegularizerInfo regularizer = 3;
+  repeated ScoreInfo score = 4;
+  repeated DictionaryInfo dictionary = 5;
+  repeated ModelInfo model = 6;
+  repeated CacheEntryInfo cache_entry = 7;
+  optional int32 merger_queue_size = 8;
+  optional int32 processor_queue_size = 9;
+  repeated BatchInfo batch = 10;
+}
+
+message ImportBatchesArgs {
+  repeated string batch_name = 1;
+  repeated Batch batch = 3;
+}
+
+message DisposeBatchesArgs {
+  repeated string batch_name = 1;
 }

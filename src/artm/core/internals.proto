@@ -19,6 +19,7 @@ message DataLoaderCacheEntry {
   optional string filename = 6;
 
   repeated string item_title = 7;
+  repeated IntArray topic_index = 8;
 }
 
 message StreamMasks {

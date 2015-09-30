@@ -13,4 +13,4 @@ Tutorials
 
    windows_basic
    linux_basic
-   typical_python_example
+   bigartm_cli

@@ -20,24 +20,6 @@ very different objectives, including sparsing, smoothing, topics decorrelation a
 Such combinations of regularizers significantly improves
 several quality measures at once almost without any loss of the perplexity.
 
-.. sidebar:: Getting help
-
-  Having trouble? We'd like to help!
-
-  * Try the :doc:`FAQ <faq>` -- it's got answers to many common questions.
-
-  * Looking for specific information? Try the :ref:`genindex`,
-    or :ref:`search`.
-
-  * Search for information in the archives of the `bigartm-users`_ mailing list, or
-    `post a question`_.
-
-  * Report bugs with BigARTM in our `ticket tracker`_.
-
-  .. _bigartm-users: https://groups.google.com/group/bigartm-users
-  .. _post a question: https://groups.google.com/d/forum/bigartm-users
-  .. _ticket tracker: https://github.com/bigartm/bigartm/issues
-
 **Online**.
 BigARTM never stores the entire text collection
 in the main memory. Instead the collection is split into

@@ -32,8 +32,10 @@ class ProcessorInput {
   };
 
   ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
-                     batch_filename_(), task_id_(), notifiable_(nullptr), scores_merger_(nullptr),
-                     cache_manager_(nullptr), caller_(Caller::Unknown) {}
+                     batch_filename_(), batch_weight_(1.0f), task_id_(), notifiable_(nullptr),
+                     scores_merger_(nullptr), cache_manager_(nullptr),
+                     caller_(Caller::Unknown), ptdw_cache_manager_(nullptr),
+                     reuse_theta_cache_manager_(nullptr) {}
 
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
@@ -51,6 +53,14 @@ class ProcessorInput {
   void set_cache_manager(CacheManager* cache_manager) { cache_manager_ = cache_manager; }
   bool has_cache_manager() const { return cache_manager_ != nullptr; }
 
+  CacheManager* ptdw_cache_manager() const { return ptdw_cache_manager_; }
+  void set_ptdw_cache_manager(CacheManager* ptdw_cache_manager) { ptdw_cache_manager_ = ptdw_cache_manager; }
+  bool has_ptdw_cache_manager() const { return ptdw_cache_manager_ != nullptr; }
+
+  CacheManager* reuse_theta_cache_manager() const { return reuse_theta_cache_manager_; }
+  void set_reuse_theta_cache_manager(CacheManager* cache_manager) { reuse_theta_cache_manager_ = cache_manager; }
+  bool has_reuse_theta_cache_manager() const { return reuse_theta_cache_manager_ != nullptr; }
+
   const ModelName& model_name() const { return model_name_; }
   void set_model_name(const ModelName& model_name) { model_name_ = model_name; }
 
@@ -61,6 +71,9 @@ class ProcessorInput {
   const std::string& batch_filename() const { return batch_filename_; }
   void set_batch_filename(const std::string& batch_filename) { batch_filename_ = batch_filename; }
   bool has_batch_filename() const { return !batch_filename_.empty(); }
+
+  const float batch_weight() const { return batch_weight_; }
+  void set_batch_weight(float batch_weight) { batch_weight_ = batch_weight; }
 
   const boost::uuids::uuid& task_id() const { return task_id_; }
   void set_task_id(const boost::uuids::uuid& task_id) { task_id_ = task_id; }
@@ -74,11 +87,14 @@ class ProcessorInput {
   ModelName model_name_;
   ModelName nwt_target_name_;
   std::string batch_filename_;  // if this is set batch_ is ignored;
+  float batch_weight_;
   boost::uuids::uuid task_id_;
   Notifiable* notifiable_;
   ScoresMerger* scores_merger_;
   CacheManager* cache_manager_;
   Caller caller_;
+  CacheManager* ptdw_cache_manager_;
+  CacheManager* reuse_theta_cache_manager_;
 };
 
 }  // namespace core

@@ -18,6 +18,7 @@
 
 extern "C" {
   DLL_PUBLIC int ArtmCreateMasterComponent(int length, const char* master_component_config);
+  DLL_PUBLIC int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicate_master_args);
   DLL_PUBLIC int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config);
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);
 
@@ -32,6 +33,11 @@ extern "C" {
   DLL_PUBLIC int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config);
   DLL_PUBLIC int ArtmReconfigureDictionary(int master_id, int length, const char* dictionary_config);
   DLL_PUBLIC int ArtmDisposeDictionary(int master_id, const char* dictionary_name);
+  DLL_PUBLIC int ArtmImportDictionary(int master_id, int length, const char* import_dictionary_args);
+  DLL_PUBLIC int ArtmParseCollection(int length, const char* collection_parser_config);
+
+  DLL_PUBLIC int ArtmImportBatches(int master_id, int length, const char* import_batches_args);
+  DLL_PUBLIC int ArtmDisposeBatches(int master_id, int length, const char* dispose_batches_args);
 
   DLL_PUBLIC int ArtmAddBatch(int master_id, int length, const char* add_batch_args);
   DLL_PUBLIC int ArtmInvokeIteration(int master_id, int length, const char* invoke_iteration_args);
@@ -42,20 +48,27 @@ extern "C" {
   DLL_PUBLIC int ArtmInitializeModel(int master_id, int length, const char* init_model_args);
   DLL_PUBLIC int ArtmExportModel(int master_id, int length, const char* export_model_args);
   DLL_PUBLIC int ArtmImportModel(int master_id, int length, const char* import_model_args);
+  DLL_PUBLIC int ArtmAttachModel(int master_id, int length, const char* attach_model_args,
+                                 int address_length, char* address);
 
   DLL_PUBLIC int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args);
+  DLL_PUBLIC int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* process_batches_args);
   DLL_PUBLIC int ArtmMergeModel(int master_id, int length, const char* merge_model_args);
   DLL_PUBLIC int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args);
   DLL_PUBLIC int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args);
 
   DLL_PUBLIC int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args);
+  DLL_PUBLIC int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
+  DLL_PUBLIC int ArtmRequestTopicModelExternal(int master_id, int length, const char* get_model_args);
   DLL_PUBLIC int ArtmRequestRegularizerState(int master_id, const char* regularizer_name);
   DLL_PUBLIC int ArtmRequestScore(int master_id, int length, const char* get_score_args);
+  DLL_PUBLIC int ArtmRequestMasterComponentInfo(int master_id, int length, const char* get_master_info_args);
   DLL_PUBLIC int ArtmRequestParseCollection(int length, const char* collection_parser_config);
   DLL_PUBLIC int ArtmRequestLoadDictionary(const char* filename);
   DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int ArtmCopyRequestResult(int length, char* address);
+  DLL_PUBLIC int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args);
 
   DLL_PUBLIC int ArtmSaveBatch(const char* disk_path, int length, const char* batch);
   DLL_PUBLIC const char* ArtmGetLastErrorMessage();

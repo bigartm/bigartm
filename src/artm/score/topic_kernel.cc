@@ -5,18 +5,18 @@
 #include <cmath>
 #include <algorithm>
 
+#include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
 
-#include "artm/score/coherence_plugin.h"
 #include "artm/score/topic_kernel.h"
 
 namespace artm {
 namespace score {
 
 std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  int topics_count = p_wt.topic_size();
-  int tokens_count = p_wt.token_size();
+  int topic_size = p_wt.topic_size();
+  int token_size = p_wt.token_size();
 
   // parameters preparation
   std::shared_ptr<core::Dictionary> dictionary_ptr = nullptr;
@@ -26,22 +26,10 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
 
   auto topic_name = p_wt.topic_name();
   std::vector<bool> topics_to_score;
-  if (config_.topic_name_size() > 0) {
-    for (int i = 0; i < topics_count; ++i)
-      topics_to_score.push_back(false);
-
-    for (int topic_id = 0; topic_id < config_.topic_name_size(); ++topic_id) {
-      for (int real_topic_id = 0; real_topic_id < topics_count; ++real_topic_id) {
-        if (topic_name.Get(real_topic_id) == config_.topic_name(topic_id)) {
-          topics_to_score[real_topic_id] = true;
-          break;
-        }
-      }
-    }
-  } else {
-    for (int i = 0; i < topics_count; ++i)
-      topics_to_score.push_back(true);
-  }
+  if (config_.topic_name_size() == 0)
+    topics_to_score.assign(topic_size, true);
+  else
+    topics_to_score = core::is_member(topic_name, config_.topic_name());
 
   ::artm::core::ClassId class_id = ::artm::core::DefaultClass;
   if (config_.has_class_id())
@@ -62,36 +50,39 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   auto kernel_purity = topic_kernel_score->mutable_kernel_purity();
   auto kernel_contrast = topic_kernel_score->mutable_kernel_contrast();
   auto kernel_coherence = topic_kernel_score->mutable_coherence();
+  auto need_topics = topic_kernel_score->mutable_topic_name();
   float average_kernel_coherence = 0.0f;
 
-  for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     if (topics_to_score[topic_index]) {
-        kernel_size->add_value(0.0);
-        kernel_purity->add_value(0.0);
-        kernel_contrast->add_value(0.0);
-        kernel_coherence->add_value(0.0);
+      kernel_size->add_value(0.0);
+      kernel_purity->add_value(0.0);
+      kernel_contrast->add_value(0.0);
+      kernel_coherence->add_value(0.0);
+
+      need_topics->add_value(topic_name.Get(topic_index));
     } else {
-        kernel_size->add_value(-1);
-        kernel_purity->add_value(-1);
-        kernel_contrast->add_value(-1);
-        kernel_coherence->add_value(-1);
+      kernel_size->add_value(-1);
+      kernel_purity->add_value(-1);
+      kernel_contrast->add_value(-1);
+      kernel_coherence->add_value(-1);
     }
   }
 
   std::vector<std::vector<core::Token> > topic_kernel_tokens;
-  for (int topic_index = 0; topic_index < topics_count; ++topic_index)
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index)
     topic_kernel_tokens.push_back(std::vector<core::Token>());
 
-  for (int token_index = 0; token_index < tokens_count; token_index++) {
+  for (int token_index = 0; token_index < token_size; token_index++) {
     if (p_wt.token(token_index).class_id == class_id) {
       // calculate normalizer
       double normalizer = 0.0;
-      for (int topic_index = 0; topic_index < topics_count; topic_index++) {
+      for (int topic_index = 0; topic_index < topic_size; topic_index++) {
         if (topics_to_score[topic_index])
           normalizer += static_cast<double>(p_wt.get(token_index, topic_index));
       }
 
-      for (int topic_index = 0; topic_index < topics_count; topic_index++) {
+      for (int topic_index = 0; topic_index < topic_size; topic_index++) {
         if (topics_to_score[topic_index]) {
           float value = p_wt.get(token_index, topic_index);
           double p_tw = (normalizer > 0.0) ? (value / normalizer) : 0.0;
@@ -100,8 +91,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
             artm::core::repeated_field_append(kernel_size->mutable_value(), topic_index, 1.0);
             artm::core::repeated_field_append(kernel_purity->mutable_value(), topic_index, value);
             artm::core::repeated_field_append(kernel_contrast->mutable_value(), topic_index, p_tw);
-            if (count_coherence)
-              topic_kernel_tokens[topic_index].push_back(p_wt.token(token_index));
+            topic_kernel_tokens[topic_index].push_back(p_wt.token(token_index));
           }
         }
       }
@@ -109,7 +99,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   }
 
   // contrast = sum(p(t|w)) / kernel_size
-  for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     double value = 0;
     if (kernel_size->value(topic_index) > config_.eps()) {
       value = kernel_contrast->value(topic_index) / kernel_size->value(topic_index);
@@ -119,9 +109,9 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
 
   if (count_coherence) {
     int denominator = 0;
-    for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
       if (topics_to_score[topic_index]) {
-        float value = CountTopicCoherence(dictionary_ptr, topic_kernel_tokens[topic_index]);
+        float value = dictionary_ptr->CountTopicCoherence(topic_kernel_tokens[topic_index]);
         artm::core::repeated_field_append(kernel_coherence->mutable_value(), topic_index, value);
         average_kernel_coherence += value;
         ++denominator;
@@ -136,7 +126,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   double useful_topics_count = 0.0;
   auto kernel_tokens = topic_kernel_score->mutable_kernel_tokens();
 
-  for (int topic_index = 0; topic_index < topics_count; ++topic_index) {
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     double current_kernel_size = kernel_size->value(topic_index);
     bool useful_topic = (current_kernel_size != -1);
     if (useful_topic) {
@@ -144,10 +134,11 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
       average_kernel_size += current_kernel_size;
       average_kernel_purity += kernel_purity->value(topic_index);
       average_kernel_contrast += kernel_contrast->value(topic_index);
+
+      StringArray* tokens = kernel_tokens->Add();
+      for (int token_id = 0; token_id < topic_kernel_tokens[topic_index].size(); ++token_id)
+        tokens->add_value(topic_kernel_tokens[topic_index][token_id].keyword);
     }
-    StringArray* tokens = kernel_tokens->Add();
-    for (int token_id = 0; token_id < topic_kernel_tokens[topic_index].size(); ++token_id)
-      tokens->add_value(topic_kernel_tokens[topic_index][token_id].keyword);
   }
   average_kernel_size /= useful_topics_count;
   average_kernel_purity /= useful_topics_count;
@@ -156,7 +147,8 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   topic_kernel_score->set_average_kernel_size(average_kernel_size);
   topic_kernel_score->set_average_kernel_purity(average_kernel_purity);
   topic_kernel_score->set_average_kernel_contrast(average_kernel_contrast);
-  topic_kernel_score->set_average_coherence(average_kernel_coherence);
+  if (count_coherence)
+    topic_kernel_score->set_average_coherence(average_kernel_coherence);
 
   return retval;
 }

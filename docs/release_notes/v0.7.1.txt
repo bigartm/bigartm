@@ -1,0 +1,131 @@
+BigARTM v0.7.1 Release notes
+============================
+
+We are happy to introduce BigARTM v0.7.1, which brings you the following changes:
+
+* BigARTM noteboks --- new source of information about BigARTM
+* ArtmModel --- a brand new Python API
+* Much faster retrieval of Phi and Theta matrices from Python
+* Much faster dictionary imports from Python
+* Auto-detect and use all CPU cores by default
+* Fixed Import/Export of topic models (was broken in v0.7.0)
+* New capability to implement Phi-regularizers in Python code
+* Improvements in Coherence score
+
+Before you upgrade to BigARTM v0.7.1 please review the changes that :ref:`break backward compatibility <Breaking-Changes-v0-7-1>`.
+
+BigARTM notebooks
+-----------------
+
+BigARTM notebooks is your go-to links to read more ideas, examples and other information around BigARTM:
+
+* `BigARTM notebooks in English <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/Topic_Modeling_with_BigARTM.ipynb>`_
+* `BigARTM notebooks in Russian <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/Topic_Modeling_with_BigARTM_RU.ipynb>`_
+
+ArtmModel
+---------
+
+Best thing about ArtmModel is that this API had been designed by BigARTM users. Not by BigARTM programmers.
+This means that BigARTM finally has a nice, clean and easy-to-use programming interface for Python.
+Don't believe it? Just take a look and some examples:
+
+* `ArtmModel examples in English <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb>`_
+* `ArtmModel examples in Russian <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_RU.ipynb>`_
+
+That is cool, right?
+This new API allows you to load input data from several file formats, infer topic model,
+find topic distribution for new documents, visualize scores, apply regularizers,
+and perform many other actions.
+Each action typically takes one line to write,
+which allows you to work with BigARTM interactively from Python command line.
+
+ArtmModel exposes most of BigARTM functionality,
+and it should be sufficiently powerful to cover 95% of all BigARTM use-cases.
+However, for the most advanced scenarios you might still need to go through the previous API
+(`artm.library <https://github.com/bigartm/bigartm/blob/master/python/artm/library.py>`_).
+When in doubt which API to use, ask `bigartm-users@googlegroups.com <https://groups.google.com/forum/#!forum/bigartm-users>`_ --- we are there to help!
+
+Coding Phi-regularizers in Python code
+--------------------------------------
+
+This is of course one of those very advanced scenarios where you need to go down to the old API :)
+Take a look at this example:
+
+* `example19_regularize_model <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example19_regularize_model.py>`_
+* `example20_attach_model <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example20_attach_model.py>`_
+
+First one tells how to use Phi regularizers, built into BigARTM.
+Second one provides a new capability to manipulate Phi matrix from Python.
+We call this **Attach** numpy matrix to the model, because this is similar to attaching debugger (like gdb or Visual Studio) to a running application.
+
+To implement your own Phi regularizer in Python you need to to **attach** to ``rwt`` model from the first example, and update its values.
+
+Other changes
+-------------
+
+**Fast retrieval of Phi and Theta matrices.** 
+In BigARTM v0.7.1 dense Phi and Theta matrices will be retrieved to Python as numpy matrices.
+All copying work will be done in native C++ code.
+This is much faster comparing to current solution, where all data is transferred in
+a large Protobuf message which needs to be deserialized in Python.
+ArtmModel already takes advantage of this performance improvements.
+
+**Fast dictionary import.**
+BigARTM core now supports importing dictionary files from disk,
+so you no longer have to load them to Python.
+ArtmModel already take advantage of this performance improvement.
+
+**Auto-detect number of CPU cores.**
+You no longer need to specify ``num_processors`` parameter.
+By default BigARTM will detect the number of cores on your machine and load all of them.
+``num_processors`` still can be used to limit CPU resources used by BigARTM.
+
+**Fixed Import/Export of topic models.**
+Export and Import of topic models will now work. As simple as this:
+
+   .. code-block:: bash
+
+      master.ExportModel("pwt", "file_on_disk.model")
+      master.ImportModel("pwt", "file_on_disk.model")
+
+This will also take care of very large models above 1 GB that does not fit into single protobuf message.
+
+**Coherence scores.**
+Ask `bigartm-users@googlegroups.com <https://groups.google.com/forum/#!forum/bigartm-users>`_ if you are interested :)
+
+.. _Breaking-Changes-v0-7-1:
+
+Breaking changes
+----------------
+
+* **Changes in Python methods** ``MasterComponent.GetTopicModel`` **and** ``MasterComponent.GetThetaMatrix``
+
+  From BigARTM v0.7.1 and onwards method ``MasterComponent.GetTopicModel`` of the low-level Python API will return a tuple,
+  where first argument is of type TopicModel (protobuf message), and second argument is a numpy matrix.
+  TopicModel message will keep all fields as usual, except token_weights field which will became empty.
+  Information from token_weights field had been moved to numpy matrix (rows = tokens, columns = topics).
+
+  Similarly, ``MasterComponent.GetThetaMatrix`` will also return a tuple,
+  where first argument is of type ThetaMatrix (protobuf message), and second argument is a numpy matrix.
+  ThetaMatrix message will keep all fields as usual, except item_weights field which will became empty.
+  Information from item_weights field had been moved to numpy matrix (rows = items, columns = topics).
+
+  Updated examples:
+
+  * `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example11_get_theta_matrix.py>`_
+  * `example12_get_topic_model <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example12_get_topic_model.py>`_
+
+  .. warning::
+
+     Use the followign syntax to restore the old behaviour:
+
+     * MasterComponent.GetTopicModel(use_matrix = False)
+     * MasterComponent.GetThetaMatrix(use_matrix = False)
+
+     This will return a complete protobuf message, without numpy matrix.
+
+* **Python method ParseCollectionOrLoadDictionary is now obsolete**
+
+  * Use ParseCollection method to convert collection into a set of batches
+  * Use MasterComponent.ImportDictionary to load dictionary into BigARTM
+  * Updated example: `example06_use_dictionaries.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example06_use_dictionaries.py>`_

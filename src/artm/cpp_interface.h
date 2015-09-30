@@ -6,6 +6,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "artm/messages.pb.h"
 #include "artm/c_interface.h"
@@ -59,25 +60,76 @@ std::shared_ptr<Batch> LoadBatch(const std::string& filename);
 std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& filename);
 std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& config);
 
+class Matrix {
+ public:
+  Matrix(int no_rows = 0, int no_columns = 0) : no_rows_(no_rows), no_columns_(no_columns), data_() {
+    if (no_rows > 0 && no_columns > 0)
+      data_.resize(no_rows_ * no_columns_);
+  }
+
+  float& operator() (int index_row, int index_col) {
+    return data_[index_row * no_columns_ + index_col];
+  }
+
+  const float& operator() (int index_row, int index_col) const {
+    return data_[index_row * no_columns_ + index_col];
+  }
+
+  void resize(int no_rows, int no_columns) {
+    no_rows_ = no_rows;
+    no_columns_ = no_columns;
+    if (no_rows > 0 && no_columns > 0)
+      data_.resize(no_rows_ * no_columns_);
+  }
+
+  int no_rows() const { return no_rows_; }
+  int no_columns() const { return no_columns_; }
+
+  float* get_data() {
+    return &data_[0];
+  }
+
+  const float* get_data() const {
+    return &data_[0];
+  }
+
+ private:
+  int no_rows_;
+  int no_columns_;
+  std::vector<float> data_;
+  DISALLOW_COPY_AND_ASSIGN(Matrix);
+};
+
 class MasterComponent {
  public:
   explicit MasterComponent(const MasterComponentConfig& config);
+  MasterComponent(const MasterComponent& rhs);
   ~MasterComponent();
 
   int id() const { return id_; }
   std::shared_ptr<TopicModel> GetTopicModel(const std::string& model_name);
+  std::shared_ptr<TopicModel> GetTopicModel(const std::string& model_name, Matrix* matrix);
   std::shared_ptr<TopicModel> GetTopicModel(const GetTopicModelArgs& args);
+  std::shared_ptr<TopicModel> GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix);
+
+  std::shared_ptr<Matrix> AttachTopicModel(const std::string& model_name);
+  std::shared_ptr<Matrix> AttachTopicModel(const std::string& model_name, TopicModel* topic_model);
+
   std::shared_ptr<RegularizerInternalState> GetRegularizerState(
     const std::string& regularizer_name);
   std::shared_ptr<ThetaMatrix> GetThetaMatrix(const std::string& model_name);
+  std::shared_ptr<ThetaMatrix> GetThetaMatrix(const std::string& model_name, Matrix* matrix);
   std::shared_ptr<ThetaMatrix> GetThetaMatrix(const std::string& model_name, const ::artm::Batch& batch);
   std::shared_ptr<ThetaMatrix> GetThetaMatrix(const GetThetaMatrixArgs& args);
+  std::shared_ptr<ThetaMatrix> GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix);
   std::shared_ptr<ScoreData> GetScore(const GetScoreValueArgs& args);
 
   template <typename T>
   std::shared_ptr<T> GetScoreAs(const std::string& model_name, const std::string& score_name);
   template <typename T>
   std::shared_ptr<T> GetScoreAs(const Model& model, const std::string& score_name);
+
+  std::shared_ptr<MasterComponentInfo> info() const;
 
   std::shared_ptr<ProcessBatchesResultObject> ProcessBatches(const ProcessBatchesArgs& args);
   void MergeModel(const MergeModelArgs& args);
@@ -86,6 +138,12 @@ class MasterComponent {
   void InitializeModel(const InitializeModelArgs& args);
   void ExportModel(const ExportModelArgs& args);
   void ImportModel(const ImportModelArgs& args);
+  void DisposeModel(const std::string& model_name);
+
+  void ImportBatches(const ImportBatchesArgs& args);
+  void DisposeBatches(const DisposeBatchesArgs &args);
+
+  void ImportDictionary(const ImportDictionaryArgs& args);
 
   void Reconfigure(const MasterComponentConfig& config);
   bool AddBatch(const Batch& batch);
@@ -106,7 +164,7 @@ class MasterComponent {
  private:
   int id_;
   MasterComponentConfig config_;
-  DISALLOW_COPY_AND_ASSIGN(MasterComponent);
+  MasterComponent& operator=(const MasterComponent&);
 };
 
 class Model {
@@ -161,6 +219,8 @@ class Dictionary {
   ~Dictionary();
 
   void Reconfigure(const DictionaryConfig& config);
+
+  void Import(const std::string& dictionary_name, const std::string& file_name);
 
   int master_id() const { return master_id_; }
   const DictionaryConfig& config() const { return config_; }

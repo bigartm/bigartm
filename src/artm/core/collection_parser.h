@@ -32,12 +32,12 @@ class CollectionParser : boost::noncopyable {
  private:
   struct CollectionParserTokenInfo {
     explicit CollectionParserTokenInfo()
-      : keyword(), class_id(DefaultClass), token_count(), items_count() {}
+      : keyword(), class_id(DefaultClass), token_weight(), items_count() {}
     explicit CollectionParserTokenInfo(std::string keyword_, ClassId class_id_)
-      : keyword(keyword_), class_id(class_id_), token_count(0), items_count(0) {}
+      : keyword(keyword_), class_id(class_id_), token_weight(0.0f), items_count(0) {}
     std::string keyword;
     ClassId class_id;
-    int token_count;
+    float token_weight;
     int items_count;
   };
 
@@ -47,7 +47,8 @@ class CollectionParser : boost::noncopyable {
    public:
     CoocurrenceStatisticsAccumulator(
       const TokenMap& token_info,
-      const ::google::protobuf::RepeatedPtrField< ::std::string>& tokens_to_collect);
+      const ::google::protobuf::RepeatedPtrField< ::std::string>& tokens_to_collect,
+      const ::google::protobuf::RepeatedPtrField< ::std::string>& class_ids_to_collect);
 
     void AppendTokenId(int token_id);
     void FlushNewItem();
@@ -55,7 +56,7 @@ class CollectionParser : boost::noncopyable {
 
    private:
     const TokenMap& token_info_;
-    std::set<std::string> tokens_to_collect_;
+    std::set<Token> tokens_to_collect_;
     std::map<std::pair<int, int>, int> token_coocurrence_;
     std::vector<int> item_tokens_;
   };
@@ -65,6 +66,8 @@ class CollectionParser : boost::noncopyable {
   // the format of docword file is the same for both.
   std::shared_ptr<DictionaryConfig> ParseDocwordBagOfWordsUci(TokenMap* token_map);
   std::shared_ptr<DictionaryConfig> ParseVowpalWabbit();
+
+  std::shared_ptr<DictionaryConfig> ParseCooccurrenceData(TokenMap* token_map);
 
   TokenMap ParseVocabBagOfWordsUci();
   TokenMap ParseVocabMatrixMarket();

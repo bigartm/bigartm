@@ -53,4 +53,4 @@ There are three ways to retrieve such information from BigARTM, and the correct 
    :py:meth:`MasterComponent.GetThetaMatrix <artm.library.MasterComponent.GetThetaMatrix>` (in Python) to retrieve Theta matrix.
    In this case there is no need set :attr:`MasterComponentConfig.cache_theta` to *true*.
 
-Check `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example11_get_theta_matrix.py>`_ for further examples.
+Check `example11_get_theta_matrix.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example11_get_theta_matrix.py>`_ for further examples.

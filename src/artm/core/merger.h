@@ -31,11 +31,13 @@ namespace core {
 class TopicModel;
 class InstanceSchema;
 class Dictionary;
+typedef ThreadSafeCollectionHolder<std::string, Batch> ThreadSafeBatchCollection;
 
 class Merger : boost::noncopyable {
  public:
   Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
          ThreadSafeHolder<InstanceSchema>* schema,
+         const ::artm::core::ThreadSafeBatchCollection* batches,
          const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
   ~Merger();
@@ -61,6 +63,8 @@ class Merger : boost::noncopyable {
                                ::artm::RegularizerInternalState* regularizer_state) const;
   bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData *score_data) const;
+
+  std::vector<ModelName> model_name() const;
 
  private:
   enum MergerTaskType {
@@ -97,6 +101,7 @@ class Merger : boost::noncopyable {
   ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
   ThreadSafeQueue<MergerTask> internal_task_queue_;
 
+  const ::artm::core::ThreadSafeBatchCollection* batches_;
   const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;
 
   mutable std::atomic<bool> is_stopping;

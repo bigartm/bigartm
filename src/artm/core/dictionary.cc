@@ -32,23 +32,31 @@ Dictionary::Dictionary(const artm::DictionaryConfig& config) {
       if (first_index_iter != token_index_.end() && second_index_iter != token_index_.end()) {
         auto first_cooc_iter = cooc_values_.find(first_index_iter->second);
         if (first_cooc_iter == cooc_values_.end()) {
-          cooc_values_.insert(std::make_pair(first_index_iter->second, std::unordered_map<int, int>()));
+          cooc_values_.insert(std::make_pair(first_index_iter->second, std::unordered_map<int, float>()));
           first_cooc_iter = cooc_values_.find(first_index_iter->second);
         }
 
-        auto second_cooc_iter = cooc_values_.find(second_index_iter->second);
-        if (second_cooc_iter == cooc_values_.end()) {
-          cooc_values_.insert(std::make_pair(second_index_iter->second, std::unordered_map<int, int>()));
-          second_cooc_iter = cooc_values_.find(second_index_iter->second);
-        }
+        // std::map::insert() ignores attempts to write several pairs with same key
+        first_cooc_iter->second.insert(std::make_pair(second_index_iter->second,
+                                                      config.cooc_entries().value(i)));
 
-        // std::map::insert() ignores attempts to write multiply pairs with same key
-        // the data representation is symmetric for both first and second tokens in cooc pair
-        first_cooc_iter->second.insert(std::make_pair(second_index_iter->second, config.cooc_entries().items_count(i)));
-        second_cooc_iter->second.insert(std::make_pair(first_index_iter->second, config.cooc_entries().items_count(i)));
+        if (config.cooc_entries().symmetric_cooc_values()) {
+          auto second_cooc_iter = cooc_values_.find(second_index_iter->second);
+          if (second_cooc_iter == cooc_values_.end()) {
+            cooc_values_.insert(std::make_pair(second_index_iter->second, std::unordered_map<int, float>()));
+            second_cooc_iter = cooc_values_.find(second_index_iter->second);
+          }
+
+          second_cooc_iter->second.insert(std::make_pair(first_index_iter->second,
+                                                         config.cooc_entries().value(i)));
+        }
       }
     }
   }
+}
+
+std::shared_ptr<Dictionary> Dictionary::Duplicate() const {
+  return std::shared_ptr<Dictionary>(new Dictionary(*this));
 }
 
 int Dictionary::cooc_size(const Token& token) const {
@@ -75,7 +83,7 @@ const Token* Dictionary::cooc_token(const Token& token, int index) const {
   return nullptr;
 }
 
-int Dictionary::cooc_value(const Token& token, int index) const {
+float Dictionary::cooc_value(const Token& token, int index) const {
   auto index_iter = token_index_.find(token);
   if (index_iter == token_index_.end()) return 0;
 
@@ -89,7 +97,7 @@ int Dictionary::cooc_value(const Token& token, int index) const {
   return 0;
 }
 
-int Dictionary::cooc_value(const Token& token_1, const Token& token_2) const {
+float Dictionary::cooc_value(const Token& token_1, const Token& token_2) const {
   auto index_iter_1 = token_index_.find(token_1);
   if (index_iter_1 == token_index_.end()) return 0;
 
@@ -105,19 +113,14 @@ int Dictionary::cooc_value(const Token& token_1, const Token& token_2) const {
   return cooc_map_iter_2->second;
 }
 
-const std::vector<TokenCoocInfo> Dictionary::cooc_info(const Token& token) const {
-  auto retval = std::vector<TokenCoocInfo>();
-
+const std::unordered_map<int, float>* Dictionary::cooc_info(const Token& token) const {
   auto index_iter = token_index_.find(token);
-  if (index_iter == token_index_.end()) return retval;
+  if (index_iter == token_index_.end()) return nullptr;
 
   auto cooc_map_iter = cooc_values_.find(index_iter->second);
-  if (cooc_map_iter == cooc_values_.end()) return retval;
+  if (cooc_map_iter == cooc_values_.end()) return nullptr;
 
-  for (auto iter = cooc_map_iter->second.begin(); iter != cooc_map_iter->second.end(); ++iter) {
-    TokenCoocInfo token_cooc_info = TokenCoocInfo(&index_token_.find(iter->first)->second, iter->second);
-    retval.push_back(token_cooc_info);
-  }
+  return &(cooc_map_iter->second);
 }
 
 const DictionaryEntry* Dictionary::entry(const Token& token) const {
@@ -131,6 +134,33 @@ const DictionaryEntry* Dictionary::entry(const Token& token) const {
 const DictionaryEntry* Dictionary::entry(int index) const {
   if (index < 0 || index >= entries_.size()) return nullptr;
   return &entries_[index];
+}
+
+float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_score) {
+  float coherence_value = 0.0;
+  int k = tokens_to_score.size();
+  if (k == 0 || k == 1) return 0.0f;
+
+  for (int i = 0; i < k - 1; ++i) {
+    auto token_one_index_iter = token_index_.find(tokens_to_score[i]);
+    if (token_one_index_iter == token_index_.end()) continue;
+
+    auto cooc_map_iter = cooc_values_.find(token_one_index_iter->second);
+    if (cooc_map_iter == cooc_values_.end()) continue;
+
+    for (int j = i; j < k; ++j) {
+      if (tokens_to_score[j].class_id != tokens_to_score[i].class_id) continue;
+
+      auto token_two_index_iter = token_index_.find(tokens_to_score[j]);
+      if (token_two_index_iter == token_index_.end()) continue;
+
+      auto value_iter = cooc_map_iter->second.find(token_two_index_iter->second);
+      if (value_iter == cooc_map_iter->second.end()) continue;
+      coherence_value += static_cast<float>(value_iter->second);
+    }
+  }
+
+  return 2.0f / (k * (k - 1)) * coherence_value;
 }
 
 }  // namespace core

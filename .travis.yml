@@ -1,26 +1,48 @@
+sudo: false
+
 language:
-  - objective-c
+  - python
+  - cpp
 
 compiler:
+  - clang
   - gcc
 
+python:
+  - "2.7"
+
+virtualenv:
+  system_site_packages: true
+
+addons:
+  apt:
+    packages:
+      - cmake
+      - libboost-all-dev
+      - python-numpy
+      - python-pandas
+      - python-virtualenv
+
 before_install:
-  - cd utils && cat cpplint_files.txt | xargs python cpplint.py --linelength=120 && cd ..
-  - mkdir datasets && cd datasets
-  - wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz && gunzip docword.kos.txt.gz
-  - wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
-  - cd ..
-  - cp datasets/* src/python/examples/
+  - pip install pep8
+  - pip install -U pytest
+
+install:
+  - ./codestyle_checks.sh
+  - mkdir build
+  - pushd build && cmake .. && make && popd
+  - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
+  - pushd 3rdparty/protobuf/python && python setup.py build && python setup.py install && popd
+  - pushd python && python setup.py install && popd
 
 before_script:
-  - mkdir build && cd build && cmake .. && cd ..
+  - pushd python/examples && ./download_datasets.sh && popd
+  - pushd python/tests/wrapper && ./download_datasets.sh && popd
 
 script:
-  - cd build && make -j4 && cd ..
-  - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
-  - cd 3rdparty/protobuf/python && python setup.py build && sudo python setup.py install && cd ../../..
-  - cd build/src/artm_tests && ./artm_tests && cd ../../..
-  - export PYTHONPATH=`pwd`/src/python:$PYTHONPATH
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.dylib
-  - cd src/python/tests && python tests.py && cd ../../..
-  - cd src/python/examples && for f in *.py ; do echo "==== $f ====" && python "$f" ; done && cd ../../..
+  - export PYTHONPATH=`pwd`/python:$PYTHONPATH
+  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
+  - pushd build/src/artm_tests && ./artm_tests && popd
+  - pushd python/tests/artm && python tests.py && popd
+  - pushd python/tests/wrapper && py.test && popd
+  - pushd python/examples && ./run_all.sh && popd

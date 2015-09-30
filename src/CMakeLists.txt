@@ -23,13 +23,4 @@ include_directories(${GFLAGS_INCLUDE_DIRS})
 
 add_subdirectory(artm)
 add_subdirectory(artm_tests)
-add_subdirectory(cpp_client)
-
-install(FILES python/artm/library.py python/artm/messages_pb2.py python/artm/__init__.py DESTINATION python/artm)
-install(FILES ../datasets/docword.kos.txt ../datasets/vocab.kos.txt DESTINATION python/examples)
-
-FILE(GLOB PYTHON_EXAMPLES python/examples/*.py)
-install(FILES ${PYTHON_EXAMPLES} DESTINATION python/examples)
-
-FILE(GLOB PYTHON_EXPERIMENTS python/experiments/*.py)
-install(FILES ${PYTHON_EXPERIMENTS} DESTINATION python/experiments)
+add_subdirectory(bigartm)

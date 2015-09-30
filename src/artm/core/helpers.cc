@@ -4,9 +4,12 @@
 
 #include <fstream>  // NOLINT
 #include <sstream>
+#include <thread>
 
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
+#include "boost/random/uniform_real.hpp"
+#include "boost/random/variate_generator.hpp"
 #include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 
@@ -77,6 +80,35 @@ void Helpers::SetThreadName(int thread_id, const char* thread_name) {
 
 #endif
 
+void Helpers::Fix(::artm::CollectionParserConfig* message) {
+  const int token_size = message->cooccurrence_token_size();
+  if ((message->cooccurrence_class_id_size() == 0) && (token_size > 0)) {
+    message->mutable_cooccurrence_class_id()->Reserve(token_size);
+    for (int i = 0; i < token_size; ++i)
+      message->add_cooccurrence_class_id(::artm::core::DefaultClass);
+  }
+}
+
+bool Helpers::Validate(const ::artm::CollectionParserConfig& message, bool throw_error) {
+  std::stringstream ss;
+  const int token_size = message.cooccurrence_token_size();
+  if (message.cooccurrence_class_id_size() != token_size) {
+    ss << "Inconsistent cooc token and class_id fields size in CollectionParserConfig";
+  }
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
 void Helpers::Fix(::artm::TopicModel* message) {
   const int token_size = message->token_size();
   if ((message->class_id_size() == 0) && (token_size > 0)) {
@@ -91,50 +123,66 @@ void Helpers::Fix(::artm::TopicModel* message) {
 
 bool Helpers::Validate(const ::artm::TopicModel& message, bool throw_error) {
   std::stringstream ss;
-  const int token_size = message.token_size();
-  const bool use_sparse_format = (message.topic_index_size() != 0);
-  if ((message.class_id_size() != token_size) ||
-      (message.operation_type_size() != token_size) ||
-      (message.token_weights_size() != token_size) ||
-      (use_sparse_format && (message.topic_index_size() != token_size))) {
-    ss << "Inconsistent fields size in TopicModel: "
-       << message.token_size() << " vs " << message.class_id_size()
-       << " vs " << message.operation_type_size() << " vs " << message.token_weights_size() << ";";
+
+  const bool has_topic_data = (message.topics_count() != 0 || message.topic_name_size() != 0);
+  const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
+  const bool has_bulk_data = (message.token_weights_size() != 0 || message.operation_type_size() != 0);
+  const bool has_sparse_format = has_bulk_data && (message.topic_index_size() != 0);
+
+  if (has_topic_data) {
+    if (message.topics_count() != message.topic_name_size())
+      ss << "Length mismatch in fields TopicModel.topics_count and TopicModel.topic_name";
   }
 
-  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+  if (has_token_data) {
+    if (message.class_id_size() != message.token_size())
+      ss << "Inconsistent fields size in TopicModel.token and TopicModel.class_id: "
+         << message.token_size() << " vs " << message.class_id_size();
+  }
+
+  if (has_bulk_data && !has_topic_data)
     ss << "TopicModel.topic_name_size is empty";
-  if (message.topics_count() != message.topic_name_size())
-    ss << "Length mismatch in fields TopicModel.topics_count and TopicModel.topic_name";
+  if (has_bulk_data && !has_token_data)
+    ss << "TopicModel.token_size is empty";
 
-  for (int i = 0; i < message.token_size(); ++i) {
-    bool use_sparse_format_local = use_sparse_format && (message.topic_index(i).value_size() > 0);
-    if (use_sparse_format_local) {
-      if (message.topic_index(i).value_size() != message.token_weights(i).value_size()) {
-        ss << "Length mismatch between TopicModel.topic_index(" << i << ") and TopicModel.token_weights(" << i << ")";
-        break;
-      }
-
-      bool ok = true;
-      for (int topic_index : message.topic_index(i).value()) {
-        if (topic_index < 0 || topic_index >= message.topics_count()) {
-          ss << "Value " << topic_index << " in message.topic_index(" << i
-             << ") is negative or exceeds TopicModel.topics_count";
-          ok = false;
-          break;
-        }
-      }
-
-      if (!ok)
-        break;
+  if (has_bulk_data) {
+    if ((message.operation_type_size() != message.token_size()) ||
+      (message.token_weights_size() != message.token_size()) ||
+      (has_sparse_format && (message.topic_index_size() != message.token_size()))) {
+      ss << "Inconsistent fields size in TopicModel: "
+        << message.token_size() << " vs " << message.class_id_size()
+        << " vs " << message.operation_type_size() << " vs " << message.token_weights_size() << ";";
     }
 
-    if (!use_sparse_format) {
-      if (message.operation_type(i) == TopicModel_OperationType_Increment ||
-          message.operation_type(i) == TopicModel_OperationType_Overwrite) {
-        if (message.token_weights(i).value_size() != message.topics_count()) {
-          ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+    for (int i = 0; i < message.token_size(); ++i) {
+      bool has_sparse_format_local = has_sparse_format && (message.topic_index(i).value_size() > 0);
+      if (has_sparse_format_local) {
+        if (message.topic_index(i).value_size() != message.token_weights(i).value_size()) {
+          ss << "Length mismatch between TopicModel.topic_index(" << i << ") and TopicModel.token_weights(" << i << ")";
           break;
+        }
+
+        bool ok = true;
+        for (int topic_index : message.topic_index(i).value()) {
+          if (topic_index < 0 || topic_index >= message.topics_count()) {
+            ss << "Value " << topic_index << " in message.topic_index(" << i
+               << ") is negative or exceeds TopicModel.topics_count";
+            ok = false;
+            break;
+          }
+        }
+
+        if (!ok)
+          break;
+      }
+
+      if (!has_sparse_format) {
+        if (message.operation_type(i) == TopicModel_OperationType_Increment ||
+            message.operation_type(i) == TopicModel_OperationType_Overwrite) {
+          if (message.token_weights(i).value_size() != message.topics_count()) {
+            ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+            break;
+          }
         }
       }
     }
@@ -227,10 +275,10 @@ bool Helpers::Validate(const ::artm::ThetaMatrix& message, bool throw_error) {
   std::stringstream ss;
   const int item_size = message.item_id_size();
   const bool has_title = (message.item_title_size() > 0);
-  const bool use_sparse_format = (message.topic_index_size() != 0);
+  const bool has_sparse_format = (message.topic_index_size() != 0);
   if ((message.item_weights_size() != item_size) ||
       (has_title && (message.item_title_size() != item_size)) ||
-      (use_sparse_format && (message.topic_index_size() != item_size))) {
+      (has_sparse_format && (message.topic_index_size() != item_size))) {
     ss << "Inconsistent fields size in ThetaMatrix: "
        << message.item_id_size() << " vs " << message.item_weights_size()
        << " vs " << message.item_title_size() << " vs " << message.topic_index_size() << ";";
@@ -242,7 +290,7 @@ bool Helpers::Validate(const ::artm::ThetaMatrix& message, bool throw_error) {
     ss << "Length mismatch in fields ThetaMatrix.topics_count and ThetaMatrix.topic_name";
 
   for (int i = 0; i < message.item_id_size(); ++i) {
-    if (use_sparse_format) {
+    if (has_sparse_format) {
       if (message.topic_index(i).value_size() != message.item_weights(i).value_size()) {
         ss << "Length mismatch between ThetaMatrix.topic_index(" << i << ") and ThetaMatrix.item_weights(" << i << ")";
         break;
@@ -277,10 +325,71 @@ bool Helpers::FixAndValidate(::artm::ThetaMatrix* message, bool throw_error) {
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::GetThetaMatrixArgs* message) {
+  if (message->has_batch())
+    Fix(message->mutable_batch());
+
+  if (message->has_use_sparse_format())
+    message->set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
+}
+
+bool Helpers::Validate(const ::artm::GetThetaMatrixArgs& message, bool throw_error) {
+  if (message.has_batch())
+    Validate(message.batch(), throw_error);
+
+  std::stringstream ss;
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::GetThetaMatrixArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::GetTopicModelArgs* message) {
+  if (message->has_use_sparse_format())
+    message->set_matrix_layout(GetTopicModelArgs_MatrixLayout_Sparse);
+}
+
+bool Helpers::Validate(const ::artm::GetTopicModelArgs& message, bool throw_error) {
+  std::stringstream ss;
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::GetTopicModelArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
 void Helpers::Fix(::artm::Batch* message) {
   if (message->class_id_size() == 0) {
     for (int i = 0; i < message->token_size(); ++i) {
       message->add_class_id(DefaultClass);
+    }
+  }
+
+  // Upgrade token_count to token_weight
+  for (::artm::Item& item : *message->mutable_item()) {
+    for (::artm::Field& field : *item.mutable_field()) {
+      if (field.token_count_size() != 0 && field.token_weight_size() == 0) {
+        field.mutable_token_weight()->Reserve(field.token_count_size());
+        for (int i = 0; i < field.token_count_size(); ++i)
+          field.add_token_weight(static_cast<float>(field.token_count(i)));
+        field.clear_token_count();
+      }
     }
   }
 }
@@ -306,14 +415,18 @@ bool Helpers::Validate(const ::artm::Batch& message, bool throw_error) {
 
   for (int item_id = 0; item_id < message.item_size(); ++item_id) {
     for (const Field& field : message.item(item_id).field()) {
-      if (field.token_count_size() != field.token_id_size()) {
-        ss << "Length mismatch in field Batch.item(" << item_id << ").token_count and token_id; ";
+      if (field.token_count_size() != 0) {
+        ss << "Field.token_count field is deprecated. Use Field.token_weight instead; ";
+        break;
+      }
+
+      if (field.token_weight_size() != field.token_id_size()) {
+        ss << "Length mismatch in field Batch.item(" << item_id << ").token_weight and token_id; ";
         break;
       }
 
       for (int token_index = 0; token_index < field.token_count_size(); token_index++) {
         int token_id = field.token_id(token_index);
-        int token_count = field.token_count(token_index);
         if (token_id < 0 || token_id >= message.token_size()) {
           ss << "Value " << token_id << " in Batch.Item(" << item_id
              << ").token_id is negative or exceeds Batch.token_size";
@@ -368,6 +481,24 @@ bool Helpers::FixAndValidate(::artm::GetScoreValueArgs* message, bool throw_erro
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::MasterComponentConfig* message) {
+  if (!message->has_processors_count() || message->processors_count() <= 0) {
+    unsigned int n = std::thread::hardware_concurrency();
+    if (n == 0) {
+      LOG(INFO) << "MasterComponentConfig.processors_count is set to 1 (default)";
+      message->set_processors_count(1);
+    } else {
+      LOG(INFO) << "MasterComponentConfig.processors_count is automatically set to " << n;
+      message->set_processors_count(n);
+    }
+  }
+
+  if (!message->has_processor_queue_max_size()) {
+    // The default setting for processor queue max size is to use the number of processors.
+    message->set_processor_queue_max_size(message->processors_count());
+  }
+}
+
 bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_error) {
   std::stringstream ss;
 
@@ -389,6 +520,11 @@ bool Helpers::Validate(const ::artm::MasterComponentConfig& message, bool throw_
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
+}
+
+bool Helpers::FixAndValidate(::artm::MasterComponentConfig* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
 }
 
 void Helpers::Fix(::artm::InitializeModelArgs* message) {
@@ -418,7 +554,9 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
   }
 
   if (message.source_type() == InitializeModelArgs_SourceType_Batches) {
-    if (!message.has_disk_path() || message.disk_path().empty()) {
+    const bool has_disk_path = message.has_disk_path() && !message.disk_path().empty();
+    const bool has_batch_filename = message.batch_filename_size() > 0;
+    if (!has_disk_path && !has_batch_filename) {
       ss << "InitializeModelArgs.disk_path is required together with SourceType.Batches; ";
     }
   }
@@ -465,12 +603,42 @@ bool Helpers::Validate(const ::artm::ImportModelArgs& message, bool throw_error)
   return false;
 }
 
+bool Helpers::Validate(const ::artm::ImportDictionaryArgs& message, bool throw_error) {
+  std::stringstream ss;
+  if (!message.has_file_name()) ss << "ImportDictionaryArgs.file_name is not defined; ";
+  if (!message.has_dictionary_name())
+    ss << "ImportDictionaryArgs.dictionary_name is not defined; ";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+void Helpers::Fix(::artm::DictionaryConfig* message) {
+  // Upgrade from token_count to token_weight
+  if (message->has_total_token_count() && message->has_total_token_weight()) {
+    message->set_total_token_weight(static_cast<float>(message->total_token_count()));
+    message->clear_total_token_count();
+  }
+
+  for (::artm::DictionaryEntry& entry : *message->mutable_entry()) {
+    if (entry.has_token_count() && !entry.has_token_weight()) {
+      entry.set_token_weight(static_cast<float>(entry.token_count()));
+      entry.clear_token_count();
+    }
+  }
+}
+
 bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error) {
   std::stringstream ss;
-  if (message.has_cooc_entries())
+  if (message.has_cooc_entries()) {
     if (message.cooc_entries().first_index_size() != message.cooc_entries().second_index_size() ||
-        message.cooc_entries().first_index_size() != message.cooc_entries().items_count_size() ||
-        message.cooc_entries().second_index_size() != message.cooc_entries().items_count_size()) {
+        message.cooc_entries().first_index_size() != message.cooc_entries().value_size() ||
+        message.cooc_entries().second_index_size() != message.cooc_entries().value_size()) {
       ss << "DictionaryConfig.cooc_entries fields have inconsistent sizes; ";
 
       for (int i = 0; i < message.cooc_entries().first_index_size(); ++i) {
@@ -482,6 +650,18 @@ bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error
           ss << "DictionaryConfig.cooc_entries.first_index contain index nt from [0, entry.size); ";
       }
     }
+  }
+
+  // Validate no info in deprecated field (token_count)
+  if (message.has_total_token_count()) {
+    ss << "DictionaryConfig.total_token_count field is deprecated. Use DictionaryConfig.total_token_weight instead; ";
+  }
+
+  for (const ::artm::DictionaryEntry& entry : message.entry()) {
+    if (entry.has_token_count()) {
+      ss << "DictionaryEntry.token_count field is deprecated. Use DictionaryEntry.token_weight instead; ";
+    }
+  }
 
   if (ss.str().empty())
     return true;
@@ -491,6 +671,39 @@ bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error
   LOG(WARNING) << ss.str();
   return false;
 }
+
+bool Helpers::FixAndValidate(::artm::DictionaryConfig* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::ProcessBatchesArgs* message) {
+  if (message->batch_weight_size() == 0) {
+    for (int i = 0; i < message->batch_filename_size(); ++i)
+      message->add_batch_weight(1.0f);
+  }
+}
+
+bool Helpers::Validate(const ::artm::ProcessBatchesArgs& message, bool throw_error) {
+  std::stringstream ss;
+
+  if (message.batch_filename_size() != message.batch_weight_size())
+    ss << "Length mismatch in fields ProcessBatchesArgs.batch_filename and ProcessBatchesArgs.batch_weight";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::ProcessBatchesArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
 
 std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   std::stringstream ss;
@@ -510,6 +723,7 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", use_random_theta=" << (message.use_random_theta() ? "yes" : "no");
   ss << ", use_new_tokens=" << (message.use_new_tokens() ? "yes" : "no");
+  ss << ", use_ptdw_matrix=" << (message.use_ptdw_matrix() ? "yes" : "no");
   return ss.str();
 }
 
@@ -551,6 +765,7 @@ std::string Helpers::Describe(const ::artm::ProcessBatchesArgs& message) {
   ss << "ProcessBatchesArgs";
   ss << ": nwt_target_name=" << message.nwt_target_name();
   ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", pwt_source_name=" << message.pwt_source_name();
   ss << ", inner_iterations_count=" << message.inner_iterations_count();
   ss << ", stream_name=" << message.stream_name();
@@ -562,6 +777,7 @@ std::string Helpers::Describe(const ::artm::ProcessBatchesArgs& message) {
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", reset_scores=" << (message.reset_scores() ? "yes" : "no");
+  ss << ", use_ptdw_matrix=" << (message.use_ptdw_matrix() ? "yes" : "no");
   return ss.str();
 }
 
@@ -610,20 +826,13 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   std::vector<float> retval;
   retval.reserve(size);
 
-#if defined(_WIN32) || defined(_WIN64)
-  // http://msdn.microsoft.com/en-us/library/aa272875(v=vs.60).aspx
-  // rand() is thread-safe on Windows when linked with LIBCMT.LIB
+  boost::mt19937 rng(seed);
+  boost::uniform_real<float> u(0.0f, 1.0f);
+  boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > gen(rng, u);
 
-  srand(seed);
   for (int i = 0; i < size; ++i) {
-    retval.push_back(static_cast<float>(rand()) / static_cast<float>(RAND_MAX));  // NOLINT
+    retval.push_back(gen());
   }
-#else
-  unsigned int int_seed = static_cast<unsigned int>(seed);
-  for (int i = 0; i < size; ++i) {
-    retval.push_back(static_cast<float>(rand_r(&int_seed)) / static_cast<float>(RAND_MAX));
-  }
-#endif
 
   float sum = 0.0f;
   for (int i = 0; i < size; ++i) sum += retval[i];
@@ -632,6 +841,22 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   }
 
   return retval;
+}
+
+std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token) {
+  size_t h = 1125899906842597L;  // prime
+
+  if (token.class_id != DefaultClass) {
+    for (int i = 0; i < token.class_id.size(); i++)
+      h = 31 * h + token.class_id[i];
+  }
+
+  h = 31 * h + 255;  // separate class_id and token
+
+  for (int i = 0; i < token.keyword.size(); i++)
+    h = 31 * h + token.keyword[i];
+
+  return GenerateRandomVector(size, h);
 }
 
 // Return the filenames of all files that have the specified extension
@@ -780,6 +1005,8 @@ void BatchHelpers::SaveMessage(const std::string& full_filename,
   fout.close();
 }
 
+// ToDo(sashafrey): this method has grown too big and complicated.
+// It needs to be refactored.
 bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     const DataLoaderCacheEntry& cache,
     const GetThetaMatrixArgs& get_theta_args,
@@ -791,7 +1018,9 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
   auto& args_model_name = get_theta_args.model_name();
   auto& args_topic_name = get_theta_args.topic_name();
   auto& args_topic_index = get_theta_args.topic_index();
-  const bool use_sparse_format = get_theta_args.use_sparse_format();
+  const bool has_sparse_format = get_theta_args.matrix_layout() == GetThetaMatrixArgs_MatrixLayout_Sparse;
+  const bool sparse_cache = cache.topic_index_size() > 0;
+  bool use_all_topics = false;
 
   std::vector<int> topics_to_use;
   if (args_topic_index.size() > 0) {
@@ -821,6 +1050,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     assert(cache.topic_name_size() > 0);
     for (int i = 0; i < cache.topic_name_size(); ++i)
       topics_to_use.push_back(i);
+    use_all_topics = true;
   }
 
   // Populate topics_count and topic_name fields in the resulting message
@@ -854,17 +1084,46 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     ::artm::FloatArray* theta_vec = theta_matrix->add_item_weights();
 
     const artm::FloatArray& item_theta = cache.theta(item_index);
-    if (!use_sparse_format) {
-      for (int topic_index : topics_to_use)
-        theta_vec->add_value(item_theta.value(topic_index));
+    if (!has_sparse_format) {
+      if (sparse_cache) {
+        // dense output -- sparse cache
+        for (int index = 0; index < topics_to_use.size(); ++index) {
+          int topic_index = repeated_field_index_of(cache.topic_index(item_index).value(), topics_to_use[index]);
+          theta_vec->add_value(topic_index != -1 ? item_theta.value(topic_index) : 0.0f);
+        }
+      } else {
+        // dense output -- dense cache
+        for (int topic_index : topics_to_use)
+          theta_vec->add_value(item_theta.value(topic_index));
+      }
     } else {
       ::artm::IntArray* sparse_topic_index = theta_matrix->add_topic_index();
-      for (int topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
-        int topic_index = topics_to_use[topics_to_use_index];
-        float value = item_theta.value(topic_index);
-        if (value >= get_theta_args.eps()) {
-          theta_vec->add_value(item_theta.value(topic_index));
-          sparse_topic_index->add_value(topics_to_use_index);
+      if (sparse_cache) {
+        // sparse output -- sparse cache
+        for (int index = 0; index < cache.topic_index(item_index).value_size(); ++index) {
+          int topic_index = cache.topic_index(item_index).value(index);
+          if (use_all_topics) {
+            theta_vec->add_value(item_theta.value(index));
+            sparse_topic_index->add_value(topic_index);
+          } else {
+            for (int i = 0; i < topics_to_use.size(); ++i) {
+              if (topics_to_use[i] == topic_index) {
+                theta_vec->add_value(item_theta.value(index));
+                sparse_topic_index->add_value(topic_index);
+                break;
+              }
+            }
+          }
+        }
+      } else {
+        // sparse output -- dense cache
+        for (int index = 0; index < topics_to_use.size(); index++) {
+          int topic_index = topics_to_use[index];
+          float value = item_theta.value(topic_index);
+          if (value >= get_theta_args.eps()) {
+            theta_vec->add_value(value);
+            sparse_topic_index->add_value(index);
+          }
         }
       }
     }

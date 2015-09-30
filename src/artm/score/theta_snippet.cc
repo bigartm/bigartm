@@ -15,12 +15,12 @@ void ThetaSnippet::AppendScore(
     const artm::ModelConfig& model_config,
     const std::vector<float>& theta,
     Score* score) {
-  int topics_size = p_wt.topic_size();
+  int topic_size = p_wt.topic_size();
 
   ThetaSnippetScore theta_snippet_score;
   theta_snippet_score.add_item_id(item.id());
   auto theta_snippet_item = theta_snippet_score.add_values();
-  for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
+  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     theta_snippet_item->add_value(theta[topic_index]);
   }
 

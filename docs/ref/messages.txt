@@ -1826,7 +1826,7 @@ InitializeModelArgs
 
 Represents an argument of :c:func:`ArtmInitializeModel` operation.
 Please refer to
-`example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/src/python/examples/example14_initialize_topic_model.py>`_
+`example14_initialize_topic_model.py <https://raw.githubusercontent.com/bigartm/bigartm/master/python/examples/example14_initialize_topic_model.py>`_
 for further information.
 
 .. code-block:: bash
