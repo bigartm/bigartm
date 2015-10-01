@@ -245,7 +245,7 @@ class ARTM(object):
             raise IOError('dictionary_name is None')
 
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=20,
-                    num_document_passes=1, reuse_theta=True):
+                    num_document_passes=1, reuse_theta=True, dictionary_filename=DICTIONARY_NAME):
         """ARTM.fit_offline() --- proceed the learning of
         topic model in off-line mode
 
@@ -258,6 +258,9 @@ class ARTM(object):
           reuse_theta (bool): using theta from previous pass of the collection,
           defaul=True
 
+          dictionary_filename (str): the name of file with dictionary to use in inline
+          initialization, default='dictionary'
+
         Note:
           ARTM.initialize() should be proceed before first call
           ARTM.fit_offline(), or it will be initialized by dictionary
@@ -267,11 +270,10 @@ class ARTM(object):
             raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            dictionary_name = '{0}:{1}'.format(DICTIONARY_NAME, str(uuid.uuid4()))
+            dictionary_name = '{0}:{1}'.format(dictionary_filename, str(uuid.uuid4()))
             self.master.import_dictionary(
-                self,
                 dictionary_name=dictionary_name,
-                filename=os.path.join(batch_vectorizer.data_path, DICTIONARY_NAME))
+                filename=os.path.join(batch_vectorizer.data_path, dictionary_filename))
 
             self.initialize(dictionary_name=dictionary_name)
             self.remove_dictionary(dictionary_name)
@@ -321,7 +323,8 @@ class ARTM(object):
                 self.score_tracker[name].add(self.scores[name])
 
     def fit_online(self, batch_vectorizer=None, tau0=1024.0, kappa=0.7,
-                   update_every=1, num_document_passes=10, reset_theta_scores=False):
+                   update_every=1, num_document_passes=10, reset_theta_scores=False,
+                   dictionary_filename=DICTIONARY_NAME):
         """ARTM.fit_online() --- proceed the learning of topic model
         in on-line mode
 
@@ -343,6 +346,9 @@ class ARTM(object):
           reset_theta_scores (bool): reset accumulated Theta scores
           before learning, default=False
 
+          dictionary_filename (str): the name of file with dictionary to use in inline
+          initialization, default='dictionary'
+
         Note:
           ARTM.initialize() should be proceed before first call
           ARTM.fit_online(), or it will be initialized by dictionary
@@ -352,11 +358,10 @@ class ARTM(object):
             raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            dictionary_name = '{0}:{1}'.format(DICTIONARY_NAME, str(uuid.uuid4()))
+            dictionary_name = '{0}:{1}'.format(dictionary_filename, str(uuid.uuid4()))
             self.master.import_dictionary(
-                self,
                 dictionary_name=dictionary_name,
-                filename=os.path.join(batch_vectorizer.data_path, DICTIONARY_NAME))
+                filename=os.path.join(batch_vectorizer.data_path, dictionary_filename))
 
             self.initialize(dictionary_name=dictionary_name)
             self.remove_dictionary(dictionary_name)
