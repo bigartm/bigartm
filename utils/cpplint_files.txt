@@ -24,6 +24,7 @@ src/artm/regularizer/label_regularization_phi.cc
 src/artm/regularizer/smooth_sparse_theta.cc
 src/artm/regularizer/specified_sparse_phi.cc
 src/artm/regularizer/improve_coherence_phi.cc
+src/artm/regularizer/smooth_ptdw.cc
 src/artm/score/perplexity.cc
 src/artm/score/sparsity_theta.cc
 src/artm/score/sparsity_phi.cc
@@ -80,6 +81,7 @@ src/artm/regularizer/label_regularization_phi.h
 src/artm/regularizer/smooth_sparse_theta.h
 src/artm/regularizer/specified_sparse_phi.h
 src/artm/regularizer/improve_coherence_phi.h
+src/artm/regularizer/smooth_ptdw.h
 src/artm/score/perplexity.h
 src/artm/score/sparsity_theta.h
 src/artm/score/sparsity_phi.h

@@ -31,21 +31,13 @@ namespace core {
 class RegularizeThetaAgent {
  public:
   virtual ~RegularizeThetaAgent() {}
-  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) { return; }
+  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const = 0;
 };
 
-class RegularizeThetaAgentCollection : public RegularizeThetaAgent {
- private:
-  std::vector<std::shared_ptr<RegularizeThetaAgent>> agents_;
-
+class RegularizePtdwAgent {
  public:
-  void AddAgent(std::shared_ptr<RegularizeThetaAgent> agent) { agents_.push_back(agent); }
-  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta);
-};
-
-class NormalizeThetaAgent : public RegularizeThetaAgent {
- public:
-  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta);
+  virtual ~RegularizePtdwAgent() {}
+  virtual void Apply(int item_index, int inner_iter, ::artm::utility::DenseMatrix<float>* ptdw) const = 0;
 };
 
 class RegularizerInterface {
@@ -55,6 +47,11 @@ class RegularizerInterface {
 
   virtual std::shared_ptr<RegularizeThetaAgent>
   CreateRegularizeThetaAgent(const Batch& batch, const ModelConfig& model_config, double tau) {
+    return nullptr;
+  }
+
+  virtual std::shared_ptr<RegularizePtdwAgent>
+  CreateRegularizePtdwAgent(const Batch& batch, const ModelConfig& model_config, double tau) {
     return nullptr;
   }
 

@@ -116,6 +116,15 @@ TEST(MultipleClasses, BasicTest) {
   regularizer_config.set_config(smooth_sparse_theta_config.SerializeAsString());
   ::artm::Regularizer regularizer_smsp_theta(master_component, regularizer_config);
 
+  // Create ptdw-regularizer
+  ::artm::RegularizerConfig regularizer_config2;
+  regularizer_config2.set_name("regularizer_ptdw");
+  regularizer_config2.set_type(::artm::RegularizerConfig_Type_SmoothPtdw);
+  ::artm::SmoothPtdwConfig smooth_ptdw_config;
+  smooth_ptdw_config.set_window(5);
+  regularizer_config2.set_config(smooth_ptdw_config.SerializeAsString());
+  ::artm::Regularizer regularizer_ptdw(master_component, regularizer_config2);
+
   // Generate doc-token matrix
   int nTokens = 60;
   int nDocs = 100;
@@ -143,7 +152,6 @@ TEST(MultipleClasses, BasicTest) {
   artm::ModelConfig model_config1, model_config2, model_config3;
 
   model_config1.set_name("model1"); model_config1.set_topics_count(nTopics);
-  model_config1.set_use_ptdw_matrix(true);   // temporary switch tests into use_ptdw_matrix mode
   model_config2.set_name("model2"); model_config2.set_topics_count(nTopics); model_config2.set_use_sparse_bow(false);
   model_config3.set_name("model3"); model_config3.set_topics_count(nTopics);
   model_config3.add_class_id("@default_class"); model_config3.add_class_weight(0.5f);
@@ -159,6 +167,8 @@ TEST(MultipleClasses, BasicTest) {
   model_config_reg.set_name("model_config_reg");
   model_config_reg.add_regularizer_name("regularizer_smsp_theta");
   model_config_reg.add_regularizer_tau(-1.0);
+  model_config_reg.add_regularizer_name("regularizer_ptdw");
+  model_config_reg.add_regularizer_tau(2.0);
   for (int i = 0; i < nTopics; ++i) {
     std::stringstream ss;
     ss << "Topic" << i;
