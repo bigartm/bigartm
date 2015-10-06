@@ -73,7 +73,6 @@ void BasicTest() {
   model_config.add_regularizer_name(reg_multilang_name);
   model_config.add_regularizer_tau(1);
   model_config.set_name("model_config1");
-  model_config.set_use_ptdw_matrix(true);  // temporary switch tests into use_ptdw_matrix mode
   artm::Model model(*master_component, model_config);
 
   // Load doc-token matrix
@@ -657,7 +656,6 @@ TEST(CppInterface, ProcessBatchesApi) {
   ASSERT_EQ(rwt->topics_count(), nTopics);
 
   // Test to verify Ptdw extraction
-  process_batches_args.set_use_ptdw_matrix(true);
   process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_SparsePtdw);
   std::shared_ptr< ::artm::ProcessBatchesResultObject> result_2 = master.ProcessBatches(process_batches_args);
   auto& theta_matrix = result_2->GetThetaMatrix();

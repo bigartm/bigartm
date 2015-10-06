@@ -62,6 +62,8 @@ set(SRC_LIST
 	regularizer/label_regularization_phi.h
 	regularizer/smooth_sparse_theta.cc
 	regularizer/smooth_sparse_theta.h
+	regularizer/smooth_ptdw.cc
+	regularizer/smooth_ptdw.h
 	regularizer/specified_sparse_phi.cc
 	regularizer/specified_sparse_phi.h
 	regularizer/improve_coherence_phi.cc
