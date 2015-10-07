@@ -11,7 +11,8 @@ __all__ = [
     'DecorrelatorPhiRegularizer',
     'LabelRegularizationPhiRegularizer',
     'SpecifiedSparsePhiRegularizer',
-    'ImproveCoherencePhiRegularizer'
+    'ImproveCoherencePhiRegularizer',
+    'SmoothPtdwRegularizer'
 ]
 
 
@@ -75,33 +76,21 @@ class BaseRegularizer(object):
 
     _config_message = None
 
-    def __init__(self, name, tau, topic_names):
+    def __init__(self, name, tau, config):
         if self._config_message is None:
             raise NotImplementedError()
-        config = self._config_message()
 
         if name is None:
             name = '{0}:{1}'.format(self._type, uuid.uuid1().urn)
 
-        self._topic_names = []
-        if topic_names is not None:
-            config.ClearField('topic_name')
-            for topic_name in topic_names:
-                config.topic_name.append(topic_name)
-                self._topic_names.append(topic_name)
-
         self._name = name
         self.tau = tau
-        self._config = config
+        self._config = config if config is not None else self._config_message()
         self._master = None  # reserve place for master
 
     @property
     def name(self):
         return self._name
-
-    @property
-    def topic_names(self):
-        return self._topic_names
 
     @property
     def regularizer(self):
@@ -115,18 +104,18 @@ class BaseRegularizer(object):
     def type(self):
         return self._type
 
-    @topic_names.setter
-    def topic_names(self, topic_names):
-        _reconfigure_field(self, topic_names, 'topic_names')
+    @config.setter
+    def config(self, config):
+        self._config = config
+        self._master.reconfigure_regularizer(self._name, self._type, self._config)
 
 
 class BaseRegularizerPhi(BaseRegularizer):
-    def __init__(self, name, tau, topic_names,
-                 class_ids, dictionary_name):
+    def __init__(self, name, tau, config, topic_names, class_ids, dictionary_name):
         BaseRegularizer.__init__(self,
                                  name=name,
                                  tau=tau,
-                                 topic_names=topic_names)
+                                 config=config)
 
         self._class_ids = []
         if class_ids is not None:
@@ -134,6 +123,13 @@ class BaseRegularizerPhi(BaseRegularizer):
             for class_id in class_ids:
                 self._config.class_id.append(class_id)
                 self._class_ids.append(class_id)
+
+        self._topic_names = []
+        if topic_names is not None:
+            self._config.ClearField('topic_name')
+            for topic_name in topic_names:
+                self._config.topic_name.append(topic_name)
+                self._topic_names.append(topic_name)
 
         self._dictionary_name = ''
         if dictionary_name is not None:
@@ -143,6 +139,10 @@ class BaseRegularizerPhi(BaseRegularizer):
     @property
     def class_ids(self):
         return self._class_ids
+
+    @property
+    def topic_names(self):
+        return self._topic_names
 
     @property
     def dictionary_name(self):
@@ -156,13 +156,17 @@ class BaseRegularizerPhi(BaseRegularizer):
     def dictionary_name(self, dictionary_name):
         _reconfigure_field(self, dictionary_name, 'dictionary_name')
 
+    @topic_names.setter
+    def topic_names(self, topic_names):
+        _reconfigure_field(self, topic_names, 'topic_names')
+
 
 class BaseRegularizerTheta(BaseRegularizer):
-    def __init__(self, name, tau, topic_names, alpha_iter):
+    def __init__(self, name, tau, config, topic_names, alpha_iter):
         BaseRegularizer.__init__(self,
                                  name=name,
                                  tau=tau,
-                                 topic_names=topic_names)
+                                 config=config)
         self._alpha_iter = []
         if alpha_iter is not None:
             self._config.ClearField('alpha_iter')
@@ -170,13 +174,28 @@ class BaseRegularizerTheta(BaseRegularizer):
                 self._config.alpha_iter.append(alpha)
                 self._alpha_iter.append(alpha)
 
+        self._topic_names = []
+        if topic_names is not None:
+            self._config.ClearField('topic_name')
+            for topic_name in topic_names:
+                self._config.topic_name.append(topic_name)
+                self._topic_names.append(topic_name)
+
     @property
     def alpha_iter(self):
         return self._alpha_iter
 
+    @property
+    def topic_names(self):
+        return self._topic_names
+
     @alpha_iter.setter
     def alpha_iter(self, alpha_iter):
         _reconfigure_field(self, alpha_iter, 'alpha_iter')
+
+    @topic_names.setter
+    def topic_names(self, topic_names):
+        _reconfigure_field(self, topic_names, 'topic_names')
 
 
 ###################################################################################################
@@ -194,16 +213,18 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
       all topics if not specified
       dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
       specified
+      config (protobuf object): the low-level config of this regularizer, default=None
     """
 
     _config_message = messages.SmoothSparsePhiConfig
     _type = const.RegularizerConfig_Type_SmoothSparsePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
-                 topic_names=None, dictionary_name=None):
+                 topic_names=None, dictionary_name=None, config=None):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
                                     dictionary_name=dictionary_name)
@@ -220,15 +241,17 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
       alpha_iter (list of double, default=None): list of additional coefficients of
       regularization on each iteration over document. Should have length equal to
       model.num_document_passes
+      config (protobuf object): the low-level config of this regularizer, default=None
     """
 
     _config_message = messages.SmoothSparseThetaConfig
     _type = const.RegularizerConfig_Type_SmoothSparseTheta
 
-    def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None):
+    def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None, config=None):
         BaseRegularizerTheta.__init__(self,
                                       name=name,
                                       tau=tau,
+                                      config=config,
                                       topic_names=topic_names,
                                       alpha_iter=alpha_iter)
 
@@ -243,15 +266,17 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
       classes if not specified
       topic_names (list of str): list of names of topics to regularize, will regularize
       all topics if not specified
+      config (protobuf object): the low-level config of this regularizer, default=None
     """
 
     _config_message = messages.DecorrelatorPhiConfig
     _type = const.RegularizerConfig_Type_DecorrelatorPhi
 
-    def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None):
+    def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None, config=None):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
                                     dictionary_name=None)
@@ -277,16 +302,18 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
       all topics if not specified
       dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
       specified
+      config (protobuf object): the low-level config of this regularizer, default=None
     """
 
     _config_message = messages.LabelRegularizationPhiConfig
     _type = const.RegularizerConfig_Type_LabelRegularizationPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
-                 topic_names=None, dictionary_name=None):
+                 topic_names=None, dictionary_name=None, config=None):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
                                     dictionary_name=dictionary_name)
@@ -307,16 +334,18 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
       summarize into value >= probability_threshold, m < n => only these elements would
       be saved. Value should be in (0, 1), default=None
       sparse_by_columns (bool) --- find max elements in column or in row, default=True
+      config (protobuf object): the low-level config of this regularizer, default=None
     """
 
     _config_message = messages.SpecifiedSparsePhiConfig
     _type = const.RegularizerConfig_Type_SpecifiedSparsePhi
 
-    def __init__(self, name=None, tau=1.0, topic_names=None, class_id=None,
-                 num_max_elements=None, probability_threshold=None, sparse_by_columns=True):
+    def __init__(self, name=None, tau=1.0, topic_names=None, class_id=None, num_max_elements=None,
+                 probability_threshold=None, sparse_by_columns=True, config=None):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    config=config,
                                     topic_names=topic_names,
                                     dictionary_name=None,
                                     class_ids=None)
@@ -413,16 +442,37 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
       all topics if not specified
       dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
       specified
+      config (protobuf object): the low-level config of this regularizer, default=None
     """
 
     _config_message = messages.ImproveCoherencePhiConfig
     _type = const.RegularizerConfig_Type_ImproveCoherencePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
-                 topic_names=None, dictionary_name=None):
+                 topic_names=None, dictionary_name=None, config=None):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
                                     dictionary_name=dictionary_name)
+
+
+class SmoothPtdwRegularizer(BaseRegularizer):
+    """SmoothPtdwRegularizer is a regularizer in ArtmModel (public class)
+
+    Args:
+      name (str): the identifier of regularizer, will be auto-generated if not specified
+      tau (double): the coefficient of regularization for this regularizer, default=1.0
+      config (protobuf object): the low-level config of this regularizer, default=None
+    """
+
+    _config_message = messages.SmoothPtdwConfig
+    _type = const.RegularizerConfig_Type_SmoothPtdw
+
+    def __init__(self, name=None, tau=1.0, config=None):
+        BaseRegularizer.__init__(self,
+                                 name=name,
+                                 tau=tau,
+                                 config=config)

@@ -964,8 +964,9 @@ void BatchHelpers::LoadMessage(const std::string& full_filename,
     } catch (...) {}
 
     if (uuid.is_nil()) {
-      // Otherwise generate new random UUID
-      uuid = boost::uuids::random_generator()();
+      // Otherwise throw the exception
+        BOOST_THROW_EXCEPTION(DiskReadException(
+          "Unable to detect batch.id or uuid filename in " + full_filename));
     }
 
     batch->set_id(boost::lexical_cast<std::string>(uuid));
