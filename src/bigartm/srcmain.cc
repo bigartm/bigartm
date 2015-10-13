@@ -246,6 +246,7 @@ struct artm_options {
   std::vector<std::string> regularizer;
   bool b_reuse_theta;
   int threads;
+  bool async;
 
   // Output
   std::string save_model;
@@ -257,6 +258,7 @@ struct artm_options {
   int score_level;
   std::vector<std::string> score;
   std::vector<std::string> final_score;
+  std::string pwt_model_name;
 
   // Other options
   std::string disk_cache_folder;
@@ -264,6 +266,10 @@ struct artm_options {
   bool b_paused;
   bool b_disable_avx_opt;
   bool b_use_dense_bow;
+
+  artm_options() {
+    pwt_model_name = "pwt";
+  }
 };
 
 void fixOptions(artm_options* options) {
@@ -638,14 +644,120 @@ class BatchVectorizer {
   const std::string& batch_folder() { return batch_folder_; }
 };
 
+class BatchesIterator {
+ private:
+  std::vector<std::string> batch_file_names_;
+  int update_every_;
+  int current_;
+
+ public:
+  BatchesIterator(const std::vector<std::string>& batch_file_names)
+      : batch_file_names_(batch_file_names), update_every_(-1), current_(0) {}
+
+  BatchesIterator(const std::vector<std::string>& batch_file_names, int update_every)
+      : batch_file_names_(batch_file_names), update_every_(update_every), current_(0) {}
+
+  bool more() { return current_ < batch_file_names_.size(); }
+
+  void get(ProcessBatchesArgs* args) {
+    int last = std::min<int>(current_ + update_every_, batch_file_names_.size());
+    if (update_every_ < 0) last = batch_file_names_.size();  // offline algorighm
+    for (; current_ < last; current_++)
+      args->add_batch_filename(batch_file_names_[current_]);
+  }
+
+  void rewind() { current_ = 0; }
+};
+
+void ExecuteOfflineAlgorithm(const artm_options& options, BatchesIterator* batch_iterator, MasterComponent* master_component,
+                             ProcessBatchesArgs* process_batches_args, RegularizeModelArgs* regularize_model_args) {
+  const std::string nwt_hat_model_name = "nwt_hat";
+  const std::string rwt_model_name = "rwt";
+
+  NormalizeModelArgs normalize_model_args;
+
+  process_batches_args->set_pwt_source_name(options.pwt_model_name);
+  process_batches_args->set_nwt_target_name(nwt_hat_model_name);
+  batch_iterator->get(process_batches_args);
+  master_component->ProcessBatches(*process_batches_args);
+  process_batches_args->clear_batch_filename();
+
+  if (regularize_model_args->regularizer_settings_size() > 0) {
+    regularize_model_args->set_nwt_source_name(nwt_hat_model_name);
+    regularize_model_args->set_pwt_source_name(options.pwt_model_name);
+    regularize_model_args->set_rwt_target_name(rwt_model_name);
+    master_component->RegularizeModel(*regularize_model_args);
+    normalize_model_args.set_rwt_source_name(rwt_model_name);
+  }
+
+  normalize_model_args.set_nwt_source_name(nwt_hat_model_name);
+  normalize_model_args.set_pwt_target_name(options.pwt_model_name);
+  master_component->NormalizeModel(normalize_model_args);
+}
+
+void ExecuteOnlineAlgorithm(const artm_options& options, BatchesIterator* batch_iterator, MasterComponent* master_component,
+                            ProcessBatchesArgs* process_batches_args, RegularizeModelArgs* regularize_model_args,
+                            int* update_count) {
+  const std::string nwt_hat_model_name = "nwt_hat";
+  const std::string rwt_model_name = "rwt";
+  const std::string nwt_model_name = "nwt";
+
+  NormalizeModelArgs normalize_model_args;
+
+  process_batches_args->set_reset_scores(true);  // reset scores at the beginning of each iteration
+  while (batch_iterator->more()) {
+    batch_iterator->get(process_batches_args);
+    (*update_count)++;
+
+    process_batches_args->set_pwt_source_name(options.pwt_model_name);
+    process_batches_args->set_nwt_target_name(nwt_hat_model_name);
+    master_component->ProcessBatches(*process_batches_args);
+
+    double apply_weight = (*update_count == 1) ? 1.0 : pow(options.tau0 + (*update_count), -options.kappa);
+    double decay_weight = 1.0 - apply_weight;
+
+    MergeModelArgs merge_model_args;
+    merge_model_args.add_nwt_source_name(nwt_model_name);
+    merge_model_args.add_source_weight(decay_weight);
+    merge_model_args.add_nwt_source_name(nwt_hat_model_name);
+    merge_model_args.add_source_weight(apply_weight);
+    merge_model_args.set_nwt_target_name(nwt_model_name);
+    master_component->MergeModel(merge_model_args);
+
+    if (regularize_model_args->regularizer_settings_size() > 0) {
+      regularize_model_args->set_nwt_source_name(nwt_model_name);
+      regularize_model_args->set_pwt_source_name(options.pwt_model_name);
+      regularize_model_args->set_rwt_target_name(rwt_model_name);
+      master_component->RegularizeModel(*regularize_model_args);
+      normalize_model_args.set_rwt_source_name(rwt_model_name);
+    }
+
+    normalize_model_args.set_nwt_source_name(nwt_model_name);
+    normalize_model_args.set_pwt_target_name(options.pwt_model_name);
+    master_component->NormalizeModel(normalize_model_args);
+    process_batches_args->clear_batch_filename();
+    process_batches_args->set_reset_scores(false);
+  }  // while (batch_source.more())
+}
+
+void ExecuteAsyncOnlineAlgorithm(const artm_options& options, BatchesIterator* batch_iterator, MasterComponent* master_component,
+                                 ProcessBatchesArgs* process_batches_args, RegularizeModelArgs* regularize_model_args,
+                                 int* update_count) {
+  /*
+    process(b1, pwt0, nwt1)
+    process(b2, pwt0, nwt2) wait(nwt1) merge(nwt, nwt1) dispose(nwt1) regularize(nwt, rwt) normalize(nwt, rwt, pwt1) dispose(rwt)
+    process(b3, pwt1, nwt3) wait(nwt2) merge(nwt, nwt2) dispose(nwt2) regularize(nwt, rwt) normalize(nwt, rwt, pwt2) dispose(rwt) dispose(pwt0)
+    process(b4, pwt2, nwt4) wait(nwt3) merge(nwt, nwt3) dispose(nwt3) regularize(nwt, rwt) normalize(nwt, rwt, pwt3) dispose(rwt) dispose(pwt1)
+    process(b5, pwt3, nwt5) wait(nwt4) merge(nwt, nwt3) dispose(nwt4) regularize(nwt, rwt) normalize(nwt, rwt, pwt4) dispose(rwt) dispose(pwt2)
+                            wait(nwt5) merge(nwt, nwt4) dispose(nwt5) regularize(nwt, rwt) normalize(nwt, rwt, pwt5) dispose(rwt) dispose(pwt3)
+  */
+}
+
 int execute(const artm_options& options) {
   bool online = (options.update_every > 0);
 
   const std::string dictionary_name = "dictionary";
-  const std::string pwt_model_name = "pwt";
-  const std::string nwt_model_name = "nwt";
-  const std::string rwt_model_name = "rwt";
-  const std::string nwt_hat_model_name = "nwt_hat";
+  const std::string pwt_model_name = options.pwt_model_name;
 
   if (options.b_paused) {
     std::cerr << "Press any key to continue. ";
@@ -675,7 +787,6 @@ int execute(const artm_options& options) {
   }
 
   RegularizeModelArgs regularize_model_args;
-  NormalizeModelArgs normalize_model_args;
 
   // Step 2. Collection parsing
   BatchVectorizer batch_vectorizer(options);
@@ -768,60 +879,14 @@ int execute(const artm_options& options) {
     CuckooWatch timer("================= Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
 
     if (!online) {
-      process_batches_args.set_pwt_source_name(pwt_model_name);
-      process_batches_args.set_nwt_target_name(nwt_hat_model_name);
-      for (auto& batch_filename : batch_file_names)
-        process_batches_args.add_batch_filename(batch_filename);
-      master_component->ProcessBatches(process_batches_args);
-      process_batches_args.clear_batch_filename();
-
-      if (regularize_model_args.regularizer_settings_size() > 0) {
-        regularize_model_args.set_nwt_source_name(nwt_hat_model_name);
-        regularize_model_args.set_pwt_source_name(pwt_model_name);
-        regularize_model_args.set_rwt_target_name(rwt_model_name);
-        master_component->RegularizeModel(regularize_model_args);
-        normalize_model_args.set_rwt_source_name(rwt_model_name);
-      }
-
-      normalize_model_args.set_nwt_source_name(nwt_hat_model_name);
-      normalize_model_args.set_pwt_target_name(pwt_model_name);
-      master_component->NormalizeModel(normalize_model_args);
+      BatchesIterator batches_iterator(batch_file_names);
+      ExecuteOfflineAlgorithm(options, &batches_iterator, master_component.get(), &process_batches_args, &regularize_model_args);
     } else {  // online
-      for (int i = 0; i < batch_file_names.size(); ++i) {
-        process_batches_args.set_reset_scores(i == 0);  // reset scores at the beginning of each iteration
-        process_batches_args.add_batch_filename(batch_file_names[i]);
-        int size = process_batches_args.batch_filename_size();
-        if (size >= options.update_every || (i + 1) == batch_file_names.size()) {
-          update_count++;
-          process_batches_args.set_pwt_source_name(pwt_model_name);
-          process_batches_args.set_nwt_target_name(nwt_hat_model_name);
-          master_component->ProcessBatches(process_batches_args);
-
-          double apply_weight = (update_count == 1) ? 1.0 : pow(options.tau0 + update_count, -options.kappa);
-          double decay_weight = 1.0 - apply_weight;
-
-          MergeModelArgs merge_model_args;
-          merge_model_args.add_nwt_source_name(nwt_model_name);
-          merge_model_args.add_source_weight(decay_weight);
-          merge_model_args.add_nwt_source_name(nwt_hat_model_name);
-          merge_model_args.add_source_weight(apply_weight);
-          merge_model_args.set_nwt_target_name(nwt_model_name);
-          master_component->MergeModel(merge_model_args);
-
-          if (regularize_model_args.regularizer_settings_size() > 0) {
-            regularize_model_args.set_nwt_source_name(nwt_model_name);
-            regularize_model_args.set_pwt_source_name(pwt_model_name);
-            regularize_model_args.set_rwt_target_name(rwt_model_name);
-            master_component->RegularizeModel(regularize_model_args);
-            normalize_model_args.set_rwt_source_name(rwt_model_name);
-          }
-
-          normalize_model_args.set_nwt_source_name(nwt_model_name);
-          normalize_model_args.set_pwt_target_name(pwt_model_name);
-          master_component->NormalizeModel(normalize_model_args);
-          process_batches_args.clear_batch_filename();
-        }
-      }  // for batch_file_names
+      BatchesIterator batches_iterator(batch_file_names, options.update_every);
+      if (options.async)
+        ExecuteOnlineAlgorithm(options, &batches_iterator, master_component.get(), &process_batches_args, &regularize_model_args, &update_count);
+      else
+        ExecuteAsyncOnlineAlgorithm(options, &batches_iterator, master_component.get(), &process_batches_args, &regularize_model_args, &update_count);
     }  // online
 
     score_helper.showScores(pwt_model_name);
@@ -962,6 +1027,7 @@ int main(int argc, char * argv[]) {
       ("reuse-theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
       ("threads", po::value(&options.threads)->default_value(0), "number of concurrent processors (default: auto-detect)")
+      ("async", po::value(&options.async)->default_value(false), "invoke asynchronous version of the online algorithm")
     ;
 
     po::options_description output_options("Output");
