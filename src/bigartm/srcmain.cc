@@ -733,11 +733,11 @@ class ArtmExecutor {
     i = 2: process(b3, pwt2, nwt2) wait(nwt1) merge(nwt, nwt1) dispose(nwt1) regularize(pwt2, nwt, rwt) normalize(nwt, rwt, pwt3) dispose(pwt1)
     i = 3: process(b4, pwt3, nwt3) wait(nwt2) merge(nwt, nwt2) dispose(nwt2) regularize(pwt3, nwt, rwt) normalize(nwt, rwt, pwt4) dispose(pwt2)
     i = 4: process(b5, pwt4, nwt4) wait(nwt3) merge(nwt, nwt3) dispose(nwt3) regularize(pwt4, nwt, rwt) normalize(nwt, rwt, pwt5) dispose(pwt3)
-    i = 4:                         wait(nwt4) merge(nwt, nwt4) dispose(nwt4) regularize(pwt5, nwt, rwt) normalize(nwt, rwt, pwt)  dispose(pwt4)
+    i = 4:                         wait(nwt4) merge(nwt, nwt4) dispose(nwt4) regularize(pwt5, nwt, rwt) normalize(nwt, rwt, pwt)  dispose(pwt4) dispose(pwt5)
 
     2. Not enough batches -- same code works just fine.
     i = 0: process(b1, pwt,  nwt0)
-    i = 1:                         wait(nwt0) merge(nwt, nwt0) dispose(nwt0) regularize(pwt,  nwt, rwt) normalize(nwt, rwt, pwt)  dispose(pwt0)
+    i = 1:                         wait(nwt0) merge(nwt, nwt0) dispose(nwt0) regularize(pwt,  nwt, rwt) normalize(nwt, rwt, pwt)  dispose(pwt0) dispose(pwt1)
     **************************************************/
 
     std::string pwt_active = options_.pwt_model_name;
@@ -748,6 +748,7 @@ class ArtmExecutor {
     process_batches_args_->set_reset_scores(true);  // reset scores at the beginning of each iteration
     int op_id = AsyncProcessBatches(pwt_active, nwt_index, update_count);
     process_batches_args_->set_reset_scores(false);
+
     while (true) {
       bool is_last = !batch_iterator_.more();
       pwt_index++; nwt_index++;
@@ -765,10 +766,10 @@ class ArtmExecutor {
       pwt_active = is_last ? options_.pwt_model_name : std::string(pwt_index + 1);
       Normalize(pwt_active, "NWT", "RWT");
 
-      Dispose(pwt_index);
+      Dispose(pwt_index - 1);
+      if (is_last) Dispose(pwt_index);
       if (is_last) break;
     }
-
   }
 
  private:
