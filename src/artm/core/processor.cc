@@ -1007,6 +1007,8 @@ void Processor::ThreadFunction() {
 
       const ModelName& model_name = part->model_name();
       const ModelConfig& model_config = part->model_config();
+      const ModelName& model_name_cache = model_config.has_model_name_cache() ? model_config.model_name_cache()
+                                                                              : model_name;
       {
         // do not process disabled models.
         if (!model_config.enabled()) continue;
@@ -1092,13 +1094,13 @@ void Processor::ThreadFunction() {
 
         if (new_cache_entry_ptr != nullptr) {
           new_cache_entry_ptr->set_batch_uuid(batch.id());
-          new_cache_entry_ptr->set_model_name(model_name);
+          new_cache_entry_ptr->set_model_name(model_name_cache);
           new_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
         }
 
         if (new_ptdw_cache_entry_ptr != nullptr) {
           new_ptdw_cache_entry_ptr->set_batch_uuid(batch.id());
-          new_ptdw_cache_entry_ptr->set_model_name(model_name);
+          new_ptdw_cache_entry_ptr->set_model_name(model_name_cache);
           new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
         }
 
@@ -1154,7 +1156,7 @@ void Processor::ThreadFunction() {
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config,
                                         *theta_matrix, &stream_masks);
           if (score_value != nullptr)
-            part->scores_merger()->Append(schema, model_name, score_name, score_value->SerializeAsString());
+            part->scores_merger()->Append(schema, model_name_cache, score_name, score_value->SerializeAsString());
         }
 
         if (part->caller() != ProcessorInput::Caller::ProcessBatches) {

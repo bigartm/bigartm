@@ -2087,6 +2087,18 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
       mutable_regularizer_settings();
 
+  // optional string model_name_cache = 19;
+  inline bool has_model_name_cache() const;
+  inline void clear_model_name_cache();
+  static const int kModelNameCacheFieldNumber = 19;
+  inline const ::std::string& model_name_cache() const;
+  inline void set_model_name_cache(const ::std::string& value);
+  inline void set_model_name_cache(const char* value);
+  inline void set_model_name_cache(const char* value, size_t size);
+  inline ::std::string* mutable_model_name_cache();
+  inline ::std::string* release_model_name_cache();
+  inline void set_allocated_model_name_cache(::std::string* model_name_cache);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2111,6 +2123,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_new_tokens();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
+  inline void set_has_model_name_cache();
+  inline void clear_has_model_name_cache();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2135,9 +2149,10 @@ class ModelConfig : public ::google::protobuf::Message {
   bool opt_for_avx_;
   ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
+  ::std::string* model_name_cache_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8793,6 +8808,18 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_batch_weight();
 
+  // optional string model_name_cache = 16;
+  inline bool has_model_name_cache() const;
+  inline void clear_model_name_cache();
+  static const int kModelNameCacheFieldNumber = 16;
+  inline const ::std::string& model_name_cache() const;
+  inline void set_model_name_cache(const ::std::string& value);
+  inline void set_model_name_cache(const char* value);
+  inline void set_model_name_cache(const char* value, size_t size);
+  inline ::std::string* mutable_model_name_cache();
+  inline ::std::string* release_model_name_cache();
+  inline void set_allocated_model_name_cache(::std::string* model_name_cache);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8813,6 +8840,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_reset_scores();
   inline void set_has_theta_matrix_type();
   inline void clear_has_theta_matrix_type();
+  inline void set_has_model_name_cache();
+  inline void clear_has_model_name_cache();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8831,10 +8860,11 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool use_sparse_bow_;
   bool reset_scores_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
+  ::std::string* model_name_cache_;
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -13063,6 +13093,76 @@ ModelConfig::regularizer_settings() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
 ModelConfig::mutable_regularizer_settings() {
   return &regularizer_settings_;
+}
+
+// optional string model_name_cache = 19;
+inline bool ModelConfig::has_model_name_cache() const {
+  return (_has_bits_[0] & 0x00040000u) != 0;
+}
+inline void ModelConfig::set_has_model_name_cache() {
+  _has_bits_[0] |= 0x00040000u;
+}
+inline void ModelConfig::clear_has_model_name_cache() {
+  _has_bits_[0] &= ~0x00040000u;
+}
+inline void ModelConfig::clear_model_name_cache() {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_->clear();
+  }
+  clear_has_model_name_cache();
+}
+inline const ::std::string& ModelConfig::model_name_cache() const {
+  return *model_name_cache_;
+}
+inline void ModelConfig::set_model_name_cache(const ::std::string& value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ModelConfig::set_model_name_cache(const char* value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ModelConfig::set_model_name_cache(const char* value, size_t size) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ModelConfig::mutable_model_name_cache() {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  return model_name_cache_;
+}
+inline ::std::string* ModelConfig::release_model_name_cache() {
+  clear_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_cache_;
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ModelConfig::set_allocated_model_name_cache(::std::string* model_name_cache) {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_cache_;
+  }
+  if (model_name_cache) {
+    set_has_model_name_cache();
+    model_name_cache_ = model_name_cache;
+  } else {
+    clear_has_model_name_cache();
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -21757,6 +21857,76 @@ ProcessBatchesArgs::batch_weight() const {
 inline ::google::protobuf::RepeatedField< float >*
 ProcessBatchesArgs::mutable_batch_weight() {
   return &batch_weight_;
+}
+
+// optional string model_name_cache = 16;
+inline bool ProcessBatchesArgs::has_model_name_cache() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_model_name_cache() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void ProcessBatchesArgs::clear_has_model_name_cache() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void ProcessBatchesArgs::clear_model_name_cache() {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_->clear();
+  }
+  clear_has_model_name_cache();
+}
+inline const ::std::string& ProcessBatchesArgs::model_name_cache() const {
+  return *model_name_cache_;
+}
+inline void ProcessBatchesArgs::set_model_name_cache(const ::std::string& value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ProcessBatchesArgs::set_model_name_cache(const char* value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ProcessBatchesArgs::set_model_name_cache(const char* value, size_t size) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ProcessBatchesArgs::mutable_model_name_cache() {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  return model_name_cache_;
+}
+inline ::std::string* ProcessBatchesArgs::release_model_name_cache() {
+  clear_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_cache_;
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ProcessBatchesArgs::set_allocated_model_name_cache(::std::string* model_name_cache) {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_cache_;
+  }
+  if (model_name_cache) {
+    set_has_model_name_cache();
+    model_name_cache_ = model_name_cache;
+  } else {
+    clear_has_model_name_cache();
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------

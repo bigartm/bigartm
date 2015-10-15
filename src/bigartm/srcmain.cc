@@ -744,7 +744,7 @@ class ArtmExecutor {
     StringIndex pwt_index("pwt");
     StringIndex nwt_index("nwt");
 
-    // ToDo: fix theta scores so that they accumulate accross different pwt models...
+    process_batches_args_->set_model_name_cache(options_.pwt_model_name);
     process_batches_args_->set_reset_scores(true);  // reset scores at the beginning of each iteration
     int op_id = AsyncProcessBatches(pwt_active, nwt_index, update_count);
     process_batches_args_->set_reset_scores(false);
