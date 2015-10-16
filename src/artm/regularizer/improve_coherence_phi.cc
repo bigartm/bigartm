@@ -47,6 +47,8 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
 
     for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+      if (!topics_to_regularize[topic_id]) continue;
+
       float value = 0.0f;
       auto cooc_tokens_info = dictionary_ptr->cooc_info(token);
       if (cooc_tokens_info == nullptr) continue;
