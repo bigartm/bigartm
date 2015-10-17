@@ -620,7 +620,7 @@ bool Helpers::Validate(const ::artm::ImportDictionaryArgs& message, bool throw_e
 
 void Helpers::Fix(::artm::DictionaryConfig* message) {
   // Upgrade from token_count to token_weight
-  if (message->has_total_token_count() && message->has_total_token_weight()) {
+  if (message->has_total_token_count() && !message->has_total_token_weight()) {
     message->set_total_token_weight(static_cast<float>(message->total_token_count()));
     message->clear_total_token_count();
   }
