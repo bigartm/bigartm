@@ -60,6 +60,11 @@ Downloads
 
     lastfm    `lastfm`_         1k,     * `lastfm_1k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_1k.7z>`_ (VW format)
                                 360k    * `lastfm_360k ( MB)  <https://s3-eu-west-1.amazonaws.com/artm/lastfm_360k.7z>`_ (VW format)
+
+    mmro      `mmro`_   7805    1061    * `docword.mmro.txt.gz (500 KB) <https://s3-eu-west-1.amazonaws.com/artm/docword.mmro.txt.7z>`_
+                                        * `vocab.mmro.txt (150 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.mmro.txt>`_
+                                        * `pPMI_w100.mmro.txt.7z (23 MB) <https://s3-eu-west-1.amazonaws.com/artm/pPMI_w100.mmro.txt.7z>`_
+                                        * `vw.mmro.txt.7z (1.4 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt.7z>`_
     ========= ========= ======= ======= ==================================================================================================================
 
 .. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words
@@ -69,3 +74,5 @@ Downloads
 .. _Wiki: http://dumps.wikimedia.org
 
 .. _lastfm: http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/
+
+.. _mmro: http://mmro.ru/
