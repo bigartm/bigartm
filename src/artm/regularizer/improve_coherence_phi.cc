@@ -41,23 +41,33 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     return false;
   }
 
+  // create the conversion from index if token in Dictionary -> index of token in Phi
+  // -1 means that token from dictionary doesn't present in Phi matrix
+  std::vector<int> dict_to_phi_indices(dictionary_ptr->size(), -1);
+  for (auto& index_token : dictionary_ptr->index_token())
+    dict_to_phi_indices[index_token.first] = n_wt.token_index(index_token.second);
+
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {
     auto token = n_wt.token(token_id);
     if (!use_all_classes && !core::is_member(token.class_id, config_.class_id())) continue;
 
-    for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
-      if (!topics_to_regularize[topic_id]) continue;
+    auto cooc_tokens_info = dictionary_ptr->cooc_info(token);
+    if (cooc_tokens_info == nullptr) continue;
 
-      float value = 0.0f;
-      auto cooc_tokens_info = dictionary_ptr->cooc_info(token);
-      if (cooc_tokens_info == nullptr) continue;
+    std::vector<float> values(topic_size, 0.0);
+    for (auto& elem : *cooc_tokens_info) {
+      float mult_coef = elem.second;
+      int cooc_token_index = dict_to_phi_indices[elem.first];
+      if (cooc_token_index == -1) continue;
 
-      for (auto& elem : *cooc_tokens_info) {
-        value += n_wt.get(elem.first, topic_id) * elem.second;
+      for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
+        if (!topics_to_regularize[topic_id]) continue;
+
+        values[topic_id] += n_wt.get(cooc_token_index, topic_id) * mult_coef;
       }
-      result->set(token_id, topic_id, value);
     }
+    result->increase(token_id, values);
   }
   return true;
 }

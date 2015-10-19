@@ -141,20 +141,24 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
   int k = tokens_to_score.size();
   if (k == 0 || k == 1) return 0.0f;
 
-  for (int i = 0; i < k - 1; ++i) {
-    auto token_one_index_iter = token_index_.find(tokens_to_score[i]);
-    if (token_one_index_iter == token_index_.end()) continue;
+  // -1 means that find() result == end()
+  auto indices = std::vector<int>(k, -1);
+  for (int i = 0; i < k; ++i) {
+    auto token_index_iter = token_index_.find(tokens_to_score[i]);
+    if (token_index_iter == token_index_.end()) continue;
+    indices[i] = token_index_iter->second;
+  }
 
-    auto cooc_map_iter = cooc_values_.find(token_one_index_iter->second);
+  for (int i = 0; i < k - 1; ++i) {
+    if (indices[i] == -1) continue;
+    auto cooc_map_iter = cooc_values_.find(indices[i]);
     if (cooc_map_iter == cooc_values_.end()) continue;
 
     for (int j = i; j < k; ++j) {
+      if (indices[j] == -1) continue;
       if (tokens_to_score[j].class_id != tokens_to_score[i].class_id) continue;
 
-      auto token_two_index_iter = token_index_.find(tokens_to_score[j]);
-      if (token_two_index_iter == token_index_.end()) continue;
-
-      auto value_iter = cooc_map_iter->second.find(token_two_index_iter->second);
+      auto value_iter = cooc_map_iter->second.find(indices[j]);
       if (value_iter == cooc_map_iter->second.end()) continue;
       coherence_value += static_cast<float>(value_iter->second);
     }
