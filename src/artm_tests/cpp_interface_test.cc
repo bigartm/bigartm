@@ -736,3 +736,53 @@ TEST(CppInterface, AttachModel) {
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }
+
+// artm_tests.exe --gtest_filter=CppInterface.AsyncProcessBatches
+TEST(CppInterface, AsyncProcessBatches) {
+  int nTopics = 17, nBatches = 5;
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+  ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
+  artm::MasterComponentConfig master_config;
+  artm::MasterComponent master(master_config);
+
+  // Verify that it is possible to attach immediatelly after Initialize()
+  artm::InitializeModelArgs initialize_model_args;
+  initialize_model_args.set_disk_path(target_folder);
+  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_topics_count(nTopics);
+  initialize_model_args.set_model_name("pwt0");
+  master.InitializeModel(initialize_model_args);
+
+  std::vector<std::string> all_batches = ::artm::core::BatchHelpers::ListAllBatches(target_folder);
+  ASSERT_EQ(all_batches.size(), nBatches);
+
+  std::vector<int> operation_ids;
+  for (int i = 0; i < all_batches.size(); ++i) {
+    std::string& batch_name = all_batches[i];
+    artm::ProcessBatchesArgs process_batches_args;
+    process_batches_args.add_batch_filename(batch_name);
+    process_batches_args.set_pwt_source_name(std::string("pwt0"));
+    process_batches_args.set_nwt_target_name(std::string("nwt_hat") + boost::lexical_cast<std::string>(i));
+    process_batches_args.set_theta_matrix_type(::artm::ProcessBatchesArgs_ThetaMatrixType_None);
+    operation_ids.push_back(master.AsyncProcessBatches(process_batches_args));
+  }
+
+  for (int i = 0; i < operation_ids.size(); ++i) {
+    master.AwaitOperation(operation_ids[i]);
+
+    ::artm::MergeModelArgs merge_model_args;
+    std::string name = std::string("nwt_hat") + boost::lexical_cast<std::string>(i);
+    merge_model_args.add_nwt_source_name("nwt_merge"); merge_model_args.add_source_weight(1.0f);
+    merge_model_args.add_nwt_source_name(name); merge_model_args.add_source_weight(1.0f);
+    merge_model_args.set_nwt_target_name("nwt_merge");
+    master.MergeModel(merge_model_args);
+  }
+
+  artm::NormalizeModelArgs normalize_model_args;
+  normalize_model_args.set_pwt_target_name("pwt");
+  normalize_model_args.set_nwt_source_name("nwt_merge");
+  master.NormalizeModel(normalize_model_args);
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+}

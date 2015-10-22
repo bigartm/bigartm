@@ -6,6 +6,8 @@
 #include <iostream>  // NOLINT
 
 #include "boost/thread/tss.hpp"
+#include "boost/thread/thread.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "glog/logging.h"
 
@@ -15,7 +17,12 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/master_component.h"
+#include "artm/core/template_manager.h"
 #include "artm/core/collection_parser.h"
+#include "artm/core/batch_manager.h"
+
+typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterComponent>> MasterComponentManager;
+typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::BatchManager>> AsyncProcessBatchesManager;
 
 // Never use the following variables explicitly (only through the corresponding methods).
 // It might be good idea to make them a private members of a new singleton class.
@@ -95,7 +102,7 @@ static void EnableLogging() {
 }
 
 static std::shared_ptr< ::artm::core::MasterComponent> master_component(int master_id) {
-  auto master_component = artm::core::MasterComponentManager::singleton().Get(master_id);
+  auto master_component = MasterComponentManager::singleton().Get(master_id);
   if (master_component == nullptr) {
     BOOST_THROW_EXCEPTION(::artm::core::InvalidMasterIdException(boost::lexical_cast<std::string>(master_id)));
   }
@@ -225,9 +232,9 @@ int ArtmCreateMasterComponent(int length, const char* master_component_config) {
     artm::MasterComponentConfig config;
     ParseFromArray(master_component_config, length, &config);
     ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-    auto& mcm = artm::core::MasterComponentManager::singleton();
-    int retval = mcm.Create< ::artm::core::MasterComponent, ::artm::MasterComponentConfig>(config);
-    assert(retval > 0);
+    auto& mcm = MasterComponentManager::singleton();
+    int retval = mcm.Store(std::make_shared< ::artm::core::MasterComponent>(config));
+    LOG(INFO) << "Creating MasterComponent (id=" << retval << ")...";
     return retval;
   } CATCH_EXCEPTIONS;
 }
@@ -237,9 +244,9 @@ int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicat
     EnableLogging();
 
     std::shared_ptr< ::artm::core::MasterComponent> master = master_component(master_id);
-    auto& mcm = artm::core::MasterComponentManager::singleton();
-    int retval = mcm.Create< ::artm::core::MasterComponent, ::artm::core::MasterComponent>(*master);
-    assert(retval > 0);
+    auto& mcm = MasterComponentManager::singleton();
+    int retval = mcm.Store(master->Duplicate());
+    LOG(INFO) << "Copying MasterComponent (id=" << master_id << " to id=" << retval << ")...";
     return retval;
   } CATCH_EXCEPTIONS;
 }
@@ -298,6 +305,49 @@ int ArtmRequestProcessBatches(int master_id, int length, const char* process_bat
 
 int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* process_batches_args) {
   return ImplRequestProcessBatches(master_id, length, process_batches_args, /* external =*/ true);
+}
+
+int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batches_args) {
+  try {
+    artm::ProcessBatchesArgs args;
+    ParseFromArray(process_batches_args, length, &args);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    std::shared_ptr< ::artm::core::MasterComponent> master = master_component(master_id);
+
+    std::shared_ptr< ::artm::core::BatchManager> batch_manager = std::make_shared< ::artm::core::BatchManager>();
+    master->AsyncRequestProcessBatches(args, batch_manager.get());
+    int retval = AsyncProcessBatchesManager::singleton().Store(batch_manager);
+
+    LOG(INFO) << "Creating async operation (id=" << retval << ")...";
+    return retval;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmAwaitOperation(int operation_id, int length, const char* await_operation_args) {
+  try {
+    artm::AwaitOperationArgs args;
+    ParseFromArray(await_operation_args, length, &args);
+
+    AsyncProcessBatchesManager& manager = AsyncProcessBatchesManager::singleton();
+    std::shared_ptr<artm::core::BatchManager> batch_manager = manager.Get(operation_id);
+
+    const int timeout = args.timeout_milliseconds();
+    auto time_start = boost::posix_time::microsec_clock::local_time();
+    for (;;) {
+      if (batch_manager->IsEverythingProcessed())
+        return ARTM_SUCCESS;
+
+      boost::this_thread::sleep(boost::posix_time::milliseconds(::artm::core::kIdleLoopFrequency));
+      auto time_end = boost::posix_time::microsec_clock::local_time();
+      if (timeout >= 0) {
+        if ((time_end - time_start).total_milliseconds() >= timeout)
+          break;
+      }
+    }
+
+    set_last_error("The operation is still in progress. Call ArtmAwaitOperation() later.");
+    return ARTM_STILL_WORKING;
+  } CATCH_EXCEPTIONS;
 }
 
 int ArtmMergeModel(int master_id, int length, const char* merge_model_args) {
@@ -418,6 +468,7 @@ int ArtmRequestMasterComponentInfo(int master_id, int length, const char* /*get_
   try {
     ::artm::MasterComponentInfo master_component_info;
     master_component(master_id)->RequestMasterComponentInfo(&master_component_info);
+    master_component_info.set_master_id(master_id);
     master_component_info.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
@@ -474,7 +525,8 @@ int ArtmAttachModel(int master_id, int length, const char* attach_model_args, in
 
 int ArtmDisposeMasterComponent(int master_id) {
   try {
-    artm::core::MasterComponentManager::singleton().Erase(master_id);
+    MasterComponentManager::singleton().Erase(master_id);
+    LOG(INFO) << "Disposing MasterComponent (id=" << master_id << ")...";
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
