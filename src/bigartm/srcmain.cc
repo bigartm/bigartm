@@ -236,6 +236,7 @@ struct artm_options {
   std::string load_model;
   std::string topics;
   std::string use_modality;
+  std::string predict_class;
 
   // Learning
   int passes;
@@ -864,6 +865,7 @@ int execute(const artm_options& options) {
   process_batches_args.set_inner_iterations_count(options.inner_iterations_count);
   process_batches_args.set_opt_for_avx(!options.b_disable_avx_opt);
   process_batches_args.set_use_sparse_bow(!options.b_use_dense_bow);
+  if (!options.predict_class.empty()) process_batches_args.set_predict_class_id(options.predict_class);
   if (options.b_reuse_theta) process_batches_args.set_reuse_theta(true);
 
   std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options.use_modality);
@@ -1097,6 +1099,7 @@ int main(int argc, char * argv[]) {
       ("load-model", po::value(&options.load_model)->default_value(""), "load model from file before processing")
       ("topics,t", po::value(&options.topics)->default_value("16"), "number of topics")
       ("use-modality", po::value< std::string >(&options.use_modality)->default_value(""), "modalities (class_ids) and their weights")
+      ("predict-class", po::value< std::string >(&options.predict_class)->default_value(""), "target modality to predict by theta matrix")
     ;
 
     po::options_description learning_options("Learning");

@@ -100,16 +100,38 @@ class NormalizeThetaAgent : public RegularizeThetaAgent {
 static void CreateThetaCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
                                   DenseMatrix<float>* theta_matrix,
                                   const Batch& batch,
-                                  int topic_size) {
+                                  const PhiMatrix& p_wt,
+                                  const ModelConfig& model_config) {
   if (new_cache_entry_ptr == nullptr) return;
 
+  const int topic_size = model_config.topics_count();
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     const Item& item = batch.item(item_index);
     new_cache_entry_ptr->add_item_id(item.id());
     new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
     FloatArray* cached_theta = new_cache_entry_ptr->add_theta();
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      cached_theta->add_value((*theta_matrix)(topic_index, item_index));
+  }
+
+  if (!model_config.has_predict_class_id()) {
+    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+        new_cache_entry_ptr->mutable_theta(item_index)->add_value((*theta_matrix)(topic_index, item_index));
+      }
+    }
+  } else {
+    new_cache_entry_ptr->clear_topic_name();
+    for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
+      const Token& token = p_wt.token(token_index);
+      if (token.class_id != model_config.predict_class_id())
+        continue;
+
+      new_cache_entry_ptr->add_topic_name(token.keyword);
+      for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+        float weight = 0.0;
+        for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+          weight += (*theta_matrix)(topic_index, item_index) * p_wt.get(token_index, topic_index);
+        new_cache_entry_ptr->mutable_theta(item_index)->add_value(weight);
+      }
     }
   }
 }
@@ -590,7 +612,7 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
     nwt_writer->Store(w, token_id[w], values);
   }
 
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, model_config);
 }
 
 static void
@@ -687,7 +709,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
     }
     CreatePtdwCacheEntry(new_ptdw_cache_entry_ptr, &local_ptdw, batch, d, topics_count);
   }
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, model_config);
 }
 
 static void
@@ -797,7 +819,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
     }
   }
 
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, model_config);
 }
 
 static std::shared_ptr<Score>

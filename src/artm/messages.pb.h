@@ -2099,6 +2099,18 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::std::string* release_model_name_cache();
   inline void set_allocated_model_name_cache(::std::string* model_name_cache);
 
+  // optional string predict_class_id = 20;
+  inline bool has_predict_class_id() const;
+  inline void clear_predict_class_id();
+  static const int kPredictClassIdFieldNumber = 20;
+  inline const ::std::string& predict_class_id() const;
+  inline void set_predict_class_id(const ::std::string& value);
+  inline void set_predict_class_id(const char* value);
+  inline void set_predict_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_predict_class_id();
+  inline ::std::string* release_predict_class_id();
+  inline void set_allocated_predict_class_id(::std::string* predict_class_id);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2125,6 +2137,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_opt_for_avx();
   inline void set_has_model_name_cache();
   inline void clear_has_model_name_cache();
+  inline void set_has_predict_class_id();
+  inline void clear_has_predict_class_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2150,9 +2164,10 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
   ::std::string* model_name_cache_;
+  ::std::string* predict_class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8820,6 +8835,18 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::std::string* release_model_name_cache();
   inline void set_allocated_model_name_cache(::std::string* model_name_cache);
 
+  // optional string predict_class_id = 17;
+  inline bool has_predict_class_id() const;
+  inline void clear_predict_class_id();
+  static const int kPredictClassIdFieldNumber = 17;
+  inline const ::std::string& predict_class_id() const;
+  inline void set_predict_class_id(const ::std::string& value);
+  inline void set_predict_class_id(const char* value);
+  inline void set_predict_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_predict_class_id();
+  inline ::std::string* release_predict_class_id();
+  inline void set_allocated_predict_class_id(::std::string* predict_class_id);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8842,6 +8869,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_theta_matrix_type();
   inline void set_has_model_name_cache();
   inline void clear_has_model_name_cache();
+  inline void set_has_predict_class_id();
+  inline void clear_has_predict_class_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8861,10 +8890,11 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool reset_scores_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
   ::std::string* model_name_cache_;
+  ::std::string* predict_class_id_;
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -13162,6 +13192,76 @@ inline void ModelConfig::set_allocated_model_name_cache(::std::string* model_nam
   } else {
     clear_has_model_name_cache();
     model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string predict_class_id = 20;
+inline bool ModelConfig::has_predict_class_id() const {
+  return (_has_bits_[0] & 0x00080000u) != 0;
+}
+inline void ModelConfig::set_has_predict_class_id() {
+  _has_bits_[0] |= 0x00080000u;
+}
+inline void ModelConfig::clear_has_predict_class_id() {
+  _has_bits_[0] &= ~0x00080000u;
+}
+inline void ModelConfig::clear_predict_class_id() {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_->clear();
+  }
+  clear_has_predict_class_id();
+}
+inline const ::std::string& ModelConfig::predict_class_id() const {
+  return *predict_class_id_;
+}
+inline void ModelConfig::set_predict_class_id(const ::std::string& value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ModelConfig::set_predict_class_id(const char* value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ModelConfig::set_predict_class_id(const char* value, size_t size) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ModelConfig::mutable_predict_class_id() {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  return predict_class_id_;
+}
+inline ::std::string* ModelConfig::release_predict_class_id() {
+  clear_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = predict_class_id_;
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ModelConfig::set_allocated_predict_class_id(::std::string* predict_class_id) {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete predict_class_id_;
+  }
+  if (predict_class_id) {
+    set_has_predict_class_id();
+    predict_class_id_ = predict_class_id;
+  } else {
+    clear_has_predict_class_id();
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
@@ -21926,6 +22026,76 @@ inline void ProcessBatchesArgs::set_allocated_model_name_cache(::std::string* mo
   } else {
     clear_has_model_name_cache();
     model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string predict_class_id = 17;
+inline bool ProcessBatchesArgs::has_predict_class_id() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_predict_class_id() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void ProcessBatchesArgs::clear_has_predict_class_id() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline void ProcessBatchesArgs::clear_predict_class_id() {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_->clear();
+  }
+  clear_has_predict_class_id();
+}
+inline const ::std::string& ProcessBatchesArgs::predict_class_id() const {
+  return *predict_class_id_;
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const ::std::string& value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const char* value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const char* value, size_t size) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ProcessBatchesArgs::mutable_predict_class_id() {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  return predict_class_id_;
+}
+inline ::std::string* ProcessBatchesArgs::release_predict_class_id() {
+  clear_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = predict_class_id_;
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ProcessBatchesArgs::set_allocated_predict_class_id(::std::string* predict_class_id) {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete predict_class_id_;
+  }
+  if (predict_class_id) {
+    set_has_predict_class_id();
+    predict_class_id_ = predict_class_id;
+  } else {
+    clear_has_predict_class_id();
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 

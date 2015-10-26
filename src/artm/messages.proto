@@ -117,6 +117,7 @@ message ModelConfig {
   optional bool opt_for_avx = 17 [default = true];
   repeated RegularizerSettings regularizer_settings = 18;
   optional string model_name_cache = 19;
+  optional string predict_class_id = 20;
 }
 
 // Represents a configuration of a general regularizer
@@ -618,6 +619,7 @@ message ProcessBatchesArgs {
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
   optional string model_name_cache = 16;
+  optional string predict_class_id = 17;
 }
 
 message ProcessBatchesResult {

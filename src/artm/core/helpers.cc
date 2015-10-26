@@ -776,6 +776,7 @@ std::string Helpers::Describe(const ::artm::ProcessBatchesArgs& message) {
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", reset_scores=" << (message.reset_scores() ? "yes" : "no");
+  ss << ", predict_class_id=" << (message.predict_class_id());
   return ss.str();
 }
 
