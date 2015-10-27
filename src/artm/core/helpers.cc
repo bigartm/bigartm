@@ -620,7 +620,7 @@ bool Helpers::Validate(const ::artm::ImportDictionaryArgs& message, bool throw_e
 
 void Helpers::Fix(::artm::DictionaryConfig* message) {
   // Upgrade from token_count to token_weight
-  if (message->has_total_token_count() && message->has_total_token_weight()) {
+  if (message->has_total_token_count() && !message->has_total_token_weight()) {
     message->set_total_token_weight(static_cast<float>(message->total_token_count()));
     message->clear_total_token_count();
   }
@@ -723,7 +723,6 @@ std::string Helpers::Describe(const ::artm::ModelConfig& message) {
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", use_random_theta=" << (message.use_random_theta() ? "yes" : "no");
   ss << ", use_new_tokens=" << (message.use_new_tokens() ? "yes" : "no");
-  ss << ", use_ptdw_matrix=" << (message.use_ptdw_matrix() ? "yes" : "no");
   return ss.str();
 }
 
@@ -777,7 +776,6 @@ std::string Helpers::Describe(const ::artm::ProcessBatchesArgs& message) {
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", reset_scores=" << (message.reset_scores() ? "yes" : "no");
-  ss << ", use_ptdw_matrix=" << (message.use_ptdw_matrix() ? "yes" : "no");
   return ss.str();
 }
 
@@ -966,8 +964,9 @@ void BatchHelpers::LoadMessage(const std::string& full_filename,
     } catch (...) {}
 
     if (uuid.is_nil()) {
-      // Otherwise generate new random UUID
-      uuid = boost::uuids::random_generator()();
+      // Otherwise throw the exception
+        BOOST_THROW_EXCEPTION(DiskReadException(
+          "Unable to detect batch.id or uuid filename in " + full_filename));
     }
 
     batch->set_id(boost::lexical_cast<std::string>(uuid));

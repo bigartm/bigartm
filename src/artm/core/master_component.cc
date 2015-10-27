@@ -28,28 +28,23 @@
 #include "artm/core/scores_merger.h"
 #include "artm/core/merger.h"
 #include "artm/core/dense_phi_matrix.h"
+#include "artm/core/template_manager.h"
 
 namespace artm {
 namespace core {
 
-MasterComponent::MasterComponent(int id, const MasterComponentConfig& config)
-    : master_id_(id),
-      instance_(std::make_shared<Instance>(config)) {
-  LOG(INFO) << "Creating MasterComponent (id=" << master_id_ << ")...";
+MasterComponent::MasterComponent(const MasterComponentConfig& config)
+    : instance_(std::make_shared<Instance>(config)) {
 }
 
-MasterComponent::MasterComponent(int id, const MasterComponent& rhs)
-  : master_id_(id),
-    instance_(rhs.instance_->Duplicate()) {
-  LOG(INFO) << "Copying MasterComponent (id=" << rhs.id() << " to id=" << master_id_ << ")...";
+MasterComponent::MasterComponent(const MasterComponent& rhs)
+    : instance_(rhs.instance_->Duplicate()) {
 }
 
-MasterComponent::~MasterComponent() {
-  LOG(INFO) << "Disposing MasterComponent (id=" << master_id_ << ")...";
-}
+MasterComponent::~MasterComponent() {}
 
-int MasterComponent::id() const {
-  return master_id_;
+std::shared_ptr<MasterComponent> MasterComponent::Duplicate() const {
+  return std::shared_ptr<MasterComponent>(new MasterComponent(*this));
 }
 
 void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
@@ -271,12 +266,23 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
 
 void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
   std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
-  master_info->set_master_id(master_id_);
   this->instance_->RequestMasterComponentInfo(master_info);
 }
 
 void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                             ProcessBatchesResult* process_batches_result) {
+  BatchManager batch_manager;
+  RequestProcessBatchesImpl(process_batches_args, &batch_manager, /* async =*/ false, process_batches_result);
+}
+
+void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                                                 BatchManager *batch_manager) {
+  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* async =*/ true, nullptr);
+}
+
+void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
+                                                BatchManager* batch_manager, bool async,
+                                                ProcessBatchesResult* process_batches_result) {
   LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
   const MasterComponentConfig& config = schema->config();
@@ -294,7 +300,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   if (args.has_reuse_theta()) model_config.set_reuse_theta(args.reuse_theta());
   if (args.has_opt_for_avx()) model_config.set_opt_for_avx(args.opt_for_avx());
   if (args.has_use_sparse_bow()) model_config.set_use_sparse_bow(args.use_sparse_bow());
-  if (args.has_use_ptdw_matrix()) model_config.set_use_ptdw_matrix(args.use_ptdw_matrix());
+  if (args.has_model_name_cache()) model_config.set_model_name_cache(args.model_name_cache());
 
   std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
@@ -316,7 +322,13 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
   Helpers::FixAndValidate(&model_config, /* throw_error =*/ true);
 
-  BatchManager batch_manager;
+  if (async && args.theta_matrix_type() != ProcessBatchesArgs_ThetaMatrixType_None)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "ArtmAsyncProcessBatches require ProcessBatchesArgs.theta_matrix_type to be set to None"));
+
+  // The code below must not use cache_manger in async mode.
+  // Since cache_manager lives on stack it will be destroyed once we return from this function.
+  // Therefore, no pointers to cache_manager should exist upon return from RequestProcessBatchesImpl.
   CacheManager cache_manager;
   ScoresMerger* scores_merger = instance_->merger()->scores_merger();
 
@@ -352,10 +364,10 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
 
   for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
-    batch_manager.Add(task_id, std::string(), model_name);
+    batch_manager->Add(task_id, std::string(), model_name);
 
     auto pi = std::make_shared<ProcessorInput>();
-    pi->set_notifiable(&batch_manager);
+    pi->set_notifiable(batch_manager);
     pi->set_scores_merger(scores_merger);
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
@@ -366,10 +378,6 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);
 
-    if (args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_DensePtdw ||
-        args.theta_matrix_type() == ProcessBatchesArgs_ThetaMatrixType_SparsePtdw)
-      pi->mutable_model_config()->set_use_ptdw_matrix(true);
-
     if (args.reuse_theta())
       pi->set_reuse_theta_cache_manager(instance_->cache_manager());
 
@@ -379,11 +387,13 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
     instance_->processor_queue()->push(pi);
   }
 
-  while (!batch_manager.IsEverythingProcessed()) {
+  if (async)
+    return;
+
+  while (!batch_manager->IsEverythingProcessed()) {
     boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
   }
 
-  process_batches_result->Clear();
   for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
     ScoreName score_name = config.score_config(score_index).name();
     ScoreData score_data;

@@ -132,6 +132,9 @@ class MasterComponent {
   std::shared_ptr<MasterComponentInfo> info() const;
 
   std::shared_ptr<ProcessBatchesResultObject> ProcessBatches(const ProcessBatchesArgs& args);
+  int AsyncProcessBatches(const ProcessBatchesArgs& args);
+  int AwaitOperation(int operation_id);
+
   void MergeModel(const MergeModelArgs& args);
   void NormalizeModel(const NormalizeModelArgs& args);
   void RegularizeModel(const RegularizeModelArgs& args);

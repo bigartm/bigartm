@@ -54,6 +54,7 @@ class MultiLanguagePhiConfig;
 class LabelRegularizationPhiConfig;
 class SpecifiedSparsePhiConfig;
 class ImproveCoherencePhiConfig;
+class SmoothPtdwConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class DictionaryConfig;
@@ -111,6 +112,7 @@ class MasterComponentInfo_ModelInfo;
 class MasterComponentInfo_CacheEntryInfo;
 class ImportBatchesArgs;
 class DisposeBatchesArgs;
+class AwaitOperationArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -138,11 +140,12 @@ enum RegularizerConfig_Type {
   RegularizerConfig_Type_MultiLanguagePhi = 3,
   RegularizerConfig_Type_LabelRegularizationPhi = 4,
   RegularizerConfig_Type_SpecifiedSparsePhi = 5,
-  RegularizerConfig_Type_ImproveCoherencePhi = 6
+  RegularizerConfig_Type_ImproveCoherencePhi = 6,
+  RegularizerConfig_Type_SmoothPtdw = 7
 };
 bool RegularizerConfig_Type_IsValid(int value);
 const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_SmoothSparseTheta;
-const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_ImproveCoherencePhi;
+const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_SmoothPtdw;
 const int RegularizerConfig_Type_Type_ARRAYSIZE = RegularizerConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* RegularizerConfig_Type_descriptor();
@@ -173,6 +176,25 @@ inline bool SpecifiedSparsePhiConfig_Mode_Parse(
     const ::std::string& name, SpecifiedSparsePhiConfig_Mode* value) {
   return ::google::protobuf::internal::ParseNamedEnum<SpecifiedSparsePhiConfig_Mode>(
     SpecifiedSparsePhiConfig_Mode_descriptor(), name, value);
+}
+enum SmoothPtdwConfig_Type {
+  SmoothPtdwConfig_Type_MovingAverage = 1,
+  SmoothPtdwConfig_Type_MovingProduct = 2
+};
+bool SmoothPtdwConfig_Type_IsValid(int value);
+const SmoothPtdwConfig_Type SmoothPtdwConfig_Type_Type_MIN = SmoothPtdwConfig_Type_MovingAverage;
+const SmoothPtdwConfig_Type SmoothPtdwConfig_Type_Type_MAX = SmoothPtdwConfig_Type_MovingProduct;
+const int SmoothPtdwConfig_Type_Type_ARRAYSIZE = SmoothPtdwConfig_Type_Type_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* SmoothPtdwConfig_Type_descriptor();
+inline const ::std::string& SmoothPtdwConfig_Type_Name(SmoothPtdwConfig_Type value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    SmoothPtdwConfig_Type_descriptor(), value);
+}
+inline bool SmoothPtdwConfig_Type_Parse(
+    const ::std::string& name, SmoothPtdwConfig_Type* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<SmoothPtdwConfig_Type>(
+    SmoothPtdwConfig_Type_descriptor(), name, value);
 }
 enum RegularizerInternalState_Type {
   RegularizerInternalState_Type_MultiLanguagePhi = 3
@@ -2065,12 +2087,17 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
       mutable_regularizer_settings();
 
-  // optional bool use_ptdw_matrix = 19 [default = false];
-  inline bool has_use_ptdw_matrix() const;
-  inline void clear_use_ptdw_matrix();
-  static const int kUsePtdwMatrixFieldNumber = 19;
-  inline bool use_ptdw_matrix() const;
-  inline void set_use_ptdw_matrix(bool value);
+  // optional string model_name_cache = 19;
+  inline bool has_model_name_cache() const;
+  inline void clear_model_name_cache();
+  static const int kModelNameCacheFieldNumber = 19;
+  inline const ::std::string& model_name_cache() const;
+  inline void set_model_name_cache(const ::std::string& value);
+  inline void set_model_name_cache(const char* value);
+  inline void set_model_name_cache(const char* value, size_t size);
+  inline ::std::string* mutable_model_name_cache();
+  inline ::std::string* release_model_name_cache();
+  inline void set_allocated_model_name_cache(::std::string* model_name_cache);
 
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
@@ -2096,8 +2123,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_new_tokens();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
-  inline void set_has_use_ptdw_matrix();
-  inline void clear_has_use_ptdw_matrix();
+  inline void set_has_model_name_cache();
+  inline void clear_has_model_name_cache();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2114,15 +2141,15 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
   bool use_new_tokens_;
   bool opt_for_avx_;
-  bool use_ptdw_matrix_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
+  ::std::string* model_name_cache_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
@@ -2196,6 +2223,7 @@ class RegularizerConfig : public ::google::protobuf::Message {
   static const Type LabelRegularizationPhi = RegularizerConfig_Type_LabelRegularizationPhi;
   static const Type SpecifiedSparsePhi = RegularizerConfig_Type_SpecifiedSparsePhi;
   static const Type ImproveCoherencePhi = RegularizerConfig_Type_ImproveCoherencePhi;
+  static const Type SmoothPtdw = RegularizerConfig_Type_SmoothPtdw;
   static inline bool Type_IsValid(int value) {
     return RegularizerConfig_Type_IsValid(value);
   }
@@ -3076,6 +3104,132 @@ class ImproveCoherencePhiConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static ImproveCoherencePhiConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class SmoothPtdwConfig : public ::google::protobuf::Message {
+ public:
+  SmoothPtdwConfig();
+  virtual ~SmoothPtdwConfig();
+
+  SmoothPtdwConfig(const SmoothPtdwConfig& from);
+
+  inline SmoothPtdwConfig& operator=(const SmoothPtdwConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SmoothPtdwConfig& default_instance();
+
+  void Swap(SmoothPtdwConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  SmoothPtdwConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SmoothPtdwConfig& from);
+  void MergeFrom(const SmoothPtdwConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef SmoothPtdwConfig_Type Type;
+  static const Type MovingAverage = SmoothPtdwConfig_Type_MovingAverage;
+  static const Type MovingProduct = SmoothPtdwConfig_Type_MovingProduct;
+  static inline bool Type_IsValid(int value) {
+    return SmoothPtdwConfig_Type_IsValid(value);
+  }
+  static const Type Type_MIN =
+    SmoothPtdwConfig_Type_Type_MIN;
+  static const Type Type_MAX =
+    SmoothPtdwConfig_Type_Type_MAX;
+  static const int Type_ARRAYSIZE =
+    SmoothPtdwConfig_Type_Type_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  Type_descriptor() {
+    return SmoothPtdwConfig_Type_descriptor();
+  }
+  static inline const ::std::string& Type_Name(Type value) {
+    return SmoothPtdwConfig_Type_Name(value);
+  }
+  static inline bool Type_Parse(const ::std::string& name,
+      Type* value) {
+    return SmoothPtdwConfig_Type_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // optional .artm.SmoothPtdwConfig.Type type = 1 [default = MovingAverage];
+  inline bool has_type() const;
+  inline void clear_type();
+  static const int kTypeFieldNumber = 1;
+  inline ::artm::SmoothPtdwConfig_Type type() const;
+  inline void set_type(::artm::SmoothPtdwConfig_Type value);
+
+  // optional int32 window = 3 [default = 10];
+  inline bool has_window() const;
+  inline void clear_window();
+  static const int kWindowFieldNumber = 3;
+  inline ::google::protobuf::int32 window() const;
+  inline void set_window(::google::protobuf::int32 value);
+
+  // optional double threshold = 4 [default = 1];
+  inline bool has_threshold() const;
+  inline void clear_threshold();
+  static const int kThresholdFieldNumber = 4;
+  inline double threshold() const;
+  inline void set_threshold(double value);
+
+  // @@protoc_insertion_point(class_scope:artm.SmoothPtdwConfig)
+ private:
+  inline void set_has_type();
+  inline void clear_has_type();
+  inline void set_has_window();
+  inline void clear_has_window();
+  inline void set_has_threshold();
+  inline void clear_has_threshold();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  int type_;
+  ::google::protobuf::int32 window_;
+  double threshold_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static SmoothPtdwConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -8654,12 +8808,17 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_batch_weight();
 
-  // optional bool use_ptdw_matrix = 16 [default = false];
-  inline bool has_use_ptdw_matrix() const;
-  inline void clear_use_ptdw_matrix();
-  static const int kUsePtdwMatrixFieldNumber = 16;
-  inline bool use_ptdw_matrix() const;
-  inline void set_use_ptdw_matrix(bool value);
+  // optional string model_name_cache = 16;
+  inline bool has_model_name_cache() const;
+  inline void clear_model_name_cache();
+  static const int kModelNameCacheFieldNumber = 16;
+  inline const ::std::string& model_name_cache() const;
+  inline void set_model_name_cache(const ::std::string& value);
+  inline void set_model_name_cache(const char* value);
+  inline void set_model_name_cache(const char* value, size_t size);
+  inline ::std::string* mutable_model_name_cache();
+  inline ::std::string* release_model_name_cache();
+  inline void set_allocated_model_name_cache(::std::string* model_name_cache);
 
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
@@ -8681,8 +8840,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_reset_scores();
   inline void set_has_theta_matrix_type();
   inline void clear_has_theta_matrix_type();
-  inline void set_has_use_ptdw_matrix();
-  inline void clear_has_use_ptdw_matrix();
+  inline void set_has_model_name_cache();
+  inline void clear_has_model_name_cache();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8701,8 +8860,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool use_sparse_bow_;
   bool reset_scores_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
+  ::std::string* model_name_cache_;
   int theta_matrix_type_;
-  bool use_ptdw_matrix_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
@@ -10561,6 +10720,88 @@ class DisposeBatchesArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static DisposeBatchesArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class AwaitOperationArgs : public ::google::protobuf::Message {
+ public:
+  AwaitOperationArgs();
+  virtual ~AwaitOperationArgs();
+
+  AwaitOperationArgs(const AwaitOperationArgs& from);
+
+  inline AwaitOperationArgs& operator=(const AwaitOperationArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const AwaitOperationArgs& default_instance();
+
+  void Swap(AwaitOperationArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  AwaitOperationArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const AwaitOperationArgs& from);
+  void MergeFrom(const AwaitOperationArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 timeout_milliseconds = 1 [default = -1];
+  inline bool has_timeout_milliseconds() const;
+  inline void clear_timeout_milliseconds();
+  static const int kTimeoutMillisecondsFieldNumber = 1;
+  inline ::google::protobuf::int32 timeout_milliseconds() const;
+  inline void set_timeout_milliseconds(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.AwaitOperationArgs)
+ private:
+  inline void set_has_timeout_milliseconds();
+  inline void clear_has_timeout_milliseconds();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::int32 timeout_milliseconds_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static AwaitOperationArgs* default_instance_;
 };
 // ===================================================================
 
@@ -12854,26 +13095,74 @@ ModelConfig::mutable_regularizer_settings() {
   return &regularizer_settings_;
 }
 
-// optional bool use_ptdw_matrix = 19 [default = false];
-inline bool ModelConfig::has_use_ptdw_matrix() const {
+// optional string model_name_cache = 19;
+inline bool ModelConfig::has_model_name_cache() const {
   return (_has_bits_[0] & 0x00040000u) != 0;
 }
-inline void ModelConfig::set_has_use_ptdw_matrix() {
+inline void ModelConfig::set_has_model_name_cache() {
   _has_bits_[0] |= 0x00040000u;
 }
-inline void ModelConfig::clear_has_use_ptdw_matrix() {
+inline void ModelConfig::clear_has_model_name_cache() {
   _has_bits_[0] &= ~0x00040000u;
 }
-inline void ModelConfig::clear_use_ptdw_matrix() {
-  use_ptdw_matrix_ = false;
-  clear_has_use_ptdw_matrix();
+inline void ModelConfig::clear_model_name_cache() {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_->clear();
+  }
+  clear_has_model_name_cache();
 }
-inline bool ModelConfig::use_ptdw_matrix() const {
-  return use_ptdw_matrix_;
+inline const ::std::string& ModelConfig::model_name_cache() const {
+  return *model_name_cache_;
 }
-inline void ModelConfig::set_use_ptdw_matrix(bool value) {
-  set_has_use_ptdw_matrix();
-  use_ptdw_matrix_ = value;
+inline void ModelConfig::set_model_name_cache(const ::std::string& value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ModelConfig::set_model_name_cache(const char* value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ModelConfig::set_model_name_cache(const char* value, size_t size) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ModelConfig::mutable_model_name_cache() {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  return model_name_cache_;
+}
+inline ::std::string* ModelConfig::release_model_name_cache() {
+  clear_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_cache_;
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ModelConfig::set_allocated_model_name_cache(::std::string* model_name_cache) {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_cache_;
+  }
+  if (model_name_cache) {
+    set_has_model_name_cache();
+    model_name_cache_ = model_name_cache;
+  } else {
+    clear_has_model_name_cache();
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -13881,6 +14170,77 @@ inline void ImproveCoherencePhiConfig::set_allocated_dictionary_name(::std::stri
     clear_has_dictionary_name();
     dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
+}
+
+// -------------------------------------------------------------------
+
+// SmoothPtdwConfig
+
+// optional .artm.SmoothPtdwConfig.Type type = 1 [default = MovingAverage];
+inline bool SmoothPtdwConfig::has_type() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void SmoothPtdwConfig::set_has_type() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void SmoothPtdwConfig::clear_has_type() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void SmoothPtdwConfig::clear_type() {
+  type_ = 1;
+  clear_has_type();
+}
+inline ::artm::SmoothPtdwConfig_Type SmoothPtdwConfig::type() const {
+  return static_cast< ::artm::SmoothPtdwConfig_Type >(type_);
+}
+inline void SmoothPtdwConfig::set_type(::artm::SmoothPtdwConfig_Type value) {
+  assert(::artm::SmoothPtdwConfig_Type_IsValid(value));
+  set_has_type();
+  type_ = value;
+}
+
+// optional int32 window = 3 [default = 10];
+inline bool SmoothPtdwConfig::has_window() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void SmoothPtdwConfig::set_has_window() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void SmoothPtdwConfig::clear_has_window() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void SmoothPtdwConfig::clear_window() {
+  window_ = 10;
+  clear_has_window();
+}
+inline ::google::protobuf::int32 SmoothPtdwConfig::window() const {
+  return window_;
+}
+inline void SmoothPtdwConfig::set_window(::google::protobuf::int32 value) {
+  set_has_window();
+  window_ = value;
+}
+
+// optional double threshold = 4 [default = 1];
+inline bool SmoothPtdwConfig::has_threshold() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void SmoothPtdwConfig::set_has_threshold() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void SmoothPtdwConfig::clear_has_threshold() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void SmoothPtdwConfig::clear_threshold() {
+  threshold_ = 1;
+  clear_has_threshold();
+}
+inline double SmoothPtdwConfig::threshold() const {
+  return threshold_;
+}
+inline void SmoothPtdwConfig::set_threshold(double value) {
+  set_has_threshold();
+  threshold_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -21499,26 +21859,74 @@ ProcessBatchesArgs::mutable_batch_weight() {
   return &batch_weight_;
 }
 
-// optional bool use_ptdw_matrix = 16 [default = false];
-inline bool ProcessBatchesArgs::has_use_ptdw_matrix() const {
+// optional string model_name_cache = 16;
+inline bool ProcessBatchesArgs::has_model_name_cache() const {
   return (_has_bits_[0] & 0x00008000u) != 0;
 }
-inline void ProcessBatchesArgs::set_has_use_ptdw_matrix() {
+inline void ProcessBatchesArgs::set_has_model_name_cache() {
   _has_bits_[0] |= 0x00008000u;
 }
-inline void ProcessBatchesArgs::clear_has_use_ptdw_matrix() {
+inline void ProcessBatchesArgs::clear_has_model_name_cache() {
   _has_bits_[0] &= ~0x00008000u;
 }
-inline void ProcessBatchesArgs::clear_use_ptdw_matrix() {
-  use_ptdw_matrix_ = false;
-  clear_has_use_ptdw_matrix();
+inline void ProcessBatchesArgs::clear_model_name_cache() {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_->clear();
+  }
+  clear_has_model_name_cache();
 }
-inline bool ProcessBatchesArgs::use_ptdw_matrix() const {
-  return use_ptdw_matrix_;
+inline const ::std::string& ProcessBatchesArgs::model_name_cache() const {
+  return *model_name_cache_;
 }
-inline void ProcessBatchesArgs::set_use_ptdw_matrix(bool value) {
-  set_has_use_ptdw_matrix();
-  use_ptdw_matrix_ = value;
+inline void ProcessBatchesArgs::set_model_name_cache(const ::std::string& value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ProcessBatchesArgs::set_model_name_cache(const char* value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ProcessBatchesArgs::set_model_name_cache(const char* value, size_t size) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ProcessBatchesArgs::mutable_model_name_cache() {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  return model_name_cache_;
+}
+inline ::std::string* ProcessBatchesArgs::release_model_name_cache() {
+  clear_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_cache_;
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ProcessBatchesArgs::set_allocated_model_name_cache(::std::string* model_name_cache) {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_cache_;
+  }
+  if (model_name_cache) {
+    set_has_model_name_cache();
+    model_name_cache_ = model_name_cache;
+  } else {
+    clear_has_model_name_cache();
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -23572,6 +23980,32 @@ DisposeBatchesArgs::mutable_batch_name() {
   return &batch_name_;
 }
 
+// -------------------------------------------------------------------
+
+// AwaitOperationArgs
+
+// optional int32 timeout_milliseconds = 1 [default = -1];
+inline bool AwaitOperationArgs::has_timeout_milliseconds() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void AwaitOperationArgs::set_has_timeout_milliseconds() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void AwaitOperationArgs::clear_has_timeout_milliseconds() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void AwaitOperationArgs::clear_timeout_milliseconds() {
+  timeout_milliseconds_ = -1;
+  clear_has_timeout_milliseconds();
+}
+inline ::google::protobuf::int32 AwaitOperationArgs::timeout_milliseconds() const {
+  return timeout_milliseconds_;
+}
+inline void AwaitOperationArgs::set_timeout_milliseconds(::google::protobuf::int32 value) {
+  set_has_timeout_milliseconds();
+  timeout_milliseconds_ = value;
+}
+
 
 // @@protoc_insertion_point(namespace_scope)
 
@@ -23592,6 +24026,10 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerConfig_Type>(
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::SpecifiedSparsePhiConfig_Mode>() {
   return ::artm::SpecifiedSparsePhiConfig_Mode_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::SmoothPtdwConfig_Type>() {
+  return ::artm::SmoothPtdwConfig_Type_descriptor();
 }
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerInternalState_Type>() {

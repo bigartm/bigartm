@@ -15,7 +15,6 @@
 
 #include "artm/messages.pb.h"
 #include "artm/core/common.h"
-#include "artm/core/template_manager.h"
 #include "artm/core/thread_safe_holder.h"
 
 namespace artm {

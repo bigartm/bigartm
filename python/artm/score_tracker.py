@@ -605,15 +605,15 @@ class TopicKernelScoreTracker(object):
           set: information about kernel tokens per topic on the last
           synchronization; each set contains information about topics,
           key --- name of topic, value --- named tuple:
-          - *.topic_info[topic_name].tokens --- list of
+          - *.last_topic_info[topic_name].tokens --- list of
             kernel tokens for this topic
-          - *.topic_info[topic_name].size --- size of
+          - *.last_topic_info[topic_name].size --- size of
             kernel for this topic
-          - *.topic_info[topic_name].contrast --- contrast of
+          - *.last_topic_info[topic_name].contrast --- contrast of
             kernel for this topic
-          - *.topic_info[topic_name].purity --- purity of kernel
+          - *.last_topic_info[topic_name].purity --- purity of kernel
             for this topic
-          - *.topic_info[topic_name].coherence --- the coherency of
+          - *.last_topic_info[topic_name].coherence --- the coherency of
             topic due to it's kernel
         """
         return self._topic_info[-1]

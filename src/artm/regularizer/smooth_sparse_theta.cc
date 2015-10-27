@@ -12,7 +12,7 @@
 namespace artm {
 namespace regularizer {
 
-void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) {
+void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
   assert(topics_size == topic_weight.size());
   assert(inner_iter < alpha_weight.size());
   if (topics_size != topic_weight.size()) return;

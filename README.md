@@ -18,9 +18,9 @@ BigARTM is a tool for [topic modeling](https://www.cs.princeton.edu/~blei/papers
 
 Here are some examples of when you could use BigARTM:
 
-  - Extract highly-interpretable topics from text collections. [Demo]()
-  - Scale up topic extraction using parallel and distributed mode. [Demo]()
-  - Construct accurate text classifiers by very small training set. [Demo]()
+  - Build model from interactive ipython notebook. [Demo](https://github.com/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb)
+  - Construct accurate text classifiers by very small training set. [Demo](https://github.com/bigartm/bigartm-book/blob/master/applications/eurlex/Main_EN.ipynb)
+  - Evaluate coherence-based quality metrics. [Demo](https://github.com/bigartm/bigartm-book/blob/master/MMRO_coherence_experiment.ipynb)
   - Query similar documents on different languages.
 
 
