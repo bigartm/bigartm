@@ -24,7 +24,8 @@ SCORE_TRACKER = {
     const.ScoreConfig_Type_ItemsProcessed: score_tracker.ItemsProcessedScoreTracker,
     const.ScoreConfig_Type_TopTokens: score_tracker.TopTokensScoreTracker,
     const.ScoreConfig_Type_TopicKernel: score_tracker.TopicKernelScoreTracker,
-    const.ScoreConfig_Type_TopicMassPhi: score_tracker.TopicMassPhiScoreTracker
+    const.ScoreConfig_Type_TopicMassPhi: score_tracker.TopicMassPhiScoreTracker,
+    const.ScoreConfig_Type_ClassPrecision: score_tracker.ClassPrecisionScoreTracker,
 }
 
 

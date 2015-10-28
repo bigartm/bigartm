@@ -255,6 +255,7 @@ struct artm_options {
   std::string save_batches;
   std::string write_model_readable;
   std::string write_predictions;
+  std::string write_class_predictions;
   std::string csv_separator;
   int score_level;
   std::vector<std::string> score;
@@ -305,6 +306,8 @@ void fixScoreLevel(artm_options* options) {
     for (auto& class_id : class_ids)
       options->score.push_back(std::string("SparsityPhi") + class_id);
     options->score.push_back("SparsityTheta");
+    if (!options->predict_class.empty())
+      options->score.push_back("ClassPrecision");
   }
 
   if (options->score_level >= 2) {
@@ -496,6 +499,11 @@ class ScoreHelper {
        score_config.set_type(::artm::ScoreConfig_Type_TopicKernel);
        score_config.set_config(specific_config.SerializeAsString());
      }
+     else if (score_type == "classprecision") {
+       ClassPrecisionScoreConfig specific_config;
+       score_config.set_type(::artm::ScoreConfig_Type_ClassPrecision);
+       score_config.set_config(specific_config.SerializeAsString());
+     }
      else {
        throw std::invalid_argument(std::string("Unknown regularizer type: " + strs[0]));
      }
@@ -561,6 +569,12 @@ class ScoreHelper {
        std::cerr << "KernelContrast  = " << score_data->average_kernel_contrast() << suffix.str() << "\n";
        if (score_data->has_average_coherence())
          std::cerr << "KernelCoherence = " << score_data->average_kernel_contrast() << suffix.str() << "\n";
+     }
+     else if (type == ::artm::ScoreConfig_Type_ClassPrecision) {
+       auto score_data = master_->GetScoreAs< ::artm::ClassPrecisionScore>(model_name, score_name);
+       std::stringstream suffix;
+       if (boost::to_lower_copy(score_name) != "classprecision") suffix << "\t(" << score_name << ")";
+       std::cerr << "ClassPrecision  = " << score_data->value() << suffix.str() << "\n";
      }
      else {
        throw std::invalid_argument("Unknown score config type: " + boost::lexical_cast<std::string>(type));
@@ -842,6 +856,79 @@ class ArtmExecutor {
   }
 };
 
+void WritePredictions(const artm_options& options,
+                      const ::artm::ThetaMatrix& theta_metadata,
+                      const ::artm::Matrix& theta_matrix) {
+  ProgressScope scope(std::string("Writing model predictions into ") + options.write_predictions);
+  CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
+
+  std::ofstream output(options.write_predictions);
+  const std::string sep = options.csv_separator;
+
+  // header
+  output << "id" << sep << "title";
+  for (int j = 0; j < theta_metadata.topics_count(); ++j) {
+    if (theta_metadata.topic_name_size() > 0)
+      output << sep << escape.apply(theta_metadata.topic_name(j));
+    else
+      output << sep << "topic" << j;
+  }
+  output << std::endl;
+
+  std::vector<std::pair<int, int>> id_to_index;
+  for (int i = 0; i < theta_metadata.item_id_size(); ++i)
+    id_to_index.push_back(std::make_pair(theta_metadata.item_id(i), i));
+  std::sort(id_to_index.begin(), id_to_index.end());
+
+  // bulk
+  for (int i = 0; i < theta_metadata.item_id_size(); ++i) {
+    int index = id_to_index[i].second;
+    output << theta_metadata.item_id(index) << sep;
+    output << (theta_metadata.item_title_size() == 0 ? "" : escape.apply(theta_metadata.item_title(index)));
+    for (int j = 0; j < theta_metadata.topics_count(); ++j) {
+      output << sep << theta_matrix(index, j);
+    }
+    output << std::endl;
+  }
+}
+
+void WriteClassPredictions(const artm_options& options,
+                           const ::artm::ThetaMatrix& theta_metadata,
+                           const ::artm::Matrix& theta_matrix) {
+  ProgressScope scope(std::string("Writing model class predictions into ") + options.write_class_predictions);
+  CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
+
+  std::ofstream output(options.write_class_predictions);
+  const std::string sep = options.csv_separator;
+
+  // header
+  output << "id" << sep << "title" << sep << options.predict_class << std::endl;
+
+  std::vector<std::pair<int, int>> id_to_index;
+  for (int i = 0; i < theta_metadata.item_id_size(); ++i)
+    id_to_index.push_back(std::make_pair(theta_metadata.item_id(i), i));
+  std::sort(id_to_index.begin(), id_to_index.end());
+
+  // bulk
+  for (int i = 0; i < theta_metadata.item_id_size(); ++i) {
+    int index = id_to_index[i].second;
+
+    float max = 0;
+    float max_index = 0;
+    for (int j = 0; j < theta_metadata.topics_count(); ++j) {
+      float value = theta_matrix(index, j);
+      if (value > max) {
+        max = value;
+        max_index = j;
+      }
+    }
+
+    output << theta_metadata.item_id(index) << sep;
+    output << (theta_metadata.item_title_size() == 0 ? "" : escape.apply(theta_metadata.item_title(index))) << sep;
+    output << theta_metadata.topic_name(max_index) << std::endl;
+  }
+}
+
 int execute(const artm_options& options) {
   bool online = (options.update_every > 0);
 
@@ -1018,56 +1105,37 @@ int execute(const artm_options& options) {
     }
   }
 
-  if (!options.write_predictions.empty()) {
-    ProgressScope scope(std::string("Generating model predictions into ") + options.write_predictions);
-    CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
-    if (!master_config.cache_theta()) {
-      master_config.set_cache_theta(true);
-      master_component->Reconfigure(master_config);
-    }
-
-    process_batches_args.set_pwt_source_name(pwt_model_name);
-    process_batches_args.clear_nwt_target_name();
-
-    for (auto& batch_filename : batch_file_names)
-      process_batches_args.add_batch_filename(batch_filename);
-    master_component->ProcessBatches(process_batches_args);
-    process_batches_args.clear_batch_filename();
-
-    ::artm::Matrix matrix;
-    std::shared_ptr< ::artm::ThetaMatrix> theta = master_component->GetThetaMatrix(pwt_model_name, &matrix);
-    if (matrix.no_columns() != theta->topics_count())
-      throw "internal error (matrix.no_columns() != theta->topics_count())";
-
-    std::ofstream output(options.write_predictions);
-    const std::string sep = options.csv_separator;
-
-    // header
-    output << "id" << sep << "title";
-    for (int j = 0; j < theta->topics_count(); ++j) {
-      if (theta->topic_name_size() > 0)
-        output << sep << escape.apply(theta->topic_name(j));
-      else
-        output << sep << "topic" << j;
-    }
-    output << std::endl;
-
-    std::vector<std::pair<int, int>> id_to_index;
-    for (int i = 0; i < theta->item_id_size(); ++i)
-      id_to_index.push_back(std::make_pair(theta->item_id(i), i));
-    std::sort(id_to_index.begin(), id_to_index.end());
-
-    // bulk
-    for (int i = 0; i < theta->item_id_size(); ++i) {
-      int index = id_to_index[i].second;
-      output << theta->item_id(index) << sep;
-      output << (theta->item_title_size() == 0 ? "" : escape.apply(theta->item_title(index)));
-      for (int j = 0; j < theta->topics_count(); ++j) {
-        output << sep << matrix(index, j);
+  ::artm::Matrix theta_matrix;
+  std::shared_ptr< ::artm::ThetaMatrix> theta_metadata;
+  if (!options.write_class_predictions.empty() || !options.write_predictions.empty()) {
+    {
+      ProgressScope scope(std::string("Generating model predictions"));
+      if (!master_component->mutable_config()->cache_theta()) {
+        master_component->mutable_config()->set_cache_theta(true);
+        master_component->Reconfigure(master_component->config());
       }
-      output << std::endl;
+
+      process_batches_args.set_pwt_source_name(pwt_model_name);
+      process_batches_args.clear_nwt_target_name();
+
+      for (auto& batch_filename : batch_file_names)
+        process_batches_args.add_batch_filename(batch_filename);
+      master_component->ProcessBatches(process_batches_args);
+      process_batches_args.clear_batch_filename();
+
+      theta_metadata = master_component->GetThetaMatrix(pwt_model_name, &theta_matrix);
+      if (theta_matrix.no_columns() != theta_metadata->topics_count())
+        throw "internal error (matrix.no_columns() != theta->topics_count())";
     }
+
+    score_helper.showScores(pwt_model_name);
   }
+
+  if (!options.write_predictions.empty())
+    WritePredictions(options, *theta_metadata, theta_matrix);
+
+  if (!options.write_class_predictions.empty())
+    WriteClassPredictions(options, *theta_metadata, theta_matrix);
 
   return 0;
 }
@@ -1122,6 +1190,7 @@ int main(int argc, char * argv[]) {
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
       ("write-model-readable", po::value(&options.write_model_readable)->default_value(""), "output the model in a human-readable format")
       ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
+      ("write-class-predictions", po::value(&options.write_class_predictions)->default_value(""), "write class prediction in a human-readable format")
       ("csv-separator", po::value(&options.csv_separator)->default_value(";"), "columns separator for --write-model-readable and --write-predictions. Use \\t or TAB to indicate tab.")
       ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level (0, 1, 2, or 3")
       ("score", po::value< std::vector<std::string> >(&options.score)->multitoken(), "scores (Perplexity, SparsityTheta, SparsityPhi, TopTokens, ThetaSnippet, or TopicKernel)")

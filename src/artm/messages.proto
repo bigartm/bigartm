@@ -256,6 +256,7 @@ message ScoreConfig {
     ThetaSnippet = 5;
     TopicKernel = 6;
     TopicMassPhi = 7;
+    ClassPrecision = 8;
   }
 
   optional string name = 1;
@@ -274,6 +275,7 @@ message ScoreData {
     ThetaSnippet = 5;
     TopicKernel = 6;
     TopicMassPhi = 7;
+    ClassPrecision = 8;
   }
 
   optional string name = 1;
@@ -417,6 +419,18 @@ message TopicMassPhiScore {
   repeated string topic_name = 2;
   repeated double topic_ratio = 3;
   repeated double topic_mass = 4;
+}
+
+// Represents a configuration of a class precision score
+message ClassPrecisionScoreConfig {
+  optional string stream_name = 1 [default = "@global"];
+}
+
+// Represents a result of calculation of a class precision score
+message ClassPrecisionScore {
+  optional double value = 1;
+  optional double error = 2;
+  optional double total = 3;
 }
 
 // Represents a topic model (or an operation on topic model)
