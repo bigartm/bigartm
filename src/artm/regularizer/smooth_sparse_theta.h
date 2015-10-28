@@ -20,7 +20,7 @@ class SmoothSparseThetaAgent : public RegularizeThetaAgent {
   std::vector<float> topic_weight;
   std::vector<float> alpha_weight;
  public:
-  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta);
+  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const;
 };
 
 class SmoothSparseTheta : public RegularizerInterface {

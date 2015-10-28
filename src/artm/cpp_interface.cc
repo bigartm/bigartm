@@ -24,6 +24,10 @@ inline int HandleErrorCode(int artm_error_code) {
     return artm_error_code;
   }
 
+  if (artm_error_code == ARTM_STILL_WORKING) {
+    return artm_error_code;
+  }
+
   switch (artm_error_code) {
     case ARTM_INTERNAL_ERROR:
       throw InternalError(GetLastErrorMessage());
@@ -558,6 +562,23 @@ std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(cons
 
   std::shared_ptr<ProcessBatchesResultObject> retval(new ProcessBatchesResultObject(process_batches_result));
   return retval;
+}
+
+int MasterComponent::AsyncProcessBatches(const ProcessBatchesArgs& args) {
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  return HandleErrorCode(ArtmAsyncProcessBatches(id(), args_blob.size(), args_blob.c_str()));
+}
+
+int MasterComponent::AwaitOperation(int operation_id) {
+  ::artm::AwaitOperationArgs args;
+  // args.set_timeout_milliseconds(timeout_milliseconds);
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int code = HandleErrorCode(ArtmAwaitOperation(operation_id, args_blob.size(), StringAsArray(&args_blob)));
+  if (code == ARTM_STILL_WORKING)
+    return false;
+  return true;
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& args) {

@@ -41,6 +41,7 @@ class Dictionary {
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;
   inline int size() const { return entries_.size(); }
+  inline const std::unordered_map<int, Token>& index_token() const { return index_token_; }
 
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
 

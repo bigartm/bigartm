@@ -1,0 +1,99 @@
+BigARTM v0.7.3 Release notes
+============================
+
+BigARTM v0.7.3 releases the following changes:
+
+* New command line tool for BigARTM
+* Support for classification in bigartm CLI
+* Support for asynchronous processing of batches
+* Improvements in coherence regularizer and coherence score
+* New *TopicMass* score for phi matrix
+* Support for documents markup
+* New API for importing batches through memory
+
+
+New command line tool for BigARTM
+---------------------------------
+
+New CLI is named ``bigartm`` (or ``bigrtm.exe`` on Windows),
+and it supersedes previous CLI named ``cpp_client``. 
+New CLI has the following features:
+
+* Parse collection in one of the :doc:`/formats`
+* Load dictionary
+* Initialize a new model, or import previously created model
+* Perform EM-iterations to fit the model
+* Export predicted probabilities for all documents into CSV file
+* Export model into a file
+
+All command-line options are listed `here <http://docs.bigartm.org/en/latest/tutorials/bigartm_cli.html>`_,
+and you may see several exampels on `BigARTM <http://github.com/bigartm/bigartm>`_ page at github.
+At the moment full documentation is only available in `Russian <https://github.com/bigartm/bigartm-book/blob/master/junk/cli/BigARTM_CommandLineInferface.ipynb>`_.
+
+
+Support for classification in BigARTM CLI
+-----------------------------------------
+
+BigARTM CLI is now able to perform classification.
+The following example assumes that your batches have ``target_class`` modality in addition to the default modality (``@default_class``).
+
+.. code-block:: bash
+
+   # Fit model
+   bigartm.exe --use-batches <your batches>
+               --use-modality @default_class,target_class
+               --topics 50
+               --dictionary-min-df 10
+               --dictionary-max-df 25%
+               --save-model model.bin
+
+   # Apply model and output to text files
+   bigartm.exe --use-batches <your batches>
+               --use-modality @default_class,target_class
+               --topics 50
+               --passes 0
+               --load-model model.bin
+               --predict-class target_class
+               --write-predictions pred.txt
+               --write-class-predictions pred_class.txt
+               --csv-separator=tab
+               --score ClassPrecision
+
+Support for asynchronous processing of batches
+----------------------------------------------
+
+Asynchronous processing of batches enables applications to 
+overlap EM-iterations better utilize CPU resources.
+The following chart shows CPU utilization of ``bigartm.exe``
+with (left-hand side) and without async flag (right-hand side).
+
+.. image:: _images/v0.7.3_perf.png
+   :alt: BigARTM performance in asynchronous mode
+
+
+TopicMass score for phi matrix
+------------------------------
+
+Topic mass score calculates cumulated topic mass for each topic.
+This is a useful metric to monitor balance between topics.
+
+Support for documents markup
+------------------------------
+
+Document markup provides topic distribution for each word in a document.
+Since BigARTM v0.7.3 it is posible to extract this information to use it.
+A potential application includes color-highlighted maps of the document,
+where every work is colored according to the most probable topic of the document.
+
+In the code this feature is refered to as ``ptdw`` matrix.
+It is possible to extract and regularizer ``ptdw`` matrices.
+In future versions it will be also possible to calculate scores based on ``ptdw`` matrix.
+
+New API for importing batches through memory
+--------------------------------------------
+
+New low-level APIs ``ArtmImportBatches`` and ``ArtmDisposeBatches``
+allow to import batches from memory into BigARTM.
+Those batches are saved in BigARTM, and can be used for batches processing.
+
+

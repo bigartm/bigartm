@@ -30,7 +30,6 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
     topics_to_score.assign(topic_size, true);
   else
     topics_to_score = core::is_member(topic_name, config_.topic_name());
-
   ::artm::core::ClassId class_id = ::artm::core::DefaultClass;
   if (config_.has_class_id())
     class_id = config_.class_id();
@@ -73,16 +72,16 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
   for (int topic_index = 0; topic_index < topic_size; ++topic_index)
     topic_kernel_tokens.push_back(std::vector<core::Token>());
 
-  for (int token_index = 0; token_index < token_size; token_index++) {
+  for (int token_index = 0; token_index < token_size; ++token_index) {
     if (p_wt.token(token_index).class_id == class_id) {
       // calculate normalizer
       double normalizer = 0.0;
-      for (int topic_index = 0; topic_index < topic_size; topic_index++) {
+      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if (topics_to_score[topic_index])
           normalizer += static_cast<double>(p_wt.get(token_index, topic_index));
       }
 
-      for (int topic_index = 0; topic_index < topic_size; topic_index++) {
+      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if (topics_to_score[topic_index]) {
           float value = p_wt.get(token_index, topic_index);
           double p_tw = (normalizer > 0.0) ? (value / normalizer) : 0.0;

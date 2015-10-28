@@ -41,19 +41,97 @@ const float kProcessorEps = 1e-16;
 namespace artm {
 namespace core {
 
+class RegularizeThetaAgentCollection : public RegularizeThetaAgent {
+ private:
+  std::vector<std::shared_ptr<RegularizeThetaAgent>> agents_;
+
+ public:
+  void AddAgent(std::shared_ptr<RegularizeThetaAgent> agent) {
+    if (agent != nullptr)
+      agents_.push_back(agent);
+  }
+
+  bool empty() const { return agents_.empty(); }
+
+  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
+    for (auto& agent : agents_)
+      agent->Apply(item_index, inner_iter, topics_size, theta);
+  }
+};
+
+class RegularizePtdwAgentCollection : public RegularizePtdwAgent {
+ private:
+  std::vector<std::shared_ptr<RegularizePtdwAgent>> agents_;
+
+ public:
+  void AddAgent(std::shared_ptr<RegularizePtdwAgent> agent) {
+    if (agent != nullptr)
+      agents_.push_back(agent);
+  }
+
+  bool empty() const { return agents_.empty(); }
+
+  virtual void Apply(int item_index, int inner_iter, ::artm::utility::DenseMatrix<float>* ptdw) const {
+    for (auto& agent : agents_)
+      agent->Apply(item_index, inner_iter, ptdw);
+  }
+};
+
+class NormalizeThetaAgent : public RegularizeThetaAgent {
+ public:
+  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
+    float sum = 0.0f;
+    for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
+      float val = theta[topic_index];
+      if (val > 0)
+        sum += val;
+    }
+
+    float sum_inv = sum > 0.0f ? (1.0f / sum) : 0.0f;
+    for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
+      float val = sum_inv * theta[topic_index];
+      if (val < 1e-16f) val = 0.0f;
+      theta[topic_index] = val;
+    }
+  }
+};
+
+
 static void CreateThetaCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
                                   DenseMatrix<float>* theta_matrix,
                                   const Batch& batch,
-                                  int topic_size) {
+                                  const PhiMatrix& p_wt,
+                                  const ModelConfig& model_config) {
   if (new_cache_entry_ptr == nullptr) return;
 
+  const int topic_size = model_config.topics_count();
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     const Item& item = batch.item(item_index);
     new_cache_entry_ptr->add_item_id(item.id());
     new_cache_entry_ptr->add_item_title(item.has_title() ? item.title() : std::string());
     FloatArray* cached_theta = new_cache_entry_ptr->add_theta();
-    for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-      cached_theta->add_value((*theta_matrix)(topic_index, item_index));
+  }
+
+  if (!model_config.has_predict_class_id()) {
+    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+      for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
+        new_cache_entry_ptr->mutable_theta(item_index)->add_value((*theta_matrix)(topic_index, item_index));
+      }
+    }
+  } else {
+    new_cache_entry_ptr->clear_topic_name();
+    for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
+      const Token& token = p_wt.token(token_index);
+      if (token.class_id != model_config.predict_class_id())
+        continue;
+
+      new_cache_entry_ptr->add_topic_name(token.keyword);
+      for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
+        float weight = 0.0;
+        for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+          weight += (*theta_matrix)(topic_index, item_index) * p_wt.get(token_index, topic_index);
+        new_cache_entry_ptr->mutable_theta(item_index)->add_value(weight);
+      }
     }
   }
 }
@@ -325,10 +403,9 @@ InitializePhi(const Batch& batch, const ModelConfig& model_config,
   return phi_matrix;
 }
 
-static std::shared_ptr<RegularizeThetaAgentCollection>
-CreateRegularizerAgents(const Batch& batch, const ModelConfig& model_config, const InstanceSchema& schema) {
-  auto retval = std::make_shared<RegularizeThetaAgentCollection>();
-
+static void
+CreateRegularizerAgents(const Batch& batch, const ModelConfig& model_config, const InstanceSchema& schema,
+                        RegularizeThetaAgentCollection* theta_agents, RegularizePtdwAgentCollection* ptdw_agents) {
   for (int reg_index = 0; reg_index < model_config.regularizer_settings_size(); ++reg_index) {
     std::string reg_name = model_config.regularizer_settings(reg_index).name();
     double tau = model_config.regularizer_settings(reg_index).tau();
@@ -338,10 +415,15 @@ CreateRegularizerAgents(const Batch& batch, const ModelConfig& model_config, con
       continue;
     }
 
-    retval->AddAgent(regularizer->CreateRegularizeThetaAgent(batch, model_config, tau));
+    if (theta_agents != nullptr)
+      theta_agents->AddAgent(regularizer->CreateRegularizeThetaAgent(batch, model_config, tau));
+
+    if (ptdw_agents != nullptr)
+      ptdw_agents->AddAgent(regularizer->CreateRegularizePtdwAgent(batch, model_config, tau));
   }
 
-  return retval;
+  if (theta_agents != nullptr)
+    theta_agents->AddAgent(std::make_shared<NormalizeThetaAgent>());
 }
 
 static std::shared_ptr<CsrMatrix<float>>
@@ -406,17 +488,16 @@ InitializeDenseNdw(const Batch& batch) {
 
 static void
 InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
-                             const InstanceSchema& schema, const CsrMatrix<float>& sparse_ndw,
-                             const ::artm::core::PhiMatrix& p_wt, DenseMatrix<float>* theta_matrix,
+                             const CsrMatrix<float>& sparse_ndw,
+                             const ::artm::core::PhiMatrix& p_wt,
+                             const RegularizeThetaAgentCollection& theta_agents,
+                             DenseMatrix<float>* theta_matrix,
                              NwtWriteAdapter* nwt_writer, util::Blas* blas,
                              DataLoaderCacheEntry* new_cache_entry_ptr = nullptr) {
   DenseMatrix<float> n_td(theta_matrix->no_rows(), theta_matrix->no_columns(), false);
   const int topics_count = model_config.topics_count();
   const int docs_count = theta_matrix->no_columns();
   const int tokens_count = batch.token_size();
-
-  std::shared_ptr<RegularizeThetaAgentCollection> agents = CreateRegularizerAgents(batch, model_config, schema);
-  agents->AddAgent(std::make_shared<NormalizeThetaAgent>());
 
   std::vector<int> token_id(batch.token_size(), -1);
   for (int token_index = 0; token_index < batch.token_size(); ++token_index)
@@ -469,7 +550,7 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
       for (int k = 0; k < topics_count; ++k)
         theta_ptr[k] *= ntd_ptr[k];
 
-      agents->Apply(d, inner_iter, model_config.topics_count(), theta_ptr);
+      theta_agents.Apply(d, inner_iter, model_config.topics_count(), theta_ptr);
     }
   }
   } else {
@@ -492,7 +573,7 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
     AssignDenseMatrixByProduct(*theta_matrix, n_td, theta_matrix);
 
     for (int item_index = 0; item_index < batch.item_size(); ++item_index)
-      agents->Apply(item_index, inner_iter, model_config.topics_count(), &(*theta_matrix)(0, item_index));  // NOLINT
+      theta_agents.Apply(item_index, inner_iter, model_config.topics_count(), &(*theta_matrix)(0, item_index));  // NOLINT
   }
   }
 
@@ -531,13 +612,16 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
     nwt_writer->Store(w, token_id[w], values);
   }
 
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, model_config);
 }
 
 static void
 InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
-                            const InstanceSchema& schema, const CsrMatrix<float>& sparse_ndw,
-                            const ::artm::core::PhiMatrix& p_wt, DenseMatrix<float>* theta_matrix,
+                            const CsrMatrix<float>& sparse_ndw,
+                            const ::artm::core::PhiMatrix& p_wt,
+                            const RegularizeThetaAgentCollection& theta_agents,
+                            const RegularizePtdwAgentCollection& ptdw_agents,
+                            DenseMatrix<float>* theta_matrix,
                             NwtWriteAdapter* nwt_writer, util::Blas* blas,
                             DataLoaderCacheEntry* new_cache_entry_ptr = nullptr,
                             DataLoaderCacheEntry* new_ptdw_cache_entry_ptr = nullptr) {
@@ -545,9 +629,6 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
   const int topics_count = model_config.topics_count();
   const int docs_count = theta_matrix->no_columns();
   const int tokens_count = batch.token_size();
-
-  std::shared_ptr<RegularizeThetaAgentCollection> agents = CreateRegularizerAgents(batch, model_config, schema);
-  agents->AddAgent(std::make_shared<NormalizeThetaAgent>());
 
   std::vector<int> token_id(batch.token_size(), -1);
   for (int token_index = 0; token_index < batch.token_size(); ++token_index)
@@ -593,10 +674,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
           ptdw_ptr[k] *= Z;
       }
 
-      // ToDo: Apply ptdw regularizer here (if needed)
-      // For now ust put the code here.
-      // Later we may do via regularizer's framework like this:
-      // ptdw_agents->Apply(d, inner_iter, topics_count, local_ptdw)
+      ptdw_agents.Apply(d, inner_iter, &local_ptdw);
 
       if (!last_iteration) {  // update theta matrix (except for the last iteration)
         for (int k = 0; k < topics_count; ++k)
@@ -611,7 +689,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
         for (int k = 0; k < topics_count; ++k)
           theta_ptr[k] = ntd_ptr[k];
 
-        agents->Apply(d, inner_iter, topics_count, theta_ptr);
+        theta_agents.Apply(d, inner_iter, topics_count, theta_ptr);
       } else {  // update n_wt matrix (on the last iteration)
         const bool in_mask = (mask == nullptr || mask->value(d));
         if (nwt_writer != nullptr && in_mask) {
@@ -631,7 +709,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
     }
     CreatePtdwCacheEntry(new_ptdw_cache_entry_ptr, &local_ptdw, batch, d, topics_count);
   }
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, model_config);
 }
 
 static void
@@ -667,13 +745,13 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
 
     AssignDenseMatrixByProduct(*theta_matrix, prod_trans_phi_Z, theta_matrix);
 
-    std::shared_ptr<RegularizeThetaAgentCollection> agents = CreateRegularizerAgents(batch, model_config, schema);
-    agents->AddAgent(std::make_shared<NormalizeThetaAgent>());
+    RegularizeThetaAgentCollection theta_agents;
+    CreateRegularizerAgents(batch, model_config, schema, &theta_agents, /* ptdw_agents =*/ nullptr);
 
     std::vector<float> theta_copy(topics_count, 0.0f);
     for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
       for (int i = 0; i < topics_count; ++i) theta_copy[i] = (*theta_matrix)(i, item_index);
-      agents->Apply(item_index, inner_iter, model_config.topics_count(), &theta_copy[0]);
+      theta_agents.Apply(item_index, inner_iter, model_config.topics_count(), &theta_copy[0]);
       for (int i = 0; i < topics_count; ++i) (*theta_matrix)(i, item_index) = theta_copy[i];
     }
   }
@@ -741,7 +819,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
     }
   }
 
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, topics_count);
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, model_config);
 }
 
 static std::shared_ptr<Score>
@@ -825,12 +903,18 @@ void Processor::FindThetaMatrix(const Batch& batch,
     return;  // return from lambda; goes to next step of std::for_each
   }
 
-  if (model_config.use_sparse_bow() && model_config.use_ptdw_matrix()) {
-    InferPtdwAndUpdateNwtSparse(model_config, batch, 1.0f, nullptr, *schema, *sparse_ndw, p_wt,
-                                theta_matrix.get(), nullptr, blas);
-  } else if (model_config.use_sparse_bow()) {
-    InferThetaAndUpdateNwtSparse(model_config, batch, 1.0f, nullptr, *schema, *sparse_ndw, p_wt,
-                                 theta_matrix.get(), nullptr, blas);
+  if (model_config.use_sparse_bow()) {
+    RegularizeThetaAgentCollection theta_agents;
+    RegularizePtdwAgentCollection ptdw_agents;
+    CreateRegularizerAgents(batch, model_config, *schema, &theta_agents, &ptdw_agents);
+
+    if (ptdw_agents.empty()) {
+      InferThetaAndUpdateNwtSparse(model_config, batch, 1.0f, nullptr, *sparse_ndw, p_wt,
+                                   theta_agents, theta_matrix.get(), nullptr, blas);
+    } else {
+      InferPtdwAndUpdateNwtSparse(model_config, batch, 1.0f, nullptr, *sparse_ndw, p_wt,
+                                  theta_agents, ptdw_agents, theta_matrix.get(), nullptr, blas);
+    }
   } else {
     // We don't need 'UpdateNwt' part, but for Dense mode it is hard to split this function.
     InferThetaAndUpdateNwtDense(model_config, batch, 1.0f, nullptr, *schema, *dense_ndw, p_wt,
@@ -945,6 +1029,8 @@ void Processor::ThreadFunction() {
 
       const ModelName& model_name = part->model_name();
       const ModelConfig& model_config = part->model_config();
+      const ModelName& model_name_cache = model_config.has_model_name_cache() ? model_config.model_name_cache()
+                                                                              : model_name;
       {
         // do not process disabled models.
         if (!model_config.enabled()) continue;
@@ -1030,25 +1116,33 @@ void Processor::ThreadFunction() {
 
         if (new_cache_entry_ptr != nullptr) {
           new_cache_entry_ptr->set_batch_uuid(batch.id());
-          new_cache_entry_ptr->set_model_name(model_name);
+          new_cache_entry_ptr->set_model_name(model_name_cache);
           new_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
         }
 
         if (new_ptdw_cache_entry_ptr != nullptr) {
           new_ptdw_cache_entry_ptr->set_batch_uuid(batch.id());
-          new_ptdw_cache_entry_ptr->set_model_name(model_name);
+          new_ptdw_cache_entry_ptr->set_model_name(model_name_cache);
           new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
         }
 
-        if (model_config.use_sparse_bow() && model_config.use_ptdw_matrix()) {
-          CuckooWatch cuckoo2("InferPtdwAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
-          InferPtdwAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *schema, *sparse_ndw,
-                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas, new_cache_entry_ptr.get(),
-                                      new_ptdw_cache_entry_ptr.get());
-        } else if (model_config.use_sparse_bow()) {
-          CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
-          InferThetaAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *schema, *sparse_ndw,
-                                       p_wt, theta_matrix.get(), nwt_writer.get(), blas, new_cache_entry_ptr.get());
+        if (model_config.use_sparse_bow()) {
+          RegularizeThetaAgentCollection theta_agents;
+          RegularizePtdwAgentCollection ptdw_agents;
+          CreateRegularizerAgents(batch, model_config, *schema, &theta_agents, &ptdw_agents);
+
+          if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
+            CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
+            InferThetaAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw,
+                                         p_wt, theta_agents, theta_matrix.get(), nwt_writer.get(),
+                                         blas, new_cache_entry_ptr.get());
+          } else {
+            CuckooWatch cuckoo2("InferPtdwAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
+            InferPtdwAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw,
+                                        p_wt, theta_agents, ptdw_agents, theta_matrix.get(), nwt_writer.get(),
+                                        blas, new_cache_entry_ptr.get(),
+                                        new_ptdw_cache_entry_ptr.get());
+          }
         } else {
           CuckooWatch cuckoo2("InferThetaAndUpdateNwtDense", &cuckoo, kTimeLoggingThreshold);
           InferThetaAndUpdateNwtDense(model_config, batch, part->batch_weight(), stream_mask, *schema, *dense_ndw,
@@ -1084,7 +1178,7 @@ void Processor::ThreadFunction() {
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config,
                                         *theta_matrix, &stream_masks);
           if (score_value != nullptr)
-            part->scores_merger()->Append(schema, model_name, score_name, score_value->SerializeAsString());
+            part->scores_merger()->Append(schema, model_name_cache, score_name, score_value->SerializeAsString());
         }
 
         if (part->caller() != ProcessorInput::Caller::ProcessBatches) {

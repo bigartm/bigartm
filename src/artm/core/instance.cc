@@ -17,7 +17,6 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/processor.h"
 #include "artm/core/merger.h"
-#include "artm/core/template_manager.h"
 #include "artm/core/topic_model.h"
 #include "artm/core/instance_schema.h"
 
@@ -29,6 +28,7 @@
 #include "artm/regularizer/label_regularization_phi.h"
 #include "artm/regularizer/specified_sparse_phi.h"
 #include "artm/regularizer/improve_coherence_phi.h"
+#include "artm/regularizer/smooth_ptdw.h"
 
 #include "artm/score/items_processed.h"
 #include "artm/score/sparsity_theta.h"
@@ -38,6 +38,7 @@
 #include "artm/score/theta_snippet.h"
 #include "artm/score/perplexity.h"
 #include "artm/score/topic_mass_phi.h"
+#include "artm/score/class_precision.h"
 
 #define CREATE_OR_RECONFIGURE_REGULARIZER(ConfigType, RegularizerType) {                      \
   ConfigType regularizer_config;                                                              \
@@ -274,6 +275,12 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
       break;
     }
 
+    case artm::RegularizerConfig_Type_SmoothPtdw: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothPtdwConfig,
+                                        ::artm::regularizer::SmoothPtdw);
+      break;
+    }
+
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
         "RegularizerConfig.type", regularizer_type));
@@ -343,6 +350,12 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
     case artm::ScoreConfig_Type_TopicMassPhi: {
       CREATE_SCORE_CALCULATOR(::artm::TopicMassPhiScoreConfig,
                               ::artm::score::TopicMassPhi);
+      break;
+    }
+
+    case artm::ScoreConfig_Type_ClassPrecision: {
+      CREATE_SCORE_CALCULATOR(::artm::ClassPrecisionScoreConfig,
+                              ::artm::score::ClassPrecision);
       break;
     }
 

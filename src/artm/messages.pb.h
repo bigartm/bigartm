@@ -54,6 +54,7 @@ class MultiLanguagePhiConfig;
 class LabelRegularizationPhiConfig;
 class SpecifiedSparsePhiConfig;
 class ImproveCoherencePhiConfig;
+class SmoothPtdwConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class DictionaryConfig;
@@ -77,6 +78,8 @@ class TopicKernelScoreConfig;
 class TopicKernelScore;
 class TopicMassPhiScoreConfig;
 class TopicMassPhiScore;
+class ClassPrecisionScoreConfig;
+class ClassPrecisionScore;
 class TopicModel;
 class TopicModel_TopicModelInternals;
 class ThetaMatrix;
@@ -111,6 +114,7 @@ class MasterComponentInfo_ModelInfo;
 class MasterComponentInfo_CacheEntryInfo;
 class ImportBatchesArgs;
 class DisposeBatchesArgs;
+class AwaitOperationArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -138,11 +142,12 @@ enum RegularizerConfig_Type {
   RegularizerConfig_Type_MultiLanguagePhi = 3,
   RegularizerConfig_Type_LabelRegularizationPhi = 4,
   RegularizerConfig_Type_SpecifiedSparsePhi = 5,
-  RegularizerConfig_Type_ImproveCoherencePhi = 6
+  RegularizerConfig_Type_ImproveCoherencePhi = 6,
+  RegularizerConfig_Type_SmoothPtdw = 7
 };
 bool RegularizerConfig_Type_IsValid(int value);
 const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_SmoothSparseTheta;
-const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_ImproveCoherencePhi;
+const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_SmoothPtdw;
 const int RegularizerConfig_Type_Type_ARRAYSIZE = RegularizerConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* RegularizerConfig_Type_descriptor();
@@ -174,6 +179,25 @@ inline bool SpecifiedSparsePhiConfig_Mode_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<SpecifiedSparsePhiConfig_Mode>(
     SpecifiedSparsePhiConfig_Mode_descriptor(), name, value);
 }
+enum SmoothPtdwConfig_Type {
+  SmoothPtdwConfig_Type_MovingAverage = 1,
+  SmoothPtdwConfig_Type_MovingProduct = 2
+};
+bool SmoothPtdwConfig_Type_IsValid(int value);
+const SmoothPtdwConfig_Type SmoothPtdwConfig_Type_Type_MIN = SmoothPtdwConfig_Type_MovingAverage;
+const SmoothPtdwConfig_Type SmoothPtdwConfig_Type_Type_MAX = SmoothPtdwConfig_Type_MovingProduct;
+const int SmoothPtdwConfig_Type_Type_ARRAYSIZE = SmoothPtdwConfig_Type_Type_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* SmoothPtdwConfig_Type_descriptor();
+inline const ::std::string& SmoothPtdwConfig_Type_Name(SmoothPtdwConfig_Type value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    SmoothPtdwConfig_Type_descriptor(), value);
+}
+inline bool SmoothPtdwConfig_Type_Parse(
+    const ::std::string& name, SmoothPtdwConfig_Type* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<SmoothPtdwConfig_Type>(
+    SmoothPtdwConfig_Type_descriptor(), name, value);
+}
 enum RegularizerInternalState_Type {
   RegularizerInternalState_Type_MultiLanguagePhi = 3
 };
@@ -200,11 +224,12 @@ enum ScoreConfig_Type {
   ScoreConfig_Type_TopTokens = 4,
   ScoreConfig_Type_ThetaSnippet = 5,
   ScoreConfig_Type_TopicKernel = 6,
-  ScoreConfig_Type_TopicMassPhi = 7
+  ScoreConfig_Type_TopicMassPhi = 7,
+  ScoreConfig_Type_ClassPrecision = 8
 };
 bool ScoreConfig_Type_IsValid(int value);
 const ScoreConfig_Type ScoreConfig_Type_Type_MIN = ScoreConfig_Type_Perplexity;
-const ScoreConfig_Type ScoreConfig_Type_Type_MAX = ScoreConfig_Type_TopicMassPhi;
+const ScoreConfig_Type ScoreConfig_Type_Type_MAX = ScoreConfig_Type_ClassPrecision;
 const int ScoreConfig_Type_Type_ARRAYSIZE = ScoreConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ScoreConfig_Type_descriptor();
@@ -225,11 +250,12 @@ enum ScoreData_Type {
   ScoreData_Type_TopTokens = 4,
   ScoreData_Type_ThetaSnippet = 5,
   ScoreData_Type_TopicKernel = 6,
-  ScoreData_Type_TopicMassPhi = 7
+  ScoreData_Type_TopicMassPhi = 7,
+  ScoreData_Type_ClassPrecision = 8
 };
 bool ScoreData_Type_IsValid(int value);
 const ScoreData_Type ScoreData_Type_Type_MIN = ScoreData_Type_Perplexity;
-const ScoreData_Type ScoreData_Type_Type_MAX = ScoreData_Type_TopicMassPhi;
+const ScoreData_Type ScoreData_Type_Type_MAX = ScoreData_Type_ClassPrecision;
 const int ScoreData_Type_Type_ARRAYSIZE = ScoreData_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ScoreData_Type_descriptor();
@@ -2065,12 +2091,29 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
       mutable_regularizer_settings();
 
-  // optional bool use_ptdw_matrix = 19 [default = false];
-  inline bool has_use_ptdw_matrix() const;
-  inline void clear_use_ptdw_matrix();
-  static const int kUsePtdwMatrixFieldNumber = 19;
-  inline bool use_ptdw_matrix() const;
-  inline void set_use_ptdw_matrix(bool value);
+  // optional string model_name_cache = 19;
+  inline bool has_model_name_cache() const;
+  inline void clear_model_name_cache();
+  static const int kModelNameCacheFieldNumber = 19;
+  inline const ::std::string& model_name_cache() const;
+  inline void set_model_name_cache(const ::std::string& value);
+  inline void set_model_name_cache(const char* value);
+  inline void set_model_name_cache(const char* value, size_t size);
+  inline ::std::string* mutable_model_name_cache();
+  inline ::std::string* release_model_name_cache();
+  inline void set_allocated_model_name_cache(::std::string* model_name_cache);
+
+  // optional string predict_class_id = 20;
+  inline bool has_predict_class_id() const;
+  inline void clear_predict_class_id();
+  static const int kPredictClassIdFieldNumber = 20;
+  inline const ::std::string& predict_class_id() const;
+  inline void set_predict_class_id(const ::std::string& value);
+  inline void set_predict_class_id(const char* value);
+  inline void set_predict_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_predict_class_id();
+  inline ::std::string* release_predict_class_id();
+  inline void set_allocated_predict_class_id(::std::string* predict_class_id);
 
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
@@ -2096,8 +2139,10 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_new_tokens();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
-  inline void set_has_use_ptdw_matrix();
-  inline void clear_has_use_ptdw_matrix();
+  inline void set_has_model_name_cache();
+  inline void clear_has_model_name_cache();
+  inline void set_has_predict_class_id();
+  inline void clear_has_predict_class_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2114,18 +2159,19 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
   bool enabled_;
   bool reuse_theta_;
   bool use_sparse_bow_;
   bool use_random_theta_;
   bool use_new_tokens_;
   bool opt_for_avx_;
-  bool use_ptdw_matrix_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
+  ::std::string* model_name_cache_;
+  ::std::string* predict_class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -2196,6 +2242,7 @@ class RegularizerConfig : public ::google::protobuf::Message {
   static const Type LabelRegularizationPhi = RegularizerConfig_Type_LabelRegularizationPhi;
   static const Type SpecifiedSparsePhi = RegularizerConfig_Type_SpecifiedSparsePhi;
   static const Type ImproveCoherencePhi = RegularizerConfig_Type_ImproveCoherencePhi;
+  static const Type SmoothPtdw = RegularizerConfig_Type_SmoothPtdw;
   static inline bool Type_IsValid(int value) {
     return RegularizerConfig_Type_IsValid(value);
   }
@@ -3079,6 +3126,132 @@ class ImproveCoherencePhiConfig : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class SmoothPtdwConfig : public ::google::protobuf::Message {
+ public:
+  SmoothPtdwConfig();
+  virtual ~SmoothPtdwConfig();
+
+  SmoothPtdwConfig(const SmoothPtdwConfig& from);
+
+  inline SmoothPtdwConfig& operator=(const SmoothPtdwConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SmoothPtdwConfig& default_instance();
+
+  void Swap(SmoothPtdwConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  SmoothPtdwConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SmoothPtdwConfig& from);
+  void MergeFrom(const SmoothPtdwConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef SmoothPtdwConfig_Type Type;
+  static const Type MovingAverage = SmoothPtdwConfig_Type_MovingAverage;
+  static const Type MovingProduct = SmoothPtdwConfig_Type_MovingProduct;
+  static inline bool Type_IsValid(int value) {
+    return SmoothPtdwConfig_Type_IsValid(value);
+  }
+  static const Type Type_MIN =
+    SmoothPtdwConfig_Type_Type_MIN;
+  static const Type Type_MAX =
+    SmoothPtdwConfig_Type_Type_MAX;
+  static const int Type_ARRAYSIZE =
+    SmoothPtdwConfig_Type_Type_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  Type_descriptor() {
+    return SmoothPtdwConfig_Type_descriptor();
+  }
+  static inline const ::std::string& Type_Name(Type value) {
+    return SmoothPtdwConfig_Type_Name(value);
+  }
+  static inline bool Type_Parse(const ::std::string& name,
+      Type* value) {
+    return SmoothPtdwConfig_Type_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // optional .artm.SmoothPtdwConfig.Type type = 1 [default = MovingAverage];
+  inline bool has_type() const;
+  inline void clear_type();
+  static const int kTypeFieldNumber = 1;
+  inline ::artm::SmoothPtdwConfig_Type type() const;
+  inline void set_type(::artm::SmoothPtdwConfig_Type value);
+
+  // optional int32 window = 3 [default = 10];
+  inline bool has_window() const;
+  inline void clear_window();
+  static const int kWindowFieldNumber = 3;
+  inline ::google::protobuf::int32 window() const;
+  inline void set_window(::google::protobuf::int32 value);
+
+  // optional double threshold = 4 [default = 1];
+  inline bool has_threshold() const;
+  inline void clear_threshold();
+  static const int kThresholdFieldNumber = 4;
+  inline double threshold() const;
+  inline void set_threshold(double value);
+
+  // @@protoc_insertion_point(class_scope:artm.SmoothPtdwConfig)
+ private:
+  inline void set_has_type();
+  inline void clear_has_type();
+  inline void set_has_window();
+  inline void clear_has_window();
+  inline void set_has_threshold();
+  inline void clear_has_threshold();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  int type_;
+  ::google::protobuf::int32 window_;
+  double threshold_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static SmoothPtdwConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class RegularizerInternalState : public ::google::protobuf::Message {
  public:
   RegularizerInternalState();
@@ -3791,6 +3964,7 @@ class ScoreConfig : public ::google::protobuf::Message {
   static const Type ThetaSnippet = ScoreConfig_Type_ThetaSnippet;
   static const Type TopicKernel = ScoreConfig_Type_TopicKernel;
   static const Type TopicMassPhi = ScoreConfig_Type_TopicMassPhi;
+  static const Type ClassPrecision = ScoreConfig_Type_ClassPrecision;
   static inline bool Type_IsValid(int value) {
     return ScoreConfig_Type_IsValid(value);
   }
@@ -3933,6 +4107,7 @@ class ScoreData : public ::google::protobuf::Message {
   static const Type ThetaSnippet = ScoreData_Type_ThetaSnippet;
   static const Type TopicKernel = ScoreData_Type_TopicKernel;
   static const Type TopicMassPhi = ScoreData_Type_TopicMassPhi;
+  static const Type ClassPrecision = ScoreData_Type_ClassPrecision;
   static inline bool Type_IsValid(int value) {
     return ScoreData_Type_IsValid(value);
   }
@@ -6071,6 +6246,196 @@ class TopicMassPhiScore : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static TopicMassPhiScore* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ClassPrecisionScoreConfig : public ::google::protobuf::Message {
+ public:
+  ClassPrecisionScoreConfig();
+  virtual ~ClassPrecisionScoreConfig();
+
+  ClassPrecisionScoreConfig(const ClassPrecisionScoreConfig& from);
+
+  inline ClassPrecisionScoreConfig& operator=(const ClassPrecisionScoreConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ClassPrecisionScoreConfig& default_instance();
+
+  void Swap(ClassPrecisionScoreConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  ClassPrecisionScoreConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ClassPrecisionScoreConfig& from);
+  void MergeFrom(const ClassPrecisionScoreConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string stream_name = 1 [default = "@global"];
+  inline bool has_stream_name() const;
+  inline void clear_stream_name();
+  static const int kStreamNameFieldNumber = 1;
+  inline const ::std::string& stream_name() const;
+  inline void set_stream_name(const ::std::string& value);
+  inline void set_stream_name(const char* value);
+  inline void set_stream_name(const char* value, size_t size);
+  inline ::std::string* mutable_stream_name();
+  inline ::std::string* release_stream_name();
+  inline void set_allocated_stream_name(::std::string* stream_name);
+
+  // @@protoc_insertion_point(class_scope:artm.ClassPrecisionScoreConfig)
+ private:
+  inline void set_has_stream_name();
+  inline void clear_has_stream_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* stream_name_;
+  static ::std::string* _default_stream_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ClassPrecisionScoreConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ClassPrecisionScore : public ::google::protobuf::Message {
+ public:
+  ClassPrecisionScore();
+  virtual ~ClassPrecisionScore();
+
+  ClassPrecisionScore(const ClassPrecisionScore& from);
+
+  inline ClassPrecisionScore& operator=(const ClassPrecisionScore& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ClassPrecisionScore& default_instance();
+
+  void Swap(ClassPrecisionScore* other);
+
+  // implements Message ----------------------------------------------
+
+  ClassPrecisionScore* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ClassPrecisionScore& from);
+  void MergeFrom(const ClassPrecisionScore& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional double value = 1;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 1;
+  inline double value() const;
+  inline void set_value(double value);
+
+  // optional double error = 2;
+  inline bool has_error() const;
+  inline void clear_error();
+  static const int kErrorFieldNumber = 2;
+  inline double error() const;
+  inline void set_error(double value);
+
+  // optional double total = 3;
+  inline bool has_total() const;
+  inline void clear_total();
+  static const int kTotalFieldNumber = 3;
+  inline double total() const;
+  inline void set_total(double value);
+
+  // @@protoc_insertion_point(class_scope:artm.ClassPrecisionScore)
+ private:
+  inline void set_has_value();
+  inline void clear_has_value();
+  inline void set_has_error();
+  inline void clear_has_error();
+  inline void set_has_total();
+  inline void clear_has_total();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  double value_;
+  double error_;
+  double total_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ClassPrecisionScore* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -8654,12 +9019,29 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_batch_weight();
 
-  // optional bool use_ptdw_matrix = 16 [default = false];
-  inline bool has_use_ptdw_matrix() const;
-  inline void clear_use_ptdw_matrix();
-  static const int kUsePtdwMatrixFieldNumber = 16;
-  inline bool use_ptdw_matrix() const;
-  inline void set_use_ptdw_matrix(bool value);
+  // optional string model_name_cache = 16;
+  inline bool has_model_name_cache() const;
+  inline void clear_model_name_cache();
+  static const int kModelNameCacheFieldNumber = 16;
+  inline const ::std::string& model_name_cache() const;
+  inline void set_model_name_cache(const ::std::string& value);
+  inline void set_model_name_cache(const char* value);
+  inline void set_model_name_cache(const char* value, size_t size);
+  inline ::std::string* mutable_model_name_cache();
+  inline ::std::string* release_model_name_cache();
+  inline void set_allocated_model_name_cache(::std::string* model_name_cache);
+
+  // optional string predict_class_id = 17;
+  inline bool has_predict_class_id() const;
+  inline void clear_predict_class_id();
+  static const int kPredictClassIdFieldNumber = 17;
+  inline const ::std::string& predict_class_id() const;
+  inline void set_predict_class_id(const ::std::string& value);
+  inline void set_predict_class_id(const char* value);
+  inline void set_predict_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_predict_class_id();
+  inline ::std::string* release_predict_class_id();
+  inline void set_allocated_predict_class_id(::std::string* predict_class_id);
 
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
@@ -8681,8 +9063,10 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_reset_scores();
   inline void set_has_theta_matrix_type();
   inline void clear_has_theta_matrix_type();
-  inline void set_has_use_ptdw_matrix();
-  inline void clear_has_use_ptdw_matrix();
+  inline void set_has_model_name_cache();
+  inline void clear_has_model_name_cache();
+  inline void set_has_predict_class_id();
+  inline void clear_has_predict_class_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8701,11 +9085,12 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool use_sparse_bow_;
   bool reset_scores_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
+  ::std::string* model_name_cache_;
+  ::std::string* predict_class_id_;
   int theta_matrix_type_;
-  bool use_ptdw_matrix_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -10561,6 +10946,88 @@ class DisposeBatchesArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static DisposeBatchesArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class AwaitOperationArgs : public ::google::protobuf::Message {
+ public:
+  AwaitOperationArgs();
+  virtual ~AwaitOperationArgs();
+
+  AwaitOperationArgs(const AwaitOperationArgs& from);
+
+  inline AwaitOperationArgs& operator=(const AwaitOperationArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const AwaitOperationArgs& default_instance();
+
+  void Swap(AwaitOperationArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  AwaitOperationArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const AwaitOperationArgs& from);
+  void MergeFrom(const AwaitOperationArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 timeout_milliseconds = 1 [default = -1];
+  inline bool has_timeout_milliseconds() const;
+  inline void clear_timeout_milliseconds();
+  static const int kTimeoutMillisecondsFieldNumber = 1;
+  inline ::google::protobuf::int32 timeout_milliseconds() const;
+  inline void set_timeout_milliseconds(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.AwaitOperationArgs)
+ private:
+  inline void set_has_timeout_milliseconds();
+  inline void clear_has_timeout_milliseconds();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::int32 timeout_milliseconds_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static AwaitOperationArgs* default_instance_;
 };
 // ===================================================================
 
@@ -12854,26 +13321,144 @@ ModelConfig::mutable_regularizer_settings() {
   return &regularizer_settings_;
 }
 
-// optional bool use_ptdw_matrix = 19 [default = false];
-inline bool ModelConfig::has_use_ptdw_matrix() const {
+// optional string model_name_cache = 19;
+inline bool ModelConfig::has_model_name_cache() const {
   return (_has_bits_[0] & 0x00040000u) != 0;
 }
-inline void ModelConfig::set_has_use_ptdw_matrix() {
+inline void ModelConfig::set_has_model_name_cache() {
   _has_bits_[0] |= 0x00040000u;
 }
-inline void ModelConfig::clear_has_use_ptdw_matrix() {
+inline void ModelConfig::clear_has_model_name_cache() {
   _has_bits_[0] &= ~0x00040000u;
 }
-inline void ModelConfig::clear_use_ptdw_matrix() {
-  use_ptdw_matrix_ = false;
-  clear_has_use_ptdw_matrix();
+inline void ModelConfig::clear_model_name_cache() {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_->clear();
+  }
+  clear_has_model_name_cache();
 }
-inline bool ModelConfig::use_ptdw_matrix() const {
-  return use_ptdw_matrix_;
+inline const ::std::string& ModelConfig::model_name_cache() const {
+  return *model_name_cache_;
 }
-inline void ModelConfig::set_use_ptdw_matrix(bool value) {
-  set_has_use_ptdw_matrix();
-  use_ptdw_matrix_ = value;
+inline void ModelConfig::set_model_name_cache(const ::std::string& value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ModelConfig::set_model_name_cache(const char* value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ModelConfig::set_model_name_cache(const char* value, size_t size) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ModelConfig::mutable_model_name_cache() {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  return model_name_cache_;
+}
+inline ::std::string* ModelConfig::release_model_name_cache() {
+  clear_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_cache_;
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ModelConfig::set_allocated_model_name_cache(::std::string* model_name_cache) {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_cache_;
+  }
+  if (model_name_cache) {
+    set_has_model_name_cache();
+    model_name_cache_ = model_name_cache;
+  } else {
+    clear_has_model_name_cache();
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string predict_class_id = 20;
+inline bool ModelConfig::has_predict_class_id() const {
+  return (_has_bits_[0] & 0x00080000u) != 0;
+}
+inline void ModelConfig::set_has_predict_class_id() {
+  _has_bits_[0] |= 0x00080000u;
+}
+inline void ModelConfig::clear_has_predict_class_id() {
+  _has_bits_[0] &= ~0x00080000u;
+}
+inline void ModelConfig::clear_predict_class_id() {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_->clear();
+  }
+  clear_has_predict_class_id();
+}
+inline const ::std::string& ModelConfig::predict_class_id() const {
+  return *predict_class_id_;
+}
+inline void ModelConfig::set_predict_class_id(const ::std::string& value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ModelConfig::set_predict_class_id(const char* value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ModelConfig::set_predict_class_id(const char* value, size_t size) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ModelConfig::mutable_predict_class_id() {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  return predict_class_id_;
+}
+inline ::std::string* ModelConfig::release_predict_class_id() {
+  clear_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = predict_class_id_;
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ModelConfig::set_allocated_predict_class_id(::std::string* predict_class_id) {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete predict_class_id_;
+  }
+  if (predict_class_id) {
+    set_has_predict_class_id();
+    predict_class_id_ = predict_class_id;
+  } else {
+    clear_has_predict_class_id();
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -13881,6 +14466,77 @@ inline void ImproveCoherencePhiConfig::set_allocated_dictionary_name(::std::stri
     clear_has_dictionary_name();
     dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
+}
+
+// -------------------------------------------------------------------
+
+// SmoothPtdwConfig
+
+// optional .artm.SmoothPtdwConfig.Type type = 1 [default = MovingAverage];
+inline bool SmoothPtdwConfig::has_type() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void SmoothPtdwConfig::set_has_type() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void SmoothPtdwConfig::clear_has_type() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void SmoothPtdwConfig::clear_type() {
+  type_ = 1;
+  clear_has_type();
+}
+inline ::artm::SmoothPtdwConfig_Type SmoothPtdwConfig::type() const {
+  return static_cast< ::artm::SmoothPtdwConfig_Type >(type_);
+}
+inline void SmoothPtdwConfig::set_type(::artm::SmoothPtdwConfig_Type value) {
+  assert(::artm::SmoothPtdwConfig_Type_IsValid(value));
+  set_has_type();
+  type_ = value;
+}
+
+// optional int32 window = 3 [default = 10];
+inline bool SmoothPtdwConfig::has_window() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void SmoothPtdwConfig::set_has_window() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void SmoothPtdwConfig::clear_has_window() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void SmoothPtdwConfig::clear_window() {
+  window_ = 10;
+  clear_has_window();
+}
+inline ::google::protobuf::int32 SmoothPtdwConfig::window() const {
+  return window_;
+}
+inline void SmoothPtdwConfig::set_window(::google::protobuf::int32 value) {
+  set_has_window();
+  window_ = value;
+}
+
+// optional double threshold = 4 [default = 1];
+inline bool SmoothPtdwConfig::has_threshold() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void SmoothPtdwConfig::set_has_threshold() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void SmoothPtdwConfig::clear_has_threshold() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void SmoothPtdwConfig::clear_threshold() {
+  threshold_ = 1;
+  clear_has_threshold();
+}
+inline double SmoothPtdwConfig::threshold() const {
+  return threshold_;
+}
+inline void SmoothPtdwConfig::set_threshold(double value) {
+  set_has_threshold();
+  threshold_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -17669,6 +18325,150 @@ TopicMassPhiScore::topic_mass() const {
 inline ::google::protobuf::RepeatedField< double >*
 TopicMassPhiScore::mutable_topic_mass() {
   return &topic_mass_;
+}
+
+// -------------------------------------------------------------------
+
+// ClassPrecisionScoreConfig
+
+// optional string stream_name = 1 [default = "@global"];
+inline bool ClassPrecisionScoreConfig::has_stream_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ClassPrecisionScoreConfig::set_has_stream_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ClassPrecisionScoreConfig::clear_has_stream_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ClassPrecisionScoreConfig::clear_stream_name() {
+  if (stream_name_ != _default_stream_name_) {
+    stream_name_->assign(*_default_stream_name_);
+  }
+  clear_has_stream_name();
+}
+inline const ::std::string& ClassPrecisionScoreConfig::stream_name() const {
+  return *stream_name_;
+}
+inline void ClassPrecisionScoreConfig::set_stream_name(const ::std::string& value) {
+  set_has_stream_name();
+  if (stream_name_ == _default_stream_name_) {
+    stream_name_ = new ::std::string;
+  }
+  stream_name_->assign(value);
+}
+inline void ClassPrecisionScoreConfig::set_stream_name(const char* value) {
+  set_has_stream_name();
+  if (stream_name_ == _default_stream_name_) {
+    stream_name_ = new ::std::string;
+  }
+  stream_name_->assign(value);
+}
+inline void ClassPrecisionScoreConfig::set_stream_name(const char* value, size_t size) {
+  set_has_stream_name();
+  if (stream_name_ == _default_stream_name_) {
+    stream_name_ = new ::std::string;
+  }
+  stream_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ClassPrecisionScoreConfig::mutable_stream_name() {
+  set_has_stream_name();
+  if (stream_name_ == _default_stream_name_) {
+    stream_name_ = new ::std::string(*_default_stream_name_);
+  }
+  return stream_name_;
+}
+inline ::std::string* ClassPrecisionScoreConfig::release_stream_name() {
+  clear_has_stream_name();
+  if (stream_name_ == _default_stream_name_) {
+    return NULL;
+  } else {
+    ::std::string* temp = stream_name_;
+    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
+    return temp;
+  }
+}
+inline void ClassPrecisionScoreConfig::set_allocated_stream_name(::std::string* stream_name) {
+  if (stream_name_ != _default_stream_name_) {
+    delete stream_name_;
+  }
+  if (stream_name) {
+    set_has_stream_name();
+    stream_name_ = stream_name;
+  } else {
+    clear_has_stream_name();
+    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
+  }
+}
+
+// -------------------------------------------------------------------
+
+// ClassPrecisionScore
+
+// optional double value = 1;
+inline bool ClassPrecisionScore::has_value() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ClassPrecisionScore::set_has_value() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ClassPrecisionScore::clear_has_value() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ClassPrecisionScore::clear_value() {
+  value_ = 0;
+  clear_has_value();
+}
+inline double ClassPrecisionScore::value() const {
+  return value_;
+}
+inline void ClassPrecisionScore::set_value(double value) {
+  set_has_value();
+  value_ = value;
+}
+
+// optional double error = 2;
+inline bool ClassPrecisionScore::has_error() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ClassPrecisionScore::set_has_error() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ClassPrecisionScore::clear_has_error() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ClassPrecisionScore::clear_error() {
+  error_ = 0;
+  clear_has_error();
+}
+inline double ClassPrecisionScore::error() const {
+  return error_;
+}
+inline void ClassPrecisionScore::set_error(double value) {
+  set_has_error();
+  error_ = value;
+}
+
+// optional double total = 3;
+inline bool ClassPrecisionScore::has_total() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ClassPrecisionScore::set_has_total() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ClassPrecisionScore::clear_has_total() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ClassPrecisionScore::clear_total() {
+  total_ = 0;
+  clear_has_total();
+}
+inline double ClassPrecisionScore::total() const {
+  return total_;
+}
+inline void ClassPrecisionScore::set_total(double value) {
+  set_has_total();
+  total_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -21499,26 +22299,144 @@ ProcessBatchesArgs::mutable_batch_weight() {
   return &batch_weight_;
 }
 
-// optional bool use_ptdw_matrix = 16 [default = false];
-inline bool ProcessBatchesArgs::has_use_ptdw_matrix() const {
+// optional string model_name_cache = 16;
+inline bool ProcessBatchesArgs::has_model_name_cache() const {
   return (_has_bits_[0] & 0x00008000u) != 0;
 }
-inline void ProcessBatchesArgs::set_has_use_ptdw_matrix() {
+inline void ProcessBatchesArgs::set_has_model_name_cache() {
   _has_bits_[0] |= 0x00008000u;
 }
-inline void ProcessBatchesArgs::clear_has_use_ptdw_matrix() {
+inline void ProcessBatchesArgs::clear_has_model_name_cache() {
   _has_bits_[0] &= ~0x00008000u;
 }
-inline void ProcessBatchesArgs::clear_use_ptdw_matrix() {
-  use_ptdw_matrix_ = false;
-  clear_has_use_ptdw_matrix();
+inline void ProcessBatchesArgs::clear_model_name_cache() {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_->clear();
+  }
+  clear_has_model_name_cache();
 }
-inline bool ProcessBatchesArgs::use_ptdw_matrix() const {
-  return use_ptdw_matrix_;
+inline const ::std::string& ProcessBatchesArgs::model_name_cache() const {
+  return *model_name_cache_;
 }
-inline void ProcessBatchesArgs::set_use_ptdw_matrix(bool value) {
-  set_has_use_ptdw_matrix();
-  use_ptdw_matrix_ = value;
+inline void ProcessBatchesArgs::set_model_name_cache(const ::std::string& value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ProcessBatchesArgs::set_model_name_cache(const char* value) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(value);
+}
+inline void ProcessBatchesArgs::set_model_name_cache(const char* value, size_t size) {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  model_name_cache_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ProcessBatchesArgs::mutable_model_name_cache() {
+  set_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_cache_ = new ::std::string;
+  }
+  return model_name_cache_;
+}
+inline ::std::string* ProcessBatchesArgs::release_model_name_cache() {
+  clear_has_model_name_cache();
+  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_cache_;
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ProcessBatchesArgs::set_allocated_model_name_cache(::std::string* model_name_cache) {
+  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_cache_;
+  }
+  if (model_name_cache) {
+    set_has_model_name_cache();
+    model_name_cache_ = model_name_cache;
+  } else {
+    clear_has_model_name_cache();
+    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string predict_class_id = 17;
+inline bool ProcessBatchesArgs::has_predict_class_id() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_predict_class_id() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void ProcessBatchesArgs::clear_has_predict_class_id() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline void ProcessBatchesArgs::clear_predict_class_id() {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_->clear();
+  }
+  clear_has_predict_class_id();
+}
+inline const ::std::string& ProcessBatchesArgs::predict_class_id() const {
+  return *predict_class_id_;
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const ::std::string& value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const char* value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void ProcessBatchesArgs::set_predict_class_id(const char* value, size_t size) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ProcessBatchesArgs::mutable_predict_class_id() {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  return predict_class_id_;
+}
+inline ::std::string* ProcessBatchesArgs::release_predict_class_id() {
+  clear_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = predict_class_id_;
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ProcessBatchesArgs::set_allocated_predict_class_id(::std::string* predict_class_id) {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete predict_class_id_;
+  }
+  if (predict_class_id) {
+    set_has_predict_class_id();
+    predict_class_id_ = predict_class_id;
+  } else {
+    clear_has_predict_class_id();
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
@@ -23572,6 +24490,32 @@ DisposeBatchesArgs::mutable_batch_name() {
   return &batch_name_;
 }
 
+// -------------------------------------------------------------------
+
+// AwaitOperationArgs
+
+// optional int32 timeout_milliseconds = 1 [default = -1];
+inline bool AwaitOperationArgs::has_timeout_milliseconds() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void AwaitOperationArgs::set_has_timeout_milliseconds() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void AwaitOperationArgs::clear_has_timeout_milliseconds() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void AwaitOperationArgs::clear_timeout_milliseconds() {
+  timeout_milliseconds_ = -1;
+  clear_has_timeout_milliseconds();
+}
+inline ::google::protobuf::int32 AwaitOperationArgs::timeout_milliseconds() const {
+  return timeout_milliseconds_;
+}
+inline void AwaitOperationArgs::set_timeout_milliseconds(::google::protobuf::int32 value) {
+  set_has_timeout_milliseconds();
+  timeout_milliseconds_ = value;
+}
+
 
 // @@protoc_insertion_point(namespace_scope)
 
@@ -23592,6 +24536,10 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerConfig_Type>(
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::SpecifiedSparsePhiConfig_Mode>() {
   return ::artm::SpecifiedSparsePhiConfig_Mode_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::SmoothPtdwConfig_Type>() {
+  return ::artm::SmoothPtdwConfig_Type_descriptor();
 }
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerInternalState_Type>() {

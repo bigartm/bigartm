@@ -116,7 +116,8 @@ message ModelConfig {
   optional bool use_new_tokens = 16 [default = true];
   optional bool opt_for_avx = 17 [default = true];
   repeated RegularizerSettings regularizer_settings = 18;
-  optional bool use_ptdw_matrix = 19 [default = false];
+  optional string model_name_cache = 19;
+  optional string predict_class_id = 20;
 }
 
 // Represents a configuration of a general regularizer
@@ -129,6 +130,7 @@ message RegularizerConfig {
     LabelRegularizationPhi = 4;
     SpecifiedSparsePhi = 5;
     ImproveCoherencePhi = 6;
+    SmoothPtdw = 7;
   }
 
   optional string name = 1;
@@ -183,6 +185,18 @@ message ImproveCoherencePhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
+}
+
+// Represents a configuration of a Smooth Ptdw regularizer
+message SmoothPtdwConfig {
+  enum Type {
+    MovingAverage = 1;
+    MovingProduct = 2;
+  }
+
+  optional Type type = 1 [default = MovingAverage];
+  optional int32 window = 3 [default = 10];
+  optional double threshold = 4 [default = 1.0];
 }
 
 // Represents an internal state of a general regularizer
@@ -242,6 +256,7 @@ message ScoreConfig {
     ThetaSnippet = 5;
     TopicKernel = 6;
     TopicMassPhi = 7;
+    ClassPrecision = 8;
   }
 
   optional string name = 1;
@@ -260,6 +275,7 @@ message ScoreData {
     ThetaSnippet = 5;
     TopicKernel = 6;
     TopicMassPhi = 7;
+    ClassPrecision = 8;
   }
 
   optional string name = 1;
@@ -403,6 +419,18 @@ message TopicMassPhiScore {
   repeated string topic_name = 2;
   repeated double topic_ratio = 3;
   repeated double topic_mass = 4;
+}
+
+// Represents a configuration of a class precision score
+message ClassPrecisionScoreConfig {
+  optional string stream_name = 1 [default = "@global"];
+}
+
+// Represents a result of calculation of a class precision score
+message ClassPrecisionScore {
+  optional double value = 1;
+  optional double error = 2;
+  optional double total = 3;
 }
 
 // Represents a topic model (or an operation on topic model)
@@ -604,7 +632,8 @@ message ProcessBatchesArgs {
   optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
-  optional bool use_ptdw_matrix = 16 [default = false];
+  optional string model_name_cache = 16;
+  optional string predict_class_id = 17;
 }
 
 message ProcessBatchesResult {
@@ -707,4 +736,8 @@ message ImportBatchesArgs {
 
 message DisposeBatchesArgs {
   repeated string batch_name = 1;
+}
+
+message AwaitOperationArgs {
+  optional int32 timeout_milliseconds = 1 [default = -1];
 }
