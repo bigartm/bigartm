@@ -3,8 +3,8 @@ Downloads
 
 * **Windows**
 
-  * Latest 32 bit release: `BigARTM_v0.7.2_win32 <https://github.com/bigartm/bigartm/releases/download/v0.7.2/BigARTM_v0.7.2_win32.7z>`_
-  * Latest 64 bit release: `BigARTM_v0.7.2_x64 <https://github.com/bigartm/bigartm/releases/download/v0.7.2/BigARTM_v0.7.2_x64.7z>`_
+  * Latest 32 bit release: `BigARTM_v0.7.3_win32 <https://github.com/bigartm/bigartm/releases/download/v0.7.3/BigARTM_v0.7.3_win32.7z>`_
+  * Latest 64 bit release: `BigARTM_v0.7.3_x64 <https://github.com/bigartm/bigartm/releases/download/v0.7.3/BigARTM_v0.7.3_x64.7z>`_
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
   Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
@@ -65,6 +65,8 @@ Downloads
                                         * `vocab.mmro.txt (150 KB) <https://s3-eu-west-1.amazonaws.com/artm/vocab.mmro.txt>`_
                                         * `pPMI_w100.mmro.txt.7z (23 MB) <https://s3-eu-west-1.amazonaws.com/artm/pPMI_w100.mmro.txt.7z>`_
                                         * `vw.mmro.txt.7z (1.4 MB) <https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt.7z>`_
+
+    eurlex    `eurlex`_ 19800   21000   * `eurlex_1k (13 MB) <https://s3-eu-west-1.amazonaws.com/artm/eurlex_1k.zip>`_
     ========= ========= ======= ======= ==================================================================================================================
 
 .. _UCI: https://archive.ics.uci.edu/ml/datasets/Bag+of+Words
@@ -76,3 +78,5 @@ Downloads
 .. _lastfm: http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/
 
 .. _mmro: http://mmro.ru/
+
+.. _eurlex: http://www.ke.tu-darmstadt.de/resources/eurlex
