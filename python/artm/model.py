@@ -569,14 +569,13 @@ class ARTM(object):
             class_weights.append(class_weight)
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
-        theta_info, nd_array = self.master.process_batches(
-                                    pwt=self.model_pwt,
-                                    batches=batches_list,
-                                    nwt='nwt_hat',
-                                    num_inner_iterations=num_document_passes,
-                                    class_ids=class_ids,
-                                    class_weights=class_weights,
-                                    find_theta=True)
+        theta_info, nd_array = self.master.process_batches(pwt=self.model_pwt,
+                                                           batches=batches_list,
+                                                           nwt='nwt_hat',
+                                                           num_inner_iterations=num_document_passes,
+                                                           class_ids=class_ids,
+                                                           class_weights=class_weights,
+                                                           find_theta=True)
 
         document_ids = [item_id for item_id in theta_info.item_id]
         topic_names = [topic_name for topic_name in theta_info.topic_name]
