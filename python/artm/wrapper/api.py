@@ -26,7 +26,7 @@ class LibArtm(object):
 
     def _load_cdll(self, lib_name):
         # choose default library name
-        default_lib_name = 'artm.so'
+        default_lib_name = 'libartm.so'
         if sys.platform.startswith('win'):
             default_lib_name = 'artm.dll'
         if sys.platform.startswith('darwin'):
