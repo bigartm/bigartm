@@ -594,23 +594,25 @@ class BatchVectorizer {
   std::string cleanup_folder_;
 
  public:
-  BatchVectorizer(const artm_options& options) : batch_folder_(), options_(options), cleanup_folder_() {
-    const bool parse_vw_format = !options.read_vw_corpus.empty();
-    const bool parse_uci_format = !options.read_uci_docword.empty();
-    const bool use_batches = !options.use_batches.empty();
+  BatchVectorizer(const artm_options& options) : batch_folder_(), options_(options), cleanup_folder_() {}
+
+  void Vectorize() {
+    const bool parse_vw_format = !options_.read_vw_corpus.empty();
+    const bool parse_uci_format = !options_.read_uci_docword.empty();
+    const bool use_batches = !options_.use_batches.empty();
 
     if (((int)parse_vw_format + (int)parse_uci_format + (int)use_batches) >= 2)
       throw std::invalid_argument("--read_vw_format, --read-uci-docword, --use-batches must not be used together");
-    if (parse_uci_format && options.read_uci_vocab.empty())
+    if (parse_uci_format && options_.read_uci_vocab.empty())
       throw std::invalid_argument("--read-uci-vocab option must be specified together with --read-uci-docword\n");
 
     if (parse_vw_format || parse_uci_format) {
-      if (options.save_batches.empty()) {
+      if (options_.save_batches.empty()) {
         batch_folder_ = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
         cleanup_folder_ = batch_folder_;
       }
       else {
-        batch_folder_ = options.save_batches;
+        batch_folder_ = options_.save_batches;
       }
 
       if (fs::exists(fs::path(batch_folder_)) && !fs::is_empty(fs::path(batch_folder_)))
@@ -627,17 +629,17 @@ class BatchVectorizer {
       else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_Format_VowpalWabbit);
       else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_Format");
 
-      collection_parser_config.set_docword_file_path(parse_vw_format ? options.read_vw_corpus : options.read_uci_docword);
-      if (!options.read_uci_vocab.empty())
-        collection_parser_config.set_vocab_file_path(options.read_uci_vocab);
-      if (!options.save_dictionary.empty())
-        collection_parser_config.set_dictionary_file_name(options.save_dictionary);
+      collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
+      if (!options_.read_uci_vocab.empty())
+        collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
+      if (!options_.save_dictionary.empty())
+        collection_parser_config.set_dictionary_file_name(options_.save_dictionary);
       collection_parser_config.set_target_folder(batch_folder_);
-      collection_parser_config.set_num_items_per_batch(options.batch_size);
+      collection_parser_config.set_num_items_per_batch(options_.batch_size);
       ::artm::ParseCollection(collection_parser_config);
     }
     else {
-      batch_folder_ = options.use_batches;
+      batch_folder_ = options_.use_batches;
       if (!fs::exists(fs::path(batch_folder_)))
         throw std::runtime_error(std::string("Unable to find batch folder: ") + batch_folder_);
 
@@ -967,6 +969,7 @@ int execute(const artm_options& options) {
 
   // Step 2. Collection parsing
   BatchVectorizer batch_vectorizer(options);
+  batch_vectorizer.Vectorize();
 
   // Step 3. Create master component.
   std::shared_ptr<MasterComponent> master_component;
