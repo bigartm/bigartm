@@ -35,6 +35,10 @@ class ifstream_or_cin {
     if (!boost::filesystem::exists(filename))
       BOOST_THROW_EXCEPTION(::artm::core::DiskReadException("File " + filename + " does not exist."));
 
+    if (boost::filesystem::exists(filename) && !boost::filesystem::is_regular_file(filename))
+      BOOST_THROW_EXCEPTION(::artm::core::DiskReadException(
+                  "File " + filename + " is not regular (probably it's a directory)."));
+
     file_.open(filename);
   }
 
