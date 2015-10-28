@@ -1,0 +1,89 @@
+// Copyright 2014, Additive Regularization of Topic Models.
+
+#include <cmath>
+
+#include "artm/core/common.h"
+#include "artm/core/exceptions.h"
+#include "artm/core/protobuf_helpers.h"
+
+#include "artm/score/class_precision.h"
+
+namespace artm {
+namespace score {
+
+void ClassPrecision::AppendScore(
+    const Item& item,
+    const std::vector<artm::core::Token>& token_dict,
+    const artm::core::PhiMatrix& p_wt,
+    const artm::ModelConfig& model_config,
+    const std::vector<float>& theta,
+    Score* score) {
+  if (!model_config.has_predict_class_id())
+    return;
+
+  int topic_size = p_wt.topic_size();
+
+  float max_token_weight = 0.0f;
+  std::string keyword;
+  for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
+    const ::artm::core::Token& token = p_wt.token(token_index);
+    if (token.class_id != model_config.predict_class_id())
+      continue;
+
+    float weight = 0.0;
+    for (int topic_index = 0; topic_index < topic_size; ++topic_index)
+      weight += theta[topic_index] * p_wt.get(token_index, topic_index);
+
+    if (weight >= max_token_weight) {
+      keyword = token.keyword;
+      max_token_weight = weight;
+    }
+  }
+
+  bool error = true;
+  for (auto& field : item.field()) {
+    for (auto& token_id : field.token_id()) {
+      const artm::core::Token& token = token_dict[token_id];
+      if (token.class_id == model_config.predict_class_id() && token.keyword == keyword) {
+        error = false;
+        break;
+      }
+    }
+  }
+
+  ClassPrecisionScore class_prediction_score;
+  class_prediction_score.set_error(error ? 1 : 0);
+  class_prediction_score.set_total(1);
+  AppendScore(class_prediction_score, score);
+}
+
+std::string ClassPrecision::stream_name() const {
+  return config_.stream_name();
+}
+
+std::shared_ptr<Score> ClassPrecision::CreateScore() {
+  return std::make_shared<ClassPrecisionScore>();
+}
+
+void ClassPrecision::AppendScore(const Score& score, Score* target) {
+  std::string error_message = "Unable downcast Score to ClassPrecisionScore";
+  const ClassPrecisionScore* class_precision_score = dynamic_cast<const ClassPrecisionScore*>(&score);
+  if (class_precision_score == nullptr) {
+    BOOST_THROW_EXCEPTION(::artm::core::InternalError(error_message));
+  }
+
+  ClassPrecisionScore* class_precision_target = dynamic_cast<ClassPrecisionScore*>(target);
+  if (class_precision_target == nullptr) {
+    BOOST_THROW_EXCEPTION(::artm::core::InternalError(error_message));
+  }
+
+  class_precision_target->set_error(class_precision_target->error() +
+                                    class_precision_score->error());
+  class_precision_target->set_total(class_precision_target->total() +
+                                    class_precision_score->total());
+  class_precision_target->set_value(1.0 - class_precision_target->error() /
+                                          class_precision_target->total());
+}
+
+}  // namespace score
+}  // namespace artm

@@ -68,6 +68,8 @@ set(SRC_LIST
 	regularizer/specified_sparse_phi.h
 	regularizer/improve_coherence_phi.cc
 	regularizer/improve_coherence_phi.h	
+	score/class_precision.cc
+	score/class_precision.h
 	score/items_processed.cc
 	score/items_processed.h
 	score/perplexity.cc

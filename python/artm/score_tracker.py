@@ -798,3 +798,50 @@ class TopicMassPhiScoreTracker(object):
           - *.topic_info[sync_index][topic_name].topic_ratio --- p_t value
         """
         return self._topic_info[-1]
+
+
+###################################################################################################
+class ClassPrecisionScoreTracker(object):
+    """ClassPrecisionScoreTracker represents a result of counting
+    ClassPrecisionScore (private class)
+
+    Args:
+      score (reference): reference to Score object, no default
+    """
+
+    def __init__(self, score):
+        self._name = score.name
+        self._value = []
+
+    def add(self, score=None):
+        """ClassPrecisionScoreTracker.add() --- add info about score after synchronization
+
+        Args:
+          score (reference): reference to score object, if not specified
+          means 'Add None values'
+        """
+        if score is not None:
+            _data = score.master.retrieve_score(score.model_nwt, score.name)
+
+            self._value.append(_data.value)
+
+        else:
+            self._value.append(None)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def value(self):
+        """Returns:
+          list of double: fraction of correct classifications on synchronizations
+        """
+        return self._value
+
+    @property
+    def last_value(self):
+        """Returns:
+        double: fraction of correct classifications on synchronizations
+        """
+        return self._value[-1]
