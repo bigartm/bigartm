@@ -6,6 +6,7 @@ from wrapper import constants as const
 
 
 __all__ = [
+    'KlFunctionInfo',
     'SmoothSparsePhiRegularizer',
     'SmoothSparseThetaRegularizer',
     'DecorrelatorPhiRegularizer',
@@ -30,6 +31,34 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     else:
         setattr(config, proto_field_name, field)
     obj._master.reconfigure_regularizer(obj.name, obj.type, config)
+
+
+class KlFunctionInfo(object):
+    """Contains the info about the function under the KL-div.
+
+    Args:
+      function_type (str): the type of function, 'log' (logarithm) or 'pol' (polynomial)
+      power_value (double): the double power of polynomial, ignored if type = 'log'
+    """
+
+    def __init__(self, function_type='log', power_value=2.0):
+        if function_type not in ['log', 'pol']:
+            raise ValueError('Function type can be only "log" or "pol"')
+
+        self.function_type = function_type
+        self.power_value = power_value
+
+    def _update_config(obj):
+        transfrom_config = messages.TransformConfig()
+
+        if function_type == 'log':
+            transform_config.transform_type = TransformConfig_TransformType_Constant
+        elif function_type == 'pol':
+            transform_config.transform_type = TransformConfig_TransformType_Polynomial
+            transform_config.n = power_value - 1
+            transform_config.a = power_value
+
+        _reconfigure_field(self, transform_config, 'transform_config')
 
 
 class Regularizers(object):
@@ -213,21 +242,38 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
       all topics if not specified
       dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
       specified
+      kl_function_info (KlFunctionInfo object): class with additional info about function
+      under KL-div in regularizer
       config (protobuf object): the low-level config of this regularizer, default=None
     """
 
     _config_message = messages.SmoothSparsePhiConfig
     _type = const.RegularizerConfig_Type_SmoothSparsePhi
 
-    def __init__(self, name=None, tau=1.0, class_ids=None,
-                 topic_names=None, dictionary_name=None, config=None):
+    def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None,
+                 dictionary_name=None, kl_function_info=None, config=None):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    dictionary_name=dictionary_name)
+                                    dictionary_name=dictionary_name,
+                                    kl_function_info=kl_function_info)
+
+        self._kl_function_info = KlFunctionInfo()
+        if kl_function_info is not None:
+            self._kl_function_info = kl_function_info
+        kl_function_info._update_config(self)
+
+    @property
+    def kl_function_info(self):
+        return self._kl_function_info
+
+    @kl_function_info.setter
+    def kl_function_info(self, kl_function_info):
+        self._kl_function_info = kl_function_info
+        kl_function_info._update_config(self)
 
 
 class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
@@ -241,19 +287,37 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
       alpha_iter (list of double, default=None): list of additional coefficients of
       regularization on each iteration over document. Should have length equal to
       model.num_document_passes
+      kl_function_info (KlFunctionInfo object): class with additional info about function
+      under KL-div in regularizer
       config (protobuf object): the low-level config of this regularizer, default=None
     """
 
     _config_message = messages.SmoothSparseThetaConfig
     _type = const.RegularizerConfig_Type_SmoothSparseTheta
 
-    def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None, config=None):
+    def __init__(self, name=None, tau=1.0, topic_names=None,
+                 alpha_iter=None, kl_function_info=None, config=None):
         BaseRegularizerTheta.__init__(self,
                                       name=name,
                                       tau=tau,
                                       config=config,
                                       topic_names=topic_names,
-                                      alpha_iter=alpha_iter)
+                                      alpha_iter=alpha_iter,
+                                      kl_function_info=kl_function_info)
+
+        self._kl_function_info = KlFunctionInfo()
+        if kl_function_info is not None:
+            self._kl_function_info = kl_function_info
+        kl_function_info._update_config(self)
+
+    @property
+    def kl_function_info(self):
+        return self._kl_function_info
+
+    @kl_function_info.setter
+    def kl_function_info(self, kl_function_info):
+        self._kl_function_info = kl_function_info
+        kl_function_info._update_config(self)
 
 
 class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
