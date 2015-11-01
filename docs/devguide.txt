@@ -229,23 +229,3 @@ Then execute the script like this:
 On Windows you may run this master-script to check all required files:
 
   ``$(BIGARTM_ROOT/utils/cpplint_all.bat``.
-
-..
-	Intel Math Kernel Library
-	-------------------------
-
-	BigARTM can utilize Intel Math Kernel Library to achieve better performance.
-	This only applies when :attr:`ModelConfig.use_sparse_bow` is ``false``
-	(in sparse version BigARTM has better built-in algorithm that does not use Intel MKL).
-
-	To enable MKL usage on Windows add the path to MKL library to your ``PATH`` system variable
-
-	.. code-block:: bash
-
-	   set PATH=%PATH%;"C:\Program Files (x86)\Intel\Composer XE 2013 SP1\redist\intel64\mkl"
-
-	To enable MKL usage on Linux create a new system variable ``MKL_PATH`` and set it as follows
-
-	.. code-block:: bash
-
-	   export MKL_PATH="/opt/intel/mkl/lib/intel64/"

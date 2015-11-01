@@ -86,8 +86,6 @@ set(SRC_LIST
 	score/topic_kernel.h
 	score/topic_mass_phi.cc
 	score/topic_mass_phi.h
-	utility/ice.cc
-	utility/ice.h
 	utility/blas.cc
 	utility/blas.h
 )
@@ -122,7 +120,6 @@ source_group("" FILES c_interface.cc c_interface.h)
 
 set(ARTM_LIB_DEPS  artm-static
 		   gflags-static
-                   ${LINK_DL}
                    ${Boost_LIBRARIES}
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES})

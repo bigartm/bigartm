@@ -859,9 +859,7 @@ CalcScores(ScoreCalculatorInterface* score_calc, const Batch& batch,
 void Processor::FindThetaMatrix(const Batch& batch,
                                 const GetThetaMatrixArgs& args, ThetaMatrix* result,
                                 const GetScoreValueArgs& score_args, ScoreData* score_result) {
-  util::Blas* blas = util::Blas::mkl();
-  if ((blas == nullptr) || !blas->is_loaded())
-    blas = util::Blas::builtin();
+  util::Blas* blas = util::Blas::builtin();
 
   std::string model_name = args.has_model_name() ? args.model_name() : score_args.model_name();
   std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
@@ -961,13 +959,7 @@ void Processor::ThreadFunction() {
     int pop_retries = 0;
     const int pop_retries_max = 20;
 
-    util::Blas* blas = util::Blas::mkl();
-    if ((blas == nullptr) || !blas->is_loaded()) {
-      // Avoid this warning because it only applies to non-default case "use_sparse_bow==false"
-      // LOG(INFO) << "Intel Math Kernel Library is not detected, "
-      //    << "using built in implementation (can be slower than MKL)";
-      blas = util::Blas::builtin();
-    }
+    util::Blas* blas = util::Blas::builtin();
 
     for (;;) {
       if (is_stopping) {

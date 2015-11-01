@@ -12,8 +12,6 @@
 
 #include "glog/logging.h"
 
-#include "artm/utility/ice.h"
-
 typedef void blas_sgemm_type(int order, const int transa, const int transb,
                              const int m, const int n, const int k,
                              const float alpha,
@@ -59,7 +57,6 @@ class Blas {
   static const int Trans = 112;
   static const int ConfTrans = 113;
 
-  static Blas* mkl();
   static Blas* builtin();
 
  protected:
