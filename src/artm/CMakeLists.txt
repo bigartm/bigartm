@@ -118,7 +118,6 @@ source_group("" FILES c_interface.cc c_interface.h)
 
 set(ARTM_LIB_DEPS  artm-static
 		   gflags-static
-                   ${LINK_DL}
                    ${Boost_LIBRARIES}
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES})
