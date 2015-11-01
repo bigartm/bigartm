@@ -125,12 +125,10 @@ class BuiltinBlas : public Blas {
 
 }  // namespace
 
-std::once_flag flag_builtin;
 
 Blas* Blas::builtin() {
-  static BuiltinBlas* impl;
-  std::call_once(flag_builtin, [](){ impl = new BuiltinBlas(); });
-  return impl;
+  static BuiltinBlas impl;
+  return &impl;
 }
 
 }  // namespace utility
