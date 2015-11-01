@@ -111,43 +111,6 @@ void builtin_sgemm(int order, const int transa, const int transb,
   }
 }
 
-class MklBlas : public Blas {
- public:
-  MklBlas() {
-#if (defined(_WIN32) || defined(__WIN32__))
-    mkl_library_.reset(new ice::Library("mkl_rt.dll"));
-#else
-    if (const char* mkl_path = std::getenv("MKL_PATH")) {
-      boost::filesystem::path dir(mkl_path);
-      boost::filesystem::path file("libmkl_rt.so");
-      boost::filesystem::path full_path = dir / file;
-      mkl_library_.reset(new ice::Library(full_path.c_str()));
-    } else {
-      return;
-    }
-#endif
-
-    sgemm_ptr_.reset(new ice::Function<blas_sgemm_type>(mkl_library_.get(), "cblas_sgemm"));
-    sgemm = *sgemm_ptr_;
-
-    sdot_ptr_.reset(new ice::Function<blas_sdot_type>(mkl_library_.get(), "cblas_sdot"));
-    sdot = *sdot_ptr_;
-
-    saxpy_ptr_.reset(new ice::Function<blas_saxpy_type>(mkl_library_.get(), "cblas_saxpy"));
-    saxpy = *saxpy_ptr_;
-
-    scsr2csc = builtin_scsr2csc;  // Use our own impl since MKL has csr2csc only for square matrices
-  }
-
-  virtual bool is_loaded() { return mkl_library_ != nullptr; }
-
- private:
-  std::shared_ptr<ice::Library> mkl_library_;
-  std::shared_ptr<ice::Function<blas_sgemm_type>> sgemm_ptr_;
-  std::shared_ptr<ice::Function<blas_sdot_type>> sdot_ptr_;
-  std::shared_ptr<ice::Function<blas_saxpy_type>> saxpy_ptr_;
-};
-
 class BuiltinBlas : public Blas {
  public:
   BuiltinBlas() {
@@ -162,14 +125,7 @@ class BuiltinBlas : public Blas {
 
 }  // namespace
 
-std::once_flag flag_mkl;
 std::once_flag flag_builtin;
-
-Blas* Blas::mkl() {
-  static MklBlas* impl;
-  std::call_once(flag_mkl, [](){ try { impl = new MklBlas(); } catch (...) { impl = nullptr; } });
-  return impl;
-}
 
 Blas* Blas::builtin() {
   static BuiltinBlas* impl;
