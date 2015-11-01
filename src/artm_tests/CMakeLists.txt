@@ -18,7 +18,6 @@ set(SRC_LIST
 	thread_safe_holder_test.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest_main.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest-all.cc
-	${CMAKE_SOURCE_DIR}/src/artm/c_interface.cc
 	${CMAKE_SOURCE_DIR}/src/artm/cpp_interface.cc
 	${CMAKE_SOURCE_DIR}/src/artm/messages.pb.cc
 )
