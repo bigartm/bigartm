@@ -30,7 +30,7 @@ before_install:
 install:
   - ./codestyle_checks.sh
   - mkdir build
-  - pushd build && cmake .. && make && popd
+  - pushd build && cmake .. && make && file ./src/bigartm/bigartm && popd
   - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
   - pushd 3rdparty/protobuf/python && python setup.py build && python setup.py install && popd
   - pushd python && python setup.py install && popd

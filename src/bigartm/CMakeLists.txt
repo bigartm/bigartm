@@ -8,7 +8,21 @@ set(SRC_LIST
 	${CMAKE_SOURCE_DIR}/src/artm/messages.pb.cc
 )
 
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC ON)
+find_package(Boost COMPONENTS REQUIRED ${BIGARTM_BOOST_COMPONENTS})
+
 add_executable(bigartm ${SRC_LIST})
-target_link_libraries(bigartm artm ${Boost_LIBRARIES})
+
+if (WIN32)
+  target_link_libraries(bigartm artm ${Boost_LIBRARIES})
+else()
+  set(CMAKE_EXE_LINKER_FLAGS "-static")
+  target_link_libraries(bigartm
+	  artm-static
+	  ${PROTOBUF_LIBRARIES}
+	  ${GLOG_LIBRARIES}
+	  ${Boost_LIBRARIES})
+endif()
 
 install(TARGETS bigartm DESTINATION bin)
