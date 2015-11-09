@@ -17,6 +17,7 @@ src/artm/core/processor.cc
 src/artm/core/processor_input.cc
 src/artm/core/scores_merger.cc
 src/artm/core/topic_model.cc
+src/artm/core/transform_function.cc
 src/artm/regularizer/decorrelator_phi.cc
 src/artm/regularizer/multilanguage_phi.cc
 src/artm/regularizer/smooth_sparse_phi.cc
@@ -73,6 +74,7 @@ src/artm/core/scores_merger.h
 src/artm/core/template_manager.h
 src/artm/core/thread_safe_holder.h
 src/artm/core/topic_model.h
+src/artm/core/transform_function.h
 src/artm_tests/test_mother.h
 src/artm/regularizer/decorrelator_phi.h
 src/artm/regularizer/multilanguage_phi.h

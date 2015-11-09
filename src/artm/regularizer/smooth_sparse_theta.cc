@@ -18,14 +18,25 @@ void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter, int topics_si
   if (topics_size != topic_weight.size()) return;
   if (inner_iter >= alpha_weight.size()) return;
 
-  for (int topic_id = 0; topic_id < topics_size; ++topic_id)
-    theta[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id];
+  for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
+    double value = transform_function_->apply(theta[topic_id]);
+    theta[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] * value;
+  }
+}
+
+SmoothSparseTheta::SmoothSparseTheta(const SmoothSparseThetaConfig& config)
+    : config_(config),
+      transform_function_(nullptr) {
+  if (config.has_transform_config())
+    transform_function_ = artm::core::TransformFunction::create(config.transform_config());
+  else
+    transform_function_ = artm::core::TransformFunction::create();
 }
 
 std::shared_ptr<RegularizeThetaAgent>
 SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
                                               const ModelConfig& model_config, double tau) {
-  SmoothSparseThetaAgent* agent = new SmoothSparseThetaAgent();
+  SmoothSparseThetaAgent* agent = new SmoothSparseThetaAgent(transform_function_);
   std::shared_ptr<SmoothSparseThetaAgent> retval(agent);
 
   const int topic_size = model_config.topics_count();
@@ -77,6 +88,12 @@ bool SmoothSparseTheta::Reconfigure(const RegularizerConfig& config) {
   }
 
   config_.CopyFrom(regularizer_config);
+
+  if (config_.has_transform_config())
+    transform_function_ = artm::core::TransformFunction::create(config_.transform_config());
+  else
+    transform_function_ = artm::core::TransformFunction::create();
+
   return true;
 }
 

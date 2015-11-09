@@ -5,18 +5,19 @@
 #ifndef SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_PHI_H_
 #define SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_PHI_H_
 
+#include <memory>
 #include <string>
 
 #include "artm/messages.pb.h"
 #include "artm/regularizer_interface.h"
+#include "artm/core/transform_function.h"
 
 namespace artm {
 namespace regularizer {
 
 class SmoothSparsePhi : public RegularizerInterface {
  public:
-  explicit SmoothSparsePhi(const SmoothSparsePhiConfig& config)
-    : config_(config) {}
+  explicit SmoothSparsePhi(const SmoothSparsePhiConfig& config);
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
@@ -29,6 +30,7 @@ class SmoothSparsePhi : public RegularizerInterface {
 
  private:
   SmoothSparsePhiConfig config_;
+  std::shared_ptr<artm::core::TransformFunction> transform_function_;
 };
 
 }  // namespace regularizer

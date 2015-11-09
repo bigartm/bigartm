@@ -57,6 +57,7 @@ class ImproveCoherencePhiConfig;
 class SmoothPtdwConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
+class TransformConfig;
 class DictionaryConfig;
 class DictionaryEntry;
 class DictionaryCoocurenceEntries;
@@ -215,6 +216,26 @@ inline bool RegularizerInternalState_Type_Parse(
     const ::std::string& name, RegularizerInternalState_Type* value) {
   return ::google::protobuf::internal::ParseNamedEnum<RegularizerInternalState_Type>(
     RegularizerInternalState_Type_descriptor(), name, value);
+}
+enum TransformConfig_TransformType {
+  TransformConfig_TransformType_Logarithm = 0,
+  TransformConfig_TransformType_Polynomial = 1,
+  TransformConfig_TransformType_Constant = 2
+};
+bool TransformConfig_TransformType_IsValid(int value);
+const TransformConfig_TransformType TransformConfig_TransformType_TransformType_MIN = TransformConfig_TransformType_Logarithm;
+const TransformConfig_TransformType TransformConfig_TransformType_TransformType_MAX = TransformConfig_TransformType_Constant;
+const int TransformConfig_TransformType_TransformType_ARRAYSIZE = TransformConfig_TransformType_TransformType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* TransformConfig_TransformType_descriptor();
+inline const ::std::string& TransformConfig_TransformType_Name(TransformConfig_TransformType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    TransformConfig_TransformType_descriptor(), value);
+}
+inline bool TransformConfig_TransformType_Parse(
+    const ::std::string& name, TransformConfig_TransformType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<TransformConfig_TransformType>(
+    TransformConfig_TransformType_descriptor(), name, value);
 }
 enum ScoreConfig_Type {
   ScoreConfig_Type_Perplexity = 0,
@@ -2406,16 +2427,28 @@ class SmoothSparseThetaConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_alpha_iter();
 
+  // optional .artm.TransformConfig transform_config = 3;
+  inline bool has_transform_config() const;
+  inline void clear_transform_config();
+  static const int kTransformConfigFieldNumber = 3;
+  inline const ::artm::TransformConfig& transform_config() const;
+  inline ::artm::TransformConfig* mutable_transform_config();
+  inline ::artm::TransformConfig* release_transform_config();
+  inline void set_allocated_transform_config(::artm::TransformConfig* transform_config);
+
   // @@protoc_insertion_point(class_scope:artm.SmoothSparseThetaConfig)
  private:
+  inline void set_has_transform_config();
+  inline void clear_has_transform_config();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedField< float > alpha_iter_;
+  ::artm::TransformConfig* transform_config_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -2524,19 +2557,31 @@ class SmoothSparsePhiConfig : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
+  // optional .artm.TransformConfig transform_config = 4;
+  inline bool has_transform_config() const;
+  inline void clear_transform_config();
+  static const int kTransformConfigFieldNumber = 4;
+  inline const ::artm::TransformConfig& transform_config() const;
+  inline ::artm::TransformConfig* mutable_transform_config();
+  inline ::artm::TransformConfig* release_transform_config();
+  inline void set_allocated_transform_config(::artm::TransformConfig* transform_config);
+
   // @@protoc_insertion_point(class_scope:artm.SmoothSparsePhiConfig)
  private:
   inline void set_has_dictionary_name();
   inline void clear_has_dictionary_name();
+  inline void set_has_transform_config();
+  inline void clear_has_transform_config();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::std::string* dictionary_name_;
+  ::artm::TransformConfig* transform_config_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3466,6 +3511,133 @@ class MultiLanguagePhiInternalState : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static MultiLanguagePhiInternalState* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class TransformConfig : public ::google::protobuf::Message {
+ public:
+  TransformConfig();
+  virtual ~TransformConfig();
+
+  TransformConfig(const TransformConfig& from);
+
+  inline TransformConfig& operator=(const TransformConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TransformConfig& default_instance();
+
+  void Swap(TransformConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  TransformConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TransformConfig& from);
+  void MergeFrom(const TransformConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef TransformConfig_TransformType TransformType;
+  static const TransformType Logarithm = TransformConfig_TransformType_Logarithm;
+  static const TransformType Polynomial = TransformConfig_TransformType_Polynomial;
+  static const TransformType Constant = TransformConfig_TransformType_Constant;
+  static inline bool TransformType_IsValid(int value) {
+    return TransformConfig_TransformType_IsValid(value);
+  }
+  static const TransformType TransformType_MIN =
+    TransformConfig_TransformType_TransformType_MIN;
+  static const TransformType TransformType_MAX =
+    TransformConfig_TransformType_TransformType_MAX;
+  static const int TransformType_ARRAYSIZE =
+    TransformConfig_TransformType_TransformType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  TransformType_descriptor() {
+    return TransformConfig_TransformType_descriptor();
+  }
+  static inline const ::std::string& TransformType_Name(TransformType value) {
+    return TransformConfig_TransformType_Name(value);
+  }
+  static inline bool TransformType_Parse(const ::std::string& name,
+      TransformType* value) {
+    return TransformConfig_TransformType_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // optional .artm.TransformConfig.TransformType transform_type = 1 [default = Constant];
+  inline bool has_transform_type() const;
+  inline void clear_transform_type();
+  static const int kTransformTypeFieldNumber = 1;
+  inline ::artm::TransformConfig_TransformType transform_type() const;
+  inline void set_transform_type(::artm::TransformConfig_TransformType value);
+
+  // optional double n = 2 [default = 1];
+  inline bool has_n() const;
+  inline void clear_n();
+  static const int kNFieldNumber = 2;
+  inline double n() const;
+  inline void set_n(double value);
+
+  // optional double a = 3 [default = 1];
+  inline bool has_a() const;
+  inline void clear_a();
+  static const int kAFieldNumber = 3;
+  inline double a() const;
+  inline void set_a(double value);
+
+  // @@protoc_insertion_point(class_scope:artm.TransformConfig)
+ private:
+  inline void set_has_transform_type();
+  inline void clear_has_transform_type();
+  inline void set_has_n();
+  inline void clear_has_n();
+  inline void set_has_a();
+  inline void clear_has_a();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  double n_;
+  double a_;
+  int transform_type_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static TransformConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -13701,6 +13873,44 @@ SmoothSparseThetaConfig::mutable_alpha_iter() {
   return &alpha_iter_;
 }
 
+// optional .artm.TransformConfig transform_config = 3;
+inline bool SmoothSparseThetaConfig::has_transform_config() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void SmoothSparseThetaConfig::set_has_transform_config() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void SmoothSparseThetaConfig::clear_has_transform_config() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void SmoothSparseThetaConfig::clear_transform_config() {
+  if (transform_config_ != NULL) transform_config_->::artm::TransformConfig::Clear();
+  clear_has_transform_config();
+}
+inline const ::artm::TransformConfig& SmoothSparseThetaConfig::transform_config() const {
+  return transform_config_ != NULL ? *transform_config_ : *default_instance_->transform_config_;
+}
+inline ::artm::TransformConfig* SmoothSparseThetaConfig::mutable_transform_config() {
+  set_has_transform_config();
+  if (transform_config_ == NULL) transform_config_ = new ::artm::TransformConfig;
+  return transform_config_;
+}
+inline ::artm::TransformConfig* SmoothSparseThetaConfig::release_transform_config() {
+  clear_has_transform_config();
+  ::artm::TransformConfig* temp = transform_config_;
+  transform_config_ = NULL;
+  return temp;
+}
+inline void SmoothSparseThetaConfig::set_allocated_transform_config(::artm::TransformConfig* transform_config) {
+  delete transform_config_;
+  transform_config_ = transform_config;
+  if (transform_config) {
+    set_has_transform_config();
+  } else {
+    clear_has_transform_config();
+  }
+}
+
 // -------------------------------------------------------------------
 
 // SmoothSparsePhiConfig
@@ -13860,6 +14070,44 @@ inline void SmoothSparsePhiConfig::set_allocated_dictionary_name(::std::string* 
   } else {
     clear_has_dictionary_name();
     dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional .artm.TransformConfig transform_config = 4;
+inline bool SmoothSparsePhiConfig::has_transform_config() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void SmoothSparsePhiConfig::set_has_transform_config() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void SmoothSparsePhiConfig::clear_has_transform_config() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void SmoothSparsePhiConfig::clear_transform_config() {
+  if (transform_config_ != NULL) transform_config_->::artm::TransformConfig::Clear();
+  clear_has_transform_config();
+}
+inline const ::artm::TransformConfig& SmoothSparsePhiConfig::transform_config() const {
+  return transform_config_ != NULL ? *transform_config_ : *default_instance_->transform_config_;
+}
+inline ::artm::TransformConfig* SmoothSparsePhiConfig::mutable_transform_config() {
+  set_has_transform_config();
+  if (transform_config_ == NULL) transform_config_ = new ::artm::TransformConfig;
+  return transform_config_;
+}
+inline ::artm::TransformConfig* SmoothSparsePhiConfig::release_transform_config() {
+  clear_has_transform_config();
+  ::artm::TransformConfig* temp = transform_config_;
+  transform_config_ = NULL;
+  return temp;
+}
+inline void SmoothSparsePhiConfig::set_allocated_transform_config(::artm::TransformConfig* transform_config) {
+  delete transform_config_;
+  transform_config_ = transform_config;
+  if (transform_config) {
+    set_has_transform_config();
+  } else {
+    clear_has_transform_config();
   }
 }
 
@@ -14730,6 +14978,77 @@ inline ::google::protobuf::int32 MultiLanguagePhiInternalState::no_regularizatio
 inline void MultiLanguagePhiInternalState::set_no_regularization_calls(::google::protobuf::int32 value) {
   set_has_no_regularization_calls();
   no_regularization_calls_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// TransformConfig
+
+// optional .artm.TransformConfig.TransformType transform_type = 1 [default = Constant];
+inline bool TransformConfig::has_transform_type() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void TransformConfig::set_has_transform_type() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void TransformConfig::clear_has_transform_type() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void TransformConfig::clear_transform_type() {
+  transform_type_ = 2;
+  clear_has_transform_type();
+}
+inline ::artm::TransformConfig_TransformType TransformConfig::transform_type() const {
+  return static_cast< ::artm::TransformConfig_TransformType >(transform_type_);
+}
+inline void TransformConfig::set_transform_type(::artm::TransformConfig_TransformType value) {
+  assert(::artm::TransformConfig_TransformType_IsValid(value));
+  set_has_transform_type();
+  transform_type_ = value;
+}
+
+// optional double n = 2 [default = 1];
+inline bool TransformConfig::has_n() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void TransformConfig::set_has_n() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void TransformConfig::clear_has_n() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void TransformConfig::clear_n() {
+  n_ = 1;
+  clear_has_n();
+}
+inline double TransformConfig::n() const {
+  return n_;
+}
+inline void TransformConfig::set_n(double value) {
+  set_has_n();
+  n_ = value;
+}
+
+// optional double a = 3 [default = 1];
+inline bool TransformConfig::has_a() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void TransformConfig::set_has_a() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void TransformConfig::clear_has_a() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void TransformConfig::clear_a() {
+  a_ = 1;
+  clear_has_a();
+}
+inline double TransformConfig::a() const {
+  return a_;
+}
+inline void TransformConfig::set_a(double value) {
+  set_has_a();
+  a_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -24544,6 +24863,10 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::SmoothPtdwConfig_Type>()
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerInternalState_Type>() {
   return ::artm::RegularizerInternalState_Type_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::TransformConfig_TransformType>() {
+  return ::artm::TransformConfig_TransformType_descriptor();
 }
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::ScoreConfig_Type>() {

@@ -69,7 +69,9 @@ set(SRC_LIST
 	regularizer/specified_sparse_phi.cc
 	regularizer/specified_sparse_phi.h
 	regularizer/improve_coherence_phi.cc
-	regularizer/improve_coherence_phi.h	
+	regularizer/improve_coherence_phi.h
+	core/transform_function.h
+	core/transform_function.cc
 	score/class_precision.cc
 	score/class_precision.h
 	score/items_processed.cc
