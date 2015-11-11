@@ -48,17 +48,20 @@ class KlFunctionInfo(object):
         self.function_type = function_type
         self.power_value = power_value
 
-    def _update_config(obj):
-        transfrom_config = messages.TransformConfig()
+    def _update_config(self, obj, first=False):
+        config = obj._config_message()
+        config.CopyFrom(obj._config)
 
-        if function_type == 'log':
-            transform_config.transform_type = TransformConfig_TransformType_Constant
-        elif function_type == 'pol':
-            transform_config.transform_type = TransformConfig_TransformType_Polynomial
-            transform_config.n = power_value - 1
-            transform_config.a = power_value
+        if self.function_type == 'log':
+            config.transform_config.transform_type = const.TransformConfig_TransformType_Constant
+        elif self.function_type == 'pol':
+            config.transform_config.transform_type = const.TransformConfig_TransformType_Polynomial
+            config.transform_config.n = self.power_value  # power_value - 1, but *x gives no change
+            config.transform_config.a = self.power_value
 
-        _reconfigure_field(self, transform_config, 'transform_config')
+        obj._config = config
+        if not first:
+            obj._master.reconfigure_regularizer(obj.name, obj.type, config)
 
 
 class Regularizers(object):
@@ -258,13 +261,12 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    dictionary_name=dictionary_name,
-                                    kl_function_info=kl_function_info)
+                                    dictionary_name=dictionary_name)
 
         self._kl_function_info = KlFunctionInfo()
         if kl_function_info is not None:
             self._kl_function_info = kl_function_info
-        kl_function_info._update_config(self)
+        self._kl_function_info._update_config(self, first=True)
 
     @property
     def kl_function_info(self):
@@ -302,13 +304,12 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
                                       tau=tau,
                                       config=config,
                                       topic_names=topic_names,
-                                      alpha_iter=alpha_iter,
-                                      kl_function_info=kl_function_info)
+                                      alpha_iter=alpha_iter)
 
         self._kl_function_info = KlFunctionInfo()
         if kl_function_info is not None:
             self._kl_function_info = kl_function_info
-        kl_function_info._update_config(self)
+        self._kl_function_info._update_config(self, first=True)
 
     @property
     def kl_function_info(self):
