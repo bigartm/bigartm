@@ -31,13 +31,13 @@ std::shared_ptr<TransformFunction> TransformFunction::create() {
 }
 
 double LogarithmTransformFunction::apply(double value) {
-  return log(value);
+  return value > 0 ? log(value) : 0.0;
 }
 
 PolynomialTransformFunction::PolynomialTransformFunction(double a, double n) : a_(a), n_(n) { }
 
 double PolynomialTransformFunction::apply(double value) {
-  return a_ * pow(value, n_);
+  return value > 0 ? a_ * pow(value, n_) : 0.0;
 }
 
 double ConstantTransformFunction::apply(double value) {
