@@ -80,35 +80,6 @@ void Helpers::SetThreadName(int thread_id, const char* thread_name) {
 
 #endif
 
-void Helpers::Fix(::artm::CollectionParserConfig* message) {
-  const int token_size = message->cooccurrence_token_size();
-  if ((message->cooccurrence_class_id_size() == 0) && (token_size > 0)) {
-    message->mutable_cooccurrence_class_id()->Reserve(token_size);
-    for (int i = 0; i < token_size; ++i)
-      message->add_cooccurrence_class_id(::artm::core::DefaultClass);
-  }
-}
-
-bool Helpers::Validate(const ::artm::CollectionParserConfig& message, bool throw_error) {
-  std::stringstream ss;
-  const int token_size = message.cooccurrence_token_size();
-  if (message.cooccurrence_class_id_size() != token_size) {
-    ss << "Inconsistent cooc token and class_id fields size in CollectionParserConfig";
-  }
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
-}
-
-bool Helpers::FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error) {
-  Fix(message);
-  return Validate(*message, throw_error);
-}
-
 void Helpers::Fix(::artm::TopicModel* message) {
   const int token_size = message->token_size();
   if ((message->class_id_size() == 0) && (token_size > 0)) {
@@ -549,18 +520,6 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
     ss << "InitializeModelArgs.model_name is not defined; ";
   }
 
-  if (!InitializeModelArgs_SourceType_IsValid(message.source_type())) {
-    ss << "InitializeModelArgs.source_type == " << message.source_type() << " is invalid; ";
-  }
-
-  if (message.source_type() == InitializeModelArgs_SourceType_Batches) {
-    const bool has_disk_path = message.has_disk_path() && !message.disk_path().empty();
-    const bool has_batch_filename = message.batch_filename_size() > 0;
-    if (!has_disk_path && !has_batch_filename) {
-      ss << "InitializeModelArgs.disk_path is required together with SourceType.Batches; ";
-    }
-  }
-
   if (ss.str().empty())
     return true;
 
@@ -745,14 +704,11 @@ std::string Helpers::Describe(const ::artm::InitializeModelArgs& message) {
   std::stringstream ss;
   ss << "InitializeModelArgs";
   ss << ": model_name=" << message.model_name();
-  ss << ", source_type=" <<
-    (message.source_type() == InitializeModelArgs_SourceType_Batches) ? "Batches" :
-    (message.source_type() == InitializeModelArgs_SourceType_Dictionary) ? "Dictionary" : "Unknown";
+
   if (message.has_disk_path())
     ss << ", disk_path=" << message.disk_path();
   if (message.has_dictionary_name())
     ss << ", dictionary_name=" << message.dictionary_name();
-  ss << ", filter_size=" << message.filter_size();
   if (message.has_topics_count())
     ss << ", topics_count=" << message.topics_count();
   ss << ", topic_name_size=" << message.topic_name_size();

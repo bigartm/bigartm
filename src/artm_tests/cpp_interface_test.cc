@@ -510,7 +510,6 @@ TEST(CppInterface, ProcessBatchesApi) {
   artm::InitializeModelArgs initialize_model_args;
   for (auto& batch_name : import_batches_args.batch_name())
     initialize_model_args.add_batch_filename(batch_name);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
@@ -685,7 +684,6 @@ TEST(CppInterface, AttachModel) {
   // Verify that it is possible to attach immediatelly after Initialize()
   artm::InitializeModelArgs initialize_model_args;
   initialize_model_args.set_disk_path(target_folder);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
@@ -748,7 +746,6 @@ TEST(CppInterface, AsyncProcessBatches) {
   // Verify that it is possible to attach immediatelly after Initialize()
   artm::InitializeModelArgs initialize_model_args;
   initialize_model_args.set_disk_path(target_folder);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
