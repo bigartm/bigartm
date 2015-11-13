@@ -567,6 +567,14 @@ int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args)
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmGatherDictionary(int length, const char* gather_dictionary_config) {
+  return 0;
+}
+
+int ArtmFilterDictionary(int length, const char* filter_dictionary_config) {
+  return 0;
+}
+
 int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config) {
   try {
     artm::DictionaryConfig config;
@@ -596,6 +604,10 @@ int ArtmImportDictionary(int master_id, int length, const char* dictionary_args)
     master_component(master_id)->ImportDictionary(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
+}
+
+int ArtmExportDictionary(int master_id, int length, const char* export_dictionary_args) {
+  return 0;
 }
 
 int ArtmImportBatches(int master_id, int length, const char* import_batches_args) {
