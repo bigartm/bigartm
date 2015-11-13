@@ -57,8 +57,7 @@ DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
 
 void SaveBatch(const Batch& batch, const std::string& disk_path);
 std::shared_ptr<Batch> LoadBatch(const std::string& filename);
-std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& filename);
-std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& config);
+void ParseCollection(const CollectionParserConfig& config);
 
 class Matrix {
  public:
@@ -220,8 +219,6 @@ class Dictionary {
  public:
   Dictionary(const MasterComponent& master_component, const DictionaryConfig& config);
   ~Dictionary();
-
-  void Reconfigure(const DictionaryConfig& config);
 
   void Import(const std::string& dictionary_name, const std::string& file_name);
 
