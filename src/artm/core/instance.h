@@ -61,10 +61,13 @@ class Instance {
   void Reconfigure(const MasterComponentConfig& master_config);
   void CreateOrReconfigureModel(const ModelConfig& config);
   void DisposeModel(ModelName model_name);
+
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   void DisposeRegularizer(const std::string& name);
-  void CreateOrReconfigureDictionary(const DictionaryConfig& config);
+
+  void CreateOrReconfigureDictionary(const DictionaryData& data);
   void DisposeDictionary(const std::string& name);
+  std::shared_ptr<Dictionary> dictionary(const std::string& name);
 
   std::shared_ptr<ScoreCalculatorInterface> CreateScoreCalculator(const ScoreConfig& config);
 
