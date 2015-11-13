@@ -71,22 +71,138 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
   instance_->DisposeRegularizer(name);
 }
 
-void MasterComponent::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
-  instance_->CreateOrReconfigureDictionary(config);
+void MasterComponent::CreateOrReconfigureDictionary(const DictionaryData& data) {
+  instance_->CreateOrReconfigureDictionary(data);
 }
 
 void MasterComponent::DisposeDictionary(const std::string& name) {
   instance_->DisposeDictionary(name);
 }
 
-void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
-  DictionaryConfig config;
-  BatchHelpers::LoadMessage(args.file_name(), &config);
-  Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-  config.set_name(args.dictionary_name());
+void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
+  if (boost::filesystem::exists(args.file_name()))
+    BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + args.file_name()));
 
-  instance_->CreateOrReconfigureDictionary(config);
-  LOG(INFO) << "Dictionary import completed";
+  std::ofstream fout(args.file_name(), std::ofstream::binary);
+  if (!fout.is_open())
+    BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + args.file_name()));
+
+  std::shared_ptr<Dictionary> dict_ptr = instance_->dictionary(args.dictionary_name());
+  if (dict_ptr == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
+        args.dictionary_name() + " does not exist or has no tokens"));
+
+  LOG(INFO) << "Exporting dictionary " << args.dictionary_name() << " to " << args.file_name();
+
+  const int token_size = dict_ptr->size();
+  
+  // ToDo: MelLain
+  // Add ability to save and load several token_dict_data
+  // int tokens_per_chunk = std::min<int>(token_size, 3e+7);
+
+  DictionaryData token_dict_data;
+  token_dict_data.set_name(args.dictionary_name());
+  DictionaryData cooc_dict_data;
+  int current_cooc_length = 0;
+  const int max_cooc_length = 1e+7;
+
+  const char version = 0;
+  fout << version;
+  for (int token_id = 0; token_id < token_size; ++token_id) {
+    auto entry = dict_ptr->entry(token_id);
+    token_dict_data.add_token(entry->token().keyword);
+    token_dict_data.add_class_id(entry->token().class_id);
+    token_dict_data.add_token_value(entry->token_value());
+    token_dict_data.add_token_tf(entry->token_tf());
+    token_dict_data.add_token_df(entry->token_df());
+
+    auto cooc_info = dict_ptr->cooc_info(entry->token());
+
+    for (auto& iter = cooc_info->begin(); iter != cooc_info->end(); ++iter) {
+      cooc_dict_data.add_cooc_first_index(token_id);
+      cooc_dict_data.add_cooc_second_index(iter->first);
+      cooc_dict_data.add_cooc_value(iter->second);
+      current_cooc_length++;
+    }
+
+    if (current_cooc_length >= max_cooc_length) {
+      std::string str = cooc_dict_data.SerializeAsString();
+      fout << str.size();
+      fout << str;
+      cooc_dict_data.clear_cooc_first_index();
+      cooc_dict_data.clear_cooc_second_index();
+      cooc_dict_data.clear_cooc_value();
+      current_cooc_length = 0;
+    }
+
+    if ((token_id + 1) == token_size) {
+      std::string str = cooc_dict_data.SerializeAsString();
+      fout << str.size();
+      fout << str;
+
+      std::string str = token_dict_data.SerializeAsString();
+      fout << str.size();
+      fout << str;
+    }
+  }
+
+  fout.close();
+  LOG(INFO) << "Export completed, token_size = " << dict_ptr->size();
+}
+
+void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
+  std::ifstream fin(args.file_name(), std::ifstream::binary);
+  if (!fin.is_open())
+    BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + args.file_name()));
+
+  LOG(INFO) << "Importing dictionary " << args.dictionary_name() << " from " << args.file_name();
+
+  char version;
+  fin >> version;
+  if (version != 0) {
+    std::stringstream ss;
+    ss << "Unsupported fromat version: " << static_cast<int>(version);
+    BOOST_THROW_EXCEPTION(DiskReadException(ss.str()));
+  }
+
+  std::vector<std::shared_ptr<::artm::DictionaryData> > temp_data;
+  while (!fin.eof()) {
+    int length;
+    fin >> length;
+    if (fin.eof())
+      break;
+
+    if (length <= 0)
+      BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
+
+    std::string buffer(length, '\0');
+    fin.read(&buffer[0], length);
+    ::artm::DictionaryData dict_data;
+    if (!dict_data.ParseFromArray(buffer.c_str(), length))
+      BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
+
+    temp_data.push_back(std::make_shared<::artm::DictionaryData>(dict_data));
+  }
+
+  fin.close();
+
+  // now last element of temp_data contains ptr to tokens part of dictionary
+  std::string dict_name = temp_data.back()->name();
+
+  int token_size = temp_data.back()->token_size();
+  if (token_size <= 0)
+    BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
+
+  instance_->CreateOrReconfigureDictionary(*(temp_data.back().get()));
+  temp_data.pop_back();
+
+  int temp_size = temp_data.size();
+  for (int i = 0; i < temp_size; ++i) {
+    instance_->dictionary(dict_name)->Append(*(temp_data.back().get()));
+    temp_data.pop_back();
+  }
+
+  LOG(INFO) << "Import completed, token_size = " << token_size;
 }
 
 void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
@@ -229,7 +345,22 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   LOG(INFO) << "MasterComponent::InitializeModel() with " << Helpers::Describe(args);
-  instance_->merger()->InitializeModel(args);
+
+  // temp code to be removed with ModelConfig
+  if (instance_->schema()->has_model_config(args.model_name()))
+    instance_->merger()->InitializeModel(args);
+
+  
+}
+
+void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
+  LOG(INFO) << "MasterComponent::FilterDictionaryArgs() with " << Helpers::Describe(args);
+
+}
+
+void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
+  LOG(INFO) << "MasterComponent::GatherDictionary() with " << Helpers::Describe(args);
+
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
@@ -262,6 +393,11 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
   instance_->processor(0)->FindThetaMatrix(
     get_score_args.batch(), GetThetaMatrixArgs(), nullptr, get_score_args, score_data);
   return true;
+}
+
+void MasterComponent::RequestDictionary(DictionaryName regularizer_name,
+                                        ::artm::DictionaryData* dictionary_data) {
+  instance_->RequestDictionary(dictionary_name, dictionary_data);
 }
 
 void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {

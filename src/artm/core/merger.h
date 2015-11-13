@@ -63,6 +63,7 @@ class Merger : boost::noncopyable {
                                ::artm::RegularizerInternalState* regularizer_state) const;
   bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData *score_data) const;
+  void RequestDictionary(const DictionaryName& dictionary_name, DictionaryData* dictionary_data) const;
 
   std::vector<ModelName> model_name() const;
 

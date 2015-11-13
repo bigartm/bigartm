@@ -485,6 +485,8 @@ int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) 
 }
 
 int ArtmInitializeModel(int master_id, int length, const char* init_model_args) {
+  // check if given dictionary name is appear in instaance dictionaries_
+  // (e.g. was created by ArtmCreate beforehand) and use it or raise error
   try {
     artm::InitializeModelArgs args;
     ParseFromArray(init_model_args, length, &args);
@@ -567,15 +569,32 @@ int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args)
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmGatherDictionary(int length, const char* gather_dictionary_config) {
-  return 0;
+int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionary_args) {
+  // this method creates DictionaryData and than Dictionary, based on it
+  // the method DOESN't store DictionaryData into disk, it's the task of ExportDictionary
+  try {
+    artm::GatherDictionaryArgs args;
+    ParseFromArray(gather_dictionary_args, length, &args);
+    // ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    master_component(master_id)->GatherDictionary(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
 }
 
-int ArtmFilterDictionary(int length, const char* filter_dictionary_config) {
-  return 0;
+int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionary_config) {
+  try {
+    artm::GatherDictionaryArgs args;
+    ParseFromArray(filter_dictionary_config, length, &args);
+    // ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    master_component(master_id)->FilterDictionary(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
 }
 
 int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config) {
+// it's all incorrect. This method should call artm_gather_dict, than filter
+// than put the got data into  master_component(master_id)->CreateOrReconfigureDictionary(data);
+
   try {
     artm::DictionaryConfig config;
     ParseFromArray(dictionary_config, length, &config);
@@ -593,13 +612,18 @@ int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
 }
 
 int ArtmRequestDictionary(int master_id, const char* dictionary_name) {
-  return 0;
+  try {
+    artm::DictionaryData data;
+    master_component(master_id)->RequestDictionary(dictionary_name, &data);
+    data.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
 }
 
-int ArtmImportDictionary(int master_id, int length, const char* dictionary_args) {
+int ArtmImportDictionary(int master_id, int length, const char* import_dictionary_args) {
   try {
     artm::ImportDictionaryArgs args;
-    ParseFromArray(dictionary_args, length, &args);
+    ParseFromArray(import_dictionary_args, length, &args);
     ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
     master_component(master_id)->ImportDictionary(args);
     return ARTM_SUCCESS;
@@ -607,7 +631,12 @@ int ArtmImportDictionary(int master_id, int length, const char* dictionary_args)
 }
 
 int ArtmExportDictionary(int master_id, int length, const char* export_dictionary_args) {
-  return 0;
+  try {
+    artm::ExportDictionaryArgs args;
+    ParseFromArray(export_dictionary_args, length, &args);
+    master_component(master_id)->ExportDictionary(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
 }
 
 int ArtmImportBatches(int master_id, int length, const char* import_batches_args) {

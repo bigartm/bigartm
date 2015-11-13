@@ -48,6 +48,8 @@ class MasterComponent : boost::noncopyable {
                           ::artm::ThetaMatrix* theta_matrix);
   bool RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData* score_data);
+  void RequestDictionary(DictionaryName dictionary_name,
+                         ::artm::DictionaryData* dictionary_data);
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
   void RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
@@ -74,9 +76,10 @@ class MasterComponent : boost::noncopyable {
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   void DisposeRegularizer(const std::string& name);
 
-  void CreateOrReconfigureDictionary(const DictionaryConfig& config);
+  void CreateOrReconfigureDictionary(const DictionaryData& data);
   void DisposeDictionary(const std::string& name);
   void ImportDictionary(const ImportDictionaryArgs& args);
+  void ExportDictionary(const ExportDictionaryArgs& args);
 
   void ImportBatches(const ImportBatchesArgs& args);
   void DisposeBatches(const DisposeBatchesArgs& args);
@@ -89,6 +92,8 @@ class MasterComponent : boost::noncopyable {
   void ImportModel(const ImportModelArgs& args);
   void AttachModel(const AttachModelArgs& args, int address_length, float* address);
   void InitializeModel(const InitializeModelArgs& args);
+  void FilterDictionary(const FilterDictionaryArgs& args);
+  void GatherDictionary(const GatherDictionaryArgs& args);
   bool AddBatch(const AddBatchArgs& args);
 
  private:
