@@ -269,6 +269,16 @@ bool Merger::RequestScore(const GetScoreValueArgs& args,
   return true;
 }
 
+void Merger::RequestDictionary(const DictionaryName& dictionary_name, DictionaryData* dictionary_data) const {
+  if (dictionaries_->has_key(dictionary_name)) {
+    dictionaries_->get(dictionary_name)->StoreIntoDictionaryData(dictionary_data);
+  } else {
+    LOG(ERROR) << "Requested non-exists dictionary.";
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "Attemp to request non-exist dictionary"));
+  }
+}
+
 std::vector<ModelName> Merger::model_name() const {
   std::vector<ModelName> new_models = topic_model_.keys();
   std::vector<ModelName> old_models = phi_matrix_.keys();

@@ -372,13 +372,17 @@ void Instance::DisposeRegularizer(const std::string& name) {
   schema_.set(new_schema);
 }
 
-void Instance::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
-  auto dictionary = std::make_shared<Dictionary>(Dictionary(config));
-  dictionaries_.set(config.name(), dictionary);
+void Instance::CreateOrReconfigureDictionary(const DictionaryData& data) {
+  auto dictionary = std::make_shared<Dictionary>(Dictionary(data));
+  dictionaries_.set(data.name(), dictionary);
 }
 
 void Instance::DisposeDictionary(const std::string& name) {
   dictionaries_.erase(name);
+}
+
+std::shared_ptr<Dictionary> Instance::dictionary(const std::string& name) {
+  return dictionaries_.has_key(name) ? dictionaries_.get(name) : nullptr;
 }
 
 void Instance::Reconfigure(const MasterComponentConfig& master_config) {

@@ -15,46 +15,6 @@
 namespace artm {
 namespace core {
 
-struct TokenCoocInfo {
-  TokenCoocInfo() : token(nullptr), value(0) {}
-  TokenCoocInfo(const Token* _token, int _value) : token(_token), value(_value) { }
-  const Token* token;
-  float value;
-};
-
- class Dictionary {
- public:
-  explicit Dictionary(const artm::DictionaryConfig& config);
-  std::shared_ptr<Dictionary> Duplicate() const;
-
-  inline int total_items_count() const { return total_items_count_; }
-  int cooc_size(const Token& token) const;
-  const Token* cooc_token(const Token& token, int index) const;
-
-  // cooc_value() methods return 0, if there're no such tokens
-  float cooc_value(const Token& token, int index) const;
-  float cooc_value(const Token& token_1, const Token& token_2) const;
-
-  // general method to return all cooc tokens with their values for given token
-  const std::unordered_map<int, float>* cooc_info(const Token& token) const;
-
-  const DictionaryEntry* entry(const Token& token) const;
-  const DictionaryEntry* entry(int index) const;
-  inline int size() const { return entries_.size(); }
-  inline const std::unordered_map<int, Token>& index_token() const { return index_token_; }
-
-  float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
-
- private:
-  int total_items_count_;
-  std::vector<DictionaryEntry> entries_;
-  std::unordered_map<Token, int, TokenHasher> token_index_;
-  std::unordered_map<int, Token> index_token_;
-  std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
-};
-
-typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
-
 class DictionaryEntryImpl {
  public: 
   DictionaryEntryImpl(Token token, float value, float tf, float df)
@@ -72,14 +32,18 @@ class DictionaryEntryImpl {
   float token_df_;
 };
 
-class DictionaryImpl {
+class Dictionary {
  public:
-  explicit DictionaryImpl(const artm::DictionaryData& data);
-  DictionaryImpl() { }
+  explicit Dictionary(const artm::DictionaryData& data);
+  Dictionary() { }
 
   void Append (const DictionaryData& dict);
 
-  std::shared_ptr<DictionaryImpl> Duplicate() const;
+  std::shared_ptr<Dictionary> Duplicate() const;
+    // Note: the data should be allocated, and the whole dictionary will be put
+    // into it (so the method is unsafe according to 1GB limitation on proto-message size)
+    // Also note, that it saves only token info, without cooc
+  void StoreIntoDictionaryData(DictionaryData* data) const;
 
   // general method to return all cooc tokens with their values for given token
   const std::unordered_map<int, float>* cooc_info(const Token& token) const;
@@ -98,7 +62,7 @@ class DictionaryImpl {
   std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
 };
 
-typedef ThreadSafeCollectionHolder<std::string, DictionaryImpl> ThreadSafeDictionaryImplCollection;
+typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 
 }  // namespace core
 }  // namespace artm
