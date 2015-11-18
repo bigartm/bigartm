@@ -19,29 +19,21 @@ TEST(Blas, Basic) {
   float CT[12] = { 29, 65, 101, 32, 72, 112, 35, 79, 123, 38, 86, 134 };
 
   Blas* blas_builtin = Blas::builtin();
-  Blas* blas_mkl = Blas::mkl();
   ASSERT_TRUE(blas_builtin->is_loaded());
-  if ((blas_mkl == nullptr) || !blas_mkl->is_loaded()) {
-    LOG(WARNING) << "Intel Math Kernel Library not loaded";
-  }
 
-  Blas* blas[2] = { blas_builtin, blas_mkl };
-  for (int index = 0; index < 2; ++index) {
-    if ((blas_mkl == nullptr) || !blas_mkl->is_loaded()) continue;
-    EXPECT_EQ(blas[index]->sdot(12, C, 1, CT, 1), 75188);
-    blas[index]->saxpy(6, 1.0, A, 1, A2, 1);
-    for (int i = 0; i < 6; ++i) EXPECT_EQ(A2[i], A[i]);
-    blas[index]->saxpy(6, -1.0, A, 1, A2, 1);
-    blas[index]->sgemm(Blas::RowMajor, Blas::NoTrans, Blas::NoTrans,
-        3, 4, 2, 1.0, A, 2, B, 4, 0, C1, 4);
-    for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], C[i]);
-    blas[index]->sgemm(Blas::ColMajor, Blas::NoTrans, Blas::NoTrans,
-        3, 4, 2, 1.0, AT, 3, BT, 2, 0, C1, 3);
-    for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], CT[i]);
-    blas[index]->sgemm(Blas::RowMajor, Blas::Trans, Blas::NoTrans,
-        3, 4, 2, 1.0, AT, 3, B, 4, 0, C1, 4);
-    for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], C[i]);
-  }
+  EXPECT_EQ(blas_builtin->sdot(12, C, 1, CT, 1), 75188);
+  blas_builtin->saxpy(6, 1.0, A, 1, A2, 1);
+  for (int i = 0; i < 6; ++i) EXPECT_EQ(A2[i], A[i]);
+  blas_builtin->saxpy(6, -1.0, A, 1, A2, 1);
+  blas_builtin->sgemm(Blas::RowMajor, Blas::NoTrans, Blas::NoTrans,
+      3, 4, 2, 1.0, A, 2, B, 4, 0, C1, 4);
+  for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], C[i]);
+  blas_builtin->sgemm(Blas::ColMajor, Blas::NoTrans, Blas::NoTrans,
+      3, 4, 2, 1.0, AT, 3, BT, 2, 0, C1, 3);
+  for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], CT[i]);
+  blas_builtin->sgemm(Blas::RowMajor, Blas::Trans, Blas::NoTrans,
+      3, 4, 2, 1.0, AT, 3, B, 4, 0, C1, 4);
+  for (int i = 0; i < 12; ++i) EXPECT_EQ(C1[i], C[i]);
 }
 
 TEST(Blas, scsr2csc) {

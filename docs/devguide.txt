@@ -170,6 +170,27 @@ Build C++ code on Linux
 Refer to :doc:`/tutorials/linux_basic`.
 
 
+Working with iPython notebooks remotely
+---------------------------------------
+
+It turned out to be common scenario to run BigARTM on a Linux server (for example on Amazon EC2), while connecting to it from Windows through ``putty``.
+Here is a convenient way to use ``ipython notebook`` in this scenario:
+
+1. Connect to the Linux machine via `putty <http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe>`_.
+   Putty needs to be configured with dynamic tunnel for port ``8888`` as describe here on `this page <https://anapnea.net/tut_putty_tunneling.php>`_
+   (port ``8888`` is a default port for ``ipython notebook``).
+   The same page describes how to configure internet properties:
+   
+   *Clicking on Settings in Internet Explorer, or Proxy Settings in Google Chrome, should open this dialogue. Navigate through to the Advanced Proxy section and add localhost:9090 as a SOCKS Proxy.*
+
+2. Start ``ipython notebook`` in your putty terminal.
+
+3. Open your favourite browser on Windows, and go to http://localhost:8888. Enjoy your notebook while the engine runs on remotely :)
+   
+.. image:: _images/remote_ipython.png
+   :alt: Working with iPython notebooks remotely
+
+
 Compiling .proto files on Windows
 ---------------------------------
 
@@ -229,23 +250,3 @@ Then execute the script like this:
 On Windows you may run this master-script to check all required files:
 
   ``$(BIGARTM_ROOT/utils/cpplint_all.bat``.
-
-..
-	Intel Math Kernel Library
-	-------------------------
-
-	BigARTM can utilize Intel Math Kernel Library to achieve better performance.
-	This only applies when :attr:`ModelConfig.use_sparse_bow` is ``false``
-	(in sparse version BigARTM has better built-in algorithm that does not use Intel MKL).
-
-	To enable MKL usage on Windows add the path to MKL library to your ``PATH`` system variable
-
-	.. code-block:: bash
-
-	   set PATH=%PATH%;"C:\Program Files (x86)\Intel\Composer XE 2013 SP1\redist\intel64\mkl"
-
-	To enable MKL usage on Linux create a new system variable ``MKL_PATH`` and set it as follows
-
-	.. code-block:: bash
-
-	   export MKL_PATH="/opt/intel/mkl/lib/intel64/"

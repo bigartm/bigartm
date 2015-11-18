@@ -18,7 +18,6 @@ set(SRC_LIST
 	thread_safe_holder_test.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest_main.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest-all.cc
-	${CMAKE_SOURCE_DIR}/src/artm/c_interface.cc
 	${CMAKE_SOURCE_DIR}/src/artm/cpp_interface.cc
 	${CMAKE_SOURCE_DIR}/src/artm/messages.pb.cc
 )
@@ -26,7 +25,6 @@ set(SRC_LIST
 add_definitions("-Dartm_EXPORTS")
 add_executable(artm_tests ${SRC_LIST})
 target_link_libraries(artm_tests artm-static
-                                 ${LINK_DL}
                                  ${Boost_LIBRARIES}
                                  ${PROTOBUF_LIBRARIES}
                                  ${GLOG_LIBRARIES})

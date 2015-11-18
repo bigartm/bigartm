@@ -3,6 +3,8 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 # Static 'artm' library
 
 set(SRC_LIST
+	c_interface.cc
+	c_interface.h
 	messages.pb.cc
 	messages.pb.h
 	regularizer_interface.cc
@@ -88,8 +90,6 @@ set(SRC_LIST
 	score/topic_kernel.h
 	score/topic_mass_phi.cc
 	score/topic_mass_phi.h
-	utility/ice.cc
-	utility/ice.h
 	utility/blas.cc
 	utility/blas.h
 )
@@ -99,6 +99,8 @@ FILE(GLOB_RECURSE SRC_LIST_OTHER
 	regularizer_interface.h
 	score_calculator_interface.cc
 	score_calculator_interface.h
+	c_interface.cc
+	c_interface.h
 	messages.pb.cc
 	messages.pb.h
 )
@@ -123,8 +125,7 @@ set(SRC_LIST c_interface.cc c_interface.h)
 source_group("" FILES c_interface.cc c_interface.h)
 
 set(ARTM_LIB_DEPS  artm-static
-		   gflags-static
-                   ${LINK_DL}
+                   gflags-static
                    ${Boost_LIBRARIES}
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES})
