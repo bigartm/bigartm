@@ -1,4 +1,12 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
+
+   Author: Marina Suvorova (m.dudarenko@gmail.com)
+   
+   This class proceeds count the number of documents, currently
+   processed by the algorithm.
+   
+   This score has no input parameters.
+*/
 
 #ifndef SRC_ARTM_SCORE_ITEMS_PROCESSED_H_
 #define SRC_ARTM_SCORE_ITEMS_PROCESSED_H_

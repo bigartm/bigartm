@@ -1,5 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+// Author: Alexander Frey (sashafrey@gmail.com)
+
 #include <cmath>
 
 #include "artm/core/common.h"

@@ -1,4 +1,17 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
+
+   Author: Marina Suvorova (m.dudarenko@gmail.com)
+   
+   This class proceeds scoring of perplexity.
+   
+   Parameters:
+   - model_type (the mode of replacing zero values, default is unigram doc model) 
+   - dictionary_name
+   - theta_sparsity_topic_name (topic names to count Theta sparsity)
+   - theta_sparsity_eps
+   - class_id (array of class_ids to count perplexity, empty == all)
+
+*/
 
 #ifndef SRC_ARTM_SCORE_PERPLEXITY_H_
 #define SRC_ARTM_SCORE_PERPLEXITY_H_
