@@ -1,4 +1,15 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
+
+   Author: Marina Suvorova (m.dudarenko@gmail.com)
+   
+   This class can provide you the part of Theta matrix
+   according to your request.
+   
+   Parameters:
+   - item_id (array with documents ids to extract)
+   - item_count (number of first documents to extract)
+
+*/
 
 #ifndef SRC_ARTM_SCORE_THETA_SNIPPET_H_
 #define SRC_ARTM_SCORE_THETA_SNIPPET_H_
