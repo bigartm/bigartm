@@ -1,4 +1,15 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
+
+   Author: Murat Apishev (great-mel@yandex.ru)
+   
+   This class count the n_t values for each topic in Phi matrix.
+   
+   Parameters:
+   - topic_name (names of topics from which top tokens need to be extracted)
+   - class_id (class_id to use, empty == DefaultClass)
+   - eps
+
+*/
 
 #ifndef SRC_ARTM_SCORE_TOPIC_MASS_PHI_H_
 #define SRC_ARTM_SCORE_TOPIC_MASS_PHI_H_

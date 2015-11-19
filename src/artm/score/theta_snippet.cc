@@ -1,5 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+// Author: Marina Suvorova (m.dudarenko@gmail.com)
+
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
 

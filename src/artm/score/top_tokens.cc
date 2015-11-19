@@ -1,5 +1,8 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+// Authors: Marina Suvorova (m.dudarenko@gmail.com)
+//          Murat Apishev (great-mel@yandex.ru)
+
 #include <algorithm>
 #include <utility>
 
