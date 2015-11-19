@@ -1,6 +1,19 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
 
-// Author: Murat Apishev (great-mel@yandex.ru)
+   Author: Murat Apishev (great-mel@yandex.ru)
+
+   This class proceeds the decorrelation of topics in Phi matrix.
+   The formula of M-step is
+   
+   p_wt \propto n_wt - tau * p_wt * \sum_{s \in T\t} p_ws.
+   
+   The parameters of the regularizer:
+   - topic_names (the names of topics to regularize, empty == all)
+   - class_ids (class ids to regularize, empty == all)
+
+*/
+
+*/
 
 #ifndef SRC_ARTM_REGULARIZER_DECORRELATOR_PHI_H_
 #define SRC_ARTM_REGULARIZER_DECORRELATOR_PHI_H_
