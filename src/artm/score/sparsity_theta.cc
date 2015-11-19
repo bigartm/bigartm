@@ -1,5 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+// Author: Marina Suvorova (m.dudarenko@gmail.com)
+
 #include <cmath>
 
 #include "artm/core/exceptions.h"

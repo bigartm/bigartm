@@ -1,6 +1,24 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
 
-// Author: Murat Apishev (great-mel@yandex.ru)
+   Author: Murat Apishev (great-mel@yandex.ru)
+
+   This class proceeds Phi matrix Label Regularization.
+   The formula of M-step is
+   
+   p_wt \propto n_wt + tau * dict[w] * \frac{p_wt * n_t}{\sum_{s \in T} p_ws n_s},
+   
+   where dict[w] is a token_value from dictionary if it was provided, or 1.
+   Note that dictionary usage will set to zero each token, that
+   hasn't token_value in it. token_value should contain the value of
+   empirical frequencies of tokens in collection. This regularizer is mostly
+   using for <class-topic> matrix in classification topic models.
+   
+   The parameters of the regularizer:
+   - topic_names (the names of topics to regularize, empty == all)
+   - class_ids (class ids to regularize, empty == all)
+   - dictionary_name
+
+*/
 
 #ifndef SRC_ARTM_REGULARIZER_LABEL_REGULARIZATION_PHI_H_
 #define SRC_ARTM_REGULARIZER_LABEL_REGULARIZATION_PHI_H_

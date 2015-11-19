@@ -1,6 +1,9 @@
-// Copyright 2015, Additive Regularization of Topic Models.
+/* Copyright 2015, Additive Regularization of Topic Models.
 
-// Author: Anya Potapenko (anya_potapenko@mail.ru)
+   Author: Anya Potapenko (anya_potapenko@mail.ru)
+
+   Work in progress, description will be provided later.
+*/
 
 #ifndef SRC_ARTM_REGULARIZER_SMOOTH_PTDW_H_
 #define SRC_ARTM_REGULARIZER_SMOOTH_PTDW_H_

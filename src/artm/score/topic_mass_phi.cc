@@ -1,5 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+// Author: Murat Apishev (great-mel@yandex.ru)
+
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
 
@@ -9,8 +11,6 @@ namespace artm {
 namespace score {
 
 std::shared_ptr<Score> TopicMassPhi::CalculateScore(const artm::core::PhiMatrix& p_wt) {
-  // this score counts the n_t counters of 'topic_name'
-  // part in the n_t counters of all topics
   int topic_size = p_wt.topic_size();
   int token_size = p_wt.token_size();
 

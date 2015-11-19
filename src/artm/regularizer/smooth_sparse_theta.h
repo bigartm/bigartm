@@ -1,6 +1,21 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
 
-// Author: Murat Apishev (great-mel@yandex.ru)
+   Author: Murat Apishev (great-mel@yandex.ru)
+
+   This class proceeds Theta matrix smoothing or sparsing.
+   The formula of M-step is
+   
+   p_td \propto n_td + tau * f(p_td),
+   
+   where f is a transform function, which is p_wt multiplied on
+   the derivative of function under KL-divergence.
+   
+   The parameters of the regularizer:
+   - topic_names (the names of topics to regularize, empty == all)
+   - transform_function (default is 1, corresponds log() under
+     KL-divergence)
+
+*/
 
 #ifndef SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_THETA_H_
 #define SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_THETA_H_

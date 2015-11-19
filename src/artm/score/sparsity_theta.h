@@ -1,4 +1,14 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
+
+   Author: Marina Suvorova (m.dudarenko@gmail.com)
+   
+   This class proceeds scoring of sparsity of Theta matrix.
+   
+   Parameters:
+   - topic_name (array with topic names to score)
+   - eps
+
+*/
 
 #ifndef SRC_ARTM_SCORE_SPARSITY_THETA_H_
 #define SRC_ARTM_SCORE_SPARSITY_THETA_H_
