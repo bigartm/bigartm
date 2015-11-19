@@ -1,6 +1,26 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+/* Copyright 2014, Additive Regularization of Topic Models.
 
-// Author: Murat Apishev (great-mel@yandex.ru)
+   Author: Murat Apishev (great-mel@yandex.ru)
+
+   This class proceeds Phi matrix smoothing or sparsing.
+   The formula of M-step is
+   
+   p_wt \propto n_wt + tau * f(p_wt) * dict[w],
+   
+   where f is a transform function, which is p_wt multiplied on
+   the derivative of function under KL-divergence and dict[w]
+   is a token_value from dictionary if it was provided, or 1.
+   Note that dictionary usage will set to zero each token, that
+   hasn't token_value in it.
+   
+   The parameters of the regularizer:
+   - topic_names (the names of topics to regularize, empty == all)
+   - class_ids (class ids to regularize, empty == all)
+   - dictionary_name
+   - transform_function (default is 1, corresponds log() under
+     KL-divergence)
+
+*/
 
 #ifndef SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_PHI_H_
 #define SRC_ARTM_REGULARIZER_SMOOTH_SPARSE_PHI_H_
