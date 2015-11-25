@@ -14,8 +14,6 @@ find_package(Boost COMPONENTS REQUIRED ${BIGARTM_BOOST_COMPONENTS})
 
 add_executable(bigartm ${SRC_LIST})
 
-option(BUILD_STATIC_BIGARTM "Request build of static executable bigartm" ON)
-
 if (WIN32)
   target_link_libraries(bigartm artm ${Boost_LIBRARIES})
 else (WIN32)

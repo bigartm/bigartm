@@ -30,7 +30,8 @@ else()
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif()
 
-set(BUILD_STATIC_BIGARTM ON)
+option(BUILD_STATIC_BIGARTM "Request build of static executable bigartm" ON)
+
 set(BUILD_STATIC_LIBS ON)
 set(BUILD_SHARED_LIBS OFF)
 set(BUILD_gflags_LIB ON)
