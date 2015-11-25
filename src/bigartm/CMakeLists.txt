@@ -14,15 +14,19 @@ find_package(Boost COMPONENTS REQUIRED ${BIGARTM_BOOST_COMPONENTS})
 
 add_executable(bigartm ${SRC_LIST})
 
+option(BUILD_STATIC_BIGARTM "Request build of static executable bigartm" ON)
+
 if (WIN32)
   target_link_libraries(bigartm artm ${Boost_LIBRARIES})
-else()
-  set(CMAKE_EXE_LINKER_FLAGS "-static")
+else (WIN32)
+  if (BUILD_STATIC_BIGARTM)
+    set(CMAKE_EXE_LINKER_FLAGS "-static")
+  endif (BUILD_STATIC_BIGARTM)
   target_link_libraries(bigartm
 	  artm-static
 	  ${PROTOBUF_LIBRARIES}
 	  ${GLOG_LIBRARIES}
 	  ${Boost_LIBRARIES})
-endif()
+endif (WIN32)
 
 install(TARGETS bigartm DESTINATION bin)
