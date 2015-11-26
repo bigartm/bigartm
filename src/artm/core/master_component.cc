@@ -351,8 +351,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
       ptdw_cache_manager_ptr = &cache_manager;
       return_ptdw = true;
-    default:
-      break;
   }
 
   if (args.reset_scores())
@@ -414,8 +412,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     case ProcessBatchesArgs_ThetaMatrixType_Sparse:
     case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
       get_theta_matrix_args.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
-      break;
-    default:
       break;
   }
 
