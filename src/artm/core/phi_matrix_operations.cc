@@ -161,8 +161,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
   bool optimized_execution = false;
   if ((apply_weight == 1.0f) && (target_topic_index.size() == this_topic_size)) {
     bool ok = true;
-    for (unsigned topic_index = 0; topic_index < target_topic_index.size();
-         ++topic_index) {
+    for (unsigned topic_index = 0; topic_index < target_topic_index.size(); ++topic_index) {
       if (target_topic_index[topic_index] != topic_index)
         ok = false;
     }
