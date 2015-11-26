@@ -20,8 +20,9 @@ CacheManager::~CacheManager() {
   auto keys = cache_.keys();
   for (auto &key : keys) {
     auto cache_entry = cache_.get(key);
-    if (cache_entry != nullptr && cache_entry->has_filename())
+    if (cache_entry != nullptr && cache_entry->has_filename()) {
       try { fs::remove(fs::path(cache_entry->filename())); } catch(...) {}
+    }
   }
 }
 
@@ -46,8 +47,9 @@ void CacheManager::DisposeModel(ModelName model_name) {
     }
 
     if (cache_entry->model_name() == model_name) {
-      if (cache_entry->has_filename())
+      if (cache_entry->has_filename()) {
         try { fs::remove(fs::path(cache_entry->filename())); } catch(...) {}
+      }
       cache_.erase(key);
     }
   }
@@ -107,8 +109,9 @@ void CacheManager::UpdateCacheEntry(std::shared_ptr<DataLoaderCacheEntry> cache_
   CacheKey cache_key(uuid, model_name);
   std::shared_ptr<DataLoaderCacheEntry> old_entry = cache_.get(cache_key);
   cache_.set(cache_key, cache_entry);
-  if (old_entry != nullptr && old_entry->has_filename())
+  if (old_entry != nullptr && old_entry->has_filename()) {
     try { fs::remove(fs::path(old_entry->filename())); } catch(...) {}
+  }
 }
 
 }  // namespace core

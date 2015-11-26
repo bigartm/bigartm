@@ -179,7 +179,7 @@ void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment)
 }
 
 void DensePhiMatrix::Clear() {
-  std::for_each(values_.begin(), values_.end(), [&](float* value) {
+  std::for_each(values_.begin(), values_.end(), [&](float* value) {  // NOLINT
     delete[] value;
   });
   values_.clear();
@@ -202,7 +202,7 @@ void DensePhiMatrix::RemoveTokens(const std::vector<Token>& tokens) {
 }
 
 void DensePhiMatrix::Reset() {
-  std::for_each(values_.begin(), values_.end(), [&](float* value) {
+  std::for_each(values_.begin(), values_.end(), [&](float* value) {  // NOLINT
     for (int i = 0; i < topic_size(); ++i) value[i] = 0.0f;
   });
 }

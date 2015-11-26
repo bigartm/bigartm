@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
-#include <mutex>
+#include <mutex>  // NOLINT
 #include <tuple>
 #include <vector>
 #include <utility>

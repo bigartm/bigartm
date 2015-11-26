@@ -174,7 +174,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
                       /* apply_weight =*/ 1.0,
                       /* invoke_regularizers =*/ nwt_request);  // invoke regularizers only for nwt_request
   std::string file_name = ::artm::test::Helpers::getUniqueString();
-  artm::core::call_on_destruction c([&]() { try { boost::filesystem::remove(file_name); } catch (...) {} });
+  artm::core::call_on_destruction c([&]() { try { boost::filesystem::remove(file_name); } catch (...) {} });  // NOLINT
   model.Export(file_name);
   model3.Import(file_name);
 

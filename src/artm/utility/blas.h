@@ -66,7 +66,7 @@ class Blas {
 template<typename T>
 class DenseMatrix {
  public:
-  DenseMatrix(int no_rows = 0, int no_columns = 0, bool store_by_rows = true)
+  explicit DenseMatrix(int no_rows = 0, int no_columns = 0, bool store_by_rows = true)
     : no_rows_(no_rows),
     no_columns_(no_columns),
     store_by_rows_(store_by_rows),

@@ -27,7 +27,7 @@ namespace core {
 template<typename T>
 class ThreadSafeHolder : boost::noncopyable {
  public:
-  explicit ThreadSafeHolder()
+  ThreadSafeHolder()
       : lock_(), object_(std::make_shared<T>()) {}
 
   explicit ThreadSafeHolder(const std::shared_ptr<T>& object)
@@ -58,7 +58,7 @@ class ThreadSafeHolder : boost::noncopyable {
 template<typename K, typename T>
 class ThreadSafeCollectionHolder : boost::noncopyable {
  public:
-  explicit ThreadSafeCollectionHolder()
+  ThreadSafeCollectionHolder()
       : lock_(), object_(std::map<K, std::shared_ptr<T>>()) {}
 
   ~ThreadSafeCollectionHolder() {}

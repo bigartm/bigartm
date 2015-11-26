@@ -3,7 +3,7 @@
 #ifndef SRC_ARTM_CORE_COMMON_H_
 #define SRC_ARTM_CORE_COMMON_H_
 
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <functional>
 #include <memory>
 #include <string>

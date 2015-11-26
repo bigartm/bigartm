@@ -4,7 +4,7 @@
 
 #include <fstream>  // NOLINT
 #include <sstream>
-#include <thread>
+#include <thread>  // NOLINT
 
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"

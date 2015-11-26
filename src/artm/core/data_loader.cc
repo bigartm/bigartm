@@ -71,7 +71,7 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
   }
 
   std::vector<ModelName> model_names = schema->GetModelNames();
-  std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+  std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {  // NOLINT
     if (!schema->has_model_config(model_name))
       return;  // return from lambda and continues for_each
 
@@ -118,7 +118,7 @@ void DataLoader::InvokeIteration(const InvokeIterationArgs& args) {
 
   for (int iter = 0; iter < iterations_count; ++iter) {
     for (const std::string& task : tasks) {
-      std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {
+      std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {  // NOLINT
         if (!schema->has_model_config(model_name))
           return;  // return from lambda and continues for_each
 
