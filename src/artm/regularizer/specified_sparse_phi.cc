@@ -88,7 +88,7 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
         break;
       }
     }
-    for (int i = stop_index; i < max_and_indices.size(); ++i) {
+    for (unsigned i = stop_index; i < max_and_indices.size(); ++i) {
       int* ptr = indices_of_max.Add();
       *ptr = max_and_indices[i].first;
     }

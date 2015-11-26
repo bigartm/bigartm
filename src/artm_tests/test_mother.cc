@@ -143,7 +143,7 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
 void TestMother::GenerateBatches(int batches_size, int nTokens, const std::string& target_folder) {
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   GenerateBatches(batches_size, nTokens, &batches);
-  for (int i = 0; i < batches.size(); ++i)
+  for (unsigned i = 0; i < batches.size(); ++i)
     artm::SaveBatch(*batches[i], target_folder);
 }
 

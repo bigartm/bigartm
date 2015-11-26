@@ -358,7 +358,8 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
         PhiMatrixOperations::FindNormalizers(new_ttm->GetNwt(), global_r_wt);
       for (auto iter : new_ttm_normalizers) {
         int bad_topics = 0;
-        for (int topic_index = 0; topic_index < iter.second.size(); ++topic_index) {
+        for (unsigned topic_index = 0; topic_index < iter.second.size();
+             ++topic_index) {
           if (iter.second[topic_index] < 1e-20) {
             bad_topics++;
           }
