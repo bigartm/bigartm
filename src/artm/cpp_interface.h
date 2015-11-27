@@ -41,7 +41,7 @@ class ProcessBatchesResultObject;
 // Exception handling in cpp_interface
 #define DEFINE_EXCEPTION_TYPE(Type, BaseType)                  \
 class Type : public BaseType { public:  /*NOLINT*/             \
-  explicit Type() : BaseType("") {}                            \
+  Type() : BaseType("") {}                                     \
   explicit Type(std::string message) : BaseType(message) {}    \
 };
 
@@ -62,7 +62,7 @@ std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& 
 
 class Matrix {
  public:
-  Matrix(int no_rows = 0, int no_columns = 0) : no_rows_(no_rows), no_columns_(no_columns), data_() {
+  explicit Matrix(int no_rows = 0, int no_columns = 0) : no_rows_(no_rows), no_columns_(no_columns), data_() {
     if (no_rows > 0 && no_columns > 0)
       data_.resize(no_rows_ * no_columns_);
   }

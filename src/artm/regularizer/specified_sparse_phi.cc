@@ -39,10 +39,11 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   const int local_end = !mode_topics ? topic_size : token_size;
 
   for (int global_index = 0; global_index < global_end; ++global_index) {
-    if (mode_topics)
+    if (mode_topics) {
       if (!topics_to_regularize[global_index]) continue;
-    else
+    } else {
       if (n_wt.token(global_index).class_id != config_.class_id()) continue;
+    }
 
     google::protobuf::RepeatedField<int> indices_of_max;
     std::vector<std::pair<int, float> > max_and_indices;
@@ -52,10 +53,11 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     double normalizer = 0.0;
 
     for (int local_index = 0; local_index < local_end; ++local_index) {
-      if (mode_topics)
+      if (mode_topics) {
         if (n_wt.token(local_index).class_id != config_.class_id()) continue;
-      else
+      } else {
         if (!topics_to_regularize[local_index]) continue;
+      }
 
       auto value = std::pair<int, float>(local_index,
           mode_topics ? n_wt.get(local_index, global_index) : n_wt.get(global_index, local_index));

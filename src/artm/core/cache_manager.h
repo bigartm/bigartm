@@ -21,7 +21,7 @@ namespace core {
 
 class CacheManager : boost::noncopyable {
  public:
-  explicit CacheManager();
+  CacheManager();
   virtual ~CacheManager();
 
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;

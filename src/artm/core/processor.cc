@@ -986,7 +986,7 @@ void Processor::ThreadFunction() {
       CuckooWatch cuckoo(std::string("ProcessBatch(") + batch_name + std::string(")"));
       total_processed_batches++;
 
-      call_on_destruction c([&]() {
+      call_on_destruction c([&]() {  // NOLINT
         if (part->notifiable() != nullptr) {
           part->notifiable()->Callback(part->task_id(), part->model_name());
         }

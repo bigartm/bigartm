@@ -25,7 +25,7 @@ class InstanceSchema;
 
 class BatchManager : boost::noncopyable, public Notifiable {
  public:
-  explicit BatchManager();
+  BatchManager();
   virtual ~BatchManager() {}
 
   void Add(const boost::uuids::uuid& task_id, const std::string& file_path,

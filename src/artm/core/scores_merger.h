@@ -23,7 +23,7 @@ namespace core {
 
 class ScoresMerger : boost::noncopyable {
  public:
-  explicit ScoresMerger() : lock_(), score_map_() {}
+  ScoresMerger() : lock_(), score_map_() {}
 
   void Append(std::shared_ptr<InstanceSchema> schema,
               const ModelName& model_name, const ScoreName& score_name, const std::string& score_blob);

@@ -22,10 +22,10 @@ namespace artm {
 
 namespace core {
   // Forward declarations
-  class Dictionary;
-  class PhiMatrix;
-  template<typename K, typename T> class ThreadSafeCollectionHolder;
-  typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
+class Dictionary;
+class PhiMatrix;
+template<typename K, typename T> class ThreadSafeCollectionHolder;
+typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 }
 
 class RegularizeThetaAgent {
