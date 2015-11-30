@@ -121,7 +121,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
         target->add_value(phi_matrix.get(token_index, topic_index));
     } else {
       ::artm::IntArray* sparse_topic_index = topic_model->add_topic_index();
-      for (int topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
+      for (unsigned topics_to_use_index = 0; topics_to_use_index < topics_to_use.size(); topics_to_use_index++) {
         int topic_index = topics_to_use[topics_to_use_index];
         float value = phi_matrix.get(token_index, topic_index);
         if (fabs(value) > get_model_args.eps()) {
@@ -161,7 +161,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
   bool optimized_execution = false;
   if ((apply_weight == 1.0f) && (target_topic_index.size() == this_topic_size)) {
     bool ok = true;
-    for (int topic_index = 0; topic_index < target_topic_index.size(); ++topic_index) {
+    for (unsigned topic_index = 0; topic_index < target_topic_index.size(); ++topic_index) {
       if (target_topic_index[topic_index] != topic_index)
         ok = false;
     }

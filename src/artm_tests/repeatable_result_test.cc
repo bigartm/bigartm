@@ -38,7 +38,7 @@ std::string runOfflineTest() {
   int nTokens = 10;
   ::artm::test::TestMother::GenerateBatches(batches_size, nTokens, &batches);
   for (int iter = 0; iter < 3; ++iter) {
-    for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
+    for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
       master_component.AddBatch(*batches[iBatch]);
     }
 
@@ -50,7 +50,7 @@ std::string runOfflineTest() {
   std::stringstream ss;
   ss << "Topic model:\n" << ::artm::test::Helpers::DescribeTopicModel(*topic_model);
   ss << "Theta matrix:\n";
-  for (int i = 0; i < batches.size(); ++i) {
+  for (unsigned i = 0; i < batches.size(); ++i) {
     ::artm::GetThetaMatrixArgs args;
     args.set_model_name(model.name());
     args.mutable_batch()->CopyFrom(*batches[i]);
@@ -130,7 +130,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
   ::artm::test::TestMother::GenerateBatches(batches_size, nTokens, &batches);
 
   for (int iter = 0; iter < 3; ++iter) {
-    for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
+    for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
       master_component.AddBatch(*batches[iBatch]);
     }
 
@@ -196,7 +196,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
               << ::artm::test::Helpers::DescribeTopicModel(*master_component.GetTopicModel(model.name()));
   }
   ASSERT_TRUE(ok && ok2);
-  for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
+  for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
     ::artm::test::Helpers::CompareThetaMatrices(*master2.GetThetaMatrix(model.name(), *batches[iBatch]),
                                                 *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok);
     ::artm::test::Helpers::CompareThetaMatrices(*master3.GetThetaMatrix(model.name(), *batches[iBatch]),
@@ -208,7 +208,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
     return;  // do not validate further model inference for pwt_request
 
   // Run extra iteration and validate that model is stil still the same
-  for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
+  for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
     master_component.AddBatch(*batches[iBatch]);
     master2.AddBatch(*batches[iBatch]);
     master3.AddBatch(*batches[iBatch]);
@@ -225,7 +225,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_
                                             *master_component.GetTopicModel(model.name()), &ok2);
   ASSERT_TRUE(ok2);
 
-  for (int iBatch = 0; iBatch < batches.size(); ++iBatch) {
+  for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
     ::artm::test::Helpers::CompareThetaMatrices(*master2.GetThetaMatrix(model.name(), *batches[iBatch]),
                                                 *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok);
     ASSERT_TRUE(ok);

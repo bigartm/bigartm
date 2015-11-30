@@ -846,13 +846,13 @@ std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token) {
   size_t h = 1125899906842597L;  // prime
 
   if (token.class_id != DefaultClass) {
-    for (int i = 0; i < token.class_id.size(); i++)
+    for (unsigned i = 0; i < token.class_id.size(); i++)
       h = 31 * h + token.class_id[i];
   }
 
   h = 31 * h + 255;  // separate class_id and token
 
-  for (int i = 0; i < token.keyword.size(); i++)
+  for (unsigned i = 0; i < token.keyword.size(); i++)
     h = 31 * h + token.keyword[i];
 
   return GenerateRandomVector(size, h);
@@ -1087,7 +1087,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     if (!has_sparse_format) {
       if (sparse_cache) {
         // dense output -- sparse cache
-        for (int index = 0; index < topics_to_use.size(); ++index) {
+        for (unsigned index = 0; index < topics_to_use.size(); ++index) {
           int topic_index = repeated_field_index_of(cache.topic_index(item_index).value(), topics_to_use[index]);
           theta_vec->add_value(topic_index != -1 ? item_theta.value(topic_index) : 0.0f);
         }
@@ -1106,7 +1106,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
             theta_vec->add_value(item_theta.value(index));
             sparse_topic_index->add_value(topic_index);
           } else {
-            for (int i = 0; i < topics_to_use.size(); ++i) {
+            for (unsigned i = 0; i < topics_to_use.size(); ++i) {
               if (topics_to_use[i] == topic_index) {
                 theta_vec->add_value(item_theta.value(index));
                 sparse_topic_index->add_value(topic_index);
@@ -1117,7 +1117,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
         }
       } else {
         // sparse output -- dense cache
-        for (int index = 0; index < topics_to_use.size(); index++) {
+        for (unsigned index = 0; index < topics_to_use.size(); index++) {
           int topic_index = topics_to_use[index];
           float value = item_theta.value(topic_index);
           if (value >= get_theta_args.eps()) {

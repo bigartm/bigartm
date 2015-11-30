@@ -34,7 +34,7 @@ void RunTest(bool disk_cache) {
   ::artm::Model model(master_component, model_config);
 
   for (int iter = 0; iter < 3; ++iter) {
-    for (int iBatch = 0; iBatch < batches.size(); ++iBatch)
+    for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch)
       master_component.AddBatch(*batches[iBatch]);
     master_component.WaitIdle();
     model.Synchronize(0.0);
@@ -47,7 +47,7 @@ void RunTest(bool disk_cache) {
   model_config.set_inner_iterations_count(0);
   model.Reconfigure(model_config);
   {
-    for (int iBatch = 0; iBatch < batches.size(); ++iBatch)
+    for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch)
       master_component.AddBatch(*batches[iBatch]);
     master_component.WaitIdle();
     model.Synchronize(0.0);

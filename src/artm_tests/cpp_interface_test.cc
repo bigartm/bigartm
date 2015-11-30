@@ -757,7 +757,7 @@ TEST(CppInterface, AsyncProcessBatches) {
   ASSERT_EQ(all_batches.size(), nBatches);
 
   std::vector<int> operation_ids;
-  for (int i = 0; i < all_batches.size(); ++i) {
+  for (unsigned i = 0; i < all_batches.size(); ++i) {
     std::string& batch_name = all_batches[i];
     artm::ProcessBatchesArgs process_batches_args;
     process_batches_args.add_batch_filename(batch_name);
@@ -767,7 +767,7 @@ TEST(CppInterface, AsyncProcessBatches) {
     operation_ids.push_back(master.AsyncProcessBatches(process_batches_args));
   }
 
-  for (int i = 0; i < operation_ids.size(); ++i) {
+  for (unsigned i = 0; i < operation_ids.size(); ++i) {
     master.AwaitOperation(operation_ids[i]);
 
     ::artm::MergeModelArgs merge_model_args;
