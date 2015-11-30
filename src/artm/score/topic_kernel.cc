@@ -135,7 +135,7 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
       average_kernel_contrast += kernel_contrast->value(topic_index);
 
       StringArray* tokens = kernel_tokens->Add();
-      for (int token_id = 0; token_id < topic_kernel_tokens[topic_index].size(); ++token_id)
+      for (unsigned token_id = 0; token_id < topic_kernel_tokens[topic_index].size(); ++token_id)
         tokens->add_value(topic_kernel_tokens[topic_index][token_id].keyword);
     }
   }

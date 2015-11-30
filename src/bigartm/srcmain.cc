@@ -74,7 +74,7 @@ class CsvEscape {
 
     std::stringstream ss;
     ss << "\"";
-    for (int i = 0; i < in.size(); ++i) {
+    for (unsigned i = 0; i < in.size(); ++i) {
       if (in[i] == '"') ss << "\"\"";
       else ss << in[i];
     }
@@ -143,7 +143,7 @@ std::vector<std::pair<std::string, T>> parseKeyValuePairs(const std::string& inp
   // Handle the case when "input" is a set of "group:value" pairs, separated by ; or ,
   std::vector<std::string> strs;
   boost::split(strs, input, boost::is_any_of(";,"));
-  for (int elem_index = 0; elem_index < strs.size(); ++elem_index) {
+  for (unsigned elem_index = 0; elem_index < strs.size(); ++elem_index) {
     std::string elem = strs[elem_index];
     T elem_size = 0;
     size_t split_index = elem.find(':');
@@ -338,7 +338,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   std::vector<std::pair<std::string, float>> class_ids;
   std::vector<std::string> topic_names;
   std::string dictionary_name;
-  for (int i = 2; i < strs.size(); ++i) {
+  for (unsigned i = 2; i < strs.size(); ++i) {
     std::string elem = strs[i];
     if (elem.empty())
       continue;
@@ -422,7 +422,7 @@ class ScoreHelper {
      std::vector<std::pair<std::string, float>> class_ids;
      std::vector<std::string> topic_names;
      std::string dictionary_name;
-     for (int i = 1; i < strs.size(); ++i) {
+     for (unsigned i = 1; i < strs.size(); ++i) {
        std::string elem = strs[i];
        if (elem.empty())
          continue;
@@ -665,7 +665,7 @@ class BatchesIterator {
  private:
   std::vector<std::string> batch_file_names_;
   int update_every_;
-  int current_;
+  unsigned current_;
 
  public:
   BatchesIterator(const std::vector<std::string>& batch_file_names, int update_every)
@@ -675,7 +675,7 @@ class BatchesIterator {
 
   void get(ProcessBatchesArgs* args) {
     args->clear_batch_filename();
-    int last = std::min<int>(current_ + update_every_, batch_file_names_.size());
+    unsigned last = std::min<unsigned>(current_ + update_every_, batch_file_names_.size());
     if (update_every_ <= 0) last = batch_file_names_.size();  // offline algorighm
     for (; current_ < last; current_++)
       args->add_batch_filename(batch_file_names_[current_]);

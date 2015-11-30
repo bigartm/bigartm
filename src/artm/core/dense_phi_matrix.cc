@@ -84,7 +84,7 @@ PhiMatrixFrame::PhiMatrixFrame(const PhiMatrixFrame& rhs)
       token_collection_(rhs.token_collection_),
       spin_locks_() {
   spin_locks_.reserve(rhs.spin_locks_.size());
-  for (int i = 0; i < rhs.spin_locks_.size(); ++i)
+  for (unsigned i = 0; i < rhs.spin_locks_.size(); ++i)
     spin_locks_.push_back(std::make_shared<SpinLock>());
 }
 

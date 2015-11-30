@@ -574,7 +574,7 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
     std::string item_title = strs[0];
 
     ClassId class_id = DefaultClass;
-    for (int elem_index = 1; elem_index < strs.size(); ++elem_index) {
+    for (unsigned elem_index = 1; elem_index < strs.size(); ++elem_index) {
       std::string elem = strs[elem_index];
       if (elem.size() == 0)
         continue;

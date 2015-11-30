@@ -58,7 +58,7 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
 
   float average_coherence = 0.0f;
   auto coherence = top_tokens_score->mutable_coherence();
-  for (int i = 0; i < topic_ids.size(); ++i) {
+  for (unsigned i = 0; i < topic_ids.size(); ++i) {
     std::vector<std::pair<float, int>> p_wt_local;
     p_wt_local.reserve(tokens.size());
 
