@@ -405,8 +405,11 @@ class MasterComponent(object):
            Returns:
            - messages.ThetaMatrix object
         """
-        result = self._lib.ArtmRequestThetaMatrix(self.master_id,
-                                                  messages.GetThetaMatrixArgs(model_name=model))
+        args = messages.GetThetaMatrixArgs()
+        args.model_name = model
+        args.eps = 1.001  # hack to not get any data back
+        args.matrix_layout = 1  # GetThetaMatrixArgs_MatrixLayout_Sparse
+        result = self._lib.ArtmRequestThetaMatrix(self.master_id, args)
 
         theta_matrix_info = messages.ThetaMatrix()
         theta_matrix_info.ParseFromString(result)
