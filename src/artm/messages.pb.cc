@@ -1305,15 +1305,18 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(InitializeModelArgs));
   FilterDictionaryArgs_descriptor_ = file->message_type(53);
-  static const int FilterDictionaryArgs_offsets_[8] = {
+  static const int FilterDictionaryArgs_offsets_[11] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, dictionary_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, dictionary_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, min_percentage_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, max_percentage_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, min_items_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, max_items_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, min_total_count_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, min_one_item_count_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, min_df_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, max_df_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, min_tf_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, max_tf_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, min_value_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, max_value_),
   };
   FilterDictionaryArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1328,7 +1331,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(FilterDictionaryArgs));
   GatherDictionaryArgs_descriptor_ = file->message_type(54);
   static const int GatherDictionaryArgs_offsets_[5] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, dictionary_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, dictionary_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, data_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, cooc_file_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, vocab_file_path_),
@@ -2447,107 +2450,109 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "tializeModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\027\n\017"
     "dictionary_name\030\002 \001(\t\022\024\n\014topics_count\030\003 "
     "\001(\005\022\022\n\ntopic_name\030\004 \003(\t\022\020\n\004seed\030\005 \001(\005:\002-"
-    "1\"\314\001\n\024FilterDictionaryArgs\022\027\n\017dictionary"
-    "_name\030\001 \001(\t\022\020\n\010class_id\030\002 \001(\t\022\026\n\016min_per"
-    "centage\030\003 \001(\002\022\026\n\016max_percentage\030\004 \001(\002\022\021\n"
-    "\tmin_items\030\005 \001(\005\022\021\n\tmax_items\030\006 \001(\005\022\027\n\017m"
-    "in_total_count\030\007 \001(\005\022\032\n\022min_one_item_cou"
-    "nt\030\010 \001(\005\"\231\001\n\024GatherDictionaryArgs\022\027\n\017dic"
-    "tionary_name\030\001 \001(\t\022\021\n\tdata_path\030\002 \001(\t\022\026\n"
-    "\016cooc_file_path\030\003 \001(\t\022\027\n\017vocab_file_path"
-    "\030\004 \001(\t\022$\n\025symmetric_cooc_values\030\005 \001(\010:\005f"
-    "alse\"\364\002\n\021GetTopicModelArgs\022\022\n\nmodel_name"
-    "\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 \003("
-    "\t\022\020\n\010class_id\030\004 \003(\t\022\031\n\021use_sparse_format"
-    "\030\005 \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n\014request_t"
-    "ype\030\007 \001(\0162#.artm.GetTopicModelArgs.Reque"
-    "stType:\003Pwt\022B\n\rmatrix_layout\030\010 \001(\0162$.art"
-    "m.GetTopicModelArgs.MatrixLayout:\005Dense\""
-    ";\n\013RequestType\022\007\n\003Pwt\020\000\022\007\n\003Nwt\020\001\022\016\n\nTopi"
-    "cNames\020\002\022\n\n\006Tokens\020\003\"%\n\014MatrixLayout\022\t\n\005"
-    "Dense\020\000\022\n\n\006Sparse\020\001\"\245\002\n\022GetThetaMatrixAr"
-    "gs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013."
-    "artm.Batch\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013topic_"
-    "index\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001(\010:\005false\022"
-    "\031\n\021use_sparse_format\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:"
-    "\0061e-037\022C\n\rmatrix_layout\030\010 \001(\0162%.artm.Ge"
-    "tThetaMatrixArgs.MatrixLayout:\005Dense\"%\n\014"
-    "MatrixLayout\022\t\n\005Dense\020\000\022\n\n\006Sparse\020\001\"W\n\021G"
-    "etScoreValueArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\n"
-    "score_name\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.B"
-    "atch\"\202\001\n\014AddBatchArgs\022\032\n\005batch\030\001 \001(\0132\013.a"
-    "rtm.Batch\022 \n\024timeout_milliseconds\030\002 \001(\005:"
-    "\002-1\022\033\n\014reset_scores\030\003 \001(\010:\005false\022\027\n\017batc"
-    "h_file_name\030\004 \001(\t\"a\n\023InvokeIterationArgs"
-    "\022\033\n\020iterations_count\030\001 \001(\005:\0011\022\032\n\014reset_s"
-    "cores\030\002 \001(\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014"
-    "WaitIdleArgs\022 \n\024timeout_milliseconds\030\001 \001"
-    "(\005:\002-1\"8\n\017ExportModelArgs\022\021\n\tfile_name\030\001"
-    " \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"8\n\017ImportModelA"
-    "rgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001"
-    "(\t\"%\n\017AttachModelArgs\022\022\n\nmodel_name\030\001 \001("
-    "\t\"\340\004\n\022ProcessBatchesArgs\022\027\n\017nwt_target_n"
-    "ame\030\001 \001(\t\022\026\n\016batch_filename\030\002 \003(\t\022\027\n\017pwt"
-    "_source_name\030\003 \001(\t\022\"\n\026inner_iterations_c"
-    "ount\030\004 \001(\005:\00210\022\034\n\013stream_name\030\005 \001(\t:\007@gl"
-    "obal\022\030\n\020regularizer_name\030\006 \003(\t\022\027\n\017regula"
-    "rizer_tau\030\007 \003(\001\022\020\n\010class_id\030\010 \003(\t\022\024\n\014cla"
-    "ss_weight\030\t \003(\002\022\032\n\013reuse_theta\030\n \001(\010:\005fa"
-    "lse\022\031\n\013opt_for_avx\030\013 \001(\010:\004true\022\034\n\016use_sp"
-    "arse_bow\030\014 \001(\010:\004true\022\032\n\014reset_scores\030\r \001"
-    "(\010:\004true\022J\n\021theta_matrix_type\030\016 \001(\0162(.ar"
-    "tm.ProcessBatchesArgs.ThetaMatrixType:\005C"
-    "ache\022\024\n\014batch_weight\030\017 \003(\002\022\030\n\020model_name"
-    "_cache\030\020 \001(\t\022\030\n\020predict_class_id\030\021 \001(\t\"\\"
-    "\n\017ThetaMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n"
-    "\n\006Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\n"
-    "SparsePtdw\020\005\"d\n\024ProcessBatchesResult\022#\n\n"
-    "score_data\030\001 \003(\0132\017.artm.ScoreData\022\'\n\014the"
-    "ta_matrix\030\002 \001(\0132\021.artm.ThetaMatrix\"m\n\016Me"
-    "rgeModelArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\027\n"
-    "\017nwt_source_name\030\002 \003(\t\022\025\n\rsource_weight\030"
-    "\003 \003(\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023Regularize"
-    "ModelArgs\022\027\n\017rwt_target_name\030\001 \001(\t\022\027\n\017pw"
-    "t_source_name\030\002 \001(\t\022\027\n\017nwt_source_name\030\003"
-    " \001(\t\0227\n\024regularizer_settings\030\004 \003(\0132\031.art"
-    "m.RegularizerSettings\"_\n\022NormalizeModelA"
-    "rgs\022\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017nwt_sour"
-    "ce_name\030\002 \001(\t\022\027\n\017rwt_source_name\030\003 \001(\t\"B"
-    "\n\024ImportDictionaryArgs\022\021\n\tfile_name\030\001 \001("
-    "\t\022\027\n\017dictionary_name\030\002 \001(\t\"B\n\024ExportDict"
-    "ionaryArgs\022\021\n\tfile_name\030\001 \001(\t\022\027\n\017diction"
-    "ary_name\030\002 \001(\t\"\301\001\n\025CopyRequestResultArgs"
-    "\022Q\n\014request_type\030\001 \001(\0162\'.artm.CopyReques"
-    "tResultArgs.RequestType:\022DefaultRequestT"
-    "ype\"U\n\013RequestType\022\026\n\022DefaultRequestType"
-    "\020\000\022\026\n\022GetThetaSecondPass\020\001\022\026\n\022GetModelSe"
-    "condPass\020\002\"\036\n\034DuplicateMasterComponentAr"
-    "gs\"\034\n\032GetMasterComponentInfoArgs\"\301\006\n\023Mas"
-    "terComponentInfo\022\021\n\tmaster_id\030\001 \001(\005\022+\n\006c"
-    "onfig\030\002 \001(\0132\033.artm.MasterComponentConfig"
-    "\022>\n\013regularizer\030\003 \003(\0132).artm.MasterCompo"
-    "nentInfo.RegularizerInfo\0222\n\005score\030\004 \003(\0132"
-    "#.artm.MasterComponentInfo.ScoreInfo\022<\n\n"
-    "dictionary\030\005 \003(\0132(.artm.MasterComponentI"
-    "nfo.DictionaryInfo\0222\n\005model\030\006 \003(\0132#.artm"
-    ".MasterComponentInfo.ModelInfo\022=\n\013cache_"
-    "entry\030\007 \003(\0132(.artm.MasterComponentInfo.C"
-    "acheEntryInfo\022\031\n\021merger_queue_size\030\010 \001(\005"
-    "\022\034\n\024processor_queue_size\030\t \001(\005\0222\n\005batch\030"
-    "\n \003(\0132#.artm.MasterComponentInfo.BatchIn"
-    "fo\032-\n\017RegularizerInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004t"
-    "ype\030\002 \001(\t\032\'\n\tScoreInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004"
-    "type\030\002 \001(\t\0325\n\016DictionaryInfo\022\014\n\004name\030\001 \001"
-    "(\t\022\025\n\rentries_count\030\002 \001(\003\032C\n\tBatchInfo\022\014"
-    "\n\004name\030\001 \001(\t\022\023\n\013items_count\030\002 \001(\005\022\023\n\013tok"
-    "en_count\030\003 \001(\005\032R\n\tModelInfo\022\014\n\004name\030\001 \001("
-    "\t\022\014\n\004type\030\002 \001(\t\022\024\n\014topics_count\030\003 \001(\005\022\023\n"
-    "\013token_count\030\004 \001(\005\0320\n\016CacheEntryInfo\022\013\n\003"
-    "key\030\001 \001(\t\022\021\n\tbyte_size\030\002 \001(\005\"C\n\021ImportBa"
-    "tchesArgs\022\022\n\nbatch_name\030\001 \003(\t\022\032\n\005batch\030\003"
-    " \003(\0132\013.artm.Batch\"(\n\022DisposeBatchesArgs\022"
-    "\022\n\nbatch_name\030\001 \003(\t\"6\n\022AwaitOperationArg"
-    "s\022 \n\024timeout_milliseconds\030\001 \001(\005:\002-1", 12315);
+    "1\"\367\001\n\024FilterDictionaryArgs\022\027\n\017dictionary"
+    "_name\030\001 \001(\t\022\036\n\026dictionary_target_name\030\002 "
+    "\001(\t\022\020\n\010class_id\030\003 \001(\t\022\026\n\016min_percentage\030"
+    "\004 \001(\002\022\026\n\016max_percentage\030\005 \001(\002\022\016\n\006min_df\030"
+    "\006 \001(\005\022\016\n\006max_df\030\007 \001(\005\022\016\n\006min_tf\030\010 \001(\005\022\016\n"
+    "\006max_tf\030\t \001(\005\022\021\n\tmin_value\030\n \001(\005\022\021\n\tmax_"
+    "value\030\013 \001(\005\"\240\001\n\024GatherDictionaryArgs\022\036\n\026"
+    "dictionary_target_name\030\001 \001(\t\022\021\n\tdata_pat"
+    "h\030\002 \001(\t\022\026\n\016cooc_file_path\030\003 \001(\t\022\027\n\017vocab"
+    "_file_path\030\004 \001(\t\022$\n\025symmetric_cooc_value"
+    "s\030\005 \001(\010:\005false\"\364\002\n\021GetTopicModelArgs\022\022\n\n"
+    "model_name\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005"
+    "token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\022\031\n\021use_spa"
+    "rse_format\030\005 \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n"
+    "\014request_type\030\007 \001(\0162#.artm.GetTopicModel"
+    "Args.RequestType:\003Pwt\022B\n\rmatrix_layout\030\010"
+    " \001(\0162$.artm.GetTopicModelArgs.MatrixLayo"
+    "ut:\005Dense\";\n\013RequestType\022\007\n\003Pwt\020\000\022\007\n\003Nwt"
+    "\020\001\022\016\n\nTopicNames\020\002\022\n\n\006Tokens\020\003\"%\n\014Matrix"
+    "Layout\022\t\n\005Dense\020\000\022\n\n\006Sparse\020\001\"\245\002\n\022GetThe"
+    "taMatrixArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batc"
+    "h\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic_name\030\003 \003(\t"
+    "\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001"
+    "(\010:\005false\022\031\n\021use_sparse_format\030\006 \001(\010\022\023\n\003"
+    "eps\030\007 \001(\002:\0061e-037\022C\n\rmatrix_layout\030\010 \001(\016"
+    "2%.artm.GetThetaMatrixArgs.MatrixLayout:"
+    "\005Dense\"%\n\014MatrixLayout\022\t\n\005Dense\020\000\022\n\n\006Spa"
+    "rse\020\001\"W\n\021GetScoreValueArgs\022\022\n\nmodel_name"
+    "\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001("
+    "\0132\013.artm.Batch\"\202\001\n\014AddBatchArgs\022\032\n\005batch"
+    "\030\001 \001(\0132\013.artm.Batch\022 \n\024timeout_milliseco"
+    "nds\030\002 \001(\005:\002-1\022\033\n\014reset_scores\030\003 \001(\010:\005fal"
+    "se\022\027\n\017batch_file_name\030\004 \001(\t\"a\n\023InvokeIte"
+    "rationArgs\022\033\n\020iterations_count\030\001 \001(\005:\0011\022"
+    "\032\n\014reset_scores\030\002 \001(\010:\004true\022\021\n\tdisk_path"
+    "\030\003 \001(\t\"0\n\014WaitIdleArgs\022 \n\024timeout_millis"
+    "econds\030\001 \001(\005:\002-1\"8\n\017ExportModelArgs\022\021\n\tf"
+    "ile_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"8\n\017Im"
+    "portModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmode"
+    "l_name\030\002 \001(\t\"%\n\017AttachModelArgs\022\022\n\nmodel"
+    "_name\030\001 \001(\t\"\340\004\n\022ProcessBatchesArgs\022\027\n\017nw"
+    "t_target_name\030\001 \001(\t\022\026\n\016batch_filename\030\002 "
+    "\003(\t\022\027\n\017pwt_source_name\030\003 \001(\t\022\"\n\026inner_it"
+    "erations_count\030\004 \001(\005:\00210\022\034\n\013stream_name\030"
+    "\005 \001(\t:\007@global\022\030\n\020regularizer_name\030\006 \003(\t"
+    "\022\027\n\017regularizer_tau\030\007 \003(\001\022\020\n\010class_id\030\010 "
+    "\003(\t\022\024\n\014class_weight\030\t \003(\002\022\032\n\013reuse_theta"
+    "\030\n \001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true"
+    "\022\034\n\016use_sparse_bow\030\014 \001(\010:\004true\022\032\n\014reset_"
+    "scores\030\r \001(\010:\004true\022J\n\021theta_matrix_type\030"
+    "\016 \001(\0162(.artm.ProcessBatchesArgs.ThetaMat"
+    "rixType:\005Cache\022\024\n\014batch_weight\030\017 \003(\002\022\030\n\020"
+    "model_name_cache\030\020 \001(\t\022\030\n\020predict_class_"
+    "id\030\021 \001(\t\"\\\n\017ThetaMatrixType\022\010\n\004None\020\000\022\t\n"
+    "\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDense"
+    "Ptdw\020\004\022\016\n\nSparsePtdw\020\005\"d\n\024ProcessBatches"
+    "Result\022#\n\nscore_data\030\001 \003(\0132\017.artm.ScoreD"
+    "ata\022\'\n\014theta_matrix\030\002 \001(\0132\021.artm.ThetaMa"
+    "trix\"m\n\016MergeModelArgs\022\027\n\017nwt_target_nam"
+    "e\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 \003(\t\022\025\n\rsour"
+    "ce_weight\030\003 \003(\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023"
+    "RegularizeModelArgs\022\027\n\017rwt_target_name\030\001"
+    " \001(\t\022\027\n\017pwt_source_name\030\002 \001(\t\022\027\n\017nwt_sou"
+    "rce_name\030\003 \001(\t\0227\n\024regularizer_settings\030\004"
+    " \003(\0132\031.artm.RegularizerSettings\"_\n\022Norma"
+    "lizeModelArgs\022\027\n\017pwt_target_name\030\001 \001(\t\022\027"
+    "\n\017nwt_source_name\030\002 \001(\t\022\027\n\017rwt_source_na"
+    "me\030\003 \001(\t\"B\n\024ImportDictionaryArgs\022\021\n\tfile"
+    "_name\030\001 \001(\t\022\027\n\017dictionary_name\030\002 \001(\t\"B\n\024"
+    "ExportDictionaryArgs\022\021\n\tfile_name\030\001 \001(\t\022"
+    "\027\n\017dictionary_name\030\002 \001(\t\"\301\001\n\025CopyRequest"
+    "ResultArgs\022Q\n\014request_type\030\001 \001(\0162\'.artm."
+    "CopyRequestResultArgs.RequestType:\022Defau"
+    "ltRequestType\"U\n\013RequestType\022\026\n\022DefaultR"
+    "equestType\020\000\022\026\n\022GetThetaSecondPass\020\001\022\026\n\022"
+    "GetModelSecondPass\020\002\"\036\n\034DuplicateMasterC"
+    "omponentArgs\"\034\n\032GetMasterComponentInfoAr"
+    "gs\"\301\006\n\023MasterComponentInfo\022\021\n\tmaster_id\030"
+    "\001 \001(\005\022+\n\006config\030\002 \001(\0132\033.artm.MasterCompo"
+    "nentConfig\022>\n\013regularizer\030\003 \003(\0132).artm.M"
+    "asterComponentInfo.RegularizerInfo\0222\n\005sc"
+    "ore\030\004 \003(\0132#.artm.MasterComponentInfo.Sco"
+    "reInfo\022<\n\ndictionary\030\005 \003(\0132(.artm.Master"
+    "ComponentInfo.DictionaryInfo\0222\n\005model\030\006 "
+    "\003(\0132#.artm.MasterComponentInfo.ModelInfo"
+    "\022=\n\013cache_entry\030\007 \003(\0132(.artm.MasterCompo"
+    "nentInfo.CacheEntryInfo\022\031\n\021merger_queue_"
+    "size\030\010 \001(\005\022\034\n\024processor_queue_size\030\t \001(\005"
+    "\0222\n\005batch\030\n \003(\0132#.artm.MasterComponentIn"
+    "fo.BatchInfo\032-\n\017RegularizerInfo\022\014\n\004name\030"
+    "\001 \001(\t\022\014\n\004type\030\002 \001(\t\032\'\n\tScoreInfo\022\014\n\004name"
+    "\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\0325\n\016DictionaryInfo\022\014"
+    "\n\004name\030\001 \001(\t\022\025\n\rentries_count\030\002 \001(\003\032C\n\tB"
+    "atchInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013items_count\030\002 "
+    "\001(\005\022\023\n\013token_count\030\003 \001(\005\032R\n\tModelInfo\022\014\n"
+    "\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\022\024\n\014topics_coun"
+    "t\030\003 \001(\005\022\023\n\013token_count\030\004 \001(\005\0320\n\016CacheEnt"
+    "ryInfo\022\013\n\003key\030\001 \001(\t\022\021\n\tbyte_size\030\002 \001(\005\"C"
+    "\n\021ImportBatchesArgs\022\022\n\nbatch_name\030\001 \003(\t\022"
+    "\032\n\005batch\030\003 \003(\0132\013.artm.Batch\"(\n\022DisposeBa"
+    "tchesArgs\022\022\n\nbatch_name\030\001 \003(\t\"6\n\022AwaitOp"
+    "erationArgs\022 \n\024timeout_milliseconds\030\001 \001("
+    "\005:\002-1", 12365);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -23097,13 +23102,16 @@ void InitializeModelArgs::Swap(InitializeModelArgs* other) {
 
 #ifndef _MSC_VER
 const int FilterDictionaryArgs::kDictionaryNameFieldNumber;
+const int FilterDictionaryArgs::kDictionaryTargetNameFieldNumber;
 const int FilterDictionaryArgs::kClassIdFieldNumber;
 const int FilterDictionaryArgs::kMinPercentageFieldNumber;
 const int FilterDictionaryArgs::kMaxPercentageFieldNumber;
-const int FilterDictionaryArgs::kMinItemsFieldNumber;
-const int FilterDictionaryArgs::kMaxItemsFieldNumber;
-const int FilterDictionaryArgs::kMinTotalCountFieldNumber;
-const int FilterDictionaryArgs::kMinOneItemCountFieldNumber;
+const int FilterDictionaryArgs::kMinDfFieldNumber;
+const int FilterDictionaryArgs::kMaxDfFieldNumber;
+const int FilterDictionaryArgs::kMinTfFieldNumber;
+const int FilterDictionaryArgs::kMaxTfFieldNumber;
+const int FilterDictionaryArgs::kMinValueFieldNumber;
+const int FilterDictionaryArgs::kMaxValueFieldNumber;
 #endif  // !_MSC_VER
 
 FilterDictionaryArgs::FilterDictionaryArgs()
@@ -23123,13 +23131,16 @@ FilterDictionaryArgs::FilterDictionaryArgs(const FilterDictionaryArgs& from)
 void FilterDictionaryArgs::SharedCtor() {
   _cached_size_ = 0;
   dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  dictionary_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   min_percentage_ = 0;
   max_percentage_ = 0;
-  min_items_ = 0;
-  max_items_ = 0;
-  min_total_count_ = 0;
-  min_one_item_count_ = 0;
+  min_df_ = 0;
+  max_df_ = 0;
+  min_tf_ = 0;
+  max_tf_ = 0;
+  min_value_ = 0;
+  max_value_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -23140,6 +23151,9 @@ FilterDictionaryArgs::~FilterDictionaryArgs() {
 void FilterDictionaryArgs::SharedDtor() {
   if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete dictionary_name_;
+  }
+  if (dictionary_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_target_name_;
   }
   if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
     delete class_id_;
@@ -23176,6 +23190,11 @@ void FilterDictionaryArgs::Clear() {
         dictionary_name_->clear();
       }
     }
+    if (has_dictionary_target_name()) {
+      if (dictionary_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        dictionary_target_name_->clear();
+      }
+    }
     if (has_class_id()) {
       if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
         class_id_->clear();
@@ -23183,10 +23202,14 @@ void FilterDictionaryArgs::Clear() {
     }
     min_percentage_ = 0;
     max_percentage_ = 0;
-    min_items_ = 0;
-    max_items_ = 0;
-    min_total_count_ = 0;
-    min_one_item_count_ = 0;
+    min_df_ = 0;
+    max_df_ = 0;
+    min_tf_ = 0;
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    max_tf_ = 0;
+    min_value_ = 0;
+    max_value_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -23210,12 +23233,29 @@ bool FilterDictionaryArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_class_id;
+        if (input->ExpectTag(18)) goto parse_dictionary_target_name;
         break;
       }
 
-      // optional string class_id = 2;
+      // optional string dictionary_target_name = 2;
       case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_dictionary_target_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_dictionary_target_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->dictionary_target_name().data(), this->dictionary_target_name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_class_id;
+        break;
+      }
+
+      // optional string class_id = 3;
+      case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_class_id:
@@ -23227,12 +23267,12 @@ bool FilterDictionaryArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(29)) goto parse_min_percentage;
+        if (input->ExpectTag(37)) goto parse_min_percentage;
         break;
       }
 
-      // optional float min_percentage = 3;
-      case 3: {
+      // optional float min_percentage = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
          parse_min_percentage:
@@ -23243,12 +23283,12 @@ bool FilterDictionaryArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(37)) goto parse_max_percentage;
+        if (input->ExpectTag(45)) goto parse_max_percentage;
         break;
       }
 
-      // optional float max_percentage = 4;
-      case 4: {
+      // optional float max_percentage = 5;
+      case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
          parse_max_percentage:
@@ -23259,67 +23299,99 @@ bool FilterDictionaryArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(40)) goto parse_min_items;
+        if (input->ExpectTag(48)) goto parse_min_df;
         break;
       }
 
-      // optional int32 min_items = 5;
-      case 5: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_min_items:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &min_items_)));
-          set_has_min_items();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(48)) goto parse_max_items;
-        break;
-      }
-
-      // optional int32 max_items = 6;
+      // optional int32 min_df = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_max_items:
+         parse_min_df:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &max_items_)));
-          set_has_max_items();
+                 input, &min_df_)));
+          set_has_min_df();
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(56)) goto parse_min_total_count;
+        if (input->ExpectTag(56)) goto parse_max_df;
         break;
       }
 
-      // optional int32 min_total_count = 7;
+      // optional int32 max_df = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_min_total_count:
+         parse_max_df:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &min_total_count_)));
-          set_has_min_total_count();
+                 input, &max_df_)));
+          set_has_max_df();
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(64)) goto parse_min_one_item_count;
+        if (input->ExpectTag(64)) goto parse_min_tf;
         break;
       }
 
-      // optional int32 min_one_item_count = 8;
+      // optional int32 min_tf = 8;
       case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_min_one_item_count:
+         parse_min_tf:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &min_one_item_count_)));
-          set_has_min_one_item_count();
+                 input, &min_tf_)));
+          set_has_min_tf();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(72)) goto parse_max_tf;
+        break;
+      }
+
+      // optional int32 max_tf = 9;
+      case 9: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_max_tf:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &max_tf_)));
+          set_has_max_tf();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(80)) goto parse_min_value;
+        break;
+      }
+
+      // optional int32 min_value = 10;
+      case 10: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_min_value:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &min_value_)));
+          set_has_min_value();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(88)) goto parse_max_value;
+        break;
+      }
+
+      // optional int32 max_value = 11;
+      case 11: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_max_value:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &max_value_)));
+          set_has_max_value();
         } else {
           goto handle_uninterpreted;
         }
@@ -23354,43 +23426,62 @@ void FilterDictionaryArgs::SerializeWithCachedSizes(
       1, this->dictionary_name(), output);
   }
 
-  // optional string class_id = 2;
+  // optional string dictionary_target_name = 2;
+  if (has_dictionary_target_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->dictionary_target_name().data(), this->dictionary_target_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->dictionary_target_name(), output);
+  }
+
+  // optional string class_id = 3;
   if (has_class_id()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->class_id().data(), this->class_id().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->class_id(), output);
+      3, this->class_id(), output);
   }
 
-  // optional float min_percentage = 3;
+  // optional float min_percentage = 4;
   if (has_min_percentage()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(3, this->min_percentage(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(4, this->min_percentage(), output);
   }
 
-  // optional float max_percentage = 4;
+  // optional float max_percentage = 5;
   if (has_max_percentage()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(4, this->max_percentage(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(5, this->max_percentage(), output);
   }
 
-  // optional int32 min_items = 5;
-  if (has_min_items()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->min_items(), output);
+  // optional int32 min_df = 6;
+  if (has_min_df()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->min_df(), output);
   }
 
-  // optional int32 max_items = 6;
-  if (has_max_items()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->max_items(), output);
+  // optional int32 max_df = 7;
+  if (has_max_df()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->max_df(), output);
   }
 
-  // optional int32 min_total_count = 7;
-  if (has_min_total_count()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->min_total_count(), output);
+  // optional int32 min_tf = 8;
+  if (has_min_tf()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->min_tf(), output);
   }
 
-  // optional int32 min_one_item_count = 8;
-  if (has_min_one_item_count()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->min_one_item_count(), output);
+  // optional int32 max_tf = 9;
+  if (has_max_tf()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->max_tf(), output);
+  }
+
+  // optional int32 min_value = 10;
+  if (has_min_value()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(10, this->min_value(), output);
+  }
+
+  // optional int32 max_value = 11;
+  if (has_max_value()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(11, this->max_value(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -23411,44 +23502,64 @@ void FilterDictionaryArgs::SerializeWithCachedSizes(
         1, this->dictionary_name(), target);
   }
 
-  // optional string class_id = 2;
+  // optional string dictionary_target_name = 2;
+  if (has_dictionary_target_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->dictionary_target_name().data(), this->dictionary_target_name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->dictionary_target_name(), target);
+  }
+
+  // optional string class_id = 3;
   if (has_class_id()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->class_id().data(), this->class_id().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->class_id(), target);
+        3, this->class_id(), target);
   }
 
-  // optional float min_percentage = 3;
+  // optional float min_percentage = 4;
   if (has_min_percentage()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(3, this->min_percentage(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(4, this->min_percentage(), target);
   }
 
-  // optional float max_percentage = 4;
+  // optional float max_percentage = 5;
   if (has_max_percentage()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(4, this->max_percentage(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(5, this->max_percentage(), target);
   }
 
-  // optional int32 min_items = 5;
-  if (has_min_items()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->min_items(), target);
+  // optional int32 min_df = 6;
+  if (has_min_df()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->min_df(), target);
   }
 
-  // optional int32 max_items = 6;
-  if (has_max_items()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->max_items(), target);
+  // optional int32 max_df = 7;
+  if (has_max_df()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->max_df(), target);
   }
 
-  // optional int32 min_total_count = 7;
-  if (has_min_total_count()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->min_total_count(), target);
+  // optional int32 min_tf = 8;
+  if (has_min_tf()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->min_tf(), target);
   }
 
-  // optional int32 min_one_item_count = 8;
-  if (has_min_one_item_count()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->min_one_item_count(), target);
+  // optional int32 max_tf = 9;
+  if (has_max_tf()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->max_tf(), target);
+  }
+
+  // optional int32 min_value = 10;
+  if (has_min_value()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(10, this->min_value(), target);
+  }
+
+  // optional int32 max_value = 11;
+  if (has_max_value()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(11, this->max_value(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -23469,49 +23580,72 @@ int FilterDictionaryArgs::ByteSize() const {
           this->dictionary_name());
     }
 
-    // optional string class_id = 2;
+    // optional string dictionary_target_name = 2;
+    if (has_dictionary_target_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->dictionary_target_name());
+    }
+
+    // optional string class_id = 3;
     if (has_class_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->class_id());
     }
 
-    // optional float min_percentage = 3;
+    // optional float min_percentage = 4;
     if (has_min_percentage()) {
       total_size += 1 + 4;
     }
 
-    // optional float max_percentage = 4;
+    // optional float max_percentage = 5;
     if (has_max_percentage()) {
       total_size += 1 + 4;
     }
 
-    // optional int32 min_items = 5;
-    if (has_min_items()) {
+    // optional int32 min_df = 6;
+    if (has_min_df()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->min_items());
+          this->min_df());
     }
 
-    // optional int32 max_items = 6;
-    if (has_max_items()) {
+    // optional int32 max_df = 7;
+    if (has_max_df()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->max_items());
+          this->max_df());
     }
 
-    // optional int32 min_total_count = 7;
-    if (has_min_total_count()) {
+    // optional int32 min_tf = 8;
+    if (has_min_tf()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->min_total_count());
+          this->min_tf());
     }
 
-    // optional int32 min_one_item_count = 8;
-    if (has_min_one_item_count()) {
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional int32 max_tf = 9;
+    if (has_max_tf()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->min_one_item_count());
+          this->max_tf());
+    }
+
+    // optional int32 min_value = 10;
+    if (has_min_value()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->min_value());
+    }
+
+    // optional int32 max_value = 11;
+    if (has_max_value()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->max_value());
     }
 
   }
@@ -23544,6 +23678,9 @@ void FilterDictionaryArgs::MergeFrom(const FilterDictionaryArgs& from) {
     if (from.has_dictionary_name()) {
       set_dictionary_name(from.dictionary_name());
     }
+    if (from.has_dictionary_target_name()) {
+      set_dictionary_target_name(from.dictionary_target_name());
+    }
     if (from.has_class_id()) {
       set_class_id(from.class_id());
     }
@@ -23553,17 +23690,25 @@ void FilterDictionaryArgs::MergeFrom(const FilterDictionaryArgs& from) {
     if (from.has_max_percentage()) {
       set_max_percentage(from.max_percentage());
     }
-    if (from.has_min_items()) {
-      set_min_items(from.min_items());
+    if (from.has_min_df()) {
+      set_min_df(from.min_df());
     }
-    if (from.has_max_items()) {
-      set_max_items(from.max_items());
+    if (from.has_max_df()) {
+      set_max_df(from.max_df());
     }
-    if (from.has_min_total_count()) {
-      set_min_total_count(from.min_total_count());
+    if (from.has_min_tf()) {
+      set_min_tf(from.min_tf());
     }
-    if (from.has_min_one_item_count()) {
-      set_min_one_item_count(from.min_one_item_count());
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (from.has_max_tf()) {
+      set_max_tf(from.max_tf());
+    }
+    if (from.has_min_value()) {
+      set_min_value(from.min_value());
+    }
+    if (from.has_max_value()) {
+      set_max_value(from.max_value());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -23589,13 +23734,16 @@ bool FilterDictionaryArgs::IsInitialized() const {
 void FilterDictionaryArgs::Swap(FilterDictionaryArgs* other) {
   if (other != this) {
     std::swap(dictionary_name_, other->dictionary_name_);
+    std::swap(dictionary_target_name_, other->dictionary_target_name_);
     std::swap(class_id_, other->class_id_);
     std::swap(min_percentage_, other->min_percentage_);
     std::swap(max_percentage_, other->max_percentage_);
-    std::swap(min_items_, other->min_items_);
-    std::swap(max_items_, other->max_items_);
-    std::swap(min_total_count_, other->min_total_count_);
-    std::swap(min_one_item_count_, other->min_one_item_count_);
+    std::swap(min_df_, other->min_df_);
+    std::swap(max_df_, other->max_df_);
+    std::swap(min_tf_, other->min_tf_);
+    std::swap(max_tf_, other->max_tf_);
+    std::swap(min_value_, other->min_value_);
+    std::swap(max_value_, other->max_value_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -23614,7 +23762,7 @@ void FilterDictionaryArgs::Swap(FilterDictionaryArgs* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int GatherDictionaryArgs::kDictionaryNameFieldNumber;
+const int GatherDictionaryArgs::kDictionaryTargetNameFieldNumber;
 const int GatherDictionaryArgs::kDataPathFieldNumber;
 const int GatherDictionaryArgs::kCoocFilePathFieldNumber;
 const int GatherDictionaryArgs::kVocabFilePathFieldNumber;
@@ -23637,7 +23785,7 @@ GatherDictionaryArgs::GatherDictionaryArgs(const GatherDictionaryArgs& from)
 
 void GatherDictionaryArgs::SharedCtor() {
   _cached_size_ = 0;
-  dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  dictionary_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   data_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   cooc_file_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   vocab_file_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
@@ -23650,8 +23798,8 @@ GatherDictionaryArgs::~GatherDictionaryArgs() {
 }
 
 void GatherDictionaryArgs::SharedDtor() {
-  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete dictionary_name_;
+  if (dictionary_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_target_name_;
   }
   if (data_path_ != &::google::protobuf::internal::GetEmptyString()) {
     delete data_path_;
@@ -23689,9 +23837,9 @@ GatherDictionaryArgs* GatherDictionaryArgs::New() const {
 
 void GatherDictionaryArgs::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_dictionary_name()) {
-      if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
-        dictionary_name_->clear();
+    if (has_dictionary_target_name()) {
+      if (dictionary_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        dictionary_target_name_->clear();
       }
     }
     if (has_data_path()) {
@@ -23721,14 +23869,14 @@ bool GatherDictionaryArgs::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string dictionary_name = 1;
+      // optional string dictionary_target_name = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_dictionary_name()));
+                input, this->mutable_dictionary_target_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->dictionary_name().data(), this->dictionary_name().length(),
+            this->dictionary_target_name().data(), this->dictionary_target_name().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
@@ -23822,13 +23970,13 @@ bool GatherDictionaryArgs::MergePartialFromCodedStream(
 
 void GatherDictionaryArgs::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional string dictionary_name = 1;
-  if (has_dictionary_name()) {
+  // optional string dictionary_target_name = 1;
+  if (has_dictionary_target_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->dictionary_name().data(), this->dictionary_name().length(),
+      this->dictionary_target_name().data(), this->dictionary_target_name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      1, this->dictionary_name(), output);
+      1, this->dictionary_target_name(), output);
   }
 
   // optional string data_path = 2;
@@ -23871,14 +24019,14 @@ void GatherDictionaryArgs::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* GatherDictionaryArgs::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // optional string dictionary_name = 1;
-  if (has_dictionary_name()) {
+  // optional string dictionary_target_name = 1;
+  if (has_dictionary_target_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->dictionary_name().data(), this->dictionary_name().length(),
+      this->dictionary_target_name().data(), this->dictionary_target_name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->dictionary_name(), target);
+        1, this->dictionary_target_name(), target);
   }
 
   // optional string data_path = 2;
@@ -23927,11 +24075,11 @@ int GatherDictionaryArgs::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string dictionary_name = 1;
-    if (has_dictionary_name()) {
+    // optional string dictionary_target_name = 1;
+    if (has_dictionary_target_name()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->dictionary_name());
+          this->dictionary_target_name());
     }
 
     // optional string data_path = 2;
@@ -23987,8 +24135,8 @@ void GatherDictionaryArgs::MergeFrom(const ::google::protobuf::Message& from) {
 void GatherDictionaryArgs::MergeFrom(const GatherDictionaryArgs& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_dictionary_name()) {
-      set_dictionary_name(from.dictionary_name());
+    if (from.has_dictionary_target_name()) {
+      set_dictionary_target_name(from.dictionary_target_name());
     }
     if (from.has_data_path()) {
       set_data_path(from.data_path());
@@ -24025,7 +24173,7 @@ bool GatherDictionaryArgs::IsInitialized() const {
 
 void GatherDictionaryArgs::Swap(GatherDictionaryArgs* other) {
   if (other != this) {
-    std::swap(dictionary_name_, other->dictionary_name_);
+    std::swap(dictionary_target_name_, other->dictionary_target_name_);
     std::swap(data_path_, other->data_path_);
     std::swap(cooc_file_path_, other->cooc_file_path_);
     std::swap(vocab_file_path_, other->vocab_file_path_);

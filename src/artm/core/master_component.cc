@@ -8,6 +8,8 @@
 #include <set>
 #include <sstream>
 
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/predicate.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 #include "boost/thread.hpp"
 
@@ -29,6 +31,7 @@
 #include "artm/core/merger.h"
 #include "artm/core/dense_phi_matrix.h"
 #include "artm/core/template_manager.h"
+#include "artm/core/fileread_helpers.h"
 
 namespace artm {
 namespace core {
@@ -361,6 +364,202 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
   LOG(INFO) << "MasterComponent::GatherDictionary() with " << Helpers::Describe(args);
 
+  std::unordered_map<Token, TokenInfo, TokenHasher> token_freq_map;
+  std::vector<std::string> batches;
+
+  if (args.has_data_path()) {
+    batches = BatchHelpers::ListAllBatches(args.data_path());
+    LOG(INFO) << "Found " << batches.size() << " batches in '" << args.data_path() << "' folder";
+  } else {
+    LOG(ERROR) << "MasterComponent::GatherDictionary() requires data_path in it's args";
+    return;
+  }
+
+  int total_items_count = 0;
+  double sum_w_tf = 0.0;
+  for (const std::string& batch_file : batches) {
+    std::shared_ptr<Batch> batch_ptr = std::make_shared<Batch>();
+    try {
+      ::artm::core::BatchHelpers::LoadMessage(batch_file, batch_ptr.get());
+    } catch(std::exception& ex) {
+        LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+        continue;
+    }
+
+    const Batch& batch = *batch_ptr;
+
+    std::vector<float> token_df(batch.token_size(), 0);
+    std::vector<float> token_n_w(batch.token_size(), 0);
+    for (int item_id = 0; item_id < batch.item_size(); ++item_id) {
+      total_items_count++;
+      // Find cumulative weight for each token in item
+      // (assume that token might have multiple occurence in each item)
+      std::vector<bool> local_token_df(batch.token_size(), false);
+      for (const Field& field : batch.item(item_id).field()) {
+        for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
+          const float token_weight = field.token_weight(token_index);
+          const int token_id = field.token_id(token_index);
+          token_n_w[token_id] += token_weight;
+          local_token_df[token_id] = true;
+        }
+      }
+      for (int i = 0; i < batch.token_size(); ++i)
+        token_df[i] += local_token_df[i] ? 1.0 : 0.0;
+    }
+
+    for (int index = 0; index < batch.token_size(); ++index) {
+      // unordered_map.operator[] creates element using default constructor if the key doesn't exist
+      TokenInfo& token_info = token_freq_map[Token(batch.class_id(index), batch.token(index))];
+      token_info.token_tf += token_n_w[index];
+      sum_w_tf += token_n_w[index];
+      token_info.token_df += token_df[index];
+    }
+  }
+
+  for (auto& iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
+    iter->second.token_value = static_cast<float>(iter->second.token_tf / sum_w_tf);
+
+  LOG(INFO) << "Find " << token_freq_map.size()
+    << " unique tokens in " << total_items_count << " items";
+
+  // create DictionaryDataMessage using token_freq_map and vocab file
+  // if vocab file is given
+  std::vector<Token> collection_vocab;
+  std::unordered_map<Token, int> token_to_token_id;
+  bool use_vocab_file = args.has_vocab_file_path();
+
+  if (use_vocab_file) {
+    try {
+      ifstream_or_cin stream_or_cin(args.vocab_file_path());
+      std::istream& vocab = stream_or_cin.get_stream();
+
+      std::string str;
+      int token_id = 0;
+      while (!vocab.eof()) {
+        std::getline(vocab, str);
+        if (vocab.eof())
+          break;
+
+        boost::algorithm::trim(str);
+        if (str.empty()) {
+          std::stringstream ss;
+          ss << "Empty token at line " << (token_id + 1) << ", file " << args.vocab_file_path();
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
+
+        std::vector<std::string> strs;
+        boost::split(strs, str, boost::is_any_of("\t "));
+        if ((strs.size() == 0) || (strs.size() > 2)) {
+          std::stringstream ss;
+          ss << "Error at line " << (token_id + 1) << ", file " << args.vocab_file_path()
+             << ". Expected format: <token> [<class_id>]";
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
+
+        ClassId class_id = (strs.size() == 2) ? strs[1] : DefaultClass;
+        Token token(class_id, strs[0]);
+
+        if (token_to_token_id.find(token) != token_to_token_id.end()) {
+          std::stringstream ss;
+          ss << "Token (" << token.keyword << ", " << token.class_id << "' found twice, lines "
+             << (token_to_token_id.find(token)->second + 1)
+             << " and " << (token_id + 1) << ", file " << args.vocab_file_path();
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
+
+        collection_vocab.push_back(token);
+        token_to_token_id.insert(std::make_pair(token, token_id));
+        token_id++;
+      }
+    } catch(std::exception& ex) {
+      use_vocab_file = false;
+      LOG(ERROR) << ex.what() << ", dictionary will be gathered in random token order";
+    }
+  }
+
+  if (!use_vocab_file) {  // fill dictionary in map order
+    collection_vocab.clear();
+    for (auto& iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
+      collection_vocab.push_back(iter->first);
+  }
+
+  auto dictionary_data = std::make_shared<artm::DictionaryData>();
+  dictionary_data->set_name(args.dictionary_target_name());
+
+  for (auto& token : collection_vocab) {
+    dictionary_data->add_token(token.keyword);
+    dictionary_data->add_class_id(token.class_id);
+    dictionary_data->add_token_tf(token_freq_map[token].token_tf);
+    dictionary_data->add_token_df(token_freq_map[token].token_df);
+    dictionary_data->add_token_value(token_freq_map[token].token_value);
+  }
+
+  // parse the cooc info and append it to DictionaryData
+  if (args.has_cooc_file_path()) {
+    try {
+      ifstream_or_cin stream_or_cin(args.cooc_file_path());
+      std::istream& user_cooc_data = stream_or_cin.get_stream();
+
+
+      // Craft the co-occurence part of dictionary
+      int index = 0;
+      std::string str;
+      bool last_line = false;
+      while (!user_cooc_data.eof()) {
+        if (last_line) {
+          std::stringstream ss;
+          ss << "Empty pair of tokens at line " << index << ", file " << args.cooc_file_path();
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
+        std::getline(user_cooc_data, str);
+        ++index;
+        boost::algorithm::trim(str);
+        if (str.empty()) {
+          last_line = true;
+          continue;
+        }
+
+        std::vector<std::string> strs;
+        boost::split(strs, str, boost::is_any_of("\t "));
+        if (strs.size() < 3) {
+          std::stringstream ss;
+          ss << "Error at line " << index << ", file " << args.cooc_file_path()
+             << ". Expected format: <token_id_1> <token_id_2> {<cooc_value>}";
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
+
+        if (strs.size() != 3) {
+          std::stringstream ss;
+          ss << "Error at line " << index << ", file " << args.cooc_file_path()
+             << ". Number of values in all lines should be equal to 3";
+          BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+        }
+
+        int first_index = std::stoi(strs[0]);
+        int second_index = std::stoi(strs[1]);
+        float value = std::stof(strs[2]);
+
+        dictionary_data->add_cooc_first_index(first_index);
+        dictionary_data->add_cooc_second_index(second_index);
+        dictionary_data->add_cooc_value(value);
+
+        if (args.symmetric_cooc_values()) {
+          dictionary_data->add_cooc_first_index(second_index);
+          dictionary_data->add_cooc_second_index(first_index);
+          dictionary_data->add_cooc_value(value);
+        }
+      }
+
+    } catch(std::exception& ex) {
+      dictionary_data->clear_cooc_first_index();
+      dictionary_data->clear_cooc_second_index();
+      dictionary_data->clear_cooc_value();
+      LOG(ERROR) << ex.what() << ", dictionary will be gathered without cooc info";
+    }
+  }
+
+  // put dictionary into instance.dictionaries_
+  instance_->CreateOrReconfigureDictionary(*dictionary_data);
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
@@ -395,7 +594,7 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
   return true;
 }
 
-void MasterComponent::RequestDictionary(DictionaryName regularizer_name,
+void MasterComponent::RequestDictionary(DictionaryName dictionary_name,
                                         ::artm::DictionaryData* dictionary_data) {
   instance_->RequestDictionary(dictionary_name, dictionary_data);
 }

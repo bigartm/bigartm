@@ -60,6 +60,7 @@ src/artm/core/data_loader.h
 src/artm/core/dense_phi_matrix.h
 src/artm/core/dictionary.h
 src/artm/core/exceptions.h
+src/artm/core/fileread_helpers.h
 src/artm/core/helpers.h
 src/artm/core/instance.h
 src/artm/core/instance_schema.h

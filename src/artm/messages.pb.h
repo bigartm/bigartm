@@ -7783,10 +7783,22 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
-  // optional string class_id = 2;
+  // optional string dictionary_target_name = 2;
+  inline bool has_dictionary_target_name() const;
+  inline void clear_dictionary_target_name();
+  static const int kDictionaryTargetNameFieldNumber = 2;
+  inline const ::std::string& dictionary_target_name() const;
+  inline void set_dictionary_target_name(const ::std::string& value);
+  inline void set_dictionary_target_name(const char* value);
+  inline void set_dictionary_target_name(const char* value, size_t size);
+  inline ::std::string* mutable_dictionary_target_name();
+  inline ::std::string* release_dictionary_target_name();
+  inline void set_allocated_dictionary_target_name(::std::string* dictionary_target_name);
+
+  // optional string class_id = 3;
   inline bool has_class_id() const;
   inline void clear_class_id();
-  static const int kClassIdFieldNumber = 2;
+  static const int kClassIdFieldNumber = 3;
   inline const ::std::string& class_id() const;
   inline void set_class_id(const ::std::string& value);
   inline void set_class_id(const char* value);
@@ -7795,80 +7807,103 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   inline ::std::string* release_class_id();
   inline void set_allocated_class_id(::std::string* class_id);
 
-  // optional float min_percentage = 3;
+  // optional float min_percentage = 4;
   inline bool has_min_percentage() const;
   inline void clear_min_percentage();
-  static const int kMinPercentageFieldNumber = 3;
+  static const int kMinPercentageFieldNumber = 4;
   inline float min_percentage() const;
   inline void set_min_percentage(float value);
 
-  // optional float max_percentage = 4;
+  // optional float max_percentage = 5;
   inline bool has_max_percentage() const;
   inline void clear_max_percentage();
-  static const int kMaxPercentageFieldNumber = 4;
+  static const int kMaxPercentageFieldNumber = 5;
   inline float max_percentage() const;
   inline void set_max_percentage(float value);
 
-  // optional int32 min_items = 5;
-  inline bool has_min_items() const;
-  inline void clear_min_items();
-  static const int kMinItemsFieldNumber = 5;
-  inline ::google::protobuf::int32 min_items() const;
-  inline void set_min_items(::google::protobuf::int32 value);
+  // optional int32 min_df = 6;
+  inline bool has_min_df() const;
+  inline void clear_min_df();
+  static const int kMinDfFieldNumber = 6;
+  inline ::google::protobuf::int32 min_df() const;
+  inline void set_min_df(::google::protobuf::int32 value);
 
-  // optional int32 max_items = 6;
-  inline bool has_max_items() const;
-  inline void clear_max_items();
-  static const int kMaxItemsFieldNumber = 6;
-  inline ::google::protobuf::int32 max_items() const;
-  inline void set_max_items(::google::protobuf::int32 value);
+  // optional int32 max_df = 7;
+  inline bool has_max_df() const;
+  inline void clear_max_df();
+  static const int kMaxDfFieldNumber = 7;
+  inline ::google::protobuf::int32 max_df() const;
+  inline void set_max_df(::google::protobuf::int32 value);
 
-  // optional int32 min_total_count = 7;
-  inline bool has_min_total_count() const;
-  inline void clear_min_total_count();
-  static const int kMinTotalCountFieldNumber = 7;
-  inline ::google::protobuf::int32 min_total_count() const;
-  inline void set_min_total_count(::google::protobuf::int32 value);
+  // optional int32 min_tf = 8;
+  inline bool has_min_tf() const;
+  inline void clear_min_tf();
+  static const int kMinTfFieldNumber = 8;
+  inline ::google::protobuf::int32 min_tf() const;
+  inline void set_min_tf(::google::protobuf::int32 value);
 
-  // optional int32 min_one_item_count = 8;
-  inline bool has_min_one_item_count() const;
-  inline void clear_min_one_item_count();
-  static const int kMinOneItemCountFieldNumber = 8;
-  inline ::google::protobuf::int32 min_one_item_count() const;
-  inline void set_min_one_item_count(::google::protobuf::int32 value);
+  // optional int32 max_tf = 9;
+  inline bool has_max_tf() const;
+  inline void clear_max_tf();
+  static const int kMaxTfFieldNumber = 9;
+  inline ::google::protobuf::int32 max_tf() const;
+  inline void set_max_tf(::google::protobuf::int32 value);
+
+  // optional int32 min_value = 10;
+  inline bool has_min_value() const;
+  inline void clear_min_value();
+  static const int kMinValueFieldNumber = 10;
+  inline ::google::protobuf::int32 min_value() const;
+  inline void set_min_value(::google::protobuf::int32 value);
+
+  // optional int32 max_value = 11;
+  inline bool has_max_value() const;
+  inline void clear_max_value();
+  static const int kMaxValueFieldNumber = 11;
+  inline ::google::protobuf::int32 max_value() const;
+  inline void set_max_value(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:artm.FilterDictionaryArgs)
  private:
   inline void set_has_dictionary_name();
   inline void clear_has_dictionary_name();
+  inline void set_has_dictionary_target_name();
+  inline void clear_has_dictionary_target_name();
   inline void set_has_class_id();
   inline void clear_has_class_id();
   inline void set_has_min_percentage();
   inline void clear_has_min_percentage();
   inline void set_has_max_percentage();
   inline void clear_has_max_percentage();
-  inline void set_has_min_items();
-  inline void clear_has_min_items();
-  inline void set_has_max_items();
-  inline void clear_has_max_items();
-  inline void set_has_min_total_count();
-  inline void clear_has_min_total_count();
-  inline void set_has_min_one_item_count();
-  inline void clear_has_min_one_item_count();
+  inline void set_has_min_df();
+  inline void clear_has_min_df();
+  inline void set_has_max_df();
+  inline void clear_has_max_df();
+  inline void set_has_min_tf();
+  inline void clear_has_min_tf();
+  inline void set_has_max_tf();
+  inline void clear_has_max_tf();
+  inline void set_has_min_value();
+  inline void clear_has_min_value();
+  inline void set_has_max_value();
+  inline void clear_has_max_value();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* dictionary_name_;
+  ::std::string* dictionary_target_name_;
   ::std::string* class_id_;
   float min_percentage_;
   float max_percentage_;
-  ::google::protobuf::int32 min_items_;
-  ::google::protobuf::int32 max_items_;
-  ::google::protobuf::int32 min_total_count_;
-  ::google::protobuf::int32 min_one_item_count_;
+  ::google::protobuf::int32 min_df_;
+  ::google::protobuf::int32 max_df_;
+  ::google::protobuf::int32 min_tf_;
+  ::google::protobuf::int32 max_tf_;
+  ::google::protobuf::int32 min_value_;
+  ::google::protobuf::int32 max_value_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7933,17 +7968,17 @@ class GatherDictionaryArgs : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional string dictionary_name = 1;
-  inline bool has_dictionary_name() const;
-  inline void clear_dictionary_name();
-  static const int kDictionaryNameFieldNumber = 1;
-  inline const ::std::string& dictionary_name() const;
-  inline void set_dictionary_name(const ::std::string& value);
-  inline void set_dictionary_name(const char* value);
-  inline void set_dictionary_name(const char* value, size_t size);
-  inline ::std::string* mutable_dictionary_name();
-  inline ::std::string* release_dictionary_name();
-  inline void set_allocated_dictionary_name(::std::string* dictionary_name);
+  // optional string dictionary_target_name = 1;
+  inline bool has_dictionary_target_name() const;
+  inline void clear_dictionary_target_name();
+  static const int kDictionaryTargetNameFieldNumber = 1;
+  inline const ::std::string& dictionary_target_name() const;
+  inline void set_dictionary_target_name(const ::std::string& value);
+  inline void set_dictionary_target_name(const char* value);
+  inline void set_dictionary_target_name(const char* value, size_t size);
+  inline ::std::string* mutable_dictionary_target_name();
+  inline ::std::string* release_dictionary_target_name();
+  inline void set_allocated_dictionary_target_name(::std::string* dictionary_target_name);
 
   // optional string data_path = 2;
   inline bool has_data_path() const;
@@ -7990,8 +8025,8 @@ class GatherDictionaryArgs : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.GatherDictionaryArgs)
  private:
-  inline void set_has_dictionary_name();
-  inline void clear_has_dictionary_name();
+  inline void set_has_dictionary_target_name();
+  inline void clear_has_dictionary_target_name();
   inline void set_has_data_path();
   inline void clear_has_data_path();
   inline void set_has_cooc_file_path();
@@ -8003,7 +8038,7 @@ class GatherDictionaryArgs : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* dictionary_name_;
+  ::std::string* dictionary_target_name_;
   ::std::string* data_path_;
   ::std::string* cooc_file_path_;
   ::std::string* vocab_file_path_;
@@ -20824,15 +20859,85 @@ inline void FilterDictionaryArgs::set_allocated_dictionary_name(::std::string* d
   }
 }
 
-// optional string class_id = 2;
-inline bool FilterDictionaryArgs::has_class_id() const {
+// optional string dictionary_target_name = 2;
+inline bool FilterDictionaryArgs::has_dictionary_target_name() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void FilterDictionaryArgs::set_has_class_id() {
+inline void FilterDictionaryArgs::set_has_dictionary_target_name() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void FilterDictionaryArgs::clear_has_class_id() {
+inline void FilterDictionaryArgs::clear_has_dictionary_target_name() {
   _has_bits_[0] &= ~0x00000002u;
+}
+inline void FilterDictionaryArgs::clear_dictionary_target_name() {
+  if (dictionary_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_->clear();
+  }
+  clear_has_dictionary_target_name();
+}
+inline const ::std::string& FilterDictionaryArgs::dictionary_target_name() const {
+  return *dictionary_target_name_;
+}
+inline void FilterDictionaryArgs::set_dictionary_target_name(const ::std::string& value) {
+  set_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_ = new ::std::string;
+  }
+  dictionary_target_name_->assign(value);
+}
+inline void FilterDictionaryArgs::set_dictionary_target_name(const char* value) {
+  set_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_ = new ::std::string;
+  }
+  dictionary_target_name_->assign(value);
+}
+inline void FilterDictionaryArgs::set_dictionary_target_name(const char* value, size_t size) {
+  set_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_ = new ::std::string;
+  }
+  dictionary_target_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* FilterDictionaryArgs::mutable_dictionary_target_name() {
+  set_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_ = new ::std::string;
+  }
+  return dictionary_target_name_;
+}
+inline ::std::string* FilterDictionaryArgs::release_dictionary_target_name() {
+  clear_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = dictionary_target_name_;
+    dictionary_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void FilterDictionaryArgs::set_allocated_dictionary_target_name(::std::string* dictionary_target_name) {
+  if (dictionary_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_target_name_;
+  }
+  if (dictionary_target_name) {
+    set_has_dictionary_target_name();
+    dictionary_target_name_ = dictionary_target_name;
+  } else {
+    clear_has_dictionary_target_name();
+    dictionary_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string class_id = 3;
+inline bool FilterDictionaryArgs::has_class_id() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void FilterDictionaryArgs::set_has_class_id() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void FilterDictionaryArgs::clear_has_class_id() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void FilterDictionaryArgs::clear_class_id() {
   if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -20894,15 +20999,15 @@ inline void FilterDictionaryArgs::set_allocated_class_id(::std::string* class_id
   }
 }
 
-// optional float min_percentage = 3;
+// optional float min_percentage = 4;
 inline bool FilterDictionaryArgs::has_min_percentage() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_min_percentage() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void FilterDictionaryArgs::clear_has_min_percentage() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void FilterDictionaryArgs::clear_min_percentage() {
   min_percentage_ = 0;
@@ -20916,15 +21021,15 @@ inline void FilterDictionaryArgs::set_min_percentage(float value) {
   min_percentage_ = value;
 }
 
-// optional float max_percentage = 4;
+// optional float max_percentage = 5;
 inline bool FilterDictionaryArgs::has_max_percentage() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_max_percentage() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void FilterDictionaryArgs::clear_has_max_percentage() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void FilterDictionaryArgs::clear_max_percentage() {
   max_percentage_ = 0;
@@ -20938,165 +21043,209 @@ inline void FilterDictionaryArgs::set_max_percentage(float value) {
   max_percentage_ = value;
 }
 
-// optional int32 min_items = 5;
-inline bool FilterDictionaryArgs::has_min_items() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void FilterDictionaryArgs::set_has_min_items() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void FilterDictionaryArgs::clear_has_min_items() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void FilterDictionaryArgs::clear_min_items() {
-  min_items_ = 0;
-  clear_has_min_items();
-}
-inline ::google::protobuf::int32 FilterDictionaryArgs::min_items() const {
-  return min_items_;
-}
-inline void FilterDictionaryArgs::set_min_items(::google::protobuf::int32 value) {
-  set_has_min_items();
-  min_items_ = value;
-}
-
-// optional int32 max_items = 6;
-inline bool FilterDictionaryArgs::has_max_items() const {
+// optional int32 min_df = 6;
+inline bool FilterDictionaryArgs::has_min_df() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void FilterDictionaryArgs::set_has_max_items() {
+inline void FilterDictionaryArgs::set_has_min_df() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void FilterDictionaryArgs::clear_has_max_items() {
+inline void FilterDictionaryArgs::clear_has_min_df() {
   _has_bits_[0] &= ~0x00000020u;
 }
-inline void FilterDictionaryArgs::clear_max_items() {
-  max_items_ = 0;
-  clear_has_max_items();
+inline void FilterDictionaryArgs::clear_min_df() {
+  min_df_ = 0;
+  clear_has_min_df();
 }
-inline ::google::protobuf::int32 FilterDictionaryArgs::max_items() const {
-  return max_items_;
+inline ::google::protobuf::int32 FilterDictionaryArgs::min_df() const {
+  return min_df_;
 }
-inline void FilterDictionaryArgs::set_max_items(::google::protobuf::int32 value) {
-  set_has_max_items();
-  max_items_ = value;
+inline void FilterDictionaryArgs::set_min_df(::google::protobuf::int32 value) {
+  set_has_min_df();
+  min_df_ = value;
 }
 
-// optional int32 min_total_count = 7;
-inline bool FilterDictionaryArgs::has_min_total_count() const {
+// optional int32 max_df = 7;
+inline bool FilterDictionaryArgs::has_max_df() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void FilterDictionaryArgs::set_has_min_total_count() {
+inline void FilterDictionaryArgs::set_has_max_df() {
   _has_bits_[0] |= 0x00000040u;
 }
-inline void FilterDictionaryArgs::clear_has_min_total_count() {
+inline void FilterDictionaryArgs::clear_has_max_df() {
   _has_bits_[0] &= ~0x00000040u;
 }
-inline void FilterDictionaryArgs::clear_min_total_count() {
-  min_total_count_ = 0;
-  clear_has_min_total_count();
+inline void FilterDictionaryArgs::clear_max_df() {
+  max_df_ = 0;
+  clear_has_max_df();
 }
-inline ::google::protobuf::int32 FilterDictionaryArgs::min_total_count() const {
-  return min_total_count_;
+inline ::google::protobuf::int32 FilterDictionaryArgs::max_df() const {
+  return max_df_;
 }
-inline void FilterDictionaryArgs::set_min_total_count(::google::protobuf::int32 value) {
-  set_has_min_total_count();
-  min_total_count_ = value;
+inline void FilterDictionaryArgs::set_max_df(::google::protobuf::int32 value) {
+  set_has_max_df();
+  max_df_ = value;
 }
 
-// optional int32 min_one_item_count = 8;
-inline bool FilterDictionaryArgs::has_min_one_item_count() const {
+// optional int32 min_tf = 8;
+inline bool FilterDictionaryArgs::has_min_tf() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
-inline void FilterDictionaryArgs::set_has_min_one_item_count() {
+inline void FilterDictionaryArgs::set_has_min_tf() {
   _has_bits_[0] |= 0x00000080u;
 }
-inline void FilterDictionaryArgs::clear_has_min_one_item_count() {
+inline void FilterDictionaryArgs::clear_has_min_tf() {
   _has_bits_[0] &= ~0x00000080u;
 }
-inline void FilterDictionaryArgs::clear_min_one_item_count() {
-  min_one_item_count_ = 0;
-  clear_has_min_one_item_count();
+inline void FilterDictionaryArgs::clear_min_tf() {
+  min_tf_ = 0;
+  clear_has_min_tf();
 }
-inline ::google::protobuf::int32 FilterDictionaryArgs::min_one_item_count() const {
-  return min_one_item_count_;
+inline ::google::protobuf::int32 FilterDictionaryArgs::min_tf() const {
+  return min_tf_;
 }
-inline void FilterDictionaryArgs::set_min_one_item_count(::google::protobuf::int32 value) {
-  set_has_min_one_item_count();
-  min_one_item_count_ = value;
+inline void FilterDictionaryArgs::set_min_tf(::google::protobuf::int32 value) {
+  set_has_min_tf();
+  min_tf_ = value;
+}
+
+// optional int32 max_tf = 9;
+inline bool FilterDictionaryArgs::has_max_tf() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void FilterDictionaryArgs::set_has_max_tf() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void FilterDictionaryArgs::clear_has_max_tf() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void FilterDictionaryArgs::clear_max_tf() {
+  max_tf_ = 0;
+  clear_has_max_tf();
+}
+inline ::google::protobuf::int32 FilterDictionaryArgs::max_tf() const {
+  return max_tf_;
+}
+inline void FilterDictionaryArgs::set_max_tf(::google::protobuf::int32 value) {
+  set_has_max_tf();
+  max_tf_ = value;
+}
+
+// optional int32 min_value = 10;
+inline bool FilterDictionaryArgs::has_min_value() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void FilterDictionaryArgs::set_has_min_value() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void FilterDictionaryArgs::clear_has_min_value() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void FilterDictionaryArgs::clear_min_value() {
+  min_value_ = 0;
+  clear_has_min_value();
+}
+inline ::google::protobuf::int32 FilterDictionaryArgs::min_value() const {
+  return min_value_;
+}
+inline void FilterDictionaryArgs::set_min_value(::google::protobuf::int32 value) {
+  set_has_min_value();
+  min_value_ = value;
+}
+
+// optional int32 max_value = 11;
+inline bool FilterDictionaryArgs::has_max_value() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void FilterDictionaryArgs::set_has_max_value() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void FilterDictionaryArgs::clear_has_max_value() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void FilterDictionaryArgs::clear_max_value() {
+  max_value_ = 0;
+  clear_has_max_value();
+}
+inline ::google::protobuf::int32 FilterDictionaryArgs::max_value() const {
+  return max_value_;
+}
+inline void FilterDictionaryArgs::set_max_value(::google::protobuf::int32 value) {
+  set_has_max_value();
+  max_value_ = value;
 }
 
 // -------------------------------------------------------------------
 
 // GatherDictionaryArgs
 
-// optional string dictionary_name = 1;
-inline bool GatherDictionaryArgs::has_dictionary_name() const {
+// optional string dictionary_target_name = 1;
+inline bool GatherDictionaryArgs::has_dictionary_target_name() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void GatherDictionaryArgs::set_has_dictionary_name() {
+inline void GatherDictionaryArgs::set_has_dictionary_target_name() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void GatherDictionaryArgs::clear_has_dictionary_name() {
+inline void GatherDictionaryArgs::clear_has_dictionary_target_name() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void GatherDictionaryArgs::clear_dictionary_name() {
-  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_->clear();
+inline void GatherDictionaryArgs::clear_dictionary_target_name() {
+  if (dictionary_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_->clear();
   }
-  clear_has_dictionary_name();
+  clear_has_dictionary_target_name();
 }
-inline const ::std::string& GatherDictionaryArgs::dictionary_name() const {
-  return *dictionary_name_;
+inline const ::std::string& GatherDictionaryArgs::dictionary_target_name() const {
+  return *dictionary_target_name_;
 }
-inline void GatherDictionaryArgs::set_dictionary_name(const ::std::string& value) {
-  set_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_ = new ::std::string;
+inline void GatherDictionaryArgs::set_dictionary_target_name(const ::std::string& value) {
+  set_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_ = new ::std::string;
   }
-  dictionary_name_->assign(value);
+  dictionary_target_name_->assign(value);
 }
-inline void GatherDictionaryArgs::set_dictionary_name(const char* value) {
-  set_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_ = new ::std::string;
+inline void GatherDictionaryArgs::set_dictionary_target_name(const char* value) {
+  set_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_ = new ::std::string;
   }
-  dictionary_name_->assign(value);
+  dictionary_target_name_->assign(value);
 }
-inline void GatherDictionaryArgs::set_dictionary_name(const char* value, size_t size) {
-  set_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_ = new ::std::string;
+inline void GatherDictionaryArgs::set_dictionary_target_name(const char* value, size_t size) {
+  set_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_ = new ::std::string;
   }
-  dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
+  dictionary_target_name_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* GatherDictionaryArgs::mutable_dictionary_name() {
-  set_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    dictionary_name_ = new ::std::string;
+inline ::std::string* GatherDictionaryArgs::mutable_dictionary_target_name() {
+  set_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    dictionary_target_name_ = new ::std::string;
   }
-  return dictionary_name_;
+  return dictionary_target_name_;
 }
-inline ::std::string* GatherDictionaryArgs::release_dictionary_name() {
-  clear_has_dictionary_name();
-  if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
+inline ::std::string* GatherDictionaryArgs::release_dictionary_target_name() {
+  clear_has_dictionary_target_name();
+  if (dictionary_target_name_ == &::google::protobuf::internal::GetEmptyString()) {
     return NULL;
   } else {
-    ::std::string* temp = dictionary_name_;
-    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    ::std::string* temp = dictionary_target_name_;
+    dictionary_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
     return temp;
   }
 }
-inline void GatherDictionaryArgs::set_allocated_dictionary_name(::std::string* dictionary_name) {
-  if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete dictionary_name_;
+inline void GatherDictionaryArgs::set_allocated_dictionary_target_name(::std::string* dictionary_target_name) {
+  if (dictionary_target_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete dictionary_target_name_;
   }
-  if (dictionary_name) {
-    set_has_dictionary_name();
-    dictionary_name_ = dictionary_name;
+  if (dictionary_target_name) {
+    set_has_dictionary_target_name();
+    dictionary_target_name_ = dictionary_target_name;
   } else {
-    clear_has_dictionary_name();
-    dictionary_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    clear_has_dictionary_target_name();
+    dictionary_target_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 

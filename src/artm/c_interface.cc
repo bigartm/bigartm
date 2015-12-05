@@ -575,7 +575,7 @@ int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionar
   try {
     artm::GatherDictionaryArgs args;
     ParseFromArray(gather_dictionary_args, length, &args);
-    // ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
     master_component(master_id)->GatherDictionary(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -583,9 +583,9 @@ int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionar
 
 int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionary_config) {
   try {
-    artm::GatherDictionaryArgs args;
+    artm::FilterDictionaryArgs args;
     ParseFromArray(filter_dictionary_config, length, &args);
-    // ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    ::artm::core::Helpers::Validate(&args, /* throw_error =*/ true);
     master_component(master_id)->FilterDictionary(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;

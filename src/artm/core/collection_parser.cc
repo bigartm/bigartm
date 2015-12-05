@@ -14,40 +14,13 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
 #include "boost/lexical_cast.hpp"
-#include "boost/iostreams/device/mapped_file.hpp"
-#include "boost/iostreams/stream.hpp"
 
 #include "glog/logging.h"
 
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
-
-using boost::iostreams::mapped_file_source;
-
-namespace {
-class ifstream_or_cin {
- public:
-  explicit ifstream_or_cin(const std::string& filename) {
-    if (filename == "-")  // read from std::cin
-      return;
-
-    if (!boost::filesystem::exists(filename))
-      BOOST_THROW_EXCEPTION(::artm::core::DiskReadException("File " + filename + " does not exist."));
-
-    if (boost::filesystem::exists(filename) && !boost::filesystem::is_regular_file(filename))
-      BOOST_THROW_EXCEPTION(::artm::core::DiskReadException(
-                  "File " + filename + " is not regular (probably it's a directory)."));
-
-    file_.open(filename);
-  }
-
-  std::istream& get_stream() { return file_.is_open() ? file_ : std::cin; }
-
- private:
-  boost::iostreams::stream<mapped_file_source> file_;
-};
-}  // namespace
+#include "artm/core/fileread_helpers.h"
 
 namespace artm {
 namespace core {
