@@ -252,7 +252,8 @@ class PerplexityScore(BaseScore):
 
     Args:
       name (str): the identifier of score, will be auto-generated if not specified
-      class_id (str): class_id to score, default=None
+      class_ids (list of strs): class_ids to score, default=None, means that tokens
+      of all class_ids will be used
       topic_names (list of str): list of names of topics to regularize, will
       score all topics if not specified
       eps (double, default=None): the tolerance const, everything < eps
@@ -266,17 +267,23 @@ class PerplexityScore(BaseScore):
     _config_message = messages.PerplexityScoreConfig
     _type = const.ScoreConfig_Type_Perplexity
 
-    def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
+    def __init__(self, name=None, class_ids=None, topic_names=None, eps=None,
                  dictionary_name=None, use_unigram_document_model=None):
         BaseScore.__init__(self,
                            name=name,
-                           class_id=class_id,
                            topic_names=topic_names)
 
         self._eps = GLOB_EPS
         if eps is not None:
             self._config.theta_sparsity_eps = eps
             self._eps = eps
+
+        self._class_ids = []
+        if class_ids is not None:
+            self._config.ClearField('class_id')
+            for class_id in class_ids:
+                self._config.class_id.append(class_id)
+                self._class_ids.append(class_id)
 
         self._dictionary_name = ''
         if dictionary_name is not None:
@@ -303,6 +310,14 @@ class PerplexityScore(BaseScore):
     def use_unigram_document_model(self):
         return self._use_unigram_document_model
 
+    @property
+    def class_ids(self):
+        return self._class_ids
+
+    @property
+    def class_id(self):
+        raise KeyError('No class_id parameter')
+
     @eps.setter
     def eps(self, eps):
         _reconfigure_field(self, eps, 'eps')
@@ -321,6 +336,14 @@ class PerplexityScore(BaseScore):
         else:
             score_config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
         _reconfigure_score_in_master(self._master, score_config, self._name)
+
+    @class_ids.setter
+    def class_ids(self, class_ids):
+        _reconfigure_field(self, class_ids, 'class_ids', 'class_id')
+
+    @class_id.setter
+    def class_id(self, class_id):
+        raise KeyError('No class_id parameter')
 
 
 class ItemsProcessedScore(BaseScore):
