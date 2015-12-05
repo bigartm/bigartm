@@ -10,6 +10,8 @@
 
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "boost/uuid/uuid_generators.hpp"
 #include "boost/thread.hpp"
 
@@ -74,7 +76,15 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
   instance_->DisposeRegularizer(name);
 }
 
-void MasterComponent::CreateOrReconfigureDictionary(const DictionaryData& data) {
+void MasterComponent::CreateOrReconfigureDictionaryImpl(const DictionaryData& data) {
+  instance_->CreateOrReconfigureDictionaryImpl(data);
+}
+
+void MasterComponent::DisposeDictionaryImpl(const std::string& name) {
+  instance_->DisposeDictionaryImpl(name);
+}
+
+void MasterComponent::CreateOrReconfigureDictionary(const DictionaryConfig& data) {
   instance_->CreateOrReconfigureDictionary(data);
 }
 
@@ -90,7 +100,7 @@ void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
   if (!fout.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + args.file_name()));
 
-  std::shared_ptr<Dictionary> dict_ptr = instance_->dictionary(args.dictionary_name());
+  std::shared_ptr<DictionaryImpl> dict_ptr = instance_->dictionary_impl(args.dictionary_name());
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
         args.dictionary_name() + " does not exist or has no tokens"));
@@ -143,7 +153,7 @@ void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
       fout << str.size();
       fout << str;
 
-      std::string str = token_dict_data.SerializeAsString();
+      str = token_dict_data.SerializeAsString();
       fout << str.size();
       fout << str;
     }
@@ -196,12 +206,12 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   if (token_size <= 0)
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
-  instance_->CreateOrReconfigureDictionary(*(temp_data.back().get()));
+  instance_->CreateOrReconfigureDictionaryImpl(*(temp_data.back().get()));
   temp_data.pop_back();
 
   int temp_size = temp_data.size();
   for (int i = 0; i < temp_size; ++i) {
-    instance_->dictionary(dict_name)->Append(*(temp_data.back().get()));
+    instance_->dictionary_impl(dict_name)->Append(*(temp_data.back().get()));
     temp_data.pop_back();
   }
 
@@ -346,19 +356,101 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
   instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
+
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   LOG(INFO) << "MasterComponent::InitializeModel() with " << Helpers::Describe(args);
 
-  // temp code to be removed with ModelConfig
-  if (instance_->schema()->has_model_config(args.model_name()))
-    instance_->merger()->InitializeModel(args);
+  //// temp code to be removed with ModelConfig
+  //if (instance_->schema()->has_model_config(args.model_name()))
+  //  instance_->merger()->InitializeModel(args);
 
-  
+  //for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
+  //  if (iter->second.num_items != -1) {
+  //    topic_model.add_operation_type(TopicModel_OperationType_Initialize);
+  //    topic_model.add_class_id(iter->first.class_id);
+  //    topic_model.add_token(iter->first.keyword);
+  //    topic_model.add_token_weights();
+  //  }
+  //}
+
+  //auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), topic_model.topic_name());
+  //PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm.get());
+  //PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
+  //SetPhiMatrix(args.model_name(), new_ttm);
+
+  //instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   LOG(INFO) << "MasterComponent::FilterDictionaryArgs() with " << Helpers::Describe(args);
+  
+  auto src_dictionary_ptr = instance_->dictionary_impl(args.dictionary_name());
+  if (src_dictionary_ptr == nullptr) {
+    LOG(ERROR) << "MasterComponent::FilterDictionaryArgs(): filter was requested for non-exists dictionary '"
+      << args.dictionary_name() << "', operation was aborted";
+  }
 
+  std::string dictionary_target_name = args.has_dictionary_target_name() ? args.dictionary_target_name() :
+      "dictionary_" + boost::lexical_cast<std::string>(boost::uuids::random_generator()());
+  LOG(INFO) << "The name of filtered dictionary is '" << dictionary_target_name << "'";
+
+  auto dictionary_data = std::make_shared<artm::DictionaryData>();
+  dictionary_data->set_name(dictionary_target_name);
+
+  auto& src_entries = src_dictionary_ptr->entries();
+  auto& dictionary_token_index = src_dictionary_ptr->token_index();
+  std::unordered_map<int, int> old_index_new_index;
+
+  int accepted_tokens_count = 0;
+  for (auto& entry : src_entries) {
+    if (args.has_class_id() && entry.token().class_id != args.class_id()) continue;
+
+    if (args.has_min_df() && entry.token_df() < args.min_df()) continue;
+    if (args.has_max_df() && entry.token_df() >= args.max_df()) continue;
+
+    if (args.has_min_tf() && entry.token_tf() < args.min_tf()) continue;
+    if (args.has_max_tf() && entry.token_tf() >= args.max_tf()) continue;
+
+    if (args.has_min_value() && entry.token_value() < args.min_value()) continue;
+    if (args.has_max_value() && entry.token_value() >= args.max_value()) continue;
+
+    // all filters were passed, add token to the new dictionary
+    Token token = entry.token();
+    accepted_tokens_count += 1;
+    dictionary_data->add_token(token.keyword);
+    dictionary_data->add_class_id(token.class_id);
+    dictionary_data->add_token_df(entry.token_df());
+    dictionary_data->add_token_tf(entry.token_tf());
+    dictionary_data->add_token_value(entry.token_value());
+
+    old_index_new_index.insert(std::pair<int, int>(dictionary_token_index.find(token)->second,
+                                                   accepted_tokens_count - 1));
+  }
+
+  auto cooc_dictionary_data = std::make_shared<artm::DictionaryData>();
+  auto& cooc_values = src_dictionary_ptr->cooc_values();
+
+  for (auto& iter = cooc_values.begin(); iter != cooc_values.end(); ++iter) {
+    auto& first_index_iter = old_index_new_index.find(iter->first);
+    if (first_index_iter == old_index_new_index.end()) continue;
+
+    for (auto& cooc_iter = iter->second.begin(); cooc_iter != iter->second.end(); ++cooc_iter) {
+      auto& second_index_iter = old_index_new_index.find(cooc_iter->first);
+      if (second_index_iter == old_index_new_index.end()) continue;
+
+      cooc_dictionary_data->add_cooc_first_index(first_index_iter->second);
+      cooc_dictionary_data->add_cooc_second_index(second_index_iter->second);
+      cooc_dictionary_data->add_cooc_value(cooc_iter->second);
+    }
+  }
+
+  // replace the src dictionary
+  if (args.dictionary_name() == args.dictionary_target_name())
+    instance_->DisposeDictionaryImpl(args.dictionary_name());
+
+  instance_->CreateOrReconfigureDictionaryImpl(*dictionary_data);
+  auto dict_ptr = instance_->dictionary_impl(dictionary_data->name());
+  dict_ptr->Append(*cooc_dictionary_data);
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
@@ -425,7 +517,7 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
   // create DictionaryDataMessage using token_freq_map and vocab file
   // if vocab file is given
   std::vector<Token> collection_vocab;
-  std::unordered_map<Token, int> token_to_token_id;
+  std::unordered_map<Token, int, TokenHasher> token_to_token_id;
   bool use_vocab_file = args.has_vocab_file_path();
 
   if (use_vocab_file) {
@@ -559,7 +651,7 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
   }
 
   // put dictionary into instance.dictionaries_
-  instance_->CreateOrReconfigureDictionary(*dictionary_data);
+  instance_->CreateOrReconfigureDictionaryImpl(*dictionary_data);
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
@@ -592,11 +684,6 @@ bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
   instance_->processor(0)->FindThetaMatrix(
     get_score_args.batch(), GetThetaMatrixArgs(), nullptr, get_score_args, score_data);
   return true;
-}
-
-void MasterComponent::RequestDictionary(DictionaryName dictionary_name,
-                                        ::artm::DictionaryData* dictionary_data) {
-  instance_->RequestDictionary(dictionary_name, dictionary_data);
 }
 
 void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {

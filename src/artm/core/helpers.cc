@@ -520,6 +520,10 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
     ss << "InitializeModelArgs.model_name is not defined; ";
   }
 
+  if (!message.has_dictionary_name()) {
+    ss << "InitializeModelArgs.dictionary_name is not defined; ";
+  }
+
   if (ss.str().empty())
     return true;
 
@@ -774,17 +778,13 @@ std::string Helpers::Describe(const ::artm::InitializeModelArgs& message) {
   return ss.str();
 }
 
-std::string Describe(const ::artm::FilterDictionaryArgs& message) {
+std::string Helpers::Describe(const ::artm::FilterDictionaryArgs& message) {
   std::stringstream ss;
   ss << "FilterDictionaryArgs";
   ss << ": dictionary_name=" << message.dictionary_name();
 
   if (message.has_class_id())
     ss << ", class_id=" << message.class_id();
-  if (message.has_min_percentage())
-    ss << ", min_percentage=" << message.min_percentage();
-  if (message.has_max_percentage())
-    ss << ", max_percentage=" << message.max_percentage();
   if (message.has_min_df())
     ss << ", min_df=" << message.min_df();
   if (message.has_max_df())
@@ -802,7 +802,7 @@ std::string Describe(const ::artm::FilterDictionaryArgs& message) {
   return ss.str();
 }
 
-std::string Describe(const ::artm::GatherDictionaryArgs& message) {
+std::string Helpers::Describe(const ::artm::GatherDictionaryArgs& message) {
   std::stringstream ss;
   ss << "GatherDictionaryArgs";
   ss << ": dictionary_target_name=" << message.dictionary_target_name();
