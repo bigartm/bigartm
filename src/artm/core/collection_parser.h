@@ -47,8 +47,6 @@ class CollectionParser : boost::noncopyable {
   void ParseDocwordBagOfWordsUci(TokenMap* token_map);
   void ParseVowpalWabbit();
 
-  void ParseCooccurrenceData(TokenMap* token_map);
-
   TokenMap ParseVocabBagOfWordsUci();
   TokenMap ParseVocabMatrixMarket();
 
