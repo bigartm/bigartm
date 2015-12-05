@@ -485,7 +485,7 @@ int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) 
 }
 
 int ArtmInitializeModel(int master_id, int length, const char* init_model_args) {
-  // check if given dictionary name is appear in instaance dictionaries_
+  // check if given dictionary name is appear in instance.dictionaries_
   // (e.g. was created by ArtmCreate beforehand) and use it or raise error
   try {
     artm::InitializeModelArgs args;
@@ -575,7 +575,7 @@ int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionar
   try {
     artm::GatherDictionaryArgs args;
     ParseFromArray(gather_dictionary_args, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
     master_component(master_id)->GatherDictionary(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -585,16 +585,13 @@ int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionar
   try {
     artm::FilterDictionaryArgs args;
     ParseFromArray(filter_dictionary_config, length, &args);
-    ::artm::core::Helpers::Validate(&args, /* throw_error =*/ true);
+    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
     master_component(master_id)->FilterDictionary(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
 
 int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config) {
-// it's all incorrect. This method should call artm_gather_dict, than filter
-// than put the got data into  master_component(master_id)->CreateOrReconfigureDictionary(data);
-
   try {
     artm::DictionaryConfig config;
     ParseFromArray(dictionary_config, length, &config);
@@ -604,6 +601,20 @@ int ArtmCreateDictionary(int master_id, int length, const char* dictionary_confi
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmCreateDictionaryImpl(int master_id, int length, const char* dictionary_config) {
+// it's all incorrect. This method should call artm_gather_dict, than filter
+// than put the got data into  master_component(master_id)->CreateOrReconfigureDictionary(data);
+
+  //try {
+  //  artm::DictionaryConfig config;
+  //  ParseFromArray(dictionary_config, length, &config);
+  //  ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
+  //  master_component(master_id)->CreateOrReconfigureDictionary(config);
+  //  return ARTM_SUCCESS;
+  //} CATCH_EXCEPTIONS;
+  return 0;
+}
+
 int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
   try {
     master_component(master_id)->DisposeDictionary(dictionary_name);
@@ -611,12 +622,10 @@ int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestDictionary(int master_id, const char* dictionary_name) {
+int ArtmDisposeDictionaryImpl(int master_id, const char* dictionary_name) {
   try {
-    artm::DictionaryData data;
-    master_component(master_id)->RequestDictionary(dictionary_name, &data);
-    data.SerializeToString(last_message());
-    return last_message()->size();
+    master_component(master_id)->DisposeDictionaryImpl(dictionary_name);
+    return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
 

@@ -535,14 +535,12 @@ message FilterDictionaryArgs {
   optional string dictionary_target_name = 2;
 
   optional string class_id = 3;
-  optional float min_percentage = 4;
-  optional float max_percentage = 5;
-  optional int32 min_df = 6;
-  optional int32 max_df = 7;
-  optional int32 min_tf = 8;
-  optional int32 max_tf = 9;
-  optional int32 min_value = 10;
-  optional int32 max_value = 11;
+  optional int32 min_df = 4;
+  optional int32 max_df = 5;
+  optional int32 min_tf = 6;
+  optional int32 max_tf = 7;
+  optional int32 min_value = 8;
+  optional int32 max_value = 9;
 }
 
 message GatherDictionaryArgs {

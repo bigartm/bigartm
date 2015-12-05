@@ -32,7 +32,8 @@ namespace core {
 Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
                const ::artm::core::ThreadSafeBatchCollection* batches,
-               const ::artm::core::ThreadSafeDictionaryCollection* dictionaries)
+               const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
+               const ::artm::core::ThreadSafeDictionaryImplCollection* dictionaries_impl)
     : topic_model_(),
       topic_model_inc_(),
       phi_matrix_(),
@@ -43,6 +44,7 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
       merger_queue_(merger_queue),
       batches_(batches),
       dictionaries_(dictionaries),
+      dictionaries_impl_(dictionaries_impl),
       is_stopping(false),
       thread_() {
   // Keep this at the last action in constructor.
@@ -112,8 +114,7 @@ Merger::GetPhiMatrix(ModelName model_name) const {
   return phi_matrix_.get(model_name);
 }
 
-void
-Merger::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
+void Merger::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
   this->DisposeModel(model_name);
   return phi_matrix_.set(model_name, phi_matrix);
 }
@@ -270,8 +271,8 @@ bool Merger::RequestScore(const GetScoreValueArgs& args,
 }
 
 void Merger::RequestDictionary(const DictionaryName& dictionary_name, DictionaryData* dictionary_data) const {
-  if (dictionaries_->has_key(dictionary_name)) {
-    dictionaries_->get(dictionary_name)->StoreIntoDictionaryData(dictionary_data);
+  if (dictionaries_impl_->has_key(dictionary_name)) {
+    dictionaries_impl_->get(dictionary_name)->StoreIntoDictionaryData(dictionary_data);
   } else {
     LOG(ERROR) << "Requested non-exists dictionary.";
     BOOST_THROW_EXCEPTION(InvalidOperation(
@@ -401,155 +402,36 @@ struct TokenInfo {
 
 void Merger::InitializeModel(const InitializeModelArgs& args) {
   auto schema = schema_->get();
-  const ModelConfig* model_config = nullptr;
-  if (schema->has_model_config(args.model_name()))
-    model_config = &schema->model_config(args.model_name());
+  const ModelConfig* model_config = &schema->model_config(args.model_name());
 
   artm::TopicModel topic_model;
-  topic_model.mutable_topic_name()->CopyFrom(
-    (model_config != nullptr) ? model_config->topic_name() : args.topic_name());
+  topic_model.mutable_topic_name()->CopyFrom(model_config->topic_name());
   topic_model.set_topics_count(topic_model.topic_name_size());
 
-  if (args.source_type() == InitializeModelArgs_SourceType_Dictionary) {
-    std::shared_ptr<Dictionary> dict = dictionaries_->get(args.dictionary_name());
-    if (dict == nullptr) {
-      std::stringstream ss;
-      ss << "Dictionary " << args.dictionary_name() << " does not exist";
-      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-    }
-
-    LOG(INFO) << "InitializeModel() with "
-      << topic_model.topic_name_size() << " topics and "
-      << dict->size() << " tokens";
-
-    for (int index = 0; index < dict->size(); ++index) {
-      ClassId class_id = dict->entry(index)->has_class_id() ? dict->entry(index)->class_id() : DefaultClass;
-      topic_model.add_operation_type(TopicModel_OperationType_Initialize);
-      topic_model.add_class_id(class_id);
-      topic_model.add_token(dict->entry(index)->key_token());
-      topic_model.add_token_weights();
-    }
-  } else if (args.source_type() == InitializeModelArgs_SourceType_Batches) {
-    std::unordered_map<Token, TokenInfo, TokenHasher> token_freq_map;
-    size_t total_items_count = 0;
-    float total_token_weight = 0.0f;
-    std::vector<std::string> batches;
-    if (args.has_disk_path()) {
-      batches = BatchHelpers::ListAllBatches(args.disk_path());
-      LOG(INFO) << "Found " << batches.size() << " batches in '" << args.disk_path() << "' folder";
-    } else {
-      for (auto& batch : args.batch_filename())
-        batches.push_back(batch);
-    }
-
-    for (const std::string& batch_file : batches) {
-      std::shared_ptr<Batch> batch_ptr = batches_->get(batch_file);
-      if (batch_ptr == nullptr) {
-        try {
-          batch_ptr = std::make_shared<Batch>();
-          ::artm::core::BatchHelpers::LoadMessage(batch_file, batch_ptr.get());
-        }
-        catch (std::exception& ex) {
-          LOG(ERROR) << ex.what() << ", the batch will be skipped.";
-          continue;
-        }
-      }
-
-      const Batch& batch = *batch_ptr;
-
-      std::vector<float> token_weight_in_item(batch.token_size(), 0);
-      for (int item_id = 0; item_id < batch.item_size(); ++item_id) {
-        total_items_count++;
-
-        // Find cumulative weight for each token in item
-        // (assume that token might have multiple occurence in each item)
-        for (const Field& field : batch.item(item_id).field()) {
-          for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
-            const float token_weight = field.token_weight(token_index);
-            const int token_id = field.token_id(token_index);
-            token_weight_in_item[token_id] += token_weight;
-            total_token_weight += token_weight;
-          }
-        }
-
-        for (const Field& field : batch.item(item_id).field()) {
-          for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
-            const int token_id = field.token_id(token_index);
-            const float token_weight = token_weight_in_item[token_id];
-            if (token_weight == 0)  //  The token already had been processed -- see line (*) below
-              continue;
-
-            Token token(batch.class_id(token_id), batch.token(token_id));
-            TokenInfo& token_info = token_freq_map[token];
-            token_info.num_items++;
-            token_info.num_total_count += token_weight;
-            if (token_info.max_one_item_weight < token_weight)
-              token_info.max_one_item_weight = token_weight;
-
-            token_weight_in_item[token_id] = 0;  // (*) Makes sure each token is processed only once per item
-          }
-        }
-      }
-    }
-
-    LOG(INFO) << "Find "
-      << token_freq_map.size() << " unique tokens in "
-      << total_items_count << " items, average token frequency is "
-      << std::fixed << std::setw(4) << std::setprecision(5)
-      << static_cast<double>(total_token_weight) / total_items_count << ".";
-
-    for (auto& filter : args.filter()) {
-      int max_freq = INT_MAX, min_freq = -1;
-      int min_total_count = -1;
-      float min_one_item_weight = -1;
-      if (filter.has_max_percentage()) max_freq = total_items_count * filter.max_percentage();
-      if (filter.has_min_percentage()) min_freq = total_items_count * filter.min_percentage();
-      if (filter.has_max_items() && (max_freq > filter.max_items())) max_freq = filter.max_items();
-      if (filter.has_min_items() && (min_freq < filter.min_items())) min_freq = filter.min_items();
-      if (filter.has_min_total_count()) min_total_count = filter.min_total_count();
-      if (filter.has_min_one_item_count()) min_one_item_weight = filter.min_one_item_count();
-
-      for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
-        if (filter.has_class_id() && iter->first.class_id != filter.class_id())
-          continue;
-        if (iter->second.num_items > max_freq) iter->second.num_items = -1;
-        if (iter->second.num_items < min_freq) iter->second.num_items = -1;
-        if (iter->second.max_one_item_weight < min_one_item_weight) iter->second.num_items = -1;
-        if (iter->second.num_total_count < min_total_count) iter->second.num_items = -1;
-      }
-    }
-
-    size_t unique_tokens_left = 0;
-    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
-      if (iter->second.num_items != -1) unique_tokens_left++;
-    }
-    LOG(INFO) << "All filters applied, " << unique_tokens_left << " unique tokens left.";
-
-    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
-      if (iter->second.num_items != -1) {
-        topic_model.add_operation_type(TopicModel_OperationType_Initialize);
-        topic_model.add_class_id(iter->first.class_id);
-        topic_model.add_token(iter->first.keyword);
-        topic_model.add_token_weights();
-      }
-    }
-  } else {
-    BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
-      "InitializeModelArgs.source_type", args.source_type()));
+  std::shared_ptr<Dictionary> dict = dictionaries_->get(args.dictionary_name());
+  if (dict == nullptr) {
+    std::stringstream ss;
+    ss << "Dictionary " << args.dictionary_name() << " does not exist";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  if (model_config != nullptr) {
-    auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
-    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
+  LOG(INFO) << "InitializeModel() with "
+    << topic_model.topic_name_size() << " topics and "
+    << dict->size() << " tokens";
 
-    new_ttm->CalcPwt();   // calculate pwt matrix
-    topic_model_.set(args.model_name(), new_ttm);
-  } else {
-    auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), topic_model.topic_name());
-    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm.get());
-    PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
-    SetPhiMatrix(args.model_name(), new_ttm);
+  for (int index = 0; index < dict->size(); ++index) {
+    ClassId class_id = dict->entry(index)->class_id();
+    topic_model.add_operation_type(TopicModel_OperationType_Initialize);
+    topic_model.add_class_id(class_id);
+    topic_model.add_token(dict->entry(index)->key_token());
+    topic_model.add_token_weights();
   }
+
+  auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
+  PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
+  
+  new_ttm->CalcPwt();   // calculate pwt matrix
+  topic_model_.set(args.model_name(), new_ttm);
 }
 
 }  // namespace core

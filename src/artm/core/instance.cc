@@ -71,6 +71,7 @@ Instance::Instance(const MasterComponentConfig& config)
     : is_configured_(false),
       schema_(std::make_shared<InstanceSchema>(config)),
       dictionaries_(),
+      dictionaries_impl_(),
       batches_(),
       processor_queue_(),
       merger_queue_(),
@@ -86,6 +87,7 @@ Instance::Instance(const Instance& rhs)
     : is_configured_(false),
       schema_(rhs.schema()->Duplicate()),
       dictionaries_(),
+      dictionaries_impl_(),
       batches_(),
       processor_queue_(),
       merger_queue_(),
@@ -103,6 +105,13 @@ Instance::Instance(const Instance& rhs)
       dictionaries_.set(key, value->Duplicate());
   }
 
+  std::vector<std::string> dict_name_impl = rhs.dictionaries_.keys();
+  for (auto& key : dict_name_impl) {
+    std::shared_ptr<DictionaryImpl> value_impl = rhs.dictionaries_impl_.get(key);
+    if (value_impl != nullptr)
+      dictionaries_impl_.set(key, value_impl->Duplicate());
+  }
+
   std::vector<std::string> batch_name = rhs.batches_.keys();
   for (auto& key : batch_name) {
     std::shared_ptr<Batch> value = rhs.batches_.get(key);
@@ -118,7 +127,7 @@ Instance::Instance(const Instance& rhs)
   }
 }
 
-Instance::~Instance() {}
+Instance::~Instance() { }
 
 std::shared_ptr<Instance> Instance::Duplicate() const {
   return std::shared_ptr<Instance>(new Instance(*this));
@@ -128,6 +137,7 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
   schema_.get()->RequestMasterComponentInfo(master_info);
   cache_manager_->RequestMasterComponentInfo(master_info);
 
+  // ToDo: (MelLain) replace this logic when DictionaryImpl -> Dictionary
   for (auto& name : dictionaries_.keys()) {
     std::shared_ptr<Dictionary> dict = dictionaries_.get(name);
     if (dict == nullptr)
@@ -286,6 +296,7 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
         "RegularizerConfig.type", regularizer_type));
   }
 
+  // ToDo: (MelLain) replace with DictionaryImpl
   regularizer->set_dictionaries(&dictionaries_);
   auto new_schema = schema_.get_copy();
   new_schema->set_regularizer(regularizer_name, regularizer);
@@ -362,6 +373,7 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("ScoreConfig.type", score_type));
   }
+  // ToDo: (MelLain) replace with DictionaryImpl
   score_calculator->set_dictionaries(&dictionaries_);
   return score_calculator;
 }
@@ -372,17 +384,30 @@ void Instance::DisposeRegularizer(const std::string& name) {
   schema_.set(new_schema);
 }
 
-void Instance::CreateOrReconfigureDictionary(const DictionaryData& data) {
-  auto dictionary = std::make_shared<Dictionary>(Dictionary(data));
-  dictionaries_.set(data.name(), dictionary);
+void Instance::CreateOrReconfigureDictionaryImpl(const DictionaryData& data) {
+  auto dictionary = std::make_shared<DictionaryImpl>(DictionaryImpl(data));
+  dictionaries_impl_.set(data.name(), dictionary);
+}
+
+void Instance::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
+  auto dictionary = std::make_shared<Dictionary>(Dictionary(config));
+  dictionaries_.set(config.name(), dictionary);
 }
 
 void Instance::DisposeDictionary(const std::string& name) {
   dictionaries_.erase(name);
 }
 
+void Instance::DisposeDictionaryImpl(const std::string& name) {
+  dictionaries_impl_.erase(name);
+}
+
 std::shared_ptr<Dictionary> Instance::dictionary(const std::string& name) {
   return dictionaries_.has_key(name) ? dictionaries_.get(name) : nullptr;
+}
+
+std::shared_ptr<DictionaryImpl> Instance::dictionary_impl(const std::string& name) {
+  return dictionaries_impl_.has_key(name) ? dictionaries_impl_.get(name) : nullptr;
 }
 
 void Instance::Reconfigure(const MasterComponentConfig& master_config) {
@@ -407,7 +432,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     cache_manager_.reset(new CacheManager());
     batch_manager_.reset(new BatchManager());
     data_loader_.reset(new DataLoader(this));
-    merger_.reset(new Merger(&merger_queue_, &schema_, &batches_, &dictionaries_));
+    merger_.reset(new Merger(&merger_queue_, &schema_, &batches_, &dictionaries_, &dictionaries_impl_));
 
     is_configured_  = true;
   }
