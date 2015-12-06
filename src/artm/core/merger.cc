@@ -402,11 +402,14 @@ struct TokenInfo {
 
 void Merger::InitializeModel(const InitializeModelArgs& args) {
   auto schema = schema_->get();
-  const ModelConfig* model_config = &schema->model_config(args.model_name());
+  const ModelConfig* model_config = nullptr;
+  if (schema->has_model_config(args.model_name()))
+    model_config = &schema->model_config(args.model_name());
 
   artm::TopicModel topic_model;
   topic_model.set_seed(args.seed());
-  topic_model.mutable_topic_name()->CopyFrom(model_config->topic_name());
+  topic_model.mutable_topic_name()->CopyFrom(
+    (model_config != nullptr) ? model_config->topic_name() : args.topic_name());
   topic_model.set_topics_count(topic_model.topic_name_size());
 
   std::shared_ptr<Dictionary> dict = dictionaries_->get(args.dictionary_name());
@@ -421,18 +424,25 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     << dict->size() << " tokens";
 
   for (int index = 0; index < dict->size(); ++index) {
-    ClassId class_id = dict->entry(index)->class_id();
+    ClassId class_id = dict->entry(index)->has_class_id() ? dict->entry(index)->class_id() : DefaultClass;
     topic_model.add_operation_type(TopicModel_OperationType_Initialize);
     topic_model.add_class_id(class_id);
     topic_model.add_token(dict->entry(index)->key_token());
     topic_model.add_token_weights();
   }
 
-  auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
-  PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
-  
-  new_ttm->CalcPwt();   // calculate pwt matrix
-  topic_model_.set(args.model_name(), new_ttm);
+  if (model_config != nullptr) {
+    auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
+    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
+
+    new_ttm->CalcPwt();   // calculate pwt matrix
+    topic_model_.set(args.model_name(), new_ttm);
+  } else {
+    auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), topic_model.topic_name());
+    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm.get());
+    PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
+    SetPhiMatrix(args.model_name(), new_ttm);
+  }
 }
 
 }  // namespace core

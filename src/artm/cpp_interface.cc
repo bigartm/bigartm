@@ -520,6 +520,18 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   HandleErrorCode(ArtmImportDictionary(id_, blob.size(), blob.c_str()));
 }
 
+void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmGatherDictionary(id_, blob.size(), blob.c_str()));
+}
+
+void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmFilterDictionary(id_, blob.size(), blob.c_str()));
+}
+
 std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);

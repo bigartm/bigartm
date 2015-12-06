@@ -632,8 +632,8 @@ class BatchVectorizer {
       collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
       if (!options_.read_uci_vocab.empty())
         collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
-      if (!options_.save_dictionary.empty())
-        collection_parser_config.set_dictionary_file_name(options_.save_dictionary);
+      //if (!options_.save_dictionary.empty())
+      //  collection_parser_config.set_dictionary_file_name(options_.save_dictionary);
       collection_parser_config.set_target_folder(batch_folder_);
       collection_parser_config.set_num_items_per_batch(options_.batch_size);
       ::artm::ParseCollection(collection_parser_config);
@@ -1006,36 +1006,9 @@ int execute(const artm_options& options) {
     initialize_model_args.set_model_name(pwt_model_name);
     for (auto& topic_name : topic_names)
       initialize_model_args.add_topic_name(topic_name);
-    if (initialize_from_dictionary) {
-      ProgressScope scope(std::string("Initializing random model from dictionary ") + options.use_dictionary);
-      initialize_model_args.set_dictionary_name(dictionary_name);
-      initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Dictionary);
-    }
-    else {
-      bool fraction;
-      double value;
-      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
-        ::artm::InitializeModelArgs_Filter* filter = initialize_model_args.add_filter();
-        if (fraction) filter->set_min_percentage(value);
-        else filter->set_min_items(value);
-      } else {
-        if (!options.dictionary_min_df.empty())
-          std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
-      }
-      if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
-        ::artm::InitializeModelArgs_Filter* filter = initialize_model_args.add_filter();
-        if (fraction) filter->set_max_percentage(value);
-        else filter->set_max_items(value);
-      }
-      else {
-        if (!options.dictionary_max_df.empty())
-          std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
-      }
 
-      ProgressScope scope(std::string("Initializing random model from batches in folder ") + batch_vectorizer.batch_folder());
-      initialize_model_args.set_disk_path(batch_vectorizer.batch_folder());
-      initialize_model_args.set_source_type(InitializeModelArgs_SourceType_Batches);
-    }
+    ProgressScope scope(std::string("Initializing random model from dictionary ") + options.use_dictionary);
+    initialize_model_args.set_dictionary_name(dictionary_name);
     master_component->InitializeModel(initialize_model_args);
   }
   else {

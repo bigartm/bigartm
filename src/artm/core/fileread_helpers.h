@@ -3,6 +3,8 @@
 #ifndef SRC_ARTM_CORE_FILEREAD_HELPERS_H_
 #define SRC_ARTM_CORE_FILEREAD_HELPERS_H_
 
+#include <string>
+
 #include "boost/iostreams/device/mapped_file.hpp"
 #include "boost/iostreams/stream.hpp"
 

@@ -31,15 +31,24 @@ def test_func():
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
                                  'docword_file_path': os.path.join(os.getcwd(), docword),
                                  'vocab_file_path': os.path.join(os.getcwd(), vocab),
-                                 'target_folder': batches_folder,
-                                 'dictionary_file_name': dictionary_name})
+                                 'target_folder': batches_folder})
 
         # Create master component and scores
         scores = [('ThetaSnippet', messages.ThetaSnippetScoreConfig())]
         master = mc.MasterComponent(lib, scores=scores)
 
+        # Create collection dictionary and import it
+        args = messages.GatherDictionaryArgs()
+        args.dictionary_target_name = dictionary_name
+        args.data_path = batches_folder
+        args.vocab_file_path = os.path.join(os.getcwd(), vocab)
+        lib.ArtmGatherDictionary(master.master_id, args)
+
         # Initialize model
-        master.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)
+        master.initialize_model(model_name=pwt,
+                                num_topics=num_topics,
+                                disk_path=batches_folder,
+                                dictionary_name=dictionary_name)
 
         # Attach Pwt matrix
         topic_model, numpy_matrix = master.attach_model(pwt)
@@ -52,7 +61,7 @@ def test_func():
 
         theta_snippet_score = master.retrieve_score(pwt, 'ThetaSnippet')
 
-        print 'Option 1. ThetaSnippetScore.'
+        print 'ThetaSnippetScore.'
          # Note that 5th topic is fully zero; this is because we performed "numpy_matrix[:, 4] = 0".
         snippet_tuples = zip(theta_snippet_score.values, theta_snippet_score.item_id)
         print_string = ''

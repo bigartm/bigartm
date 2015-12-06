@@ -146,6 +146,8 @@ class MasterComponent {
   void DisposeBatches(const DisposeBatchesArgs &args);
 
   void ImportDictionary(const ImportDictionaryArgs& args);
+  void GatherDictionary(const GatherDictionaryArgs& args);
+  void FilterDictionary(const FilterDictionaryArgs& args);
 
   void Reconfigure(const MasterComponentConfig& config);
   bool AddBatch(const Batch& batch);

@@ -15,9 +15,8 @@ DictionaryImpl::DictionaryImpl(const artm::DictionaryData& data) {
       ClassId class_id = data.class_id_size() ? data.class_id(index) : DefaultClass;
       entries_.push_back(DictionaryEntryImpl(Token(class_id, data.token(index)),
         data.token_value(index), data.token_tf(index), data.token_df(index)));
-    
+
       token_index_.insert(std::make_pair(entries_[index].token(), index));
-      index_token_.insert(std::make_pair(index, entries_[index].token()));
     }
   } else {
     LOG(ERROR) << "Can't create Dictionary using the cooc part of DictionaryData";
@@ -129,7 +128,6 @@ Dictionary::Dictionary(const artm::DictionaryConfig& config) {
     if (entry.has_class_id()) class_id = entry.class_id();
     else                      class_id = DefaultClass;
     token_index_.insert(std::make_pair(Token(class_id, entry.key_token()), index));
-    index_token_.insert(std::make_pair(index, Token(class_id, entry.key_token())));
     entries_.push_back(entry);
   }
 
@@ -179,20 +177,6 @@ int Dictionary::cooc_size(const Token& token) const {
   if (cooc_map_iter == cooc_values_.end()) return 0;
 
   return cooc_map_iter->second.size();
-}
-
-const Token* Dictionary::cooc_token(const Token& token, int index) const {
-  auto index_iter = token_index_.find(token);
-  if (index_iter == token_index_.end()) return nullptr;
-
-  auto cooc_map_iter = cooc_values_.find(index_iter->second);
-  if (cooc_map_iter == cooc_values_.end()) return nullptr;
-
-  int internal_index = -1;
-  for (auto iter = cooc_map_iter->second.begin(); iter != cooc_map_iter->second.end(); ++iter)
-    if (++internal_index == index) return &index_token_.find(iter->first)->second;
-
-  return nullptr;
 }
 
 float Dictionary::cooc_value(const Token& token, int index) const {
