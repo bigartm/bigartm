@@ -585,7 +585,7 @@ int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionar
   try {
     artm::FilterDictionaryArgs args;
     ParseFromArray(filter_dictionary_config, length, &args);
-    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
     master_component(master_id)->FilterDictionary(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -601,29 +601,9 @@ int ArtmCreateDictionary(int master_id, int length, const char* dictionary_confi
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCreateDictionaryImpl(int master_id, int length, const char* dictionary_config) {
-// it's all incorrect. This method should call artm_gather_dict, than filter
-// than put the got data into  master_component(master_id)->CreateOrReconfigureDictionary(data);
-
-  //try {
-  //  artm::DictionaryConfig config;
-  //  ParseFromArray(dictionary_config, length, &config);
-  //  ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-  //  master_component(master_id)->CreateOrReconfigureDictionary(config);
-  //  return ARTM_SUCCESS;
-  //} CATCH_EXCEPTIONS;
-  return 0;
-}
-
 int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
   try {
     master_component(master_id)->DisposeDictionary(dictionary_name);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmDisposeDictionaryImpl(int master_id, const char* dictionary_name) {
-  try {
     master_component(master_id)->DisposeDictionaryImpl(dictionary_name);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;

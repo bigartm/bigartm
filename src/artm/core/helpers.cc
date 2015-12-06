@@ -538,11 +538,19 @@ bool Helpers::FixAndValidate(::artm::InitializeModelArgs* message, bool throw_er
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::FilterDictionaryArgs* message) {
+  if (!message->has_class_id())
+    message->set_class_id(DefaultClass);
+}
+
 bool Helpers::Validate(const ::artm::FilterDictionaryArgs& message, bool throw_error) {
   std::stringstream ss;
 
   if (!message.has_dictionary_name())
     ss << "FilterDictionaryArgs has no dictionary name; ";
+
+  if (!message.has_class_id())
+    ss << "FilterDictionaryArgs has no class_id; ";
 
   if (ss.str().empty())
     return true;
@@ -551,6 +559,11 @@ bool Helpers::Validate(const ::artm::FilterDictionaryArgs& message, bool throw_e
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
+}
+
+bool Helpers::FixAndValidate(::artm::FilterDictionaryArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
 }
 
 bool Helpers::Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error) {

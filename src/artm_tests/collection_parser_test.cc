@@ -84,7 +84,7 @@ TEST(CollectionParser, MatrixMarket) {
     if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
-      ASSERT_TRUE(batch->item_size() == 9);
+      ASSERT_EQ(batch->item_size(), 9);
     }
     ++it;
   }
@@ -117,7 +117,7 @@ TEST(CollectionParser, Multiclass) {
       ASSERT_EQ(batch->class_id(0), "class1");
       ASSERT_EQ(batch->class_id(1), "class1");
       ASSERT_EQ(batch->class_id(2), "@default_class");
-      ASSERT_TRUE(batch->item_size() == 2);
+      ASSERT_EQ(batch->item_size(), 2);
     }
     ++it;
   }
@@ -155,7 +155,7 @@ TEST(CollectionParser, VowpalWabbit) {
         if (batch->token(i) == "noname" || batch->token(i) == "alex")
           ASSERT_EQ(batch->class_id(i), "author");
       }
-      ASSERT_TRUE(batch->item_size() == 1);
+      ASSERT_EQ(batch->item_size(), 1);
     }
     ++it;
   }

@@ -16,10 +16,10 @@ namespace artm {
 namespace core {
 
 class DictionaryEntryImpl {
- public: 
+ public:
   DictionaryEntryImpl(Token token, float value, float tf, float df)
     : token_(token), token_value_(value), token_tf_(tf), token_df_(df) { }
-  
+
   const Token& token() const { return token_; }
   float token_value() const { return token_value_; }
   float token_tf() const { return token_tf_; }
@@ -37,7 +37,7 @@ class DictionaryImpl {
   explicit DictionaryImpl(const artm::DictionaryData& data);
   DictionaryImpl() { }
 
-  void Append (const DictionaryData& dict);
+  void Append(const DictionaryData& dict);
 
   std::shared_ptr<DictionaryImpl> Duplicate() const;
     // Note: the data should be allocated, and the whole dictionary will be put
@@ -51,7 +51,6 @@ class DictionaryImpl {
   const DictionaryEntryImpl* entry(const Token& token) const;
   const DictionaryEntryImpl* entry(int index) const;
   inline int size() const { return entries_.size(); }
-  inline const std::unordered_map<int, Token>& index_token() const { return index_token_; }
   inline const std::unordered_map<Token, int, TokenHasher>& token_index() const { return token_index_; }
   inline const std::vector<DictionaryEntryImpl>& entries() const { return entries_; }
   inline const std::unordered_map<int, std::unordered_map<int, float> >& cooc_values() const { return cooc_values_; }
@@ -61,7 +60,6 @@ class DictionaryImpl {
  private:
   std::vector<DictionaryEntryImpl> entries_;
   std::unordered_map<Token, int, TokenHasher> token_index_;
-  std::unordered_map<int, Token> index_token_;
   std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
 };
 
@@ -74,7 +72,6 @@ class Dictionary {
 
   inline int total_items_count() const { return total_items_count_; }
   int cooc_size(const Token& token) const;
-  const Token* cooc_token(const Token& token, int index) const;
 
   // cooc_value() methods return 0, if there're no such tokens
   float cooc_value(const Token& token, int index) const;
@@ -86,7 +83,7 @@ class Dictionary {
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;
   inline int size() const { return entries_.size(); }
-  inline const std::unordered_map<int, Token>& index_token() const { return index_token_; }
+  inline const std::vector<DictionaryEntry>& entries() const { return entries_; }
 
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
 
@@ -94,7 +91,6 @@ class Dictionary {
   int total_items_count_;
   std::vector<DictionaryEntry> entries_;
   std::unordered_map<Token, int, TokenHasher> token_index_;
-  std::unordered_map<int, Token> index_token_;
   std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
 };
 

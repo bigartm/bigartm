@@ -7,11 +7,12 @@
 #include <vector>
 #include <set>
 #include <sstream>
+#include <utility>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "boost/lexical_cast.hpp"
+#include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 #include "boost/thread.hpp"
 
@@ -108,7 +109,7 @@ void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
   LOG(INFO) << "Exporting dictionary " << args.dictionary_name() << " to " << args.file_name();
 
   const int token_size = dict_ptr->size();
-  
+
   // ToDo: MelLain
   // Add ability to save and load several token_dict_data
   // int tokens_per_chunk = std::min<int>(token_size, 3e+7);
@@ -131,7 +132,7 @@ void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
 
     auto cooc_info = dict_ptr->cooc_info(entry->token());
 
-    for (auto& iter = cooc_info->begin(); iter != cooc_info->end(); ++iter) {
+    for (auto iter = cooc_info->begin(); iter != cooc_info->end(); ++iter) {
       cooc_dict_data.add_cooc_first_index(token_id);
       cooc_dict_data.add_cooc_second_index(iter->first);
       cooc_dict_data.add_cooc_value(iter->second);
@@ -178,7 +179,7 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
     BOOST_THROW_EXCEPTION(DiskReadException(ss.str()));
   }
 
-  std::vector<std::shared_ptr<::artm::DictionaryData> > temp_data;
+  std::vector<std::shared_ptr<artm::DictionaryData> > temp_data;
   while (!fin.eof()) {
     int length;
     fin >> length;
@@ -194,7 +195,7 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
     if (!dict_data.ParseFromArray(buffer.c_str(), length))
       BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
-    temp_data.push_back(std::make_shared<::artm::DictionaryData>(dict_data));
+    temp_data.push_back(std::make_shared<artm::DictionaryData>(dict_data));
   }
 
   fin.close();
@@ -360,30 +361,16 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   LOG(INFO) << "MasterComponent::InitializeModel() with " << Helpers::Describe(args);
 
-  //// temp code to be removed with ModelConfig
-  //if (instance_->schema()->has_model_config(args.model_name()))
-  //  instance_->merger()->InitializeModel(args);
+  // temp code to be removed with ModelConfig and old dictionaries
+  instance_->merger()->InitializeModel(args);
 
-  //for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter) {
-  //  if (iter->second.num_items != -1) {
-  //    topic_model.add_operation_type(TopicModel_OperationType_Initialize);
-  //    topic_model.add_class_id(iter->first.class_id);
-  //    topic_model.add_token(iter->first.keyword);
-  //    topic_model.add_token_weights();
-  //  }
-  //}
-
-  //auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), topic_model.topic_name());
-  //PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm.get());
-  //PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
-  //SetPhiMatrix(args.model_name(), new_ttm);
-
-  //instance_->merger()->SetPhiMatrix(model_name, attached);
+  // ToDo: (MelLain) implement the initialization of new-style models with new-style dicts
+  // instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   LOG(INFO) << "MasterComponent::FilterDictionaryArgs() with " << Helpers::Describe(args);
-  
+
   auto src_dictionary_ptr = instance_->dictionary_impl(args.dictionary_name());
   if (src_dictionary_ptr == nullptr) {
     LOG(ERROR) << "MasterComponent::FilterDictionaryArgs(): filter was requested for non-exists dictionary '"
@@ -430,12 +417,12 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   auto cooc_dictionary_data = std::make_shared<artm::DictionaryData>();
   auto& cooc_values = src_dictionary_ptr->cooc_values();
 
-  for (auto& iter = cooc_values.begin(); iter != cooc_values.end(); ++iter) {
-    auto& first_index_iter = old_index_new_index.find(iter->first);
+  for (auto iter = cooc_values.begin(); iter != cooc_values.end(); ++iter) {
+    auto first_index_iter = old_index_new_index.find(iter->first);
     if (first_index_iter == old_index_new_index.end()) continue;
 
-    for (auto& cooc_iter = iter->second.begin(); cooc_iter != iter->second.end(); ++cooc_iter) {
-      auto& second_index_iter = old_index_new_index.find(cooc_iter->first);
+    for (auto cooc_iter = iter->second.begin(); cooc_iter != iter->second.end(); ++cooc_iter) {
+      auto second_index_iter = old_index_new_index.find(cooc_iter->first);
       if (second_index_iter == old_index_new_index.end()) continue;
 
       cooc_dictionary_data->add_cooc_first_index(first_index_iter->second);
@@ -444,13 +431,36 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
     }
   }
 
-  // replace the src dictionary
   if (args.dictionary_name() == args.dictionary_target_name())
-    instance_->DisposeDictionaryImpl(args.dictionary_name());
+    instance_->DisposeDictionaryImpl(args.dictionary_name());  // replace the src dictionary
 
   instance_->CreateOrReconfigureDictionaryImpl(*dictionary_data);
   auto dict_ptr = instance_->dictionary_impl(dictionary_data->name());
-  dict_ptr->Append(*cooc_dictionary_data);
+  if (cooc_dictionary_data->cooc_first_index_size() > 0)
+    dict_ptr->Append(*cooc_dictionary_data);
+
+  // temp code to craft the old-style dictionary based on new-style one
+  auto dictionary_config = std::make_shared<artm::DictionaryConfig>();
+  dictionary_config->set_name(args.dictionary_target_name());
+
+  for (int i = 0; i < dictionary_data->token_size(); ++i) {
+    auto entry = dictionary_config->add_entry();
+    entry->set_key_token(dictionary_data->token(i));
+    entry->set_class_id(dictionary_data->class_id(i));
+  }
+
+  dictionary_config->clear_cooc_entries();
+  auto cooc_entries = dictionary_config->mutable_cooc_entries();
+  for (int i = 0; i < cooc_dictionary_data->cooc_first_index_size(); ++i) {
+    cooc_entries->add_first_index(cooc_dictionary_data->cooc_first_index(i));
+    cooc_entries->add_second_index(cooc_dictionary_data->cooc_second_index(i));
+    cooc_entries->add_value(cooc_dictionary_data->cooc_value(i));
+  }
+
+  if (args.dictionary_name() == args.dictionary_target_name())
+    instance_->DisposeDictionary(args.dictionary_name());  // replace the src dictionary
+
+  instance_->CreateOrReconfigureDictionary(*dictionary_config);
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
@@ -508,7 +518,7 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
     }
   }
 
-  for (auto& iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
+  for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
     iter->second.token_value = static_cast<float>(iter->second.token_tf / sum_w_tf);
 
   LOG(INFO) << "Find " << token_freq_map.size()
@@ -571,7 +581,7 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
 
   if (!use_vocab_file) {  // fill dictionary in map order
     collection_vocab.clear();
-    for (auto& iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
+    for (auto iter = token_freq_map.begin(); iter != token_freq_map.end(); ++iter)
       collection_vocab.push_back(iter->first);
   }
 
@@ -587,6 +597,8 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
   }
 
   // parse the cooc info and append it to DictionaryData
+  auto cooc_dictionary_data = std::make_shared<artm::DictionaryData>();
+
   if (args.has_cooc_file_path()) {
     try {
       ifstream_or_cin stream_or_cin(args.cooc_file_path());
@@ -631,27 +643,49 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
         int second_index = std::stoi(strs[1]);
         float value = std::stof(strs[2]);
 
-        dictionary_data->add_cooc_first_index(first_index);
-        dictionary_data->add_cooc_second_index(second_index);
-        dictionary_data->add_cooc_value(value);
+        cooc_dictionary_data->add_cooc_first_index(first_index);
+        cooc_dictionary_data->add_cooc_second_index(second_index);
+        cooc_dictionary_data->add_cooc_value(value);
 
         if (args.symmetric_cooc_values()) {
-          dictionary_data->add_cooc_first_index(second_index);
-          dictionary_data->add_cooc_second_index(first_index);
-          dictionary_data->add_cooc_value(value);
+          cooc_dictionary_data->add_cooc_first_index(second_index);
+          cooc_dictionary_data->add_cooc_second_index(first_index);
+          cooc_dictionary_data->add_cooc_value(value);
         }
       }
-
     } catch(std::exception& ex) {
-      dictionary_data->clear_cooc_first_index();
-      dictionary_data->clear_cooc_second_index();
-      dictionary_data->clear_cooc_value();
+      cooc_dictionary_data->clear_cooc_first_index();
+      cooc_dictionary_data->clear_cooc_second_index();
+      cooc_dictionary_data->clear_cooc_value();
       LOG(ERROR) << ex.what() << ", dictionary will be gathered without cooc info";
     }
   }
 
   // put dictionary into instance.dictionaries_
   instance_->CreateOrReconfigureDictionaryImpl(*dictionary_data);
+  if (cooc_dictionary_data->cooc_first_index_size() > 0)
+    instance_->dictionary_impl(dictionary_data->name())->Append(*cooc_dictionary_data);
+
+  // temp code to craft the old-style dictionary based on new-style one
+  auto dictionary_config = std::make_shared<artm::DictionaryConfig>();
+  dictionary_config->set_name(args.dictionary_target_name());
+
+  for (int i = 0; i < dictionary_data->token_size(); ++i) {
+    auto entry = dictionary_config->add_entry();
+    entry->set_key_token(dictionary_data->token(i));
+    entry->set_class_id(dictionary_data->class_id(i));
+    entry->set_value(dictionary_data->token_value(i));
+  }
+
+  dictionary_config->clear_cooc_entries();
+  auto cooc_entries = dictionary_config->mutable_cooc_entries();
+  for (int i = 0; i < cooc_dictionary_data->cooc_first_index_size(); ++i) {
+    cooc_entries->add_first_index(cooc_dictionary_data->cooc_first_index(i));
+    cooc_entries->add_second_index(cooc_dictionary_data->cooc_second_index(i));
+    cooc_entries->add_value(cooc_dictionary_data->cooc_value(i));
+  }
+
+  instance_->CreateOrReconfigureDictionary(*dictionary_config);
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
