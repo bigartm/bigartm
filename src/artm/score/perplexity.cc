@@ -109,6 +109,7 @@ void Perplexity::AppendScore(
     }
   }
 
+  bool do_log_unigram_collection_failure = true;
   for (auto& field : item.field()) {
     for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
       double sum = 0.0;
@@ -143,10 +144,12 @@ void Perplexity::AppendScore(
             failed = false;
           }
           if (failed) {
-            LOG(INFO) << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
+            LOG_IF(INFO, do_log_unigram_collection_failure)
+                      << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
                       << ". Verify that the token exists in the dictionary and contains DictionaryEntry.value field. "
                       << "Document unigram model will be used for this token.";
             sum = token_weight / n_d;
+            do_log_unigram_collection_failure = false;
           }
         }
         zero_words++;
