@@ -271,6 +271,7 @@ class PerplexityScore(BaseScore):
                  dictionary_name=None, use_unigram_document_model=None):
         BaseScore.__init__(self,
                            name=name,
+                           class_id=None,
                            topic_names=topic_names)
 
         self._eps = GLOB_EPS
