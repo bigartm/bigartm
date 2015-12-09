@@ -177,6 +177,10 @@ class ARTM(object):
             self._phi_synchronization = self._synchronizations_processed
         return self._phi_cached
 
+    @property
+    def info(self):
+        return self.master.get_info()
+
     # ========== SETTERS ==========
     @num_processors.setter
     def num_processors(self, num_processors):
