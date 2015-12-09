@@ -520,3 +520,10 @@ class MasterComponent(object):
         args.file_name = filename
 
         result = self._lib.ArtmImportModel(self.master_id, args)
+
+    def get_info(self):
+        result = self._lib.ArtmRequestMasterComponentInfo(self.master_id,
+                                                          messages.GetMasterComponentInfoArgs())
+        info = messages.MasterComponentInfo()
+        info.ParseFromString(result)
+        return info
