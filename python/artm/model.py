@@ -598,6 +598,9 @@ class ARTM(object):
           1) batches in 'data_path'
           2) dictionary
         """
+        self._lib.ArtmDisposeModel(self.master.master_id, self.model_pwt)
+        self._lib.ArtmDisposeModel(self.master.master_id, self.model_nwt)
+        self._lib.ArtmDisposeModel(self.master.master_id, self.model_rwt)
         if data_path is not None:
             self.master.initialize_model(model_name=self.model_pwt,
                                          disk_path=data_path,
