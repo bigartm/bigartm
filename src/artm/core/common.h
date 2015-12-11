@@ -24,6 +24,7 @@ namespace core {
 typedef std::string ModelName;
 typedef std::string ScoreName;
 typedef std::string RegularizerName;
+typedef std::string DictionaryName;
 typedef std::string TopicName;
 
 typedef std::string ClassId;

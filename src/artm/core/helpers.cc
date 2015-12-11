@@ -80,35 +80,6 @@ void Helpers::SetThreadName(int thread_id, const char* thread_name) {
 
 #endif
 
-void Helpers::Fix(::artm::CollectionParserConfig* message) {
-  const int token_size = message->cooccurrence_token_size();
-  if ((message->cooccurrence_class_id_size() == 0) && (token_size > 0)) {
-    message->mutable_cooccurrence_class_id()->Reserve(token_size);
-    for (int i = 0; i < token_size; ++i)
-      message->add_cooccurrence_class_id(::artm::core::DefaultClass);
-  }
-}
-
-bool Helpers::Validate(const ::artm::CollectionParserConfig& message, bool throw_error) {
-  std::stringstream ss;
-  const int token_size = message.cooccurrence_token_size();
-  if (message.cooccurrence_class_id_size() != token_size) {
-    ss << "Inconsistent cooc token and class_id fields size in CollectionParserConfig";
-  }
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
-}
-
-bool Helpers::FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error) {
-  Fix(message);
-  return Validate(*message, throw_error);
-}
-
 void Helpers::Fix(::artm::TopicModel* message) {
   const int token_size = message->token_size();
   if ((message->class_id_size() == 0) && (token_size > 0)) {
@@ -549,16 +520,8 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
     ss << "InitializeModelArgs.model_name is not defined; ";
   }
 
-  if (!InitializeModelArgs_SourceType_IsValid(message.source_type())) {
-    ss << "InitializeModelArgs.source_type == " << message.source_type() << " is invalid; ";
-  }
-
-  if (message.source_type() == InitializeModelArgs_SourceType_Batches) {
-    const bool has_disk_path = message.has_disk_path() && !message.disk_path().empty();
-    const bool has_batch_filename = message.batch_filename_size() > 0;
-    if (!has_disk_path && !has_batch_filename) {
-      ss << "InitializeModelArgs.disk_path is required together with SourceType.Batches; ";
-    }
+  if (!message.has_dictionary_name()) {
+    ss << "InitializeModelArgs.dictionary_name is not defined; ";
   }
 
   if (ss.str().empty())
@@ -574,6 +537,80 @@ bool Helpers::FixAndValidate(::artm::InitializeModelArgs* message, bool throw_er
   Fix(message);
   return Validate(*message, throw_error);
 }
+
+void Helpers::Fix(::artm::FilterDictionaryArgs* message) {
+  if (!message->has_class_id())
+    message->set_class_id(DefaultClass);
+}
+
+bool Helpers::Validate(const ::artm::FilterDictionaryArgs& message, bool throw_error) {
+  std::stringstream ss;
+
+  if (!message.has_dictionary_name())
+    ss << "FilterDictionaryArgs has no dictionary name; ";
+
+  if (!message.has_class_id())
+    ss << "FilterDictionaryArgs has no class_id; ";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::FixAndValidate(::artm::FilterDictionaryArgs* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
+}
+
+bool Helpers::Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error) {
+  std::stringstream ss;
+
+  if (!message.has_dictionary_target_name())
+    ss << "GatherDictionaryArgs has no target dictionary name; ";
+
+  if (!message.has_data_path())
+    ss << "GatherDictionaryArgs has no data_path to batches folder; ";
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
+bool Helpers::Validate(const ::artm::DictionaryData& message, bool throw_error) {
+  std::stringstream ss;
+
+  if (!message.has_name())
+    ss << "DictionaryData has no dictionary name; ";
+
+  if (message.token_size() != message.class_id_size() ||
+      message.token_size() != message.token_tf_size() ||
+      message.token_size() != message.token_df_size() ||
+      message.token_size() != message.token_value_size()) {
+    ss << "DictionaryData general token fields have inconsistent sizes; ";
+  }
+
+  if (message.cooc_first_index_size() != message.cooc_second_index_size() ||
+      message.cooc_first_index_size() != message.cooc_value_size()) {
+    ss << "DictionaryData cooc fields have inconsistent sizes; ";
+  }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
+}
+
 
 bool Helpers::Validate(const ::artm::ExportModelArgs& message, bool throw_error) {
   std::stringstream ss;
@@ -745,17 +782,52 @@ std::string Helpers::Describe(const ::artm::InitializeModelArgs& message) {
   std::stringstream ss;
   ss << "InitializeModelArgs";
   ss << ": model_name=" << message.model_name();
-  ss << ", source_type=" <<
-    (message.source_type() == InitializeModelArgs_SourceType_Batches) ? "Batches" :
-    (message.source_type() == InitializeModelArgs_SourceType_Dictionary) ? "Dictionary" : "Unknown";
-  if (message.has_disk_path())
-    ss << ", disk_path=" << message.disk_path();
+
   if (message.has_dictionary_name())
     ss << ", dictionary_name=" << message.dictionary_name();
-  ss << ", filter_size=" << message.filter_size();
   if (message.has_topics_count())
     ss << ", topics_count=" << message.topics_count();
   ss << ", topic_name_size=" << message.topic_name_size();
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::FilterDictionaryArgs& message) {
+  std::stringstream ss;
+  ss << "FilterDictionaryArgs";
+  ss << ": dictionary_name=" << message.dictionary_name();
+
+  if (message.has_class_id())
+    ss << ", class_id=" << message.class_id();
+  if (message.has_min_df())
+    ss << ", min_df=" << message.min_df();
+  if (message.has_max_df())
+    ss << ", max_df=" << message.max_df();
+  if (message.has_min_tf())
+    ss << ", min_tf=" << message.min_tf();
+  if (message.has_max_tf())
+    ss << ", max_tf=" << message.max_tf();
+
+  if (message.has_min_value())
+    ss << ", min_value=" << message.min_value();
+  if (message.has_max_value())
+    ss << ", max_value=" << message.max_value();
+
+  return ss.str();
+}
+
+std::string Helpers::Describe(const ::artm::GatherDictionaryArgs& message) {
+  std::stringstream ss;
+  ss << "GatherDictionaryArgs";
+  ss << ": dictionary_target_name=" << message.dictionary_target_name();
+
+  if (message.has_data_path())
+    ss << ", data_path=" << message.data_path();
+  if (message.has_cooc_file_path())
+    ss << ", cooc_file_path=" << message.cooc_file_path();
+  if (message.has_vocab_file_path())
+    ss << ", vocab_file_path=" << message.vocab_file_path();
+  ss << ", symmetric_cooc_values=" << message.symmetric_cooc_values();
+
   return ss.str();
 }
 
