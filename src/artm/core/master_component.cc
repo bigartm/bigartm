@@ -21,6 +21,8 @@
 #include "artm/regularizer_interface.h"
 #include "artm/score_calculator_interface.h"
 
+#include "artm/utility/ifstream_or_cin.h"
+
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/data_loader.h"
@@ -34,7 +36,8 @@
 #include "artm/core/merger.h"
 #include "artm/core/dense_phi_matrix.h"
 #include "artm/core/template_manager.h"
-#include "artm/core/fileread_helpers.h"
+
+using ::artm::utility::ifstream_or_cin;
 
 namespace artm {
 namespace core {

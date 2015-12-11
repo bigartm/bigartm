@@ -17,10 +17,13 @@
 
 #include "glog/logging.h"
 
+#include "artm/utility/ifstream_or_cin.h"
+
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
-#include "artm/core/fileread_helpers.h"
+
+using ::artm::utility::ifstream_or_cin;
 
 namespace artm {
 namespace core {

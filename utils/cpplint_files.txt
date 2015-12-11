@@ -60,7 +60,6 @@ src/artm/core/data_loader.h
 src/artm/core/dense_phi_matrix.h
 src/artm/core/dictionary.h
 src/artm/core/exceptions.h
-src/artm/core/fileread_helpers.h
 src/artm/core/helpers.h
 src/artm/core/instance.h
 src/artm/core/instance_schema.h
@@ -95,3 +94,4 @@ src/artm/score/theta_snippet.h
 src/artm/score/topic_kernel.h
 src/artm/score/topic_mass_phi.h
 src/artm/utility/blas.h
+src/artm/utility/ifstream_or_cin.h

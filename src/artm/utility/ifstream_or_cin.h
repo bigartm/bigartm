@@ -1,17 +1,20 @@
-// Copyright 2014, Additive Regularization of Topic Models.
+// Copyright 2015, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_FILEREAD_HELPERS_H_
-#define SRC_ARTM_CORE_FILEREAD_HELPERS_H_
+#ifndef SRC_ARTM_UTILITY_IFSTREAM_OR_CIN_H_
+#define SRC_ARTM_UTILITY_IFSTREAM_OR_CIN_H_
 
 #include <string>
+#include <iostream>  // NOLINT
 
+#include "boost/filesystem.hpp"
 #include "boost/iostreams/device/mapped_file.hpp"
 #include "boost/iostreams/stream.hpp"
+#include "boost/throw_exception.hpp"
 
 using boost::iostreams::mapped_file_source;
 
 namespace artm {
-namespace core {
+namespace utility {
 
 class ifstream_or_cin {
  public:
@@ -35,7 +38,7 @@ class ifstream_or_cin {
   boost::iostreams::stream<mapped_file_source> file_;
 };
 
-}  // namespace core
+}  // namespace utility
 }  // namespace artm
 
-#endif  // SRC_ARTM_CORE_FILEREAD_HELPERS_H_
+#endif  // SRC_ARTM_UTILITY_IFSTREAM_OR_CIN_H_
