@@ -507,10 +507,13 @@ TEST(CppInterface, ProcessBatchesApi) {
   model_config.set_topics_count(nTopics);
   ::artm::Model model(master, model_config);
 
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
   artm::InitializeModelArgs initialize_model_args;
-  for (auto& batch_name : import_batches_args.batch_name())
-    initialize_model_args.add_batch_filename(batch_name);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_dictionary_name("gathered_dictionary");
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
@@ -602,14 +605,14 @@ TEST(CppInterface, ProcessBatchesApi) {
   de1->set_key_token("my_tok_1");
   ::artm::Dictionary dict(master, dict_config);
   master_info = master.info();
-  ASSERT_EQ(master_info->dictionary_size(), 1);
+  ASSERT_EQ(master_info->dictionary_size(), 2);
   EXPECT_EQ(master_info->dictionary(0).entries_count(), 1);
 
   {
     artm::MasterComponent master_clone(master);
     std::shared_ptr< ::artm::MasterComponentInfo> clone_master_info = master_clone.info();
     ASSERT_EQ(clone_master_info->model_size(), 2);  // "pwt", "nwt_hat"; "pwt0" is not cloned (old-style model)
-    ASSERT_EQ(clone_master_info->dictionary_size(), 1);
+    ASSERT_EQ(clone_master_info->dictionary_size(), 2);
     EXPECT_EQ(clone_master_info->dictionary(0).entries_count(), 1);
     ASSERT_EQ(clone_master_info->score_size(), master_info->score_size());
     ASSERT_EQ(clone_master_info->regularizer_size(), master_info->regularizer_size());
@@ -683,9 +686,13 @@ TEST(CppInterface, AttachModel) {
   artm::MasterComponent master(master_config);
 
   // Verify that it is possible to attach immediatelly after Initialize()
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
   artm::InitializeModelArgs initialize_model_args;
-  initialize_model_args.set_disk_path(target_folder);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_dictionary_name("gathered_dictionary");
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
@@ -746,9 +753,13 @@ TEST(CppInterface, AsyncProcessBatches) {
   artm::MasterComponent master(master_config);
 
   // Verify that it is possible to attach immediatelly after Initialize()
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
   artm::InitializeModelArgs initialize_model_args;
-  initialize_model_args.set_disk_path(target_folder);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_dictionary_name("gathered_dictionary");
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);

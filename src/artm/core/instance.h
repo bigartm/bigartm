@@ -30,7 +30,9 @@ class Processor;
 class Merger;
 class InstanceSchema;
 class Dictionary;
+class DictionaryImpl;
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
+typedef ThreadSafeCollectionHolder<std::string, DictionaryImpl> ThreadSafeDictionaryImplCollection;
 typedef ThreadSafeCollectionHolder<std::string, Batch> ThreadSafeBatchCollection;
 typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
 typedef ThreadSafeQueue<std::shared_ptr<ModelIncrement>> MergerQueue;
@@ -61,10 +63,16 @@ class Instance {
   void Reconfigure(const MasterComponentConfig& master_config);
   void CreateOrReconfigureModel(const ModelConfig& config);
   void DisposeModel(ModelName model_name);
+
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   void DisposeRegularizer(const std::string& name);
+
   void CreateOrReconfigureDictionary(const DictionaryConfig& config);
+  void CreateOrReconfigureDictionaryImpl(const DictionaryData& data);
   void DisposeDictionary(const std::string& name);
+  void DisposeDictionaryImpl(const std::string& name);
+  std::shared_ptr<Dictionary> dictionary(const std::string& name);
+  std::shared_ptr<DictionaryImpl> dictionary_impl(const std::string& name);
 
   std::shared_ptr<ScoreCalculatorInterface> CreateScoreCalculator(const ScoreConfig& config);
 
@@ -78,6 +86,7 @@ class Instance {
 
   ThreadSafeHolder<InstanceSchema> schema_;
   ThreadSafeDictionaryCollection dictionaries_;
+  ThreadSafeDictionaryImplCollection dictionaries_impl_;
   ThreadSafeBatchCollection batches_;
 
   ProcessorQueue processor_queue_;

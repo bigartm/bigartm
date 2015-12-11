@@ -37,18 +37,24 @@ def test_func():
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
                                  'docword_file_path': os.path.join(os.getcwd(), docword),
                                  'vocab_file_path': os.path.join(os.getcwd(), vocab),
-                                 'target_folder': batches_folder,
-                                 'dictionary_file_name': dictionary_name})
+                                 'target_folder': batches_folder})
 
         # Create master component and scores
         scores = [('ThetaSnippetScore', messages.ThetaSnippetScoreConfig())]
         master = mc.MasterComponent(lib, scores=scores, cache_theta=True)
 
-        # Import the collection dictionary
-        master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
+        # Create collection dictionary and import it
+        args = messages.GatherDictionaryArgs()
+        args.dictionary_target_name = dictionary_name
+        args.data_path = batches_folder
+        args.vocab_file_path = os.path.join(os.getcwd(), vocab)
+        lib.ArtmGatherDictionary(master.master_id, args)
 
         # Initialize model
-        master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
+        master.initialize_model(model_name=pwt,
+                                num_topics=num_topics,
+                                disk_path=batches_folder,
+                                dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi

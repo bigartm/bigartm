@@ -37,6 +37,7 @@ def test_func():
     top_tokens_tol = 0.05
     expected_top_tokens_weight = 0.1
 
+    dictionary_name = 'dictionary'
     batches_folder = tempfile.mkdtemp()
     try:
         # Generate small collection
@@ -66,8 +67,17 @@ def test_func():
                   ('TopTokensScore', messages.TopTokensScoreConfig(num_tokens = num_top_tokens))]
         master = mc.MasterComponent(lib, scores=scores)
 
+        # Create collection dictionary and import it
+        args = messages.GatherDictionaryArgs()
+        args.dictionary_target_name = dictionary_name
+        args.data_path = batches_folder
+        lib.ArtmGatherDictionary(master.master_id, args)
+
         # Initialize model
-        master.initialize_model(pwt, num_topics, source_type='batches', disk_path=batches_folder)
+        master.initialize_model(model_name=pwt,
+                                num_topics=num_topics,
+                                disk_path=batches_folder,
+                                dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi

@@ -30,10 +30,13 @@ extern "C" {
   DLL_PUBLIC int ArtmReconfigureRegularizer(int master_id, int length, const char* regularizer_config);
   DLL_PUBLIC int ArtmDisposeRegularizer(int master_id, const char* regularizer_name);
 
+  DLL_PUBLIC int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionary_args);
+  DLL_PUBLIC int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionary_args);
   DLL_PUBLIC int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config);
-  DLL_PUBLIC int ArtmReconfigureDictionary(int master_id, int length, const char* dictionary_config);
   DLL_PUBLIC int ArtmDisposeDictionary(int master_id, const char* dictionary_name);
+
   DLL_PUBLIC int ArtmImportDictionary(int master_id, int length, const char* import_dictionary_args);
+  DLL_PUBLIC int ArtmExportDictionary(int master_id, int length, const char* export_dictionary_args);
   DLL_PUBLIC int ArtmParseCollection(int length, const char* collection_parser_config);
 
   DLL_PUBLIC int ArtmImportBatches(int master_id, int length, const char* import_batches_args);
@@ -65,8 +68,6 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestRegularizerState(int master_id, const char* regularizer_name);
   DLL_PUBLIC int ArtmRequestScore(int master_id, int length, const char* get_score_args);
   DLL_PUBLIC int ArtmRequestMasterComponentInfo(int master_id, int length, const char* get_master_info_args);
-  DLL_PUBLIC int ArtmRequestParseCollection(int length, const char* collection_parser_config);
-  DLL_PUBLIC int ArtmRequestLoadDictionary(const char* filename);
   DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int ArtmCopyRequestResult(int length, char* address);
   DLL_PUBLIC int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args);
