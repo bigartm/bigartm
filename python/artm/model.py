@@ -546,13 +546,17 @@ class ARTM(object):
                                      index=use_topic_names)
         return theta_data_frame
 
-    def transform(self, batch_vectorizer=None, num_document_passes=1):
+    def transform(self, batch_vectorizer=None, num_document_passes=1, predict_class_id=None):
         """ARTM.transform() --- find Theta matrix for new documents
 
         Args:
           batch_vectorizer: an instance of BatchVectorizer class
           num_document_passes (int): number of inner iterations over each document
           for inferring theta, default = 1
+          predict_class_id (string): class_id of a target modality to predict, default = None.
+          When this option is enabled the resulting columns of theta matrix will correspond
+          to unique labels of a target modality. The values will represent p(c|d), which give
+          the probability of class label c for document d.
 
         Returns:
           pandas.DataFrame: (data, columns, rows), where:
@@ -580,7 +584,8 @@ class ARTM(object):
                                                            num_inner_iterations=num_document_passes,
                                                            class_ids=class_ids,
                                                            class_weights=class_weights,
-                                                           find_theta=True)
+                                                           find_theta=True,
+                                                           predict_class_id=predict_class_id)
 
         document_ids = [item_id for item_id in theta_info.item_id]
         topic_names = [topic_name for topic_name in theta_info.topic_name]
