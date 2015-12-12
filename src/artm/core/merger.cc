@@ -396,6 +396,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     model_config = &schema->model_config(args.model_name());
 
   artm::TopicModel topic_model;
+  topic_model.set_seed(args.seed());
   topic_model.mutable_topic_name()->CopyFrom(
     (model_config != nullptr) ? model_config->topic_name() : args.topic_name());
   topic_model.set_topics_count(topic_model.topic_name_size());

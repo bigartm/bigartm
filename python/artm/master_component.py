@@ -73,7 +73,8 @@ class MasterComponent(object):
         self._lib.ArtmImportDictionary(self.master_id, args)
 
     def initialize_model(self, model_name=None, num_topics=None, topic_names=None,
-                         source_type=None, disk_path=None, dictionary_name=None, args=None):
+                         source_type=None, disk_path=None, dictionary_name=None,
+                         seed=None, args=None):
         """Args:
            - model_name(str): name of pwt matrix in BigARTM
            - source_type(str): 'batches' | 'dictionary'
@@ -83,6 +84,7 @@ class MasterComponent(object):
                              (need if InitializeModelArgs_SourceType_Batches)
            - dictionary_name(str): name of imported dictionary
                                    (need if InitializeModelArgs_SourceType_Dictionary)
+           - seed (unsigned int or -1): seed for random initialization, default=None (no seed)
            - args: an instance of InitilaizeModelArgs
         """
         init_args = messages.InitializeModelArgs()
@@ -90,6 +92,8 @@ class MasterComponent(object):
             init_args = args
         if model_name is not None:
             init_args.model_name = model_name
+        if seed is not None:
+            init_args.seed = seed
         if num_topics is not None:
             init_args.topics_count = num_topics
         if topic_names is not None:

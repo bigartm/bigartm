@@ -589,13 +589,14 @@ class ARTM(object):
                                      index=topic_names)
         return theta_data_frame
 
-    def initialize(self, data_path=None, dictionary_name=None):
+    def initialize(self, data_path=None, dictionary_name=None, seed=-1):
         """ARTM.initialize() --- initialize topic model before learning
 
         Args:
           data_path (str): name of directory containing BigARTM batches, default=None
           dictionary_name (str): the name of loaded BigARTM collection
           dictionary, default=None
+          seed (unsigned int or -1): seed for random initialization, default=-1 (no seed)
 
         Note:
           Priority of initialization:
@@ -610,13 +611,15 @@ class ARTM(object):
                                          disk_path=data_path,
                                          num_topics=self._num_topics,
                                          topic_names=self._topic_names,
-                                         source_type='batches')
+                                         source_type='batches',
+                                         seed=seed)
         else:
             self.master.initialize_model(model_name=self.model_pwt,
                                          dictionary_name=dictionary_name,
                                          num_topics=self._num_topics,
                                          topic_names=self._topic_names,
-                                         source_type='dictionary')
+                                         source_type='dictionary',
+                                         seed=seed)
 
         phi_info = self.master.get_phi_info(model=self.model_pwt)
         self._topic_names = [topic_name for topic_name in phi_info.topic_name]

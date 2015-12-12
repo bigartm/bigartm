@@ -472,6 +472,7 @@ message TopicModel {
   optional bytes internals = 7;  // obsolete in BigARTM v0.6.3
   repeated IntArray topic_index = 8;
   repeated OperationType operation_type = 9;
+  optional int32 seed = 10;
 }
 
 // Represents a theta matrix.
@@ -543,6 +544,7 @@ message InitializeModelArgs {
   repeated string topic_name = 7;
 
   repeated string batch_filename = 8;
+  optional int32 seed = 9 [default = -1];
 }
 
 message GetTopicModelArgs {
