@@ -115,7 +115,8 @@ class MasterComponent(object):
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None, find_theta=False,
-                        reset_scores=False, reuse_theta=False, find_ptdw=False):
+                        reset_scores=False, reuse_theta=False, find_ptdw=False,
+                        predict_class_id=None):
         """Args:
            - pwt(str): name of pwt matrix in BigARTM
            - nwt(str): name of nwt matrix in BigARTM
@@ -130,6 +131,7 @@ class MasterComponent(object):
            - reset_scores(bool): reset scores after iterations or not
            - reuse_theta(bool): initialize by theta from previous collection pass
            - find_ptdw(bool): count and return Ptdw matrix or not (works if find_theta == False)
+           - predict_class_id(str): class_id of a target modality to predict (default = None)
            Returns:
            - tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta (find_theta==True)
            - messages.ThetaMatrix --- the info about Theta (find_theta==False)
@@ -161,6 +163,9 @@ class MasterComponent(object):
             for class_id, weight in zip(class_ids, class_weights):
                 args.class_id.append(class_id)
                 args.class_weight.append(weight)
+
+        if predict_class_id is not None:
+            args.predict_class_id = predict_class_id
 
         func = None
         if find_theta or find_ptdw:
