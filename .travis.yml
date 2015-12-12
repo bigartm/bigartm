@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 
 language:
   - python
@@ -30,16 +30,11 @@ before_install:
 install:
   - ./codestyle_checks.sh
   - mkdir build
-  - pushd build && cmake .. && make && file ./src/bigartm/bigartm && popd
-  - cp build/3rdparty/protobuf-cmake/protoc/protoc 3rdparty/protobuf/src/
-  - pushd 3rdparty/protobuf/python && python setup.py build && python setup.py install && popd
-  - pushd python && python setup.py install && popd
+  - pushd build && cmake .. && make && sudo make install && file /usr/local/bin/bigartm && popd
 
 before_script:
   - pushd python/tests/wrapper && ./download_datasets.sh && popd
 
 script:
-  - export PYTHONPATH=`pwd`/python:$PYTHONPATH
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests/wrapper && py.test && popd
