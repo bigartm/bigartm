@@ -6892,6 +6892,13 @@ class TopicModel : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedField<int>& operation_type() const;
   inline ::google::protobuf::RepeatedField<int>* mutable_operation_type();
 
+  // optional int32 seed = 10;
+  inline bool has_seed() const;
+  inline void clear_seed();
+  static const int kSeedFieldNumber = 10;
+  inline ::google::protobuf::int32 seed() const;
+  inline void set_seed(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.TopicModel)
  private:
   inline void set_has_name();
@@ -6900,6 +6907,8 @@ class TopicModel : public ::google::protobuf::Message {
   inline void clear_has_topics_count();
   inline void set_has_internals();
   inline void clear_has_internals();
+  inline void set_has_seed();
+  inline void clear_has_seed();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -6909,13 +6918,14 @@ class TopicModel : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> token_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > token_weights_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::int32 topics_count_;
+  ::google::protobuf::int32 seed_;
   ::std::string* internals_;
   ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
   ::google::protobuf::RepeatedField<int> operation_type_;
-  ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7777,6 +7787,13 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
 
+  // optional int32 seed = 9 [default = -1];
+  inline bool has_seed() const;
+  inline void clear_seed();
+  static const int kSeedFieldNumber = 9;
+  inline ::google::protobuf::int32 seed() const;
+  inline void set_seed(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs)
  private:
   inline void set_has_model_name();
@@ -7789,6 +7806,8 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline void clear_has_disk_path();
   inline void set_has_topics_count();
   inline void clear_has_topics_count();
+  inline void set_has_seed();
+  inline void clear_has_seed();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -7800,9 +7819,10 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter > filter_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
+  ::google::protobuf::int32 seed_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -19194,6 +19214,28 @@ TopicModel::mutable_operation_type() {
   return &operation_type_;
 }
 
+// optional int32 seed = 10;
+inline bool TopicModel::has_seed() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void TopicModel::set_has_seed() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void TopicModel::clear_has_seed() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void TopicModel::clear_seed() {
+  seed_ = 0;
+  clear_has_seed();
+}
+inline ::google::protobuf::int32 TopicModel::seed() const {
+  return seed_;
+}
+inline void TopicModel::set_seed(::google::protobuf::int32 value) {
+  set_has_seed();
+  seed_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // ThetaMatrix
@@ -20652,6 +20694,28 @@ InitializeModelArgs::batch_filename() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 InitializeModelArgs::mutable_batch_filename() {
   return &batch_filename_;
+}
+
+// optional int32 seed = 9 [default = -1];
+inline bool InitializeModelArgs::has_seed() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void InitializeModelArgs::set_has_seed() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void InitializeModelArgs::clear_has_seed() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void InitializeModelArgs::clear_seed() {
+  seed_ = -1;
+  clear_has_seed();
+}
+inline ::google::protobuf::int32 InitializeModelArgs::seed() const {
+  return seed_;
+}
+inline void InitializeModelArgs::set_seed(::google::protobuf::int32 value) {
+  set_has_seed();
+  seed_ = value;
 }
 
 // -------------------------------------------------------------------

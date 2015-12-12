@@ -842,7 +842,7 @@ std::vector<float> Helpers::GenerateRandomVector(int size, size_t seed) {
   return retval;
 }
 
-std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token) {
+std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token, int seed) {
   size_t h = 1125899906842597L;  // prime
 
   if (token.class_id != DefaultClass) {
@@ -854,6 +854,8 @@ std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token) {
 
   for (unsigned i = 0; i < token.keyword.size(); i++)
     h = 31 * h + token.keyword[i];
+
+  if (seed > 0) h = 31 * h + seed;
 
   return GenerateRandomVector(size, h);
 }

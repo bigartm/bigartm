@@ -27,7 +27,7 @@ class Helpers {
   // (thread_id == -1 stands for the current thread)
   static void SetThreadName(int thread_id, const char* thread_name);
   static std::vector<float> GenerateRandomVector(int size, size_t seed);
-  static std::vector<float> GenerateRandomVector(int size, const Token& token);
+  static std::vector<float> GenerateRandomVector(int size, const Token& token, int seed = -1);
 
   static void Fix(::artm::CollectionParserConfig* message);
   static bool Validate(const ::artm::CollectionParserConfig& message, bool throw_error = true);
