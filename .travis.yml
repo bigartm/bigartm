@@ -36,5 +36,6 @@ before_script:
   - pushd python/tests/wrapper && ./download_datasets.sh && popd
 
 script:
+  - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests/wrapper && py.test && popd
