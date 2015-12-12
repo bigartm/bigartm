@@ -6,7 +6,7 @@ if(UNIX)
     DEPENDS protoc
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
   install(CODE "message(\"Installing python package protobuf\")")
-  install(CODE "execute_process(COMMAND python setup.py install\
+  install(CODE "execute_process(COMMAND python setup.py install
     WORKING_DIRECTORY \"${CMAKE_CURRENT_LIST_DIR}\")")
 endif(UNIX)
 

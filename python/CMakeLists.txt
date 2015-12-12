@@ -20,6 +20,6 @@ elseif(UNIX)
     COMMAND python ${CMAKE_CURRENT_LIST_DIR}/setup.py build
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
   install(CODE "message(\"Installing python package bigartm\")")
-  install(CODE "execute_process(COMMAND python setup.py install\
+  install(CODE "execute_process(COMMAND python setup.py install
     WORKING_DIRECTORY \"${CMAKE_CURRENT_LIST_DIR}\")")
 endif(MSVC)
