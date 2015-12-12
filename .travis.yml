@@ -1,4 +1,4 @@
-sudo: true
+sudo: false
 
 language:
   - python
@@ -30,7 +30,7 @@ before_install:
 install:
   - ./codestyle_checks.sh
   - mkdir build
-  - pushd build && cmake .. && make && sudo make install && file /usr/local/bin/bigartm && popd
+  - pushd build && cmake .. && make && make install && file /usr/local/bin/bigartm && popd
 
 before_script:
   - pushd python/tests/wrapper && ./download_datasets.sh && popd
