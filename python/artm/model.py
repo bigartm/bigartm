@@ -116,6 +116,20 @@ class ARTM(object):
         self._phi_cached = None  # This field will be set during .phi_ call
         self._phi_synchronization = -1
 
+    def __enter__(self):
+        return self
+
+    def dispose(self):
+        if self._master is not None:
+            self._lib.ArtmDisposeMasterComponent(self.master.master_id)
+            self._master = None
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.dispose()
+
+    def __del__(self):
+        self.dispose()
+
     # ========== PROPERTIES ==========
     @property
     def num_processors(self):
