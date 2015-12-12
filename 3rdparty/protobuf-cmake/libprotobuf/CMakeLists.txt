@@ -114,6 +114,6 @@ foreach(fil ${INSTALL_FILES_LIST})
         DESTINATION ${INCLUDE_DIR}/../protobuf/${relative_header_dir}
         )
 endforeach()
-endif()  # if(MSVC)
+endif(MSVC)
 
 set(PROTOBUF_INCLUDE_DIR ${PROTOBUF_ROOT}/src CACHE INTERNAL "protobuf library")
