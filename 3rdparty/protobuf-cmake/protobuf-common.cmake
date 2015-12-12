@@ -6,13 +6,13 @@ set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")
 # config.h is generated from cmake now, so use on all platforms
 add_definitions( -DHAVE_CONFIG_H )
 
-if( MSVC )
+if(MSVC)
   add_definitions(
     /wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305
     )
-else()
+else(MSVC)
   add_definitions( -Wno-deprecated )
-endif()
+endif(MSVC)
 
 # Easier to support different versions of protobufs
 function(append_if_exist OUTPUT_LIST)
@@ -36,6 +36,6 @@ if(WIN32)
     # http://www.cmake.org/Wiki/BuildingWinDLL
     # NOTE: findprotobuf doesn't work unless this is set to lib
     set(LIB_DIR     lib)
-else()
+else(WIN32)
     set(LIB_DIR     lib)
-endif()
+endif(WIN32)
