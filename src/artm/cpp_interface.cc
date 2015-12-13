@@ -185,7 +185,11 @@ std::shared_ptr<Matrix> MasterComponent::AttachTopicModel(const std::string& mod
 
 std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(
   const std::string& regularizer_name) {
-  int length = HandleErrorCode(ArtmRequestRegularizerState(id(), regularizer_name.c_str()));
+  ::artm::GetRegularizerStateArgs args;
+  args.set_name(regularizer_name);
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  int length = HandleErrorCode(ArtmRequestRegularizerState(id(), args_blob.length(), args_blob.c_str()));
   std::string state_blob;
   state_blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&state_blob)));

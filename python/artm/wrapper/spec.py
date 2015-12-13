@@ -189,7 +189,7 @@ ARTM_API = [
     ## deprecated
     #CallSpec(
     #    'ArtmRequestRegularizerState',
-    #    [('master_id', int), ('name', str)],
+    #    [('master_id', int), ('args', message.GetRegularizerStateArgs)],
     #    request=messages.RegularizerInternalState,
     #),
     CallSpec(

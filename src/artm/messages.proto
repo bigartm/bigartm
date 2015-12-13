@@ -201,6 +201,10 @@ message SmoothPtdwConfig {
   optional double threshold = 4 [default = 1.0];
 }
 
+message GetRegularizerStateArgs {
+  optional string name = 1;
+}
+
 // Represents an internal state of a general regularizer
 message RegularizerInternalState {
   enum Type {

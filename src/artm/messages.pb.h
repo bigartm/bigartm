@@ -55,6 +55,7 @@ class LabelRegularizationPhiConfig;
 class SpecifiedSparsePhiConfig;
 class ImproveCoherencePhiConfig;
 class SmoothPtdwConfig;
+class GetRegularizerStateArgs;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class TransformConfig;
@@ -3294,6 +3295,93 @@ class SmoothPtdwConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static SmoothPtdwConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class GetRegularizerStateArgs : public ::google::protobuf::Message {
+ public:
+  GetRegularizerStateArgs();
+  virtual ~GetRegularizerStateArgs();
+
+  GetRegularizerStateArgs(const GetRegularizerStateArgs& from);
+
+  inline GetRegularizerStateArgs& operator=(const GetRegularizerStateArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GetRegularizerStateArgs& default_instance();
+
+  void Swap(GetRegularizerStateArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  GetRegularizerStateArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const GetRegularizerStateArgs& from);
+  void MergeFrom(const GetRegularizerStateArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // @@protoc_insertion_point(class_scope:artm.GetRegularizerStateArgs)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static GetRegularizerStateArgs* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -14973,6 +15061,80 @@ inline double SmoothPtdwConfig::threshold() const {
 inline void SmoothPtdwConfig::set_threshold(double value) {
   set_has_threshold();
   threshold_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// GetRegularizerStateArgs
+
+// optional string name = 1;
+inline bool GetRegularizerStateArgs::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void GetRegularizerStateArgs::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void GetRegularizerStateArgs::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void GetRegularizerStateArgs::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& GetRegularizerStateArgs::name() const {
+  return *name_;
+}
+inline void GetRegularizerStateArgs::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void GetRegularizerStateArgs::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void GetRegularizerStateArgs::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetRegularizerStateArgs::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* GetRegularizerStateArgs::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void GetRegularizerStateArgs::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------

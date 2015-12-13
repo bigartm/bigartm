@@ -48,6 +48,7 @@ class MasterComponent : boost::noncopyable {
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external);
   void Request(const GetDictionaryArgs& args, DictionaryData* result);
   void Request(const GetMasterComponentInfoArgs& args, MasterComponentInfo* result);
+  void Request(const GetRegularizerStateArgs& args, RegularizerInternalState* regularizer_state);
 
   // EXECUTE functionality
   void MergeModel(const MergeModelArgs& args);
@@ -72,9 +73,6 @@ class MasterComponent : boost::noncopyable {
   void DisposeBatch(const std::string& name);
 
   // Other ad-hoc functionality
-  void RequestRegularizerState(RegularizerName regularizer_name,
-                               RegularizerInternalState* regularizer_state);
-
   void AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                   BatchManager *batch_manager);
 

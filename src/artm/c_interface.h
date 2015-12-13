@@ -66,7 +66,7 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
   DLL_PUBLIC int ArtmRequestTopicModelExternal(int master_id, int length, const char* get_model_args);
-  DLL_PUBLIC int ArtmRequestRegularizerState(int master_id, const char* regularizer_name);
+  DLL_PUBLIC int ArtmRequestRegularizerState(int master_id, int length, const char* get_regularizer_state_args);
   DLL_PUBLIC int ArtmRequestScore(int master_id, int length, const char* get_score_args);
   DLL_PUBLIC int ArtmRequestMasterComponentInfo(int master_id, int length, const char* get_master_info_args);
   DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);

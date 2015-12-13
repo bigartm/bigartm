@@ -24,6 +24,8 @@
 typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterComponent>> MasterComponentManager;
 typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::BatchManager>> AsyncProcessBatchesManager;
 
+using ::artm::core::MasterComponent;
+
 // Never use the following variables explicitly (only through the corresponding methods).
 // It might be good idea to make them a private members of a new singleton class.
 static boost::thread_specific_ptr<std::string> last_message_;
@@ -89,8 +91,16 @@ static void ParseFromArray(const char* buffer, int length, google::protobuf::Mes
 }
 
 // =========================================================================
-// Common routines
+// Misc routines (public ARTM interface)
 // =========================================================================
+
+const char* ArtmGetLastErrorMessage() {
+  if (last_error_.get() == nullptr) {
+    return nullptr;
+  }
+
+  return last_error_->c_str();
+}
 
 int ArtmCopyRequestResult(int length, char* address) {
   ::artm::CopyRequestResultArgs args;
@@ -130,14 +140,6 @@ int ArtmCopyRequestResultEx(int length, char* address, int args_length, const ch
   } CATCH_EXCEPTIONS;
 }
 
-const char* ArtmGetLastErrorMessage() {
-  if (last_error_.get() == nullptr) {
-    return nullptr;
-  }
-
-  return last_error_->c_str();
-}
-
 int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
   try {
     EnableLogging();
@@ -166,15 +168,6 @@ int ArtmAddBatch(int master_id, int length, const char* add_batch_args) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmInvokeIteration(int master_id, int length, const char* invoke_iteration_args) {
-  try {
-    artm::InvokeIterationArgs invoke_iteration_args_object;
-    ParseFromArray(invoke_iteration_args, length, &invoke_iteration_args_object);
-    master_component(master_id)->InvokeIteration(invoke_iteration_args_object);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
 int ArtmWaitIdle(int master_id, int length, const char* wait_idle_args) {
   try {
     artm::WaitIdleArgs wait_idle_args_object;
@@ -189,10 +182,6 @@ int ArtmWaitIdle(int master_id, int length, const char* wait_idle_args) {
     }
   } CATCH_EXCEPTIONS;
 }
-
-// =========================================================================
-// MasterComponent
-// =========================================================================
 
 int ArtmCreateMasterComponent(int length, const char* master_component_config) {
   try {
@@ -217,30 +206,6 @@ int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicat
     int retval = mcm.Store(master->Duplicate());
     LOG(INFO) << "Copying MasterComponent (id=" << master_id << " to id=" << retval << ")...";
     return retval;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmCreateModel(int master_id, int length, const char* model_config) {
-  return ArtmReconfigureModel(master_id, length, model_config);
-}
-
-int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config) {
-  try {
-    artm::MasterComponentConfig config;
-    ParseFromArray(master_component_config, length, &config);
-    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-    master_component(master_id)->Reconfigure(config);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
-  try {
-    artm::ModelConfig config;
-    ParseFromArray(model_config, length, &config);
-    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-    master_component(master_id)->CreateOrReconfigureModel(config);
-    return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
 
@@ -287,82 +252,6 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmMergeModel(int master_id, int length, const char* merge_model_args) {
-  try {
-    artm::MergeModelArgs args;
-    ParseFromArray(merge_model_args, length, &args);
-    master_component(master_id)->MergeModel(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args) {
-  try {
-    artm::RegularizeModelArgs args;
-    ParseFromArray(regularize_model_args, length, &args);
-    master_component(master_id)->RegularizeModel(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args) {
-  try {
-    artm::NormalizeModelArgs args;
-    ParseFromArray(normalize_model_args, length, &args);
-    master_component(master_id)->NormalizeModel(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRequestRegularizerState(int master_id, const char* regularizer_name) {
-  try {
-    artm::RegularizerInternalState regularizer_state;
-    master_component(master_id)->RequestRegularizerState(regularizer_name, &regularizer_state);
-    regularizer_state.SerializeToString(last_message());
-    return last_message()->size();
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) {
-  try {
-    artm::TopicModel topic_model_object;
-    ParseFromArray(topic_model, length, &topic_model_object);
-    ::artm::core::Helpers::FixAndValidate(&topic_model_object, /* throw_error =*/ true);
-    master_component(master_id)->OverwriteTopicModel(topic_model_object);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmInitializeModel(int master_id, int length, const char* init_model_args) {
-  try {
-    artm::InitializeModelArgs args;
-    ParseFromArray(init_model_args, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
-    master_component(master_id)->InitializeModel(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmExportModel(int master_id, int length, const char* export_model_args) {
-  try {
-    artm::ExportModelArgs args;
-    ParseFromArray(export_model_args, length, &args);
-    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
-    master_component(master_id)->ExportModel(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmImportModel(int master_id, int length, const char* init_model_args) {
-  try {
-    artm::ImportModelArgs args;
-    ParseFromArray(init_model_args, length, &args);
-    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
-    master_component(master_id)->ImportModel(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
 int ArtmAttachModel(int master_id, int length, const char* attach_model_args, int address_length, char* address) {
   try {
     artm::AttachModelArgs args;
@@ -376,116 +265,6 @@ int ArtmDisposeMasterComponent(int master_id) {
   try {
     MasterComponentManager::singleton().Erase(master_id);
     LOG(INFO) << "Disposing MasterComponent (id=" << master_id << ")...";
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmDisposeModel(int master_id, const char* model_name) {
-  try {
-    master_component(master_id)->DisposeModel(model_name);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmCreateRegularizer(int master_id, int length, const char* regularizer_config) {
-  return ArtmReconfigureRegularizer(master_id, length, regularizer_config);
-}
-
-int ArtmReconfigureRegularizer(int master_id, int length, const char* regularizer_config) {
-  try {
-    ::artm::RegularizerConfig config;
-    ParseFromArray(regularizer_config, length, &config);
-    master_component(master_id)->CreateOrReconfigureRegularizer(config);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmDisposeRegularizer(int master_id, const char* regularizer_name) {
-  try {
-    master_component(master_id)->DisposeRegularizer(regularizer_name);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args) {
-  try {
-    ::artm::SynchronizeModelArgs args;
-    ParseFromArray(sync_model_args, length, &args);
-    master_component(master_id)->SynchronizeModel(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionary_args) {
-  // this method creates DictionaryData and than Dictionary, based on it
-  // the method DOESN't store DictionaryData into disk, it's the task of ExportDictionary
-  try {
-    artm::GatherDictionaryArgs args;
-    ParseFromArray(gather_dictionary_args, length, &args);
-    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
-    master_component(master_id)->GatherDictionary(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionary_config) {
-  try {
-    artm::FilterDictionaryArgs args;
-    ParseFromArray(filter_dictionary_config, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
-    master_component(master_id)->FilterDictionary(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmCreateDictionary(int master_id, int length, const char* dictionary_data) {
-  try {
-    artm::DictionaryData message;
-    ParseFromArray(dictionary_data, length, &message);
-    ::artm::core::Helpers::FixAndValidate(&message, /* throw_error =*/ true);
-    master_component(master_id)->CreateDictionary(message);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
-  try {
-    master_component(master_id)->DisposeDictionary(dictionary_name);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmImportDictionary(int master_id, int length, const char* import_dictionary_args) {
-  try {
-    artm::ImportDictionaryArgs args;
-    ParseFromArray(import_dictionary_args, length, &args);
-    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
-    master_component(master_id)->ImportDictionary(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmExportDictionary(int master_id, int length, const char* export_dictionary_args) {
-  try {
-    artm::ExportDictionaryArgs args;
-    ParseFromArray(export_dictionary_args, length, &args);
-    master_component(master_id)->ExportDictionary(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmImportBatches(int master_id, int length, const char* import_batches_args) {
-  try {
-    artm::ImportBatchesArgs args;
-    ParseFromArray(import_batches_args, length, &args);
-    master_component(master_id)->ImportBatches(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmDisposeBatch(int master_id, const char* batch_name) {
-  try {
-    master_component(master_id)->DisposeBatch(batch_name);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
@@ -513,12 +292,145 @@ int ArtmRequestLoadBatch(const char* filename) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// EXECUTE functionality
+// EXECUTE routines (public ARTM interface)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Execute a method of MasterComponent with explicitly provided args
+template<typename FuncT>
+int ArtmExecute(int master_id, const char* args, FuncT func) {
+  try {
+    (master_component(master_id).get()->*func)(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+// Execute a method of MasterComponent with args parsed from a protobuf blob
+template<typename ArgsT, typename FuncT>
+int ArtmExecute(int master_id, int length, const char* args_blob, FuncT func) {
+  try {
+    ArgsT args;
+    ParseFromArray(args_blob, length, &args);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    (master_component(master_id).get()->*func)(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+// Execute a method of MasterComponent with args parsed from a protobuf blob WITHOUT VALIDATION
+template<typename ArgsT, typename FuncT>
+int ArtmExecuteUnsafe(int master_id, int length, const char* args_blob, FuncT func) {
+  try {
+    ArgsT args;
+    ParseFromArray(args_blob, length, &args);
+
+    // ArtmExecuteUnsafe does not execute validation.
+    // ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+
+    (master_component(master_id).get()->*func)(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmImportBatches(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::ImportBatchesArgs>(master_id, length, args, &MasterComponent::ImportBatches);
+}
+
+int ArtmInvokeIteration(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::InvokeIterationArgs>(master_id, length, args, &MasterComponent::InvokeIteration);
+}
+
+int ArtmCreateModel(int master_id, int length, const char* config) {
+  return ArtmExecute< ::artm::ModelConfig>(master_id, length, config, &MasterComponent::CreateOrReconfigureModel);
+}
+int ArtmReconfigureModel(int master_id, int length, const char* config) {
+  return ArtmExecute< ::artm::ModelConfig>(master_id, length, config, &MasterComponent::CreateOrReconfigureModel);
+}
+
+int ArtmMergeModel(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::MergeModelArgs>(master_id, length, args, &MasterComponent::MergeModel);
+}
+
+int ArtmRegularizeModel(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::RegularizeModelArgs>(master_id, length, args, &MasterComponent::RegularizeModel);
+}
+
+int ArtmNormalizeModel(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::NormalizeModelArgs>(master_id, length, args, &MasterComponent::NormalizeModel);
+}
+
+int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) {
+  return ArtmExecute< ::artm::TopicModel>(master_id, length, topic_model, &MasterComponent::OverwriteTopicModel);
+}
+
+int ArtmInitializeModel(int master_id, int length, const char* args) {
+  return ArtmExecute< ::artm::InitializeModelArgs>(master_id, length, args, &MasterComponent::InitializeModel);
+}
+
+int ArtmExportModel(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::ExportModelArgs>(master_id, length, args, &MasterComponent::ExportModel);
+}
+
+int ArtmImportModel(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::ImportModelArgs>(master_id, length, args, &MasterComponent::ImportModel);
+}
+
+int ArtmCreateRegularizer(int master_id, int length, const char* config) {
+  return ArtmExecuteUnsafe< ::artm::RegularizerConfig>(
+    master_id, length, config, &MasterComponent::CreateOrReconfigureRegularizer);
+}
+
+int ArtmReconfigureRegularizer(int master_id, int length, const char* config) {
+  return ArtmExecuteUnsafe< ::artm::RegularizerConfig>(
+    master_id, length, config, &MasterComponent::CreateOrReconfigureRegularizer);
+}
+
+int ArtmSynchronizeModel(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::SynchronizeModelArgs>(
+    master_id, length, args, &MasterComponent::SynchronizeModel);
+}
+
+int ArtmGatherDictionary(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::GatherDictionaryArgs>(master_id, length, args, &MasterComponent::GatherDictionary);
+}
+
+int ArtmFilterDictionary(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::FilterDictionaryArgs>(master_id, length, args, &MasterComponent::FilterDictionary);
+}
+
+int ArtmCreateDictionary(int master_id, int length, const char* data) {
+  return ArtmExecute< ::artm::DictionaryData>(master_id, length, data, &MasterComponent::CreateDictionary);
+}
+
+int ArtmImportDictionary(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::ImportDictionaryArgs>(master_id, length, args, &MasterComponent::ImportDictionary);
+}
+
+int ArtmExportDictionary(int master_id, int length, const char* args) {
+  return ArtmExecuteUnsafe< ::artm::ExportDictionaryArgs>(master_id, length, args, &MasterComponent::ExportDictionary);
+}
+
+int ArtmReconfigureMasterComponent(int master_id, int length, const char* config) {
+  return ArtmExecute< ::artm::MasterComponentConfig>(master_id, length, config, &MasterComponent::Reconfigure);
+}
+
+int ArtmDisposeRegularizer(int master_id, const char* name) {
+  return ArtmExecute(master_id, name, &MasterComponent::DisposeRegularizer);
+}
+
+int ArtmDisposeModel(int master_id, const char* name) {
+  return ArtmExecute(master_id, name, &MasterComponent::DisposeModel);
+}
+
+int ArtmDisposeDictionary(int master_id, const char* name) {
+  return ArtmExecute(master_id, name, &MasterComponent::DisposeDictionary);
+}
+
+int ArtmDisposeBatch(int master_id, const char* name) {
+  return ArtmExecute(master_id, name, &MasterComponent::DisposeBatch);
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// REQUEST functionality
+// REQUEST routines (public ARTM interface)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename ArgsT, typename ResultT>
@@ -590,4 +502,9 @@ int ArtmRequestTopicModel(int master_id, int length, const char* args) {
 int ArtmRequestTopicModelExternal(int master_id, int length, const char* args) {
   return ArtmRequestExternal< ::artm::GetTopicModelArgs,
                               ::artm::TopicModel>(master_id, length, args);
+}
+
+int ArtmRequestRegularizerState(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::GetRegularizerStateArgs,
+                      ::artm::RegularizerInternalState>(master_id, length, args);
 }

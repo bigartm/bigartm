@@ -76,7 +76,7 @@ class Helpers {
   static void Fix(::artm::DictionaryData* message);
   static bool Validate(const ::artm::DictionaryData& message, bool throw_error = true);
   static bool FixAndValidate(::artm::DictionaryData* message, bool throw_error = true);
-  
+
   static void Fix(::artm::CollectionParserConfig* message);
   static bool Validate(const ::artm::CollectionParserConfig& message, bool throw_error = true);
   static bool FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error = true);
@@ -88,6 +88,10 @@ class Helpers {
   static void Fix(::artm::GetMasterComponentInfoArgs* message);
   static bool Validate(const ::artm::GetMasterComponentInfoArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::GetMasterComponentInfoArgs* message, bool throw_error = true);
+
+  static void Fix(::artm::GetRegularizerStateArgs* message);
+  static bool Validate(const ::artm::GetRegularizerStateArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::GetRegularizerStateArgs* message, bool throw_error = true);
 
   static bool Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);

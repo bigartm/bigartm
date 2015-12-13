@@ -339,9 +339,9 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
   HandleExternalTopicModelRequest(result, external);
 }
 
-void MasterComponent::RequestRegularizerState(RegularizerName regularizer_name,
-                                              ::artm::RegularizerInternalState* regularizer_state) {
-  instance_->merger()->RequestRegularizerState(regularizer_name, regularizer_state);
+void MasterComponent::Request(const GetRegularizerStateArgs& args,
+                              ::artm::RegularizerInternalState* regularizer_state) {
+  instance_->merger()->RequestRegularizerState(args.name(), regularizer_state);
 }
 
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {

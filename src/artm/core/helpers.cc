@@ -623,6 +623,17 @@ bool Helpers::FixAndValidate(::artm::GetMasterComponentInfoArgs* message, bool t
   Fix(message); return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::GetRegularizerStateArgs* message) {
+}
+
+bool Helpers::Validate(const ::artm::GetRegularizerStateArgs& message, bool throw_error) {
+  return true;
+}
+
+bool Helpers::FixAndValidate(::artm::GetRegularizerStateArgs* message, bool throw_error) {
+  Fix(message); return Validate(*message, throw_error);
+}
+
 bool Helpers::Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error) {
   std::stringstream ss;
 
