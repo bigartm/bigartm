@@ -193,21 +193,17 @@ void Merger::ResetScores(ModelName model_name) {
   scores_merger_.ResetScores(model_name);
 }
 
-bool Merger::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
+void Merger::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                         ::artm::TopicModel* topic_model) const {
   auto ttm = this->GetLatestTopicModel(get_model_args.model_name());
+  auto phi_matrix = this->GetPhiMatrix(get_model_args.model_name());
+  if (ttm == nullptr && phi_matrix == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + get_model_args.model_name() + " does not exist"));
   if (ttm != nullptr) {
     ttm->RetrieveExternalTopicModel(get_model_args, topic_model);
-    return true;
-  }
-
-  auto phi_matrix = this->GetPhiMatrix(get_model_args.model_name());
-  if (phi_matrix != nullptr) {
+  } else {
     PhiMatrixOperations::RetrieveExternalTopicModel(*phi_matrix, get_model_args, topic_model);
-    return true;
   }
-
-  return false;
 }
 
 void Merger::RequestRegularizerState(RegularizerName regularizer_name,
@@ -240,12 +236,12 @@ bool Merger::WaitIdle(const WaitIdleArgs& args) {
   return true;
 }
 
-bool Merger::RequestScore(const GetScoreValueArgs& args,
+void Merger::RequestScore(const GetScoreValueArgs& args,
                           ScoreData *score_data) const {
   LOG(INFO) << "Merger::RequestScore(score_name=" << args.score_name() << ")";
   std::shared_ptr<InstanceSchema> schema = schema_->get();
   if (scores_merger_.RequestScore(schema, args.model_name(), args.score_name(), score_data))
-    return true;
+    return;  // success
 
   std::shared_ptr< ::artm::core::TopicModel> topic_model = topic_model_.get(args.model_name());
   std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix = phi_matrix_.get(args.model_name());
@@ -259,13 +255,13 @@ bool Merger::RequestScore(const GetScoreValueArgs& args,
       std::string("Attempt to request non-existing score: " + args.score_name())));
 
   if (score_calculator->is_cumulative())
-    return false;
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "Score " + args.score_name() + " is cumulative and has not been calculated for  " + args.model_name()));
 
   std::shared_ptr<Score> score = score_calculator->CalculateScore(pwt);
   score_data->set_data(score->SerializeAsString());
   score_data->set_type(score_calculator->score_type());
   score_data->set_name(args.score_name());
-  return true;
 }
 
 void Merger::RequestDictionary(const DictionaryName& dictionary_name, DictionaryData* dictionary_data) const {

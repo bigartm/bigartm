@@ -38,67 +38,69 @@ class MasterComponent : boost::noncopyable {
   explicit MasterComponent(const MasterComponentConfig& config);
   std::shared_ptr<MasterComponent> Duplicate() const;
 
-  // Retrieves topic model.
-  // Returns true if succeeded, and false if model_name hasn't been found.
-  bool RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
-                         ::artm::TopicModel* topic_model);
-  void RequestRegularizerState(RegularizerName regularizer_name,
-                               ::artm::RegularizerInternalState* regularizer_state);
-  bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
-                          ::artm::ThetaMatrix* theta_matrix);
-  bool RequestScore(const GetScoreValueArgs& get_score_args,
-                    ScoreData* score_data);
-  void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
+  // REQUEST functionality
+  void Request(const GetTopicModelArgs& args, ::artm::TopicModel* result);
+  void Request(const GetTopicModelArgs& args, ::artm::TopicModel* result, std::string* external);
+  void Request(const GetThetaMatrixArgs& args, ThetaMatrix* result);
+  void Request(const GetThetaMatrixArgs& args, ThetaMatrix* result, std::string* external);
+  void Request(const GetScoreValueArgs& args, ScoreData* result);
+  void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result);
+  void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external);
+  void Request(const GetDictionaryArgs& args, DictionaryData* result);
+  void Request(const GetMasterComponentInfoArgs& args, MasterComponentInfo* result);
 
-  void RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
-                             ProcessBatchesResult* process_batches_result);
-
-  void AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
-                                  BatchManager *batch_manager);
-
-  void RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
-                                 BatchManager* batch_manager, bool async,
-                                 ProcessBatchesResult* process_batches_result);
-
-  void MergeModel(const MergeModelArgs& merge_model_args);
-  void RegularizeModel(const RegularizeModelArgs& regularize_model_args);
-  void NormalizeModel(const NormalizeModelArgs& normalize_model_args);
-
-  // Reconfigures topic model if already exists, otherwise creates a new model.
-  void CreateOrReconfigureModel(const ModelConfig& config);
-  void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
-
-  void DisposeModel(ModelName model_name);
-  void Reconfigure(const MasterComponentConfig& config);
-
-  void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
-  void DisposeRegularizer(const std::string& name);
-
-  void CreateDictionary(const DictionaryData& data);
-  void AppendDictionary(const DictionaryData& data);
-  void DisposeDictionary(const std::string& name);
+  // EXECUTE functionality
+  void MergeModel(const MergeModelArgs& args);
+  void RegularizeModel(const RegularizeModelArgs& args);
+  void NormalizeModel(const NormalizeModelArgs& args);
   void ImportDictionary(const ImportDictionaryArgs& args);
   void ExportDictionary(const ExportDictionaryArgs& args);
-  void RequestDictionary(const GetDictionaryArgs& args, DictionaryData* result);
-
   void ImportBatches(const ImportBatchesArgs& args);
-  void DisposeBatches(const DisposeBatchesArgs& args);
-
-  // Returns false if BigARTM is still processing the collection, otherwise true.
-  bool WaitIdle(const WaitIdleArgs& args);
   void InvokeIteration(const InvokeIterationArgs& args);
   void SynchronizeModel(const SynchronizeModelArgs& args);
   void ExportModel(const ExportModelArgs& args);
   void ImportModel(const ImportModelArgs& args);
-  void AttachModel(const AttachModelArgs& args, int address_length, float* address);
   void InitializeModel(const InitializeModelArgs& args);
   void FilterDictionary(const FilterDictionaryArgs& args);
   void GatherDictionary(const GatherDictionaryArgs& args);
   bool AddBatch(const AddBatchArgs& args);
 
+  // DISPOSE functionality
+  void DisposeModel(const std::string& name);
+  void DisposeRegularizer(const std::string& name);
+  void DisposeDictionary(const std::string& name);
+  void DisposeBatch(const std::string& name);
+
+  // Other ad-hoc functionality
+  void RequestRegularizerState(RegularizerName regularizer_name,
+                               RegularizerInternalState* regularizer_state);
+
+  void AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
+                                  BatchManager *batch_manager);
+
+  // Reconfigures topic model if already exists, otherwise creates a new model.
+  void CreateOrReconfigureModel(const ModelConfig& config);
+  void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
+
+  void Reconfigure(const MasterComponentConfig& config);
+
+  void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
+
+  void CreateDictionary(const DictionaryData& data);
+  void AppendDictionary(const DictionaryData& data);
+
+  // Returns false if BigARTM is still processing the collection, otherwise true.
+  bool WaitIdle(const WaitIdleArgs& args);
+
+  void AttachModel(const AttachModelArgs& args, int address_length, float* address);
+
  private:
   MasterComponent(const MasterComponent& rhs);
   MasterComponent& operator=(const MasterComponent&);
+
+  void RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
+                                 BatchManager* batch_manager, bool async,
+                                 ProcessBatchesResult* process_batches_result);
 
   std::shared_ptr<Instance> instance_;
 };

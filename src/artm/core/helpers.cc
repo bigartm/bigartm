@@ -576,6 +576,9 @@ bool Helpers::FixAndValidate(::artm::FilterDictionaryArgs* message, bool throw_e
   return Validate(*message, throw_error);
 }
 
+void Helpers::Fix(::artm::CollectionParserConfig* message) {
+}
+
 bool Helpers::Validate(const ::artm::CollectionParserConfig& message, bool throw_error) {
   std::stringstream ss;
 
@@ -592,6 +595,32 @@ bool Helpers::Validate(const ::artm::CollectionParserConfig& message, bool throw
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
+}
+
+bool Helpers::FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error) {
+  Fix(message); return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::RequestDictionaryArgs* message) {
+}
+
+bool Helpers::Validate(const ::artm::RequestDictionaryArgs& message, bool throw_error) {
+  return true;
+}
+
+bool Helpers::FixAndValidate(::artm::RequestDictionaryArgs* message, bool throw_error) {
+  Fix(message); return Validate(*message, throw_error);
+}
+
+void Helpers::Fix(::artm::GetMasterComponentInfoArgs* message) {
+}
+
+bool Helpers::Validate(const ::artm::GetMasterComponentInfoArgs& message, bool throw_error) {
+  return true;
+}
+
+bool Helpers::FixAndValidate(::artm::GetMasterComponentInfoArgs* message, bool throw_error) {
+  Fix(message); return Validate(*message, throw_error);
 }
 
 bool Helpers::Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error) {

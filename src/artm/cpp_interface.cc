@@ -604,10 +604,8 @@ void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
   HandleErrorCode(ArtmImportBatches(id(), blob.size(), blob.c_str()));
 }
 
-void MasterComponent::DisposeBatches(const DisposeBatchesArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmDisposeBatches(id(), blob.size(), blob.c_str()));
+void MasterComponent::DisposeBatch(const std::string& batch_name) {
+  ArtmDisposeBatch(id(), batch_name.c_str());
 }
 
 }  // namespace artm

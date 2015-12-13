@@ -96,8 +96,8 @@ ARTM_API = [
         [('master_id', int), ('args', messages.ImportBatchesArgs)],
     ),
     CallSpec(
-        'ArtmDisposeBatches',
-        [('master_id', int), ('args', messages.DisposeBatchesArgs)],
+        'ArtmDisposeBatch',
+        [('master_id', int), ('name', str)],
     ),
 
     ## deprecated

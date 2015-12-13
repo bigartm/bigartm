@@ -54,37 +54,6 @@ static void set_last_error(const std::string& error) {
   last_error_->assign(error);
 }
 
-static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model) {
-  std::string* lm = last_message_ex();
-  lm->resize(sizeof(float) * topic_model->token_size() * topic_model->topics_count());
-  char* lm_ptr = &(*lm)[0];
-  float* lm_float = reinterpret_cast<float*>(lm_ptr);
-  for (int token_index = 0; token_index < topic_model->token_size(); ++token_index) {
-    for (int topic_index = 0; topic_index < topic_model->topics_count(); ++topic_index) {
-      int index = token_index * topic_model->topics_count() + topic_index;
-      lm_float[index] = topic_model->token_weights(token_index).value(topic_index);
-    }
-  }
-
-  topic_model->clear_token_weights();
-  topic_model->clear_operation_type();
-}
-
-static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix) {
-  std::string* lm = last_message_ex();
-  lm->resize(sizeof(float) * theta_matrix->item_id_size() * theta_matrix->topics_count());
-  char* lm_ptr = &(*lm)[0];
-  float* lm_float = reinterpret_cast<float*>(lm_ptr);
-  for (int topic_index = 0; topic_index < theta_matrix->topics_count(); ++topic_index) {
-    for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
-      int index = item_index * theta_matrix->topics_count() + topic_index;
-      lm_float[index] = theta_matrix->item_weights(item_index).value(topic_index);
-    }
-  }
-
-  theta_matrix->clear_item_weights();
-}
-
 static void EnableLogging() {
   static bool logging_enabled = false;
   if (!logging_enabled) {
@@ -275,38 +244,6 @@ int ArtmReconfigureModel(int master_id, int length, const char* model_config) {
   } CATCH_EXCEPTIONS;
 }
 
-static int ImplRequestProcessBatches(int master_id, int length, const char* process_batches_args, bool external) {
-  try {
-    artm::ProcessBatchesArgs args;
-    ParseFromArray(process_batches_args, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
-
-    const bool is_dense_theta = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_Dense;
-    const bool is_dense_ptdw = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_DensePtdw;
-    if (external && !is_dense_theta && !is_dense_ptdw) {
-      set_last_error("Dense matrix format is required for ArtmRequestProcessBatchesExternal");
-      return ARTM_INVALID_OPERATION;
-    }
-
-    artm::ProcessBatchesResult result;
-    master_component(master_id)->RequestProcessBatches(args, &result);
-
-    if (external)
-      HandleExternalThetaMatrixRequest(result.mutable_theta_matrix());
-
-    result.SerializeToString(last_message());
-    return last_message()->size();
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRequestProcessBatches(int master_id, int length, const char* process_batches_args) {
-  return ImplRequestProcessBatches(master_id, length, process_batches_args, /* external =*/ false);
-}
-
-int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* process_batches_args) {
-  return ImplRequestProcessBatches(master_id, length, process_batches_args, /* external =*/ true);
-}
-
 int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batches_args) {
   try {
     artm::ProcessBatchesArgs args;
@@ -377,99 +314,11 @@ int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_ar
   } CATCH_EXCEPTIONS;
 }
 
-static int ImplRequestThetaMatrix(int master_id, int length, const char* get_theta_args, bool external) {
-  try {
-    artm::ThetaMatrix theta_matrix;
-    artm::GetThetaMatrixArgs args;
-    ParseFromArray(get_theta_args, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args);
-
-    if (external && args.matrix_layout() != artm::GetThetaMatrixArgs_MatrixLayout_Dense) {
-      set_last_error("Dense matrix format is required for ArtmRequestThetaMatrixExternal");
-      return ARTM_INVALID_OPERATION;
-    }
-
-    master_component(master_id)->RequestThetaMatrix(args, &theta_matrix);
-    ::artm::core::Helpers::Validate(theta_matrix, false);
-
-    if (external)
-      HandleExternalThetaMatrixRequest(&theta_matrix);
-
-    theta_matrix.SerializeToString(last_message());
-    return last_message()->size();
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args) {
-  return ImplRequestThetaMatrix(master_id, length, get_theta_args, /* external =*/ false);
-}
-
-int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* get_theta_args) {
-  return ImplRequestThetaMatrix(master_id, length, get_theta_args, /* external =*/ true);
-}
-
-static int ImplRequestTopicModel(int master_id, int length, const char* get_model_args, bool external) {
-  try {
-    artm::TopicModel topic_model;
-    artm::GetTopicModelArgs args;
-    ParseFromArray(get_model_args, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args);
-
-    if (external && args.matrix_layout() != artm::GetTopicModelArgs_MatrixLayout_Dense) {
-      set_last_error("Dense matrix format is required for ArtmRequestTopicModelExternal");
-      return ARTM_INVALID_OPERATION;
-    }
-
-    if (!master_component(master_id)->RequestTopicModel(args, &topic_model)) {
-      set_last_error("Topic model does not exist");
-      return ARTM_INVALID_OPERATION;
-    }
-
-    ::artm::core::Helpers::Validate(topic_model, false);
-
-    if (external)
-      HandleExternalTopicModelRequest(&topic_model);
-
-    topic_model.SerializeToString(last_message());
-    return last_message()->size();
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args) {
-  return ImplRequestTopicModel(master_id, length, get_model_args, /* external =*/ false);
-}
-
-int ArtmRequestTopicModelExternal(int master_id, int length, const char* get_model_args) {
-  return ImplRequestTopicModel(master_id, length, get_model_args, /* external =*/ true);
-}
-
 int ArtmRequestRegularizerState(int master_id, const char* regularizer_name) {
   try {
     artm::RegularizerInternalState regularizer_state;
     master_component(master_id)->RequestRegularizerState(regularizer_name, &regularizer_state);
     regularizer_state.SerializeToString(last_message());
-    return last_message()->size();
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRequestScore(int master_id, int length, const char* get_score_args) {
-  try {
-    ::artm::ScoreData score_data;
-    artm::GetScoreValueArgs args;
-    ParseFromArray(get_score_args, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args,  /* throw_error =*/ true);
-    master_component(master_id)->RequestScore(args, &score_data);
-    score_data.SerializeToString(last_message());
-    return last_message()->size();
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRequestMasterComponentInfo(int master_id, int length, const char* /*get_master_info_args*/) {
-  try {
-    ::artm::MasterComponentInfo master_component_info;
-    master_component(master_id)->RequestMasterComponentInfo(&master_component_info);
-    master_component_info.set_master_id(master_id);
-    master_component_info.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
 }
@@ -599,17 +448,6 @@ int ArtmCreateDictionary(int master_id, int length, const char* dictionary_data)
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestDictionary(int master_id, int length, const char* request_dictionary_args) {
-  try {
-    artm::GetDictionaryArgs message;
-    ParseFromArray(request_dictionary_args, length, &message);
-    artm::DictionaryData result_message;
-    master_component(master_id)->RequestDictionary(message, &result_message);
-    result_message.SerializeToString(last_message());
-    return last_message()->size();
-  } CATCH_EXCEPTIONS;
-}
-
 int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
   try {
     master_component(master_id)->DisposeDictionary(dictionary_name);
@@ -645,11 +483,9 @@ int ArtmImportBatches(int master_id, int length, const char* import_batches_args
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmDisposeBatches(int master_id, int length, const char* dispose_batches_args) {
+int ArtmDisposeBatch(int master_id, const char* batch_name) {
   try {
-    artm::DisposeBatchesArgs args;
-    ParseFromArray(dispose_batches_args, length, &args);
-    master_component(master_id)->DisposeBatches(args);
+    master_component(master_id)->DisposeBatch(batch_name);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
@@ -674,4 +510,84 @@ int ArtmRequestLoadBatch(const char* filename) {
     batch->SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// EXECUTE functionality
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// REQUEST functionality
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename ArgsT, typename ResultT>
+int ArtmRequest(int master_id, int length, const char* args_blob) {
+  try {
+    ArgsT args;
+    ResultT result;
+    ParseFromArray(args_blob, length, &args);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    master_component(master_id)->Request(args, &result);
+    result.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
+template<typename ArgsT, typename ResultT>
+int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
+  try {
+    ArgsT args;
+    ResultT result;
+    ParseFromArray(args_blob, length, &args);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    master_component(master_id)->Request(args, &result, last_message_ex());
+    result.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmRequestScore(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::GetScoreValueArgs,
+                      ::artm::ScoreData>(master_id, length, args);
+}
+
+int ArtmRequestDictionary(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::GetDictionaryArgs,
+                      ::artm::DictionaryData>(master_id, length, args);
+}
+
+int ArtmRequestMasterComponentInfo(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::GetMasterComponentInfoArgs,
+                      ::artm::MasterComponentInfo>(master_id, length, args);
+}
+
+int ArtmRequestProcessBatches(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::ProcessBatchesArgs,
+                      ::artm::ProcessBatchesResult>(master_id, length, args);
+}
+
+int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* args) {
+  return ArtmRequestExternal< ::artm::ProcessBatchesArgs,
+                              ::artm::ProcessBatchesResult>(master_id, length, args);
+}
+
+int ArtmRequestThetaMatrix(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::GetThetaMatrixArgs,
+                      ::artm::ThetaMatrix>(master_id, length, args);
+}
+
+int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* args) {
+  return ArtmRequestExternal< ::artm::GetThetaMatrixArgs,
+                              ::artm::ThetaMatrix>(master_id, length, args);
+}
+
+int ArtmRequestTopicModel(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::GetTopicModelArgs,
+                      ::artm::TopicModel>(master_id, length, args);
+}
+
+int ArtmRequestTopicModelExternal(int master_id, int length, const char* args) {
+  return ArtmRequestExternal< ::artm::GetTopicModelArgs,
+                              ::artm::TopicModel>(master_id, length, args);
 }

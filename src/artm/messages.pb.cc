@@ -283,9 +283,6 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* ImportBatchesArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ImportBatchesArgs_reflection_ = NULL;
-const ::google::protobuf::Descriptor* DisposeBatchesArgs_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  DisposeBatchesArgs_reflection_ = NULL;
 const ::google::protobuf::Descriptor* AwaitOperationArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   AwaitOperationArgs_reflection_ = NULL;
@@ -1806,22 +1803,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ImportBatchesArgs));
-  DisposeBatchesArgs_descriptor_ = file->message_type(74);
-  static const int DisposeBatchesArgs_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DisposeBatchesArgs, batch_name_),
-  };
-  DisposeBatchesArgs_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      DisposeBatchesArgs_descriptor_,
-      DisposeBatchesArgs::default_instance_,
-      DisposeBatchesArgs_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DisposeBatchesArgs, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DisposeBatchesArgs, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(DisposeBatchesArgs));
-  AwaitOperationArgs_descriptor_ = file->message_type(75);
+  AwaitOperationArgs_descriptor_ = file->message_type(74);
   static const int AwaitOperationArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AwaitOperationArgs, timeout_milliseconds_),
   };
@@ -2012,8 +1994,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
     MasterComponentInfo_CacheEntryInfo_descriptor_, &MasterComponentInfo_CacheEntryInfo::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ImportBatchesArgs_descriptor_, &ImportBatchesArgs::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    DisposeBatchesArgs_descriptor_, &DisposeBatchesArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     AwaitOperationArgs_descriptor_, &AwaitOperationArgs::default_instance());
 }
@@ -2207,8 +2187,6 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete MasterComponentInfo_CacheEntryInfo_reflection_;
   delete ImportBatchesArgs::default_instance_;
   delete ImportBatchesArgs_reflection_;
-  delete DisposeBatchesArgs::default_instance_;
-  delete DisposeBatchesArgs_reflection_;
   delete AwaitOperationArgs::default_instance_;
   delete AwaitOperationArgs_reflection_;
 }
@@ -2525,10 +2503,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     " \001(\005\022\023\n\013token_count\030\004 \001(\005\0320\n\016CacheEntryI"
     "nfo\022\013\n\003key\030\001 \001(\t\022\021\n\tbyte_size\030\002 \001(\005\"C\n\021I"
     "mportBatchesArgs\022\022\n\nbatch_name\030\001 \003(\t\022\032\n\005"
-    "batch\030\003 \003(\0132\013.artm.Batch\"(\n\022DisposeBatch"
-    "esArgs\022\022\n\nbatch_name\030\001 \003(\t\"6\n\022AwaitOpera"
-    "tionArgs\022 \n\024timeout_milliseconds\030\001 \001(\005:\002"
-    "-1", 12322);
+    "batch\030\003 \003(\0132\013.artm.Batch\"6\n\022AwaitOperati"
+    "onArgs\022 \n\024timeout_milliseconds\030\001 \001(\005:\002-1", 12280);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -2657,7 +2633,6 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   MasterComponentInfo_ModelInfo::default_instance_ = new MasterComponentInfo_ModelInfo();
   MasterComponentInfo_CacheEntryInfo::default_instance_ = new MasterComponentInfo_CacheEntryInfo();
   ImportBatchesArgs::default_instance_ = new ImportBatchesArgs();
-  DisposeBatchesArgs::default_instance_ = new DisposeBatchesArgs();
   AwaitOperationArgs::default_instance_ = new AwaitOperationArgs();
   DoubleArray::default_instance_->InitAsDefaultInstance();
   FloatArray::default_instance_->InitAsDefaultInstance();
@@ -2741,7 +2716,6 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   MasterComponentInfo_ModelInfo::default_instance_->InitAsDefaultInstance();
   MasterComponentInfo_CacheEntryInfo::default_instance_->InitAsDefaultInstance();
   ImportBatchesArgs::default_instance_->InitAsDefaultInstance();
-  DisposeBatchesArgs::default_instance_->InitAsDefaultInstance();
   AwaitOperationArgs::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fmessages_2eproto);
 }
@@ -33003,217 +32977,6 @@ void ImportBatchesArgs::Swap(ImportBatchesArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = ImportBatchesArgs_descriptor_;
   metadata.reflection = ImportBatchesArgs_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int DisposeBatchesArgs::kBatchNameFieldNumber;
-#endif  // !_MSC_VER
-
-DisposeBatchesArgs::DisposeBatchesArgs()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void DisposeBatchesArgs::InitAsDefaultInstance() {
-}
-
-DisposeBatchesArgs::DisposeBatchesArgs(const DisposeBatchesArgs& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void DisposeBatchesArgs::SharedCtor() {
-  _cached_size_ = 0;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-DisposeBatchesArgs::~DisposeBatchesArgs() {
-  SharedDtor();
-}
-
-void DisposeBatchesArgs::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void DisposeBatchesArgs::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* DisposeBatchesArgs::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return DisposeBatchesArgs_descriptor_;
-}
-
-const DisposeBatchesArgs& DisposeBatchesArgs::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
-  return *default_instance_;
-}
-
-DisposeBatchesArgs* DisposeBatchesArgs::default_instance_ = NULL;
-
-DisposeBatchesArgs* DisposeBatchesArgs::New() const {
-  return new DisposeBatchesArgs;
-}
-
-void DisposeBatchesArgs::Clear() {
-  batch_name_.Clear();
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool DisposeBatchesArgs::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated string batch_name = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch_name:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->add_batch_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->batch_name(this->batch_name_size() - 1).data(),
-            this->batch_name(this->batch_name_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(10)) goto parse_batch_name;
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void DisposeBatchesArgs::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated string batch_name = 1;
-  for (int i = 0; i < this->batch_name_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-    this->batch_name(i).data(), this->batch_name(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      1, this->batch_name(i), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* DisposeBatchesArgs::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // repeated string batch_name = 1;
-  for (int i = 0; i < this->batch_name_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->batch_name(i).data(), this->batch_name(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(1, this->batch_name(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int DisposeBatchesArgs::ByteSize() const {
-  int total_size = 0;
-
-  // repeated string batch_name = 1;
-  total_size += 1 * this->batch_name_size();
-  for (int i = 0; i < this->batch_name_size(); i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-      this->batch_name(i));
-  }
-
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void DisposeBatchesArgs::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const DisposeBatchesArgs* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const DisposeBatchesArgs*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void DisposeBatchesArgs::MergeFrom(const DisposeBatchesArgs& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  batch_name_.MergeFrom(from.batch_name_);
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void DisposeBatchesArgs::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void DisposeBatchesArgs::CopyFrom(const DisposeBatchesArgs& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool DisposeBatchesArgs::IsInitialized() const {
-
-  return true;
-}
-
-void DisposeBatchesArgs::Swap(DisposeBatchesArgs* other) {
-  if (other != this) {
-    batch_name_.Swap(&other->batch_name_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata DisposeBatchesArgs::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = DisposeBatchesArgs_descriptor_;
-  metadata.reflection = DisposeBatchesArgs_reflection_;
   return metadata;
 }
 

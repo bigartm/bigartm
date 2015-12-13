@@ -143,7 +143,7 @@ class MasterComponent {
   void DisposeModel(const std::string& model_name);
 
   void ImportBatches(const ImportBatchesArgs& args);
-  void DisposeBatches(const DisposeBatchesArgs &args);
+  void DisposeBatch(const std::string& batch_name);
 
   void CreateDictionary(const DictionaryData& args);
   void DisposeDictionary(const std::string& dictionary_name);

@@ -41,7 +41,7 @@ extern "C" {
   DLL_PUBLIC int ArtmParseCollection(int length, const char* collection_parser_config);
 
   DLL_PUBLIC int ArtmImportBatches(int master_id, int length, const char* import_batches_args);
-  DLL_PUBLIC int ArtmDisposeBatches(int master_id, int length, const char* dispose_batches_args);
+  DLL_PUBLIC int ArtmDisposeBatch(int master_id, const char* batch_name);
 
   DLL_PUBLIC int ArtmAddBatch(int master_id, int length, const char* add_batch_args);
   DLL_PUBLIC int ArtmInvokeIteration(int master_id, int length, const char* invoke_iteration_args);

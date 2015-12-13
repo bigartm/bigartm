@@ -26,7 +26,7 @@ class CacheManager : boost::noncopyable {
 
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
   void DisposeModel(ModelName model_name);
-  bool RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
+  void RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                           ::artm::ThetaMatrix* theta_matrix) const;
   std::shared_ptr<DataLoaderCacheEntry> FindCacheEntry(const boost::uuids::uuid& batch_uuid,
                                                        const ModelName& model_name) const;
