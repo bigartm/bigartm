@@ -332,10 +332,10 @@ void Model::Disable() {
   Reconfigure(config_copy_);
 }
 
-void Model::Initialize(const Dictionary& dictionary) {
+void Model::Initialize(const std::string& dictionary_name) {
   InitializeModelArgs args;
   args.set_model_name(this->name());
-  args.set_dictionary_name(dictionary.name());
+  args.set_dictionary_name(dictionary_name);
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmInitializeModel(master_id(), blob.size(), blob.c_str()));
@@ -399,28 +399,6 @@ void Regularizer::Reconfigure(const RegularizerConfig& config) {
   HandleErrorCode(ArtmReconfigureRegularizer(master_id(), regularizer_config_blob.size(),
     StringAsArray(&regularizer_config_blob)));
   config_.CopyFrom(config);
-}
-
-Dictionary::Dictionary(const MasterComponent& master_component, const DictionaryConfig& config)
-    : master_id_(master_component.id()),
-      config_(config) {
-  std::string dictionary_config_blob;
-  config.SerializeToString(&dictionary_config_blob);
-  HandleErrorCode(ArtmCreateDictionary(master_id_, dictionary_config_blob.size(),
-    StringAsArray(&dictionary_config_blob)));
-}
-
-Dictionary::~Dictionary() {
-  ArtmDisposeDictionary(master_id(), config_.name().c_str());
-}
-
-void Dictionary::Import(const std::string& dictionary_name, const std::string& file_name) {
-  ImportDictionaryArgs args;
-  args.set_file_name(file_name);
-  args.set_dictionary_name(dictionary_name);
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmImportDictionary(master_id(), blob.size(), blob.c_str()));
 }
 
 bool MasterComponent::AddBatch(const Batch& batch) {
@@ -512,6 +490,16 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
 
 void MasterComponent::DisposeModel(const std::string& model_name) {
   ArtmDisposeModel(id(), model_name.c_str());
+}
+
+void MasterComponent::CreateDictionary(const DictionaryData& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmCreateDictionary(id_, blob.size(), blob.c_str()));
+}
+
+void MasterComponent::DisposeDictionary(const std::string& dictionary_name) {
+  HandleErrorCode(ArtmDisposeDictionary(id_, dictionary_name.c_str()));
 }
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {

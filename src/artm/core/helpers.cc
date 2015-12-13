@@ -584,16 +584,28 @@ bool Helpers::Validate(const ::artm::GatherDictionaryArgs& message, bool throw_e
   return false;
 }
 
+void Helpers::Fix(::artm::DictionaryData* message) {
+  if (message->class_id_size() == 0) {
+    for (int i = 0; i < message->token_size(); ++i) {
+      message->add_class_id(DefaultClass);
+    }
+  }
+}
+
 bool Helpers::Validate(const ::artm::DictionaryData& message, bool throw_error) {
   std::stringstream ss;
 
   if (!message.has_name())
     ss << "DictionaryData has no dictionary name; ";
 
+  bool is_token_df_ok = message.token_df_size() == 0 || message.token_df_size() == message.token_size();
+  bool is_token_tf_ok = message.token_tf_size() == 0 || message.token_tf_size() == message.token_size();
+  bool is_token_value_ok = message.token_value_size() == 0 || message.token_value_size() == message.token_size();
+
   if (message.token_size() != message.class_id_size() ||
-      message.token_size() != message.token_tf_size() ||
-      message.token_size() != message.token_df_size() ||
-      message.token_size() != message.token_value_size()) {
+      !is_token_df_ok ||
+      !is_token_tf_ok ||
+      !is_token_value_ok) {
     ss << "DictionaryData general token fields have inconsistent sizes; ";
   }
 
@@ -609,6 +621,11 @@ bool Helpers::Validate(const ::artm::DictionaryData& message, bool throw_error) 
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
+}
+
+bool Helpers::FixAndValidate(::artm::DictionaryData* message, bool throw_error) {
+  Fix(message);
+  return Validate(*message, throw_error);
 }
 
 
@@ -653,65 +670,6 @@ bool Helpers::Validate(const ::artm::ImportDictionaryArgs& message, bool throw_e
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   LOG(WARNING) << ss.str();
   return false;
-}
-
-void Helpers::Fix(::artm::DictionaryConfig* message) {
-  // Upgrade from token_count to token_weight
-  if (message->has_total_token_count() && !message->has_total_token_weight()) {
-    message->set_total_token_weight(static_cast<float>(message->total_token_count()));
-    message->clear_total_token_count();
-  }
-
-  for (::artm::DictionaryEntry& entry : *message->mutable_entry()) {
-    if (entry.has_token_count() && !entry.has_token_weight()) {
-      entry.set_token_weight(static_cast<float>(entry.token_count()));
-      entry.clear_token_count();
-    }
-  }
-}
-
-bool Helpers::Validate(const ::artm::DictionaryConfig& message, bool throw_error) {
-  std::stringstream ss;
-  if (message.has_cooc_entries()) {
-    if (message.cooc_entries().first_index_size() != message.cooc_entries().second_index_size() ||
-        message.cooc_entries().first_index_size() != message.cooc_entries().value_size() ||
-        message.cooc_entries().second_index_size() != message.cooc_entries().value_size()) {
-      ss << "DictionaryConfig.cooc_entries fields have inconsistent sizes; ";
-
-      for (int i = 0; i < message.cooc_entries().first_index_size(); ++i) {
-        if (message.cooc_entries().first_index(i) < 0 ||
-            message.cooc_entries().first_index(i) >= message.entry_size())
-          ss << "DictionaryConfig.cooc_entries.first_index contain index nt from [0, entry.size); ";
-        if (message.cooc_entries().second_index(i) < 0 ||
-            message.cooc_entries().second_index(i) >= message.entry_size())
-          ss << "DictionaryConfig.cooc_entries.first_index contain index nt from [0, entry.size); ";
-      }
-    }
-  }
-
-  // Validate no info in deprecated field (token_count)
-  if (message.has_total_token_count()) {
-    ss << "DictionaryConfig.total_token_count field is deprecated. Use DictionaryConfig.total_token_weight instead; ";
-  }
-
-  for (const ::artm::DictionaryEntry& entry : message.entry()) {
-    if (entry.has_token_count()) {
-      ss << "DictionaryEntry.token_count field is deprecated. Use DictionaryEntry.token_weight instead; ";
-    }
-  }
-
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
-}
-
-bool Helpers::FixAndValidate(::artm::DictionaryConfig* message, bool throw_error) {
-  Fix(message);
-  return Validate(*message, throw_error);
 }
 
 void Helpers::Fix(::artm::ProcessBatchesArgs* message) {

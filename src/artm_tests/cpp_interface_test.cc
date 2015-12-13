@@ -314,18 +314,15 @@ void BasicTest() {
   }
 
   // Test dictionaries and InitializeModel
-  ::artm::DictionaryConfig dict_config;
+  ::artm::DictionaryData dict_config;
   dict_config.set_name("My dictionary");
-  ::artm::DictionaryEntry* de1 = dict_config.add_entry();
-  ::artm::DictionaryEntry* de2 = dict_config.add_entry();
-  ::artm::DictionaryEntry* de3 = dict_config.add_entry();
-  de1->set_key_token("my_tok_1");
-  de2->set_key_token("my_tok_2");
-  de3->set_key_token("my_tok_3");
-  ::artm::Dictionary dict(*master_component, dict_config);
+  dict_config.add_token("my_tok_1");
+  dict_config.add_token("my_tok_2");
+  dict_config.add_token("my_tok_3");
+  master_component->CreateDictionary(dict_config);
   model_config.set_name("model3_name");
   artm::Model model3(*master_component, model_config);
-  model3.Initialize(dict);
+  model3.Initialize(dict_config.name());
 
   artm::GetTopicModelArgs args;
   args.set_model_name(model3.name());
@@ -599,11 +596,13 @@ TEST(CppInterface, ProcessBatchesApi) {
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
   }
 
-  ::artm::DictionaryConfig dict_config;
+  ::artm::DictionaryData dict_config;
   dict_config.set_name("My dictionary");
-  ::artm::DictionaryEntry* de1 = dict_config.add_entry();
-  de1->set_key_token("my_tok_1");
-  ::artm::Dictionary dict(master, dict_config);
+  dict_config.add_token("my_tok_1");
+  dict_config.add_class_id("@default_class");
+  dict_config.add_token_df(1.0f);
+  dict_config.add_token_tf(2.0f);
+  master.CreateDictionary(dict_config);
   master_info = master.info();
   ASSERT_EQ(master_info->dictionary_size(), 2);
   EXPECT_EQ(master_info->dictionary(0).entries_count(), 1);

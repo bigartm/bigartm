@@ -122,8 +122,8 @@ def test_func():
     en_dic = {}  # mapping from english token to its index in batch.token list
     batch = messages.Batch()  # batch representing the entire collection
     batch.id = str(uuid.uuid1())
-    dict_config = messages.DictionaryConfig()  # BigARTM dictionary to initialize model
-    dict_config.name = dictionary_name
+    dict_data = messages.DictionaryData()  # BigARTM dictionary to initialize model
+    dict_data.name = dictionary_name
 
     def append(tokens, dic, item, class_id):
         for token in tokens:
@@ -131,9 +131,8 @@ def test_func():
                 dic[token] = len(batch.token)       # 1. update ru_dic or en_dic
                 batch.token.append(token)           # 2. update batch.token and batch.class_id
                 batch.class_id.append(class_id)
-                entry = dict_config.entry.add()   # 3. update dict_config
-                entry.key_token = token
-                entry.class_id = class_id
+                dict_data.token.append(token)
+                dict_data.class_id.append(class_id)
 
             # Add token to the item.
             item.field[0].token_id.append(dic[token])
@@ -164,7 +163,7 @@ def test_func():
         master = mc.MasterComponent(lib, scores=scores)
 
         # Create the collection dictionary
-        lib.ArtmCreateDictionary(master.master_id, dict_config)
+        lib.ArtmCreateDictionary(master.master_id, dict_data)
 
         # Initialize model
         master.initialize_model(model_name=pwt,

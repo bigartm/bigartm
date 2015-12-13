@@ -83,9 +83,8 @@ class MasterComponent : boost::noncopyable {
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   void DisposeRegularizer(const std::string& name);
 
-  void CreateOrReconfigureDictionaryImpl(const DictionaryData& data);
-  void DisposeDictionaryImpl(const std::string& name);
-  void CreateOrReconfigureDictionary(const DictionaryConfig& data);
+  void CreateDictionary(const DictionaryData& data);
+  void AppendDictionary(const DictionaryData& data);
   void DisposeDictionary(const std::string& name);
   void ImportDictionary(const ImportDictionaryArgs& args);
   void ExportDictionary(const ExportDictionaryArgs& args);

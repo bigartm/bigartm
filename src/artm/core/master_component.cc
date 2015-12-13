@@ -80,20 +80,27 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
   instance_->DisposeRegularizer(name);
 }
 
-void MasterComponent::CreateOrReconfigureDictionaryImpl(const DictionaryData& data) {
-  instance_->CreateOrReconfigureDictionaryImpl(data);
+void MasterComponent::CreateDictionary(const DictionaryData& data) {
+  DisposeDictionary(data.name());
+
+  auto dictionary = std::make_shared<DictionaryImpl>(data);
+  instance_->dictionaries_impl()->set(data.name(), dictionary);
+
+  instance_->dictionaries()->set(data.name(), std::make_shared<Dictionary>(*dictionary));
 }
 
-void MasterComponent::DisposeDictionaryImpl(const std::string& name) {
-  instance_->DisposeDictionaryImpl(name);
-}
+void MasterComponent::AppendDictionary(const DictionaryData& data) {
+  auto dict_ptr = instance_->dictionaries_impl()->get(data.name());
+  if (dict_ptr == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary" + data.name() + " does not exist"));
+  dict_ptr->Append(data);
 
-void MasterComponent::CreateOrReconfigureDictionary(const DictionaryConfig& data) {
-  instance_->CreateOrReconfigureDictionary(data);
+  instance_->dictionaries()->set(data.name(), std::make_shared<Dictionary>(*dict_ptr));
 }
 
 void MasterComponent::DisposeDictionary(const std::string& name) {
-  instance_->DisposeDictionary(name);
+  instance_->dictionaries()->erase(name);
+  instance_->dictionaries_impl()->erase(name);
 }
 
 void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
@@ -104,7 +111,7 @@ void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
   if (!fout.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + args.file_name()));
 
-  std::shared_ptr<DictionaryImpl> dict_ptr = instance_->dictionary_impl(args.dictionary_name());
+  std::shared_ptr<DictionaryImpl> dict_ptr = instance_->dictionaries_impl()->get(args.dictionary_name());
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
         args.dictionary_name() + " does not exist or has no tokens"));
@@ -210,12 +217,12 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   if (token_size <= 0)
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
-  instance_->CreateOrReconfigureDictionaryImpl(*(temp_data.back().get()));
+  CreateDictionary(*(temp_data.back().get()));
   temp_data.pop_back();
 
   int temp_size = temp_data.size();
   for (int i = 0; i < temp_size; ++i) {
-    instance_->dictionary_impl(dict_name)->Append(*(temp_data.back().get()));
+    AppendDictionary(*(temp_data.back().get()));
     temp_data.pop_back();
   }
 
@@ -374,7 +381,7 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   LOG(INFO) << "MasterComponent::FilterDictionaryArgs() with " << Helpers::Describe(args);
 
-  auto src_dictionary_ptr = instance_->dictionary_impl(args.dictionary_name());
+  auto src_dictionary_ptr = instance_->dictionaries_impl()->get(args.dictionary_name());
   if (src_dictionary_ptr == nullptr) {
     LOG(ERROR) << "MasterComponent::FilterDictionaryArgs(): filter was requested for non-exists dictionary '"
       << args.dictionary_name() << "', operation was aborted";
@@ -434,36 +441,9 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
     }
   }
 
-  if (args.dictionary_name() == args.dictionary_target_name())
-    instance_->DisposeDictionaryImpl(args.dictionary_name());  // replace the src dictionary
-
-  instance_->CreateOrReconfigureDictionaryImpl(*dictionary_data);
-  auto dict_ptr = instance_->dictionary_impl(dictionary_data->name());
+  CreateDictionary(*dictionary_data);
   if (cooc_dictionary_data->cooc_first_index_size() > 0)
-    dict_ptr->Append(*cooc_dictionary_data);
-
-  // temp code to craft the old-style dictionary based on new-style one
-  auto dictionary_config = std::make_shared<artm::DictionaryConfig>();
-  dictionary_config->set_name(args.dictionary_target_name());
-
-  for (int i = 0; i < dictionary_data->token_size(); ++i) {
-    auto entry = dictionary_config->add_entry();
-    entry->set_key_token(dictionary_data->token(i));
-    entry->set_class_id(dictionary_data->class_id(i));
-  }
-
-  dictionary_config->clear_cooc_entries();
-  auto cooc_entries = dictionary_config->mutable_cooc_entries();
-  for (int i = 0; i < cooc_dictionary_data->cooc_first_index_size(); ++i) {
-    cooc_entries->add_first_index(cooc_dictionary_data->cooc_first_index(i));
-    cooc_entries->add_second_index(cooc_dictionary_data->cooc_second_index(i));
-    cooc_entries->add_value(cooc_dictionary_data->cooc_value(i));
-  }
-
-  if (args.dictionary_name() == args.dictionary_target_name())
-    instance_->DisposeDictionary(args.dictionary_name());  // replace the src dictionary
-
-  instance_->CreateOrReconfigureDictionary(*dictionary_config);
+    AppendDictionary(*cooc_dictionary_data);
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
@@ -664,31 +644,9 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
     }
   }
 
-  // put dictionary into instance.dictionaries_
-  instance_->CreateOrReconfigureDictionaryImpl(*dictionary_data);
+  CreateDictionary(*dictionary_data);
   if (cooc_dictionary_data->cooc_first_index_size() > 0)
-    instance_->dictionary_impl(dictionary_data->name())->Append(*cooc_dictionary_data);
-
-  // temp code to craft the old-style dictionary based on new-style one
-  auto dictionary_config = std::make_shared<artm::DictionaryConfig>();
-  dictionary_config->set_name(args.dictionary_target_name());
-
-  for (int i = 0; i < dictionary_data->token_size(); ++i) {
-    auto entry = dictionary_config->add_entry();
-    entry->set_key_token(dictionary_data->token(i));
-    entry->set_class_id(dictionary_data->class_id(i));
-    entry->set_value(dictionary_data->token_value(i));
-  }
-
-  dictionary_config->clear_cooc_entries();
-  auto cooc_entries = dictionary_config->mutable_cooc_entries();
-  for (int i = 0; i < cooc_dictionary_data->cooc_first_index_size(); ++i) {
-    cooc_entries->add_first_index(cooc_dictionary_data->cooc_first_index(i));
-    cooc_entries->add_second_index(cooc_dictionary_data->cooc_second_index(i));
-    cooc_entries->add_value(cooc_dictionary_data->cooc_value(i));
-  }
-
-  instance_->CreateOrReconfigureDictionary(*dictionary_config);
+    AppendDictionary(*cooc_dictionary_data);
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {

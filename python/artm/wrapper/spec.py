@@ -69,13 +69,8 @@ ARTM_API = [
     ),
     CallSpec(
         'ArtmCreateDictionary',
-        [('master_id', int), ('config', messages.DictionaryConfig)],
+        [('master_id', int), ('config', messages.DictionaryData)],
     ),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmReconfigureDictionary',
-    #    [('master_id', int), ('config', messages.DictionaryConfig)],
-    #),
     CallSpec(
         'ArtmDisposeDictionary',
         [('master_id', int), ('name', str)],
@@ -207,18 +202,6 @@ ARTM_API = [
         [('master_id', int), ('args', messages.GetMasterComponentInfoArgs)],
         request=messages.MasterComponentInfo,
     ),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmRequestParseCollection',
-    #    [('args', messages.CollectionParserConfig)],
-    #    request=messages.DictionaryConfig,
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmRequestLoadDictionary',
-    #    [('filename', str)],
-    #    request=messages.DictionaryConfig,
-    #),
     CallSpec(
         'ArtmRequestLoadBatch',
         [('filename', str)],

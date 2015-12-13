@@ -65,10 +65,6 @@ class Helpers {
   static bool Validate(const ::artm::InitializeModelArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::InitializeModelArgs* message, bool throw_error = true);
 
-  static void Fix(::artm::DictionaryConfig* message);
-  static bool Validate(const ::artm::DictionaryConfig& message, bool throw_error = true);
-  static bool FixAndValidate(::artm::DictionaryConfig* message, bool throw_error = true);
-
   static void Fix(::artm::ProcessBatchesArgs* message);
   static bool Validate(const ::artm::ProcessBatchesArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::ProcessBatchesArgs* message, bool throw_error = true);
@@ -77,8 +73,11 @@ class Helpers {
   static bool Validate(const ::artm::FilterDictionaryArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::FilterDictionaryArgs* message, bool throw_error = true);
 
-  static bool Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error = true);
+  static void Fix(::artm::DictionaryData* message);
   static bool Validate(const ::artm::DictionaryData& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::DictionaryData* message, bool throw_error = true);
+
+  static bool Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportDictionaryArgs& message, bool throw_error = true);

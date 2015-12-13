@@ -58,7 +58,6 @@ class SmoothPtdwConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class TransformConfig;
-class DictionaryConfig;
 class DictionaryEntry;
 class DictionaryData;
 class DictionaryCoocurenceEntries;
@@ -3621,148 +3620,6 @@ class TransformConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static TransformConfig* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class DictionaryConfig : public ::google::protobuf::Message {
- public:
-  DictionaryConfig();
-  virtual ~DictionaryConfig();
-
-  DictionaryConfig(const DictionaryConfig& from);
-
-  inline DictionaryConfig& operator=(const DictionaryConfig& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const DictionaryConfig& default_instance();
-
-  void Swap(DictionaryConfig* other);
-
-  // implements Message ----------------------------------------------
-
-  DictionaryConfig* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const DictionaryConfig& from);
-  void MergeFrom(const DictionaryConfig& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // repeated .artm.DictionaryEntry entry = 2;
-  inline int entry_size() const;
-  inline void clear_entry();
-  static const int kEntryFieldNumber = 2;
-  inline const ::artm::DictionaryEntry& entry(int index) const;
-  inline ::artm::DictionaryEntry* mutable_entry(int index);
-  inline ::artm::DictionaryEntry* add_entry();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::DictionaryEntry >&
-      entry() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::DictionaryEntry >*
-      mutable_entry();
-
-  // optional int32 total_token_count = 3;
-  inline bool has_total_token_count() const;
-  inline void clear_total_token_count();
-  static const int kTotalTokenCountFieldNumber = 3;
-  inline ::google::protobuf::int32 total_token_count() const;
-  inline void set_total_token_count(::google::protobuf::int32 value);
-
-  // optional int32 total_items_count = 4;
-  inline bool has_total_items_count() const;
-  inline void clear_total_items_count();
-  static const int kTotalItemsCountFieldNumber = 4;
-  inline ::google::protobuf::int32 total_items_count() const;
-  inline void set_total_items_count(::google::protobuf::int32 value);
-
-  // optional .artm.DictionaryCoocurenceEntries cooc_entries = 5;
-  inline bool has_cooc_entries() const;
-  inline void clear_cooc_entries();
-  static const int kCoocEntriesFieldNumber = 5;
-  inline const ::artm::DictionaryCoocurenceEntries& cooc_entries() const;
-  inline ::artm::DictionaryCoocurenceEntries* mutable_cooc_entries();
-  inline ::artm::DictionaryCoocurenceEntries* release_cooc_entries();
-  inline void set_allocated_cooc_entries(::artm::DictionaryCoocurenceEntries* cooc_entries);
-
-  // optional float total_token_weight = 6;
-  inline bool has_total_token_weight() const;
-  inline void clear_total_token_weight();
-  static const int kTotalTokenWeightFieldNumber = 6;
-  inline float total_token_weight() const;
-  inline void set_total_token_weight(float value);
-
-  // @@protoc_insertion_point(class_scope:artm.DictionaryConfig)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_total_token_count();
-  inline void clear_has_total_token_count();
-  inline void set_has_total_items_count();
-  inline void clear_has_total_items_count();
-  inline void set_has_cooc_entries();
-  inline void clear_has_cooc_entries();
-  inline void set_has_total_token_weight();
-  inline void clear_has_total_token_weight();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* name_;
-  ::google::protobuf::RepeatedPtrField< ::artm::DictionaryEntry > entry_;
-  ::google::protobuf::int32 total_token_count_;
-  ::google::protobuf::int32 total_items_count_;
-  ::artm::DictionaryCoocurenceEntries* cooc_entries_;
-  float total_token_weight_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static DictionaryConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -7807,59 +7664,45 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   inline ::std::string* release_class_id();
   inline void set_allocated_class_id(::std::string* class_id);
 
-  // optional float min_percentage = 4;
-  inline bool has_min_percentage() const;
-  inline void clear_min_percentage();
-  static const int kMinPercentageFieldNumber = 4;
-  inline float min_percentage() const;
-  inline void set_min_percentage(float value);
-
-  // optional float max_percentage = 5;
-  inline bool has_max_percentage() const;
-  inline void clear_max_percentage();
-  static const int kMaxPercentageFieldNumber = 5;
-  inline float max_percentage() const;
-  inline void set_max_percentage(float value);
-
-  // optional int32 min_df = 6;
+  // optional int32 min_df = 4;
   inline bool has_min_df() const;
   inline void clear_min_df();
-  static const int kMinDfFieldNumber = 6;
+  static const int kMinDfFieldNumber = 4;
   inline ::google::protobuf::int32 min_df() const;
   inline void set_min_df(::google::protobuf::int32 value);
 
-  // optional int32 max_df = 7;
+  // optional int32 max_df = 5;
   inline bool has_max_df() const;
   inline void clear_max_df();
-  static const int kMaxDfFieldNumber = 7;
+  static const int kMaxDfFieldNumber = 5;
   inline ::google::protobuf::int32 max_df() const;
   inline void set_max_df(::google::protobuf::int32 value);
 
-  // optional int32 min_tf = 8;
+  // optional int32 min_tf = 6;
   inline bool has_min_tf() const;
   inline void clear_min_tf();
-  static const int kMinTfFieldNumber = 8;
+  static const int kMinTfFieldNumber = 6;
   inline ::google::protobuf::int32 min_tf() const;
   inline void set_min_tf(::google::protobuf::int32 value);
 
-  // optional int32 max_tf = 9;
+  // optional int32 max_tf = 7;
   inline bool has_max_tf() const;
   inline void clear_max_tf();
-  static const int kMaxTfFieldNumber = 9;
+  static const int kMaxTfFieldNumber = 7;
   inline ::google::protobuf::int32 max_tf() const;
   inline void set_max_tf(::google::protobuf::int32 value);
 
-  // optional int32 min_value = 10;
+  // optional int32 min_value = 8;
   inline bool has_min_value() const;
   inline void clear_min_value();
-  static const int kMinValueFieldNumber = 10;
+  static const int kMinValueFieldNumber = 8;
   inline ::google::protobuf::int32 min_value() const;
   inline void set_min_value(::google::protobuf::int32 value);
 
-  // optional int32 max_value = 11;
+  // optional int32 max_value = 9;
   inline bool has_max_value() const;
   inline void clear_max_value();
-  static const int kMaxValueFieldNumber = 11;
+  static const int kMaxValueFieldNumber = 9;
   inline ::google::protobuf::int32 max_value() const;
   inline void set_max_value(::google::protobuf::int32 value);
 
@@ -7871,10 +7714,6 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   inline void clear_has_dictionary_target_name();
   inline void set_has_class_id();
   inline void clear_has_class_id();
-  inline void set_has_min_percentage();
-  inline void clear_has_min_percentage();
-  inline void set_has_max_percentage();
-  inline void clear_has_max_percentage();
   inline void set_has_min_df();
   inline void clear_has_min_df();
   inline void set_has_max_df();
@@ -7893,8 +7732,6 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   ::std::string* dictionary_name_;
   ::std::string* dictionary_target_name_;
   ::std::string* class_id_;
-  float min_percentage_;
-  float max_percentage_;
   ::google::protobuf::int32 min_df_;
   ::google::protobuf::int32 max_df_;
   ::google::protobuf::int32 min_tf_;
@@ -7903,7 +7740,7 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   ::google::protobuf::int32 max_value_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -15398,209 +15235,6 @@ inline void TransformConfig::set_a(double value) {
 
 // -------------------------------------------------------------------
 
-// DictionaryConfig
-
-// optional string name = 1;
-inline bool DictionaryConfig::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void DictionaryConfig::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void DictionaryConfig::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void DictionaryConfig::clear_name() {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    name_->clear();
-  }
-  clear_has_name();
-}
-inline const ::std::string& DictionaryConfig::name() const {
-  return *name_;
-}
-inline void DictionaryConfig::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void DictionaryConfig::set_name(const char* value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void DictionaryConfig::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* DictionaryConfig::mutable_name() {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  return name_;
-}
-inline ::std::string* DictionaryConfig::release_name() {
-  clear_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void DictionaryConfig::set_allocated_name(::std::string* name) {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// repeated .artm.DictionaryEntry entry = 2;
-inline int DictionaryConfig::entry_size() const {
-  return entry_.size();
-}
-inline void DictionaryConfig::clear_entry() {
-  entry_.Clear();
-}
-inline const ::artm::DictionaryEntry& DictionaryConfig::entry(int index) const {
-  return entry_.Get(index);
-}
-inline ::artm::DictionaryEntry* DictionaryConfig::mutable_entry(int index) {
-  return entry_.Mutable(index);
-}
-inline ::artm::DictionaryEntry* DictionaryConfig::add_entry() {
-  return entry_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::DictionaryEntry >&
-DictionaryConfig::entry() const {
-  return entry_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::DictionaryEntry >*
-DictionaryConfig::mutable_entry() {
-  return &entry_;
-}
-
-// optional int32 total_token_count = 3;
-inline bool DictionaryConfig::has_total_token_count() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void DictionaryConfig::set_has_total_token_count() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void DictionaryConfig::clear_has_total_token_count() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void DictionaryConfig::clear_total_token_count() {
-  total_token_count_ = 0;
-  clear_has_total_token_count();
-}
-inline ::google::protobuf::int32 DictionaryConfig::total_token_count() const {
-  return total_token_count_;
-}
-inline void DictionaryConfig::set_total_token_count(::google::protobuf::int32 value) {
-  set_has_total_token_count();
-  total_token_count_ = value;
-}
-
-// optional int32 total_items_count = 4;
-inline bool DictionaryConfig::has_total_items_count() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void DictionaryConfig::set_has_total_items_count() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void DictionaryConfig::clear_has_total_items_count() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void DictionaryConfig::clear_total_items_count() {
-  total_items_count_ = 0;
-  clear_has_total_items_count();
-}
-inline ::google::protobuf::int32 DictionaryConfig::total_items_count() const {
-  return total_items_count_;
-}
-inline void DictionaryConfig::set_total_items_count(::google::protobuf::int32 value) {
-  set_has_total_items_count();
-  total_items_count_ = value;
-}
-
-// optional .artm.DictionaryCoocurenceEntries cooc_entries = 5;
-inline bool DictionaryConfig::has_cooc_entries() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void DictionaryConfig::set_has_cooc_entries() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void DictionaryConfig::clear_has_cooc_entries() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void DictionaryConfig::clear_cooc_entries() {
-  if (cooc_entries_ != NULL) cooc_entries_->::artm::DictionaryCoocurenceEntries::Clear();
-  clear_has_cooc_entries();
-}
-inline const ::artm::DictionaryCoocurenceEntries& DictionaryConfig::cooc_entries() const {
-  return cooc_entries_ != NULL ? *cooc_entries_ : *default_instance_->cooc_entries_;
-}
-inline ::artm::DictionaryCoocurenceEntries* DictionaryConfig::mutable_cooc_entries() {
-  set_has_cooc_entries();
-  if (cooc_entries_ == NULL) cooc_entries_ = new ::artm::DictionaryCoocurenceEntries;
-  return cooc_entries_;
-}
-inline ::artm::DictionaryCoocurenceEntries* DictionaryConfig::release_cooc_entries() {
-  clear_has_cooc_entries();
-  ::artm::DictionaryCoocurenceEntries* temp = cooc_entries_;
-  cooc_entries_ = NULL;
-  return temp;
-}
-inline void DictionaryConfig::set_allocated_cooc_entries(::artm::DictionaryCoocurenceEntries* cooc_entries) {
-  delete cooc_entries_;
-  cooc_entries_ = cooc_entries;
-  if (cooc_entries) {
-    set_has_cooc_entries();
-  } else {
-    clear_has_cooc_entries();
-  }
-}
-
-// optional float total_token_weight = 6;
-inline bool DictionaryConfig::has_total_token_weight() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void DictionaryConfig::set_has_total_token_weight() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void DictionaryConfig::clear_has_total_token_weight() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void DictionaryConfig::clear_total_token_weight() {
-  total_token_weight_ = 0;
-  clear_has_total_token_weight();
-}
-inline float DictionaryConfig::total_token_weight() const {
-  return total_token_weight_;
-}
-inline void DictionaryConfig::set_total_token_weight(float value) {
-  set_has_total_token_weight();
-  total_token_weight_ = value;
-}
-
-// -------------------------------------------------------------------
-
 // DictionaryEntry
 
 // optional string key_token = 1;
@@ -20999,59 +20633,15 @@ inline void FilterDictionaryArgs::set_allocated_class_id(::std::string* class_id
   }
 }
 
-// optional float min_percentage = 4;
-inline bool FilterDictionaryArgs::has_min_percentage() const {
+// optional int32 min_df = 4;
+inline bool FilterDictionaryArgs::has_min_df() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void FilterDictionaryArgs::set_has_min_percentage() {
+inline void FilterDictionaryArgs::set_has_min_df() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void FilterDictionaryArgs::clear_has_min_percentage() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void FilterDictionaryArgs::clear_min_percentage() {
-  min_percentage_ = 0;
-  clear_has_min_percentage();
-}
-inline float FilterDictionaryArgs::min_percentage() const {
-  return min_percentage_;
-}
-inline void FilterDictionaryArgs::set_min_percentage(float value) {
-  set_has_min_percentage();
-  min_percentage_ = value;
-}
-
-// optional float max_percentage = 5;
-inline bool FilterDictionaryArgs::has_max_percentage() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void FilterDictionaryArgs::set_has_max_percentage() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void FilterDictionaryArgs::clear_has_max_percentage() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void FilterDictionaryArgs::clear_max_percentage() {
-  max_percentage_ = 0;
-  clear_has_max_percentage();
-}
-inline float FilterDictionaryArgs::max_percentage() const {
-  return max_percentage_;
-}
-inline void FilterDictionaryArgs::set_max_percentage(float value) {
-  set_has_max_percentage();
-  max_percentage_ = value;
-}
-
-// optional int32 min_df = 6;
-inline bool FilterDictionaryArgs::has_min_df() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void FilterDictionaryArgs::set_has_min_df() {
-  _has_bits_[0] |= 0x00000020u;
-}
 inline void FilterDictionaryArgs::clear_has_min_df() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void FilterDictionaryArgs::clear_min_df() {
   min_df_ = 0;
@@ -21065,15 +20655,15 @@ inline void FilterDictionaryArgs::set_min_df(::google::protobuf::int32 value) {
   min_df_ = value;
 }
 
-// optional int32 max_df = 7;
+// optional int32 max_df = 5;
 inline bool FilterDictionaryArgs::has_max_df() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_max_df() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void FilterDictionaryArgs::clear_has_max_df() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void FilterDictionaryArgs::clear_max_df() {
   max_df_ = 0;
@@ -21087,15 +20677,15 @@ inline void FilterDictionaryArgs::set_max_df(::google::protobuf::int32 value) {
   max_df_ = value;
 }
 
-// optional int32 min_tf = 8;
+// optional int32 min_tf = 6;
 inline bool FilterDictionaryArgs::has_min_tf() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_min_tf() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void FilterDictionaryArgs::clear_has_min_tf() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void FilterDictionaryArgs::clear_min_tf() {
   min_tf_ = 0;
@@ -21109,15 +20699,15 @@ inline void FilterDictionaryArgs::set_min_tf(::google::protobuf::int32 value) {
   min_tf_ = value;
 }
 
-// optional int32 max_tf = 9;
+// optional int32 max_tf = 7;
 inline bool FilterDictionaryArgs::has_max_tf() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_max_tf() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void FilterDictionaryArgs::clear_has_max_tf() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void FilterDictionaryArgs::clear_max_tf() {
   max_tf_ = 0;
@@ -21131,15 +20721,15 @@ inline void FilterDictionaryArgs::set_max_tf(::google::protobuf::int32 value) {
   max_tf_ = value;
 }
 
-// optional int32 min_value = 10;
+// optional int32 min_value = 8;
 inline bool FilterDictionaryArgs::has_min_value() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_min_value() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void FilterDictionaryArgs::clear_has_min_value() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void FilterDictionaryArgs::clear_min_value() {
   min_value_ = 0;
@@ -21153,15 +20743,15 @@ inline void FilterDictionaryArgs::set_min_value(::google::protobuf::int32 value)
   min_value_ = value;
 }
 
-// optional int32 max_value = 11;
+// optional int32 max_value = 9;
 inline bool FilterDictionaryArgs::has_max_value() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_max_value() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void FilterDictionaryArgs::clear_has_max_value() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void FilterDictionaryArgs::clear_max_value() {
   max_value_ = 0;

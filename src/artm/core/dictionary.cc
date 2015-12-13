@@ -13,8 +13,13 @@ DictionaryImpl::DictionaryImpl(const artm::DictionaryData& data) {
   if (data.cooc_value_size() == 0) {
     for (int index = 0; index < data.token_size(); ++index) {
       ClassId class_id = data.class_id_size() ? data.class_id(index) : DefaultClass;
+      bool has_token_value = data.token_value_size() > 0;
+      bool has_token_tf = data.token_tf_size() > 0;
+      bool has_token_df = data.token_df_size() > 0;
       entries_.push_back(DictionaryEntryImpl(Token(class_id, data.token(index)),
-        data.token_value(index), data.token_tf(index), data.token_df(index)));
+        has_token_value ? data.token_value(index) : 0.0f,
+        has_token_tf ? data.token_tf(index): 0.0f,
+        has_token_df ? data.token_df(index): 0.0f));
 
       token_index_.insert(std::make_pair(entries_[index].token(), index));
     }
@@ -120,61 +125,31 @@ float DictionaryImpl::CountTopicCoherence(const std::vector<core::Token>& tokens
   return 2.0f / (k * (k - 1)) * coherence_value;
 }
 
-Dictionary::Dictionary(const artm::DictionaryConfig& config) {
-  total_items_count_ = config.total_items_count();
-  for (int index = 0; index < config.entry_size(); ++index) {
-    const ::artm::DictionaryEntry& entry = config.entry(index);
-    ClassId class_id;
-    if (entry.has_class_id()) class_id = entry.class_id();
-    else                      class_id = DefaultClass;
-    token_index_.insert(std::make_pair(Token(class_id, entry.key_token()), index));
-    entries_.push_back(entry);
+Dictionary::Dictionary(const artm::core::DictionaryImpl& impl) {
+  total_items_count_ = 0;
+  int index = 0;
+  for (const auto& entry : impl.entries_) {
+    DictionaryEntry old_entry;
+    old_entry.set_class_id(entry.token().class_id);
+    old_entry.set_key_token(entry.token().keyword);
+    old_entry.set_token_weight(entry.token_tf());
+    old_entry.set_items_count(entry.token_df());
+    old_entry.set_value(entry.token_value());
+    token_index_.insert(std::make_pair(entry.token(), index));
+    entries_.push_back(old_entry);
+    total_items_count_ += entry.token_df();
+    index++;
   }
 
-  if (config.has_cooc_entries()) {
-    for (int i = 0; i < config.cooc_entries().first_index_size(); ++i) {
-      auto& first_entry = config.entry(config.cooc_entries().first_index(i));
-      auto& second_entry = config.entry(config.cooc_entries().second_index(i));
-      auto first_index_iter = token_index_.find(Token(first_entry.class_id(), first_entry.key_token()));
-      auto second_index_iter = token_index_.find(Token(second_entry.class_id(), second_entry.key_token()));
-
-      // ignore tokens, that are not represented in dictionary entries
-      if (first_index_iter != token_index_.end() && second_index_iter != token_index_.end()) {
-        auto first_cooc_iter = cooc_values_.find(first_index_iter->second);
-        if (first_cooc_iter == cooc_values_.end()) {
-          cooc_values_.insert(std::make_pair(first_index_iter->second, std::unordered_map<int, float>()));
-          first_cooc_iter = cooc_values_.find(first_index_iter->second);
-        }
-
-        // std::map::insert() ignores attempts to write several pairs with same key
-        first_cooc_iter->second.insert(std::make_pair(second_index_iter->second,
-                                                      config.cooc_entries().value(i)));
-
-        if (config.cooc_entries().symmetric_cooc_values()) {
-          auto second_cooc_iter = cooc_values_.find(second_index_iter->second);
-          if (second_cooc_iter == cooc_values_.end()) {
-            cooc_values_.insert(std::make_pair(second_index_iter->second, std::unordered_map<int, float>()));
-            second_cooc_iter = cooc_values_.find(second_index_iter->second);
-          }
-
-          second_cooc_iter->second.insert(std::make_pair(first_index_iter->second,
-                                                         config.cooc_entries().value(i)));
-        }
-      }
-    }
-  }
-}
-
-std::shared_ptr<Dictionary> Dictionary::Duplicate() const {
-  return std::shared_ptr<Dictionary>(new Dictionary(*this));
+  cooc_values_ = &(impl.cooc_values());
 }
 
 int Dictionary::cooc_size(const Token& token) const {
   auto index_iter = token_index_.find(token);
   if (index_iter == token_index_.end()) return 0;
 
-  auto cooc_map_iter = cooc_values_.find(index_iter->second);
-  if (cooc_map_iter == cooc_values_.end()) return 0;
+  auto cooc_map_iter = cooc_values_->find(index_iter->second);
+  if (cooc_map_iter == cooc_values_->end()) return 0;
 
   return cooc_map_iter->second.size();
 }
@@ -183,8 +158,8 @@ float Dictionary::cooc_value(const Token& token, int index) const {
   auto index_iter = token_index_.find(token);
   if (index_iter == token_index_.end()) return 0;
 
-  auto cooc_map_iter = cooc_values_.find(index_iter->second);
-  if (cooc_map_iter == cooc_values_.end()) return 0;
+  auto cooc_map_iter = cooc_values_->find(index_iter->second);
+  if (cooc_map_iter == cooc_values_->end()) return 0;
 
   int internal_index = -1;
   for (auto iter = cooc_map_iter->second.begin(); iter != cooc_map_iter->second.end(); ++iter)
@@ -200,8 +175,8 @@ float Dictionary::cooc_value(const Token& token_1, const Token& token_2) const {
   auto index_iter_2 = token_index_.find(token_2);
   if (index_iter_2 == token_index_.end()) return 0;
 
-  auto cooc_map_iter_1 = cooc_values_.find(index_iter_1->second);
-  if (cooc_map_iter_1 == cooc_values_.end()) return 0;
+  auto cooc_map_iter_1 = cooc_values_->find(index_iter_1->second);
+  if (cooc_map_iter_1 == cooc_values_->end()) return 0;
 
   auto cooc_map_iter_2 = cooc_map_iter_1->second.find(index_iter_2->second);
   if (cooc_map_iter_2 == cooc_map_iter_1->second.end()) return 0;
@@ -213,8 +188,8 @@ const std::unordered_map<int, float>* Dictionary::cooc_info(const Token& token) 
   auto index_iter = token_index_.find(token);
   if (index_iter == token_index_.end()) return nullptr;
 
-  auto cooc_map_iter = cooc_values_.find(index_iter->second);
-  if (cooc_map_iter == cooc_values_.end()) return nullptr;
+  auto cooc_map_iter = cooc_values_->find(index_iter->second);
+  if (cooc_map_iter == cooc_values_->end()) return nullptr;
 
   return &(cooc_map_iter->second);
 }
@@ -247,8 +222,8 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
 
   for (int i = 0; i < k - 1; ++i) {
     if (indices[i] == -1) continue;
-    auto cooc_map_iter = cooc_values_.find(indices[i]);
-    if (cooc_map_iter == cooc_values_.end()) continue;
+    auto cooc_map_iter = cooc_values_->find(indices[i]);
+    if (cooc_map_iter == cooc_values_->end()) continue;
 
     for (int j = i; j < k; ++j) {
       if (indices[j] == -1) continue;

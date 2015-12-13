@@ -15,6 +15,8 @@
 namespace artm {
 namespace core {
 
+class Dictionary;
+
 class DictionaryEntryImpl {
  public:
   DictionaryEntryImpl(Token token, float value, float tf, float df)
@@ -57,6 +59,7 @@ class DictionaryImpl {
 
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
 
+  friend class Dictionary;
  private:
   std::vector<DictionaryEntryImpl> entries_;
   std::unordered_map<Token, int, TokenHasher> token_index_;
@@ -67,8 +70,7 @@ typedef ThreadSafeCollectionHolder<std::string, DictionaryImpl> ThreadSafeDictio
 
 class Dictionary {
  public:
-  explicit Dictionary(const artm::DictionaryConfig& config);
-  std::shared_ptr<Dictionary> Duplicate() const;
+  explicit Dictionary(const DictionaryImpl& dictionary_impl);
 
   inline int total_items_count() const { return total_items_count_; }
   int cooc_size(const Token& token) const;
@@ -80,18 +82,18 @@ class Dictionary {
   // general method to return all cooc tokens with their values for given token
   const std::unordered_map<int, float>* cooc_info(const Token& token) const;
 
-  const DictionaryEntry* entry(const Token& token) const;
-  const DictionaryEntry* entry(int index) const;
+  const ::artm::core::DictionaryEntry* entry(const Token& token) const;
+  const ::artm::core::DictionaryEntry* entry(int index) const;
   inline int size() const { return entries_.size(); }
-  inline const std::vector<DictionaryEntry>& entries() const { return entries_; }
+  inline const std::vector< ::artm::core::DictionaryEntry>& entries() const { return entries_; }
 
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
 
  private:
   int total_items_count_;
-  std::vector<DictionaryEntry> entries_;
+  std::vector< ::artm::core::DictionaryEntry> entries_;
   std::unordered_map<Token, int, TokenHasher> token_index_;
-  std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
+  const std::unordered_map<int, std::unordered_map<int, float> >* cooc_values_;
 };
 
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;

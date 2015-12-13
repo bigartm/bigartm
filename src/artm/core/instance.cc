@@ -98,18 +98,14 @@ Instance::Instance(const Instance& rhs)
       processors_() {
   Reconfigure(schema_.get()->config());
 
-  std::vector<std::string> dict_name = rhs.dictionaries_.keys();
-  for (auto& key : dict_name) {
-    std::shared_ptr<Dictionary> value = rhs.dictionaries_.get(key);
-    if (value != nullptr)
-      dictionaries_.set(key, value->Duplicate());
-  }
-
   std::vector<std::string> dict_name_impl = rhs.dictionaries_.keys();
   for (auto& key : dict_name_impl) {
     std::shared_ptr<DictionaryImpl> value_impl = rhs.dictionaries_impl_.get(key);
-    if (value_impl != nullptr)
-      dictionaries_impl_.set(key, value_impl->Duplicate());
+    if (value_impl != nullptr) {
+      auto dict_clone = value_impl->Duplicate();
+      dictionaries_impl_.set(key, dict_clone);
+      dictionaries_.set(key, std::make_shared<Dictionary>(*dict_clone));
+    }
   }
 
   std::vector<std::string> batch_name = rhs.batches_.keys();
@@ -382,32 +378,6 @@ void Instance::DisposeRegularizer(const std::string& name) {
   auto new_schema = schema_.get_copy();
   new_schema->clear_regularizer(name);
   schema_.set(new_schema);
-}
-
-void Instance::CreateOrReconfigureDictionaryImpl(const DictionaryData& data) {
-  auto dictionary = std::make_shared<DictionaryImpl>(DictionaryImpl(data));
-  dictionaries_impl_.set(data.name(), dictionary);
-}
-
-void Instance::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
-  auto dictionary = std::make_shared<Dictionary>(Dictionary(config));
-  dictionaries_.set(config.name(), dictionary);
-}
-
-void Instance::DisposeDictionary(const std::string& name) {
-  dictionaries_.erase(name);
-}
-
-void Instance::DisposeDictionaryImpl(const std::string& name) {
-  dictionaries_impl_.erase(name);
-}
-
-std::shared_ptr<Dictionary> Instance::dictionary(const std::string& name) {
-  return dictionaries_.has_key(name) ? dictionaries_.get(name) : nullptr;
-}
-
-std::shared_ptr<DictionaryImpl> Instance::dictionary_impl(const std::string& name) {
-  return dictionaries_impl_.has_key(name) ? dictionaries_impl_.get(name) : nullptr;
 }
 
 void Instance::Reconfigure(const MasterComponentConfig& master_config) {

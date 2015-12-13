@@ -485,8 +485,6 @@ int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) 
 }
 
 int ArtmInitializeModel(int master_id, int length, const char* init_model_args) {
-  // check if given dictionary name is appear in instance.dictionaries_
-  // (e.g. was created by ArtmCreate beforehand) and use it or raise error
   try {
     artm::InitializeModelArgs args;
     ParseFromArray(init_model_args, length, &args);
@@ -591,12 +589,12 @@ int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionar
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config) {
+int ArtmCreateDictionary(int master_id, int length, const char* dictionary_data) {
   try {
-    artm::DictionaryConfig config;
-    ParseFromArray(dictionary_config, length, &config);
-    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-    master_component(master_id)->CreateOrReconfigureDictionary(config);
+    artm::DictionaryData message;
+    ParseFromArray(dictionary_data, length, &message);
+    ::artm::core::Helpers::FixAndValidate(&message, /* throw_error =*/ true);
+    master_component(master_id)->CreateDictionary(message);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
@@ -604,7 +602,6 @@ int ArtmCreateDictionary(int master_id, int length, const char* dictionary_confi
 int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
   try {
     master_component(master_id)->DisposeDictionary(dictionary_name);
-    master_component(master_id)->DisposeDictionaryImpl(dictionary_name);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
