@@ -32,7 +32,8 @@ extern "C" {
 
   DLL_PUBLIC int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionary_args);
   DLL_PUBLIC int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionary_args);
-  DLL_PUBLIC int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config);
+  DLL_PUBLIC int ArtmCreateDictionary(int master_id, int length, const char* dictionary_data);
+  DLL_PUBLIC int ArtmRequestDictionary(int master_id, int length, const char* request_dictionary_args);
   DLL_PUBLIC int ArtmDisposeDictionary(int master_id, const char* dictionary_name);
 
   DLL_PUBLIC int ArtmImportDictionary(int master_id, int length, const char* import_dictionary_args);

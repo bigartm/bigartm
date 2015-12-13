@@ -520,6 +520,22 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   HandleErrorCode(ArtmFilterDictionary(id_, blob.size(), blob.c_str()));
 }
 
+std::shared_ptr<DictionaryData> MasterComponent::GetDictionary(const std::string& dictionary_name) {
+  artm::RequestDictionaryArgs args;
+  args.set_dictionary_name(dictionary_name);
+  std::string args_blob;
+  args.SerializeToString(&args_blob);
+  args.set_dictionary_name(dictionary_name);
+  int length = HandleErrorCode(ArtmRequestDictionary(id(), args_blob.size(), args_blob.c_str()));
+  std::string state_blob;
+  state_blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&state_blob)));
+
+  std::shared_ptr<DictionaryData> result(new DictionaryData());
+  result->ParseFromString(state_blob);
+  return result;
+}
+
 std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {
   std::string args_blob;
   args.SerializeToString(&args_blob);

@@ -599,6 +599,17 @@ int ArtmCreateDictionary(int master_id, int length, const char* dictionary_data)
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmRequestDictionary(int master_id, int length, const char* request_dictionary_args) {
+  try {
+    artm::RequestDictionaryArgs message;
+    ParseFromArray(request_dictionary_args, length, &message);
+    artm::DictionaryData result_message;
+    master_component(master_id)->RequestDictionary(message, &result_message);
+    result_message.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
   try {
     master_component(master_id)->DisposeDictionary(dictionary_name);

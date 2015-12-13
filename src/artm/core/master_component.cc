@@ -229,6 +229,14 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   LOG(INFO) << "Import completed, token_size = " << token_size;
 }
 
+void MasterComponent::RequestDictionary(const RequestDictionaryArgs& args, DictionaryData* result) {
+  std::shared_ptr<DictionaryImpl> dict_ptr = instance_->dictionaries_impl()->get(args.dictionary_name());
+  if (dict_ptr == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
+      args.dictionary_name() + " does not exist or has no tokens"));
+  dict_ptr->StoreIntoDictionaryData(result);
+}
+
 void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
   if (args.batch_name_size() != args.batch_size())
     BOOST_THROW_EXCEPTION(InvalidOperation("ImportBatchesArgs: batch_name_size() != batch_size()"));
@@ -244,7 +252,6 @@ void MasterComponent::DisposeBatches(const DisposeBatchesArgs& args) {
   for (auto& batch_name : args.batch_name())
     instance_->batches()->erase(batch_name);
 }
-
 
 void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
   instance_->merger()->ForceSynchronizeModel(args);

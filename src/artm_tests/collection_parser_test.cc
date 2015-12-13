@@ -41,6 +41,37 @@ TEST(CollectionParser, UciBagOfWords) {
 
   ASSERT_EQ(batches_count, 2);
 
+  artm::MasterComponentConfig master_config;
+  ::artm::MasterComponent mc(master_config);
+  artm::GatherDictionaryArgs gather_config;
+  gather_config.set_data_path(target_folder);
+  gather_config.set_vocab_file_path(config.vocab_file_path());
+  gather_config.set_dictionary_target_name("mydictionary");
+  mc.GatherDictionary(gather_config);
+
+  auto dictionary = mc.GetDictionary("mydictionary");
+  ASSERT_EQ(dictionary->token_size(), 3);
+
+  EXPECT_EQ(dictionary->token(0), "token1");
+  EXPECT_EQ(dictionary->token(1), "token2");
+  EXPECT_EQ(dictionary->token(2), "token3");
+
+  EXPECT_EQ(dictionary->class_id(0), "@default_class");
+  EXPECT_EQ(dictionary->class_id(1), "@default_class");
+  EXPECT_EQ(dictionary->class_id(2), "@default_class");
+
+  EXPECT_EQ(dictionary->token_df(0), 1);
+  EXPECT_EQ(dictionary->token_df(1), 2);
+  EXPECT_EQ(dictionary->token_df(2), 2);
+
+  EXPECT_EQ(dictionary->token_tf(0), 5);
+  EXPECT_EQ(dictionary->token_tf(1), 4);
+  EXPECT_EQ(dictionary->token_tf(2), 9);
+
+  ASSERT_APPROX_EQ(dictionary->token_value(0), 5.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary->token_value(1), 2.0 / 9.0);
+  ASSERT_APPROX_EQ(dictionary->token_value(2), 0.5);
+
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }
@@ -60,9 +91,6 @@ TEST(CollectionParser, ErrorHandling) {
   config.set_vocab_file_path("no_such_file.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
   ASSERT_THROW(::artm::ParseCollection(config), artm::DiskReadException);
-
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
-  config.set_docword_file_path("no_such_file");
 }
 
 TEST(CollectionParser, MatrixMarket) {

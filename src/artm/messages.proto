@@ -530,7 +530,11 @@ message GatherDictionaryArgs {
   optional string vocab_file_path = 4;
   optional bool symmetric_cooc_values = 5 [default = false];
 }
-  
+
+message RequestDictionaryArgs {
+  optional string dictionary_name = 1;
+}
+
 message GetTopicModelArgs {
   enum RequestType {
     Pwt = 0;
