@@ -524,6 +524,13 @@ bool Helpers::Validate(const ::artm::InitializeModelArgs& message, bool throw_er
     ss << "InitializeModelArgs.dictionary_name is not defined; ";
   }
 
+  if (message.has_source_type() || message.has_disk_path() ||
+      message.filter_size() || message.batch_filename_size()) {
+    ss << "InitializeModelArgs has no longer support source types (using only dictionary). ";
+    ss << "Fields 'disk_path' and 'batch_filename' are deprecated. ";
+    ss << "Also it doesn't proceed filtering (use ArtmFilterDictionary())";
+  }
+
   if (ss.str().empty())
     return true;
 
@@ -564,6 +571,24 @@ bool Helpers::Validate(const ::artm::FilterDictionaryArgs& message, bool throw_e
 bool Helpers::FixAndValidate(::artm::FilterDictionaryArgs* message, bool throw_error) {
   Fix(message);
   return Validate(*message, throw_error);
+}
+
+bool Helpers::Validate(const ::artm::CollectionParserConfig& message, bool throw_error) {
+  std::stringstream ss;
+
+  if (message.cooccurrence_token_size() || message.has_gather_cooc() ||
+      message.cooccurrence_class_id_size() || message.has_use_symmetric_cooc_values()) {
+    ss << "Collection parser no longer support gathering dictionary and cooc data. ";
+    ss << "Use ArtmParseCollection() and then ArtmGatherDictionary() functions";
+  }
+
+  if (ss.str().empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  LOG(WARNING) << ss.str();
+  return false;
 }
 
 bool Helpers::Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error) {

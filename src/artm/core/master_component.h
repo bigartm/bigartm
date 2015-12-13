@@ -29,15 +29,6 @@ class TopicModel;
 class Score;
 class BatchManager;
 
-class TokenInfo {
- public:
-  TokenInfo() : token_value(0.0f), token_tf(0.0f), token_df(0.0f) { }
-
-  float token_value;
-  float token_tf;
-  float token_df;
-};
-
 class MasterComponent : boost::noncopyable {
  public:
   ~MasterComponent();

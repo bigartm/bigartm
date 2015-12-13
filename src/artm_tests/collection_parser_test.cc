@@ -152,6 +152,42 @@ TEST(CollectionParser, Multiclass) {
 
   ASSERT_EQ(batches_count, 1);
 
+  std::string dictionary_name = "dictionary";
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name(dictionary_name);
+  gather_args.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
+
+  auto master = artm::MasterComponent(artm::MasterComponentConfig());
+  master.GatherDictionary(gather_args);
+  auto dictionary_ptr = master.GetDictionary(dictionary_name);
+
+  ASSERT_EQ(dictionary_ptr->token_size(), 3);
+  ASSERT_EQ(dictionary_ptr->class_id_size(), 3);
+  ASSERT_EQ(dictionary_ptr->token_tf_size(), 3);
+  ASSERT_EQ(dictionary_ptr->token_df_size(), 3);
+  ASSERT_EQ(dictionary_ptr->token_value_size(), 3);
+
+  ASSERT_EQ(dictionary_ptr->token(0), "token1");
+  ASSERT_EQ(dictionary_ptr->token(1), "token2");
+  ASSERT_EQ(dictionary_ptr->token(2), "token3");
+
+  ASSERT_EQ(dictionary_ptr->class_id(0), "class1");
+  ASSERT_EQ(dictionary_ptr->class_id(1), artm::core::DefaultClass);
+  ASSERT_EQ(dictionary_ptr->class_id(2), "class1");
+
+  ASSERT_APPROX_EQ(dictionary_ptr->token_df(0), 1);
+  ASSERT_APPROX_EQ(dictionary_ptr->token_df(1), 2);
+  ASSERT_APPROX_EQ(dictionary_ptr->token_df(2), 2);
+
+  ASSERT_APPROX_EQ(dictionary_ptr->token_tf(0), 5.0);
+  ASSERT_APPROX_EQ(dictionary_ptr->token_tf(1), 4.0);
+  ASSERT_APPROX_EQ(dictionary_ptr->token_tf(2), 9.0);
+
+  ASSERT_APPROX_EQ(dictionary_ptr->token_value(0), 5.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary_ptr->token_value(1), 4.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary_ptr->token_value(2), 9.0 / 18.0);
+
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }

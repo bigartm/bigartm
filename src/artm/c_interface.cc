@@ -659,6 +659,7 @@ int ArtmParseCollection(int length, const char* collection_parser_config) {
     EnableLogging();
     artm::CollectionParserConfig config;
     ParseFromArray(collection_parser_config, length, &config);
+    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
     ::artm::core::CollectionParser collection_parser(config);
     collection_parser.Parse();
     return ARTM_SUCCESS;

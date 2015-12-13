@@ -16,6 +16,10 @@ namespace artm {
 namespace core {
 
 class Dictionary;
+class DictionaryImpl;
+
+typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
+typedef ThreadSafeCollectionHolder<std::string, DictionaryImpl> ThreadSafeDictionaryImplCollection;
 
 class DictionaryEntryImpl {
  public:
@@ -34,10 +38,34 @@ class DictionaryEntryImpl {
   float token_df_;
 };
 
+class TokenValues {
+ public:
+  TokenValues() : token_value(0.0f), token_tf(0.0f), token_df(0.0f) { }
+
+  float token_value;
+  float token_tf;
+  float token_df;
+};
+
+inline bool has_suffix(const std::string& str, const std::string& suffix) {
+  return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 class DictionaryImpl {
  public:
   explicit DictionaryImpl(const artm::DictionaryData& data);
   DictionaryImpl() { }
+
+  static std::vector<std::shared_ptr<artm::DictionaryData> > ImportData(const ImportDictionaryArgs& args);
+
+  static void Export(const ExportDictionaryArgs& args,
+                     ThreadSafeDictionaryImplCollection* dictionaries);
+
+  static std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
+    Gather(const GatherDictionaryArgs& args);
+
+  static std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
+    Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryImplCollection* dictionaries);
 
   void Append(const DictionaryData& dict);
 
@@ -66,8 +94,6 @@ class DictionaryImpl {
   std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
 };
 
-typedef ThreadSafeCollectionHolder<std::string, DictionaryImpl> ThreadSafeDictionaryImplCollection;
-
 class Dictionary {
  public:
   explicit Dictionary(const DictionaryImpl& dictionary_impl);
@@ -95,8 +121,6 @@ class Dictionary {
   std::unordered_map<Token, int, TokenHasher> token_index_;
   const std::unordered_map<int, std::unordered_map<int, float> >* cooc_values_;
 };
-
-typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 
 }  // namespace core
 }  // namespace artm
