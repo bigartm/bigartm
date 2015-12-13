@@ -57,8 +57,7 @@ DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
 
 void SaveBatch(const Batch& batch, const std::string& disk_path);
 std::shared_ptr<Batch> LoadBatch(const std::string& filename);
-std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& filename);
-std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& config);
+void ParseCollection(const CollectionParserConfig& config);
 
 class Matrix {
  public:
@@ -146,7 +145,12 @@ class MasterComponent {
   void ImportBatches(const ImportBatchesArgs& args);
   void DisposeBatches(const DisposeBatchesArgs &args);
 
+  void CreateDictionary(const DictionaryData& args);
+  void DisposeDictionary(const std::string& dictionary_name);
   void ImportDictionary(const ImportDictionaryArgs& args);
+  void GatherDictionary(const GatherDictionaryArgs& args);
+  void FilterDictionary(const FilterDictionaryArgs& args);
+  std::shared_ptr<DictionaryData> GetDictionary(const std::string& dictionary_name);
 
   void Reconfigure(const MasterComponentConfig& config);
   bool AddBatch(const Batch& batch);
@@ -178,7 +182,7 @@ class Model {
   void Reconfigure(const ModelConfig& config);
   void Overwrite(const TopicModel& topic_model);
   void Overwrite(const TopicModel& topic_model, bool commit);
-  void Initialize(const Dictionary& dictionary);
+  void Initialize(const std::string& dictionary_name);
   void Export(const std::string& file_name);
   void Import(const std::string& file_name);
   void Enable();
@@ -214,25 +218,6 @@ class Regularizer {
   int master_id_;
   RegularizerConfig config_;
   DISALLOW_COPY_AND_ASSIGN(Regularizer);
-};
-
-class Dictionary {
- public:
-  Dictionary(const MasterComponent& master_component, const DictionaryConfig& config);
-  ~Dictionary();
-
-  void Reconfigure(const DictionaryConfig& config);
-
-  void Import(const std::string& dictionary_name, const std::string& file_name);
-
-  int master_id() const { return master_id_; }
-  const DictionaryConfig& config() const { return config_; }
-  const std::string name() const { return config_.name(); }
-
- private:
-  int master_id_;
-  DictionaryConfig config_;
-  DISALLOW_COPY_AND_ASSIGN(Dictionary);
 };
 
 template <typename T>

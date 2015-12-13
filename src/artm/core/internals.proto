@@ -34,3 +34,15 @@ message StreamMasks {
 message ModelIncrement {
   optional TopicModel topic_model = 1;
 }
+
+// Represents one entry in a static dictionary
+message DictionaryEntry {
+  optional string key_token = 1;
+  optional string class_id = 2;
+  optional float value = 3;
+  repeated string value_tokens = 4;
+  optional FloatArray values = 5;
+  optional int32 token_count = 6;  // obsolete in BigARTM v0.7.2
+  optional int32 items_count = 7;
+  optional float token_weight = 8;
+}

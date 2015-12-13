@@ -33,6 +33,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* ModelIncrement_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ModelIncrement_reflection_ = NULL;
+const ::google::protobuf::Descriptor* DictionaryEntry_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  DictionaryEntry_reflection_ = NULL;
 
 }  // namespace
 
@@ -111,6 +114,28 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ModelIncrement));
+  DictionaryEntry_descriptor_ = file->message_type(4);
+  static const int DictionaryEntry_offsets_[8] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, key_token_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, class_id_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, value_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, value_tokens_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, values_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, token_count_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, items_count_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, token_weight_),
+  };
+  DictionaryEntry_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      DictionaryEntry_descriptor_,
+      DictionaryEntry::default_instance_,
+      DictionaryEntry_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryEntry, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(DictionaryEntry));
 }
 
 namespace {
@@ -131,6 +156,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     StreamMasks_descriptor_, &StreamMasks::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ModelIncrement_descriptor_, &ModelIncrement::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    DictionaryEntry_descriptor_, &DictionaryEntry::default_instance());
 }
 
 }  // namespace
@@ -144,6 +171,8 @@ void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto() {
   delete StreamMasks_reflection_;
   delete ModelIncrement::default_instance_;
   delete ModelIncrement_reflection_;
+  delete DictionaryEntry::default_instance_;
+  delete DictionaryEntry_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
@@ -164,17 +193,24 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "2\016.artm.IntArray\"H\n\013StreamMasks\022$\n\013strea"
     "m_mask\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stream_"
     "name\030\005 \003(\t\"7\n\016ModelIncrement\022%\n\013topic_mo"
-    "del\030\001 \001(\0132\020.artm.TopicModel", 427);
+    "del\030\001 \001(\0132\020.artm.TopicModel\"\275\001\n\017Dictiona"
+    "ryEntry\022\021\n\tkey_token\030\001 \001(\t\022\020\n\010class_id\030\002"
+    " \001(\t\022\r\n\005value\030\003 \001(\002\022\024\n\014value_tokens\030\004 \003("
+    "\t\022 \n\006values\030\005 \001(\0132\020.artm.FloatArray\022\023\n\013t"
+    "oken_count\030\006 \001(\005\022\023\n\013items_count\030\007 \001(\005\022\024\n"
+    "\014token_weight\030\010 \001(\002", 619);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
   DataLoaderCacheEntry::default_instance_ = new DataLoaderCacheEntry();
   StreamMasks::default_instance_ = new StreamMasks();
   ModelIncrement::default_instance_ = new ModelIncrement();
+  DictionaryEntry::default_instance_ = new DictionaryEntry();
   Mask::default_instance_->InitAsDefaultInstance();
   DataLoaderCacheEntry::default_instance_->InitAsDefaultInstance();
   StreamMasks::default_instance_->InitAsDefaultInstance();
   ModelIncrement::default_instance_->InitAsDefaultInstance();
+  DictionaryEntry::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto);
 }
 
@@ -1433,6 +1469,537 @@ void ModelIncrement::Swap(ModelIncrement* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = ModelIncrement_descriptor_;
   metadata.reflection = ModelIncrement_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int DictionaryEntry::kKeyTokenFieldNumber;
+const int DictionaryEntry::kClassIdFieldNumber;
+const int DictionaryEntry::kValueFieldNumber;
+const int DictionaryEntry::kValueTokensFieldNumber;
+const int DictionaryEntry::kValuesFieldNumber;
+const int DictionaryEntry::kTokenCountFieldNumber;
+const int DictionaryEntry::kItemsCountFieldNumber;
+const int DictionaryEntry::kTokenWeightFieldNumber;
+#endif  // !_MSC_VER
+
+DictionaryEntry::DictionaryEntry()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void DictionaryEntry::InitAsDefaultInstance() {
+  values_ = const_cast< ::artm::FloatArray*>(&::artm::FloatArray::default_instance());
+}
+
+DictionaryEntry::DictionaryEntry(const DictionaryEntry& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void DictionaryEntry::SharedCtor() {
+  _cached_size_ = 0;
+  key_token_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  value_ = 0;
+  values_ = NULL;
+  token_count_ = 0;
+  items_count_ = 0;
+  token_weight_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+DictionaryEntry::~DictionaryEntry() {
+  SharedDtor();
+}
+
+void DictionaryEntry::SharedDtor() {
+  if (key_token_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete key_token_;
+  }
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete class_id_;
+  }
+  if (this != default_instance_) {
+    delete values_;
+  }
+}
+
+void DictionaryEntry::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* DictionaryEntry::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return DictionaryEntry_descriptor_;
+}
+
+const DictionaryEntry& DictionaryEntry::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
+  return *default_instance_;
+}
+
+DictionaryEntry* DictionaryEntry::default_instance_ = NULL;
+
+DictionaryEntry* DictionaryEntry::New() const {
+  return new DictionaryEntry;
+}
+
+void DictionaryEntry::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_key_token()) {
+      if (key_token_ != &::google::protobuf::internal::GetEmptyString()) {
+        key_token_->clear();
+      }
+    }
+    if (has_class_id()) {
+      if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+        class_id_->clear();
+      }
+    }
+    value_ = 0;
+    if (has_values()) {
+      if (values_ != NULL) values_->::artm::FloatArray::Clear();
+    }
+    token_count_ = 0;
+    items_count_ = 0;
+    token_weight_ = 0;
+  }
+  value_tokens_.Clear();
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool DictionaryEntry::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string key_token = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_key_token()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->key_token().data(), this->key_token().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_class_id;
+        break;
+      }
+
+      // optional string class_id = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_class_id:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_class_id()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->class_id().data(), this->class_id().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(29)) goto parse_value;
+        break;
+      }
+
+      // optional float value = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
+         parse_value:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, &value_)));
+          set_has_value();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_value_tokens;
+        break;
+      }
+
+      // repeated string value_tokens = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_value_tokens:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_value_tokens()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->value_tokens(this->value_tokens_size() - 1).data(),
+            this->value_tokens(this->value_tokens_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_value_tokens;
+        if (input->ExpectTag(42)) goto parse_values;
+        break;
+      }
+
+      // optional .artm.FloatArray values = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_values:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_values()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(48)) goto parse_token_count;
+        break;
+      }
+
+      // optional int32 token_count = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_token_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &token_count_)));
+          set_has_token_count();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(56)) goto parse_items_count;
+        break;
+      }
+
+      // optional int32 items_count = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_items_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &items_count_)));
+          set_has_items_count();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(69)) goto parse_token_weight;
+        break;
+      }
+
+      // optional float token_weight = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
+         parse_token_weight:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, &token_weight_)));
+          set_has_token_weight();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void DictionaryEntry::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string key_token = 1;
+  if (has_key_token()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->key_token().data(), this->key_token().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->key_token(), output);
+  }
+
+  // optional string class_id = 2;
+  if (has_class_id()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->class_id().data(), this->class_id().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->class_id(), output);
+  }
+
+  // optional float value = 3;
+  if (has_value()) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(3, this->value(), output);
+  }
+
+  // repeated string value_tokens = 4;
+  for (int i = 0; i < this->value_tokens_size(); i++) {
+  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+    this->value_tokens(i).data(), this->value_tokens(i).length(),
+    ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      4, this->value_tokens(i), output);
+  }
+
+  // optional .artm.FloatArray values = 5;
+  if (has_values()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, this->values(), output);
+  }
+
+  // optional int32 token_count = 6;
+  if (has_token_count()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->token_count(), output);
+  }
+
+  // optional int32 items_count = 7;
+  if (has_items_count()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->items_count(), output);
+  }
+
+  // optional float token_weight = 8;
+  if (has_token_weight()) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(8, this->token_weight(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* DictionaryEntry::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string key_token = 1;
+  if (has_key_token()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->key_token().data(), this->key_token().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->key_token(), target);
+  }
+
+  // optional string class_id = 2;
+  if (has_class_id()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->class_id().data(), this->class_id().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->class_id(), target);
+  }
+
+  // optional float value = 3;
+  if (has_value()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(3, this->value(), target);
+  }
+
+  // repeated string value_tokens = 4;
+  for (int i = 0; i < this->value_tokens_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->value_tokens(i).data(), this->value_tokens(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(4, this->value_tokens(i), target);
+  }
+
+  // optional .artm.FloatArray values = 5;
+  if (has_values()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        5, this->values(), target);
+  }
+
+  // optional int32 token_count = 6;
+  if (has_token_count()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->token_count(), target);
+  }
+
+  // optional int32 items_count = 7;
+  if (has_items_count()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->items_count(), target);
+  }
+
+  // optional float token_weight = 8;
+  if (has_token_weight()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(8, this->token_weight(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int DictionaryEntry::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string key_token = 1;
+    if (has_key_token()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->key_token());
+    }
+
+    // optional string class_id = 2;
+    if (has_class_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->class_id());
+    }
+
+    // optional float value = 3;
+    if (has_value()) {
+      total_size += 1 + 4;
+    }
+
+    // optional .artm.FloatArray values = 5;
+    if (has_values()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->values());
+    }
+
+    // optional int32 token_count = 6;
+    if (has_token_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->token_count());
+    }
+
+    // optional int32 items_count = 7;
+    if (has_items_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->items_count());
+    }
+
+    // optional float token_weight = 8;
+    if (has_token_weight()) {
+      total_size += 1 + 4;
+    }
+
+  }
+  // repeated string value_tokens = 4;
+  total_size += 1 * this->value_tokens_size();
+  for (int i = 0; i < this->value_tokens_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->value_tokens(i));
+  }
+
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void DictionaryEntry::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const DictionaryEntry* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const DictionaryEntry*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void DictionaryEntry::MergeFrom(const DictionaryEntry& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  value_tokens_.MergeFrom(from.value_tokens_);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_key_token()) {
+      set_key_token(from.key_token());
+    }
+    if (from.has_class_id()) {
+      set_class_id(from.class_id());
+    }
+    if (from.has_value()) {
+      set_value(from.value());
+    }
+    if (from.has_values()) {
+      mutable_values()->::artm::FloatArray::MergeFrom(from.values());
+    }
+    if (from.has_token_count()) {
+      set_token_count(from.token_count());
+    }
+    if (from.has_items_count()) {
+      set_items_count(from.items_count());
+    }
+    if (from.has_token_weight()) {
+      set_token_weight(from.token_weight());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void DictionaryEntry::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DictionaryEntry::CopyFrom(const DictionaryEntry& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DictionaryEntry::IsInitialized() const {
+
+  return true;
+}
+
+void DictionaryEntry::Swap(DictionaryEntry* other) {
+  if (other != this) {
+    std::swap(key_token_, other->key_token_);
+    std::swap(class_id_, other->class_id_);
+    std::swap(value_, other->value_);
+    value_tokens_.Swap(&other->value_tokens_);
+    std::swap(values_, other->values_);
+    std::swap(token_count_, other->token_count_);
+    std::swap(items_count_, other->items_count_);
+    std::swap(token_weight_, other->token_weight_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata DictionaryEntry::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = DictionaryEntry_descriptor_;
+  metadata.reflection = DictionaryEntry_reflection_;
   return metadata;
 }
 

@@ -122,7 +122,8 @@ def test_func():
     en_dic = {}  # mapping from english token to its index in batch.token list
     batch = messages.Batch()  # batch representing the entire collection
     batch.id = str(uuid.uuid1())
-    dict_config = messages.DictionaryConfig()  # BigARTM dictionary to initialize model
+    dict_data = messages.DictionaryData()  # BigARTM dictionary to initialize model
+    dict_data.name = dictionary_name
 
     def append(tokens, dic, item, class_id):
         for token in tokens:
@@ -130,9 +131,8 @@ def test_func():
                 dic[token] = len(batch.token)       # 1. update ru_dic or en_dic
                 batch.token.append(token)           # 2. update batch.token and batch.class_id
                 batch.class_id.append(class_id)
-                entry = dict_config.entry.add()   # 3. update dict_config
-                entry.key_token = token
-                entry.class_id = class_id
+                dict_data.token.append(token)
+                dict_data.class_id.append(class_id)
 
             # Add token to the item.
             item.field[0].token_id.append(dic[token])
@@ -155,10 +155,6 @@ def test_func():
         # Save batch and dictionary on the disk
         lib.ArtmSaveBatch(batches_folder, batch)
 
-        dict_config.name = dictionary_name
-        with open(os.path.join(batches_folder, dictionary_name), 'wb') as file:
-            file.write(dict_config.SerializeToString())
-
         # Create master component and scores
         scores = [('SparsityPhiRus', messages.SparsityPhiScoreConfig(class_id = russian_class)),
                   ('SparsityPhiEng', messages.SparsityPhiScoreConfig(class_id = english_class)),
@@ -166,11 +162,14 @@ def test_func():
                   ('TopTokensEng', messages.TopTokensScoreConfig(class_id = english_class))]
         master = mc.MasterComponent(lib, scores=scores)
 
-        # Import the collection dictionary
-        master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
+        # Create the collection dictionary
+        lib.ArtmCreateDictionary(master.master_id, dict_data)
 
         # Initialize model
-        master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
+        master.initialize_model(model_name=pwt,
+                                num_topics=num_topics,
+                                disk_path=batches_folder,
+                                dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
