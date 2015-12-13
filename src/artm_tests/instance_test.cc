@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 
 #include "artm/messages.pb.h"
+#include "artm/core/check_messages.h"
 #include "artm/core/instance.h"
 #include "artm/core/helpers.h"
 #include "artm/core/merger.h"
@@ -21,7 +22,7 @@ class InstanceTest : boost::noncopyable {
 
   InstanceTest() : instance_(nullptr) {
     ::artm::MasterComponentConfig config;
-    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error=*/ true);
+    ::artm::core::FixAndValidateMessage(&config, /* throw_error=*/ true);
     instance_.reset(new ::artm::core::Instance(config));
   }
 
@@ -61,7 +62,7 @@ class InstanceTest : boost::noncopyable {
       iLength = (iLength + 1) % max_length;
     }
 
-    ::artm::core::Helpers::FixAndValidate(batch.get());
+    ::artm::core::FixAndValidateMessage(batch.get());
     return batch;
   }
 
@@ -72,7 +73,7 @@ class InstanceTest : boost::noncopyable {
 // artm_tests.exe --gtest_filter=Instance.Basic
 TEST(Instance, Basic) {
   ::artm::MasterComponentConfig master_config;
-  ::artm::core::Helpers::FixAndValidate(&master_config, /* throw =*/ true);
+  ::artm::core::FixAndValidateMessage(&master_config, /* throw =*/ true);
   auto instance = std::make_shared< ::artm::core::Instance>(master_config);
 
   artm::Batch batch1;
@@ -86,7 +87,7 @@ TEST(Instance, Basic) {
     field->add_token_weight(static_cast<float>(i+1));
   }
 
-  ::artm::core::Helpers::Fix(&batch1);
+  ::artm::core::FixMessage(&batch1);
   artm::AddBatchArgs args1;
   args1.mutable_batch()->CopyFrom(batch1);  // +1
 
@@ -102,7 +103,7 @@ TEST(Instance, Basic) {
   }
 
   artm::AddBatchArgs args4;
-  ::artm::core::Helpers::Fix(&batch4);
+  ::artm::core::FixMessage(&batch4);
   args4.mutable_batch()->CopyFrom(batch4);  // +4
 
   artm::ModelConfig config;
@@ -110,7 +111,7 @@ TEST(Instance, Basic) {
   config.set_topics_count(3);
   artm::core::ModelName model_name =
     boost::lexical_cast<std::string>(boost::uuids::random_generator()());
-  artm::core::Helpers::Fix(&config);
+  artm::core::FixMessage(&config);
   config.set_name(boost::lexical_cast<std::string>(model_name));
   instance->CreateOrReconfigureModel(config);
 
@@ -131,7 +132,7 @@ TEST(Instance, Basic) {
     config.add_topic_name("@topic_" + std::to_string(i));
   }
   config.set_topics_count(0);
-  ::artm::core::Helpers::Fix(&config);
+  ::artm::core::FixMessage(&config);
   instance->CreateOrReconfigureModel(config);
 
   artm::TopicModel topic_model;
@@ -163,7 +164,7 @@ TEST(Instance, MultipleStreamsAndModels) {
   add_args.set_reset_scores(true);
 
   ::artm::MasterComponentConfig config;
-  ::artm::core::Helpers::FixAndValidate(&config, /* throw =*/ true);
+  ::artm::core::FixAndValidateMessage(&config, /* throw =*/ true);
   artm::Stream* s1 = config.add_stream();
   s1->set_type(artm::Stream_Type_ItemIdModulus);
   s1->set_modulus(2);
@@ -195,14 +196,14 @@ TEST(Instance, MultipleStreamsAndModels) {
   m1.set_stream_name("train");
   m1.set_enabled(true);
   m1.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-  artm::core::Helpers::Fix(&m1);
+  artm::core::FixMessage(&m1);
   test.instance()->CreateOrReconfigureModel(m1);
 
   artm::ModelConfig m2;
   m2.set_stream_name("test");
   m2.set_enabled(true);
   m2.set_name(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-  artm::core::Helpers::Fix(&m2);
+  artm::core::FixMessage(&m2);
   test.instance()->CreateOrReconfigureModel(m2);
 
   for (int iter = 0; iter < 5; ++iter) {

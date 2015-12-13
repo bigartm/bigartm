@@ -14,6 +14,7 @@
 #include "artm/messages.pb.h"
 #include "artm/score_calculator_interface.h"
 #include "artm/core/common.h"
+#include "artm/core/check_messages.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/master_component.h"
@@ -145,7 +146,7 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
     EnableLogging();
     artm::Batch batch_object;
     ParseFromArray(batch, length, &batch_object);
-    artm::core::Helpers::FixAndValidate(&batch_object);
+    artm::core::FixAndValidateMessage(&batch_object);
     artm::Batch compacted_batch;
     artm::core::BatchHelpers::CompactBatch(batch_object, &compacted_batch);
     artm::core::BatchHelpers::SaveBatch(compacted_batch, std::string(disk_path));
@@ -157,7 +158,7 @@ int ArtmAddBatch(int master_id, int length, const char* add_batch_args) {
   try {
     artm::AddBatchArgs args;
     ParseFromArray(add_batch_args, length, &args);
-    if (args.has_batch()) artm::core::Helpers::FixAndValidate(args.mutable_batch());
+    if (args.has_batch()) ::artm::core::FixAndValidateMessage(args.mutable_batch());
     bool result = master_component(master_id)->AddBatch(args);
     if (result) {
       return ARTM_SUCCESS;
@@ -189,7 +190,7 @@ int ArtmCreateMasterComponent(int length, const char* master_component_config) {
 
     artm::MasterComponentConfig config;
     ParseFromArray(master_component_config, length, &config);
-    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
+    ::artm::core::FixAndValidateMessage(&config, /* throw_error =*/ true);
     auto& mcm = MasterComponentManager::singleton();
     int retval = mcm.Store(std::make_shared< ::artm::core::MasterComponent>(config));
     LOG(INFO) << "Creating MasterComponent (id=" << retval << ")...";
@@ -213,7 +214,9 @@ int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batch
   try {
     artm::ProcessBatchesArgs args;
     ParseFromArray(process_batches_args, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    ::artm::core::FixAndValidateMessage(&args, /* throw_error =*/ true);
+    std::string description = ::artm::core::DescribeMessage(args);
+    LOG_IF(INFO, !description.empty()) << "Pass " << description << " to MasterComponent::AsyncRequestProcessBatches";
     std::shared_ptr< ::artm::core::MasterComponent> master = master_component(master_id);
 
     std::shared_ptr< ::artm::core::BatchManager> batch_manager = std::make_shared< ::artm::core::BatchManager>();
@@ -274,7 +277,7 @@ int ArtmParseCollection(int length, const char* collection_parser_config) {
     EnableLogging();
     artm::CollectionParserConfig config;
     ParseFromArray(collection_parser_config, length, &config);
-    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
+    ::artm::core::ValidateMessage(config, /* throw_error =*/ true);
     ::artm::core::CollectionParser collection_parser(config);
     collection_parser.Parse();
     return ARTM_SUCCESS;
@@ -310,33 +313,20 @@ int ArtmExecute(int master_id, int length, const char* args_blob, FuncT func) {
   try {
     ArgsT args;
     ParseFromArray(args_blob, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
-    (master_component(master_id).get()->*func)(args);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-// Execute a method of MasterComponent with args parsed from a protobuf blob WITHOUT VALIDATION
-template<typename ArgsT, typename FuncT>
-int ArtmExecuteUnsafe(int master_id, int length, const char* args_blob, FuncT func) {
-  try {
-    ArgsT args;
-    ParseFromArray(args_blob, length, &args);
-
-    // ArtmExecuteUnsafe does not execute validation.
-    // ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
-
+    ::artm::core::FixAndValidateMessage(&args, /* throw_error =*/ true);
+    std::string description = ::artm::core::DescribeMessage(args);
+    LOG_IF(INFO, !description.empty()) << "Pass " << description << " to " << typeid(FuncT).name();
     (master_component(master_id).get()->*func)(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
 
 int ArtmImportBatches(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::ImportBatchesArgs>(master_id, length, args, &MasterComponent::ImportBatches);
+  return ArtmExecute< ::artm::ImportBatchesArgs>(master_id, length, args, &MasterComponent::ImportBatches);
 }
 
 int ArtmInvokeIteration(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::InvokeIterationArgs>(master_id, length, args, &MasterComponent::InvokeIteration);
+  return ArtmExecute< ::artm::InvokeIterationArgs>(master_id, length, args, &MasterComponent::InvokeIteration);
 }
 
 int ArtmCreateModel(int master_id, int length, const char* config) {
@@ -347,15 +337,15 @@ int ArtmReconfigureModel(int master_id, int length, const char* config) {
 }
 
 int ArtmMergeModel(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::MergeModelArgs>(master_id, length, args, &MasterComponent::MergeModel);
+  return ArtmExecute< ::artm::MergeModelArgs>(master_id, length, args, &MasterComponent::MergeModel);
 }
 
 int ArtmRegularizeModel(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::RegularizeModelArgs>(master_id, length, args, &MasterComponent::RegularizeModel);
+  return ArtmExecute< ::artm::RegularizeModelArgs>(master_id, length, args, &MasterComponent::RegularizeModel);
 }
 
 int ArtmNormalizeModel(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::NormalizeModelArgs>(master_id, length, args, &MasterComponent::NormalizeModel);
+  return ArtmExecute< ::artm::NormalizeModelArgs>(master_id, length, args, &MasterComponent::NormalizeModel);
 }
 
 int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) {
@@ -367,34 +357,33 @@ int ArtmInitializeModel(int master_id, int length, const char* args) {
 }
 
 int ArtmExportModel(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::ExportModelArgs>(master_id, length, args, &MasterComponent::ExportModel);
+  return ArtmExecute< ::artm::ExportModelArgs>(master_id, length, args, &MasterComponent::ExportModel);
 }
 
 int ArtmImportModel(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::ImportModelArgs>(master_id, length, args, &MasterComponent::ImportModel);
+  return ArtmExecute< ::artm::ImportModelArgs>(master_id, length, args, &MasterComponent::ImportModel);
 }
 
 int ArtmCreateRegularizer(int master_id, int length, const char* config) {
-  return ArtmExecuteUnsafe< ::artm::RegularizerConfig>(
+  return ArtmExecute< ::artm::RegularizerConfig>(
     master_id, length, config, &MasterComponent::CreateOrReconfigureRegularizer);
 }
 
 int ArtmReconfigureRegularizer(int master_id, int length, const char* config) {
-  return ArtmExecuteUnsafe< ::artm::RegularizerConfig>(
+  return ArtmExecute< ::artm::RegularizerConfig>(
     master_id, length, config, &MasterComponent::CreateOrReconfigureRegularizer);
 }
 
 int ArtmSynchronizeModel(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::SynchronizeModelArgs>(
-    master_id, length, args, &MasterComponent::SynchronizeModel);
+  return ArtmExecute< ::artm::SynchronizeModelArgs>(master_id, length, args, &MasterComponent::SynchronizeModel);
 }
 
 int ArtmGatherDictionary(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::GatherDictionaryArgs>(master_id, length, args, &MasterComponent::GatherDictionary);
+  return ArtmExecute< ::artm::GatherDictionaryArgs>(master_id, length, args, &MasterComponent::GatherDictionary);
 }
 
 int ArtmFilterDictionary(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::FilterDictionaryArgs>(master_id, length, args, &MasterComponent::FilterDictionary);
+  return ArtmExecute< ::artm::FilterDictionaryArgs>(master_id, length, args, &MasterComponent::FilterDictionary);
 }
 
 int ArtmCreateDictionary(int master_id, int length, const char* data) {
@@ -402,11 +391,11 @@ int ArtmCreateDictionary(int master_id, int length, const char* data) {
 }
 
 int ArtmImportDictionary(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::ImportDictionaryArgs>(master_id, length, args, &MasterComponent::ImportDictionary);
+  return ArtmExecute< ::artm::ImportDictionaryArgs>(master_id, length, args, &MasterComponent::ImportDictionary);
 }
 
 int ArtmExportDictionary(int master_id, int length, const char* args) {
-  return ArtmExecuteUnsafe< ::artm::ExportDictionaryArgs>(master_id, length, args, &MasterComponent::ExportDictionary);
+  return ArtmExecute< ::artm::ExportDictionaryArgs>(master_id, length, args, &MasterComponent::ExportDictionary);
 }
 
 int ArtmReconfigureMasterComponent(int master_id, int length, const char* config) {
@@ -439,8 +428,9 @@ int ArtmRequest(int master_id, int length, const char* args_blob) {
     ArgsT args;
     ResultT result;
     ParseFromArray(args_blob, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    ::artm::core::FixAndValidateMessage(&args, /* throw_error =*/ true);
     master_component(master_id)->Request(args, &result);
+    ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;
@@ -452,8 +442,9 @@ int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
     ArgsT args;
     ResultT result;
     ParseFromArray(args_blob, length, &args);
-    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    ::artm::core::FixAndValidateMessage(&args, /* throw_error =*/ true);
     master_component(master_id)->Request(args, &result, last_message_ex());
+    ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

@@ -25,6 +25,7 @@
 #include "artm/core/data_loader.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
+#include "artm/core/check_messages.h"
 #include "artm/core/instance.h"
 #include "artm/core/processor.h"
 #include "artm/core/phi_matrix_operations.h"
@@ -88,7 +89,6 @@ void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  LOG(INFO) << "MasterComponent::CreateOrReconfigureModel() with " << Helpers::Describe(config);
   instance_->CreateOrReconfigureModel(config);
 }
 
@@ -158,7 +158,7 @@ void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
 
   for (int i = 0; i < args.batch_name_size(); ++i) {
     std::shared_ptr<Batch> batch = std::make_shared<Batch>(args.batch(i));
-    Helpers::FixAndValidate(batch.get(), /* throw_error =*/ true);
+    FixAndValidateMessage(batch.get(), /* throw_error =*/ true);
     instance_->batches()->set(args.batch_name(i), batch);
   }
 }
@@ -290,8 +290,6 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
 
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
-  LOG(INFO) << "MasterComponent::InitializeModel() with " << Helpers::Describe(args);
-
   // temp code to be removed with ModelConfig and old dictionaries
   instance_->merger()->InitializeModel(args);
 
@@ -300,8 +298,6 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
-  LOG(INFO) << "MasterComponent::FilterDictionaryArgs() with " << Helpers::Describe(args);
-
   auto data = Dictionary::Filter(args, instance_->dictionaries());
   CreateDictionary(*(data.first));
   if (data.second->cooc_first_index_size() > 0)
@@ -309,8 +305,6 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
-  LOG(INFO) << "MasterComponent::GatherDictionary() with " << Helpers::Describe(args);
-
   auto data = Dictionary::Gather(args);
   CreateDictionary(*(data.first));
   if (data.second->cooc_first_index_size() > 0)
@@ -318,8 +312,6 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
-  LOG(INFO) << "MasterComponent::Reconfigure() with " << Helpers::Describe(config);
-
   if (instance_->schema()->config().disk_path() != config.disk_path())
     BOOST_THROW_EXCEPTION(InvalidOperation("Changing disk_path is not supported."));
 
@@ -328,7 +320,6 @@ void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result) {
   instance_->merger()->RetrieveExternalTopicModel(args, result);
-  ::artm::core::Helpers::Validate(*result, false);
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result, std::string* external) {
@@ -382,7 +373,6 @@ void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& proce
 void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
                                                 BatchManager* batch_manager, bool async,
                                                 ProcessBatchesResult* process_batches_result) {
-  LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
   const MasterComponentConfig& config = schema->config();
 
@@ -420,7 +410,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   model_config.set_topics_count(p_wt.topic_size());
   model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
-  Helpers::FixAndValidate(&model_config, /* throw_error =*/ true);
+  FixAndValidateMessage(&model_config, /* throw_error =*/ true);
 
   if (async && args.theta_matrix_type() != ProcessBatchesArgs_ThetaMatrixType_None)
     BOOST_THROW_EXCEPTION(InvalidOperation(
@@ -519,7 +509,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
-  LOG(INFO) << "MasterComponent::MergeModel() with " << Helpers::Describe(merge_model_args);
   if (merge_model_args.nwt_source_name_size() == 0)
     BOOST_THROW_EXCEPTION(InvalidOperation("MergeModelArgs.nwt_source_name must not be empty"));
   if (merge_model_args.nwt_source_name_size() != merge_model_args.source_weight_size())
@@ -563,7 +552,6 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
 }
 
 void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_model_args) {
-  LOG(INFO) << "MasterComponent::RegularizeModel() with " << Helpers::Describe(regularize_model_args);
   const std::string& pwt_source_name = regularize_model_args.pwt_source_name();
   const std::string& nwt_source_name = regularize_model_args.nwt_source_name();
   const std::string& rwt_target_name = regularize_model_args.rwt_target_name();
@@ -595,7 +583,6 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
 }
 
 void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_args) {
-  LOG(INFO) << "MasterComponent::NormalizeModel() with " << Helpers::Describe(normalize_model_args);
   const std::string& pwt_target_name = normalize_model_args.pwt_target_name();
   const std::string& nwt_source_name = normalize_model_args.nwt_source_name();
   const std::string& rwt_source_name = normalize_model_args.rwt_source_name();
@@ -640,8 +627,6 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatri
     instance_->processor(0)->FindThetaMatrix(
       args.batch(), args, result, GetScoreValueArgs(), nullptr);
   }
-
-  ::artm::core::Helpers::Validate(*result, false);
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args,

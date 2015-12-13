@@ -16,6 +16,7 @@ set(SRC_LIST
 	core/cache_manager.cc
 	core/cache_manager.h
 	core/call_on_destruction.h
+	core/check_messages.h
 	core/collection_parser.cc
 	core/collection_parser.h
 	core/common.h

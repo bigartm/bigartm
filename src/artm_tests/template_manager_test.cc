@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 
 #include "artm/messages.pb.h"
+#include "artm/core/check_messages.h"
 #include "artm/core/master_component.h"
 #include "artm/core/template_manager.h"
 #include "artm/core/helpers.h"
@@ -15,7 +16,7 @@ typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterCompone
 // artm_tests.exe --gtest_filter=TemplateManager.*
 TEST(TemplateManager, Basic) {
   ::artm::MasterComponentConfig config;
-  ::artm::core::Helpers::FixAndValidate(&config, /* throw_error=*/ true);
+  ::artm::core::FixAndValidateMessage(&config, /* throw_error=*/ true);
 
   auto& mcm = MasterComponentManager::singleton();
   int id = mcm.Store(std::make_shared< ::artm::core::MasterComponent>(config));
