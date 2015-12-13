@@ -34,30 +34,24 @@ def test_func():
         master = mc.MasterComponent(lib)
 
         # Create collection dictionary and import it
-        args = messages.GatherDictionaryArgs()
-        args.dictionary_target_name = dictionary_name
-        args.data_path = batches_folder
-        args.vocab_file_path = os.path.join(os.getcwd(), vocab)
-        lib.ArtmGatherDictionary(master.master_id, args)
+        master.gather_dictionary(dictionary_target_name=dictionary_name,
+                                 data_path=batches_folder,
+                                 vocab_file_path=os.path.join(os.getcwd(), vocab))
 
         # filter the dictionary
-        args = messages.FilterDictionaryArgs()
-        args.dictionary_name = dictionary_name
-        args.dictionary_target_name = dictionary_name + '__'
-        args.max_df = 500
-        args.min_df = 20
-        lib.ArtmFilterDictionary(master.master_id, args)
+        master.filter_dictionary(dictionary_name=dictionary_name,
+                                 dictionary_target_name=dictionary_name + '__',
+                                 max_df=500,
+                                 min_df=20)
 
         # Initialize topic model
         master.initialize_model(model_name=pwt,
                                 num_topics=num_topics,
-                                disk_path=batches_folder,
                                 dictionary_name=dictionary_name + '__')
 
         # Extract topic model and print extracted data
         info = master.get_phi_info(model=pwt)
         matrix = master.get_phi_matrix(model=pwt)
-        print len(info.token) , num_tokens
         assert len(info.token) == num_tokens
         assert numpy.count_nonzero(matrix) == matrix.size
         print 'Number of tokens in Phi matrix = {0}'.format(len(info.token))

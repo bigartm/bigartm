@@ -68,15 +68,11 @@ def test_func():
         master = mc.MasterComponent(lib, scores=scores)
 
         # Create collection dictionary and import it
-        args = messages.GatherDictionaryArgs()
-        args.dictionary_target_name = dictionary_name
-        args.data_path = batches_folder
-        lib.ArtmGatherDictionary(master.master_id, args)
+        master.gather_dictionary(dictionary_target_name=dictionary_name, data_path=batches_folder)
 
         # Initialize model
         master.initialize_model(model_name=pwt,
                                 num_topics=num_topics,
-                                disk_path=batches_folder,
                                 dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):

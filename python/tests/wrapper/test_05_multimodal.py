@@ -168,7 +168,6 @@ def test_func():
         # Initialize model
         master.initialize_model(model_name=pwt,
                                 num_topics=num_topics,
-                                disk_path=batches_folder,
                                 dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):

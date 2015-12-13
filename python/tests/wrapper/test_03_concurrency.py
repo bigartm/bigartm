@@ -49,16 +49,13 @@ def test_func():
             master = mc.MasterComponent(lib, scores=scores)
 
             # Create collection dictionary and import it
-            args = messages.GatherDictionaryArgs()
-            args.dictionary_target_name = dictionary_name
-            args.data_path = batches_folder
-            args.vocab_file_path = os.path.join(os.getcwd(), vocab)
-            lib.ArtmGatherDictionary(master.master_id, args)
+            master.gather_dictionary(dictionary_target_name=dictionary_name,
+                                     data_path=batches_folder,
+                                     vocab_file_path=os.path.join(os.getcwd(), vocab))
 
             # Initialize model
             master.initialize_model(model_name=pwt,
                                     num_topics=num_topics,
-                                    disk_path=batches_folder,
                                     dictionary_name=dictionary_name)
 
             times = []

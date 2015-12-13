@@ -294,12 +294,12 @@ DictionaryImpl::Gather(const GatherDictionaryArgs& args) {
 
   // parse the cooc info and append it to DictionaryData
   auto cooc_dictionary_data = std::make_shared<artm::DictionaryData>();
+  cooc_dictionary_data->set_name(args.dictionary_target_name());
 
   if (args.has_cooc_file_path()) {
     try {
       ifstream_or_cin stream_or_cin(args.cooc_file_path());
       std::istream& user_cooc_data = stream_or_cin.get_stream();
-
 
       // Craft the co-occurence part of dictionary
       int index = 0;
