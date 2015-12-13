@@ -67,31 +67,10 @@ std::shared_ptr<Batch> LoadBatch(const std::string& filename) {
   return message;
 }
 
-std::shared_ptr<DictionaryConfig> LoadDictionary(const std::string& filename) {
-  int length = HandleErrorCode(ArtmRequestLoadDictionary(filename.c_str()));
-
-  std::string dictionary_blob;
-  dictionary_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&dictionary_blob)));
-
-  std::shared_ptr<DictionaryConfig> dictionary(new DictionaryConfig());
-  dictionary->ParseFromString(dictionary_blob);
-  return dictionary;
-}
-
-std::shared_ptr<DictionaryConfig> ParseCollection(const CollectionParserConfig& config) {
+void ParseCollection(const CollectionParserConfig& config) {
   std::string config_blob;
   config.SerializeToString(&config_blob);
-  int length = HandleErrorCode(ArtmRequestParseCollection(config_blob.size(),
-    StringAsArray(&config_blob)));
-
-  std::string dictionary_blob;
-  dictionary_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&dictionary_blob)));
-
-  std::shared_ptr<DictionaryConfig> dictionary(new DictionaryConfig());
-  dictionary->ParseFromString(dictionary_blob);
-  return dictionary;
+  HandleErrorCode(ArtmParseCollection(config_blob.size(), StringAsArray(&config_blob)));
 }
 
 MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), config_(config) {
@@ -435,14 +414,6 @@ Dictionary::~Dictionary() {
   ArtmDisposeDictionary(master_id(), config_.name().c_str());
 }
 
-void Dictionary::Reconfigure(const DictionaryConfig& config) {
-  std::string dictionary_config_blob;
-  config.SerializeToString(&dictionary_config_blob);
-  HandleErrorCode(ArtmReconfigureDictionary(master_id(), dictionary_config_blob.size(),
-    StringAsArray(&dictionary_config_blob)));
-  config_.CopyFrom(config);
-}
-
 void Dictionary::Import(const std::string& dictionary_name, const std::string& file_name) {
   ImportDictionaryArgs args;
   args.set_file_name(file_name);
@@ -547,6 +518,18 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   std::string blob;
   args.SerializeToString(&blob);
   HandleErrorCode(ArtmImportDictionary(id_, blob.size(), blob.c_str()));
+}
+
+void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmGatherDictionary(id_, blob.size(), blob.c_str()));
+}
+
+void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmFilterDictionary(id_, blob.size(), blob.c_str()));
 }
 
 std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {

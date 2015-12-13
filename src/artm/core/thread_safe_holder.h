@@ -68,7 +68,7 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
     return get_locked(key);
   }
 
-  bool has_key(const K& key) {
+  bool has_key(const K& key) const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return object_.find(key) != object_.end();
   }

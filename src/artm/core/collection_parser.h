@@ -24,10 +24,7 @@ class CollectionParser : boost::noncopyable {
 
   // Parses the collection from disk according to all options,
   // specified in CollectionParserConfig.
-  // Returns a dictionary that lists all unique tokens occured in the collection.
-  // Each DictionaryEntry from dictionary will contain key_token
-  // and some additional statistics like the number of term occurrences in the collection.
-  std::shared_ptr<DictionaryConfig> Parse();
+  void Parse();
 
  private:
   struct CollectionParserTokenInfo {
@@ -43,31 +40,12 @@ class CollectionParser : boost::noncopyable {
 
   typedef std::map<int, CollectionParserTokenInfo> TokenMap;
 
-  class CoocurrenceStatisticsAccumulator {
-   public:
-    CoocurrenceStatisticsAccumulator(
-      const TokenMap& token_info,
-      const ::google::protobuf::RepeatedPtrField< ::std::string>& tokens_to_collect,
-      const ::google::protobuf::RepeatedPtrField< ::std::string>& class_ids_to_collect);
-
-    void AppendTokenId(int token_id);
-    void FlushNewItem();
-    void Export(std::shared_ptr<DictionaryConfig> dictionary);
-
-   private:
-    const TokenMap& token_info_;
-    std::set<Token> tokens_to_collect_;
-    std::map<std::pair<int, int>, int> token_coocurrence_;
-    std::vector<int> item_tokens_;
-  };
   class BatchCollector;
 
   // ParseDocwordBagOfWordsUci is also used to parse MatrixMarket format, because
   // the format of docword file is the same for both.
-  std::shared_ptr<DictionaryConfig> ParseDocwordBagOfWordsUci(TokenMap* token_map);
-  std::shared_ptr<DictionaryConfig> ParseVowpalWabbit();
-
-  std::shared_ptr<DictionaryConfig> ParseCooccurrenceData(TokenMap* token_map);
+  void ParseDocwordBagOfWordsUci(TokenMap* token_map);
+  void ParseVowpalWabbit();
 
   TokenMap ParseVocabBagOfWordsUci();
   TokenMap ParseVocabMatrixMarket();

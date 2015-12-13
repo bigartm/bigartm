@@ -73,17 +73,13 @@ class MasterComponent(object):
         self._lib.ArtmImportDictionary(self.master_id, args)
 
     def initialize_model(self, model_name=None, num_topics=None, topic_names=None,
-                         source_type=None, disk_path=None, dictionary_name=None,
-                         seed=None, args=None):
+                         disk_path=None, dictionary_name=None, seed=None, args=None):
         """Args:
            - model_name(str): name of pwt matrix in BigARTM
-           - source_type(str): 'batches' | 'dictionary'
            - num_topics(int): number of topics in model
            - topic_names(list of str): the list of names of topics to be used in model
-           - disk_path(str): full name of folder with batches
-                             (need if InitializeModelArgs_SourceType_Batches)
+           - disk_path(str): full name of folder with dictionary
            - dictionary_name(str): name of imported dictionary
-                                   (need if InitializeModelArgs_SourceType_Dictionary)
            - seed (unsigned int or -1): seed for random initialization, default=None (no seed)
            - args: an instance of InitilaizeModelArgs
         """
@@ -101,15 +97,7 @@ class MasterComponent(object):
             for topic_name in topic_names:
                 init_args.topic_name.append(topic_name)
 
-        if source_type is 'batches':
-            init_args.source_type = constants.InitializeModelArgs_SourceType_Batches
-            if disk_path is not None:
-                init_args.disk_path = disk_path
-        elif source_type is 'dictionary':
-            init_args.source_type = constants.InitializeModelArgs_SourceType_Dictionary
-            if dictionary_name is not None:
-                init_args.dictionary_name = dictionary_name
-
+        init_args.dictionary_name = dictionary_name
         self._lib.ArtmInitializeModel(self.master_id, init_args)
 
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,

@@ -19,51 +19,11 @@ TEST(CollectionParser, UciBagOfWords) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
   config.set_target_folder(target_folder);
-  config.set_dictionary_file_name("test_parser.dictionary");
-  config.set_gather_cooc(true);
-  config.add_cooccurrence_token("token1");
-  config.add_cooccurrence_token("token2");
-  config.add_cooccurrence_token("token3");
   config.set_num_items_per_batch(1);
   config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
 
-  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
-  ASSERT_EQ(dictionary_parsed->entry_size(), 3);
-
-  std::shared_ptr< ::artm::DictionaryConfig> dictionary_loaded = ::artm::LoadDictionary(
-    (fs::path(target_folder) / "test_parser.dictionary").string());
-  ASSERT_EQ(dictionary_parsed->entry_size(), dictionary_loaded->entry_size());
-
-  ASSERT_EQ(dictionary_loaded->entry_size(), 3);
-  ASSERT_EQ(dictionary_loaded->total_token_weight(), 18.0f);
-  ASSERT_EQ(dictionary_loaded->total_items_count(), 2);
-  ASSERT_EQ(dictionary_loaded->entry(0).key_token(), "token1");
-  ASSERT_EQ(dictionary_loaded->entry(0).class_id(), "@default_class");
-  ASSERT_EQ(dictionary_loaded->entry(0).items_count(), 1);
-  ASSERT_EQ(dictionary_loaded->entry(0).token_weight(), 5.0f);
-  ASSERT_GT(dictionary_loaded->entry(0).value(), 0);
-  ASSERT_EQ(dictionary_loaded->entry(1).key_token(), "token2");
-  ASSERT_EQ(dictionary_loaded->entry(1).class_id(), "@default_class");
-  ASSERT_EQ(dictionary_loaded->entry(1).items_count(), 2);
-  ASSERT_EQ(dictionary_loaded->entry(1).token_weight(), 4.0f);
-  ASSERT_EQ(dictionary_loaded->entry(2).key_token(), "token3");
-  ASSERT_EQ(dictionary_loaded->entry(2).class_id(), "@default_class");
-  ASSERT_EQ(dictionary_loaded->entry(2).items_count(), 2);
-  ASSERT_EQ(dictionary_loaded->entry(2).token_weight(), 9.0f);
-
-  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index_size(), 3);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index_size(), 3);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().value_size(), 3);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(0), 0);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(1), 0);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(2), 1);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(0), 1);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(1), 2);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(2), 2);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().value(0), 1);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().value(1), 1);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().value(2), 2);
+  ::artm::ParseCollection(config);
 
   boost::filesystem::recursive_directory_iterator it(target_folder);
   boost::filesystem::recursive_directory_iterator endit;
@@ -100,12 +60,6 @@ TEST(CollectionParser, ErrorHandling) {
   config.set_vocab_file_path("no_such_file.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
   ASSERT_THROW(::artm::ParseCollection(config), artm::DiskReadException);
-
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
-  config.set_docword_file_path("no_such_file");
-  ASSERT_THROW(::artm::ParseCollection(config), artm::DiskReadException);
-
-  ASSERT_THROW(::artm::LoadDictionary("no_such_file"), artm::DiskReadException);
 }
 
 TEST(CollectionParser, MatrixMarket) {
@@ -117,10 +71,22 @@ TEST(CollectionParser, MatrixMarket) {
   config.set_num_items_per_batch(10000);
   config.set_vocab_file_path("../../../test_data/deerwestere.txt");
   config.set_docword_file_path("../../../test_data/deerwestere.mm");
-  config.set_dictionary_file_name("test_parser.dictionary");
 
-  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
-  ASSERT_EQ(dictionary_parsed->entry_size(), 12);
+  ::artm::ParseCollection(config);
+
+  boost::filesystem::recursive_directory_iterator it(target_folder);
+  boost::filesystem::recursive_directory_iterator endit;
+  int batches_count = 0;
+  while (it != endit) {
+    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+      batches_count++;
+      std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
+      ASSERT_EQ(batch->item_size(), 9);
+    }
+    ++it;
+  }
+
+  ASSERT_EQ(batches_count, 1);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
@@ -132,19 +98,28 @@ TEST(CollectionParser, Multiclass) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
   config.set_target_folder(target_folder);
-  config.set_dictionary_file_name("test_parser.dictionary");
   config.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
 
-  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
-  ASSERT_EQ(dictionary_parsed->entry_size(), 3);
-  ASSERT_EQ(dictionary_parsed->entry_size(), 3);
-  ASSERT_EQ(dictionary_parsed->entry(0).key_token(), "token1");
-  ASSERT_EQ(dictionary_parsed->entry(0).class_id(), "class1");
-  ASSERT_EQ(dictionary_parsed->entry(1).key_token(), "token2");
-  ASSERT_EQ(dictionary_parsed->entry(1).class_id(), "@default_class");
-  ASSERT_EQ(dictionary_parsed->entry(2).key_token(), "token3");
-  ASSERT_EQ(dictionary_parsed->entry(2).class_id(), "class1");
+  ::artm::ParseCollection(config);
+
+  boost::filesystem::recursive_directory_iterator it(target_folder);
+  boost::filesystem::recursive_directory_iterator endit;
+  int batches_count = 0;
+  while (it != endit) {
+    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+      batches_count++;
+      std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
+      ASSERT_EQ(batch->class_id_size(), 3);
+      ASSERT_EQ(batch->class_id(0), "class1");
+      ASSERT_EQ(batch->class_id(1), "class1");
+      ASSERT_EQ(batch->class_id(2), "@default_class");
+      ASSERT_EQ(batch->item_size(), 2);
+    }
+    ++it;
+  }
+
+  ASSERT_EQ(batches_count, 1);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
@@ -158,70 +133,31 @@ TEST(CollectionParser, VowpalWabbit) {
   ::artm::CollectionParserConfig config;
   config.set_format(::artm::CollectionParserConfig_Format_VowpalWabbit);
   config.set_target_folder(target_folder);
-  config.set_dictionary_file_name("test_parser.dictionary");
   config.set_docword_file_path("../../../test_data/vw_data.txt");
   config.set_num_items_per_batch(1);
 
-  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
-  ASSERT_EQ(dictionary_parsed->entry_size(), 4);
-  EXPECT_EQ(dictionary_parsed->entry(0).key_token(), "alex");
-  EXPECT_EQ(dictionary_parsed->entry(0).class_id(), "author");
-  EXPECT_EQ(dictionary_parsed->entry(0).token_weight(), 3.0f);
-  EXPECT_EQ(dictionary_parsed->entry(1).key_token(), "hello");
-  EXPECT_EQ(dictionary_parsed->entry(1).class_id(), "@default_class");
-  EXPECT_EQ(dictionary_parsed->entry(1).token_weight(), 6.0f);
-  EXPECT_EQ(dictionary_parsed->entry(2).key_token(), "noname");
-  EXPECT_EQ(dictionary_parsed->entry(2).class_id(), "author");
-  EXPECT_EQ(dictionary_parsed->entry(2).token_weight(), 1.0);
-  EXPECT_EQ(dictionary_parsed->entry(3).key_token(), "world");
-  EXPECT_EQ(dictionary_parsed->entry(3).class_id(), "@default_class");
-  EXPECT_EQ(dictionary_parsed->entry(3).token_weight(), 2.0);
+  ::artm::ParseCollection(config);
 
-  try { boost::filesystem::remove_all(target_folder); }
-  catch (...) {}
-}
+  boost::filesystem::recursive_directory_iterator it(target_folder);
+  boost::filesystem::recursive_directory_iterator endit;
+  int batches_count = 0;
+  while (it != endit) {
+    if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
+      batches_count++;
+      std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
+      ASSERT_TRUE(batch->class_id_size() == 3 || batch->class_id_size() == 2);
+      for (int i = 0; i < batch->token_size(); ++i) {
+        if (batch->token(i) == "hello" || batch->token(i) == "world")
+          ASSERT_EQ(batch->class_id(i), "@default_class");
+        if (batch->token(i) == "noname" || batch->token(i) == "alex")
+          ASSERT_EQ(batch->class_id(i), "author");
+      }
+      ASSERT_EQ(batch->item_size(), 1);
+    }
+    ++it;
+  }
 
-TEST(CollectionParser, Cooccurrence) {
-  std::string target_folder = artm::test::Helpers::getUniqueString();
-
-  ::artm::CollectionParserConfig config;
-  config.set_format(::artm::CollectionParserConfig_Format_Cooccurrence);
-  config.set_target_folder(target_folder);
-  config.set_dictionary_file_name("test_parser.dictionary");
-  config.set_gather_cooc(false);
-  config.set_num_items_per_batch(1);
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
-  config.set_docword_file_path("../../../test_data/cooccurrence.parser_test.txt");
-
-  std::shared_ptr< ::artm::DictionaryConfig> dictionary_parsed = ::artm::ParseCollection(config);
-  ASSERT_EQ(dictionary_parsed->entry_size(), 3);
-
-  std::shared_ptr< ::artm::DictionaryConfig> dictionary_loaded = ::artm::LoadDictionary(
-    (fs::path(target_folder) / "test_parser.dictionary").string());
-  ASSERT_EQ(dictionary_parsed->entry_size(), dictionary_loaded->entry_size());
-
-  ASSERT_EQ(dictionary_loaded->entry_size(), 3);
-  ASSERT_EQ(dictionary_loaded->entry(0).key_token(), "token1");
-  ASSERT_EQ(dictionary_loaded->entry(0).class_id(), "@default_class");
-  ASSERT_EQ(dictionary_loaded->entry(1).key_token(), "token2");
-  ASSERT_EQ(dictionary_loaded->entry(1).class_id(), "@default_class");
-  ASSERT_EQ(dictionary_loaded->entry(2).key_token(), "token3");
-  ASSERT_EQ(dictionary_loaded->entry(2).class_id(), "@default_class");
-
-  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index_size(), 3);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index_size(), 3);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().value_size(), 3);
-
-  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(0), 0);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(1), 1);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().first_index(2), 0);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(0), 1);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(1), 2);
-  ASSERT_EQ(dictionary_loaded->cooc_entries().second_index(2), 2);
-
-  ASSERT_FLOAT_EQ(dictionary_loaded->cooc_entries().value(0), 0.5);
-  ASSERT_FLOAT_EQ(dictionary_loaded->cooc_entries().value(1), 0.4);
-  ASSERT_FLOAT_EQ(dictionary_loaded->cooc_entries().value(2), 0.8);
+  ASSERT_EQ(batches_count, 2);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}

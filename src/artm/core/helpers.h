@@ -29,10 +29,6 @@ class Helpers {
   static std::vector<float> GenerateRandomVector(int size, size_t seed);
   static std::vector<float> GenerateRandomVector(int size, const Token& token, int seed = -1);
 
-  static void Fix(::artm::CollectionParserConfig* message);
-  static bool Validate(const ::artm::CollectionParserConfig& message, bool throw_error = true);
-  static bool FixAndValidate(::artm::CollectionParserConfig* message, bool throw_error = true);
-
   static void Fix(::artm::TopicModel* message);
   static bool Validate(const ::artm::TopicModel& message, bool throw_error = true);
   static bool FixAndValidate(::artm::TopicModel* message, bool throw_error = true);
@@ -77,6 +73,13 @@ class Helpers {
   static bool Validate(const ::artm::ProcessBatchesArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::ProcessBatchesArgs* message, bool throw_error = true);
 
+  static void Fix(::artm::FilterDictionaryArgs* message);
+  static bool Validate(const ::artm::FilterDictionaryArgs& message, bool throw_error = true);
+  static bool FixAndValidate(::artm::FilterDictionaryArgs* message, bool throw_error = true);
+
+  static bool Validate(const ::artm::CollectionParserConfig& message, bool throw_error = true);
+  static bool Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error = true);
+  static bool Validate(const ::artm::DictionaryData& message, bool throw_error = true);
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportModelArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::ImportDictionaryArgs& message, bool throw_error = true);
@@ -84,6 +87,8 @@ class Helpers {
   static std::string Describe(const ::artm::ModelConfig& message);
   static std::string Describe(const ::artm::MasterComponentConfig& message);
   static std::string Describe(const ::artm::InitializeModelArgs& message);
+  static std::string Describe(const ::artm::FilterDictionaryArgs& message);
+  static std::string Describe(const ::artm::GatherDictionaryArgs& message);
   static std::string Describe(const ::artm::ProcessBatchesArgs& message);
   static std::string Describe(const ::artm::NormalizeModelArgs& message);
   static std::string Describe(const ::artm::MergeModelArgs& message);

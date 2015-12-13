@@ -14,117 +14,24 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
 #include "boost/lexical_cast.hpp"
-#include "boost/iostreams/device/mapped_file.hpp"
-#include "boost/iostreams/stream.hpp"
 
 #include "glog/logging.h"
+
+#include "artm/utility/ifstream_or_cin.h"
 
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 
-using boost::iostreams::mapped_file_source;
-
-namespace {
-class ifstream_or_cin {
- public:
-  explicit ifstream_or_cin(const std::string& filename) {
-    if (filename == "-")  // read from std::cin
-      return;
-
-    if (!boost::filesystem::exists(filename))
-      BOOST_THROW_EXCEPTION(::artm::core::DiskReadException("File " + filename + " does not exist."));
-
-    if (boost::filesystem::exists(filename) && !boost::filesystem::is_regular_file(filename))
-      BOOST_THROW_EXCEPTION(::artm::core::DiskReadException(
-                  "File " + filename + " is not regular (probably it's a directory)."));
-
-    file_.open(filename);
-  }
-
-  std::istream& get_stream() { return file_.is_open() ? file_ : std::cin; }
-
- private:
-  boost::iostreams::stream<mapped_file_source> file_;
-};
-}  // namespace
+using ::artm::utility::ifstream_or_cin;
 
 namespace artm {
 namespace core {
 
-CollectionParser::CoocurrenceStatisticsAccumulator::CoocurrenceStatisticsAccumulator(
-    const TokenMap& token_info,
-    const ::google::protobuf::RepeatedPtrField< ::std::string>& tokens_to_collect,
-    const ::google::protobuf::RepeatedPtrField< ::std::string>& class_ids_to_collect)
-    : token_info_(token_info),
-      tokens_to_collect_(),
-      token_coocurrence_(),
-      item_tokens_() {
-  if (tokens_to_collect.size() == 0) {
-    for (auto token : token_info) {
-      tokens_to_collect_.insert(Token(token.second.class_id, token.second.keyword));
-      if (tokens_to_collect_.size() % 5000 == 0) {
-        LOG(INFO) << "The number of unique single tokens cooccurrence dictionary has reached "
-            << tokens_to_collect_.size();
-      }
-    }
-  } else {
-    for (int i = 0; i < tokens_to_collect.size(); ++i) {
-      tokens_to_collect_.insert(Token(class_ids_to_collect.Get(i), tokens_to_collect.Get(i)));
-    }
-  }
-}
-
-void CollectionParser::CoocurrenceStatisticsAccumulator::AppendTokenId(int token_id) {
-  Token token = Token(token_info_.find(token_id)->second.class_id,
-                      token_info_.find(token_id)->second.keyword);
-  if (tokens_to_collect_.find(token) != tokens_to_collect_.end()) {
-    item_tokens_.push_back(token_id);
-  }
-}
-
-void CollectionParser::CoocurrenceStatisticsAccumulator::FlushNewItem() {
-  std::sort(item_tokens_.begin(), item_tokens_.end());
-  item_tokens_.erase(std::unique(item_tokens_.begin(), item_tokens_.end()),
-                                  item_tokens_.end());
-  for (size_t first_token_id = 0; first_token_id < item_tokens_.size(); ++first_token_id) {
-    for (size_t second_token_id = (first_token_id + 1); second_token_id < item_tokens_.size();
-      ++second_token_id) {
-      int first_token = item_tokens_[first_token_id];
-      int second_token = item_tokens_[second_token_id];
-      auto iter = token_coocurrence_.find(std::make_pair(first_token, second_token));
-      if (iter == token_coocurrence_.end()) {
-        token_coocurrence_.insert(
-          std::make_pair(std::make_pair(first_token, second_token), 1));
-
-        // Warn about too large dictionaries.
-        if (token_coocurrence_.size() % 1000000 == 0) {
-          LOG(WARNING) << "The size of cooccurrence dictionary has reached "
-            << token_coocurrence_.size();
-        }
-      } else {
-        iter->second++;
-      }
-    }
-  }
-
-  item_tokens_.clear();
-}
-
-void CollectionParser::CoocurrenceStatisticsAccumulator::Export(std::shared_ptr<DictionaryConfig> dictionary) {
-  dictionary->clear_cooc_entries();
-  artm::DictionaryCoocurenceEntries* cooc_entries = dictionary->mutable_cooc_entries();
-  for (auto iter = token_coocurrence_.begin(); iter != token_coocurrence_.end(); ++iter) {
-    cooc_entries->add_first_index(iter->first.first);
-    cooc_entries->add_second_index(iter->first.second);
-    cooc_entries->add_value(iter->second);
-  }
-}
-
 CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config)
     : config_(config) {}
 
-std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
+void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
 
@@ -169,12 +76,6 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
       std::string token_keyword = boost::lexical_cast<std::string>(i);
       token_map->insert(std::make_pair(i, CollectionParserTokenInfo(token_keyword, DefaultClass)));
     }
-  }
-
-  std::unique_ptr<CoocurrenceStatisticsAccumulator> cooc_accum;
-  if (config_.gather_cooc()) {
-    cooc_accum.reset(new CoocurrenceStatisticsAccumulator(
-      *token_map, config_.cooccurrence_token(), config_.cooccurrence_class_id()));
   }
 
   std::map<int, int> batch_dictionary;
@@ -249,7 +150,6 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
       // Increment statistics
       total_items_count++;
-      if (cooc_accum) cooc_accum->FlushNewItem();
       LOG_IF(INFO, total_items_count % 100000 == 0) << total_items_count << " documents parsed.";
     }
 
@@ -263,7 +163,6 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
     field->add_token_id(iter->second);
     field->add_token_weight(token_weight);
-    if (cooc_accum != nullptr) cooc_accum->AppendTokenId(token_id);
 
     // Increment statistics
     total_token_weight += token_weight;
@@ -273,126 +172,10 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseDocwordBagOfWordsUci(To
 
   if (batch.item_size() > 0) {
     ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder());
-    if (cooc_accum) cooc_accum->FlushNewItem();
-  }
-
-  // Craft the dictionary
-  auto retval = std::make_shared<DictionaryConfig>();
-  retval->set_name(config_.dictionary_file_name());
-  retval->set_total_items_count(total_items_count);
-  retval->set_total_token_weight(total_token_weight);
-
-  for (auto& key_value : (*token_map)) {
-    artm::DictionaryEntry* entry = retval->add_entry();
-    entry->set_key_token(key_value.second.keyword);
-    entry->set_class_id(key_value.second.class_id);
-    entry->set_token_weight(key_value.second.token_weight);
-    entry->set_items_count(key_value.second.items_count);
-    entry->set_value(static_cast<double>(key_value.second.token_weight) /
-                     static_cast<double>(total_token_weight));
-  }
-
-  // Craft the co-occurence part of dictionary
-  if (cooc_accum != nullptr) {
-    cooc_accum->Export(retval);
-  }
-
-  if (config_.has_dictionary_file_name()) {
-    ::artm::core::BatchHelpers::SaveMessage(config_.dictionary_file_name(),
-                                            config_.target_folder(), *retval);
   }
 
   LOG_IF(WARNING, token_weight_zero > 0) << "Found " << token_weight_zero << " tokens with zero "
                                         << "occurrencies. All these tokens were ignored.";
-
-  return retval;
-}
-
-std::shared_ptr<DictionaryConfig> CollectionParser::ParseCooccurrenceData(TokenMap* token_map) {
-  ifstream_or_cin stream_or_cin(config_.docword_file_path());
-  std::istream& user_cooc_data = stream_or_cin.get_stream();
-
-  // Craft the dictionary
-  auto retval = std::make_shared<DictionaryConfig>();
-  retval->set_name(config_.dictionary_file_name());
-  retval->set_total_items_count(0);
-  retval->set_total_token_weight(0.0f);
-
-  for (auto& key_value : (*token_map)) {
-    artm::DictionaryEntry* entry = retval->add_entry();
-    entry->set_key_token(key_value.second.keyword);
-    entry->set_class_id(key_value.second.class_id);
-    entry->set_token_weight(0.0f);
-    entry->set_items_count(0);
-    entry->set_value(0);
-  }
-
-  // Craft the co-occurence part of dictionary
-  int index = 0;
-  std::string str;
-  bool last_line = false;
-  retval->clear_cooc_entries();
-  artm::DictionaryCoocurenceEntries* cooc_entries = retval->mutable_cooc_entries();
-  cooc_entries->set_symmetric_cooc_values(config_.use_symmetric_cooc_values());
-  while (!user_cooc_data.eof()) {
-    if (last_line) {
-      std::stringstream ss;
-      ss << "Empty pair of tokens at line " << index << ", file " << config_.docword_file_path();
-      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-    }
-    std::getline(user_cooc_data, str);
-    ++index;
-    boost::algorithm::trim(str);
-    if (str.empty()) {
-      last_line = true;
-      continue;
-    }
-
-    std::vector<std::string> strs;
-    boost::split(strs, str, boost::is_any_of("\t "));
-    if (strs.size() < 3) {
-      std::stringstream ss;
-      ss << "Error at line " << index << ", file " << config_.docword_file_path()
-         << ". Expected format: <token_id_1> <token_id_2> {<cooc_value>}";
-      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-    }
-
-    if (strs.size() != 3) {
-      std::stringstream ss;
-      ss << "Error at line " << index << ", file " << config_.docword_file_path()
-         << ". Number of values in all lines should be equal to 3";
-      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-    }
-
-    int first_index = std::stoi(strs[0]);
-    int second_index = std::stoi(strs[1]);
-    float value = std::stof(strs[2]);
-
-    if (config_.use_unity_based_indices()) {
-      first_index--;  // convert 1-based to zero-based index
-      second_index--;
-    }
-
-    if (first_index == -1 || second_index == -1) {
-      std::stringstream ss;
-      ss << ". TokenIndex columns appear to be zero-based in the cooc data file being parsed. "
-         << "The format defines TokenIndex column to be unity-based. "
-         << "Please, set CollectionParserConfig.use_unity_based_indices=false "
-         << "or increase both TokenIndex columns by one in your input data";
-      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-    }
-
-    cooc_entries->add_first_index(first_index);
-    cooc_entries->add_second_index(second_index);
-    cooc_entries->add_value(value);
-  }
-
-  if (config_.has_dictionary_file_name()) {
-    ::artm::core::BatchHelpers::SaveMessage(config_.dictionary_file_name(),
-                                            config_.target_folder(), *retval);
-  }
-
-  return retval;
 }
 
 CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
@@ -527,28 +310,9 @@ class CollectionParser::BatchCollector {
   }
 
   const Batch& batch() { return batch_; }
-
-  std::shared_ptr<DictionaryConfig> ExportDictionaryConfig() {
-    // Craft the dictionary
-    auto retval = std::make_shared<DictionaryConfig>();
-    retval->set_total_items_count(total_items_count_);
-    retval->set_total_token_weight(total_token_weight_);
-
-    for (auto& key_value : global_map_) {
-      artm::DictionaryEntry* entry = retval->add_entry();
-      entry->set_key_token(key_value.second.keyword);
-      entry->set_class_id(key_value.second.class_id);
-      entry->set_token_weight(key_value.second.token_weight);
-      entry->set_items_count(key_value.second.items_count);
-      entry->set_value(static_cast<double>(key_value.second.token_weight) /
-        static_cast<double>(total_token_weight_));
-    }
-
-    return retval;
-  }
 };
 
-std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
+void CollectionParser::ParseVowpalWabbit() {
   BatchCollector batch_collector;
 
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
@@ -618,35 +382,24 @@ std::shared_ptr<DictionaryConfig> CollectionParser::ParseVowpalWabbit() {
   if (batch_collector.batch().item_size() > 0) {
     ::artm::core::BatchHelpers::SaveBatch(batch_collector.FinishBatch(), config_.target_folder());
   }
-
-  std::shared_ptr<DictionaryConfig> retval = batch_collector.ExportDictionaryConfig();
-
-  if (config_.has_dictionary_file_name()) {
-    ::artm::core::BatchHelpers::SaveMessage(config_.dictionary_file_name(),
-      config_.target_folder(), *retval);
-  }
-
-  retval->set_name(config_.dictionary_file_name());
-  return retval;
 }
 
-std::shared_ptr<DictionaryConfig> CollectionParser::Parse() {
+void CollectionParser::Parse() {
   TokenMap token_map;
   switch (config_.format()) {
     case CollectionParserConfig_Format_BagOfWordsUci:
       token_map = ParseVocabBagOfWordsUci();
-      return ParseDocwordBagOfWordsUci(&token_map);
+      ParseDocwordBagOfWordsUci(&token_map);
+      break;
 
     case CollectionParserConfig_Format_MatrixMarket:
       token_map = ParseVocabMatrixMarket();
-      return ParseDocwordBagOfWordsUci(&token_map);
+      ParseDocwordBagOfWordsUci(&token_map);
+      break;
 
     case CollectionParserConfig_Format_VowpalWabbit:
-      return ParseVowpalWabbit();
-
-    case CollectionParserConfig_Format_Cooccurrence:
-      token_map = ParseVocabBagOfWordsUci();
-      return ParseCooccurrenceData(&token_map);
+      ParseVowpalWabbit();
+      break;
 
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
