@@ -60,9 +60,6 @@ TEST(CollectionParser, ErrorHandling) {
   config.set_vocab_file_path("no_such_file.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
   ASSERT_THROW(::artm::ParseCollection(config), artm::DiskReadException);
-
-  config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
-  config.set_docword_file_path("no_such_file");
 }
 
 TEST(CollectionParser, MatrixMarket) {

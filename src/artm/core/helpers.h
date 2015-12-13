@@ -77,6 +77,7 @@ class Helpers {
   static bool Validate(const ::artm::FilterDictionaryArgs& message, bool throw_error = true);
   static bool FixAndValidate(::artm::FilterDictionaryArgs* message, bool throw_error = true);
 
+  static bool Validate(const ::artm::CollectionParserConfig& message, bool throw_error = true);
   static bool Validate(const ::artm::GatherDictionaryArgs& message, bool throw_error = true);
   static bool Validate(const ::artm::DictionaryData& message, bool throw_error = true);
   static bool Validate(const ::artm::ExportModelArgs& message, bool throw_error = true);

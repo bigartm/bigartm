@@ -485,7 +485,7 @@ int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) 
 }
 
 int ArtmInitializeModel(int master_id, int length, const char* init_model_args) {
-  // check if given dictionary name is appear in instance.dictionaries_
+  // In the MasterComponent check if given dictionary name is appear in instance.dictionaries_
   // (e.g. was created by ArtmCreate beforehand) and use it or raise error
   try {
     artm::InitializeModelArgs args;
@@ -651,6 +651,7 @@ int ArtmParseCollection(int length, const char* collection_parser_config) {
     EnableLogging();
     artm::CollectionParserConfig config;
     ParseFromArray(collection_parser_config, length, &config);
+    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
     ::artm::core::CollectionParser collection_parser(config);
     collection_parser.Parse();
     return ARTM_SUCCESS;
@@ -664,5 +665,28 @@ int ArtmRequestLoadBatch(const char* filename) {
     ::artm::core::BatchHelpers::LoadMessage(filename, batch.get());
     batch->SerializeToString(last_message());
     return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmRequestParseCollection(int length, const char* collection_parser_config) {
+  try {
+    std::string err_mes = "Parser no longer support gathering dictionaries. ";
+    err_mes += "First, use ArtmParseCollection() to create batches. ";
+    err_mes += "After that use ArtmGatherDictionary() to create the dctionary using batches";
+    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(err_mes));
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmReconfigureDictionary(int master_id, int length, const char* dictionary_config) {
+  try {
+    std::string err_mes = "This method is not longer supported. Use ArtmGatherDictionary()";
+    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(err_mes));
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmRequestLoadDictionary(const char* filename) {
+  try {
+    std::string err_mes = "This method is not longer supported. Use ArtmGatherDictionary()";
+    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(err_mes));
   } CATCH_EXCEPTIONS;
 }

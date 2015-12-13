@@ -396,9 +396,6 @@ void Instance::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
 
 void Instance::DisposeDictionary(const std::string& name) {
   dictionaries_.erase(name);
-}
-
-void Instance::DisposeDictionaryImpl(const std::string& name) {
   dictionaries_impl_.erase(name);
 }
 

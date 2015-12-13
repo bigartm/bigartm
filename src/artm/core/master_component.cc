@@ -39,6 +39,19 @@
 
 using ::artm::utility::ifstream_or_cin;
 
+class TokenInfo {
+ public:
+  TokenInfo() : token_value(0.0f), token_tf(0.0f), token_df(0.0f) { }
+
+  float token_value;
+  float token_tf;
+  float token_df;
+};
+
+bool has_suffix(const std::string &str, const std::string &suffix) {
+  return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 namespace artm {
 namespace core {
 
@@ -97,19 +110,25 @@ void MasterComponent::DisposeDictionary(const std::string& name) {
 }
 
 void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
-  if (boost::filesystem::exists(args.file_name()))
-    BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + args.file_name()));
+  std::string file_name = args.file_name();
+  if (!has_suffix(file_name, ".dict")) {
+    LOG(WARNING) << "The exporting dictionary should have .dict extension, it will be added to file name";
+    file_name += ".dict";
+  }
 
-  std::ofstream fout(args.file_name(), std::ofstream::binary);
+  if (boost::filesystem::exists(file_name))
+    BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + file_name));
+
+  std::ofstream fout(file_name, std::ofstream::binary);
   if (!fout.is_open())
-    BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + args.file_name()));
+    BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + file_name));
 
   std::shared_ptr<DictionaryImpl> dict_ptr = instance_->dictionary_impl(args.dictionary_name());
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
         args.dictionary_name() + " does not exist or has no tokens"));
 
-  LOG(INFO) << "Exporting dictionary " << args.dictionary_name() << " to " << args.file_name();
+  LOG(INFO) << "Exporting dictionary " << args.dictionary_name() << " to " << file_name;
 
   const int token_size = dict_ptr->size();
 
@@ -168,6 +187,9 @@ void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
 }
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
+  if (!has_suffix(args.file_name(), ".dict"))
+    BOOST_THROW_EXCEPTION(CorruptedMessageException("The importing dictionary should have .dict exstension, abort."));
+
   std::ifstream fin(args.file_name(), std::ifstream::binary);
   if (!fin.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + args.file_name()));
@@ -211,6 +233,11 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
   instance_->CreateOrReconfigureDictionaryImpl(*(temp_data.back().get()));
+
+  // temp code to craft the old-style dictionary based on new-style one (without cooc!)
+  auto dictionary_config = dictionary_data_to_config(temp_data.back(), nullptr);
+  instance_->CreateOrReconfigureDictionary(*dictionary_config);
+
   temp_data.pop_back();
 
   int temp_size = temp_data.size();
@@ -435,7 +462,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   }
 
   if (args.dictionary_name() == args.dictionary_target_name())
-    instance_->DisposeDictionaryImpl(args.dictionary_name());  // replace the src dictionary
+    instance_->DisposeDictionary(args.dictionary_name());  // replace the src dictionary
 
   instance_->CreateOrReconfigureDictionaryImpl(*dictionary_data);
   auto dict_ptr = instance_->dictionary_impl(dictionary_data->name());
@@ -443,26 +470,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
     dict_ptr->Append(*cooc_dictionary_data);
 
   // temp code to craft the old-style dictionary based on new-style one
-  auto dictionary_config = std::make_shared<artm::DictionaryConfig>();
-  dictionary_config->set_name(args.dictionary_target_name());
-
-  for (int i = 0; i < dictionary_data->token_size(); ++i) {
-    auto entry = dictionary_config->add_entry();
-    entry->set_key_token(dictionary_data->token(i));
-    entry->set_class_id(dictionary_data->class_id(i));
-  }
-
-  dictionary_config->clear_cooc_entries();
-  auto cooc_entries = dictionary_config->mutable_cooc_entries();
-  for (int i = 0; i < cooc_dictionary_data->cooc_first_index_size(); ++i) {
-    cooc_entries->add_first_index(cooc_dictionary_data->cooc_first_index(i));
-    cooc_entries->add_second_index(cooc_dictionary_data->cooc_second_index(i));
-    cooc_entries->add_value(cooc_dictionary_data->cooc_value(i));
-  }
-
-  if (args.dictionary_name() == args.dictionary_target_name())
-    instance_->DisposeDictionary(args.dictionary_name());  // replace the src dictionary
-
+  auto dictionary_config = dictionary_data_to_config(dictionary_data, cooc_dictionary_data);
   instance_->CreateOrReconfigureDictionary(*dictionary_config);
 }
 
@@ -670,24 +678,7 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
     instance_->dictionary_impl(dictionary_data->name())->Append(*cooc_dictionary_data);
 
   // temp code to craft the old-style dictionary based on new-style one
-  auto dictionary_config = std::make_shared<artm::DictionaryConfig>();
-  dictionary_config->set_name(args.dictionary_target_name());
-
-  for (int i = 0; i < dictionary_data->token_size(); ++i) {
-    auto entry = dictionary_config->add_entry();
-    entry->set_key_token(dictionary_data->token(i));
-    entry->set_class_id(dictionary_data->class_id(i));
-    entry->set_value(dictionary_data->token_value(i));
-  }
-
-  dictionary_config->clear_cooc_entries();
-  auto cooc_entries = dictionary_config->mutable_cooc_entries();
-  for (int i = 0; i < cooc_dictionary_data->cooc_first_index_size(); ++i) {
-    cooc_entries->add_first_index(cooc_dictionary_data->cooc_first_index(i));
-    cooc_entries->add_second_index(cooc_dictionary_data->cooc_second_index(i));
-    cooc_entries->add_value(cooc_dictionary_data->cooc_value(i));
-  }
-
+  auto dictionary_config = dictionary_data_to_config(dictionary_data, cooc_dictionary_data);
   instance_->CreateOrReconfigureDictionary(*dictionary_config);
 }
 

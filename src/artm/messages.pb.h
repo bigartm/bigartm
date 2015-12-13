@@ -88,6 +88,7 @@ class ThetaMatrix;
 class CollectionParserConfig;
 class SynchronizeModelArgs;
 class InitializeModelArgs;
+class InitializeModelArgs_Filter;
 class FilterDictionaryArgs;
 class GatherDictionaryArgs;
 class GetTopicModelArgs;
@@ -352,6 +353,25 @@ inline bool CollectionParserConfig_Format_Parse(
     const ::std::string& name, CollectionParserConfig_Format* value) {
   return ::google::protobuf::internal::ParseNamedEnum<CollectionParserConfig_Format>(
     CollectionParserConfig_Format_descriptor(), name, value);
+}
+enum InitializeModelArgs_SourceType {
+  InitializeModelArgs_SourceType_Dictionary = 0,
+  InitializeModelArgs_SourceType_Batches = 1
+};
+bool InitializeModelArgs_SourceType_IsValid(int value);
+const InitializeModelArgs_SourceType InitializeModelArgs_SourceType_SourceType_MIN = InitializeModelArgs_SourceType_Dictionary;
+const InitializeModelArgs_SourceType InitializeModelArgs_SourceType_SourceType_MAX = InitializeModelArgs_SourceType_Batches;
+const int InitializeModelArgs_SourceType_SourceType_ARRAYSIZE = InitializeModelArgs_SourceType_SourceType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* InitializeModelArgs_SourceType_descriptor();
+inline const ::std::string& InitializeModelArgs_SourceType_Name(InitializeModelArgs_SourceType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    InitializeModelArgs_SourceType_descriptor(), value);
+}
+inline bool InitializeModelArgs_SourceType_Parse(
+    const ::std::string& name, InitializeModelArgs_SourceType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<InitializeModelArgs_SourceType>(
+    InitializeModelArgs_SourceType_descriptor(), name, value);
 }
 enum GetTopicModelArgs_RequestType {
   GetTopicModelArgs_RequestType_Pwt = 0,
@@ -7425,6 +7445,52 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline bool use_unity_based_indices() const;
   inline void set_use_unity_based_indices(bool value);
 
+  // repeated string cooccurrence_token = 7;
+  inline int cooccurrence_token_size() const;
+  inline void clear_cooccurrence_token();
+  static const int kCooccurrenceTokenFieldNumber = 7;
+  inline const ::std::string& cooccurrence_token(int index) const;
+  inline ::std::string* mutable_cooccurrence_token(int index);
+  inline void set_cooccurrence_token(int index, const ::std::string& value);
+  inline void set_cooccurrence_token(int index, const char* value);
+  inline void set_cooccurrence_token(int index, const char* value, size_t size);
+  inline ::std::string* add_cooccurrence_token();
+  inline void add_cooccurrence_token(const ::std::string& value);
+  inline void add_cooccurrence_token(const char* value);
+  inline void add_cooccurrence_token(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_token() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_token();
+
+  // optional bool gather_cooc = 8;
+  inline bool has_gather_cooc() const;
+  inline void clear_gather_cooc();
+  static const int kGatherCoocFieldNumber = 8;
+  inline bool gather_cooc() const;
+  inline void set_gather_cooc(bool value);
+
+  // repeated string cooccurrence_class_id = 10;
+  inline int cooccurrence_class_id_size() const;
+  inline void clear_cooccurrence_class_id();
+  static const int kCooccurrenceClassIdFieldNumber = 10;
+  inline const ::std::string& cooccurrence_class_id(int index) const;
+  inline ::std::string* mutable_cooccurrence_class_id(int index);
+  inline void set_cooccurrence_class_id(int index, const ::std::string& value);
+  inline void set_cooccurrence_class_id(int index, const char* value);
+  inline void set_cooccurrence_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_cooccurrence_class_id();
+  inline void add_cooccurrence_class_id(const ::std::string& value);
+  inline void add_cooccurrence_class_id(const char* value);
+  inline void add_cooccurrence_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_class_id();
+
+  // optional bool use_symmetric_cooc_values = 11 [default = false];
+  inline bool has_use_symmetric_cooc_values() const;
+  inline void clear_use_symmetric_cooc_values();
+  static const int kUseSymmetricCoocValuesFieldNumber = 11;
+  inline bool use_symmetric_cooc_values() const;
+  inline void set_use_symmetric_cooc_values(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.CollectionParserConfig)
  private:
   inline void set_has_format();
@@ -7439,6 +7505,10 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline void clear_has_num_items_per_batch();
   inline void set_has_use_unity_based_indices();
   inline void clear_has_use_unity_based_indices();
+  inline void set_has_gather_cooc();
+  inline void clear_has_gather_cooc();
+  inline void set_has_use_symmetric_cooc_values();
+  inline void clear_has_use_symmetric_cooc_values();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -7447,10 +7517,14 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   int format_;
   ::google::protobuf::int32 num_items_per_batch_;
   ::std::string* target_folder_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_token_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_class_id_;
   bool use_unity_based_indices_;
+  bool gather_cooc_;
+  bool use_symmetric_cooc_values_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7578,6 +7652,153 @@ class SynchronizeModelArgs : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class InitializeModelArgs_Filter : public ::google::protobuf::Message {
+ public:
+  InitializeModelArgs_Filter();
+  virtual ~InitializeModelArgs_Filter();
+
+  InitializeModelArgs_Filter(const InitializeModelArgs_Filter& from);
+
+  inline InitializeModelArgs_Filter& operator=(const InitializeModelArgs_Filter& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const InitializeModelArgs_Filter& default_instance();
+
+  void Swap(InitializeModelArgs_Filter* other);
+
+  // implements Message ----------------------------------------------
+
+  InitializeModelArgs_Filter* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const InitializeModelArgs_Filter& from);
+  void MergeFrom(const InitializeModelArgs_Filter& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string class_id = 1;
+  inline bool has_class_id() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 1;
+  inline const ::std::string& class_id() const;
+  inline void set_class_id(const ::std::string& value);
+  inline void set_class_id(const char* value);
+  inline void set_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_class_id();
+  inline ::std::string* release_class_id();
+  inline void set_allocated_class_id(::std::string* class_id);
+
+  // optional float min_percentage = 2;
+  inline bool has_min_percentage() const;
+  inline void clear_min_percentage();
+  static const int kMinPercentageFieldNumber = 2;
+  inline float min_percentage() const;
+  inline void set_min_percentage(float value);
+
+  // optional float max_percentage = 3;
+  inline bool has_max_percentage() const;
+  inline void clear_max_percentage();
+  static const int kMaxPercentageFieldNumber = 3;
+  inline float max_percentage() const;
+  inline void set_max_percentage(float value);
+
+  // optional int32 min_items = 4;
+  inline bool has_min_items() const;
+  inline void clear_min_items();
+  static const int kMinItemsFieldNumber = 4;
+  inline ::google::protobuf::int32 min_items() const;
+  inline void set_min_items(::google::protobuf::int32 value);
+
+  // optional int32 max_items = 5;
+  inline bool has_max_items() const;
+  inline void clear_max_items();
+  static const int kMaxItemsFieldNumber = 5;
+  inline ::google::protobuf::int32 max_items() const;
+  inline void set_max_items(::google::protobuf::int32 value);
+
+  // optional int32 min_total_count = 6;
+  inline bool has_min_total_count() const;
+  inline void clear_min_total_count();
+  static const int kMinTotalCountFieldNumber = 6;
+  inline ::google::protobuf::int32 min_total_count() const;
+  inline void set_min_total_count(::google::protobuf::int32 value);
+
+  // optional int32 min_one_item_count = 7;
+  inline bool has_min_one_item_count() const;
+  inline void clear_min_one_item_count();
+  static const int kMinOneItemCountFieldNumber = 7;
+  inline ::google::protobuf::int32 min_one_item_count() const;
+  inline void set_min_one_item_count(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs.Filter)
+ private:
+  inline void set_has_class_id();
+  inline void clear_has_class_id();
+  inline void set_has_min_percentage();
+  inline void clear_has_min_percentage();
+  inline void set_has_max_percentage();
+  inline void clear_has_max_percentage();
+  inline void set_has_min_items();
+  inline void clear_has_min_items();
+  inline void set_has_max_items();
+  inline void clear_has_max_items();
+  inline void set_has_min_total_count();
+  inline void clear_has_min_total_count();
+  inline void set_has_min_one_item_count();
+  inline void clear_has_min_one_item_count();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* class_id_;
+  float min_percentage_;
+  float max_percentage_;
+  ::google::protobuf::int32 min_items_;
+  ::google::protobuf::int32 max_items_;
+  ::google::protobuf::int32 min_total_count_;
+  ::google::protobuf::int32 min_one_item_count_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static InitializeModelArgs_Filter* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class InitializeModelArgs : public ::google::protobuf::Message {
  public:
   InitializeModelArgs();
@@ -7629,6 +7850,32 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::Metadata GetMetadata() const;
 
   // nested types ----------------------------------------------------
+
+  typedef InitializeModelArgs_Filter Filter;
+
+  typedef InitializeModelArgs_SourceType SourceType;
+  static const SourceType Dictionary = InitializeModelArgs_SourceType_Dictionary;
+  static const SourceType Batches = InitializeModelArgs_SourceType_Batches;
+  static inline bool SourceType_IsValid(int value) {
+    return InitializeModelArgs_SourceType_IsValid(value);
+  }
+  static const SourceType SourceType_MIN =
+    InitializeModelArgs_SourceType_SourceType_MIN;
+  static const SourceType SourceType_MAX =
+    InitializeModelArgs_SourceType_SourceType_MAX;
+  static const int SourceType_ARRAYSIZE =
+    InitializeModelArgs_SourceType_SourceType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  SourceType_descriptor() {
+    return InitializeModelArgs_SourceType_descriptor();
+  }
+  static inline const ::std::string& SourceType_Name(SourceType value) {
+    return InitializeModelArgs_SourceType_Name(value);
+  }
+  static inline bool SourceType_Parse(const ::std::string& name,
+      SourceType* value) {
+    return InitializeModelArgs_SourceType_Parse(name, value);
+  }
 
   // accessors -------------------------------------------------------
 
@@ -7686,6 +7933,53 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 seed() const;
   inline void set_seed(::google::protobuf::int32 value);
 
+  // optional .artm.InitializeModelArgs.SourceType source_type = 6;
+  inline bool has_source_type() const;
+  inline void clear_source_type();
+  static const int kSourceTypeFieldNumber = 6;
+  inline ::artm::InitializeModelArgs_SourceType source_type() const;
+  inline void set_source_type(::artm::InitializeModelArgs_SourceType value);
+
+  // optional string disk_path = 7;
+  inline bool has_disk_path() const;
+  inline void clear_disk_path();
+  static const int kDiskPathFieldNumber = 7;
+  inline const ::std::string& disk_path() const;
+  inline void set_disk_path(const ::std::string& value);
+  inline void set_disk_path(const char* value);
+  inline void set_disk_path(const char* value, size_t size);
+  inline ::std::string* mutable_disk_path();
+  inline ::std::string* release_disk_path();
+  inline void set_allocated_disk_path(::std::string* disk_path);
+
+  // repeated .artm.InitializeModelArgs.Filter filter = 8;
+  inline int filter_size() const;
+  inline void clear_filter();
+  static const int kFilterFieldNumber = 8;
+  inline const ::artm::InitializeModelArgs_Filter& filter(int index) const;
+  inline ::artm::InitializeModelArgs_Filter* mutable_filter(int index);
+  inline ::artm::InitializeModelArgs_Filter* add_filter();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >&
+      filter() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >*
+      mutable_filter();
+
+  // repeated string batch_filename = 9;
+  inline int batch_filename_size() const;
+  inline void clear_batch_filename();
+  static const int kBatchFilenameFieldNumber = 9;
+  inline const ::std::string& batch_filename(int index) const;
+  inline ::std::string* mutable_batch_filename(int index);
+  inline void set_batch_filename(int index, const ::std::string& value);
+  inline void set_batch_filename(int index, const char* value);
+  inline void set_batch_filename(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_filename();
+  inline void add_batch_filename(const ::std::string& value);
+  inline void add_batch_filename(const char* value);
+  inline void add_batch_filename(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
+
   // @@protoc_insertion_point(class_scope:artm.InitializeModelArgs)
  private:
   inline void set_has_model_name();
@@ -7696,6 +7990,10 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   inline void clear_has_topics_count();
   inline void set_has_seed();
   inline void clear_has_seed();
+  inline void set_has_source_type();
+  inline void clear_has_source_type();
+  inline void set_has_disk_path();
+  inline void clear_has_disk_path();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -7704,9 +8002,13 @@ class InitializeModelArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::int32 topics_count_;
   ::google::protobuf::int32 seed_;
+  ::std::string* disk_path_;
+  ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter > filter_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
+  int source_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -7807,59 +8109,45 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   inline ::std::string* release_class_id();
   inline void set_allocated_class_id(::std::string* class_id);
 
-  // optional float min_percentage = 4;
-  inline bool has_min_percentage() const;
-  inline void clear_min_percentage();
-  static const int kMinPercentageFieldNumber = 4;
-  inline float min_percentage() const;
-  inline void set_min_percentage(float value);
-
-  // optional float max_percentage = 5;
-  inline bool has_max_percentage() const;
-  inline void clear_max_percentage();
-  static const int kMaxPercentageFieldNumber = 5;
-  inline float max_percentage() const;
-  inline void set_max_percentage(float value);
-
-  // optional int32 min_df = 6;
+  // optional int32 min_df = 4;
   inline bool has_min_df() const;
   inline void clear_min_df();
-  static const int kMinDfFieldNumber = 6;
+  static const int kMinDfFieldNumber = 4;
   inline ::google::protobuf::int32 min_df() const;
   inline void set_min_df(::google::protobuf::int32 value);
 
-  // optional int32 max_df = 7;
+  // optional int32 max_df = 5;
   inline bool has_max_df() const;
   inline void clear_max_df();
-  static const int kMaxDfFieldNumber = 7;
+  static const int kMaxDfFieldNumber = 5;
   inline ::google::protobuf::int32 max_df() const;
   inline void set_max_df(::google::protobuf::int32 value);
 
-  // optional int32 min_tf = 8;
+  // optional int32 min_tf = 6;
   inline bool has_min_tf() const;
   inline void clear_min_tf();
-  static const int kMinTfFieldNumber = 8;
+  static const int kMinTfFieldNumber = 6;
   inline ::google::protobuf::int32 min_tf() const;
   inline void set_min_tf(::google::protobuf::int32 value);
 
-  // optional int32 max_tf = 9;
+  // optional int32 max_tf = 7;
   inline bool has_max_tf() const;
   inline void clear_max_tf();
-  static const int kMaxTfFieldNumber = 9;
+  static const int kMaxTfFieldNumber = 7;
   inline ::google::protobuf::int32 max_tf() const;
   inline void set_max_tf(::google::protobuf::int32 value);
 
-  // optional int32 min_value = 10;
+  // optional int32 min_value = 8;
   inline bool has_min_value() const;
   inline void clear_min_value();
-  static const int kMinValueFieldNumber = 10;
+  static const int kMinValueFieldNumber = 8;
   inline ::google::protobuf::int32 min_value() const;
   inline void set_min_value(::google::protobuf::int32 value);
 
-  // optional int32 max_value = 11;
+  // optional int32 max_value = 9;
   inline bool has_max_value() const;
   inline void clear_max_value();
-  static const int kMaxValueFieldNumber = 11;
+  static const int kMaxValueFieldNumber = 9;
   inline ::google::protobuf::int32 max_value() const;
   inline void set_max_value(::google::protobuf::int32 value);
 
@@ -7871,10 +8159,6 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   inline void clear_has_dictionary_target_name();
   inline void set_has_class_id();
   inline void clear_has_class_id();
-  inline void set_has_min_percentage();
-  inline void clear_has_min_percentage();
-  inline void set_has_max_percentage();
-  inline void clear_has_max_percentage();
   inline void set_has_min_df();
   inline void clear_has_min_df();
   inline void set_has_max_df();
@@ -7893,8 +8177,6 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   ::std::string* dictionary_name_;
   ::std::string* dictionary_target_name_;
   ::std::string* class_id_;
-  float min_percentage_;
-  float max_percentage_;
   ::google::protobuf::int32 min_df_;
   ::google::protobuf::int32 max_df_;
   ::google::protobuf::int32 min_tf_;
@@ -7903,7 +8185,7 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   ::google::protobuf::int32 max_value_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -20413,6 +20695,138 @@ inline void CollectionParserConfig::set_use_unity_based_indices(bool value) {
   use_unity_based_indices_ = value;
 }
 
+// repeated string cooccurrence_token = 7;
+inline int CollectionParserConfig::cooccurrence_token_size() const {
+  return cooccurrence_token_.size();
+}
+inline void CollectionParserConfig::clear_cooccurrence_token() {
+  cooccurrence_token_.Clear();
+}
+inline const ::std::string& CollectionParserConfig::cooccurrence_token(int index) const {
+  return cooccurrence_token_.Get(index);
+}
+inline ::std::string* CollectionParserConfig::mutable_cooccurrence_token(int index) {
+  return cooccurrence_token_.Mutable(index);
+}
+inline void CollectionParserConfig::set_cooccurrence_token(int index, const ::std::string& value) {
+  cooccurrence_token_.Mutable(index)->assign(value);
+}
+inline void CollectionParserConfig::set_cooccurrence_token(int index, const char* value) {
+  cooccurrence_token_.Mutable(index)->assign(value);
+}
+inline void CollectionParserConfig::set_cooccurrence_token(int index, const char* value, size_t size) {
+  cooccurrence_token_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CollectionParserConfig::add_cooccurrence_token() {
+  return cooccurrence_token_.Add();
+}
+inline void CollectionParserConfig::add_cooccurrence_token(const ::std::string& value) {
+  cooccurrence_token_.Add()->assign(value);
+}
+inline void CollectionParserConfig::add_cooccurrence_token(const char* value) {
+  cooccurrence_token_.Add()->assign(value);
+}
+inline void CollectionParserConfig::add_cooccurrence_token(const char* value, size_t size) {
+  cooccurrence_token_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+CollectionParserConfig::cooccurrence_token() const {
+  return cooccurrence_token_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+CollectionParserConfig::mutable_cooccurrence_token() {
+  return &cooccurrence_token_;
+}
+
+// optional bool gather_cooc = 8;
+inline bool CollectionParserConfig::has_gather_cooc() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void CollectionParserConfig::set_has_gather_cooc() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void CollectionParserConfig::clear_has_gather_cooc() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void CollectionParserConfig::clear_gather_cooc() {
+  gather_cooc_ = false;
+  clear_has_gather_cooc();
+}
+inline bool CollectionParserConfig::gather_cooc() const {
+  return gather_cooc_;
+}
+inline void CollectionParserConfig::set_gather_cooc(bool value) {
+  set_has_gather_cooc();
+  gather_cooc_ = value;
+}
+
+// repeated string cooccurrence_class_id = 10;
+inline int CollectionParserConfig::cooccurrence_class_id_size() const {
+  return cooccurrence_class_id_.size();
+}
+inline void CollectionParserConfig::clear_cooccurrence_class_id() {
+  cooccurrence_class_id_.Clear();
+}
+inline const ::std::string& CollectionParserConfig::cooccurrence_class_id(int index) const {
+  return cooccurrence_class_id_.Get(index);
+}
+inline ::std::string* CollectionParserConfig::mutable_cooccurrence_class_id(int index) {
+  return cooccurrence_class_id_.Mutable(index);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const ::std::string& value) {
+  cooccurrence_class_id_.Mutable(index)->assign(value);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const char* value) {
+  cooccurrence_class_id_.Mutable(index)->assign(value);
+}
+inline void CollectionParserConfig::set_cooccurrence_class_id(int index, const char* value, size_t size) {
+  cooccurrence_class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CollectionParserConfig::add_cooccurrence_class_id() {
+  return cooccurrence_class_id_.Add();
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const ::std::string& value) {
+  cooccurrence_class_id_.Add()->assign(value);
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const char* value) {
+  cooccurrence_class_id_.Add()->assign(value);
+}
+inline void CollectionParserConfig::add_cooccurrence_class_id(const char* value, size_t size) {
+  cooccurrence_class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+CollectionParserConfig::cooccurrence_class_id() const {
+  return cooccurrence_class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+CollectionParserConfig::mutable_cooccurrence_class_id() {
+  return &cooccurrence_class_id_;
+}
+
+// optional bool use_symmetric_cooc_values = 11 [default = false];
+inline bool CollectionParserConfig::has_use_symmetric_cooc_values() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void CollectionParserConfig::set_has_use_symmetric_cooc_values() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void CollectionParserConfig::clear_has_use_symmetric_cooc_values() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void CollectionParserConfig::clear_use_symmetric_cooc_values() {
+  use_symmetric_cooc_values_ = false;
+  clear_has_use_symmetric_cooc_values();
+}
+inline bool CollectionParserConfig::use_symmetric_cooc_values() const {
+  return use_symmetric_cooc_values_;
+}
+inline void CollectionParserConfig::set_use_symmetric_cooc_values(bool value) {
+  set_has_use_symmetric_cooc_values();
+  use_symmetric_cooc_values_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // SynchronizeModelArgs
@@ -20551,6 +20965,212 @@ inline float SynchronizeModelArgs::apply_weight() const {
 inline void SynchronizeModelArgs::set_apply_weight(float value) {
   set_has_apply_weight();
   apply_weight_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// InitializeModelArgs_Filter
+
+// optional string class_id = 1;
+inline bool InitializeModelArgs_Filter::has_class_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_class_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void InitializeModelArgs_Filter::clear_has_class_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void InitializeModelArgs_Filter::clear_class_id() {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    class_id_->clear();
+  }
+  clear_has_class_id();
+}
+inline const ::std::string& InitializeModelArgs_Filter::class_id() const {
+  return *class_id_;
+}
+inline void InitializeModelArgs_Filter::set_class_id(const ::std::string& value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void InitializeModelArgs_Filter::set_class_id(const char* value) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(value);
+}
+inline void InitializeModelArgs_Filter::set_class_id(const char* value, size_t size) {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* InitializeModelArgs_Filter::mutable_class_id() {
+  set_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    class_id_ = new ::std::string;
+  }
+  return class_id_;
+}
+inline ::std::string* InitializeModelArgs_Filter::release_class_id() {
+  clear_has_class_id();
+  if (class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = class_id_;
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void InitializeModelArgs_Filter::set_allocated_class_id(::std::string* class_id) {
+  if (class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete class_id_;
+  }
+  if (class_id) {
+    set_has_class_id();
+    class_id_ = class_id;
+  } else {
+    clear_has_class_id();
+    class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional float min_percentage = 2;
+inline bool InitializeModelArgs_Filter::has_min_percentage() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_percentage() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_percentage() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void InitializeModelArgs_Filter::clear_min_percentage() {
+  min_percentage_ = 0;
+  clear_has_min_percentage();
+}
+inline float InitializeModelArgs_Filter::min_percentage() const {
+  return min_percentage_;
+}
+inline void InitializeModelArgs_Filter::set_min_percentage(float value) {
+  set_has_min_percentage();
+  min_percentage_ = value;
+}
+
+// optional float max_percentage = 3;
+inline bool InitializeModelArgs_Filter::has_max_percentage() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_max_percentage() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InitializeModelArgs_Filter::clear_has_max_percentage() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InitializeModelArgs_Filter::clear_max_percentage() {
+  max_percentage_ = 0;
+  clear_has_max_percentage();
+}
+inline float InitializeModelArgs_Filter::max_percentage() const {
+  return max_percentage_;
+}
+inline void InitializeModelArgs_Filter::set_max_percentage(float value) {
+  set_has_max_percentage();
+  max_percentage_ = value;
+}
+
+// optional int32 min_items = 4;
+inline bool InitializeModelArgs_Filter::has_min_items() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_items() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_items() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void InitializeModelArgs_Filter::clear_min_items() {
+  min_items_ = 0;
+  clear_has_min_items();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::min_items() const {
+  return min_items_;
+}
+inline void InitializeModelArgs_Filter::set_min_items(::google::protobuf::int32 value) {
+  set_has_min_items();
+  min_items_ = value;
+}
+
+// optional int32 max_items = 5;
+inline bool InitializeModelArgs_Filter::has_max_items() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_max_items() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void InitializeModelArgs_Filter::clear_has_max_items() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void InitializeModelArgs_Filter::clear_max_items() {
+  max_items_ = 0;
+  clear_has_max_items();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::max_items() const {
+  return max_items_;
+}
+inline void InitializeModelArgs_Filter::set_max_items(::google::protobuf::int32 value) {
+  set_has_max_items();
+  max_items_ = value;
+}
+
+// optional int32 min_total_count = 6;
+inline bool InitializeModelArgs_Filter::has_min_total_count() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_total_count() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_total_count() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void InitializeModelArgs_Filter::clear_min_total_count() {
+  min_total_count_ = 0;
+  clear_has_min_total_count();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::min_total_count() const {
+  return min_total_count_;
+}
+inline void InitializeModelArgs_Filter::set_min_total_count(::google::protobuf::int32 value) {
+  set_has_min_total_count();
+  min_total_count_ = value;
+}
+
+// optional int32 min_one_item_count = 7;
+inline bool InitializeModelArgs_Filter::has_min_one_item_count() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void InitializeModelArgs_Filter::set_has_min_one_item_count() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void InitializeModelArgs_Filter::clear_has_min_one_item_count() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void InitializeModelArgs_Filter::clear_min_one_item_count() {
+  min_one_item_count_ = 0;
+  clear_has_min_one_item_count();
+}
+inline ::google::protobuf::int32 InitializeModelArgs_Filter::min_one_item_count() const {
+  return min_one_item_count_;
+}
+inline void InitializeModelArgs_Filter::set_min_one_item_count(::google::protobuf::int32 value) {
+  set_has_min_one_item_count();
+  min_one_item_count_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -20785,6 +21405,168 @@ inline void InitializeModelArgs::set_seed(::google::protobuf::int32 value) {
   seed_ = value;
 }
 
+// optional .artm.InitializeModelArgs.SourceType source_type = 6;
+inline bool InitializeModelArgs::has_source_type() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void InitializeModelArgs::set_has_source_type() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void InitializeModelArgs::clear_has_source_type() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void InitializeModelArgs::clear_source_type() {
+  source_type_ = 0;
+  clear_has_source_type();
+}
+inline ::artm::InitializeModelArgs_SourceType InitializeModelArgs::source_type() const {
+  return static_cast< ::artm::InitializeModelArgs_SourceType >(source_type_);
+}
+inline void InitializeModelArgs::set_source_type(::artm::InitializeModelArgs_SourceType value) {
+  assert(::artm::InitializeModelArgs_SourceType_IsValid(value));
+  set_has_source_type();
+  source_type_ = value;
+}
+
+// optional string disk_path = 7;
+inline bool InitializeModelArgs::has_disk_path() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void InitializeModelArgs::set_has_disk_path() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void InitializeModelArgs::clear_has_disk_path() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void InitializeModelArgs::clear_disk_path() {
+  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_->clear();
+  }
+  clear_has_disk_path();
+}
+inline const ::std::string& InitializeModelArgs::disk_path() const {
+  return *disk_path_;
+}
+inline void InitializeModelArgs::set_disk_path(const ::std::string& value) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(value);
+}
+inline void InitializeModelArgs::set_disk_path(const char* value) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(value);
+}
+inline void InitializeModelArgs::set_disk_path(const char* value, size_t size) {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  disk_path_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* InitializeModelArgs::mutable_disk_path() {
+  set_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_path_ = new ::std::string;
+  }
+  return disk_path_;
+}
+inline ::std::string* InitializeModelArgs::release_disk_path() {
+  clear_has_disk_path();
+  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = disk_path_;
+    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void InitializeModelArgs::set_allocated_disk_path(::std::string* disk_path) {
+  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete disk_path_;
+  }
+  if (disk_path) {
+    set_has_disk_path();
+    disk_path_ = disk_path;
+  } else {
+    clear_has_disk_path();
+    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// repeated .artm.InitializeModelArgs.Filter filter = 8;
+inline int InitializeModelArgs::filter_size() const {
+  return filter_.size();
+}
+inline void InitializeModelArgs::clear_filter() {
+  filter_.Clear();
+}
+inline const ::artm::InitializeModelArgs_Filter& InitializeModelArgs::filter(int index) const {
+  return filter_.Get(index);
+}
+inline ::artm::InitializeModelArgs_Filter* InitializeModelArgs::mutable_filter(int index) {
+  return filter_.Mutable(index);
+}
+inline ::artm::InitializeModelArgs_Filter* InitializeModelArgs::add_filter() {
+  return filter_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >&
+InitializeModelArgs::filter() const {
+  return filter_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::InitializeModelArgs_Filter >*
+InitializeModelArgs::mutable_filter() {
+  return &filter_;
+}
+
+// repeated string batch_filename = 9;
+inline int InitializeModelArgs::batch_filename_size() const {
+  return batch_filename_.size();
+}
+inline void InitializeModelArgs::clear_batch_filename() {
+  batch_filename_.Clear();
+}
+inline const ::std::string& InitializeModelArgs::batch_filename(int index) const {
+  return batch_filename_.Get(index);
+}
+inline ::std::string* InitializeModelArgs::mutable_batch_filename(int index) {
+  return batch_filename_.Mutable(index);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const ::std::string& value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const char* value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void InitializeModelArgs::set_batch_filename(int index, const char* value, size_t size) {
+  batch_filename_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* InitializeModelArgs::add_batch_filename() {
+  return batch_filename_.Add();
+}
+inline void InitializeModelArgs::add_batch_filename(const ::std::string& value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void InitializeModelArgs::add_batch_filename(const char* value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void InitializeModelArgs::add_batch_filename(const char* value, size_t size) {
+  batch_filename_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+InitializeModelArgs::batch_filename() const {
+  return batch_filename_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+InitializeModelArgs::mutable_batch_filename() {
+  return &batch_filename_;
+}
+
 // -------------------------------------------------------------------
 
 // FilterDictionaryArgs
@@ -20999,59 +21781,15 @@ inline void FilterDictionaryArgs::set_allocated_class_id(::std::string* class_id
   }
 }
 
-// optional float min_percentage = 4;
-inline bool FilterDictionaryArgs::has_min_percentage() const {
+// optional int32 min_df = 4;
+inline bool FilterDictionaryArgs::has_min_df() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void FilterDictionaryArgs::set_has_min_percentage() {
+inline void FilterDictionaryArgs::set_has_min_df() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void FilterDictionaryArgs::clear_has_min_percentage() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void FilterDictionaryArgs::clear_min_percentage() {
-  min_percentage_ = 0;
-  clear_has_min_percentage();
-}
-inline float FilterDictionaryArgs::min_percentage() const {
-  return min_percentage_;
-}
-inline void FilterDictionaryArgs::set_min_percentage(float value) {
-  set_has_min_percentage();
-  min_percentage_ = value;
-}
-
-// optional float max_percentage = 5;
-inline bool FilterDictionaryArgs::has_max_percentage() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void FilterDictionaryArgs::set_has_max_percentage() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void FilterDictionaryArgs::clear_has_max_percentage() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void FilterDictionaryArgs::clear_max_percentage() {
-  max_percentage_ = 0;
-  clear_has_max_percentage();
-}
-inline float FilterDictionaryArgs::max_percentage() const {
-  return max_percentage_;
-}
-inline void FilterDictionaryArgs::set_max_percentage(float value) {
-  set_has_max_percentage();
-  max_percentage_ = value;
-}
-
-// optional int32 min_df = 6;
-inline bool FilterDictionaryArgs::has_min_df() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void FilterDictionaryArgs::set_has_min_df() {
-  _has_bits_[0] |= 0x00000020u;
-}
 inline void FilterDictionaryArgs::clear_has_min_df() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void FilterDictionaryArgs::clear_min_df() {
   min_df_ = 0;
@@ -21065,15 +21803,15 @@ inline void FilterDictionaryArgs::set_min_df(::google::protobuf::int32 value) {
   min_df_ = value;
 }
 
-// optional int32 max_df = 7;
+// optional int32 max_df = 5;
 inline bool FilterDictionaryArgs::has_max_df() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_max_df() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void FilterDictionaryArgs::clear_has_max_df() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void FilterDictionaryArgs::clear_max_df() {
   max_df_ = 0;
@@ -21087,15 +21825,15 @@ inline void FilterDictionaryArgs::set_max_df(::google::protobuf::int32 value) {
   max_df_ = value;
 }
 
-// optional int32 min_tf = 8;
+// optional int32 min_tf = 6;
 inline bool FilterDictionaryArgs::has_min_tf() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_min_tf() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void FilterDictionaryArgs::clear_has_min_tf() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void FilterDictionaryArgs::clear_min_tf() {
   min_tf_ = 0;
@@ -21109,15 +21847,15 @@ inline void FilterDictionaryArgs::set_min_tf(::google::protobuf::int32 value) {
   min_tf_ = value;
 }
 
-// optional int32 max_tf = 9;
+// optional int32 max_tf = 7;
 inline bool FilterDictionaryArgs::has_max_tf() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_max_tf() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void FilterDictionaryArgs::clear_has_max_tf() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void FilterDictionaryArgs::clear_max_tf() {
   max_tf_ = 0;
@@ -21131,15 +21869,15 @@ inline void FilterDictionaryArgs::set_max_tf(::google::protobuf::int32 value) {
   max_tf_ = value;
 }
 
-// optional int32 min_value = 10;
+// optional int32 min_value = 8;
 inline bool FilterDictionaryArgs::has_min_value() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_min_value() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void FilterDictionaryArgs::clear_has_min_value() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void FilterDictionaryArgs::clear_min_value() {
   min_value_ = 0;
@@ -21153,15 +21891,15 @@ inline void FilterDictionaryArgs::set_min_value(::google::protobuf::int32 value)
   min_value_ = value;
 }
 
-// optional int32 max_value = 11;
+// optional int32 max_value = 9;
 inline bool FilterDictionaryArgs::has_max_value() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_max_value() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void FilterDictionaryArgs::clear_has_max_value() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void FilterDictionaryArgs::clear_max_value() {
   max_value_ = 0;
@@ -25858,6 +26596,10 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::TopicModel_OperationType
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::CollectionParserConfig_Format>() {
   return ::artm::CollectionParserConfig_Format_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::InitializeModelArgs_SourceType>() {
+  return ::artm::InitializeModelArgs_SourceType_descriptor();
 }
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::GetTopicModelArgs_RequestType>() {
