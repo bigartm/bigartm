@@ -230,36 +230,6 @@ message TransformConfig {
   optional double a = 3 [default = 1];
 }
 
-// Represents a static dictionary.
-message DictionaryConfig {
-  optional string name = 1;
-  repeated DictionaryEntry entry = 2;
-  optional int32 total_token_count = 3;  // obsolete in BigARTM v0.7.2
-  optional int32 total_items_count = 4;
-  optional DictionaryCoocurenceEntries cooc_entries = 5;
-  optional float total_token_weight = 6;
-}
-
-// Represents one entry in a static dictionary
-message DictionaryEntry {
-  optional string key_token = 1;
-  optional string class_id = 2;
-  optional float value = 3;
-  repeated string value_tokens = 4;
-  optional FloatArray values = 5;
-  optional int32 token_count = 6;  // obsolete in BigARTM v0.7.2
-  optional int32 items_count = 7;
-  optional float token_weight = 8;
-}
-
-// Represents the info about co-occurrence between one pair of tokens in a static dictionary
-message DictionaryCoocurenceEntries {
-  repeated int32 first_index = 1;  // index of token in entry field
-  repeated int32 second_index = 2; // index of token in entry field
-  repeated float value = 3;
-  optional bool symmetric_cooc_values = 4 [default = false];
-}
-
 // Represents a configuration of a general score
 message ScoreConfig {
   enum Type {
@@ -492,20 +462,19 @@ message CollectionParserConfig {
     BagOfWordsUci = 0;
     MatrixMarket = 1;
     VowpalWabbit = 2;
-    Cooccurrence = 3;
   }
 
   optional Format format = 1 [default = BagOfWordsUci];
   optional string docword_file_path = 2;
   optional string vocab_file_path = 3;
   optional string target_folder = 4;
-  optional string dictionary_file_name = 5;
-  optional int32 num_items_per_batch = 6 [default = 1000];
-  repeated string cooccurrence_token = 7;
-  optional bool use_unity_based_indices = 8 [default = true];
-  optional bool gather_cooc = 9 [default = false];
-  repeated string cooccurrence_class_id = 10;
-  optional bool use_symmetric_cooc_values = 11 [default = false];
+  optional int32 num_items_per_batch = 5 [default = 1000];
+  optional bool use_unity_based_indices = 6 [default = true];
+
+  repeated string cooccurrence_token = 7;  // obsoleted
+  optional bool gather_cooc = 8;  // obsoleted
+  repeated string cooccurrence_class_id = 10;  // obsoleted
+  optional bool use_symmetric_cooc_values = 11 [default = false];  // obsoleted
 }
 
 // Represents an argument of 'synchronize model' operation
@@ -518,12 +487,12 @@ message SynchronizeModelArgs {
 
 // Represents an argument of 'initialize model' operation
 message InitializeModelArgs {
-  enum SourceType {
+  enum SourceType {  // obsoleted
     Dictionary = 0;
     Batches = 1;
   }
 
-  message Filter {
+  message Filter {  // obsoleted
     optional string class_id = 1;
     optional float min_percentage = 2;
     optional float max_percentage = 3;
@@ -535,16 +504,52 @@ message InitializeModelArgs {
 
   optional string model_name = 1;
   optional string dictionary_name = 2;
-  optional SourceType source_type = 3 [default = Dictionary];
+  optional int32 topics_count = 3;
+  repeated string topic_name = 4;
+  optional int32 seed = 5 [default = -1];
 
-  optional string disk_path = 4;
-  repeated Filter filter = 5;
+  optional SourceType source_type = 6;  // obsoleted
+  optional string disk_path = 7;  // obsoleted
+  repeated Filter filter = 8;  // obsoleted
+  repeated string batch_filename = 9;  // obsoleted
+}
 
-  optional int32 topics_count = 6;
-  repeated string topic_name = 7;
+// Represents a static dictionary.
+message DictionaryData {
+  optional string name = 1;
+  repeated string token = 2;
+  repeated string class_id = 3;
+  repeated float token_value = 4;  // for scores and regularizers
+  repeated float token_tf = 5;  // token frequency
+  repeated float token_df = 6;  // number of document occurences
+  repeated int32 cooc_first_index = 7;
+  repeated int32 cooc_second_index = 8;
+  repeated float cooc_value = 9;
+}
 
-  repeated string batch_filename = 8;
-  optional int32 seed = 9 [default = -1];
+message FilterDictionaryArgs {
+  optional string dictionary_name = 1;
+  optional string dictionary_target_name = 2;
+
+  optional string class_id = 3;
+  optional float min_df = 4;
+  optional float max_df = 5;
+  optional float min_df_rate = 6;
+  optional float max_df_rate = 7;
+  optional float min_tf = 8;
+  optional float max_tf = 9;
+}
+
+message GatherDictionaryArgs {
+  optional string dictionary_target_name = 1;
+  optional string data_path = 2;
+  optional string cooc_file_path = 3;
+  optional string vocab_file_path = 4;
+  optional bool symmetric_cooc_values = 5 [default = false];
+}
+
+message GetDictionaryArgs {
+  optional string dictionary_name = 1;
 }
 
 message GetTopicModelArgs {
@@ -680,6 +685,11 @@ message NormalizeModelArgs {
 }
 
 message ImportDictionaryArgs {
+  optional string file_name = 1;
+  optional string dictionary_name = 2;
+}
+
+message ExportDictionaryArgs {
   optional string file_name = 1;
   optional string dictionary_name = 2;
 }

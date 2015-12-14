@@ -251,6 +251,79 @@ class ARTM(object):
         else:
             raise IOError('dictionary_name is None')
 
+    def save_dictionary(self, dictionary_name=None, dictionary_path=None):
+        """ARTM.save_dictionary() --- save the BigARTM dictionary of
+        the collection on the disk
+
+        Args:
+          dictionary_name (str): the name of the dictionary in the lib, default=None
+          dictionary_path (str): full file name for the dictionary, default=None
+        """
+        if dictionary_path is not None and dictionary_name is not None:
+            self.master.export_dictionary(filename=dictionary_path,
+                                          dictionary_name=dictionary_name)
+        elif dictionary_path is None:
+            raise IOError('dictionary_path is None')
+        else:
+            raise IOError('dictionary_name is None')
+
+    def gather_dictionary(self, dictionary_target_name=None, data_path=None, cooc_file_path=None,
+                          vocab_file_path=None, symmetric_cooc_values=False):
+        """ARTM.gather_dictionary() --- create the BigARTM dictionary of
+        the collection, represented as batches and load it in the lib
+
+        Args:
+          dictionary_target_name (str): the name of the dictionary in the lib, default=None
+          data_path (str): full path to batches folder
+          cooc_file_path (str): full path to the file with cooc info
+          vocab_file_path (str): full path to the file with vocabulary.
+          If given, the dictionary token will have the same order, as in this file,
+          otherwise the order will be random, default=None
+          symmetric_cooc_values (str): if the cooc matrix should
+          considered to be symmetric or not, default=False
+        """
+        if dictionary_target_name is not None and data_path is not None:
+            self.master.gather_dictionary(dictionary_target_name=dictionary_target_name,
+                                          data_path=data_path,
+                                          cooc_file_path=cooc_file_path,
+                                          vocab_file_path=vocab_file_path,
+                                          symmetric_cooc_values=symmetric_cooc_values)
+        elif data_path is None:
+            raise IOError('data_path is None')
+        else:
+            raise IOError('dictionary_target_name is None')
+
+    def filter_dictionary(self, dictionary_name=None, dictionary_target_name=None, class_id=None,
+                          min_df=None, max_df=None,
+                          min_df_rate=None, max_df_rate=None,
+                          min_tf=None, max_tf=None,):
+        """ARTM.filter_dictionary() --- filter the BigARTM dictionary of
+        the collection, which was already loaded into the lib
+
+        Args:
+           dictionary_name (str): name of the dictionary in the lib to filter
+           dictionary_target_name (str): name for the new filtered dictionary in the lib
+           class_id (str): class_id to filter
+           min_df (float): min df value to pass the filter
+           max_df (float): max df value to pass the filter
+           min_df_rate (float): min df rate to pass the filter
+           max_df_rate (float): max df rate to pass the filter
+           min_tf (float): min tf value to pass the filter
+           max_tf (float): max tf value to pass the filter
+        """
+        if dictionary_name is not None:
+            self.master.filter_dictionary(dictionary_target_name=dictionary_target_name,
+                                          dictionary_name=dictionary_name,
+                                          class_id=class_id,
+                                          min_df=min_df,
+                                          max_df=max_df,
+                                          min_df_rate=min_df_rate,
+                                          max_df_rate=max_df_rate,
+                                          min_tf=min_tf,
+                                          max_tf=max_tf)
+        else:
+            raise IOError('dictionary_name is None')
+
     def remove_dictionary(self, dictionary_name=None):
         """ARTM.remove_dictionary() --- remove the loaded BigARTM dictionary
         from the lib
@@ -608,37 +681,23 @@ class ARTM(object):
                                      index=topic_names)
         return theta_data_frame
 
-    def initialize(self, data_path=None, dictionary_name=None, seed=-1):
+    def initialize(self, dictionary_name=None, seed=-1):
         """ARTM.initialize() --- initialize topic model before learning
 
         Args:
-          data_path (str): name of directory containing BigARTM batches, default=None
           dictionary_name (str): the name of loaded BigARTM collection
           dictionary, default=None
           seed (unsigned int or -1): seed for random initialization, default=-1 (no seed)
 
-        Note:
-          Priority of initialization:
-          1) batches in 'data_path'
-          2) dictionary
         """
         self._lib.ArtmDisposeModel(self.master.master_id, self.model_pwt)
         self._lib.ArtmDisposeModel(self.master.master_id, self.model_nwt)
         self._lib.ArtmDisposeModel(self.master.master_id, self.model_rwt)
-        if data_path is not None:
-            self.master.initialize_model(model_name=self.model_pwt,
-                                         disk_path=data_path,
-                                         num_topics=self._num_topics,
-                                         topic_names=self._topic_names,
-                                         source_type='batches',
-                                         seed=seed)
-        else:
-            self.master.initialize_model(model_name=self.model_pwt,
-                                         dictionary_name=dictionary_name,
-                                         num_topics=self._num_topics,
-                                         topic_names=self._topic_names,
-                                         source_type='dictionary',
-                                         seed=seed)
+        self.master.initialize_model(model_name=self.model_pwt,
+                                     dictionary_name=dictionary_name,
+                                     num_topics=self._num_topics,
+                                     topic_names=self._topic_names,
+                                     seed=seed)
 
         phi_info = self.master.get_phi_info(model=self.model_pwt)
         self._topic_names = [topic_name for topic_name in phi_info.topic_name]

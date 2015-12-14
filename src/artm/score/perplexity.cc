@@ -138,15 +138,15 @@ void Perplexity::AppendScore(
         } else {
           auto entry_ptr = dictionary_ptr->entry(token);
           bool failed = true;
-          if (entry_ptr != nullptr && entry_ptr->has_value()) {
-            float n_w = entry_ptr->value();
+          if (entry_ptr != nullptr && entry_ptr->token_value()) {
+            float n_w = entry_ptr->token_value();
             sum = n_w / dictionary_ptr->size();
             failed = false;
           }
           if (failed) {
             LOG_IF(INFO, do_log_unigram_collection_failure)
                       << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
-                      << ". Verify that the token exists in the dictionary and contains DictionaryEntry.value field. "
+                      << ". Verify that the token exists in the dictionary and it's value > 0. "
                       << "Document unigram model will be used for this token.";
             sum = token_weight / n_d;
             do_log_unigram_collection_failure = false;

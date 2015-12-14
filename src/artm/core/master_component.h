@@ -74,9 +74,12 @@ class MasterComponent : boost::noncopyable {
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   void DisposeRegularizer(const std::string& name);
 
-  void CreateOrReconfigureDictionary(const DictionaryConfig& config);
+  void CreateDictionary(const DictionaryData& data);
+  void AppendDictionary(const DictionaryData& data);
   void DisposeDictionary(const std::string& name);
   void ImportDictionary(const ImportDictionaryArgs& args);
+  void ExportDictionary(const ExportDictionaryArgs& args);
+  void RequestDictionary(const GetDictionaryArgs& args, DictionaryData* result);
 
   void ImportBatches(const ImportBatchesArgs& args);
   void DisposeBatches(const DisposeBatchesArgs& args);
@@ -89,6 +92,8 @@ class MasterComponent : boost::noncopyable {
   void ImportModel(const ImportModelArgs& args);
   void AttachModel(const AttachModelArgs& args, int address_length, float* address);
   void InitializeModel(const InitializeModelArgs& args);
+  void FilterDictionary(const FilterDictionaryArgs& args);
+  void GatherDictionary(const GatherDictionaryArgs& args);
   bool AddBatch(const AddBatchArgs& args);
 
  private:
