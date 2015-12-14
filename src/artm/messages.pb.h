@@ -88,7 +88,7 @@ class InitializeModelArgs_Filter;
 class DictionaryData;
 class FilterDictionaryArgs;
 class GatherDictionaryArgs;
-class RequestDictionaryArgs;
+class GetDictionaryArgs;
 class GetTopicModelArgs;
 class GetThetaMatrixArgs;
 class GetScoreValueArgs;
@@ -7902,14 +7902,14 @@ class GatherDictionaryArgs : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class RequestDictionaryArgs : public ::google::protobuf::Message {
+class GetDictionaryArgs : public ::google::protobuf::Message {
  public:
-  RequestDictionaryArgs();
-  virtual ~RequestDictionaryArgs();
+  GetDictionaryArgs();
+  virtual ~GetDictionaryArgs();
 
-  RequestDictionaryArgs(const RequestDictionaryArgs& from);
+  GetDictionaryArgs(const GetDictionaryArgs& from);
 
-  inline RequestDictionaryArgs& operator=(const RequestDictionaryArgs& from) {
+  inline GetDictionaryArgs& operator=(const GetDictionaryArgs& from) {
     CopyFrom(from);
     return *this;
   }
@@ -7923,17 +7923,17 @@ class RequestDictionaryArgs : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const RequestDictionaryArgs& default_instance();
+  static const GetDictionaryArgs& default_instance();
 
-  void Swap(RequestDictionaryArgs* other);
+  void Swap(GetDictionaryArgs* other);
 
   // implements Message ----------------------------------------------
 
-  RequestDictionaryArgs* New() const;
+  GetDictionaryArgs* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const RequestDictionaryArgs& from);
-  void MergeFrom(const RequestDictionaryArgs& from);
+  void CopyFrom(const GetDictionaryArgs& from);
+  void MergeFrom(const GetDictionaryArgs& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -7968,7 +7968,7 @@ class RequestDictionaryArgs : public ::google::protobuf::Message {
   inline ::std::string* release_dictionary_name();
   inline void set_allocated_dictionary_name(::std::string* dictionary_name);
 
-  // @@protoc_insertion_point(class_scope:artm.RequestDictionaryArgs)
+  // @@protoc_insertion_point(class_scope:artm.GetDictionaryArgs)
  private:
   inline void set_has_dictionary_name();
   inline void clear_has_dictionary_name();
@@ -7985,7 +7985,7 @@ class RequestDictionaryArgs : public ::google::protobuf::Message {
   friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
 
   void InitAsDefaultInstance();
-  static RequestDictionaryArgs* default_instance_;
+  static GetDictionaryArgs* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -21254,56 +21254,56 @@ inline void GatherDictionaryArgs::set_symmetric_cooc_values(bool value) {
 
 // -------------------------------------------------------------------
 
-// RequestDictionaryArgs
+// GetDictionaryArgs
 
 // optional string dictionary_name = 1;
-inline bool RequestDictionaryArgs::has_dictionary_name() const {
+inline bool GetDictionaryArgs::has_dictionary_name() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void RequestDictionaryArgs::set_has_dictionary_name() {
+inline void GetDictionaryArgs::set_has_dictionary_name() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void RequestDictionaryArgs::clear_has_dictionary_name() {
+inline void GetDictionaryArgs::clear_has_dictionary_name() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void RequestDictionaryArgs::clear_dictionary_name() {
+inline void GetDictionaryArgs::clear_dictionary_name() {
   if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_->clear();
   }
   clear_has_dictionary_name();
 }
-inline const ::std::string& RequestDictionaryArgs::dictionary_name() const {
+inline const ::std::string& GetDictionaryArgs::dictionary_name() const {
   return *dictionary_name_;
 }
-inline void RequestDictionaryArgs::set_dictionary_name(const ::std::string& value) {
+inline void GetDictionaryArgs::set_dictionary_name(const ::std::string& value) {
   set_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_ = new ::std::string;
   }
   dictionary_name_->assign(value);
 }
-inline void RequestDictionaryArgs::set_dictionary_name(const char* value) {
+inline void GetDictionaryArgs::set_dictionary_name(const char* value) {
   set_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_ = new ::std::string;
   }
   dictionary_name_->assign(value);
 }
-inline void RequestDictionaryArgs::set_dictionary_name(const char* value, size_t size) {
+inline void GetDictionaryArgs::set_dictionary_name(const char* value, size_t size) {
   set_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_ = new ::std::string;
   }
   dictionary_name_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* RequestDictionaryArgs::mutable_dictionary_name() {
+inline ::std::string* GetDictionaryArgs::mutable_dictionary_name() {
   set_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     dictionary_name_ = new ::std::string;
   }
   return dictionary_name_;
 }
-inline ::std::string* RequestDictionaryArgs::release_dictionary_name() {
+inline ::std::string* GetDictionaryArgs::release_dictionary_name() {
   clear_has_dictionary_name();
   if (dictionary_name_ == &::google::protobuf::internal::GetEmptyString()) {
     return NULL;
@@ -21313,7 +21313,7 @@ inline ::std::string* RequestDictionaryArgs::release_dictionary_name() {
     return temp;
   }
 }
-inline void RequestDictionaryArgs::set_allocated_dictionary_name(::std::string* dictionary_name) {
+inline void GetDictionaryArgs::set_allocated_dictionary_name(::std::string* dictionary_name) {
   if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete dictionary_name_;
   }

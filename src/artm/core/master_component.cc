@@ -118,7 +118,7 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   LOG(INFO) << "Import completed, token_size = " << token_size;
 }
 
-void MasterComponent::RequestDictionary(const RequestDictionaryArgs& args, DictionaryData* result) {
+void MasterComponent::RequestDictionary(const GetDictionaryArgs& args, DictionaryData* result) {
   std::shared_ptr<Dictionary> dict_ptr = instance_->dictionaries()->get(args.dictionary_name());
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +

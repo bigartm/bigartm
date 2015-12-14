@@ -548,7 +548,7 @@ message GatherDictionaryArgs {
   optional bool symmetric_cooc_values = 5 [default = false];
 }
 
-message RequestDictionaryArgs {
+message GetDictionaryArgs {
   optional string dictionary_name = 1;
 }
 

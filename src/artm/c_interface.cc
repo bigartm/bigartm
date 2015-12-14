@@ -601,7 +601,7 @@ int ArtmCreateDictionary(int master_id, int length, const char* dictionary_data)
 
 int ArtmRequestDictionary(int master_id, int length, const char* request_dictionary_args) {
   try {
-    artm::RequestDictionaryArgs message;
+    artm::GetDictionaryArgs message;
     ParseFromArray(request_dictionary_args, length, &message);
     artm::DictionaryData result_message;
     master_component(master_id)->RequestDictionary(message, &result_message);
