@@ -58,8 +58,6 @@ class SmoothPtdwConfig;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
 class TransformConfig;
-class DictionaryData;
-class DictionaryCoocurenceEntries;
 class ScoreConfig;
 class ScoreData;
 class PerplexityScoreConfig;
@@ -87,6 +85,7 @@ class CollectionParserConfig;
 class SynchronizeModelArgs;
 class InitializeModelArgs;
 class InitializeModelArgs_Filter;
+class DictionaryData;
 class FilterDictionaryArgs;
 class GatherDictionaryArgs;
 class RequestDictionaryArgs;
@@ -3640,326 +3639,6 @@ class TransformConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static TransformConfig* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class DictionaryData : public ::google::protobuf::Message {
- public:
-  DictionaryData();
-  virtual ~DictionaryData();
-
-  DictionaryData(const DictionaryData& from);
-
-  inline DictionaryData& operator=(const DictionaryData& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const DictionaryData& default_instance();
-
-  void Swap(DictionaryData* other);
-
-  // implements Message ----------------------------------------------
-
-  DictionaryData* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const DictionaryData& from);
-  void MergeFrom(const DictionaryData& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // repeated string token = 2;
-  inline int token_size() const;
-  inline void clear_token();
-  static const int kTokenFieldNumber = 2;
-  inline const ::std::string& token(int index) const;
-  inline ::std::string* mutable_token(int index);
-  inline void set_token(int index, const ::std::string& value);
-  inline void set_token(int index, const char* value);
-  inline void set_token(int index, const char* value, size_t size);
-  inline ::std::string* add_token();
-  inline void add_token(const ::std::string& value);
-  inline void add_token(const char* value);
-  inline void add_token(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& token() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_token();
-
-  // repeated string class_id = 3;
-  inline int class_id_size() const;
-  inline void clear_class_id();
-  static const int kClassIdFieldNumber = 3;
-  inline const ::std::string& class_id(int index) const;
-  inline ::std::string* mutable_class_id(int index);
-  inline void set_class_id(int index, const ::std::string& value);
-  inline void set_class_id(int index, const char* value);
-  inline void set_class_id(int index, const char* value, size_t size);
-  inline ::std::string* add_class_id();
-  inline void add_class_id(const ::std::string& value);
-  inline void add_class_id(const char* value);
-  inline void add_class_id(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
-
-  // repeated float token_value = 4;
-  inline int token_value_size() const;
-  inline void clear_token_value();
-  static const int kTokenValueFieldNumber = 4;
-  inline float token_value(int index) const;
-  inline void set_token_value(int index, float value);
-  inline void add_token_value(float value);
-  inline const ::google::protobuf::RepeatedField< float >&
-      token_value() const;
-  inline ::google::protobuf::RepeatedField< float >*
-      mutable_token_value();
-
-  // repeated float token_tf = 5;
-  inline int token_tf_size() const;
-  inline void clear_token_tf();
-  static const int kTokenTfFieldNumber = 5;
-  inline float token_tf(int index) const;
-  inline void set_token_tf(int index, float value);
-  inline void add_token_tf(float value);
-  inline const ::google::protobuf::RepeatedField< float >&
-      token_tf() const;
-  inline ::google::protobuf::RepeatedField< float >*
-      mutable_token_tf();
-
-  // repeated float token_df = 6;
-  inline int token_df_size() const;
-  inline void clear_token_df();
-  static const int kTokenDfFieldNumber = 6;
-  inline float token_df(int index) const;
-  inline void set_token_df(int index, float value);
-  inline void add_token_df(float value);
-  inline const ::google::protobuf::RepeatedField< float >&
-      token_df() const;
-  inline ::google::protobuf::RepeatedField< float >*
-      mutable_token_df();
-
-  // repeated int32 cooc_first_index = 7;
-  inline int cooc_first_index_size() const;
-  inline void clear_cooc_first_index();
-  static const int kCoocFirstIndexFieldNumber = 7;
-  inline ::google::protobuf::int32 cooc_first_index(int index) const;
-  inline void set_cooc_first_index(int index, ::google::protobuf::int32 value);
-  inline void add_cooc_first_index(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      cooc_first_index() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_cooc_first_index();
-
-  // repeated int32 cooc_second_index = 8;
-  inline int cooc_second_index_size() const;
-  inline void clear_cooc_second_index();
-  static const int kCoocSecondIndexFieldNumber = 8;
-  inline ::google::protobuf::int32 cooc_second_index(int index) const;
-  inline void set_cooc_second_index(int index, ::google::protobuf::int32 value);
-  inline void add_cooc_second_index(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      cooc_second_index() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_cooc_second_index();
-
-  // repeated float cooc_value = 9;
-  inline int cooc_value_size() const;
-  inline void clear_cooc_value();
-  static const int kCoocValueFieldNumber = 9;
-  inline float cooc_value(int index) const;
-  inline void set_cooc_value(int index, float value);
-  inline void add_cooc_value(float value);
-  inline const ::google::protobuf::RepeatedField< float >&
-      cooc_value() const;
-  inline ::google::protobuf::RepeatedField< float >*
-      mutable_cooc_value();
-
-  // @@protoc_insertion_point(class_scope:artm.DictionaryData)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> token_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField< float > token_value_;
-  ::google::protobuf::RepeatedField< float > token_tf_;
-  ::google::protobuf::RepeatedField< float > token_df_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > cooc_first_index_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > cooc_second_index_;
-  ::google::protobuf::RepeatedField< float > cooc_value_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static DictionaryData* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class DictionaryCoocurenceEntries : public ::google::protobuf::Message {
- public:
-  DictionaryCoocurenceEntries();
-  virtual ~DictionaryCoocurenceEntries();
-
-  DictionaryCoocurenceEntries(const DictionaryCoocurenceEntries& from);
-
-  inline DictionaryCoocurenceEntries& operator=(const DictionaryCoocurenceEntries& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const DictionaryCoocurenceEntries& default_instance();
-
-  void Swap(DictionaryCoocurenceEntries* other);
-
-  // implements Message ----------------------------------------------
-
-  DictionaryCoocurenceEntries* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const DictionaryCoocurenceEntries& from);
-  void MergeFrom(const DictionaryCoocurenceEntries& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated int32 first_index = 1;
-  inline int first_index_size() const;
-  inline void clear_first_index();
-  static const int kFirstIndexFieldNumber = 1;
-  inline ::google::protobuf::int32 first_index(int index) const;
-  inline void set_first_index(int index, ::google::protobuf::int32 value);
-  inline void add_first_index(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      first_index() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_first_index();
-
-  // repeated int32 second_index = 2;
-  inline int second_index_size() const;
-  inline void clear_second_index();
-  static const int kSecondIndexFieldNumber = 2;
-  inline ::google::protobuf::int32 second_index(int index) const;
-  inline void set_second_index(int index, ::google::protobuf::int32 value);
-  inline void add_second_index(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      second_index() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_second_index();
-
-  // repeated float value = 3;
-  inline int value_size() const;
-  inline void clear_value();
-  static const int kValueFieldNumber = 3;
-  inline float value(int index) const;
-  inline void set_value(int index, float value);
-  inline void add_value(float value);
-  inline const ::google::protobuf::RepeatedField< float >&
-      value() const;
-  inline ::google::protobuf::RepeatedField< float >*
-      mutable_value();
-
-  // optional bool symmetric_cooc_values = 4 [default = false];
-  inline bool has_symmetric_cooc_values() const;
-  inline void clear_symmetric_cooc_values();
-  static const int kSymmetricCoocValuesFieldNumber = 4;
-  inline bool symmetric_cooc_values() const;
-  inline void set_symmetric_cooc_values(bool value);
-
-  // @@protoc_insertion_point(class_scope:artm.DictionaryCoocurenceEntries)
- private:
-  inline void set_has_symmetric_cooc_values();
-  inline void clear_has_symmetric_cooc_values();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > first_index_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > second_index_;
-  ::google::protobuf::RepeatedField< float > value_;
-  bool symmetric_cooc_values_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static DictionaryCoocurenceEntries* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -7702,6 +7381,205 @@ class InitializeModelArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static InitializeModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class DictionaryData : public ::google::protobuf::Message {
+ public:
+  DictionaryData();
+  virtual ~DictionaryData();
+
+  DictionaryData(const DictionaryData& from);
+
+  inline DictionaryData& operator=(const DictionaryData& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DictionaryData& default_instance();
+
+  void Swap(DictionaryData* other);
+
+  // implements Message ----------------------------------------------
+
+  DictionaryData* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DictionaryData& from);
+  void MergeFrom(const DictionaryData& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // repeated string token = 2;
+  inline int token_size() const;
+  inline void clear_token();
+  static const int kTokenFieldNumber = 2;
+  inline const ::std::string& token(int index) const;
+  inline ::std::string* mutable_token(int index);
+  inline void set_token(int index, const ::std::string& value);
+  inline void set_token(int index, const char* value);
+  inline void set_token(int index, const char* value, size_t size);
+  inline ::std::string* add_token();
+  inline void add_token(const ::std::string& value);
+  inline void add_token(const char* value);
+  inline void add_token(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& token() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_token();
+
+  // repeated string class_id = 3;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 3;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
+  // repeated float token_value = 4;
+  inline int token_value_size() const;
+  inline void clear_token_value();
+  static const int kTokenValueFieldNumber = 4;
+  inline float token_value(int index) const;
+  inline void set_token_value(int index, float value);
+  inline void add_token_value(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      token_value() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_token_value();
+
+  // repeated float token_tf = 5;
+  inline int token_tf_size() const;
+  inline void clear_token_tf();
+  static const int kTokenTfFieldNumber = 5;
+  inline float token_tf(int index) const;
+  inline void set_token_tf(int index, float value);
+  inline void add_token_tf(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      token_tf() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_token_tf();
+
+  // repeated float token_df = 6;
+  inline int token_df_size() const;
+  inline void clear_token_df();
+  static const int kTokenDfFieldNumber = 6;
+  inline float token_df(int index) const;
+  inline void set_token_df(int index, float value);
+  inline void add_token_df(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      token_df() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_token_df();
+
+  // repeated int32 cooc_first_index = 7;
+  inline int cooc_first_index_size() const;
+  inline void clear_cooc_first_index();
+  static const int kCoocFirstIndexFieldNumber = 7;
+  inline ::google::protobuf::int32 cooc_first_index(int index) const;
+  inline void set_cooc_first_index(int index, ::google::protobuf::int32 value);
+  inline void add_cooc_first_index(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      cooc_first_index() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_cooc_first_index();
+
+  // repeated int32 cooc_second_index = 8;
+  inline int cooc_second_index_size() const;
+  inline void clear_cooc_second_index();
+  static const int kCoocSecondIndexFieldNumber = 8;
+  inline ::google::protobuf::int32 cooc_second_index(int index) const;
+  inline void set_cooc_second_index(int index, ::google::protobuf::int32 value);
+  inline void add_cooc_second_index(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      cooc_second_index() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_cooc_second_index();
+
+  // repeated float cooc_value = 9;
+  inline int cooc_value_size() const;
+  inline void clear_cooc_value();
+  static const int kCoocValueFieldNumber = 9;
+  inline float cooc_value(int index) const;
+  inline void set_cooc_value(int index, float value);
+  inline void add_cooc_value(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      cooc_value() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_cooc_value();
+
+  // @@protoc_insertion_point(class_scope:artm.DictionaryData)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> token_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedField< float > token_value_;
+  ::google::protobuf::RepeatedField< float > token_tf_;
+  ::google::protobuf::RepeatedField< float > token_df_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > cooc_first_index_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > cooc_second_index_;
+  ::google::protobuf::RepeatedField< float > cooc_value_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static DictionaryData* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -15453,419 +15331,6 @@ inline void TransformConfig::set_a(double value) {
 
 // -------------------------------------------------------------------
 
-// DictionaryData
-
-// optional string name = 1;
-inline bool DictionaryData::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void DictionaryData::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void DictionaryData::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void DictionaryData::clear_name() {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    name_->clear();
-  }
-  clear_has_name();
-}
-inline const ::std::string& DictionaryData::name() const {
-  return *name_;
-}
-inline void DictionaryData::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void DictionaryData::set_name(const char* value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void DictionaryData::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* DictionaryData::mutable_name() {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  return name_;
-}
-inline ::std::string* DictionaryData::release_name() {
-  clear_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void DictionaryData::set_allocated_name(::std::string* name) {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// repeated string token = 2;
-inline int DictionaryData::token_size() const {
-  return token_.size();
-}
-inline void DictionaryData::clear_token() {
-  token_.Clear();
-}
-inline const ::std::string& DictionaryData::token(int index) const {
-  return token_.Get(index);
-}
-inline ::std::string* DictionaryData::mutable_token(int index) {
-  return token_.Mutable(index);
-}
-inline void DictionaryData::set_token(int index, const ::std::string& value) {
-  token_.Mutable(index)->assign(value);
-}
-inline void DictionaryData::set_token(int index, const char* value) {
-  token_.Mutable(index)->assign(value);
-}
-inline void DictionaryData::set_token(int index, const char* value, size_t size) {
-  token_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* DictionaryData::add_token() {
-  return token_.Add();
-}
-inline void DictionaryData::add_token(const ::std::string& value) {
-  token_.Add()->assign(value);
-}
-inline void DictionaryData::add_token(const char* value) {
-  token_.Add()->assign(value);
-}
-inline void DictionaryData::add_token(const char* value, size_t size) {
-  token_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-DictionaryData::token() const {
-  return token_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-DictionaryData::mutable_token() {
-  return &token_;
-}
-
-// repeated string class_id = 3;
-inline int DictionaryData::class_id_size() const {
-  return class_id_.size();
-}
-inline void DictionaryData::clear_class_id() {
-  class_id_.Clear();
-}
-inline const ::std::string& DictionaryData::class_id(int index) const {
-  return class_id_.Get(index);
-}
-inline ::std::string* DictionaryData::mutable_class_id(int index) {
-  return class_id_.Mutable(index);
-}
-inline void DictionaryData::set_class_id(int index, const ::std::string& value) {
-  class_id_.Mutable(index)->assign(value);
-}
-inline void DictionaryData::set_class_id(int index, const char* value) {
-  class_id_.Mutable(index)->assign(value);
-}
-inline void DictionaryData::set_class_id(int index, const char* value, size_t size) {
-  class_id_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* DictionaryData::add_class_id() {
-  return class_id_.Add();
-}
-inline void DictionaryData::add_class_id(const ::std::string& value) {
-  class_id_.Add()->assign(value);
-}
-inline void DictionaryData::add_class_id(const char* value) {
-  class_id_.Add()->assign(value);
-}
-inline void DictionaryData::add_class_id(const char* value, size_t size) {
-  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-DictionaryData::class_id() const {
-  return class_id_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-DictionaryData::mutable_class_id() {
-  return &class_id_;
-}
-
-// repeated float token_value = 4;
-inline int DictionaryData::token_value_size() const {
-  return token_value_.size();
-}
-inline void DictionaryData::clear_token_value() {
-  token_value_.Clear();
-}
-inline float DictionaryData::token_value(int index) const {
-  return token_value_.Get(index);
-}
-inline void DictionaryData::set_token_value(int index, float value) {
-  token_value_.Set(index, value);
-}
-inline void DictionaryData::add_token_value(float value) {
-  token_value_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< float >&
-DictionaryData::token_value() const {
-  return token_value_;
-}
-inline ::google::protobuf::RepeatedField< float >*
-DictionaryData::mutable_token_value() {
-  return &token_value_;
-}
-
-// repeated float token_tf = 5;
-inline int DictionaryData::token_tf_size() const {
-  return token_tf_.size();
-}
-inline void DictionaryData::clear_token_tf() {
-  token_tf_.Clear();
-}
-inline float DictionaryData::token_tf(int index) const {
-  return token_tf_.Get(index);
-}
-inline void DictionaryData::set_token_tf(int index, float value) {
-  token_tf_.Set(index, value);
-}
-inline void DictionaryData::add_token_tf(float value) {
-  token_tf_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< float >&
-DictionaryData::token_tf() const {
-  return token_tf_;
-}
-inline ::google::protobuf::RepeatedField< float >*
-DictionaryData::mutable_token_tf() {
-  return &token_tf_;
-}
-
-// repeated float token_df = 6;
-inline int DictionaryData::token_df_size() const {
-  return token_df_.size();
-}
-inline void DictionaryData::clear_token_df() {
-  token_df_.Clear();
-}
-inline float DictionaryData::token_df(int index) const {
-  return token_df_.Get(index);
-}
-inline void DictionaryData::set_token_df(int index, float value) {
-  token_df_.Set(index, value);
-}
-inline void DictionaryData::add_token_df(float value) {
-  token_df_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< float >&
-DictionaryData::token_df() const {
-  return token_df_;
-}
-inline ::google::protobuf::RepeatedField< float >*
-DictionaryData::mutable_token_df() {
-  return &token_df_;
-}
-
-// repeated int32 cooc_first_index = 7;
-inline int DictionaryData::cooc_first_index_size() const {
-  return cooc_first_index_.size();
-}
-inline void DictionaryData::clear_cooc_first_index() {
-  cooc_first_index_.Clear();
-}
-inline ::google::protobuf::int32 DictionaryData::cooc_first_index(int index) const {
-  return cooc_first_index_.Get(index);
-}
-inline void DictionaryData::set_cooc_first_index(int index, ::google::protobuf::int32 value) {
-  cooc_first_index_.Set(index, value);
-}
-inline void DictionaryData::add_cooc_first_index(::google::protobuf::int32 value) {
-  cooc_first_index_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-DictionaryData::cooc_first_index() const {
-  return cooc_first_index_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-DictionaryData::mutable_cooc_first_index() {
-  return &cooc_first_index_;
-}
-
-// repeated int32 cooc_second_index = 8;
-inline int DictionaryData::cooc_second_index_size() const {
-  return cooc_second_index_.size();
-}
-inline void DictionaryData::clear_cooc_second_index() {
-  cooc_second_index_.Clear();
-}
-inline ::google::protobuf::int32 DictionaryData::cooc_second_index(int index) const {
-  return cooc_second_index_.Get(index);
-}
-inline void DictionaryData::set_cooc_second_index(int index, ::google::protobuf::int32 value) {
-  cooc_second_index_.Set(index, value);
-}
-inline void DictionaryData::add_cooc_second_index(::google::protobuf::int32 value) {
-  cooc_second_index_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-DictionaryData::cooc_second_index() const {
-  return cooc_second_index_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-DictionaryData::mutable_cooc_second_index() {
-  return &cooc_second_index_;
-}
-
-// repeated float cooc_value = 9;
-inline int DictionaryData::cooc_value_size() const {
-  return cooc_value_.size();
-}
-inline void DictionaryData::clear_cooc_value() {
-  cooc_value_.Clear();
-}
-inline float DictionaryData::cooc_value(int index) const {
-  return cooc_value_.Get(index);
-}
-inline void DictionaryData::set_cooc_value(int index, float value) {
-  cooc_value_.Set(index, value);
-}
-inline void DictionaryData::add_cooc_value(float value) {
-  cooc_value_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< float >&
-DictionaryData::cooc_value() const {
-  return cooc_value_;
-}
-inline ::google::protobuf::RepeatedField< float >*
-DictionaryData::mutable_cooc_value() {
-  return &cooc_value_;
-}
-
-// -------------------------------------------------------------------
-
-// DictionaryCoocurenceEntries
-
-// repeated int32 first_index = 1;
-inline int DictionaryCoocurenceEntries::first_index_size() const {
-  return first_index_.size();
-}
-inline void DictionaryCoocurenceEntries::clear_first_index() {
-  first_index_.Clear();
-}
-inline ::google::protobuf::int32 DictionaryCoocurenceEntries::first_index(int index) const {
-  return first_index_.Get(index);
-}
-inline void DictionaryCoocurenceEntries::set_first_index(int index, ::google::protobuf::int32 value) {
-  first_index_.Set(index, value);
-}
-inline void DictionaryCoocurenceEntries::add_first_index(::google::protobuf::int32 value) {
-  first_index_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-DictionaryCoocurenceEntries::first_index() const {
-  return first_index_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-DictionaryCoocurenceEntries::mutable_first_index() {
-  return &first_index_;
-}
-
-// repeated int32 second_index = 2;
-inline int DictionaryCoocurenceEntries::second_index_size() const {
-  return second_index_.size();
-}
-inline void DictionaryCoocurenceEntries::clear_second_index() {
-  second_index_.Clear();
-}
-inline ::google::protobuf::int32 DictionaryCoocurenceEntries::second_index(int index) const {
-  return second_index_.Get(index);
-}
-inline void DictionaryCoocurenceEntries::set_second_index(int index, ::google::protobuf::int32 value) {
-  second_index_.Set(index, value);
-}
-inline void DictionaryCoocurenceEntries::add_second_index(::google::protobuf::int32 value) {
-  second_index_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-DictionaryCoocurenceEntries::second_index() const {
-  return second_index_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-DictionaryCoocurenceEntries::mutable_second_index() {
-  return &second_index_;
-}
-
-// repeated float value = 3;
-inline int DictionaryCoocurenceEntries::value_size() const {
-  return value_.size();
-}
-inline void DictionaryCoocurenceEntries::clear_value() {
-  value_.Clear();
-}
-inline float DictionaryCoocurenceEntries::value(int index) const {
-  return value_.Get(index);
-}
-inline void DictionaryCoocurenceEntries::set_value(int index, float value) {
-  value_.Set(index, value);
-}
-inline void DictionaryCoocurenceEntries::add_value(float value) {
-  value_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< float >&
-DictionaryCoocurenceEntries::value() const {
-  return value_;
-}
-inline ::google::protobuf::RepeatedField< float >*
-DictionaryCoocurenceEntries::mutable_value() {
-  return &value_;
-}
-
-// optional bool symmetric_cooc_values = 4 [default = false];
-inline bool DictionaryCoocurenceEntries::has_symmetric_cooc_values() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void DictionaryCoocurenceEntries::set_has_symmetric_cooc_values() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void DictionaryCoocurenceEntries::clear_has_symmetric_cooc_values() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void DictionaryCoocurenceEntries::clear_symmetric_cooc_values() {
-  symmetric_cooc_values_ = false;
-  clear_has_symmetric_cooc_values();
-}
-inline bool DictionaryCoocurenceEntries::symmetric_cooc_values() const {
-  return symmetric_cooc_values_;
-}
-inline void DictionaryCoocurenceEntries::set_symmetric_cooc_values(bool value) {
-  set_has_symmetric_cooc_values();
-  symmetric_cooc_values_ = value;
-}
-
-// -------------------------------------------------------------------
-
 // ScoreConfig
 
 // optional string name = 1;
@@ -20821,6 +20286,318 @@ InitializeModelArgs::batch_filename() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 InitializeModelArgs::mutable_batch_filename() {
   return &batch_filename_;
+}
+
+// -------------------------------------------------------------------
+
+// DictionaryData
+
+// optional string name = 1;
+inline bool DictionaryData::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void DictionaryData::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void DictionaryData::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void DictionaryData::clear_name() {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& DictionaryData::name() const {
+  return *name_;
+}
+inline void DictionaryData::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void DictionaryData::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void DictionaryData::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DictionaryData::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* DictionaryData::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void DictionaryData::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// repeated string token = 2;
+inline int DictionaryData::token_size() const {
+  return token_.size();
+}
+inline void DictionaryData::clear_token() {
+  token_.Clear();
+}
+inline const ::std::string& DictionaryData::token(int index) const {
+  return token_.Get(index);
+}
+inline ::std::string* DictionaryData::mutable_token(int index) {
+  return token_.Mutable(index);
+}
+inline void DictionaryData::set_token(int index, const ::std::string& value) {
+  token_.Mutable(index)->assign(value);
+}
+inline void DictionaryData::set_token(int index, const char* value) {
+  token_.Mutable(index)->assign(value);
+}
+inline void DictionaryData::set_token(int index, const char* value, size_t size) {
+  token_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DictionaryData::add_token() {
+  return token_.Add();
+}
+inline void DictionaryData::add_token(const ::std::string& value) {
+  token_.Add()->assign(value);
+}
+inline void DictionaryData::add_token(const char* value) {
+  token_.Add()->assign(value);
+}
+inline void DictionaryData::add_token(const char* value, size_t size) {
+  token_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DictionaryData::token() const {
+  return token_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DictionaryData::mutable_token() {
+  return &token_;
+}
+
+// repeated string class_id = 3;
+inline int DictionaryData::class_id_size() const {
+  return class_id_.size();
+}
+inline void DictionaryData::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& DictionaryData::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* DictionaryData::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void DictionaryData::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void DictionaryData::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void DictionaryData::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DictionaryData::add_class_id() {
+  return class_id_.Add();
+}
+inline void DictionaryData::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void DictionaryData::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void DictionaryData::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+DictionaryData::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+DictionaryData::mutable_class_id() {
+  return &class_id_;
+}
+
+// repeated float token_value = 4;
+inline int DictionaryData::token_value_size() const {
+  return token_value_.size();
+}
+inline void DictionaryData::clear_token_value() {
+  token_value_.Clear();
+}
+inline float DictionaryData::token_value(int index) const {
+  return token_value_.Get(index);
+}
+inline void DictionaryData::set_token_value(int index, float value) {
+  token_value_.Set(index, value);
+}
+inline void DictionaryData::add_token_value(float value) {
+  token_value_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DictionaryData::token_value() const {
+  return token_value_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DictionaryData::mutable_token_value() {
+  return &token_value_;
+}
+
+// repeated float token_tf = 5;
+inline int DictionaryData::token_tf_size() const {
+  return token_tf_.size();
+}
+inline void DictionaryData::clear_token_tf() {
+  token_tf_.Clear();
+}
+inline float DictionaryData::token_tf(int index) const {
+  return token_tf_.Get(index);
+}
+inline void DictionaryData::set_token_tf(int index, float value) {
+  token_tf_.Set(index, value);
+}
+inline void DictionaryData::add_token_tf(float value) {
+  token_tf_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DictionaryData::token_tf() const {
+  return token_tf_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DictionaryData::mutable_token_tf() {
+  return &token_tf_;
+}
+
+// repeated float token_df = 6;
+inline int DictionaryData::token_df_size() const {
+  return token_df_.size();
+}
+inline void DictionaryData::clear_token_df() {
+  token_df_.Clear();
+}
+inline float DictionaryData::token_df(int index) const {
+  return token_df_.Get(index);
+}
+inline void DictionaryData::set_token_df(int index, float value) {
+  token_df_.Set(index, value);
+}
+inline void DictionaryData::add_token_df(float value) {
+  token_df_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DictionaryData::token_df() const {
+  return token_df_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DictionaryData::mutable_token_df() {
+  return &token_df_;
+}
+
+// repeated int32 cooc_first_index = 7;
+inline int DictionaryData::cooc_first_index_size() const {
+  return cooc_first_index_.size();
+}
+inline void DictionaryData::clear_cooc_first_index() {
+  cooc_first_index_.Clear();
+}
+inline ::google::protobuf::int32 DictionaryData::cooc_first_index(int index) const {
+  return cooc_first_index_.Get(index);
+}
+inline void DictionaryData::set_cooc_first_index(int index, ::google::protobuf::int32 value) {
+  cooc_first_index_.Set(index, value);
+}
+inline void DictionaryData::add_cooc_first_index(::google::protobuf::int32 value) {
+  cooc_first_index_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+DictionaryData::cooc_first_index() const {
+  return cooc_first_index_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+DictionaryData::mutable_cooc_first_index() {
+  return &cooc_first_index_;
+}
+
+// repeated int32 cooc_second_index = 8;
+inline int DictionaryData::cooc_second_index_size() const {
+  return cooc_second_index_.size();
+}
+inline void DictionaryData::clear_cooc_second_index() {
+  cooc_second_index_.Clear();
+}
+inline ::google::protobuf::int32 DictionaryData::cooc_second_index(int index) const {
+  return cooc_second_index_.Get(index);
+}
+inline void DictionaryData::set_cooc_second_index(int index, ::google::protobuf::int32 value) {
+  cooc_second_index_.Set(index, value);
+}
+inline void DictionaryData::add_cooc_second_index(::google::protobuf::int32 value) {
+  cooc_second_index_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+DictionaryData::cooc_second_index() const {
+  return cooc_second_index_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+DictionaryData::mutable_cooc_second_index() {
+  return &cooc_second_index_;
+}
+
+// repeated float cooc_value = 9;
+inline int DictionaryData::cooc_value_size() const {
+  return cooc_value_.size();
+}
+inline void DictionaryData::clear_cooc_value() {
+  cooc_value_.Clear();
+}
+inline float DictionaryData::cooc_value(int index) const {
+  return cooc_value_.Get(index);
+}
+inline void DictionaryData::set_cooc_value(int index, float value) {
+  cooc_value_.Set(index, value);
+}
+inline void DictionaryData::add_cooc_value(float value) {
+  cooc_value_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+DictionaryData::cooc_value() const {
+  return cooc_value_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+DictionaryData::mutable_cooc_value() {
+  return &cooc_value_;
 }
 
 // -------------------------------------------------------------------

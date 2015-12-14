@@ -230,27 +230,6 @@ message TransformConfig {
   optional double a = 3 [default = 1];
 }
 
-// Represents a static dictionary.
-message DictionaryData {
-  optional string name = 1;
-  repeated string token = 2;
-  repeated string class_id = 3;
-  repeated float token_value = 4;  // for scores and regularizers
-  repeated float token_tf = 5;  // token frequency
-  repeated float token_df = 6;  // number of document occurences
-  repeated int32 cooc_first_index = 7;
-  repeated int32 cooc_second_index = 8;
-  repeated float cooc_value = 9;
-}
-
-// Represents the info about co-occurrence between one pair of tokens in a static dictionary
-message DictionaryCoocurenceEntries {
-  repeated int32 first_index = 1;  // index of token in entry field
-  repeated int32 second_index = 2; // index of token in entry field
-  repeated float value = 3;
-  optional bool symmetric_cooc_values = 4 [default = false];
-}
-
 // Represents a configuration of a general score
 message ScoreConfig {
   enum Type {
@@ -533,6 +512,19 @@ message InitializeModelArgs {
   optional string disk_path = 7;  // obsoleted
   repeated Filter filter = 8;  // obsoleted
   repeated string batch_filename = 9;  // obsoleted
+}
+
+// Represents a static dictionary.
+message DictionaryData {
+  optional string name = 1;
+  repeated string token = 2;
+  repeated string class_id = 3;
+  repeated float token_value = 4;  // for scores and regularizers
+  repeated float token_tf = 5;  // token frequency
+  repeated float token_df = 6;  // number of document occurences
+  repeated int32 cooc_first_index = 7;
+  repeated int32 cooc_second_index = 8;
+  repeated float cooc_value = 9;
 }
 
 message FilterDictionaryArgs {

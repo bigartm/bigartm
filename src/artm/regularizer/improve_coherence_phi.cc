@@ -46,7 +46,7 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   std::vector<int> dict_to_phi_indices(dictionary_ptr->size(), -1);
   for (int index = 0; index < dictionary_ptr->size(); ++index) {
     auto& entry = dictionary_ptr->entries()[index];
-    dict_to_phi_indices[index] = n_wt.token_index(artm::core::Token(entry.class_id(), entry.key_token()));
+    dict_to_phi_indices[index] = n_wt.token_index(entry.token());
   }
 
   // proceed the regularization

@@ -21,14 +21,14 @@ using ::artm::utility::ifstream_or_cin;
 namespace artm {
 namespace core {
 
-DictionaryImpl::DictionaryImpl(const artm::DictionaryData& data) {
+Dictionary::Dictionary(const artm::DictionaryData& data) {
   if (data.cooc_value_size() == 0) {
     for (int index = 0; index < data.token_size(); ++index) {
       ClassId class_id = data.class_id_size() ? data.class_id(index) : DefaultClass;
       bool has_token_value = data.token_value_size() > 0;
       bool has_token_tf = data.token_tf_size() > 0;
       bool has_token_df = data.token_df_size() > 0;
-      entries_.push_back(DictionaryEntryImpl(Token(class_id, data.token(index)),
+      entries_.push_back(DictionaryEntry(Token(class_id, data.token(index)),
         has_token_value ? data.token_value(index) : 0.0f,
         has_token_tf ? data.token_tf(index): 0.0f,
         has_token_df ? data.token_df(index): 0.0f));
@@ -41,7 +41,7 @@ DictionaryImpl::DictionaryImpl(const artm::DictionaryData& data) {
 }
 
 std::vector<std::shared_ptr<artm::DictionaryData> >
-DictionaryImpl::ImportData(const ImportDictionaryArgs& args) {
+Dictionary::ImportData(const ImportDictionaryArgs& args) {
   if (!has_suffix(args.file_name(), ".dict"))
     BOOST_THROW_EXCEPTION(CorruptedMessageException("The importing dictionary should have .dict exstension, abort."));
 
@@ -83,8 +83,8 @@ DictionaryImpl::ImportData(const ImportDictionaryArgs& args) {
   return import_data;
 }
 
-void DictionaryImpl::Export(const ExportDictionaryArgs& args,
-                            ThreadSafeDictionaryImplCollection* dictionaries) {
+void Dictionary::Export(const ExportDictionaryArgs& args,
+                            ThreadSafeDictionaryCollection* dictionaries) {
   std::string file_name = args.file_name();
   if (!has_suffix(file_name, ".dict")) {
     LOG(WARNING) << "The exporting dictionary should have .dict extension, it will be added to file name";
@@ -98,7 +98,7 @@ void DictionaryImpl::Export(const ExportDictionaryArgs& args,
   if (!fout.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + file_name));
 
-  std::shared_ptr<DictionaryImpl> dict_ptr = dictionaries->get(args.dictionary_name());
+  std::shared_ptr<Dictionary> dict_ptr = dictionaries->get(args.dictionary_name());
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
         args.dictionary_name() + " does not exist or has no tokens"));
@@ -162,7 +162,7 @@ void DictionaryImpl::Export(const ExportDictionaryArgs& args,
 }
 
 std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
-DictionaryImpl::Gather(const GatherDictionaryArgs& args) {
+Dictionary::Gather(const GatherDictionaryArgs& args) {
   std::unordered_map<Token, TokenValues, TokenHasher> token_freq_map;
   std::vector<std::string> batches;
 
@@ -170,7 +170,7 @@ DictionaryImpl::Gather(const GatherDictionaryArgs& args) {
     batches = BatchHelpers::ListAllBatches(args.data_path());
     LOG(INFO) << "Found " << batches.size() << " batches in '" << args.data_path() << "' folder";
   } else {
-    BOOST_THROW_EXCEPTION(InvalidOperation("DictionaryImpl::Gather() requires data_path in it's args"));
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary::Gather() requires data_path in it's args"));
   }
 
   int total_items_count = 0;
@@ -362,10 +362,10 @@ DictionaryImpl::Gather(const GatherDictionaryArgs& args) {
 }
 
 std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
-DictionaryImpl::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryImplCollection* dictionaries) {
+Dictionary::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollection* dictionaries) {
   auto src_dictionary_ptr = dictionaries->get(args.dictionary_name());
   if (src_dictionary_ptr == nullptr) {
-    LOG(ERROR) << "DictionaryImpl::Filter(): filter was requested for non-exists dictionary '"
+    LOG(ERROR) << "Dictionary::Filter(): filter was requested for non-exists dictionary '"
       << args.dictionary_name() << "', operation was aborted";
   }
 
@@ -427,7 +427,7 @@ DictionaryImpl::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryImp
                    std::shared_ptr<DictionaryData> >(dictionary_data, cooc_dictionary_data);
 }
 
-void DictionaryImpl::Append(const DictionaryData& data) {
+void Dictionary::Append(const DictionaryData& data) {
   // DictionaryData should contain only one of cases of data (tokens or cooc information), not both ones
   if (data.cooc_value_size() == 0) {
     // ToDo: MelLain
@@ -456,11 +456,11 @@ void DictionaryImpl::Append(const DictionaryData& data) {
   }
 }
 
-std::shared_ptr<DictionaryImpl> DictionaryImpl::Duplicate() const {
-  return std::shared_ptr<DictionaryImpl>(new DictionaryImpl(*this));
+std::shared_ptr<Dictionary> Dictionary::Duplicate() const {
+  return std::shared_ptr<Dictionary>(new Dictionary(*this));
 }
 
-void DictionaryImpl::StoreIntoDictionaryData(DictionaryData* data) const {
+void Dictionary::StoreIntoDictionaryData(DictionaryData* data) const {
   for (int i = 0; i < entries_.size(); ++i) {
     data->add_token(entries_[i].token().keyword);
     data->add_class_id(entries_[i].token().class_id);
@@ -470,125 +470,12 @@ void DictionaryImpl::StoreIntoDictionaryData(DictionaryData* data) const {
   }
 }
 
-const std::unordered_map<int, float>* DictionaryImpl::cooc_info(const Token& token) const {
+const std::unordered_map<int, float>* Dictionary::cooc_info(const Token& token) const {
   auto index_iter = token_index_.find(token);
   if (index_iter == token_index_.end()) return nullptr;
 
   auto cooc_map_iter = cooc_values_.find(index_iter->second);
   if (cooc_map_iter == cooc_values_.end()) return nullptr;
-
-  return &(cooc_map_iter->second);
-}
-
-const DictionaryEntryImpl* DictionaryImpl::entry(const Token& token) const {
-  auto find_iter = token_index_.find(token);
-  if (find_iter != token_index_.end())
-    return &entries_[find_iter->second];
-  else
-    return nullptr;
-}
-
-const DictionaryEntryImpl* DictionaryImpl::entry(int index) const {
-  if (index < 0 || index >= entries_.size()) return nullptr;
-  return &entries_[index];
-}
-
-float DictionaryImpl::CountTopicCoherence(const std::vector<core::Token>& tokens_to_score) {
-  float coherence_value = 0.0;
-  int k = tokens_to_score.size();
-  if (k == 0 || k == 1) return 0.0f;
-
-  // -1 means that find() result == end()
-  auto indices = std::vector<int>(k, -1);
-  for (int i = 0; i < k; ++i) {
-    auto token_index_iter = token_index_.find(tokens_to_score[i]);
-    if (token_index_iter == token_index_.end()) continue;
-    indices[i] = token_index_iter->second;
-  }
-
-  for (int i = 0; i < k - 1; ++i) {
-    if (indices[i] == -1) continue;
-    auto cooc_map_iter = cooc_values_.find(indices[i]);
-    if (cooc_map_iter == cooc_values_.end()) continue;
-
-    for (int j = i; j < k; ++j) {
-      if (indices[j] == -1) continue;
-      if (tokens_to_score[j].class_id != tokens_to_score[i].class_id) continue;
-
-      auto value_iter = cooc_map_iter->second.find(indices[j]);
-      if (value_iter == cooc_map_iter->second.end()) continue;
-      coherence_value += static_cast<float>(value_iter->second);
-    }
-  }
-
-  return 2.0f / (k * (k - 1)) * coherence_value;
-}
-
-Dictionary::Dictionary(const artm::core::DictionaryImpl& impl) {
-  total_items_count_ = 0;
-  int index = 0;
-  for (const auto& entry : impl.entries_) {
-    DictionaryEntry old_entry;
-    old_entry.set_class_id(entry.token().class_id);
-    old_entry.set_key_token(entry.token().keyword);
-    old_entry.set_token_weight(entry.token_tf());
-    old_entry.set_items_count(entry.token_df());
-    old_entry.set_value(entry.token_value());
-    token_index_.insert(std::make_pair(entry.token(), index));
-    entries_.push_back(old_entry);
-    total_items_count_ += entry.token_df();
-    index++;
-  }
-
-  cooc_values_ = &(impl.cooc_values());
-}
-
-int Dictionary::cooc_size(const Token& token) const {
-  auto index_iter = token_index_.find(token);
-  if (index_iter == token_index_.end()) return 0;
-
-  auto cooc_map_iter = cooc_values_->find(index_iter->second);
-  if (cooc_map_iter == cooc_values_->end()) return 0;
-
-  return cooc_map_iter->second.size();
-}
-
-float Dictionary::cooc_value(const Token& token, int index) const {
-  auto index_iter = token_index_.find(token);
-  if (index_iter == token_index_.end()) return 0;
-
-  auto cooc_map_iter = cooc_values_->find(index_iter->second);
-  if (cooc_map_iter == cooc_values_->end()) return 0;
-
-  int internal_index = -1;
-  for (auto iter = cooc_map_iter->second.begin(); iter != cooc_map_iter->second.end(); ++iter)
-    if (++internal_index == index) return iter->second;
-
-  return 0;
-}
-
-float Dictionary::cooc_value(const Token& token_1, const Token& token_2) const {
-  auto index_iter_1 = token_index_.find(token_1);
-  if (index_iter_1 == token_index_.end()) return 0;
-
-  auto index_iter_2 = token_index_.find(token_2);
-  if (index_iter_2 == token_index_.end()) return 0;
-
-  auto cooc_map_iter_1 = cooc_values_->find(index_iter_1->second);
-  if (cooc_map_iter_1 == cooc_values_->end()) return 0;
-
-  auto cooc_map_iter_2 = cooc_map_iter_1->second.find(index_iter_2->second);
-  if (cooc_map_iter_2 == cooc_map_iter_1->second.end()) return 0;
-
-  return cooc_map_iter_2->second;
-}
-
-const std::unordered_map<int, float>* Dictionary::cooc_info(const Token& token) const {
-  auto index_iter = token_index_.find(token);
-  if (index_iter == token_index_.end()) return nullptr;
-
-  auto cooc_map_iter = cooc_values_->find(index_iter->second);
-  if (cooc_map_iter == cooc_values_->end()) return nullptr;
 
   return &(cooc_map_iter->second);
 }
@@ -621,8 +508,8 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
 
   for (int i = 0; i < k - 1; ++i) {
     if (indices[i] == -1) continue;
-    auto cooc_map_iter = cooc_values_->find(indices[i]);
-    if (cooc_map_iter == cooc_values_->end()) continue;
+    auto cooc_map_iter = cooc_values_.find(indices[i]);
+    if (cooc_map_iter == cooc_values_.end()) continue;
 
     for (int j = i; j < k; ++j) {
       if (indices[j] == -1) continue;

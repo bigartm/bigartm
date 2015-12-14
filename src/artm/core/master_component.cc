@@ -78,32 +78,27 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
 void MasterComponent::CreateDictionary(const DictionaryData& data) {
   DisposeDictionary(data.name());
 
-  auto dictionary = std::make_shared<DictionaryImpl>(data);
-  instance_->dictionaries_impl()->set(data.name(), dictionary);
-
-  instance_->dictionaries()->set(data.name(), std::make_shared<Dictionary>(*dictionary));
+  auto dictionary = std::make_shared<Dictionary>(data);
+  instance_->dictionaries()->set(data.name(), dictionary);
 }
 
 void MasterComponent::AppendDictionary(const DictionaryData& data) {
-  auto dict_ptr = instance_->dictionaries_impl()->get(data.name());
+  auto dict_ptr = instance_->dictionaries()->get(data.name());
   if (dict_ptr == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary" + data.name() + " does not exist"));
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " + data.name() + " does not exist"));
   dict_ptr->Append(data);
-
-  instance_->dictionaries()->set(data.name(), std::make_shared<Dictionary>(*dict_ptr));
 }
 
 void MasterComponent::DisposeDictionary(const std::string& name) {
   instance_->dictionaries()->erase(name);
-  instance_->dictionaries_impl()->erase(name);
 }
 
 void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
-  DictionaryImpl::Export(args, instance_->dictionaries_impl());
+  Dictionary::Export(args, instance_->dictionaries());
 }
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
-  auto import_data = DictionaryImpl::ImportData(args);
+  auto import_data = Dictionary::ImportData(args);
   // now last element of import_data contains ptr to tokens part of dictionary
   std::string dict_name = import_data.back()->name();
 
@@ -124,7 +119,7 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
 }
 
 void MasterComponent::RequestDictionary(const RequestDictionaryArgs& args, DictionaryData* result) {
-  std::shared_ptr<DictionaryImpl> dict_ptr = instance_->dictionaries_impl()->get(args.dictionary_name());
+  std::shared_ptr<Dictionary> dict_ptr = instance_->dictionaries()->get(args.dictionary_name());
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
       args.dictionary_name() + " does not exist or has no tokens"));
@@ -282,7 +277,7 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
   LOG(INFO) << "MasterComponent::FilterDictionaryArgs() with " << Helpers::Describe(args);
 
-  auto data = DictionaryImpl::Filter(args, instance_->dictionaries_impl());
+  auto data = Dictionary::Filter(args, instance_->dictionaries());
   CreateDictionary(*(data.first));
   if (data.second->cooc_first_index_size() > 0)
     AppendDictionary(*(data.second));
@@ -291,7 +286,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
   LOG(INFO) << "MasterComponent::GatherDictionary() with " << Helpers::Describe(args);
 
-  auto data = DictionaryImpl::Gather(args);
+  auto data = Dictionary::Gather(args);
   CreateDictionary(*(data.first));
   if (data.second->cooc_first_index_size() > 0)
     AppendDictionary(*(data.second));

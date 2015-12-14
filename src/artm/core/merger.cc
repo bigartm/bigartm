@@ -32,8 +32,7 @@ namespace core {
 Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
                ThreadSafeHolder<InstanceSchema>* schema,
                const ::artm::core::ThreadSafeBatchCollection* batches,
-               const ::artm::core::ThreadSafeDictionaryCollection* dictionaries,
-               const ::artm::core::ThreadSafeDictionaryImplCollection* dictionaries_impl)
+               const ::artm::core::ThreadSafeDictionaryCollection* dictionaries)
     : topic_model_(),
       topic_model_inc_(),
       phi_matrix_(),
@@ -44,7 +43,6 @@ Merger::Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
       merger_queue_(merger_queue),
       batches_(batches),
       dictionaries_(dictionaries),
-      dictionaries_impl_(dictionaries_impl),
       is_stopping(false),
       thread_() {
   // Keep this at the last action in constructor.
@@ -271,8 +269,8 @@ bool Merger::RequestScore(const GetScoreValueArgs& args,
 }
 
 void Merger::RequestDictionary(const DictionaryName& dictionary_name, DictionaryData* dictionary_data) const {
-  if (dictionaries_impl_->has_key(dictionary_name)) {
-    dictionaries_impl_->get(dictionary_name)->StoreIntoDictionaryData(dictionary_data);
+  if (dictionaries_->has_key(dictionary_name)) {
+    dictionaries_->get(dictionary_name)->StoreIntoDictionaryData(dictionary_data);
   } else {
     LOG(ERROR) << "Requested non-exists dictionary.";
     BOOST_THROW_EXCEPTION(InvalidOperation(
@@ -424,10 +422,9 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
     << dict->size() << " tokens";
 
   for (int index = 0; index < dict->size(); ++index) {
-    ClassId class_id = dict->entry(index)->has_class_id() ? dict->entry(index)->class_id() : DefaultClass;
     topic_model.add_operation_type(TopicModel_OperationType_Initialize);
-    topic_model.add_class_id(class_id);
-    topic_model.add_token(dict->entry(index)->key_token());
+    topic_model.add_class_id(dict->entry(index)->token().class_id);
+    topic_model.add_token(dict->entry(index)->token().keyword);
     topic_model.add_token_weights();
   }
 
