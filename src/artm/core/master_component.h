@@ -79,7 +79,7 @@ class MasterComponent : boost::noncopyable {
   void DisposeDictionary(const std::string& name);
   void ImportDictionary(const ImportDictionaryArgs& args);
   void ExportDictionary(const ExportDictionaryArgs& args);
-  void RequestDictionary(const RequestDictionaryArgs& args, DictionaryData* result);
+  void RequestDictionary(const GetDictionaryArgs& args, DictionaryData* result);
 
   void ImportBatches(const ImportBatchesArgs& args);
   void DisposeBatches(const DisposeBatchesArgs& args);

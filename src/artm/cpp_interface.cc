@@ -521,7 +521,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
 }
 
 std::shared_ptr<DictionaryData> MasterComponent::GetDictionary(const std::string& dictionary_name) {
-  artm::RequestDictionaryArgs args;
+  artm::GetDictionaryArgs args;
   args.set_dictionary_name(dictionary_name);
   std::string args_blob;
   args.SerializeToString(&args_blob);
