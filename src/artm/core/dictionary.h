@@ -36,19 +36,6 @@ class DictionaryEntry {
   float token_df_;
 };
 
-class TokenValues {
- public:
-  TokenValues() : token_value(0.0f), token_tf(0.0f), token_df(0.0f) { }
-
-  float token_value;
-  float token_tf;
-  float token_df;
-};
-
-inline bool has_suffix(const std::string& str, const std::string& suffix) {
-  return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
-}
-
 class Dictionary {
  public:
   explicit Dictionary(const artm::DictionaryData& data);

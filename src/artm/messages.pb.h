@@ -7673,47 +7673,47 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   inline ::std::string* release_class_id();
   inline void set_allocated_class_id(::std::string* class_id);
 
-  // optional int32 min_df = 4;
+  // optional float min_df = 4;
   inline bool has_min_df() const;
   inline void clear_min_df();
   static const int kMinDfFieldNumber = 4;
-  inline ::google::protobuf::int32 min_df() const;
-  inline void set_min_df(::google::protobuf::int32 value);
+  inline float min_df() const;
+  inline void set_min_df(float value);
 
-  // optional int32 max_df = 5;
+  // optional float max_df = 5;
   inline bool has_max_df() const;
   inline void clear_max_df();
   static const int kMaxDfFieldNumber = 5;
-  inline ::google::protobuf::int32 max_df() const;
-  inline void set_max_df(::google::protobuf::int32 value);
+  inline float max_df() const;
+  inline void set_max_df(float value);
 
-  // optional int32 min_tf = 6;
+  // optional float min_df_rate = 6;
+  inline bool has_min_df_rate() const;
+  inline void clear_min_df_rate();
+  static const int kMinDfRateFieldNumber = 6;
+  inline float min_df_rate() const;
+  inline void set_min_df_rate(float value);
+
+  // optional float max_df_rate = 7;
+  inline bool has_max_df_rate() const;
+  inline void clear_max_df_rate();
+  static const int kMaxDfRateFieldNumber = 7;
+  inline float max_df_rate() const;
+  inline void set_max_df_rate(float value);
+
+  // optional float min_tf = 8;
   inline bool has_min_tf() const;
   inline void clear_min_tf();
-  static const int kMinTfFieldNumber = 6;
-  inline ::google::protobuf::int32 min_tf() const;
-  inline void set_min_tf(::google::protobuf::int32 value);
+  static const int kMinTfFieldNumber = 8;
+  inline float min_tf() const;
+  inline void set_min_tf(float value);
 
-  // optional int32 max_tf = 7;
+  // optional float max_tf = 9;
   inline bool has_max_tf() const;
   inline void clear_max_tf();
-  static const int kMaxTfFieldNumber = 7;
-  inline ::google::protobuf::int32 max_tf() const;
-  inline void set_max_tf(::google::protobuf::int32 value);
-
-  // optional int32 min_value = 8;
-  inline bool has_min_value() const;
-  inline void clear_min_value();
-  static const int kMinValueFieldNumber = 8;
-  inline ::google::protobuf::int32 min_value() const;
-  inline void set_min_value(::google::protobuf::int32 value);
-
-  // optional int32 max_value = 9;
-  inline bool has_max_value() const;
-  inline void clear_max_value();
-  static const int kMaxValueFieldNumber = 9;
-  inline ::google::protobuf::int32 max_value() const;
-  inline void set_max_value(::google::protobuf::int32 value);
+  static const int kMaxTfFieldNumber = 9;
+  inline float max_tf() const;
+  inline void set_max_tf(float value);
 
   // @@protoc_insertion_point(class_scope:artm.FilterDictionaryArgs)
  private:
@@ -7727,26 +7727,26 @@ class FilterDictionaryArgs : public ::google::protobuf::Message {
   inline void clear_has_min_df();
   inline void set_has_max_df();
   inline void clear_has_max_df();
+  inline void set_has_min_df_rate();
+  inline void clear_has_min_df_rate();
+  inline void set_has_max_df_rate();
+  inline void clear_has_max_df_rate();
   inline void set_has_min_tf();
   inline void clear_has_min_tf();
   inline void set_has_max_tf();
   inline void clear_has_max_tf();
-  inline void set_has_min_value();
-  inline void clear_has_min_value();
-  inline void set_has_max_value();
-  inline void clear_has_max_value();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* dictionary_name_;
   ::std::string* dictionary_target_name_;
   ::std::string* class_id_;
-  ::google::protobuf::int32 min_df_;
-  ::google::protobuf::int32 max_df_;
-  ::google::protobuf::int32 min_tf_;
-  ::google::protobuf::int32 max_tf_;
-  ::google::protobuf::int32 min_value_;
-  ::google::protobuf::int32 max_value_;
+  float min_df_;
+  float max_df_;
+  float min_df_rate_;
+  float max_df_rate_;
+  float min_tf_;
+  float max_tf_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
@@ -20814,7 +20814,7 @@ inline void FilterDictionaryArgs::set_allocated_class_id(::std::string* class_id
   }
 }
 
-// optional int32 min_df = 4;
+// optional float min_df = 4;
 inline bool FilterDictionaryArgs::has_min_df() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -20828,15 +20828,15 @@ inline void FilterDictionaryArgs::clear_min_df() {
   min_df_ = 0;
   clear_has_min_df();
 }
-inline ::google::protobuf::int32 FilterDictionaryArgs::min_df() const {
+inline float FilterDictionaryArgs::min_df() const {
   return min_df_;
 }
-inline void FilterDictionaryArgs::set_min_df(::google::protobuf::int32 value) {
+inline void FilterDictionaryArgs::set_min_df(float value) {
   set_has_min_df();
   min_df_ = value;
 }
 
-// optional int32 max_df = 5;
+// optional float max_df = 5;
 inline bool FilterDictionaryArgs::has_max_df() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -20850,100 +20850,100 @@ inline void FilterDictionaryArgs::clear_max_df() {
   max_df_ = 0;
   clear_has_max_df();
 }
-inline ::google::protobuf::int32 FilterDictionaryArgs::max_df() const {
+inline float FilterDictionaryArgs::max_df() const {
   return max_df_;
 }
-inline void FilterDictionaryArgs::set_max_df(::google::protobuf::int32 value) {
+inline void FilterDictionaryArgs::set_max_df(float value) {
   set_has_max_df();
   max_df_ = value;
 }
 
-// optional int32 min_tf = 6;
-inline bool FilterDictionaryArgs::has_min_tf() const {
+// optional float min_df_rate = 6;
+inline bool FilterDictionaryArgs::has_min_df_rate() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void FilterDictionaryArgs::set_has_min_tf() {
+inline void FilterDictionaryArgs::set_has_min_df_rate() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void FilterDictionaryArgs::clear_has_min_tf() {
+inline void FilterDictionaryArgs::clear_has_min_df_rate() {
   _has_bits_[0] &= ~0x00000020u;
+}
+inline void FilterDictionaryArgs::clear_min_df_rate() {
+  min_df_rate_ = 0;
+  clear_has_min_df_rate();
+}
+inline float FilterDictionaryArgs::min_df_rate() const {
+  return min_df_rate_;
+}
+inline void FilterDictionaryArgs::set_min_df_rate(float value) {
+  set_has_min_df_rate();
+  min_df_rate_ = value;
+}
+
+// optional float max_df_rate = 7;
+inline bool FilterDictionaryArgs::has_max_df_rate() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void FilterDictionaryArgs::set_has_max_df_rate() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void FilterDictionaryArgs::clear_has_max_df_rate() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void FilterDictionaryArgs::clear_max_df_rate() {
+  max_df_rate_ = 0;
+  clear_has_max_df_rate();
+}
+inline float FilterDictionaryArgs::max_df_rate() const {
+  return max_df_rate_;
+}
+inline void FilterDictionaryArgs::set_max_df_rate(float value) {
+  set_has_max_df_rate();
+  max_df_rate_ = value;
+}
+
+// optional float min_tf = 8;
+inline bool FilterDictionaryArgs::has_min_tf() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void FilterDictionaryArgs::set_has_min_tf() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void FilterDictionaryArgs::clear_has_min_tf() {
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void FilterDictionaryArgs::clear_min_tf() {
   min_tf_ = 0;
   clear_has_min_tf();
 }
-inline ::google::protobuf::int32 FilterDictionaryArgs::min_tf() const {
+inline float FilterDictionaryArgs::min_tf() const {
   return min_tf_;
 }
-inline void FilterDictionaryArgs::set_min_tf(::google::protobuf::int32 value) {
+inline void FilterDictionaryArgs::set_min_tf(float value) {
   set_has_min_tf();
   min_tf_ = value;
 }
 
-// optional int32 max_tf = 7;
+// optional float max_tf = 9;
 inline bool FilterDictionaryArgs::has_max_tf() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void FilterDictionaryArgs::set_has_max_tf() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void FilterDictionaryArgs::clear_has_max_tf() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void FilterDictionaryArgs::clear_max_tf() {
   max_tf_ = 0;
   clear_has_max_tf();
 }
-inline ::google::protobuf::int32 FilterDictionaryArgs::max_tf() const {
+inline float FilterDictionaryArgs::max_tf() const {
   return max_tf_;
 }
-inline void FilterDictionaryArgs::set_max_tf(::google::protobuf::int32 value) {
+inline void FilterDictionaryArgs::set_max_tf(float value) {
   set_has_max_tf();
   max_tf_ = value;
-}
-
-// optional int32 min_value = 8;
-inline bool FilterDictionaryArgs::has_min_value() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void FilterDictionaryArgs::set_has_min_value() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void FilterDictionaryArgs::clear_has_min_value() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void FilterDictionaryArgs::clear_min_value() {
-  min_value_ = 0;
-  clear_has_min_value();
-}
-inline ::google::protobuf::int32 FilterDictionaryArgs::min_value() const {
-  return min_value_;
-}
-inline void FilterDictionaryArgs::set_min_value(::google::protobuf::int32 value) {
-  set_has_min_value();
-  min_value_ = value;
-}
-
-// optional int32 max_value = 9;
-inline bool FilterDictionaryArgs::has_max_value() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
-}
-inline void FilterDictionaryArgs::set_has_max_value() {
-  _has_bits_[0] |= 0x00000100u;
-}
-inline void FilterDictionaryArgs::clear_has_max_value() {
-  _has_bits_[0] &= ~0x00000100u;
-}
-inline void FilterDictionaryArgs::clear_max_value() {
-  max_value_ = 0;
-  clear_has_max_value();
-}
-inline ::google::protobuf::int32 FilterDictionaryArgs::max_value() const {
-  return max_value_;
-}
-inline void FilterDictionaryArgs::set_max_value(::google::protobuf::int32 value) {
-  set_has_max_value();
-  max_value_ = value;
 }
 
 // -------------------------------------------------------------------

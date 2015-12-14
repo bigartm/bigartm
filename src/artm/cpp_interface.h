@@ -148,6 +148,7 @@ class MasterComponent {
   void CreateDictionary(const DictionaryData& args);
   void DisposeDictionary(const std::string& dictionary_name);
   void ImportDictionary(const ImportDictionaryArgs& args);
+  void ExportDictionary(const ExportDictionaryArgs& args);
   void GatherDictionary(const GatherDictionaryArgs& args);
   void FilterDictionary(const FilterDictionaryArgs& args);
   std::shared_ptr<DictionaryData> GetDictionary(const std::string& dictionary_name);

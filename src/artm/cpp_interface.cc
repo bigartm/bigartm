@@ -508,6 +508,12 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   HandleErrorCode(ArtmImportDictionary(id_, blob.size(), blob.c_str()));
 }
 
+void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  HandleErrorCode(ArtmExportDictionary(id_, blob.size(), blob.c_str()));
+}
+
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
   std::string blob;
   args.SerializeToString(&blob);

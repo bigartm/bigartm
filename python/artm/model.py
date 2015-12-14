@@ -294,8 +294,9 @@ class ARTM(object):
             raise IOError('dictionary_target_name is None')
 
     def filter_dictionary(self, dictionary_name=None, dictionary_target_name=None, class_id=None,
-                          min_df=None, max_df=None, min_tf=None, max_tf=None, min_value=None,
-                          max_value=None):
+                          min_df=None, max_df=None,
+                          min_df_rate=None, max_df_rate=None,
+                          min_tf=None, max_tf=None,):
         """ARTM.filter_dictionary() --- filter the BigARTM dictionary of
         the collection, which was already loaded into the lib
 
@@ -305,10 +306,10 @@ class ARTM(object):
            class_id (str): class_id to filter
            min_df (float): min df value to pass the filter
            max_df (float): max df value to pass the filter
+           min_df_rate (float): min df rate to pass the filter
+           max_df_rate (float): max df rate to pass the filter
            min_tf (float): min tf value to pass the filter
            max_tf (float): max tf value to pass the filter
-           min_value (float): min normed tf value to pass the filter
-           max_value (float): max normed tf value to pass the filter
         """
         if dictionary_name is not None:
             self.master.filter_dictionary(dictionary_target_name=dictionary_target_name,
@@ -316,10 +317,10 @@ class ARTM(object):
                                           class_id=class_id,
                                           min_df=min_df,
                                           max_df=max_df,
+                                          min_df_rate=min_df_rate,
+                                          max_df_rate=max_df_rate,
                                           min_tf=min_tf,
-                                          max_tf=max_tf,
-                                          min_value=min_value,
-                                          max_value=max_value)
+                                          max_tf=max_tf)
         else:
             raise IOError('dictionary_name is None')
 
