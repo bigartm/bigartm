@@ -111,8 +111,10 @@ class MasterComponent(object):
         self._lib.ArtmGatherDictionary(self.master_id, gather_args)
 
     def filter_dictionary(self, dictionary_name=None, dictionary_target_name=None, class_id=None,
-                          min_df=None, max_df=None, min_tf=None, max_tf=None, min_value=None,
-                          max_value=None, args=None):
+                          min_df=None, max_df=None,
+                          min_df_rate=None, max_df_rate=None,
+                          min_tf=None, max_tf=None,
+                          args=None):
 
         """Args:
            - dictionary_name(str): name of the dictionary in the core to filter
@@ -120,10 +122,10 @@ class MasterComponent(object):
            - class_id(str): class_id to filter
            - min_df(float): min df value to pass the filter
            - max_df(float): max df value to pass the filter
+           - min_df_rate (float): min df rate to pass the filter
+           - max_df_rate (float): max df rate to pass the filter
            - min_tf(float): min tf value to pass the filter
            - max_tf(float): max tf value to pass the filter
-           - min_value(float): min normed tf value to pass the filter
-           - max_value(float): max normed tf value to pass the filter
            - args: an instance of FilterDictionaryArgs
         """
         filter_args = messages.FilterDictionaryArgs()
@@ -139,14 +141,14 @@ class MasterComponent(object):
             filter_args.min_df = min_df
         if max_df is not None:
             filter_args.max_df = max_df
+        if min_df_rate is not None:
+            filter_args.min_df_rate = min_df_rate
+        if max_df_rate is not None:
+            filter_args.max_df_rate = max_df_rate
         if min_tf is not None:
             filter_args.min_tf = min_tf
         if max_tf is not None:
             filter_args.max_tf = max_tf
-        if min_value is not None:
-            filter_args.min_value = min_value
-        if max_value is not None:
-            filter_args.max_value = max_value
 
         self._lib.ArtmFilterDictionary(self.master_id, filter_args)
 

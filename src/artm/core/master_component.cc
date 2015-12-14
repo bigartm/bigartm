@@ -99,20 +99,17 @@ void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   auto import_data = Dictionary::ImportData(args);
-  // now last element of import_data contains ptr to tokens part of dictionary
-  std::string dict_name = import_data.back()->name();
 
-  int token_size = import_data.back()->token_size();
+  int token_size = import_data.front()->token_size();
   if (token_size <= 0)
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
-  CreateDictionary(*(import_data.back().get()));
-  import_data.pop_back();
+  import_data.front()->set_name(args.dictionary_name());
+  CreateDictionary(*(import_data.front()));
 
-  int temp_size = import_data.size();
-  for (int i = 0; i < temp_size; ++i) {
-    AppendDictionary(*(import_data.back().get()));
-    import_data.pop_back();
+  for (int i = 1; i < import_data.size(); ++i) {
+    import_data.at(i)->set_name(args.dictionary_name());
+    AppendDictionary(*import_data.at(i));
   }
 
   LOG(INFO) << "Import completed, token_size = " << token_size;

@@ -224,6 +224,7 @@ struct artm_options {
   std::string read_uci_docword;
   std::string read_uci_vocab;
   std::string read_vw_corpus;
+  std::string read_cooc;
   std::string use_batches;
   int batch_size;
 
@@ -261,6 +262,7 @@ struct artm_options {
   std::vector<std::string> score;
   std::vector<std::string> final_score;
   std::string pwt_model_name;
+  std::string main_dictionary_name;
 
   // Other options
   std::string disk_cache_folder;
@@ -271,6 +273,7 @@ struct artm_options {
 
   artm_options() {
     pwt_model_name = "pwt";
+    main_dictionary_name = "main_dictionary";
   }
 };
 
@@ -321,7 +324,23 @@ void fixScoreLevel(artm_options* options) {
   }
 }
 
+std::string addToDictionaryMap(std::map<std::string, std::string>* dictionary_map, std::string dictionary_path) {
+  if (dictionary_path.empty())
+    return std::string();
+
+  auto mapped_name = dictionary_map->find(dictionary_path);
+  if (mapped_name == dictionary_map->end()) {
+    dictionary_map->insert(std::make_pair(
+      dictionary_path,
+      boost::lexical_cast<std::string>(boost::uuids::random_generator()())));
+    mapped_name = dictionary_map->find(dictionary_path);
+  }
+
+  return mapped_name->second;
+}
+
 void configureRegularizer(const std::string& regularizer, const std::string& topics,
+                          std::map<std::string, std::string>* dictionary_map,
                           RegularizeModelArgs* regularize_model_args,
                           ProcessBatchesArgs* process_batches_args, artm::RegularizerConfig* config) {
   std::vector<std::string> strs;
@@ -337,7 +356,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 
   std::vector<std::pair<std::string, float>> class_ids;
   std::vector<std::string> topic_names;
-  std::string dictionary_name;
+  std::string dictionary_path;
   for (unsigned i = 2; i < strs.size(); ++i) {
     std::string elem = strs[i];
     if (elem.empty())
@@ -347,8 +366,10 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     else if (elem[0] == '@')
       class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
     else if (elem[0] == '!')
-      dictionary_name = elem.substr(1, elem.size() - 1);
+      dictionary_path = elem.substr(1, elem.size() - 1);
   }
+
+  std::string dictionary_name = addToDictionaryMap(dictionary_map, dictionary_path);
 
   // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation
   std::string regularizer_type = boost::to_lower_copy(strs[1]);
@@ -409,9 +430,11 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 class ScoreHelper {
  private:
    ::artm::MasterComponent* master_;
+   std::map<std::string, std::string>* dictionary_map_;
    std::vector<std::pair<std::string, ::artm::ScoreConfig_Type>> score_name_;
  public:
-   ScoreHelper(::artm::MasterComponent* master) : master_(master) {}
+   ScoreHelper(::artm::MasterComponent* master, std::map<std::string, std::string>* dictionary_map)
+       : master_(master), dictionary_map_(dictionary_map) {}
 
    void addScore(const std::string& score, const std::string& topics) {
      std::vector<std::string> strs;
@@ -421,7 +444,7 @@ class ScoreHelper {
 
      std::vector<std::pair<std::string, float>> class_ids;
      std::vector<std::string> topic_names;
-     std::string dictionary_name;
+     std::string dictionary_path;
      for (unsigned i = 1; i < strs.size(); ++i) {
        std::string elem = strs[i];
        if (elem.empty())
@@ -431,8 +454,10 @@ class ScoreHelper {
        else if (elem[0] == '@')
          class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
        else if (elem[0] == '!')
-         dictionary_name = elem.substr(1, elem.size() - 1);
+         dictionary_path = elem.substr(1, elem.size() - 1);
      }
+
+     std::string dictionary_name = addToDictionaryMap(dictionary_map_, dictionary_path);
 
      // Perplexity,SparsityTheta,SparsityPhi,TopTokens,ThetaSnippet,TopicKernel
      std::string score_type = boost::to_lower_copy(strs[0]);
@@ -568,7 +593,7 @@ class ScoreHelper {
        std::cerr << "KernelPurity    = " << score_data->average_kernel_purity() << suffix.str() << "\n";
        std::cerr << "KernelContrast  = " << score_data->average_kernel_contrast() << suffix.str() << "\n";
        if (score_data->has_average_coherence())
-         std::cerr << "KernelCoherence = " << score_data->average_kernel_contrast() << suffix.str() << "\n";
+         std::cerr << "KernelCoherence = " << score_data->average_coherence() << suffix.str() << "\n";
      }
      else if (type == ::artm::ScoreConfig_Type_ClassPrecision) {
        auto score_data = master_->GetScoreAs< ::artm::ClassPrecisionScore>(model_name, score_name);
@@ -632,8 +657,6 @@ class BatchVectorizer {
       collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
       if (!options_.read_uci_vocab.empty())
         collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
-      //if (!options_.save_dictionary.empty())
-      //  collection_parser_config.set_dictionary_file_name(options_.save_dictionary);
       collection_parser_config.set_target_folder(batch_folder_);
       collection_parser_config.set_num_items_per_batch(options_.batch_size);
       ::artm::ParseCollection(collection_parser_config);
@@ -975,40 +998,86 @@ int execute(const artm_options& options) {
   std::shared_ptr<MasterComponent> master_component;
   master_component.reset(new MasterComponent(master_config));
 
-  // Step 3.1. Import dictionary
-  bool initialize_from_dictionary = false;
-  if (!options.use_dictionary.empty()) {
-    ProgressScope scope(std::string("Loading dictionary file from") + options.use_dictionary);
+  // Step 3.1. Parse or import the main dictionary
+  if (options.use_dictionary.empty()) {
+    ProgressScope scope(std::string("Gathering dictionary from batches"));
+    ::artm::GatherDictionaryArgs gather_dictionary_args;
+    gather_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
+    gather_dictionary_args.set_data_path(batch_vectorizer.batch_folder());
+    if (!options.read_cooc.empty()) gather_dictionary_args.set_cooc_file_path(options.read_cooc);
+    if (!options.read_uci_vocab.empty()) gather_dictionary_args.set_vocab_file_path(options.read_uci_vocab);
+    master_component->GatherDictionary(gather_dictionary_args);
+  } else {
+    ProgressScope scope(std::string("Loading dictionary file from ") + options.use_dictionary);
     ImportDictionaryArgs import_dictionary_args;
     import_dictionary_args.set_file_name(options.use_dictionary);
-    import_dictionary_args.set_dictionary_name(dictionary_name);
+    import_dictionary_args.set_dictionary_name(options.main_dictionary_name);
     master_component->ImportDictionary(import_dictionary_args);
-    initialize_from_dictionary = true;
+  }
+
+  // Step 3.2. Filter dictionary
+  if (!options.dictionary_max_df.empty() || !options.dictionary_min_df.empty()) {
+    ProgressScope scope("Filtering dictionary based on user thresholds");
+    ::artm::FilterDictionaryArgs filter_dictionary_args;
+    filter_dictionary_args.set_dictionary_name(options.main_dictionary_name);
+    filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
+    bool fraction;
+    double value;
+    if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
+      if (fraction) filter_dictionary_args.set_min_df_rate(value);
+      else filter_dictionary_args.set_min_df(value);
+    } else {
+      if (!options.dictionary_min_df.empty())
+        std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
+    }
+    if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
+      if (fraction) filter_dictionary_args.set_max_df_rate(value);
+      else filter_dictionary_args.set_max_df(value);
+    } else {
+      if (!options.dictionary_max_df.empty())
+        std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
+    }
+
+    master_component->FilterDictionary(filter_dictionary_args);
   }
 
   // Step 4. Configure regularizers.
   std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
+  std::map<std::string, std::string> dictionary_map;
+  if (!options.use_dictionary.empty())
+    dictionary_map.insert(std::make_pair(options.use_dictionary, options.main_dictionary_name));
   for (auto& regularizer : options.regularizer) {
     ::artm::RegularizerConfig regularizer_config;
-    configureRegularizer(regularizer, options.topics, &regularize_model_args, &process_batches_args, &regularizer_config);
+    configureRegularizer(regularizer, options.topics, &dictionary_map, &regularize_model_args, &process_batches_args, &regularizer_config);
     regularizers.push_back(std::make_shared<artm::Regularizer>(*master_component, regularizer_config));
   }
 
   // Step 4.1. Configure scores.
-  ScoreHelper score_helper(master_component.get());
-  ScoreHelper final_score_helper(master_component.get());
+  ScoreHelper score_helper(master_component.get(), &dictionary_map);
+  ScoreHelper final_score_helper(master_component.get(), &dictionary_map);
   for (auto& score : options.score) score_helper.addScore(score, options.topics);
   for (auto& score : options.final_score) final_score_helper.addScore(score, options.topics);
 
+  // Step 4.2. Loading remaining dictionaries.
+  for (auto iter : dictionary_map) {
+    if (iter.second == options.main_dictionary_name)
+      continue;  // already loaded at step 3.1
+    ProgressScope scope(std::string("Importing dictionary ") + iter.first + " with ID=" + iter.second);
+    ImportDictionaryArgs import_dictionary_args;
+    import_dictionary_args.set_file_name(iter.first);
+    import_dictionary_args.set_dictionary_name(iter.second);
+    master_component->ImportDictionary(import_dictionary_args);
+  }
+
   // Step 5. Create and initialize model.
   if (options.load_model.empty()) {
+    ProgressScope scope("Initializing random model from dictionary");
     InitializeModelArgs initialize_model_args;
     initialize_model_args.set_model_name(pwt_model_name);
     for (auto& topic_name : topic_names)
       initialize_model_args.add_topic_name(topic_name);
 
-    ProgressScope scope(std::string("Initializing random model from dictionary ") + options.use_dictionary);
-    initialize_model_args.set_dictionary_name(dictionary_name);
+    initialize_model_args.set_dictionary_name(options.main_dictionary_name);
     master_component->InitializeModel(initialize_model_args);
   }
   else {
@@ -1040,6 +1109,14 @@ int execute(const artm_options& options) {
   }  // iter
 
   final_score_helper.showScores(pwt_model_name);
+
+  if (!options.save_dictionary.empty()) {
+    ProgressScope scope(std::string("Saving dictionary to ") + options.save_dictionary);
+    ExportDictionaryArgs export_dictionary_args;
+    export_dictionary_args.set_dictionary_name(options.main_dictionary_name);
+    export_dictionary_args.set_file_name(options.save_dictionary);
+    master_component->ExportDictionary(export_dictionary_args);
+  }
 
   if (!options.save_model.empty()) {
     ProgressScope scope(std::string("Saving model to ") + options.save_model);
@@ -1127,6 +1204,7 @@ int main(int argc, char * argv[]) {
       ("read-vw-corpus,c", po::value(&options.read_vw_corpus), "Raw corpus in Vowpal Wabbit format")
       ("read-uci-docword,d", po::value(&options.read_uci_docword), "docword file in UCI format")
       ("read-uci-vocab,v", po::value(&options.read_uci_vocab), "vocab file in UCI format")
+      ("read-cooc", po::value(&options.read_cooc), "read co-occurrences format")
       ("batch-size", po::value(&options.batch_size)->default_value(500), "number of items per batch")
       ("use-batches", po::value(&options.use_batches), "folder with batches to use")
     ;

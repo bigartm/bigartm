@@ -42,7 +42,7 @@ Dictionary::Dictionary(const artm::DictionaryData& data) {
 
 std::vector<std::shared_ptr<artm::DictionaryData> >
 Dictionary::ImportData(const ImportDictionaryArgs& args) {
-  if (!has_suffix(args.file_name(), ".dict"))
+  if (!boost::algorithm::ends_with(args.file_name(), ".dict"))
     BOOST_THROW_EXCEPTION(CorruptedMessageException("The importing dictionary should have .dict exstension, abort."));
 
   std::ifstream fin(args.file_name(), std::ifstream::binary);
@@ -62,7 +62,8 @@ Dictionary::ImportData(const ImportDictionaryArgs& args) {
   std::vector<std::shared_ptr<artm::DictionaryData> > import_data;
   while (!fin.eof()) {
     int length;
-    fin >> length;
+    fin.read(reinterpret_cast<char *>(&length), sizeof(length));
+    LOG(INFO) << "READ LENGTH = " << length;
     if (fin.eof())
       break;
 
@@ -86,7 +87,7 @@ Dictionary::ImportData(const ImportDictionaryArgs& args) {
 void Dictionary::Export(const ExportDictionaryArgs& args,
                             ThreadSafeDictionaryCollection* dictionaries) {
   std::string file_name = args.file_name();
-  if (!has_suffix(file_name, ".dict")) {
+  if (!boost::algorithm::ends_with(file_name, ".dict")) {
     LOG(WARNING) << "The exporting dictionary should have .dict extension, it will be added to file name";
     file_name += ".dict";
   }
@@ -111,14 +112,11 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
   // Add ability to save and load several token_dict_data
   // int tokens_per_chunk = std::min<int>(token_size, 3e+7);
 
-  DictionaryData token_dict_data;
-  token_dict_data.set_name(args.dictionary_name());
-  DictionaryData cooc_dict_data;
-  int current_cooc_length = 0;
-  const int max_cooc_length = 1e+7;
-
   const char version = 0;
   fout << version;
+
+  DictionaryData token_dict_data;
+  token_dict_data.set_name(args.dictionary_name());
   for (int token_id = 0; token_id < token_size; ++token_id) {
     auto entry = dict_ptr->entry(token_id);
     token_dict_data.add_token(entry->token().keyword);
@@ -126,40 +124,55 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
     token_dict_data.add_token_value(entry->token_value());
     token_dict_data.add_token_tf(entry->token_tf());
     token_dict_data.add_token_df(entry->token_df());
+  }
+  std::string str = token_dict_data.SerializeAsString();
+  int length = str.size();
+  LOG(INFO) << "WRITE LENGTH = " << str.size();
+  fout.write(reinterpret_cast<char *>(&length), sizeof(length));
+  fout << str;
 
+  DictionaryData cooc_dict_data;
+  int current_cooc_length = 0;
+  const int max_cooc_length = 1e+7;
+  for (int token_id = 0; token_id < token_size; ++token_id) {
+    auto entry = dict_ptr->entry(token_id);
     auto cooc_info = dict_ptr->cooc_info(entry->token());
 
-    for (auto iter = cooc_info->begin(); iter != cooc_info->end(); ++iter) {
-      cooc_dict_data.add_cooc_first_index(token_id);
-      cooc_dict_data.add_cooc_second_index(iter->first);
-      cooc_dict_data.add_cooc_value(iter->second);
-      current_cooc_length++;
+    if (cooc_info != nullptr) {
+      for (auto iter = cooc_info->begin(); iter != cooc_info->end(); ++iter) {
+        cooc_dict_data.add_cooc_first_index(token_id);
+        cooc_dict_data.add_cooc_second_index(iter->first);
+        cooc_dict_data.add_cooc_value(iter->second);
+        current_cooc_length++;
+      }
     }
 
-    if (current_cooc_length >= max_cooc_length) {
+    if ((current_cooc_length >= max_cooc_length) || ((token_id + 1) == token_size)) {
       std::string str = cooc_dict_data.SerializeAsString();
-      fout << str.size();
+      int length = str.size();
+      LOG(INFO) << "WRITE LENGTH = " << str.size();
+      fout.write(reinterpret_cast<char *>(&length), sizeof(length));
       fout << str;
       cooc_dict_data.clear_cooc_first_index();
       cooc_dict_data.clear_cooc_second_index();
       cooc_dict_data.clear_cooc_value();
       current_cooc_length = 0;
     }
-
-    if ((token_id + 1) == token_size) {
-      std::string str = cooc_dict_data.SerializeAsString();
-      fout << str.size();
-      fout << str;
-
-      str = token_dict_data.SerializeAsString();
-      fout << str.size();
-      fout << str;
-    }
   }
 
   fout.close();
   LOG(INFO) << "Export completed, token_size = " << dict_ptr->size();
 }
+
+// TokenValues is used only from Dictionary::Gather method
+class TokenValues {
+ public:
+  TokenValues() : token_value(0.0f), token_tf(0.0f), token_df(0.0f) { }
+
+  float token_value;
+  float token_tf;
+  float token_df;
+};
 
 std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
 Dictionary::Gather(const GatherDictionaryArgs& args) {
@@ -369,29 +382,27 @@ Dictionary::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollect
       << args.dictionary_name() << "', operation was aborted";
   }
 
-  std::string dictionary_target_name = args.has_dictionary_target_name() ? args.dictionary_target_name() :
-      "dictionary_" + boost::lexical_cast<std::string>(boost::uuids::random_generator()());
-  LOG(INFO) << "The name of filtered dictionary is '" << dictionary_target_name << "'";
-
   auto dictionary_data = std::make_shared<artm::DictionaryData>();
-  dictionary_data->set_name(dictionary_target_name);
+  dictionary_data->set_name(args.dictionary_target_name());
 
   auto& src_entries = src_dictionary_ptr->entries();
   auto& dictionary_token_index = src_dictionary_ptr->token_index();
   std::unordered_map<int, int> old_index_new_index;
 
+  float size = static_cast<float>(src_dictionary_ptr->size());
+
   int accepted_tokens_count = 0;
   for (auto& entry : src_entries) {
-    if (args.has_class_id() && entry.token().class_id != args.class_id()) continue;
+    if (args.has_class_id() && entry.token().class_id == args.class_id()) {
+      if (args.has_min_df() && entry.token_df() < args.min_df()) continue;
+      if (args.has_max_df() && entry.token_df() >= args.max_df()) continue;
 
-    if (args.has_min_df() && entry.token_df() < args.min_df()) continue;
-    if (args.has_max_df() && entry.token_df() >= args.max_df()) continue;
+      if (args.has_min_df_rate() && entry.token_df() < (args.min_df_rate() * size)) continue;
+      if (args.has_max_df_rate() && entry.token_df() >= (args.max_df_rate() * size)) continue;
 
-    if (args.has_min_tf() && entry.token_tf() < args.min_tf()) continue;
-    if (args.has_max_tf() && entry.token_tf() >= args.max_tf()) continue;
-
-    if (args.has_min_value() && entry.token_value() < args.min_value()) continue;
-    if (args.has_max_value() && entry.token_value() >= args.max_value()) continue;
+      if (args.has_min_tf() && entry.token_tf() < args.min_tf()) continue;
+      if (args.has_max_tf() && entry.token_tf() >= args.max_tf()) continue;
+    }
 
     // all filters were passed, add token to the new dictionary
     Token token = entry.token();

@@ -413,7 +413,13 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   std::shared_ptr<Dictionary> dict = dictionaries_->get(args.dictionary_name());
   if (dict == nullptr) {
     std::stringstream ss;
-    ss << "Dictionary " << args.dictionary_name() << " does not exist";
+    ss << "Dictionary '" << args.dictionary_name() << "' does not exist";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  }
+
+  if (dict->size() == 0) {
+    std::stringstream ss;
+    ss << "Dictionary '" << args.dictionary_name() << "' has no entries";
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 

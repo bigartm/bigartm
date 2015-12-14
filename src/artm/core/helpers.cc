@@ -556,6 +556,9 @@ bool Helpers::Validate(const ::artm::FilterDictionaryArgs& message, bool throw_e
   if (!message.has_dictionary_name())
     ss << "FilterDictionaryArgs has no dictionary name; ";
 
+  if (!message.has_dictionary_target_name())
+    ss << "FilterDictionaryArgs has no target dictionary name; ";
+
   if (!message.has_class_id())
     ss << "FilterDictionaryArgs has no class_id; ";
 
@@ -790,10 +793,10 @@ std::string Helpers::Describe(const ::artm::FilterDictionaryArgs& message) {
   if (message.has_max_tf())
     ss << ", max_tf=" << message.max_tf();
 
-  if (message.has_min_value())
-    ss << ", min_value=" << message.min_value();
-  if (message.has_max_value())
-    ss << ", max_value=" << message.max_value();
+  if (message.has_min_df_rate())
+    ss << ", min_df_rate=" << message.min_df_rate();
+  if (message.has_max_df_rate())
+    ss << ", max_df_rate=" << message.max_df_rate();
 
   return ss.str();
 }

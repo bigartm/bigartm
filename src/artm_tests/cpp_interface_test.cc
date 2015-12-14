@@ -796,3 +796,64 @@ TEST(CppInterface, AsyncProcessBatches) {
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }
+
+// artm_tests.exe --gtest_filter=CppInterface.Dictionaries
+TEST(CppInterface, Dictionaries) {
+  int nTopics = 17, nBatches = 5;
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+  ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
+  artm::MasterComponentConfig master_config;
+  artm::MasterComponent master(master_config);
+
+  // Gather
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
+  auto dictionary = master.GetDictionary("gathered_dictionary");
+  ASSERT_EQ(dictionary->token_size(), 50);
+  ASSERT_GT(dictionary->token_df(0), 0);
+  ASSERT_GT(dictionary->token_tf(0), 0);
+  ASSERT_GT(dictionary->token_value(0), 0);
+
+  // Filter
+  artm::FilterDictionaryArgs filter_args;
+  filter_args.set_dictionary_name("gathered_dictionary");
+  filter_args.set_dictionary_target_name("filtered_dictionary");
+  filter_args.set_max_df(4);
+  master.FilterDictionary(filter_args);
+
+  dictionary = master.GetDictionary("filtered_dictionary");
+  ASSERT_EQ(dictionary->token_size(), 32);
+  ASSERT_GT(dictionary->token_df(0), 0);
+  ASSERT_GT(dictionary->token_tf(0), 0);
+  ASSERT_GT(dictionary->token_value(0), 0);
+
+  std::cout << "\n";
+
+  // Export
+  artm::ExportDictionaryArgs export_args;
+  export_args.set_file_name(artm::test::Helpers::getUniqueString() + ".dict");
+  export_args.set_dictionary_name("filtered_dictionary");
+  master.ExportDictionary(export_args);
+
+  // Import
+  artm::ImportDictionaryArgs import_args;
+  import_args.set_file_name(export_args.file_name());
+  import_args.set_dictionary_name("imported_dictionary");
+  master.ImportDictionary(import_args);
+
+  dictionary = master.GetDictionary("imported_dictionary");
+  ASSERT_EQ(dictionary->token_size(), 32);
+  ASSERT_GT(dictionary->token_df(0), 0);
+  ASSERT_GT(dictionary->token_tf(0), 0);
+  ASSERT_GT(dictionary->token_value(0), 0);
+  std::cout << "\n";
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+
+  try { boost::filesystem::remove(import_args.file_name()); }
+  catch (...) {}
+}
