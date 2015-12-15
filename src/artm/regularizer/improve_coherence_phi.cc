@@ -44,8 +44,10 @@ bool ImproveCoherencePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
   // create the conversion from index if token in Dictionary -> index of token in Phi
   // -1 means that token from dictionary doesn't present in Phi matrix
   std::vector<int> dict_to_phi_indices(dictionary_ptr->size(), -1);
-  for (auto& index_token : dictionary_ptr->index_token())
-    dict_to_phi_indices[index_token.first] = n_wt.token_index(index_token.second);
+  for (int index = 0; index < dictionary_ptr->size(); ++index) {
+    auto& entry = dictionary_ptr->entries()[index];
+    dict_to_phi_indices[index] = n_wt.token_index(entry.token());
+  }
 
   // proceed the regularization
   for (int token_id = 0; token_id < token_size; ++token_id) {

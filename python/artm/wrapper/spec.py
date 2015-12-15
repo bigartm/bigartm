@@ -67,20 +67,21 @@ ARTM_API = [
         'ArtmDisposeRegularizer',
         [('master_id', int), ('name', str)],
     ),
-
-    ## deprecated
-    #CallSpec(
-    #    'ArtmCreateDictionary',
-    #    [('master_id', int), ('config', messages.DictionaryConfig)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmReconfigureDictionary',
-    #    [('master_id', int), ('config', messages.DictionaryConfig)],
-    #),
+    CallSpec(
+        'ArtmCreateDictionary',
+        [('master_id', int), ('config', messages.DictionaryData)],
+    ),
     CallSpec(
         'ArtmDisposeDictionary',
         [('master_id', int), ('name', str)],
+    ),
+    CallSpec(
+        'ArtmGatherDictionary',
+        [('master_id', int), ('config', messages.GatherDictionaryArgs)],
+    ),
+    CallSpec(
+        'ArtmFilterDictionary',
+        [('master_id', int), ('config', messages.FilterDictionaryArgs)],
     ),
     CallSpec(
         'ArtmImportDictionary',
@@ -200,16 +201,6 @@ ARTM_API = [
         'ArtmRequestMasterComponentInfo',
         [('master_id', int), ('args', messages.GetMasterComponentInfoArgs)],
         request=messages.MasterComponentInfo,
-    ),
-    CallSpec(
-        'ArtmRequestParseCollection',
-        [('args', messages.CollectionParserConfig)],
-        request=messages.DictionaryConfig,
-    ),
-    CallSpec(
-        'ArtmRequestLoadDictionary',
-        [('filename', str)],
-        request=messages.DictionaryConfig,
     ),
     CallSpec(
         'ArtmRequestLoadBatch',

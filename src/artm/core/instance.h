@@ -48,6 +48,7 @@ class Instance {
   std::shared_ptr<InstanceSchema> schema() const { return schema_.get(); }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
   MergerQueue* merger_queue() { return &merger_queue_; }
+  ThreadSafeDictionaryCollection* dictionaries() { return &dictionaries_; }
   ThreadSafeBatchCollection* batches() { return &batches_; }
 
   DataLoader* data_loader();
@@ -61,10 +62,9 @@ class Instance {
   void Reconfigure(const MasterComponentConfig& master_config);
   void CreateOrReconfigureModel(const ModelConfig& config);
   void DisposeModel(ModelName model_name);
+
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
   void DisposeRegularizer(const std::string& name);
-  void CreateOrReconfigureDictionary(const DictionaryConfig& config);
-  void DisposeDictionary(const std::string& name);
 
   std::shared_ptr<ScoreCalculatorInterface> CreateScoreCalculator(const ScoreConfig& config);
 

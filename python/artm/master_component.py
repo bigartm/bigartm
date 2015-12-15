@@ -72,18 +72,93 @@ class MasterComponent(object):
 
         self._lib.ArtmImportDictionary(self.master_id, args)
 
+    def export_dictionary(self, filename, dictionary_name):
+        """Args:
+           - filename(str): full name for dictionary file
+           - dictionary_name(str): name of exported dictionary
+        """
+        args = messages.ExportDictionaryArgs()
+        args.dictionary_name = dictionary_name
+        args.file_name = filename
+
+        self._lib.ArtmExportDictionary(self.master_id, args)
+
+    def gather_dictionary(self, dictionary_target_name=None, data_path=None, cooc_file_path=None,
+                          vocab_file_path=None, symmetric_cooc_values=None, args=None):
+        """Args:
+           - dictionary_target_name(str): name of the dictionary in the core
+           - data_path(str): full path to batches folder
+           - cooc_file_path(str): full path to the file with cooc info
+           - vocab_file_path(str): full path to the file with vocabulary
+           - symmetric_cooc_values(str): if the cooc matrix should
+             considered to be symmetric or not
+           - args: an instance of GatherDictionaryArgs
+        """
+        gather_args = messages.GatherDictionaryArgs()
+        if args is not None:
+            gather_args = args
+        if dictionary_target_name is not None:
+            gather_args.dictionary_target_name = dictionary_target_name
+        if data_path is not None:
+            gather_args.data_path = data_path
+        if cooc_file_path is not None:
+            gather_args.cooc_file_path = cooc_file_path
+        if vocab_file_path is not None:
+            gather_args.vocab_file_path = vocab_file_path
+        if symmetric_cooc_values is not None:
+            gather_args.symmetric_cooc_values = symmetric_cooc_values
+
+        self._lib.ArtmGatherDictionary(self.master_id, gather_args)
+
+    def filter_dictionary(self, dictionary_name=None, dictionary_target_name=None, class_id=None,
+                          min_df=None, max_df=None,
+                          min_df_rate=None, max_df_rate=None,
+                          min_tf=None, max_tf=None,
+                          args=None):
+
+        """Args:
+           - dictionary_name(str): name of the dictionary in the core to filter
+           - dictionary_target_name(str): name for the new filtered dictionary in the core
+           - class_id(str): class_id to filter
+           - min_df(float): min df value to pass the filter
+           - max_df(float): max df value to pass the filter
+           - min_df_rate (float): min df rate to pass the filter
+           - max_df_rate (float): max df rate to pass the filter
+           - min_tf(float): min tf value to pass the filter
+           - max_tf(float): max tf value to pass the filter
+           - args: an instance of FilterDictionaryArgs
+        """
+        filter_args = messages.FilterDictionaryArgs()
+        if args is not None:
+            filter_args = args
+        if dictionary_target_name is not None:
+            filter_args.dictionary_target_name = dictionary_target_name
+        if dictionary_name is not None:
+            filter_args.dictionary_name = dictionary_name
+        if class_id is not None:
+            filter_args.class_id = class_id
+        if min_df is not None:
+            filter_args.min_df = min_df
+        if max_df is not None:
+            filter_args.max_df = max_df
+        if min_df_rate is not None:
+            filter_args.min_df_rate = min_df_rate
+        if max_df_rate is not None:
+            filter_args.max_df_rate = max_df_rate
+        if min_tf is not None:
+            filter_args.min_tf = min_tf
+        if max_tf is not None:
+            filter_args.max_tf = max_tf
+
+        self._lib.ArtmFilterDictionary(self.master_id, filter_args)
+
     def initialize_model(self, model_name=None, num_topics=None, topic_names=None,
-                         source_type=None, disk_path=None, dictionary_name=None,
-                         seed=None, args=None):
+                         dictionary_name=None, seed=None, args=None):
         """Args:
            - model_name(str): name of pwt matrix in BigARTM
-           - source_type(str): 'batches' | 'dictionary'
            - num_topics(int): number of topics in model
            - topic_names(list of str): the list of names of topics to be used in model
-           - disk_path(str): full name of folder with batches
-                             (need if InitializeModelArgs_SourceType_Batches)
            - dictionary_name(str): name of imported dictionary
-                                   (need if InitializeModelArgs_SourceType_Dictionary)
            - seed (unsigned int or -1): seed for random initialization, default=None (no seed)
            - args: an instance of InitilaizeModelArgs
         """
@@ -101,15 +176,7 @@ class MasterComponent(object):
             for topic_name in topic_names:
                 init_args.topic_name.append(topic_name)
 
-        if source_type is 'batches':
-            init_args.source_type = constants.InitializeModelArgs_SourceType_Batches
-            if disk_path is not None:
-                init_args.disk_path = disk_path
-        elif source_type is 'dictionary':
-            init_args.source_type = constants.InitializeModelArgs_SourceType_Dictionary
-            if dictionary_name is not None:
-                init_args.dictionary_name = dictionary_name
-
+        init_args.dictionary_name = dictionary_name
         self._lib.ArtmInitializeModel(self.master_id, init_args)
 
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,

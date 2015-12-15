@@ -5,6 +5,7 @@ import shutil
 import pytest
 
 import artm.wrapper
+import artm.wrapper.messages_pb2 as messages
 import artm.wrapper.constants as constants
 import artm.master_component as mc
 
@@ -29,17 +30,20 @@ def test_func():
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
                                  'docword_file_path': os.path.join(os.getcwd(), docword),
                                  'vocab_file_path': os.path.join(os.getcwd(), vocab),
-                                 'target_folder': batches_folder,
-                                 'dictionary_file_name': dictionary_name})
+                                 'target_folder': batches_folder})
 
         # Create master component
         master = mc.MasterComponent(lib)
 
-        # Import the collection dictionary
-        master.import_dictionary(os.path.join(batches_folder, dictionary_name), dictionary_name)
+        # Create collection dictionary and import it
+        master.gather_dictionary(dictionary_target_name=dictionary_name,
+                                 data_path=batches_folder,
+                                 vocab_file_path=os.path.join(os.getcwd(), vocab))
 
         # Initialize model
-        master.initialize_model(pwt, num_topics, source_type='dictionary', dictionary_name=dictionary_name)
+        master.initialize_model(model_name=pwt,
+                                num_topics=num_topics,
+                                dictionary_name=dictionary_name)
         phi_matrix_info = master.get_phi_info(model=pwt)
         
         # Export initialized model
@@ -55,8 +59,8 @@ def test_func():
         assert phi_matrix_info_new.topics_count == num_topics
         
         print_string = 'Number of topic in new model is'
-        print_string += ' {0} and number of tokens is {1}'.format(len(phi_matrix_info.token),
-                                                                  phi_matrix_info_new.topics_count)
+        print_string += ' {0} and number of tokens is {1}'.format(phi_matrix_info_new.topics_count,
+                                                                  len(phi_matrix_info.token))
         print print_string
     finally:
         shutil.rmtree(batches_folder)

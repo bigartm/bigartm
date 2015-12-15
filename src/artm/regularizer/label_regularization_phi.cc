@@ -47,12 +47,7 @@ bool LabelRegularizationPhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
           core::is_member(token.class_id, config_.class_id())) {
         auto entry_ptr = dictionary_ptr->entry(token);
         // don't process tokens without value in the dictionary
-        if (entry_ptr == nullptr) {
-          coefficient = 0.0f;
-        } else {
-          if (entry_ptr->has_value())
-            coefficient = entry_ptr->value();
-        }
+        coefficient = entry_ptr != nullptr ? entry_ptr->token_value() : 0.0f;
       }
     }
 

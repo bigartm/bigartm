@@ -7,9 +7,13 @@
 #include <vector>
 #include <set>
 #include <sstream>
+#include <utility>
 
-#include "boost/uuid/uuid_generators.hpp"
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/predicate.hpp"
 #include "boost/thread.hpp"
+#include "boost/uuid/uuid_io.hpp"
+#include "boost/uuid/uuid_generators.hpp"
 
 #include "glog/logging.h"
 
@@ -71,22 +75,52 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
   instance_->DisposeRegularizer(name);
 }
 
-void MasterComponent::CreateOrReconfigureDictionary(const DictionaryConfig& config) {
-  instance_->CreateOrReconfigureDictionary(config);
+void MasterComponent::CreateDictionary(const DictionaryData& data) {
+  DisposeDictionary(data.name());
+
+  auto dictionary = std::make_shared<Dictionary>(data);
+  instance_->dictionaries()->set(data.name(), dictionary);
+}
+
+void MasterComponent::AppendDictionary(const DictionaryData& data) {
+  auto dict_ptr = instance_->dictionaries()->get(data.name());
+  if (dict_ptr == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " + data.name() + " does not exist"));
+  dict_ptr->Append(data);
 }
 
 void MasterComponent::DisposeDictionary(const std::string& name) {
-  instance_->DisposeDictionary(name);
+  instance_->dictionaries()->erase(name);
+}
+
+void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
+  Dictionary::Export(args, instance_->dictionaries());
 }
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
-  DictionaryConfig config;
-  BatchHelpers::LoadMessage(args.file_name(), &config);
-  Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-  config.set_name(args.dictionary_name());
+  auto import_data = Dictionary::ImportData(args);
 
-  instance_->CreateOrReconfigureDictionary(config);
-  LOG(INFO) << "Dictionary import completed";
+  int token_size = import_data.front()->token_size();
+  if (token_size <= 0)
+    BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
+
+  import_data.front()->set_name(args.dictionary_name());
+  CreateDictionary(*(import_data.front()));
+
+  for (int i = 1; i < import_data.size(); ++i) {
+    import_data.at(i)->set_name(args.dictionary_name());
+    AppendDictionary(*import_data.at(i));
+  }
+
+  LOG(INFO) << "Import completed, token_size = " << token_size;
+}
+
+void MasterComponent::RequestDictionary(const GetDictionaryArgs& args, DictionaryData* result) {
+  std::shared_ptr<Dictionary> dict_ptr = instance_->dictionaries()->get(args.dictionary_name());
+  if (dict_ptr == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
+      args.dictionary_name() + " does not exist or has no tokens"));
+  dict_ptr->StoreIntoDictionaryData(result);
 }
 
 void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
@@ -104,7 +138,6 @@ void MasterComponent::DisposeBatches(const DisposeBatchesArgs& args) {
   for (auto& batch_name : args.batch_name())
     instance_->batches()->erase(batch_name);
 }
-
 
 void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
   instance_->merger()->ForceSynchronizeModel(args);
@@ -227,9 +260,33 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
   instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
+
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   LOG(INFO) << "MasterComponent::InitializeModel() with " << Helpers::Describe(args);
+
+  // temp code to be removed with ModelConfig and old dictionaries
   instance_->merger()->InitializeModel(args);
+
+  // ToDo: (MelLain) implement the initialization of new-style models with new-style dicts
+  // instance_->merger()->SetPhiMatrix(model_name, attached);
+}
+
+void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
+  LOG(INFO) << "MasterComponent::FilterDictionaryArgs() with " << Helpers::Describe(args);
+
+  auto data = Dictionary::Filter(args, instance_->dictionaries());
+  CreateDictionary(*(data.first));
+  if (data.second->cooc_first_index_size() > 0)
+    AppendDictionary(*(data.second));
+}
+
+void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
+  LOG(INFO) << "MasterComponent::GatherDictionary() with " << Helpers::Describe(args);
+
+  auto data = Dictionary::Gather(args);
+  CreateDictionary(*(data.first));
+  if (data.second->cooc_first_index_size() > 0)
+    AppendDictionary(*(data.second));
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {

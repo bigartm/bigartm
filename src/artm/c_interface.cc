@@ -567,17 +567,46 @@ int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args)
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config) {
-  return ArtmReconfigureDictionary(master_id, length, dictionary_config);
+int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionary_args) {
+  // this method creates DictionaryData and than Dictionary, based on it
+  // the method DOESN't store DictionaryData into disk, it's the task of ExportDictionary
+  try {
+    artm::GatherDictionaryArgs args;
+    ParseFromArray(gather_dictionary_args, length, &args);
+    ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
+    master_component(master_id)->GatherDictionary(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
 }
 
-int ArtmReconfigureDictionary(int master_id, int length, const char* dictionary_config) {
+int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionary_config) {
   try {
-    artm::DictionaryConfig config;
-    ParseFromArray(dictionary_config, length, &config);
-    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-    master_component(master_id)->CreateOrReconfigureDictionary(config);
+    artm::FilterDictionaryArgs args;
+    ParseFromArray(filter_dictionary_config, length, &args);
+    ::artm::core::Helpers::FixAndValidate(&args, /* throw_error =*/ true);
+    master_component(master_id)->FilterDictionary(args);
     return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmCreateDictionary(int master_id, int length, const char* dictionary_data) {
+  try {
+    artm::DictionaryData message;
+    ParseFromArray(dictionary_data, length, &message);
+    ::artm::core::Helpers::FixAndValidate(&message, /* throw_error =*/ true);
+    master_component(master_id)->CreateDictionary(message);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmRequestDictionary(int master_id, int length, const char* request_dictionary_args) {
+  try {
+    artm::GetDictionaryArgs message;
+    ParseFromArray(request_dictionary_args, length, &message);
+    artm::DictionaryData result_message;
+    master_component(master_id)->RequestDictionary(message, &result_message);
+    result_message.SerializeToString(last_message());
+    return last_message()->size();
   } CATCH_EXCEPTIONS;
 }
 
@@ -588,12 +617,21 @@ int ArtmDisposeDictionary(int master_id, const char* dictionary_name) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmImportDictionary(int master_id, int length, const char* dictionary_args) {
+int ArtmImportDictionary(int master_id, int length, const char* import_dictionary_args) {
   try {
     artm::ImportDictionaryArgs args;
-    ParseFromArray(dictionary_args, length, &args);
+    ParseFromArray(import_dictionary_args, length, &args);
     ::artm::core::Helpers::Validate(args, /* throw_error =*/ true);
     master_component(master_id)->ImportDictionary(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
+int ArtmExportDictionary(int master_id, int length, const char* export_dictionary_args) {
+  try {
+    artm::ExportDictionaryArgs args;
+    ParseFromArray(export_dictionary_args, length, &args);
+    master_component(master_id)->ExportDictionary(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
@@ -616,40 +654,15 @@ int ArtmDisposeBatches(int master_id, int length, const char* dispose_batches_ar
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestParseCollection(int length, const char* collection_parser_config) {
-  try {
-    EnableLogging();
-    artm::CollectionParserConfig config;
-    ParseFromArray(collection_parser_config, length, &config);
-    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
-    ::artm::core::CollectionParser collection_parser(config);
-    std::shared_ptr< ::artm::DictionaryConfig> dictionary = collection_parser.Parse();
-    ::artm::core::Helpers::FixAndValidate(dictionary.get(), /* throw_error =*/ true);
-    dictionary->SerializeToString(last_message());
-    return last_message()->size();
-  } CATCH_EXCEPTIONS;
-}
-
 int ArtmParseCollection(int length, const char* collection_parser_config) {
   try {
     EnableLogging();
     artm::CollectionParserConfig config;
     ParseFromArray(collection_parser_config, length, &config);
-    ::artm::core::Helpers::FixAndValidate(&config, /* throw_error =*/ true);
+    ::artm::core::Helpers::Validate(config, /* throw_error =*/ true);
     ::artm::core::CollectionParser collection_parser(config);
     collection_parser.Parse();
     return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmRequestLoadDictionary(const char* filename) {
-  try {
-    EnableLogging();
-    auto dictionary = std::make_shared< ::artm::DictionaryConfig>();
-    ::artm::core::BatchHelpers::LoadMessage(filename, dictionary.get());
-    ::artm::core::Helpers::FixAndValidate(dictionary.get(), /* throw_error =*/ true);
-    dictionary->SerializeToString(last_message());
-    return last_message()->size();
   } CATCH_EXCEPTIONS;
 }
 

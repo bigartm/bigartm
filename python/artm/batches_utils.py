@@ -40,15 +40,12 @@ class BatchVectorizer(object):
       default='batches'
       batch_size (int): number of documents to be stored in each batch,
       default=1000
-      dictionary_name (str): the name of BigARTM dictionary with information
-      about collection, that will be gathered by the library parser;
-      default=DICTIONARY_NAME
       target_folder(str): full path to folder for future batches storing
       batches(list of str): list with non-full file names of batches (necessary parameters are
       batches + data_path + data_fromat=='batches' in this case)
     """
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
-                 target_folder='', batch_size=1000, dictionary_name=DICTIONARY_NAME):
+                 target_folder='', batch_size=1000):
         self._batches_list = []
         if data_format == 'batches':
             if batches is None:
@@ -72,7 +69,6 @@ class BatchVectorizer(object):
                 parser_config.docword_file_path = data_path
                 parser_config.format = const.CollectionParserConfig_Format_VowpalWabbit
             parser_config.target_folder = target_folder
-            parser_config.dictionary_file_name = dictionary_name
 
             lib = wrapper.LibArtm()
             lib.ArtmParseCollection(parser_config)

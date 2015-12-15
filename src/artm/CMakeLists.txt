@@ -92,6 +92,7 @@ set(SRC_LIST
 	score/topic_mass_phi.h
 	utility/blas.cc
 	utility/blas.h
+	utility/ifstream_or_cin.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_OTHER

@@ -314,18 +314,15 @@ void BasicTest() {
   }
 
   // Test dictionaries and InitializeModel
-  ::artm::DictionaryConfig dict_config;
+  ::artm::DictionaryData dict_config;
   dict_config.set_name("My dictionary");
-  ::artm::DictionaryEntry* de1 = dict_config.add_entry();
-  ::artm::DictionaryEntry* de2 = dict_config.add_entry();
-  ::artm::DictionaryEntry* de3 = dict_config.add_entry();
-  de1->set_key_token("my_tok_1");
-  de2->set_key_token("my_tok_2");
-  de3->set_key_token("my_tok_3");
-  ::artm::Dictionary dict(*master_component, dict_config);
+  dict_config.add_token("my_tok_1");
+  dict_config.add_token("my_tok_2");
+  dict_config.add_token("my_tok_3");
+  master_component->CreateDictionary(dict_config);
   model_config.set_name("model3_name");
   artm::Model model3(*master_component, model_config);
-  model3.Initialize(dict);
+  model3.Initialize(dict_config.name());
 
   artm::GetTopicModelArgs args;
   args.set_model_name(model3.name());
@@ -507,10 +504,13 @@ TEST(CppInterface, ProcessBatchesApi) {
   model_config.set_topics_count(nTopics);
   ::artm::Model model(master, model_config);
 
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
   artm::InitializeModelArgs initialize_model_args;
-  for (auto& batch_name : import_batches_args.batch_name())
-    initialize_model_args.add_batch_filename(batch_name);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_dictionary_name("gathered_dictionary");
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
@@ -596,20 +596,22 @@ TEST(CppInterface, ProcessBatchesApi) {
       << ::artm::test::Helpers::DescribeTopicModel(*master.GetTopicModel("pwt0"));
   }
 
-  ::artm::DictionaryConfig dict_config;
+  ::artm::DictionaryData dict_config;
   dict_config.set_name("My dictionary");
-  ::artm::DictionaryEntry* de1 = dict_config.add_entry();
-  de1->set_key_token("my_tok_1");
-  ::artm::Dictionary dict(master, dict_config);
+  dict_config.add_token("my_tok_1");
+  dict_config.add_class_id("@default_class");
+  dict_config.add_token_df(1.0f);
+  dict_config.add_token_tf(2.0f);
+  master.CreateDictionary(dict_config);
   master_info = master.info();
-  ASSERT_EQ(master_info->dictionary_size(), 1);
+  ASSERT_EQ(master_info->dictionary_size(), 2);
   EXPECT_EQ(master_info->dictionary(0).entries_count(), 1);
 
   {
     artm::MasterComponent master_clone(master);
     std::shared_ptr< ::artm::MasterComponentInfo> clone_master_info = master_clone.info();
     ASSERT_EQ(clone_master_info->model_size(), 2);  // "pwt", "nwt_hat"; "pwt0" is not cloned (old-style model)
-    ASSERT_EQ(clone_master_info->dictionary_size(), 1);
+    ASSERT_EQ(clone_master_info->dictionary_size(), 2);
     EXPECT_EQ(clone_master_info->dictionary(0).entries_count(), 1);
     ASSERT_EQ(clone_master_info->score_size(), master_info->score_size());
     ASSERT_EQ(clone_master_info->regularizer_size(), master_info->regularizer_size());
@@ -683,9 +685,13 @@ TEST(CppInterface, AttachModel) {
   artm::MasterComponent master(master_config);
 
   // Verify that it is possible to attach immediatelly after Initialize()
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
   artm::InitializeModelArgs initialize_model_args;
-  initialize_model_args.set_disk_path(target_folder);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_dictionary_name("gathered_dictionary");
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
@@ -746,9 +752,13 @@ TEST(CppInterface, AsyncProcessBatches) {
   artm::MasterComponent master(master_config);
 
   // Verify that it is possible to attach immediatelly after Initialize()
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
   artm::InitializeModelArgs initialize_model_args;
-  initialize_model_args.set_disk_path(target_folder);
-  initialize_model_args.set_source_type(artm::InitializeModelArgs_SourceType_Batches);
+  initialize_model_args.set_dictionary_name("gathered_dictionary");
   initialize_model_args.set_topics_count(nTopics);
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
@@ -784,5 +794,64 @@ TEST(CppInterface, AsyncProcessBatches) {
   master.NormalizeModel(normalize_model_args);
 
   try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.Dictionaries
+TEST(CppInterface, Dictionaries) {
+  int nTopics = 17, nBatches = 5;
+  std::string target_folder = artm::test::Helpers::getUniqueString();
+  ::artm::test::TestMother::GenerateBatches(nBatches, 50, target_folder);
+  artm::MasterComponentConfig master_config;
+  artm::MasterComponent master(master_config);
+
+  // Gather
+  artm::GatherDictionaryArgs gather_args;
+  gather_args.set_data_path(target_folder);
+  gather_args.set_dictionary_target_name("gathered_dictionary");
+  master.GatherDictionary(gather_args);
+
+  auto dictionary = master.GetDictionary("gathered_dictionary");
+  ASSERT_EQ(dictionary->token_size(), 50);
+  ASSERT_GT(dictionary->token_df(0), 0);
+  ASSERT_GT(dictionary->token_tf(0), 0);
+  ASSERT_GT(dictionary->token_value(0), 0);
+
+  // Filter
+  artm::FilterDictionaryArgs filter_args;
+  filter_args.set_dictionary_name("gathered_dictionary");
+  filter_args.set_dictionary_target_name("filtered_dictionary");
+  filter_args.set_max_df(4);
+  master.FilterDictionary(filter_args);
+
+  dictionary = master.GetDictionary("filtered_dictionary");
+  ASSERT_EQ(dictionary->token_size(), 32);
+  ASSERT_GT(dictionary->token_df(0), 0);
+  ASSERT_GT(dictionary->token_tf(0), 0);
+  ASSERT_GT(dictionary->token_value(0), 0);
+
+  // Export
+  artm::ExportDictionaryArgs export_args;
+  export_args.set_file_name(artm::test::Helpers::getUniqueString() + ".dict");
+  export_args.set_dictionary_name("filtered_dictionary");
+  master.ExportDictionary(export_args);
+
+  // Import
+  artm::ImportDictionaryArgs import_args;
+  import_args.set_file_name(export_args.file_name());
+  import_args.set_dictionary_name("imported_dictionary");
+  master.ImportDictionary(import_args);
+
+  dictionary = master.GetDictionary("imported_dictionary");
+  ASSERT_EQ(dictionary->token_size(), 32);
+  ASSERT_GT(dictionary->token_df(0), 0);
+  ASSERT_GT(dictionary->token_tf(0), 0);
+  ASSERT_GT(dictionary->token_value(0), 0);
+  std::cout << "\n";
+
+  try { boost::filesystem::remove_all(target_folder); }
+  catch (...) {}
+
+  try { boost::filesystem::remove(import_args.file_name()); }
   catch (...) {}
 }
