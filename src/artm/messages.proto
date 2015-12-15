@@ -201,6 +201,10 @@ message SmoothPtdwConfig {
   optional double threshold = 4 [default = 1.0];
 }
 
+message GetRegularizerStateArgs {
+  optional string name = 1;
+}
+
 // Represents an internal state of a general regularizer
 message RegularizerInternalState {
   enum Type {
@@ -744,7 +748,7 @@ message MasterComponentInfo {
 	optional int32 byte_size = 2;
   }
 
-  optional int32 master_id = 1;
+  optional int32 master_id = 1;  // obsolete in BigARTM v0.7.4
   optional MasterComponentConfig config = 2;
   repeated RegularizerInfo regularizer = 3;
   repeated ScoreInfo score = 4;
@@ -759,10 +763,6 @@ message MasterComponentInfo {
 message ImportBatchesArgs {
   repeated string batch_name = 1;
   repeated Batch batch = 3;
-}
-
-message DisposeBatchesArgs {
-  repeated string batch_name = 1;
 }
 
 message AwaitOperationArgs {

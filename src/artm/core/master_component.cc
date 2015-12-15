@@ -25,6 +25,7 @@
 #include "artm/core/data_loader.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
+#include "artm/core/check_messages.h"
 #include "artm/core/instance.h"
 #include "artm/core/processor.h"
 #include "artm/core/phi_matrix_operations.h"
@@ -36,6 +37,35 @@
 
 namespace artm {
 namespace core {
+
+static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std::string* lm) {
+  lm->resize(sizeof(float) * topic_model->token_size() * topic_model->topics_count());
+  char* lm_ptr = &(*lm)[0];
+  float* lm_float = reinterpret_cast<float*>(lm_ptr);
+  for (int token_index = 0; token_index < topic_model->token_size(); ++token_index) {
+    for (int topic_index = 0; topic_index < topic_model->topics_count(); ++topic_index) {
+      int index = token_index * topic_model->topics_count() + topic_index;
+      lm_float[index] = topic_model->token_weights(token_index).value(topic_index);
+    }
+  }
+
+  topic_model->clear_token_weights();
+  topic_model->clear_operation_type();
+}
+
+static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, std::string* lm) {
+  lm->resize(sizeof(float) * theta_matrix->item_id_size() * theta_matrix->topics_count());
+  char* lm_ptr = &(*lm)[0];
+  float* lm_float = reinterpret_cast<float*>(lm_ptr);
+  for (int topic_index = 0; topic_index < theta_matrix->topics_count(); ++topic_index) {
+    for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
+      int index = item_index * theta_matrix->topics_count() + topic_index;
+      lm_float[index] = theta_matrix->item_weights(item_index).value(topic_index);
+    }
+  }
+
+  theta_matrix->clear_item_weights();
+}
 
 MasterComponent::MasterComponent(const MasterComponentConfig& config)
     : instance_(std::make_shared<Instance>(config)) {
@@ -59,12 +89,11 @@ void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  LOG(INFO) << "MasterComponent::CreateOrReconfigureModel() with " << Helpers::Describe(config);
   instance_->CreateOrReconfigureModel(config);
 }
 
-void MasterComponent::DisposeModel(ModelName model_name) {
-  instance_->DisposeModel(model_name);
+void MasterComponent::DisposeModel(const std::string& name) {
+  instance_->DisposeModel(name);
 }
 
 void MasterComponent::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
@@ -115,7 +144,7 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   LOG(INFO) << "Import completed, token_size = " << token_size;
 }
 
-void MasterComponent::RequestDictionary(const GetDictionaryArgs& args, DictionaryData* result) {
+void MasterComponent::Request(const GetDictionaryArgs& args, DictionaryData* result) {
   std::shared_ptr<Dictionary> dict_ptr = instance_->dictionaries()->get(args.dictionary_name());
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
@@ -129,14 +158,13 @@ void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
 
   for (int i = 0; i < args.batch_name_size(); ++i) {
     std::shared_ptr<Batch> batch = std::make_shared<Batch>(args.batch(i));
-    Helpers::FixAndValidate(batch.get(), /* throw_error =*/ true);
+    FixAndValidateMessage(batch.get(), /* throw_error =*/ true);
     instance_->batches()->set(args.batch_name(i), batch);
   }
 }
 
-void MasterComponent::DisposeBatches(const DisposeBatchesArgs& args) {
-  for (auto& batch_name : args.batch_name())
-    instance_->batches()->erase(batch_name);
+void MasterComponent::DisposeBatch(const std::string& name) {
+  instance_->batches()->erase(name);
 }
 
 void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
@@ -262,8 +290,6 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
 
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
-  LOG(INFO) << "MasterComponent::InitializeModel() with " << Helpers::Describe(args);
-
   // temp code to be removed with ModelConfig and old dictionaries
   instance_->merger()->InitializeModel(args);
 
@@ -272,8 +298,6 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
-  LOG(INFO) << "MasterComponent::FilterDictionaryArgs() with " << Helpers::Describe(args);
-
   auto data = Dictionary::Filter(args, instance_->dictionaries());
   CreateDictionary(*(data.first));
   if (data.second->cooc_first_index_size() > 0)
@@ -281,8 +305,6 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
-  LOG(INFO) << "MasterComponent::GatherDictionary() with " << Helpers::Describe(args);
-
   auto data = Dictionary::Gather(args);
   CreateDictionary(*(data.first));
   if (data.second->cooc_first_index_size() > 0)
@@ -290,46 +312,57 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
-  LOG(INFO) << "MasterComponent::Reconfigure() with " << Helpers::Describe(config);
-
   if (instance_->schema()->config().disk_path() != config.disk_path())
     BOOST_THROW_EXCEPTION(InvalidOperation("Changing disk_path is not supported."));
 
   instance_->Reconfigure(config);
 }
 
-bool MasterComponent::RequestTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
-                                        ::artm::TopicModel* topic_model) {
-  return instance_->merger()->RetrieveExternalTopicModel(get_model_args, topic_model);
+void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result) {
+  instance_->merger()->RetrieveExternalTopicModel(args, result);
 }
 
-void MasterComponent::RequestRegularizerState(RegularizerName regularizer_name,
-                                              ::artm::RegularizerInternalState* regularizer_state) {
-  instance_->merger()->RequestRegularizerState(regularizer_name, regularizer_state);
+void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result, std::string* external) {
+  if (args.matrix_layout() != artm::GetTopicModelArgs_MatrixLayout_Dense)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestTopicModelExternal"));
+
+  Request(args, result);
+  HandleExternalTopicModelRequest(result, external);
 }
 
-bool MasterComponent::RequestScore(const GetScoreValueArgs& get_score_args,
-                                   ScoreData* score_data) {
-  if (!get_score_args.has_batch()) {
-    return instance_->merger()->RequestScore(get_score_args, score_data);
+void MasterComponent::Request(const GetRegularizerStateArgs& args,
+                              ::artm::RegularizerInternalState* regularizer_state) {
+  instance_->merger()->RequestRegularizerState(args.name(), regularizer_state);
+}
+
+void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
+  if (!args.has_batch()) {
+    instance_->merger()->RequestScore(args, result);
+  } else {
+    if (instance_->processor_size() == 0)
+      BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
+    instance_->processor(0)->FindThetaMatrix(args.batch(), GetThetaMatrixArgs(), nullptr, args, result);
   }
-
-  if (instance_->processor_size() == 0)
-    BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
-  instance_->processor(0)->FindThetaMatrix(
-    get_score_args.batch(), GetThetaMatrixArgs(), nullptr, get_score_args, score_data);
-  return true;
 }
 
-void MasterComponent::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
+void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, MasterComponentInfo* result) {
   std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
-  this->instance_->RequestMasterComponentInfo(master_info);
+  this->instance_->RequestMasterComponentInfo(result);
 }
 
-void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
-                                            ProcessBatchesResult* process_batches_result) {
+void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result) {
   BatchManager batch_manager;
-  RequestProcessBatchesImpl(process_batches_args, &batch_manager, /* async =*/ false, process_batches_result);
+  RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false, result);
+}
+
+void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external) {
+  const bool is_dense_theta = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_Dense;
+  const bool is_dense_ptdw = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_DensePtdw;
+  if (!is_dense_theta && !is_dense_ptdw)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestProcessBatchesExternal"));
+
+  Request(args, result);
+  HandleExternalThetaMatrixRequest(result->mutable_theta_matrix(), external);
 }
 
 void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
@@ -340,7 +373,6 @@ void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& proce
 void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
                                                 BatchManager* batch_manager, bool async,
                                                 ProcessBatchesResult* process_batches_result) {
-  LOG(INFO) << "MasterComponent::RequestProcessBatches() with " << Helpers::Describe(process_batches_args);
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
   const MasterComponentConfig& config = schema->config();
 
@@ -378,7 +410,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   model_config.set_topics_count(p_wt.topic_size());
   model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
-  Helpers::FixAndValidate(&model_config, /* throw_error =*/ true);
+  FixAndValidateMessage(&model_config, /* throw_error =*/ true);
 
   if (async && args.theta_matrix_type() != ProcessBatchesArgs_ThetaMatrixType_None)
     BOOST_THROW_EXCEPTION(InvalidOperation(
@@ -477,7 +509,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
-  LOG(INFO) << "MasterComponent::MergeModel() with " << Helpers::Describe(merge_model_args);
   if (merge_model_args.nwt_source_name_size() == 0)
     BOOST_THROW_EXCEPTION(InvalidOperation("MergeModelArgs.nwt_source_name must not be empty"));
   if (merge_model_args.nwt_source_name_size() != merge_model_args.source_weight_size())
@@ -521,7 +552,6 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
 }
 
 void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_model_args) {
-  LOG(INFO) << "MasterComponent::RegularizeModel() with " << Helpers::Describe(regularize_model_args);
   const std::string& pwt_source_name = regularize_model_args.pwt_source_name();
   const std::string& nwt_source_name = regularize_model_args.nwt_source_name();
   const std::string& rwt_target_name = regularize_model_args.rwt_target_name();
@@ -553,7 +583,6 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
 }
 
 void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_args) {
-  LOG(INFO) << "MasterComponent::NormalizeModel() with " << Helpers::Describe(normalize_model_args);
   const std::string& pwt_target_name = normalize_model_args.pwt_target_name();
   const std::string& nwt_source_name = normalize_model_args.nwt_source_name();
   const std::string& rwt_source_name = normalize_model_args.rwt_source_name();
@@ -589,17 +618,25 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model)
   instance_->merger()->OverwriteTopicModel(topic_model);
 }
 
-bool MasterComponent::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
-                                         ::artm::ThetaMatrix* theta_matrix) {
-  if (!get_theta_args.has_batch()) {
-    return instance_->cache_manager()->RequestThetaMatrix(get_theta_args, theta_matrix);
+void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatrix* result) {
+  if (!args.has_batch()) {
+    instance_->cache_manager()->RequestThetaMatrix(args, result);
   } else {
     if (instance_->processor_size() == 0)
       BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
     instance_->processor(0)->FindThetaMatrix(
-      get_theta_args.batch(), get_theta_args, theta_matrix, GetScoreValueArgs(), nullptr);
-    return true;
+      args.batch(), args, result, GetScoreValueArgs(), nullptr);
   }
+}
+
+void MasterComponent::Request(const GetThetaMatrixArgs& args,
+                              ::artm::ThetaMatrix* result,
+                              std::string* external) {
+  if (args.matrix_layout() != artm::GetThetaMatrixArgs_MatrixLayout_Dense)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestThetaMatrixExternal"));
+
+  Request(args, result);
+  HandleExternalThetaMatrixRequest(result, external);
 }
 
 bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {

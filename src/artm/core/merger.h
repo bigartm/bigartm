@@ -57,11 +57,11 @@ class Merger : boost::noncopyable {
   std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(ModelName model_name) const;
   void SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix);
 
-  bool RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
+  void RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
                                   ::artm::TopicModel* topic_model) const;
   void RequestRegularizerState(RegularizerName regularizer_name,
                                ::artm::RegularizerInternalState* regularizer_state) const;
-  bool RequestScore(const GetScoreValueArgs& get_score_args,
+  void RequestScore(const GetScoreValueArgs& get_score_args,
                     ScoreData *score_data) const;
   void RequestDictionary(const DictionaryName& dictionary_name, DictionaryData* dictionary_data) const;
 

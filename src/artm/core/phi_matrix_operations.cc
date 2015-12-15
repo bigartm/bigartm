@@ -11,6 +11,7 @@
 #include "boost/range/adaptor/map.hpp"
 #include "boost/range/algorithm/copy.hpp"
 
+#include "artm/core/check_messages.h"
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/helpers.h"
 #include "artm/core/dense_phi_matrix.h"
@@ -135,7 +136,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
 
 void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model,
                                                    float apply_weight, PhiMatrix* phi_matrix) {
-  if (!Helpers::Validate(topic_model, /* throw_error=*/ false)) return;
+  if (!ValidateMessage(topic_model, /* throw_error=*/ false)) return;
 
   const bool has_sparse_format = (topic_model.topic_index_size() > 0);
   const int this_topic_size = phi_matrix->topic_size();

@@ -186,7 +186,6 @@ Merger* Instance::merger() {
 }
 
 void Instance::CreateOrReconfigureModel(const ModelConfig& config) {
-  if (!Helpers::Validate(config)) return;
   auto corrected_config = std::make_shared<artm::ModelConfig>(config);
   if (merger_ != nullptr) {
     merger_->CreateOrReconfigureModel(*corrected_config);

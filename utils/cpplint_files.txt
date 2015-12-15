@@ -54,6 +54,7 @@ src/artm/c_interface.h
 src/artm/core/batch_manager.h
 src/artm/core/cache_manager.h
 src/artm/core/call_on_destruction.h
+src/artm/core/check_messages.h
 src/artm/core/collection_parser.h
 src/artm/core/common.h
 src/artm/core/data_loader.h

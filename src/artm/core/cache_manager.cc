@@ -55,7 +55,7 @@ void CacheManager::DisposeModel(ModelName model_name) {
   }
 }
 
-bool CacheManager::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
+void CacheManager::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                                       ::artm::ThetaMatrix* theta_matrix) const {
   std::string model_name = get_theta_args.model_name();
   std::vector<CacheKey> keys = cache_.keys();
@@ -80,8 +80,6 @@ bool CacheManager::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
       cache_.erase(key);
     }
   }
-
-  return true;
 }
 
 std::shared_ptr<DataLoaderCacheEntry> CacheManager::FindCacheEntry(
