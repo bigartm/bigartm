@@ -134,29 +134,31 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
   DictionaryData cooc_dict_data;
   int current_cooc_length = 0;
   const int max_cooc_length = 1e+7;
-  for (int token_id = 0; token_id < token_size; ++token_id) {
-    auto entry = dict_ptr->entry(token_id);
-    auto cooc_info = dict_ptr->cooc_info(entry->token());
+  if (dict_ptr->cooc_values().size()) {
+    for (int token_id = 0; token_id < token_size; ++token_id) {
+      auto entry = dict_ptr->entry(token_id);
+      auto cooc_info = dict_ptr->cooc_info(entry->token());
 
-    if (cooc_info != nullptr) {
-      for (auto iter = cooc_info->begin(); iter != cooc_info->end(); ++iter) {
-        cooc_dict_data.add_cooc_first_index(token_id);
-        cooc_dict_data.add_cooc_second_index(iter->first);
-        cooc_dict_data.add_cooc_value(iter->second);
-        current_cooc_length++;
+      if (cooc_info != nullptr) {
+        for (auto iter = cooc_info->begin(); iter != cooc_info->end(); ++iter) {
+          cooc_dict_data.add_cooc_first_index(token_id);
+          cooc_dict_data.add_cooc_second_index(iter->first);
+          cooc_dict_data.add_cooc_value(iter->second);
+          current_cooc_length++;
+        }
       }
-    }
 
-    if ((current_cooc_length >= max_cooc_length) || ((token_id + 1) == token_size)) {
-      std::string str = cooc_dict_data.SerializeAsString();
-      int length = str.size();
-      LOG(INFO) << "WRITE LENGTH = " << str.size();
-      fout.write(reinterpret_cast<char *>(&length), sizeof(length));
-      fout << str;
-      cooc_dict_data.clear_cooc_first_index();
-      cooc_dict_data.clear_cooc_second_index();
-      cooc_dict_data.clear_cooc_value();
-      current_cooc_length = 0;
+      if ((current_cooc_length >= max_cooc_length) || ((token_id + 1) == token_size)) {
+        std::string str = cooc_dict_data.SerializeAsString();
+        int length = str.size();
+        LOG(INFO) << "WRITE LENGTH = " << str.size();
+        fout.write(reinterpret_cast<char *>(&length), sizeof(length));
+        fout << str;
+        cooc_dict_data.clear_cooc_first_index();
+        cooc_dict_data.clear_cooc_second_index();
+        cooc_dict_data.clear_cooc_value();
+        current_cooc_length = 0;
+      }
     }
   }
 

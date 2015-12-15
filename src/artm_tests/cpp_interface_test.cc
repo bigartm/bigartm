@@ -830,8 +830,6 @@ TEST(CppInterface, Dictionaries) {
   ASSERT_GT(dictionary->token_tf(0), 0);
   ASSERT_GT(dictionary->token_value(0), 0);
 
-  std::cout << "\n";
-
   // Export
   artm::ExportDictionaryArgs export_args;
   export_args.set_file_name(artm::test::Helpers::getUniqueString() + ".dict");
