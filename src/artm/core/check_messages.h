@@ -19,33 +19,18 @@
 namespace artm {
 namespace core {
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Templates
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-template<typename T>
-inline void FixMessage(T* message) {}
-
-template<typename T>
-inline std::string DescribeMessage(const T& message) { return std::string(); }
+template <typename T>
+inline bool FixAndValidateMessage(T* message, bool throw_error = true);
 
 template <typename T>
-inline bool FixAndValidateMessage(T* message, bool throw_error = true) {
-  FixMessage(message);
-  return ValidateMessage(*message, throw_error);
-}
-
-#define REPORT_ERROR(error_message)                            \
-  if (throw_error) BOOST_THROW_EXCEPTION(InvalidOperation(error_message));  \
-  else             LOG(WARNING) << error_message;                           \
-  return false;                                                             \
+inline bool ValidateMessage(const T& message, bool throw_error = true);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// ValidateMessage routines
+// DescribeErrors routines
 // This method is required for all messages that go through c_interface.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline bool ValidateMessage(const ::artm::ModelConfig& message, bool throw_error = true) {
+inline std::string DescribeErrors(const ::artm::ModelConfig& message) {
   std::stringstream ss;
   if (message.topics_count() == 0 || message.topic_name_size() == 0)
     ss << "ModelConfig.topic_name() is empty";
@@ -53,17 +38,10 @@ inline bool ValidateMessage(const ::artm::ModelConfig& message, bool throw_error
     ss << "Length mismatch in fields ModelConfig.topics_count and ModelConfig.topic_name";
   if (message.class_weight_size() != message.class_id_size())
     ss << "Length mismatch in fields ModelConfig.class_id and ModelConfig.class_weight";
-
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::TopicModel& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::TopicModel& message) {
   std::stringstream ss;
 
   const bool has_topic_data = (message.topics_count() != 0 || message.topic_name_size() != 0);
@@ -130,16 +108,10 @@ inline bool ValidateMessage(const ::artm::TopicModel& message, bool throw_error)
     }
   }
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::ThetaMatrix& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
   std::stringstream ss;
   const int item_size = message.item_id_size();
   const bool has_title = (message.item_title_size() > 0);
@@ -179,16 +151,10 @@ inline bool ValidateMessage(const ::artm::ThetaMatrix& message, bool throw_error
     }
   }
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::Batch& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::Batch& message) {
   std::stringstream ss;
   if (message.has_id()) {
     try {
@@ -196,15 +162,16 @@ inline bool ValidateMessage(const ::artm::Batch& message, bool throw_error) {
     }
     catch (...) {
       ss << "Batch.id must be GUID, got: " << message.id();
-      REPORT_ERROR(ss.str())
+      return ss.str();
     }
   } else {
-    REPORT_ERROR("Batch.id is not specified");
+    ss << "Batch.id is not specified";
+    return ss.str();
   }
 
   if (message.class_id_size() != message.token_size()) {
     ss << "Length mismatch in fields Batch.class_id and Batch.token, batch.id = " << message.id();
-    REPORT_ERROR(ss.str());
+    return ss.str();
   }
 
   for (int item_id = 0; item_id < message.item_size(); ++item_id) {
@@ -224,70 +191,38 @@ inline bool ValidateMessage(const ::artm::Batch& message, bool throw_error) {
         if (token_id < 0 || token_id >= message.token_size()) {
           ss << "Value " << token_id << " in Batch.Item(" << item_id
              << ").token_id is negative or exceeds Batch.token_size";
-          REPORT_ERROR(ss.str());
+          return ss.str();
         }
       }
     }
   }
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::GetThetaMatrixArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::GetThetaMatrixArgs& message) {
+  std::stringstream ss;
   if (message.has_batch())
-    ValidateMessage(message.batch(), throw_error);
+    ss << DescribeErrors(message.batch());
 
-  std::stringstream ss;
-
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::GetTopicModelArgs& message, bool throw_error) {
-  std::stringstream ss;
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
-}
-
-inline bool ValidateMessage(const ::artm::GetScoreValueArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
   std::stringstream ss;
 
-  if (message.has_batch()) {
-    if (!ValidateMessage(message.batch(), throw_error))
-      return false;
-  }
+  if (message.has_batch())
+    ss << DescribeErrors(message.batch());
 
   if (!message.has_model_name() || message.model_name().empty())
     ss << "GetScoreValueArgs.model_name is missing; ";
   if (!message.has_score_name() || message.score_name().empty())
     ss << "GetScoreValueArgs.score_name is missing; ";
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::MasterComponentConfig& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::MasterComponentConfig& message) {
   std::stringstream ss;
 
   if (message.processors_count() <= 0)
@@ -301,16 +236,10 @@ inline bool ValidateMessage(const ::artm::MasterComponentConfig& message, bool t
     ss << "MasterComponentConfig.merger_queue_max_size == "
        << message.merger_queue_max_size() << " is invalid; ";
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::InitializeModelArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
   std::stringstream ss;
 
   if (message.topics_count() != 0 || message.topic_name_size() != 0) {
@@ -333,16 +262,10 @@ inline bool ValidateMessage(const ::artm::InitializeModelArgs& message, bool thr
     ss << "Also it doesn't proceed filtering (use ArtmFilterDictionary())";
   }
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::FilterDictionaryArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::FilterDictionaryArgs& message) {
   std::stringstream ss;
 
   if (!message.has_dictionary_name())
@@ -354,16 +277,10 @@ inline bool ValidateMessage(const ::artm::FilterDictionaryArgs& message, bool th
   if (!message.has_class_id())
     ss << "FilterDictionaryArgs has no class_id; ";
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::CollectionParserConfig& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::CollectionParserConfig& message) {
   std::stringstream ss;
 
   if (message.cooccurrence_token_size() || message.has_gather_cooc() ||
@@ -372,16 +289,10 @@ inline bool ValidateMessage(const ::artm::CollectionParserConfig& message, bool 
     ss << "Use ArtmParseCollection() and then ArtmGatherDictionary() functions";
   }
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::GatherDictionaryArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::GatherDictionaryArgs& message) {
   std::stringstream ss;
 
   if (!message.has_dictionary_target_name())
@@ -390,16 +301,10 @@ inline bool ValidateMessage(const ::artm::GatherDictionaryArgs& message, bool th
   if (!message.has_data_path())
     ss << "GatherDictionaryArgs has no data_path to batches folder; ";
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::DictionaryData& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::DictionaryData& message) {
   std::stringstream ss;
 
   if (!message.has_name())
@@ -421,93 +326,67 @@ inline bool ValidateMessage(const ::artm::DictionaryData& message, bool throw_er
     ss << "DictionaryData cooc fields have inconsistent sizes; ";
   }
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::ExportModelArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::ExportModelArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ExportModelArgs.file_name is not defined; ";
   if (!message.has_model_name()) ss << "ExportModelArgs.model_name is not defined; ";
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::ImportModelArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::ImportModelArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ImportModelArgs.file_name is not defined; ";
   if (!message.has_model_name()) ss << "ImportModelArgs.model_name is not defined; ";
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::ImportDictionaryArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::ImportDictionaryArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ImportDictionaryArgs.file_name is not defined; ";
   if (!message.has_dictionary_name())
     ss << "ImportDictionaryArgs.dictionary_name is not defined; ";
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
-inline bool ValidateMessage(const ::artm::ProcessBatchesArgs& message, bool throw_error) {
+inline std::string DescribeErrors(const ::artm::ProcessBatchesArgs& message) {
   std::stringstream ss;
 
   if (message.batch_filename_size() != message.batch_weight_size())
     ss << "Length mismatch in fields ProcessBatchesArgs.batch_filename and ProcessBatchesArgs.batch_weight";
 
-  if (ss.str().empty())
-    return true;
-
-  if (throw_error)
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  LOG(WARNING) << ss.str();
-  return false;
+  return ss.str();
 }
 
 // Empty ValidateMessage routines
-inline bool ValidateMessage(const ::artm::RegularizerInternalState& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::ImportBatchesArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::InvokeIterationArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::MergeModelArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::RegularizeModelArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::NormalizeModelArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::RegularizerConfig& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::SynchronizeModelArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::ExportDictionaryArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::ScoreData& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::MasterComponentInfo& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::RequestDictionaryArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::GetMasterComponentInfoArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::GetRegularizerStateArgs& message, bool throw_error) { return true; }
-inline bool ValidateMessage(const ::artm::ProcessBatchesResult& message, bool throw_error) { return true; }
+inline std::string DescribeErrors(const ::artm::GetTopicModelArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::RegularizerInternalState& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::InvokeIterationArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::RegularizeModelArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::NormalizeModelArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::RegularizerConfig& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::SynchronizeModelArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ExportDictionaryArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ScoreData& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::MasterComponentInfo& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::GetDictionaryArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::GetMasterComponentInfoArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::GetRegularizerStateArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ProcessBatchesResult& message) { return std::string(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // FixMessage routines (optional)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+inline void FixMessage(T* message) {}
 
 template<>
 inline void FixMessage(::artm::TopicModel* message) {
@@ -663,6 +542,9 @@ inline void FixMessage(::artm::ProcessBatchesArgs* message) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescribeMessage routines (optional)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+inline std::string DescribeMessage(const T& message) { return std::string(); }
 
 template<>
 inline std::string DescribeMessage(const ::artm::RegularizerSettings& message) {
@@ -825,7 +707,28 @@ inline std::string DescribeMessage(const ::artm::RegularizeModelArgs& message) {
   return ss.str();
 }
 
-#undef REPORT_ERROR
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Templates
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+inline bool ValidateMessage(const T& message, bool throw_error) {
+  std::string ss = DescribeErrors(message);
+
+  if (ss.empty())
+    return true;
+
+  if (throw_error)
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss));
+  LOG(WARNING) << ss;
+  return false;
+}
+
+template <typename T>
+inline bool FixAndValidateMessage(T* message, bool throw_error) {
+  FixMessage(message);
+  return ValidateMessage(*message, throw_error);
+}
 
 }  // namespace core
 }  // namespace artm
