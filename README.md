@@ -46,7 +46,7 @@ Download [binary release](https://github.com/bigartm/bigartm/releases) or build 
 ```bash
 $ mkdir build && cd build
 $ cmake ..
-$ make
+$ make install
 ```
 
 ### Command-line interface
