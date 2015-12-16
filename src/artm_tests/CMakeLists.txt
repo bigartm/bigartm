@@ -12,6 +12,7 @@ set(SRC_LIST
 	cpp_interface_test.cc
 	instance_test.cc
 	multiple_classes_test.cc
+	regularizers_test.cc
 	repeatable_result_test.cc
 	template_manager_test.cc
 	test_mother.cc

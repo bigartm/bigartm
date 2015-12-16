@@ -20,7 +20,7 @@ void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter, int topics_si
 
   for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
     double value = transform_function_->apply(theta[topic_id]);
-    theta[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] * value;
+    theta[topic_id] += value > 0.0f ? alpha_weight[inner_iter] * topic_weight[topic_id] * value : 0.0f;
   }
 }
 
