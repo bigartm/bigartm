@@ -13,7 +13,7 @@ from . import master_component as mc
 
 from .batches_utils import DICTIONARY_NAME
 from .regularizers import Regularizers
-from .scores import Scores
+from .scores import Scores, TopicMassPhiScore  # temp
 from . import score_tracker
 
 SCORE_TRACKER = {
@@ -115,6 +115,9 @@ class ARTM(object):
         self._initialized = False
         self._phi_cached = None  # This field will be set during .phi_ call
         self._phi_synchronization = -1
+
+        # temp code for easy using of TopicSelectionThetaRegularizer from Python
+        self._internal_topic_mass_score_name = None
 
     def __enter__(self):
         return self
@@ -370,11 +373,23 @@ class ARTM(object):
             self.initialize(dictionary_name=dictionary_name)
             self.remove_dictionary(dictionary_name)
 
+        # temp code for easy using of TopicSelectionThetaRegularizer from Python
+        topic_selection_regularizer_name = []
+
         theta_reg_name, theta_reg_tau, phi_reg_name, phi_reg_tau = [], [], [], []
         for name, config in self._regularizers.data.iteritems():
             if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
                 theta_reg_name.append(name)
                 theta_reg_tau.append(config.tau)
+
+                # temp code for easy using of TopicSelectionThetaRegularizer from Python
+                if str(config.__class__.__name__) == 'TopicSelectionThetaRegularizer':
+                    topic_selection_regularizer_name.append(name)
+                    if self._internal_topic_mass_score_name is None:
+                        self._internal_topic_mass_score_name = 'ITMScore_{}'.format(
+                                                                               str(uuid.uuid4()))
+                        self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
+                                                          class_id='@default_class'))  # ugly hack!
             else:
                 phi_reg_name.append(name)
                 phi_reg_tau.append(config.tau)
@@ -386,6 +401,26 @@ class ARTM(object):
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         for _ in xrange(num_collection_passes):
+            # temp code for easy using of TopicSelectionThetaRegularizer from Python
+            if len(topic_selection_regularizer_name):
+                n_t = [0] * self.num_topics
+                if not self._synchronizations_processed:
+                    phi = self.get_phi(class_ids=['@default_class'])  # ugly hack!
+                    n_t = list(phi.sum(axis=0))
+                else:
+                    for i, n in enumerate(self.topic_names):
+                        n_t[i] = self.score_tracker[
+                          self._internal_topic_mass_score_name].last_topic_info[n].topic_mass
+
+                n = sum(n_t)
+                for name in topic_selection_regularizer_name:
+                    config = self.regularizers[name]._config_message()
+                    config.CopyFrom(self.regularizers[name].config)
+                    config.ClearField('topic_value')
+                    for value in [n / (e * self.num_topics) if e > 0.0 else 0.0 for e in n_t]:
+                        config.topic_value.append(value)
+                    self.regularizers[name].config = config
+
             self.master.process_batches(pwt=self.model_pwt,
                                         batches=batches_list,
                                         nwt=self.model_nwt,
@@ -458,11 +493,23 @@ class ARTM(object):
             self.initialize(dictionary_name=dictionary_name)
             self.remove_dictionary(dictionary_name)
 
+        # temp code for easy using of TopicSelectionThetaRegularizer from Python
+        topic_selection_regularizer_name = []
+
         theta_reg_name, theta_reg_tau, phi_reg_name, phi_reg_tau = [], [], [], []
         for name, config in self._regularizers.data.iteritems():
             if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
                 theta_reg_name.append(name)
                 theta_reg_tau.append(config.tau)
+
+                # temp code for easy using of TopicSelectionThetaRegularizer from Python
+                if str(config.__class__.__name__) == 'TopicSelectionThetaRegularizer':
+                    topic_selection_regularizer_name.append(name)
+                    if self._internal_topic_mass_score_name is None:
+                        self._internal_topic_mass_score_name = 'ITMScore_{}'.format(
+                                                                               str(uuid.uuid4()))
+                        self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
+                                                          class_id='@default_class'))  # ugly hack!
             else:
                 phi_reg_name.append(name)
                 phi_reg_tau.append(config.tau)
@@ -478,6 +525,26 @@ class ARTM(object):
         for batch_idx, batch_filename in enumerate(batches_list):
             batches_to_process.append(batch_filename)
             if ((batch_idx + 1) % update_every == 0) or ((batch_idx + 1) == len(batches_list)):
+                # temp code for easy using of TopicSelectionThetaRegularizer from Python
+                if len(topic_selection_regularizer_name):
+                    n_t = [0] * self.num_topics
+                    if not self._synchronizations_processed:
+                        phi = self.get_phi(class_ids=['@default_class'])  # ugly hack!
+                        n_t = list(phi.sum(axis=0))
+                    else:
+                        for i, n in enumerate(self.topic_names):
+                            n_t[i] = self.score_tracker[
+                              self._internal_topic_mass_score_name].last_topic_info[n].topic_mass
+
+                    n = sum(n_t)
+                    for name in topic_selection_regularizer_name:
+                        config = self.regularizers[name]._config_message()
+                        config.CopyFrom(self.regularizers[name].config)
+                        config.ClearField('topic_value')
+                        for value in [n / (e * self.num_topics) if e > 0.0 else 0.0 for e in n_t]:
+                            config.topic_value.append(value)
+                        self.regularizers[name].config = config
+
                 self.master.process_batches(pwt=self.model_pwt,
                                             batches=batches_to_process,
                                             nwt='nwt_hat',

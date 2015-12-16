@@ -55,6 +55,7 @@ class LabelRegularizationPhiConfig;
 class SpecifiedSparsePhiConfig;
 class ImproveCoherencePhiConfig;
 class SmoothPtdwConfig;
+class TopicSelectionThetaConfig;
 class GetRegularizerStateArgs;
 class RegularizerInternalState;
 class MultiLanguagePhiInternalState;
@@ -146,11 +147,12 @@ enum RegularizerConfig_Type {
   RegularizerConfig_Type_LabelRegularizationPhi = 4,
   RegularizerConfig_Type_SpecifiedSparsePhi = 5,
   RegularizerConfig_Type_ImproveCoherencePhi = 6,
-  RegularizerConfig_Type_SmoothPtdw = 7
+  RegularizerConfig_Type_SmoothPtdw = 7,
+  RegularizerConfig_Type_TopicSelectionTheta = 8
 };
 bool RegularizerConfig_Type_IsValid(int value);
 const RegularizerConfig_Type RegularizerConfig_Type_Type_MIN = RegularizerConfig_Type_SmoothSparseTheta;
-const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_SmoothPtdw;
+const RegularizerConfig_Type RegularizerConfig_Type_Type_MAX = RegularizerConfig_Type_TopicSelectionTheta;
 const int RegularizerConfig_Type_Type_ARRAYSIZE = RegularizerConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* RegularizerConfig_Type_descriptor();
@@ -2265,6 +2267,7 @@ class RegularizerConfig : public ::google::protobuf::Message {
   static const Type SpecifiedSparsePhi = RegularizerConfig_Type_SpecifiedSparsePhi;
   static const Type ImproveCoherencePhi = RegularizerConfig_Type_ImproveCoherencePhi;
   static const Type SmoothPtdw = RegularizerConfig_Type_SmoothPtdw;
+  static const Type TopicSelectionTheta = RegularizerConfig_Type_TopicSelectionTheta;
   static inline bool Type_IsValid(int value) {
     return RegularizerConfig_Type_IsValid(value);
   }
@@ -3295,6 +3298,121 @@ class SmoothPtdwConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static SmoothPtdwConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class TopicSelectionThetaConfig : public ::google::protobuf::Message {
+ public:
+  TopicSelectionThetaConfig();
+  virtual ~TopicSelectionThetaConfig();
+
+  TopicSelectionThetaConfig(const TopicSelectionThetaConfig& from);
+
+  inline TopicSelectionThetaConfig& operator=(const TopicSelectionThetaConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TopicSelectionThetaConfig& default_instance();
+
+  void Swap(TopicSelectionThetaConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  TopicSelectionThetaConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TopicSelectionThetaConfig& from);
+  void MergeFrom(const TopicSelectionThetaConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string topic_name = 1;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 1;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated float topic_value = 2;
+  inline int topic_value_size() const;
+  inline void clear_topic_value();
+  static const int kTopicValueFieldNumber = 2;
+  inline float topic_value(int index) const;
+  inline void set_topic_value(int index, float value);
+  inline void add_topic_value(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      topic_value() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_topic_value();
+
+  // repeated float alpha_iter = 3;
+  inline int alpha_iter_size() const;
+  inline void clear_alpha_iter();
+  static const int kAlphaIterFieldNumber = 3;
+  inline float alpha_iter(int index) const;
+  inline void set_alpha_iter(int index, float value);
+  inline void add_alpha_iter(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      alpha_iter() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_alpha_iter();
+
+  // @@protoc_insertion_point(class_scope:artm.TopicSelectionThetaConfig)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedField< float > topic_value_;
+  ::google::protobuf::RepeatedField< float > alpha_iter_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static TopicSelectionThetaConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -15061,6 +15179,104 @@ inline double SmoothPtdwConfig::threshold() const {
 inline void SmoothPtdwConfig::set_threshold(double value) {
   set_has_threshold();
   threshold_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// TopicSelectionThetaConfig
+
+// repeated string topic_name = 1;
+inline int TopicSelectionThetaConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void TopicSelectionThetaConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& TopicSelectionThetaConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* TopicSelectionThetaConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void TopicSelectionThetaConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicSelectionThetaConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void TopicSelectionThetaConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TopicSelectionThetaConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void TopicSelectionThetaConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicSelectionThetaConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void TopicSelectionThetaConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TopicSelectionThetaConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TopicSelectionThetaConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated float topic_value = 2;
+inline int TopicSelectionThetaConfig::topic_value_size() const {
+  return topic_value_.size();
+}
+inline void TopicSelectionThetaConfig::clear_topic_value() {
+  topic_value_.Clear();
+}
+inline float TopicSelectionThetaConfig::topic_value(int index) const {
+  return topic_value_.Get(index);
+}
+inline void TopicSelectionThetaConfig::set_topic_value(int index, float value) {
+  topic_value_.Set(index, value);
+}
+inline void TopicSelectionThetaConfig::add_topic_value(float value) {
+  topic_value_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+TopicSelectionThetaConfig::topic_value() const {
+  return topic_value_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+TopicSelectionThetaConfig::mutable_topic_value() {
+  return &topic_value_;
+}
+
+// repeated float alpha_iter = 3;
+inline int TopicSelectionThetaConfig::alpha_iter_size() const {
+  return alpha_iter_.size();
+}
+inline void TopicSelectionThetaConfig::clear_alpha_iter() {
+  alpha_iter_.Clear();
+}
+inline float TopicSelectionThetaConfig::alpha_iter(int index) const {
+  return alpha_iter_.Get(index);
+}
+inline void TopicSelectionThetaConfig::set_alpha_iter(int index, float value) {
+  alpha_iter_.Set(index, value);
+}
+inline void TopicSelectionThetaConfig::add_alpha_iter(float value) {
+  alpha_iter_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+TopicSelectionThetaConfig::alpha_iter() const {
+  return alpha_iter_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+TopicSelectionThetaConfig::mutable_alpha_iter() {
+  return &alpha_iter_;
 }
 
 // -------------------------------------------------------------------

@@ -131,6 +131,7 @@ message RegularizerConfig {
     SpecifiedSparsePhi = 5;
     ImproveCoherencePhi = 6;
     SmoothPtdw = 7;
+    TopicSelectionTheta = 8;
   }
 
   optional string name = 1;
@@ -199,6 +200,13 @@ message SmoothPtdwConfig {
   optional Type type = 1 [default = MovingAverage];
   optional int32 window = 3 [default = 10];
   optional double threshold = 4 [default = 1.0];
+}
+
+// Represents a configuration of a TopicSelection Theta regularizer
+message TopicSelectionThetaConfig {
+  repeated string topic_name = 1;
+  repeated float topic_value = 2;  // user-counted value = n / (n_t * |T|)
+  repeated float alpha_iter = 3;
 }
 
 message GetRegularizerStateArgs {

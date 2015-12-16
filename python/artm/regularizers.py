@@ -13,7 +13,8 @@ __all__ = [
     'LabelRegularizationPhiRegularizer',
     'SpecifiedSparsePhiRegularizer',
     'ImproveCoherencePhiRegularizer',
-    'SmoothPtdwRegularizer'
+    'SmoothPtdwRegularizer',
+    'TopicSelectionThetaRegularizer',
 ]
 
 
@@ -541,3 +542,30 @@ class SmoothPtdwRegularizer(BaseRegularizer):
                                  name=name,
                                  tau=tau,
                                  config=config)
+
+
+class TopicSelectionThetaRegularizer(BaseRegularizerTheta):
+    """TopicSelectionThetaRegularizer is a regularizer in ArtmModel (public class)
+
+    Args:
+      name (str): the identifier of regularizer, will be auto-generated if not specified
+      tau (double): the coefficient of regularization for this regularizer, default=1.0
+      topic_names (list of str): list of names of topics to regularize, will regularize
+      all topics if not specified
+      alpha_iter (list of double, default=None): list of additional coefficients of
+      regularization on each iteration over document. Should have length equal to
+      model.num_document_passes
+      config (protobuf object): the low-level config of this regularizer, default=None
+    """
+
+    _config_message = messages.TopicSelectionThetaConfig
+    _type = const.RegularizerConfig_Type_TopicSelectionTheta
+
+    def __init__(self, name=None, tau=1.0, topic_names=None,
+                 alpha_iter=None, config=None):
+        BaseRegularizerTheta.__init__(self,
+                                      name=name,
+                                      tau=tau,
+                                      config=config,
+                                      topic_names=topic_names,
+                                      alpha_iter=alpha_iter)

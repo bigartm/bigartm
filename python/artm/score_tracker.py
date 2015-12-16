@@ -745,9 +745,7 @@ class TopicMassPhiScoreTracker(object):
         """
         if score is not None:
             _data = score.master.retrieve_score(score.model_nwt, score.name)
-
             self._value.append(_data.value)
-
             self._topic_info.append({})
 
             for top_idx, top_name in enumerate(collections.OrderedDict.fromkeys(_data.topic_name)):
@@ -794,8 +792,8 @@ class TopicMassPhiScoreTracker(object):
           list of sets: information about topic mass per topic in Nwt
           on last synchronization; each set contains information
           about topics, key --- name of topic, value --- named tuple:
-          - *.topic_info[sync_index][topic_name].topic_mass --- n_t value
-          - *.topic_info[sync_index][topic_name].topic_ratio --- p_t value
+          - *[topic_name].topic_mass --- n_t value
+          - *[topic_name].topic_ratio --- p_t value
         """
         return self._topic_info[-1]
 
@@ -822,9 +820,7 @@ class ClassPrecisionScoreTracker(object):
         """
         if score is not None:
             _data = score.master.retrieve_score(score.model_nwt, score.name)
-
             self._value.append(_data.value)
-
         else:
             self._value.append(None)
 
