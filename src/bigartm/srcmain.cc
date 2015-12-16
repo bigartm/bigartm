@@ -641,7 +641,7 @@ class BatchVectorizer {
       }
 
       if (fs::exists(fs::path(batch_folder_)) && !fs::is_empty(fs::path(batch_folder_)))
-        throw std::runtime_error(std::string("Can not parse collection (--save-batches folder already exists: ") + batch_folder_ + ")");
+        std::cerr << "Warning: --save-batches folder already exists, new batches will be added into " << batch_folder_ << "\n";
 
       boost::system::error_code error;
       fs::create_directories(batch_folder_, error);
