@@ -13,6 +13,7 @@ RegularizerConfig_Type_LabelRegularizationPhi = 4
 RegularizerConfig_Type_SpecifiedSparsePhi = 5
 RegularizerConfig_Type_ImproveCoherencePhi = 6
 RegularizerConfig_Type_SmoothPtdw = 7
+RegularizerConfig_Type_TopicSelectionTheta = 8
 TransformConfig_TransformType_Logarithm = 0
 TransformConfig_TransformType_Polynomial = 1
 TransformConfig_TransformType_Constant = 2

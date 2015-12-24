@@ -5,15 +5,18 @@
    This class proceeds Theta matrix smoothing or sparsing.
    The formula of M-step is
    
-   p_td \propto n_td + tau * f(p_td),
+   p_td \propto n_td + tau * alpha_iter[iter] * f(p_td) * n_td,
    
    where f is a transform function, which is p_wt multiplied on
-   the derivative of function under KL-divergence.
+   the derivative of function under KL-divergence, and alpha_iter
+   is an array of additional coefficients, one per document pass.
    
    The parameters of the regularizer:
    - topic_names (the names of topics to regularize, empty == all)
    - transform_function (default is 1, corresponds log() under
      KL-divergence)
+   - alpha_iter (an array of floats with length == number of
+     inner iterations)
 
 */
 

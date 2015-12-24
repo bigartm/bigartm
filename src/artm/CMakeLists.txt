@@ -71,6 +71,8 @@ set(SRC_LIST
 	regularizer/specified_sparse_phi.h
 	regularizer/improve_coherence_phi.cc
 	regularizer/improve_coherence_phi.h
+	regularizer/topic_selection_theta.cc
+	regularizer/topic_selection_theta.h
 	core/transform_function.h
 	core/transform_function.cc
 	score/class_precision.cc
