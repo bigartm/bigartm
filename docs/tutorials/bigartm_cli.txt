@@ -79,5 +79,5 @@ Then you can use ``bigartm`` as described by ``bigartm --help``:
                                           data in processors
 
     Examples:
-            cpp_client -d docword.kos.txt -v vocab.kos.txt
-            set GLOG_logtostderr=1 & cpp_client -d docword.kos.txt -v vocab.kos.txt
+            bigartm -d docword.kos.txt -v vocab.kos.txt
+            set GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt

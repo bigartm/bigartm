@@ -26,7 +26,7 @@ and build it via CMake as in the following script.
 Running BigARTM from command line
 ---------------------------------
 
-There is a simple utility ``cpp_client``, which allows you to run BigARTM from command line.
+There is a simple utility ``bigartm``, which allows you to run BigARTM from command line.
 To experiment with this tool you need a small dataset, which you can get via the following script.
 More datasets are available through :doc:`/download` page.
 
@@ -37,7 +37,7 @@ More datasets are available through :doc:`/download` page.
    wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt.gz
    wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
    gunzip docword.kos.txt.gz
-   ~/bigartm/build/src/cpp_client/cpp_client -d docword.kos.txt -v vocab.kos.txt
+   ../build/src/bigartm/bigartm -d docword.kos.txt -v vocab.kos.txt
 
 Configure BigARTM Python API
 ----------------------------
