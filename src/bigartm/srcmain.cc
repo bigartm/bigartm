@@ -1337,7 +1337,7 @@ int main(int argc, char * argv[]) {
 
     po::options_description learning_options("Learning");
     learning_options.add_options()
-      ("passes,p", po::value(&options.passes)->default_value(10), "number of outer iterations")
+      ("passes,p", po::value(&options.passes)->default_value(0), "number of outer iterations")
       ("inner-iterations-count", po::value(&options.inner_iterations_count)->default_value(10), "number of inner iterations")
       ("update-every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
@@ -1439,32 +1439,32 @@ int main(int argc, char * argv[]) {
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt \n";
       std::cerr << std::endl;
       std::cerr << "* Parse docword and vocab files from UCI bag-of-word format; then fit topic model with 20 topics:\n";
-      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20\n";
+      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10\n";
       std::cerr << std::endl;
       std::cerr << "* Parse VW format; then save the resulting batches and dictionary:\n";
-      std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --passes 0 --save-batches mmro_batches --save-dictionary mmro.dict\n";
+      std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --save-batches mmro_batches --save-dictionary mmro.dict\n";
       std::cerr << std::endl;
       std::cerr << "* Parse VW format from standard input; note usage of single dash '-' after --read-vw-corpus:\n";
       std::cerr << "  cat vw.mmro.txt | bigartm --read-vw-corpus - --save-batches mmro2_batches --save-dictionary mmro2.dict\n";
       std::cerr << std::endl;
       std::cerr << "* Load and filter the dictionary on document frequency; save the result into a new file:\n";
-      std::cerr << "  bigartm --use-dictionary mmro.dict --passes 0 --dictionary-min-df 5 dictionary-max-df 40% --save-dictionary mmro-filter.dict\n";
+      std::cerr << "  bigartm --use-dictionary mmro.dict --dictionary-min-df 5 dictionary-max-df 40% --save-dictionary mmro-filter.dict\n";
       std::cerr << std::endl;
       std::cerr << "* Load the dictionary and export it in a human-readable format:\n";
-      std::cerr << "  bigartm --use-dictionary mmro.dict --passes 0 --write-dictionary-readable mmro.dict.txt\n";
+      std::cerr << "  bigartm --use-dictionary mmro.dict --write-dictionary-readable mmro.dict.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Use batches to fit a model with 20 topics; then save the model in a binary format:\n";
       std::cerr << "  bigartm --use-batches mmro_batches --passes 10 -t 20 --save-model mmro.model\n";
       std::cerr << std::endl;
       std::cerr << "* Load the model and export it in a human-readable format:\n";
-      std::cerr << "  bigartm --load-model mmro.model --passes 0 --write-model-readable mmro.model.txt\n";
+      std::cerr << "  bigartm --load-model mmro.model --write-model-readable mmro.model.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Load the model and use it to generate predictions:\n";
-      std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --load-model mmro.model --passes 0 --write-predictions mmro.predict.txt\n";
+      std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --load-model mmro.model --write-predictions mmro.predict.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Fit model with two modalities (@default_class and @target), and use it to predict @target label:\n";
       std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --passes 10 --save-model model.bin\n";
-      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --passes 0 --load-model model.bin\n";
+      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --load-model model.bin\n";
       std::cerr << "          --write-predictions pred.txt --csv-separator=tab\n";
       std::cerr << "          --predict-class @target --write-class-predictions pred_class.txt --score ClassPrecision\n";
       std::cerr << std::endl;
@@ -1482,7 +1482,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "          --regularizer \"0.25 SmoothTheta #background\"\n";
       std::cerr << std::endl;
       std::cerr << "* Configure logger to output into stderr:\n";
-      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt\n";
+      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10\n";
       return 1;
     }
 
