@@ -150,6 +150,7 @@ void MasterComponent::Request(const GetDictionaryArgs& args, DictionaryData* res
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
       args.dictionary_name() + " does not exist or has no tokens"));
   dict_ptr->StoreIntoDictionaryData(result);
+  result->set_name(args.dictionary_name());
 }
 
 void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
