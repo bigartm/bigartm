@@ -45,7 +45,7 @@ class CuckooWatch {
 
 std::vector<std::string> findFilesInDirectory(std::string root, std::string ext) {
   std::vector<std::string> retval;
-  if (boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
+  if (!root.empty() && boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
     boost::filesystem::recursive_directory_iterator it(root);
     boost::filesystem::recursive_directory_iterator endit;
     while (it != endit) {
@@ -251,10 +251,12 @@ struct artm_options {
   bool async;
 
   // Output
+  bool force;
   std::string save_model;
   std::string save_dictionary;
   std::string save_batches;
   std::string write_model_readable;
+  std::string write_dictionary_readable;
   std::string write_predictions;
   std::string write_class_predictions;
   std::string csv_separator;
@@ -275,11 +277,100 @@ struct artm_options {
     pwt_model_name = "pwt";
     main_dictionary_name = "main_dictionary";
   }
+
+  // Check whether the options have any input data source (VW, UCI, or batches)
+  bool hasInput() const {
+    const bool has_no_input =
+      read_vw_corpus.empty() &&
+      read_uci_docword.empty() &&
+      use_batches.empty();
+
+    return !has_no_input;
+  }
+
+  // Check whether the options imply to load or initialize a model
+  bool isModelRequired() const {
+    const bool model_is_not_required =
+      load_model.empty() &&
+      write_class_predictions.empty() &&
+      write_predictions.empty() &&
+      write_model_readable.empty() &&
+      save_model.empty() &&
+      (passes == 0);
+
+    return !model_is_not_required;
+  }
+
+  // Check whether the options imply to load or gather a dictionary
+  bool isDictionaryRequired() const {
+    const bool dictionary_is_not_required =
+      use_dictionary.empty() &&
+      save_dictionary.empty() &&
+      write_dictionary_readable.empty() &&
+      dictionary_max_df.empty() &&
+      dictionary_min_df.empty() &&
+      (!isModelRequired() || !load_model.empty());
+
+    return !dictionary_is_not_required;
+  }
 };
 
 void fixOptions(artm_options* options) {
   if (boost::to_lower_copy(options->csv_separator) == "tab")
     options->csv_separator = "\t";
+}
+
+bool verifyWritableFile(const std::string& file, bool force) {
+  if (file.empty())
+    return true;
+
+  bool exists = boost::filesystem::exists(file);
+  bool is_directory = exists && boost::filesystem::is_directory(file);
+
+  if (is_directory) {
+    std::cerr << "Unable to write to " << file << " because it refers to an existing directory";
+    return false;
+  }
+
+  if (exists && !force) {
+    std::cerr << "Target file " << file << " already exist, use --force option to overwrite";
+    return false;
+  }
+
+  return true;
+}
+
+bool verifyOptions(const artm_options& options) {
+  if (!options.hasInput()) {
+    std::string required_parameters = "--read-vw-corpus, --read-uci-docword, --use-batches";
+    if (!options.write_class_predictions.empty() || !options.write_predictions.empty()) {
+      std::cerr << "At least one of the following parameters is required to generate predictions: "
+                << required_parameters;
+      return false;
+    }
+
+    if (options.load_model.empty() && options.isModelRequired() && options.use_dictionary.empty()) {
+      std::cerr << "At least one of the following parameters is required to initialize the model: "
+                << required_parameters << ", --load-model, --use-dictionary";
+      return false;
+    }
+
+    if (options.use_dictionary.empty() && options.isDictionaryRequired()) {
+      std::cerr << "At least one of the following parameters is required to find the dictionary: "
+                << required_parameters << ", --use-dictionary";
+      return false;
+    }
+  }
+
+  bool ok = true;
+  ok &= verifyWritableFile(options.save_model, options.force);
+  ok &= verifyWritableFile(options.save_dictionary, options.force);
+  ok &= verifyWritableFile(options.write_model_readable, options.force);
+  ok &= verifyWritableFile(options.write_dictionary_readable, options.force);
+  ok &= verifyWritableFile(options.write_predictions, options.force);
+  ok &= verifyWritableFile(options.write_class_predictions, options.force);
+
+  return ok;
 }
 
 void fixScoreLevel(artm_options* options) {
@@ -661,7 +752,7 @@ class BatchVectorizer {
       collection_parser_config.set_num_items_per_batch(options_.batch_size);
       ::artm::ParseCollection(collection_parser_config);
     }
-    else {
+    else if (!options_.use_batches.empty()) {
       batch_folder_ = options_.use_batches;
       if (!fs::exists(fs::path(batch_folder_)))
         throw std::runtime_error(std::string("Unable to find batch folder: ") + batch_folder_);
@@ -675,7 +766,7 @@ class BatchVectorizer {
   }
 
   ~BatchVectorizer() {
-    if (options_.save_batches.empty()) {
+    if (options_.save_batches.empty() && !cleanup_folder_.empty()) {
       try { boost::filesystem::remove_all(cleanup_folder_); }
       catch (...) {}
     }
@@ -957,7 +1048,6 @@ void WriteClassPredictions(const artm_options& options,
 int execute(const artm_options& options) {
   bool online = (options.update_every > 0);
 
-  const std::string dictionary_name = "dictionary";
   const std::string pwt_model_name = options.pwt_model_name;
 
   if (options.b_paused) {
@@ -988,8 +1078,6 @@ int execute(const artm_options& options) {
     process_batches_args.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
   }
 
-  RegularizeModelArgs regularize_model_args;
-
   // Step 2. Collection parsing
   BatchVectorizer batch_vectorizer(options);
   batch_vectorizer.Vectorize();
@@ -999,7 +1087,13 @@ int execute(const artm_options& options) {
   master_component.reset(new MasterComponent(master_config));
 
   // Step 3.1. Parse or import the main dictionary
-  if (options.use_dictionary.empty()) {
+  if (!options.use_dictionary.empty()) {
+    ProgressScope scope(std::string("Loading dictionary file from ") + options.use_dictionary);
+    ImportDictionaryArgs import_dictionary_args;
+    import_dictionary_args.set_file_name(options.use_dictionary);
+    import_dictionary_args.set_dictionary_name(options.main_dictionary_name);
+    master_component->ImportDictionary(import_dictionary_args);
+  } else if (options.isDictionaryRequired()) {
     ProgressScope scope(std::string("Gathering dictionary from batches"));
     ::artm::GatherDictionaryArgs gather_dictionary_args;
     gather_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
@@ -1007,12 +1101,6 @@ int execute(const artm_options& options) {
     if (!options.read_cooc.empty()) gather_dictionary_args.set_cooc_file_path(options.read_cooc);
     if (!options.read_uci_vocab.empty()) gather_dictionary_args.set_vocab_file_path(options.read_uci_vocab);
     master_component->GatherDictionary(gather_dictionary_args);
-  } else {
-    ProgressScope scope(std::string("Loading dictionary file from ") + options.use_dictionary);
-    ImportDictionaryArgs import_dictionary_args;
-    import_dictionary_args.set_file_name(options.use_dictionary);
-    import_dictionary_args.set_dictionary_name(options.main_dictionary_name);
-    master_component->ImportDictionary(import_dictionary_args);
   }
 
   // Step 3.2. Filter dictionary
@@ -1042,6 +1130,7 @@ int execute(const artm_options& options) {
   }
 
   // Step 4. Configure regularizers.
+  RegularizeModelArgs regularize_model_args;
   std::vector<std::shared_ptr<artm::Regularizer>> regularizers;
   std::map<std::string, std::string> dictionary_map;
   if (!options.use_dictionary.empty())
@@ -1070,7 +1159,13 @@ int execute(const artm_options& options) {
   }
 
   // Step 5. Create and initialize model.
-  if (options.load_model.empty()) {
+  if (!options.load_model.empty()) {
+    ProgressScope scope(std::string("Loading model from ") + options.load_model);
+    ImportModelArgs import_model_args;
+    import_model_args.set_model_name(pwt_model_name);
+    import_model_args.set_file_name(options.load_model);
+    master_component->ImportModel(import_model_args);
+  } else if (options.isModelRequired()) {
     ProgressScope scope("Initializing random model from dictionary");
     InitializeModelArgs initialize_model_args;
     initialize_model_args.set_model_name(pwt_model_name);
@@ -1080,24 +1175,19 @@ int execute(const artm_options& options) {
     initialize_model_args.set_dictionary_name(options.main_dictionary_name);
     master_component->InitializeModel(initialize_model_args);
   }
-  else {
-    ProgressScope scope(std::string("Loading model from ") + options.load_model);
-    ImportModelArgs import_model_args;
-    import_model_args.set_model_name(pwt_model_name);
-    import_model_args.set_file_name(options.load_model);
-    master_component->ImportModel(import_model_args);
-  }
 
-  ::artm::GetTopicModelArgs get_model_args;
-  get_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Tokens);
-  get_model_args.set_model_name(pwt_model_name);
-  std::shared_ptr< ::artm::TopicModel> topic_model = master_component->GetTopicModel(get_model_args);
-  std::cerr << "Number of tokens in the model: " << topic_model->token_size() << std::endl;
+  if (options.isModelRequired()) {
+    ::artm::GetTopicModelArgs get_model_args;
+    get_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Tokens);
+    get_model_args.set_model_name(pwt_model_name);
+    std::shared_ptr< ::artm::TopicModel> topic_model = master_component->GetTopicModel(get_model_args);
+    std::cerr << "Number of tokens in the model: " << topic_model->token_size() << std::endl;
+  }
 
   std::vector<std::string> batch_file_names = findFilesInDirectory(batch_vectorizer.batch_folder(), ".batch");
   int update_count = 0;
-  std::cerr << "================= Processing started.\n";
   for (int iter = 0; iter < options.passes; ++iter) {
+    if (iter == 0) std::cerr << "================= Processing started.\n";
     CuckooWatch timer("================= Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
 
     ArtmExecutor executor(options, batch_file_names, master_component.get(), &process_batches_args, &regularize_model_args);
@@ -1108,13 +1198,15 @@ int execute(const artm_options& options) {
     score_helper.showScores(pwt_model_name);
   }  // iter
 
-  final_score_helper.showScores(pwt_model_name);
+  if (options.passes > 0)
+    final_score_helper.showScores(pwt_model_name);
 
   if (!options.save_dictionary.empty()) {
     ProgressScope scope(std::string("Saving dictionary to ") + options.save_dictionary);
     ExportDictionaryArgs export_dictionary_args;
     export_dictionary_args.set_dictionary_name(options.main_dictionary_name);
     export_dictionary_args.set_file_name(options.save_dictionary);
+    if (options.force) boost::filesystem::remove(options.save_dictionary);
     master_component->ExportDictionary(export_dictionary_args);
   }
 
@@ -1123,7 +1215,26 @@ int execute(const artm_options& options) {
     ExportModelArgs export_model_args;
     export_model_args.set_model_name(pwt_model_name);
     export_model_args.set_file_name(options.save_model);
+    if (options.force) boost::filesystem::remove(options.save_model);
     master_component->ExportModel(export_model_args);
+  }
+
+  if (!options.write_dictionary_readable.empty()) {
+    ProgressScope scope(std::string("Saving dictionary in readable format to ") + options.write_dictionary_readable);
+    std::shared_ptr< ::DictionaryData> dict = master_component->GetDictionary(options.main_dictionary_name);
+    if (dict->token_size() != dict->class_id_size())
+      throw "internal error (DictionaryData.token_size() != DictionaryData->class_id_size())";
+    CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
+    std::ofstream output(options.write_dictionary_readable);
+    const std::string sep = options.csv_separator;
+    output << "token" << sep << "class_id" << sep << "tf" << sep << "df" << std::endl;
+    for (int j = 0; j < dict->token_size(); j++) {
+      output << escape.apply(dict->token(j));
+      output << sep << escape.apply(dict->class_id(j));
+      output << sep << ((dict->token_tf_size() > 0) ? dict->token_tf(j) : 0.0f);
+      output << sep << ((dict->token_df_size() > 0) ? dict->token_df(j) : 0.0f);
+      output << std::endl;
+    }
   }
 
   if (!options.write_model_readable.empty()) {
@@ -1226,7 +1337,7 @@ int main(int argc, char * argv[]) {
 
     po::options_description learning_options("Learning");
     learning_options.add_options()
-      ("passes,p", po::value(&options.passes)->default_value(10), "number of outer iterations")
+      ("passes,p", po::value(&options.passes)->default_value(0), "number of outer iterations")
       ("inner-iterations-count", po::value(&options.inner_iterations_count)->default_value(10), "number of inner iterations")
       ("update-every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
@@ -1243,8 +1354,10 @@ int main(int argc, char * argv[]) {
       ("save-batches", po::value(&options.save_batches)->default_value(""), "batch folder")
       ("save-dictionary", po::value(&options.save_dictionary)->default_value(""), "filename of dictionary file")
       ("write-model-readable", po::value(&options.write_model_readable)->default_value(""), "output the model in a human-readable format")
+      ("write-dictionary-readable", po::value(&options.write_dictionary_readable)->default_value(""), "output the dictionary in a human-readable format")
       ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
       ("write-class-predictions", po::value(&options.write_class_predictions)->default_value(""), "write class prediction in a human-readable format")
+      ("force", po::bool_switch(&options.force)->default_value(false), "force overwrite existing output files")
       ("csv-separator", po::value(&options.csv_separator)->default_value(";"), "columns separator for --write-model-readable and --write-predictions. Use \\t or TAB to indicate tab.")
       ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level (0, 1, 2, or 3")
       ("score", po::value< std::vector<std::string> >(&options.score)->multitoken(), "scores (Perplexity, SparsityTheta, SparsityPhi, TopTokens, ThetaSnippet, or TopicKernel)")
@@ -1308,20 +1421,75 @@ int main(int argc, char * argv[]) {
     bool show_help = (vm.count("help") > 0);
 
     // Show help if user neither provided batch folder, nor docword/vocab files
-    if (options.read_vw_corpus.empty() && options.read_uci_docword.empty() && options.use_batches.empty())
+    if (options.read_vw_corpus.empty() &&
+        options.read_uci_docword.empty() &&
+        options.use_batches.empty() &&
+        options.load_model.empty() &&
+        options.use_dictionary.empty())
       show_help = true;
 
     if (show_help) {
       std::cerr << all_options;
 
       std::cerr << "\nExamples:\n";
-      std::cerr << "\tbigartm -d docword.kos.txt -v vocab.kos.txt\n";
-      std::cerr << "\tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt\n";
+      std::cerr << std::endl;
+      std::cerr << "* Download input data:\n";
+      std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt \n";
+      std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt \n";
+      std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt \n";
+      std::cerr << std::endl;
+      std::cerr << "* Parse docword and vocab files from UCI bag-of-word format; then fit topic model with 20 topics:\n";
+      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10\n";
+      std::cerr << std::endl;
+      std::cerr << "* Parse VW format; then save the resulting batches and dictionary:\n";
+      std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --save-batches mmro_batches --save-dictionary mmro.dict\n";
+      std::cerr << std::endl;
+      std::cerr << "* Parse VW format from standard input; note usage of single dash '-' after --read-vw-corpus:\n";
+      std::cerr << "  cat vw.mmro.txt | bigartm --read-vw-corpus - --save-batches mmro2_batches --save-dictionary mmro2.dict\n";
+      std::cerr << std::endl;
+      std::cerr << "* Load and filter the dictionary on document frequency; save the result into a new file:\n";
+      std::cerr << "  bigartm --use-dictionary mmro.dict --dictionary-min-df 5 dictionary-max-df 40% --save-dictionary mmro-filter.dict\n";
+      std::cerr << std::endl;
+      std::cerr << "* Load the dictionary and export it in a human-readable format:\n";
+      std::cerr << "  bigartm --use-dictionary mmro.dict --write-dictionary-readable mmro.dict.txt\n";
+      std::cerr << std::endl;
+      std::cerr << "* Use batches to fit a model with 20 topics; then save the model in a binary format:\n";
+      std::cerr << "  bigartm --use-batches mmro_batches --passes 10 -t 20 --save-model mmro.model\n";
+      std::cerr << std::endl;
+      std::cerr << "* Load the model and export it in a human-readable format:\n";
+      std::cerr << "  bigartm --load-model mmro.model --write-model-readable mmro.model.txt\n";
+      std::cerr << std::endl;
+      std::cerr << "* Load the model and use it to generate predictions:\n";
+      std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --load-model mmro.model --write-predictions mmro.predict.txt\n";
+      std::cerr << std::endl;
+      std::cerr << "* Fit model with two modalities (@default_class and @target), and use it to predict @target label:\n";
+      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --passes 10 --save-model model.bin\n";
+      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --load-model model.bin\n";
+      std::cerr << "          --write-predictions pred.txt --csv-separator=tab\n";
+      std::cerr << "          --predict-class @target --write-class-predictions pred_class.txt --score ClassPrecision\n";
+      std::cerr << std::endl;
+      std::cerr << "* Fit simple regularized model (increase sparsity up to 60-70%):\n";
+      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2\n";
+      std::cerr << "          --passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt\n";
+      std::cerr << "          --regularizer \"0.05 SparsePhi\" \"0.05 SparseTheta\"\n";
+      std::cerr << std::endl;
+      std::cerr << "* Fit more advanced regularize model, with 10 sparse objective topics, and 2 smooth background topics:\n";
+      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2\n";
+      std::cerr << "          --passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt\n";
+      std::cerr << "          --regularizer \"0.05 SparsePhi #obj\"\n";
+      std::cerr << "          --regularizer \"0.05 SparseTheta #obj\"\n";
+      std::cerr << "          --regularizer \"0.25 SmoothPhi #background\"\n";
+      std::cerr << "          --regularizer \"0.25 SmoothTheta #background\"\n";
+      std::cerr << std::endl;
+      std::cerr << "* Configure logger to output into stderr:\n";
+      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10\n";
       return 1;
     }
 
     fixScoreLevel(&options);
     fixOptions(&options);
+    if (!verifyOptions(options))
+      return 1;  // verifyOptions should log an error upon failures
 
     return execute(options);
   } catch (std::exception& e) {
