@@ -877,6 +877,7 @@ class ArtmExecutor {
     iter->move(&process_batches_args_);
 
     BatchManager batch_manager;
+    LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
                                                  &batch_manager,
                                                  /* async =*/ false,
@@ -894,6 +895,7 @@ class ArtmExecutor {
 
     int operation_id = async_.size();
     async_.push_back(std::make_shared<BatchManager>());
+    LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
                                                  async_.back().get(),
                                                  /* async =*/ true,
@@ -914,6 +916,7 @@ class ArtmExecutor {
       regularize_model_args_.set_nwt_source_name(nwt);
       regularize_model_args_.set_pwt_source_name(pwt);
       regularize_model_args_.set_rwt_target_name(rwt);
+      LOG(INFO) << DescribeMessage(regularize_model_args_);
       master_component_->RegularizeModel(regularize_model_args_);
     }
   }
@@ -924,6 +927,7 @@ class ArtmExecutor {
       normalize_model_args.set_rwt_source_name(rwt);
     normalize_model_args.set_nwt_source_name(nwt);
     normalize_model_args.set_pwt_target_name(pwt);
+    LOG(INFO) << DescribeMessage(normalize_model_args);
     master_component_->NormalizeModel(normalize_model_args);
   }
 
@@ -934,6 +938,7 @@ class ArtmExecutor {
     merge_model_args.add_nwt_source_name(nwt_hat);
     merge_model_args.add_source_weight(apply_weight);
     merge_model_args.set_nwt_target_name(nwt);
+    LOG(INFO) << DescribeMessage(merge_model_args);
     master_component_->MergeModel(merge_model_args);
   }
 
