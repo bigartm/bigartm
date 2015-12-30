@@ -18,6 +18,16 @@
 namespace artm {
 namespace core {
 
+class BatchNameGenerator {
+ public:
+  explicit BatchNameGenerator(int length);
+  std::string next_name();
+
+ private:
+  int length_;
+  std::string next_name_;
+};
+
 class CollectionParser : boost::noncopyable {
  public:
   explicit CollectionParser(const ::artm::CollectionParserConfig& config);
