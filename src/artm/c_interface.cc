@@ -426,9 +426,7 @@ int ArtmFitOfflineMasterModel(int master_id, int length, const char* args) {
 }
 
 int ArtmFitOnlineMasterModel(int master_id, int length, const char* args) {
-  set_last_error("Method is not implemented yet");
-  return ARTM_INTERNAL_ERROR;
-  // return ArtmExecute< ::artm::FitOnlineMasterModelArgs>(master_id, length, args, &MasterComponent::FitOnline);
+  return ArtmExecute< ::artm::FitOnlineMasterModelArgs>(master_id, length, args, &MasterComponent::FitOnline);
 }
 
 int ArtmDisposeRegularizer(int master_id, const char* name) {

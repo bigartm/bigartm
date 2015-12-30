@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include <thread>  // NOLINT
-
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_io.hpp"
 
@@ -225,14 +223,11 @@ inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
 inline std::string DescribeErrors(const ::artm::MasterComponentConfig& message) {
   std::stringstream ss;
 
-  if (message.processors_count() <= 0)
-    ss << "MasterComponentConfig.processors_count == " << message.processors_count() << " is invalid; ";
-
   if (message.processor_queue_max_size() <= 0)
     ss << "MasterComponentConfig.processor_queue_max_size == "
        << message.processor_queue_max_size() << " is invalid; ";
 
-  if (message.processor_queue_max_size() <= 0)
+  if (message.merger_queue_max_size() <= 0)
     ss << "MasterComponentConfig.merger_queue_max_size == "
        << message.merger_queue_max_size() << " is invalid; ";
 
@@ -564,25 +559,6 @@ template<>
 inline void FixMessage(::artm::FilterDictionaryArgs* message) {
   if (!message->has_class_id())
     message->set_class_id(DefaultClass);
-}
-
-template<>
-inline void FixMessage(::artm::MasterComponentConfig* message) {
-  if (!message->has_processors_count() || message->processors_count() <= 0) {
-    unsigned int n = std::thread::hardware_concurrency();
-    if (n == 0) {
-      LOG(INFO) << "MasterComponentConfig.processors_count is set to 1 (default)";
-      message->set_processors_count(1);
-    } else {
-      LOG(INFO) << "MasterComponentConfig.processors_count is automatically set to " << n;
-      message->set_processors_count(n);
-    }
-  }
-
-  if (!message->has_processor_queue_max_size()) {
-    // The default setting for processor queue max size is to use the number of processors.
-    message->set_processor_queue_max_size(message->processors_count());
-  }
 }
 
 template<>

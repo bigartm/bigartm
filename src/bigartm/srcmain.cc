@@ -492,6 +492,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
     config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
   }
   else if (regularizer_type == "decorrelation") {
     ::artm::DecorrelatorPhiConfig specific_config;
@@ -503,6 +504,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerConfig_Type_DecorrelatorPhi);
     config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
   } else {
     throw std::invalid_argument(std::string("Unknown regularizer type: " + strs[1]));
   }

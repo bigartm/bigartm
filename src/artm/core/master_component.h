@@ -24,6 +24,7 @@ class RegularizerInterface;
 
 namespace core {
 
+class ArtmExecutor;
 class Instance;
 class TopicModel;
 class Score;
@@ -98,6 +99,8 @@ class MasterComponent : boost::noncopyable {
   void AttachModel(const AttachModelArgs& args, int address_length, float* address);
 
  private:
+  friend class ArtmExecutor;
+
   MasterComponent(const MasterComponent& rhs);
   MasterComponent& operator=(const MasterComponent&);
 
@@ -108,6 +111,7 @@ class MasterComponent : boost::noncopyable {
 
 
   ThreadSafeHolder<MasterModelConfig> master_model_config_;
+  int update_count_;
   std::shared_ptr<Instance> instance_;
 };
 

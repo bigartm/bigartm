@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <thread>  // NOLINT
 
 #include "artm/core/instance.h"
 
@@ -382,10 +383,20 @@ void Instance::DisposeRegularizer(const std::string& name) {
 }
 
 void Instance::Reconfigure(const MasterComponentConfig& master_config) {
-  MasterComponentConfig old_config = schema_.get()->config();
-
   auto new_schema = schema_.get_copy();
   new_schema->set_config(master_config);
+
+  int target_processors_count = master_config.processors_count();
+  if (!master_config.has_processors_count() || master_config.processors_count() <= 0) {
+    unsigned int n = std::thread::hardware_concurrency();
+    if (n == 0) {
+      LOG(INFO) << "MasterComponentConfig.processors_count is set to 1 (default)";
+      target_processors_count = 1;
+    } else {
+      LOG(INFO) << "MasterComponentConfig.processors_count is automatically set to " << n;
+      target_processors_count = n;
+    }
+  }
 
   new_schema->clear_score_calculators();  // Clear all score calculators
   for (int score_index = 0;
@@ -410,11 +421,11 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
 
   {
     // Adjust size of processors_; cast size to int to avoid compiler warning.
-    while (static_cast<int>(processors_.size()) > master_config.processors_count()) {
+    while (static_cast<int>(processors_.size()) > target_processors_count) {
       processors_.pop_back();
     }
 
-    while (static_cast<int>(processors_.size()) < master_config.processors_count()) {
+    while (static_cast<int>(processors_.size()) < target_processors_count) {
       processors_.push_back(
         std::shared_ptr<Processor>(new Processor(
           &processor_queue_,
