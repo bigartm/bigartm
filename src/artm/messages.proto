@@ -801,9 +801,9 @@ message FitOnlineMasterModelArgs {
   repeated float batch_weight = 2;
   optional int32 passes = 3 [default = 1];
   optional int32 update_every = 4;
-  optional int32 tau0 = 5;
-  optional double kappa = 6;
-  optional bool async = 7;
+  optional int32 tau0 = 5 [default = 1024];
+  optional double kappa = 6 [default = 0.7];
+  optional bool async = 7 [default = false];
 }
 
 message TransformMasterModelArgs {

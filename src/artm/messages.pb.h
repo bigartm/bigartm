@@ -12038,21 +12038,21 @@ class FitOnlineMasterModelArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 update_every() const;
   inline void set_update_every(::google::protobuf::int32 value);
 
-  // optional int32 tau0 = 5;
+  // optional int32 tau0 = 5 [default = 1024];
   inline bool has_tau0() const;
   inline void clear_tau0();
   static const int kTau0FieldNumber = 5;
   inline ::google::protobuf::int32 tau0() const;
   inline void set_tau0(::google::protobuf::int32 value);
 
-  // optional double kappa = 6;
+  // optional double kappa = 6 [default = 0.7];
   inline bool has_kappa() const;
   inline void clear_kappa();
   static const int kKappaFieldNumber = 6;
   inline double kappa() const;
   inline void set_kappa(double value);
 
-  // optional bool async = 7;
+  // optional bool async = 7 [default = false];
   inline bool has_async() const;
   inline void clear_async();
   static const int kAsyncFieldNumber = 7;
@@ -27115,7 +27115,7 @@ inline void FitOnlineMasterModelArgs::set_update_every(::google::protobuf::int32
   update_every_ = value;
 }
 
-// optional int32 tau0 = 5;
+// optional int32 tau0 = 5 [default = 1024];
 inline bool FitOnlineMasterModelArgs::has_tau0() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -27126,7 +27126,7 @@ inline void FitOnlineMasterModelArgs::clear_has_tau0() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void FitOnlineMasterModelArgs::clear_tau0() {
-  tau0_ = 0;
+  tau0_ = 1024;
   clear_has_tau0();
 }
 inline ::google::protobuf::int32 FitOnlineMasterModelArgs::tau0() const {
@@ -27137,7 +27137,7 @@ inline void FitOnlineMasterModelArgs::set_tau0(::google::protobuf::int32 value) 
   tau0_ = value;
 }
 
-// optional double kappa = 6;
+// optional double kappa = 6 [default = 0.7];
 inline bool FitOnlineMasterModelArgs::has_kappa() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -27148,7 +27148,7 @@ inline void FitOnlineMasterModelArgs::clear_has_kappa() {
   _has_bits_[0] &= ~0x00000020u;
 }
 inline void FitOnlineMasterModelArgs::clear_kappa() {
-  kappa_ = 0;
+  kappa_ = 0.7;
   clear_has_kappa();
 }
 inline double FitOnlineMasterModelArgs::kappa() const {
@@ -27159,7 +27159,7 @@ inline void FitOnlineMasterModelArgs::set_kappa(double value) {
   kappa_ = value;
 }
 
-// optional bool async = 7;
+// optional bool async = 7 [default = false];
 inline bool FitOnlineMasterModelArgs::has_async() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }

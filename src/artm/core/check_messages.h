@@ -239,6 +239,69 @@ inline std::string DescribeErrors(const ::artm::MasterComponentConfig& message) 
   return ss.str();
 }
 
+inline std::string DescribeErrors(const ::artm::MasterModelConfig& message) {
+  std::stringstream ss;
+
+  if (message.class_weight_size() != message.class_id_size())
+    ss << "Length mismatch in fields MasterModelConfig.class_id and MasterModelConfig.class_weight; ";
+
+  if (!message.has_pwt_name() || message.pwt_name().empty())
+    ss << "Field MasterModelConfig.pwt_name must not be empty; ";
+
+  if (message.inner_iterations_count() < 0)
+    ss << "Field MasterModelConfig.inner_iterations_count must be non-negative; ";
+
+  for (int i = 0; i < message.regularizer_config_size(); ++i) {
+    const RegularizerConfig& config = message.regularizer_config(i);
+    if (!config.has_tau())
+      ss << "Field MasterModelConfig.RegularizerConfig.tau must not be empty "
+         << "(regularizer name: " << config.name() << "); ";
+  }
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::FitOfflineMasterModelArgs& message) {
+  std::stringstream ss;
+
+  if (message.batch_filename_size() == 0)
+    ss << "Fields FitOfflineMasterModelArgs.batch_filename must not be empty; ";
+
+  if (message.batch_filename_size() != message.batch_weight_size())
+    ss << "Length mismatch in fields FitOfflineMasterModelArgs.batch_filename "
+       << "and FitOfflineMasterModelArgs.batch_weight; ";
+
+  if (message.passes() <= 0)
+    ss << "FitOfflineMasterModelArgs.passes() must be a positive number";
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::FitOnlineMasterModelArgs& message) {
+  std::stringstream ss;
+
+  if (message.batch_filename_size() == 0)
+    ss << "Fields FitOnlineMasterModelArgs.batch_filename must not be empty; ";
+
+  if (message.batch_filename_size() != message.batch_weight_size())
+    ss << "Length mismatch in fields FitOnlineMasterModelArgs.batch_filename "
+    << "and FitOnlineMasterModelArgs.batch_weight; ";
+
+  if (message.passes() <= 0)
+    ss << "FitOnlineMasterModelArgs.passes() must be a positive number";
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::TransformMasterModelArgs& message) {
+  std::stringstream ss;
+
+  if (message.batch_filename_size() == 0)
+    ss << "Fields TransformMasterModelArgs.batch_filename must not be empty; ";
+
+  return ss.str();
+}
+
 inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
   std::stringstream ss;
 
@@ -539,6 +602,30 @@ inline void FixMessage(::artm::ProcessBatchesArgs* message) {
   }
 }
 
+template<>
+inline void FixMessage(::artm::MasterModelConfig* message) {
+  if (message->class_weight_size() == 0) {
+    for (int i = 0; i < message->class_id_size(); ++i)
+      message->add_class_weight(1.0f);
+  }
+}
+
+template<>
+inline void FixMessage(::artm::FitOfflineMasterModelArgs* message) {
+  if (message->batch_weight_size() == 0) {
+    for (int i = 0; i < message->batch_filename_size(); ++i)
+      message->add_batch_weight(1.0f);
+  }
+}
+
+template<>
+inline void FixMessage(::artm::FitOnlineMasterModelArgs* message) {
+  if (message->batch_weight_size() == 0) {
+    for (int i = 0; i < message->batch_filename_size(); ++i)
+      message->add_batch_weight(1.0f);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescribeMessage routines (optional)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -704,6 +791,62 @@ inline std::string DescribeMessage(const ::artm::RegularizeModelArgs& message) {
   ss << ", nwt_source_name=" << message.nwt_source_name();
   for (int i = 0; i < message.regularizer_settings_size(); ++i)
     DescribeMessage(message.regularizer_settings(i));
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
+  std::stringstream ss;
+  ss << "MasterModelConfig";
+  ss << ": topic_name_size=" << message.topic_name_size();
+  for (int i = 0; i < message.class_id_size(); ++i)
+    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
+  ss << ", score_config_size=" << message.score_config_size();
+  ss << ", threads=" << message.threads();
+  ss << ", pwt_name=" << message.pwt_name();
+  ss << ", nwt_name=" << message.nwt_name();
+  ss << ", inner_iterations_count=" << message.inner_iterations_count();
+  for (int i = 0; i < message.regularizer_config_size(); ++i)
+    ss << ", regularizer=("
+       << message.regularizer_config(i).name() << ":"
+       << message.regularizer_config(i).tau() << ")";
+
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::FitOfflineMasterModelArgs& message) {
+  std::stringstream ss;
+  ss << "FitOfflineMasterModelArgs";
+  ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", batch_weight_size=" << message.batch_weight_size();
+  ss << ", passes=" << message.passes();
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::FitOnlineMasterModelArgs& message) {
+  std::stringstream ss;
+  ss << "FitOnlineMasterModelArgs";
+  ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", batch_weight_size=" << message.batch_weight_size();
+  ss << ", passes=" << message.passes();
+  ss << ", update_every=" << message.has_update_every()
+    ? boost::lexical_cast<std::string>(message.update_every())
+    : "auto";
+  ss << ", tau0=" << message.tau0();
+  ss << ", kappa=" << message.kappa();
+  ss << ", async=" << message.async();
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& message) {
+  std::stringstream ss;
+  ss << "TransformMasterModelArgs";
+  ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", theta_matrix_type=" << message.theta_matrix_type();
+  ss << ", predict_class_id=" << message.predict_class_id();
   return ss.str();
 }
 

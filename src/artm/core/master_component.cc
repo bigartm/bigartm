@@ -68,11 +68,25 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
 }
 
 MasterComponent::MasterComponent(const MasterComponentConfig& config)
-    : instance_(std::make_shared<Instance>(config)) {
+    : master_model_config_(),
+      instance_(std::make_shared<Instance>(config)) {
+}
+
+MasterComponent::MasterComponent(const MasterModelConfig& config)
+    : master_model_config_(std::make_shared<MasterModelConfig>(config)),
+      instance_(nullptr) {
+  MasterComponentConfig master_component_config;
+  master_component_config.set_processors_count(config.threads());
+  master_component_config.mutable_score_config()->CopyFrom(config.score_config());
+  instance_ = std::make_shared<Instance>(master_component_config);
+
+  for (int i = 0; i < config.regularizer_config_size(); ++i)
+    CreateOrReconfigureRegularizer(config.regularizer_config(i));
 }
 
 MasterComponent::MasterComponent(const MasterComponent& rhs)
-    : instance_(rhs.instance_->Duplicate()) {
+    : master_model_config_(rhs.master_model_config_.get_copy()),
+      instance_(rhs.instance_->Duplicate()) {
 }
 
 MasterComponent::~MasterComponent() {}
@@ -353,7 +367,8 @@ void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, Master
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result) {
   BatchManager batch_manager;
-  RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false, result);
+  RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false,
+                            result->mutable_score_data(), result->mutable_theta_matrix());
 }
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external) {
@@ -368,12 +383,13 @@ void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResu
 
 void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                                  BatchManager *batch_manager) {
-  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* async =*/ true, nullptr);
+  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* async =*/ true, nullptr, nullptr);
 }
 
 void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
                                                 BatchManager* batch_manager, bool async,
-                                                ProcessBatchesResult* process_batches_result) {
+                                                ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data,
+                                                ::artm::ThetaMatrix* theta_matrix) {
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
   const MasterComponentConfig& config = schema->config();
 
@@ -487,9 +503,9 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
     ScoreName score_name = config.score_config(score_index).name();
-    ScoreData score_data;
-    if (scores_merger->RequestScore(schema, model_name, score_name, &score_data))
-      process_batches_result->add_score_data()->Swap(&score_data);
+    ScoreData requested_score_data;
+    if ((score_data != nullptr) && scores_merger->RequestScore(schema, model_name, score_name, &requested_score_data))
+      score_data->Add()->Swap(&requested_score_data);
   }
 
   GetThetaMatrixArgs get_theta_matrix_args;
@@ -505,8 +521,8 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
       break;
   }
 
-  if (args.has_theta_matrix_type())
-    cache_manager.RequestThetaMatrix(get_theta_matrix_args, process_batches_result->mutable_theta_matrix());
+  if (theta_matrix != nullptr && args.has_theta_matrix_type())
+    cache_manager.RequestThetaMatrix(get_theta_matrix_args, theta_matrix);
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
@@ -638,6 +654,105 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args,
 
   Request(args, result);
   HandleExternalThetaMatrixRequest(result, external);
+}
+
+void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::ThetaMatrix* result) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
+
+  ProcessBatchesArgs process_batches_args;
+  process_batches_args.mutable_batch_filename()->CopyFrom(args.batch_filename());
+  process_batches_args.set_pwt_source_name(config->pwt_name());
+  if (config->has_inner_iterations_count())
+    process_batches_args.set_inner_iterations_count(config->inner_iterations_count());
+  for (auto& regularizer : config->regularizer_config()) {
+    process_batches_args.add_regularizer_name(regularizer.name());
+    process_batches_args.add_regularizer_tau(regularizer.tau());
+  }
+
+  process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
+  process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
+  process_batches_args.set_theta_matrix_type((::artm::ProcessBatchesArgs_ThetaMatrixType)args.theta_matrix_type());
+  if (args.has_predict_class_id()) process_batches_args.set_predict_class_id(args.predict_class_id());
+
+  BatchManager batch_manager;
+  RequestProcessBatchesImpl(process_batches_args, &batch_manager,
+                            /* async =*/ false, /*score_data =*/ nullptr, result);
+}
+
+void MasterComponent::Request(const TransformMasterModelArgs& args,
+                              ::artm::ThetaMatrix* result,
+                              std::string* external) {
+  const bool is_dense_theta = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_Dense;
+  const bool is_dense_ptdw = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_DensePtdw;
+  if (!is_dense_theta && !is_dense_ptdw)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestProcessBatchesExternal"));
+
+  Request(args, result);
+  HandleExternalThetaMatrixRequest(result, external);
+}
+
+void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
+
+  // TBD
+}
+
+void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
+
+  ProcessBatchesArgs process_batches_args;
+  process_batches_args.mutable_batch_filename()->CopyFrom(args.batch_filename());
+  process_batches_args.mutable_batch_weight()->CopyFrom(args.batch_weight());
+  process_batches_args.set_pwt_source_name(config->pwt_name());
+  process_batches_args.set_nwt_target_name(config->nwt_name());
+  if (config->has_inner_iterations_count())
+    process_batches_args.set_inner_iterations_count(config->inner_iterations_count());
+  process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
+  process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
+  for (auto& regularizer : config->regularizer_config()) {
+    process_batches_args.add_regularizer_name(regularizer.name());
+    process_batches_args.add_regularizer_tau(regularizer.tau());
+  }
+
+  const std::string rwt_name = "rwt";
+  RegularizeModelArgs regularize_model_args;
+  regularize_model_args.set_nwt_source_name(config->nwt_name());
+  regularize_model_args.set_pwt_source_name(config->pwt_name());
+  regularize_model_args.set_rwt_target_name(rwt_name);
+  for (auto& regularizer : config->regularizer_config()) {
+    RegularizerSettings* settings = regularize_model_args.add_regularizer_settings();
+    settings->set_tau(regularizer.tau());
+    settings->set_name(regularizer.name());
+    settings->set_use_relative_regularization(false);
+  }
+
+  NormalizeModelArgs normalize_model_args;
+  normalize_model_args.set_pwt_target_name(config->pwt_name());
+  normalize_model_args.set_nwt_source_name(config->nwt_name());
+  if (regularize_model_args.regularizer_settings_size() > 0)
+    normalize_model_args.set_rwt_source_name(rwt_name);
+
+  for (int pass = 0; pass < args.passes(); pass++) {
+    BatchManager batch_manager;
+    RequestProcessBatchesImpl(process_batches_args, &batch_manager,
+                              /* async =*/ false,
+                              /* score_data =*/ nullptr,
+                              /* theta_matrix*/ nullptr);
+    if (regularize_model_args.regularizer_settings_size() > 0)
+      RegularizeModel(regularize_model_args);
+    NormalizeModel(normalize_model_args);
+  }
+
+  DisposeModel(rwt_name);
 }
 
 bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {

@@ -35,8 +35,19 @@ RegularizerConfig TestMother::GenerateRegularizerConfig() const {
   return general_regularizer_1_config;
 }
 
+void TestMother::GenerateBatches(int batches_size, int nTokens, ImportBatchesArgs* args,
+                                 DictionaryData* dictionary) {
+  std::vector<std::shared_ptr< ::artm::Batch>> batches;
+  GenerateBatches(batches_size, nTokens, &batches, dictionary);
+  for (auto& batch : batches) {
+    args->add_batch()->CopyFrom(*batch);
+    args->add_batch_name(artm::test::Helpers::getUniqueString());
+  }
+}
+
 void TestMother::GenerateBatches(int batches_size, int nTokens,
-                                 std::vector<std::shared_ptr< ::artm::Batch>>* batches) {
+                                 std::vector<std::shared_ptr< ::artm::Batch>>* batches,
+                                 ::artm::DictionaryData* dictionary) {
   for (int iBatch = 0; iBatch < batches_size; ++iBatch) {
     ::artm::Batch batch;
     batch.set_id(artm::test::Helpers::getUniqueString());
@@ -46,6 +57,8 @@ void TestMother::GenerateBatches(int batches_size, int nTokens,
       std::stringstream str;
       str << "token" << i;
       batch.add_token(str.str());
+      if (iBatch == 0 && dictionary != nullptr)
+        dictionary->add_token(str.str());
     }
 
     artm::Item* item = batch.add_item();

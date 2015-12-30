@@ -2674,17 +2674,18 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "nwt\022\036\n\026inner_iterations_count\030\t \001(\005\"\\\n\031F"
     "itOfflineMasterModelArgs\022\026\n\016batch_filena"
     "me\030\001 \003(\t\022\024\n\014batch_weight\030\002 \003(\002\022\021\n\006passes"
-    "\030\003 \001(\005:\0011\"\235\001\n\030FitOnlineMasterModelArgs\022\026"
+    "\030\003 \001(\005:\0011\"\257\001\n\030FitOnlineMasterModelArgs\022\026"
     "\n\016batch_filename\030\001 \003(\t\022\024\n\014batch_weight\030\002"
     " \003(\002\022\021\n\006passes\030\003 \001(\005:\0011\022\024\n\014update_every\030"
-    "\004 \001(\005\022\014\n\004tau0\030\005 \001(\005\022\r\n\005kappa\030\006 \001(\001\022\r\n\005as"
-    "ync\030\007 \001(\010\"\374\001\n\030TransformMasterModelArgs\022\026"
-    "\n\016batch_filename\030\001 \003(\t\022P\n\021theta_matrix_t"
-    "ype\030\002 \001(\0162..artm.TransformMasterModelArg"
-    "s.ThetaMatrixType:\005Cache\022\030\n\020predict_clas"
-    "s_id\030\003 \001(\t\"\\\n\017ThetaMatrixType\022\010\n\004None\020\000\022"
-    "\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDen"
-    "sePtdw\020\004\022\016\n\nSparsePtdw\020\005", 13224);
+    "\004 \001(\005\022\022\n\004tau0\030\005 \001(\005:\0041024\022\022\n\005kappa\030\006 \001(\001"
+    ":\0030.7\022\024\n\005async\030\007 \001(\010:\005false\"\374\001\n\030Transfor"
+    "mMasterModelArgs\022\026\n\016batch_filename\030\001 \003(\t"
+    "\022P\n\021theta_matrix_type\030\002 \001(\0162..artm.Trans"
+    "formMasterModelArgs.ThetaMatrixType:\005Cac"
+    "he\022\030\n\020predict_class_id\030\003 \001(\t\"\\\n\017ThetaMat"
+    "rixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002"
+    "\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSparsePtdw"
+    "\020\005", 13242);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -34872,8 +34873,8 @@ void FitOnlineMasterModelArgs::SharedCtor() {
   _cached_size_ = 0;
   passes_ = 1;
   update_every_ = 0;
-  tau0_ = 0;
-  kappa_ = 0;
+  tau0_ = 1024;
+  kappa_ = 0.7;
   async_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -34912,8 +34913,8 @@ void FitOnlineMasterModelArgs::Clear() {
   if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
     passes_ = 1;
     update_every_ = 0;
-    tau0_ = 0;
-    kappa_ = 0;
+    tau0_ = 1024;
+    kappa_ = 0.7;
     async_ = false;
   }
   batch_filename_.Clear();
@@ -35001,7 +35002,7 @@ bool FitOnlineMasterModelArgs::MergePartialFromCodedStream(
         break;
       }
 
-      // optional int32 tau0 = 5;
+      // optional int32 tau0 = 5 [default = 1024];
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -35017,7 +35018,7 @@ bool FitOnlineMasterModelArgs::MergePartialFromCodedStream(
         break;
       }
 
-      // optional double kappa = 6;
+      // optional double kappa = 6 [default = 0.7];
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
@@ -35033,7 +35034,7 @@ bool FitOnlineMasterModelArgs::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bool async = 7;
+      // optional bool async = 7 [default = false];
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -35092,17 +35093,17 @@ void FitOnlineMasterModelArgs::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->update_every(), output);
   }
 
-  // optional int32 tau0 = 5;
+  // optional int32 tau0 = 5 [default = 1024];
   if (has_tau0()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->tau0(), output);
   }
 
-  // optional double kappa = 6;
+  // optional double kappa = 6 [default = 0.7];
   if (has_kappa()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->kappa(), output);
   }
 
-  // optional bool async = 7;
+  // optional bool async = 7 [default = false];
   if (has_async()) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(7, this->async(), output);
   }
@@ -35140,17 +35141,17 @@ void FitOnlineMasterModelArgs::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->update_every(), target);
   }
 
-  // optional int32 tau0 = 5;
+  // optional int32 tau0 = 5 [default = 1024];
   if (has_tau0()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->tau0(), target);
   }
 
-  // optional double kappa = 6;
+  // optional double kappa = 6 [default = 0.7];
   if (has_kappa()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->kappa(), target);
   }
 
-  // optional bool async = 7;
+  // optional bool async = 7 [default = false];
   if (has_async()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(7, this->async(), target);
   }
@@ -35180,19 +35181,19 @@ int FitOnlineMasterModelArgs::ByteSize() const {
           this->update_every());
     }
 
-    // optional int32 tau0 = 5;
+    // optional int32 tau0 = 5 [default = 1024];
     if (has_tau0()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->tau0());
     }
 
-    // optional double kappa = 6;
+    // optional double kappa = 6 [default = 0.7];
     if (has_kappa()) {
       total_size += 1 + 8;
     }
 
-    // optional bool async = 7;
+    // optional bool async = 7 [default = false];
     if (has_async()) {
       total_size += 1 + 1;
     }

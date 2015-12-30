@@ -11,6 +11,7 @@ set(SRC_LIST
 	collection_parser_test.cc
 	cpp_interface_test.cc
 	instance_test.cc
+	master_model_test.cc
 	multiple_classes_test.cc
 	regularizers_test.cc
 	repeatable_result_test.cc

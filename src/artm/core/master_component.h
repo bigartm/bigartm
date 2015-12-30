@@ -36,6 +36,7 @@ class MasterComponent : boost::noncopyable {
   std::shared_ptr<MasterComponentConfig> config() const;
 
   explicit MasterComponent(const MasterComponentConfig& config);
+  explicit MasterComponent(const MasterModelConfig& config);
   std::shared_ptr<MasterComponent> Duplicate() const;
 
   // REQUEST functionality
@@ -43,6 +44,8 @@ class MasterComponent : boost::noncopyable {
   void Request(const GetTopicModelArgs& args, ::artm::TopicModel* result, std::string* external);
   void Request(const GetThetaMatrixArgs& args, ThetaMatrix* result);
   void Request(const GetThetaMatrixArgs& args, ThetaMatrix* result, std::string* external);
+  void Request(const TransformMasterModelArgs& args, ThetaMatrix* result);
+  void Request(const TransformMasterModelArgs& args, ThetaMatrix* result, std::string* external);
   void Request(const GetScoreValueArgs& args, ScoreData* result);
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result);
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external);
@@ -62,6 +65,8 @@ class MasterComponent : boost::noncopyable {
   void ExportModel(const ExportModelArgs& args);
   void ImportModel(const ImportModelArgs& args);
   void InitializeModel(const InitializeModelArgs& args);
+  void FitOnline(const FitOnlineMasterModelArgs& args);
+  void FitOffline(const FitOfflineMasterModelArgs& args);
   void FilterDictionary(const FilterDictionaryArgs& args);
   void GatherDictionary(const GatherDictionaryArgs& args);
   bool AddBatch(const AddBatchArgs& args);
@@ -98,8 +103,11 @@ class MasterComponent : boost::noncopyable {
 
   void RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
                                  BatchManager* batch_manager, bool async,
-                                 ProcessBatchesResult* process_batches_result);
+                                 ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data,
+                                 ::artm::ThetaMatrix* theta_matrix);
 
+
+  ThreadSafeHolder<MasterModelConfig> master_model_config_;
   std::shared_ptr<Instance> instance_;
 };
 
