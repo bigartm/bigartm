@@ -14,6 +14,8 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/predicate.hpp"
 #include "boost/lexical_cast.hpp"
+#include "boost/uuid/uuid_io.hpp"
+#include "boost/uuid/uuid_generators.hpp"
 
 #include "glog/logging.h"
 
@@ -28,10 +30,40 @@ using ::artm::utility::ifstream_or_cin;
 namespace artm {
 namespace core {
 
+BatchNameGenerator::BatchNameGenerator(int length, bool use_guid_name)
+  : length_(length),
+    next_name_(std::string()),
+    use_guid_name_(use_guid_name) {
+  next_name_ = std::string(length, 'a');
+}
+
+std::string BatchNameGenerator::next_name(const Batch& batch) {
+  if (use_guid_name_)
+    return batch.id();
+
+  std::string old_next_name = next_name_;
+
+  for (int i = length_ - 1; i >= 0; --i) {
+    if (next_name_[i] != 'z') {
+      next_name_[i] += 1;
+      break;
+    } else {
+      if (i == 0)
+          BOOST_THROW_EXCEPTION(InvalidOperation("Parser can't create more batches"));
+      else
+          next_name_[i] = 'a';
+    }
+  }
+
+  return old_next_name;
+}
+
 CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config)
     : config_(config) {}
 
 void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
+  BatchNameGenerator batch_name_generator(kBatchNameLength,
+    config_.name_type() == CollectionParserConfig_NameType_Guid);
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
 
@@ -139,7 +171,8 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
     if (item_id != prev_item_id) {
       prev_item_id = item_id;
       if (batch.item_size() >= config_.num_items_per_batch()) {
-        ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder());
+        batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+        ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
         batch.Clear();
         batch_dictionary.clear();
       }
@@ -171,7 +204,8 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   }
 
   if (batch.item_size() > 0) {
-    ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder());
+    batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+    ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
   }
 
   LOG_IF(WARNING, token_weight_zero > 0) << "Found " << token_weight_zero << " tokens with zero "
@@ -305,6 +339,7 @@ class CollectionParser::BatchCollector {
   Batch FinishBatch() {
     Batch batch;
     batch.Swap(&batch_);
+    batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
     local_map_.clear();
     return batch;
   }
@@ -315,6 +350,8 @@ class CollectionParser::BatchCollector {
 void CollectionParser::ParseVowpalWabbit() {
   BatchCollector batch_collector;
 
+  BatchNameGenerator batch_name_generator(kBatchNameLength,
+    config_.name_type() == CollectionParserConfig_NameType_Guid);
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
 
@@ -375,12 +412,14 @@ void CollectionParser::ParseVowpalWabbit() {
 
     batch_collector.FinishItem(line_no, item_title);
     if (batch_collector.batch().item_size() >= config_.num_items_per_batch()) {
-      ::artm::core::BatchHelpers::SaveBatch(batch_collector.FinishBatch(), config_.target_folder());
+      artm::Batch batch = batch_collector.FinishBatch();
+      ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
     }
   }
 
   if (batch_collector.batch().item_size() > 0) {
-    ::artm::core::BatchHelpers::SaveBatch(batch_collector.FinishBatch(), config_.target_folder());
+    artm::Batch batch = batch_collector.FinishBatch();
+    ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
   }
 }
 
