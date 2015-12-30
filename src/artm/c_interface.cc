@@ -210,6 +210,14 @@ int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicat
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmCreateMasterModel(int length, const char* master_model_config) {
+  return ARTM_INTERNAL_ERROR;  // not implemented
+}
+
+int ArtmReconfigureMasterModel(int master_id, int length, const char* master_model_config) {
+  return ARTM_INTERNAL_ERROR;  // not implemented
+}
+
 int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batches_args) {
   try {
     artm::ProcessBatchesArgs args;
@@ -418,6 +426,14 @@ int ArtmDisposeBatch(int master_id, const char* name) {
   return ArtmExecute(master_id, name, &MasterComponent::DisposeBatch);
 }
 
+int ArtmFitOfflineMasterModel(int master_id, int lenght, const char* args) {
+  return ARTM_INTERNAL_ERROR;  // not implemented
+}
+
+int ArtmFitOnlineMasterModel(int master_id, int lenght, const char* args) {
+  return ARTM_INTERNAL_ERROR;  // not implemented
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // REQUEST routines (public ARTM interface)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -498,4 +514,12 @@ int ArtmRequestTopicModelExternal(int master_id, int length, const char* args) {
 int ArtmRequestRegularizerState(int master_id, int length, const char* args) {
   return ArtmRequest< ::artm::GetRegularizerStateArgs,
                       ::artm::RegularizerInternalState>(master_id, length, args);
+}
+
+int ArtmRequestTransformMasterModel(int master_id, int length, const char* args) {
+  return ARTM_INTERNAL_ERROR;  // not implemented
+}
+
+int ArtmRequestTransformMasterModelExternal(int master_id, int length, const char* args) {
+  return ARTM_INTERNAL_ERROR;  // not implemented
 }

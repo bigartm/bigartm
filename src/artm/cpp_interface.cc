@@ -63,16 +63,21 @@ int ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
 }
 
 template<typename ResultT, typename ArgsT, typename FuncT>
-std::shared_ptr<ResultT> ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
+ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
   int length = ArtmExecute(master_id, args, func);
 
   std::string result_blob;
   result_blob.resize(length);
   HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&result_blob)));
 
-  auto result = std::make_shared<ResultT>();
-  result->ParseFromString(result_blob);
+  ResultT result;
+  result.ParseFromString(result_blob);
   return result;
+}
+
+template<typename ResultT, typename ArgsT, typename FuncT>
+std::shared_ptr<ResultT> ArtmRequestShared(int master_id, const ArgsT& args, FuncT func) {
+  return std::make_shared<ResultT>(ArtmRequest<ResultT>(master_id, args, func));
 }
 
 void ArtmRequestEx(int no_rows, int no_cols, CopyRequestResultArgs_RequestType type, Matrix* matrix) {
@@ -150,7 +155,7 @@ std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelAr
 
 std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
   auto func = (matrix == nullptr) ? ArtmRequestTopicModel : ArtmRequestTopicModelExternal;
-  auto retval = ArtmRequest< ::artm::TopicModel>(id_, args, func);
+  auto retval = ArtmRequestShared<TopicModel>(id_, args, func);
   auto type = CopyRequestResultArgs_RequestType_GetModelSecondPass;
   ArtmRequestEx(retval->token_size(), retval->topics_count(), type, matrix);
   return retval;
@@ -199,7 +204,7 @@ std::shared_ptr<Matrix> MasterComponent::AttachTopicModel(const std::string& mod
 std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(const std::string& regularizer_name) {
   ::artm::GetRegularizerStateArgs args;
   args.set_name(regularizer_name);
-  return ArtmRequest<RegularizerInternalState>(id_, args, ArtmRequestRegularizerState);
+  return ArtmRequestShared<RegularizerInternalState>(id_, args, ArtmRequestRegularizerState);
 }
 
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& model_name) {
@@ -228,19 +233,19 @@ std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatri
 
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
   auto func = (matrix == nullptr) ? ArtmRequestThetaMatrix : ArtmRequestThetaMatrixExternal;
-  auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, func);
+  auto retval = ArtmRequestShared<ThetaMatrix>(id_, args, func);
   auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
   ArtmRequestEx(retval->item_id_size(), retval->topics_count(), type, matrix);
   return retval;
 }
 
 std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& args) {
-  return ArtmRequest<ScoreData>(id_, args, ArtmRequestScore);
+  return ArtmRequestShared<ScoreData>(id_, args, ArtmRequestScore);
 }
 
 std::shared_ptr<MasterComponentInfo> MasterComponent::info() const {
   GetMasterComponentInfoArgs args;
-  return ArtmRequest<MasterComponentInfo>(id_, args, ArtmRequestMasterComponentInfo);
+  return ArtmRequestShared<MasterComponentInfo>(id_, args, ArtmRequestMasterComponentInfo);
 }
 
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)
@@ -484,12 +489,12 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
 std::shared_ptr<DictionaryData> MasterComponent::GetDictionary(const std::string& dictionary_name) {
   artm::GetDictionaryArgs args;
   args.set_dictionary_name(dictionary_name);
-  return ArtmRequest<DictionaryData>(id_, args, ArtmRequestDictionary);
+  return ArtmRequestShared<DictionaryData>(id_, args, ArtmRequestDictionary);
 }
 
 std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {
   auto process_batches_result = ArtmRequest<ProcessBatchesResult>(id_, args, ArtmRequestProcessBatches);
-  std::shared_ptr<ProcessBatchesResultObject> retval(new ProcessBatchesResultObject(*process_batches_result));
+  std::shared_ptr<ProcessBatchesResultObject> retval(new ProcessBatchesResultObject(process_batches_result));
   return retval;
 }
 
@@ -527,6 +532,121 @@ void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
 
 void MasterComponent::DisposeBatch(const std::string& batch_name) {
   ArtmDisposeBatch(id(), batch_name.c_str());
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// MasterModel implementation
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+MasterModel::MasterModel(const MasterModelConfig& config) : id_(0), config_(config) {
+  id_ = ArtmExecute(config, ArtmCreateMasterModel);
+}
+
+MasterModel::~MasterModel() {
+  ArtmDisposeMasterComponent(id_);
+}
+
+void MasterModel::Reconfigure() {
+  ArtmExecute(id_, config_, ArtmReconfigureMasterModel);
+}
+
+TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args) {
+  return ArtmRequest< ::artm::TopicModel>(id_, args, ArtmRequestTopicModel);
+}
+
+TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
+  auto retval = ArtmRequest< ::artm::TopicModel>(id_, args, ArtmRequestTopicModelExternal);
+  auto type = CopyRequestResultArgs_RequestType_GetModelSecondPass;
+  ArtmRequestEx(retval.token_size(), retval.topics_count(), type, matrix);
+  return retval;
+}
+
+ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args) {
+  return ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestThetaMatrix);
+}
+
+ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
+  auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestThetaMatrixExternal);
+  auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
+  ArtmRequestEx(retval.item_id_size(), retval.topics_count(), type, matrix);
+  return retval;
+}
+
+
+ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args) {
+  return ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestTransformMasterModel);
+}
+
+ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args, Matrix* matrix) {
+  auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestTransformMasterModelExternal);
+  auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
+  ArtmRequestEx(retval.item_id_size(), retval.topics_count(), type, matrix);
+  return retval;
+}
+
+ScoreData MasterModel::GetScore(const GetScoreValueArgs& args) {
+  return ArtmRequest<ScoreData>(id_, args, ArtmRequestScore);
+}
+
+MasterComponentInfo MasterModel::info() const {
+  GetMasterComponentInfoArgs args;
+  return ArtmRequest<MasterComponentInfo>(id_, args, ArtmRequestMasterComponentInfo);
+}
+
+void MasterModel::ExportModel(const ExportModelArgs& args) {
+  ArtmExecute(id_, args, ArtmExportModel);
+}
+
+void MasterModel::ImportModel(const ImportModelArgs& args) {
+  ArtmExecute(id_, args, ArtmImportModel);
+}
+
+void MasterModel::CreateDictionary(const DictionaryData& args) {
+  ArtmExecute(id_, args, ArtmCreateDictionary);
+}
+
+void MasterModel::DisposeDictionary(const std::string& dictionary_name) {
+  HandleErrorCode(ArtmDisposeDictionary(id_, dictionary_name.c_str()));
+}
+
+void MasterModel::ImportDictionary(const ImportDictionaryArgs& args) {
+  ArtmExecute(id_, args, ArtmImportDictionary);
+}
+
+void MasterModel::ExportDictionary(const ExportDictionaryArgs& args) {
+  ArtmExecute(id_, args, ArtmExportDictionary);
+}
+
+void MasterModel::GatherDictionary(const GatherDictionaryArgs& args) {
+  ArtmExecute(id_, args, ArtmGatherDictionary);
+}
+
+void MasterModel::FilterDictionary(const FilterDictionaryArgs& args) {
+  ArtmExecute(id_, args, ArtmFilterDictionary);
+}
+
+DictionaryData MasterModel::GetDictionary(const GetDictionaryArgs& args) {
+  return ArtmRequest<DictionaryData>(id_, args, ArtmRequestDictionary);
+}
+
+void MasterModel::InitializeModel(const InitializeModelArgs& args) {
+  ArtmExecute(id_, args, ArtmInitializeModel);
+}
+
+void MasterModel::ImportBatches(const ImportBatchesArgs& args) {
+  ArtmExecute(id_, args, ArtmImportBatches);
+}
+
+void MasterModel::FitOnlineModel(const FitOnlineMasterModelArgs& args) {
+  ArtmExecute(id_, args, ArtmFitOnlineMasterModel);
+}
+
+void MasterModel::FitOfflineModel(const FitOfflineMasterModelArgs& args) {
+  ArtmExecute(id_, args, ArtmFitOfflineMasterModel);
+}
+
+void MasterModel::DisposeBatch(const std::string& batch_name) {
+  ArtmDisposeBatch(id_, batch_name.c_str());
 }
 
 }  // namespace artm

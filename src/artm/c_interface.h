@@ -20,6 +20,8 @@ extern "C" {
   DLL_PUBLIC int ArtmCreateMasterComponent(int length, const char* master_component_config);
   DLL_PUBLIC int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicate_master_args);
   DLL_PUBLIC int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config);
+  DLL_PUBLIC int ArtmCreateMasterModel(int length, const char* master_model_config);
+  DLL_PUBLIC int ArtmReconfigureMasterModel(int master_id, int length, const char* master_model_config);
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);
 
   DLL_PUBLIC int ArtmCreateModel(int master_id, int length, const char* model_config);
@@ -61,6 +63,12 @@ extern "C" {
   DLL_PUBLIC int ArtmMergeModel(int master_id, int length, const char* merge_model_args);
   DLL_PUBLIC int ArtmRegularizeModel(int master_id, int length, const char* regularize_model_args);
   DLL_PUBLIC int ArtmNormalizeModel(int master_id, int length, const char* normalize_model_args);
+
+  DLL_PUBLIC int ArtmFitOfflineMasterModel(int master_id, int lenght, const char* fit_offline_master_model_args);
+  DLL_PUBLIC int ArtmFitOnlineMasterModel(int master_id, int lenght, const char* fit_online_master_model_args);
+  DLL_PUBLIC int ArtmRequestTransformMasterModel(int master_id, int length, const char* transform_master_model_args);
+  DLL_PUBLIC int ArtmRequestTransformMasterModelExternal(int master_id, int length,
+                                                         const char* transform_master_model_args);
 
   DLL_PUBLIC int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* get_theta_args);
