@@ -938,6 +938,15 @@ int execute(const artm_options& options) {
     master_component->FilterDictionary(filter_dictionary_args);
   }
 
+  if (!options.save_dictionary.empty()) {
+    ProgressScope scope(std::string("Saving dictionary to ") + options.save_dictionary);
+    ExportDictionaryArgs export_dictionary_args;
+    export_dictionary_args.set_dictionary_name(options.main_dictionary_name);
+    export_dictionary_args.set_file_name(options.save_dictionary);
+    if (options.force) boost::filesystem::remove(options.save_dictionary);
+    master_component->ExportDictionary(export_dictionary_args);
+  }
+
   // Step 4.2. Loading remaining dictionaries.
   for (auto iter : dictionary_map) {
     if (iter.second == options.main_dictionary_name)
@@ -1001,15 +1010,6 @@ int execute(const artm_options& options) {
 
   if (options.passes > 0)
     final_score_helper.showScores(pwt_model_name);
-
-  if (!options.save_dictionary.empty()) {
-    ProgressScope scope(std::string("Saving dictionary to ") + options.save_dictionary);
-    ExportDictionaryArgs export_dictionary_args;
-    export_dictionary_args.set_dictionary_name(options.main_dictionary_name);
-    export_dictionary_args.set_file_name(options.save_dictionary);
-    if (options.force) boost::filesystem::remove(options.save_dictionary);
-    master_component->ExportDictionary(export_dictionary_args);
-  }
 
   if (!options.save_model.empty()) {
     ProgressScope scope(std::string("Saving model to ") + options.save_model);
