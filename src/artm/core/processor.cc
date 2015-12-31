@@ -1008,6 +1008,7 @@ void Processor::ThreadFunction() {
       }
 
       const Batch& batch = batch_ptr != nullptr ? *batch_ptr : part->batch();
+      VLOG(0) << "Processor: start processing batch " << batch.id();
 
       if (batch.class_id_size() != batch.token_size())
         BOOST_THROW_EXCEPTION(InternalError(
@@ -1186,6 +1187,7 @@ void Processor::ThreadFunction() {
         }
 
         if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
+        VLOG(0) << "Processor: complete processing batch " << batch.id();
       }
     }
   }

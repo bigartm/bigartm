@@ -134,26 +134,28 @@ std::vector<std::string> BatchHelpers::ListAllBatches(const boost::filesystem::p
 }
 
 boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,
-                                           const std::string& disk_path) {
+                                           const std::string& disk_path, const std::string& name) {
+  if (!batch.has_id())
+    BOOST_THROW_EXCEPTION(InvalidOperation("BatchHelpers::SaveBatch: batch expecting id"));
+
   boost::uuids::uuid uuid;
-  if (batch.has_id()) {
-    try {
-      uuid = boost::lexical_cast<boost::uuids::uuid>(batch.id());
-    } catch (...) {
-      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Batch.id", batch.id(), "expecting guid"));
-    }
-  } else {
-    uuid = boost::uuids::random_generator()();
+  try {
+    uuid = boost::lexical_cast<boost::uuids::uuid>(batch.id());
+  } catch (...) {
+    BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Batch.id", batch.id(), "expecting guid"));
   }
 
-  boost::filesystem::path file(boost::lexical_cast<std::string>(uuid) + kBatchExtension);
+  boost::filesystem::path file(name + kBatchExtension);
   SaveMessage(file.string(), disk_path, batch);
   return uuid;
 }
 
 void BatchHelpers::CompactBatch(const Batch& batch, Batch* compacted_batch) {
   if (batch.has_description()) compacted_batch->set_description(batch.description());
-  if (batch.has_id()) compacted_batch->set_id(batch.id());
+  if (batch.has_id())
+    compacted_batch->set_id(batch.id());
+  else
+    compacted_batch->set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
 
   std::vector<int> orig_to_compacted_id_map(batch.token_size(), -1);
   int compacted_dictionary_size = 0;
