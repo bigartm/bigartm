@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include <thread>  // NOLINT
-
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_io.hpp"
 
@@ -225,16 +223,109 @@ inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
 inline std::string DescribeErrors(const ::artm::MasterComponentConfig& message) {
   std::stringstream ss;
 
-  if (message.processors_count() <= 0)
-    ss << "MasterComponentConfig.processors_count == " << message.processors_count() << " is invalid; ";
-
   if (message.processor_queue_max_size() <= 0)
     ss << "MasterComponentConfig.processor_queue_max_size == "
        << message.processor_queue_max_size() << " is invalid; ";
 
-  if (message.processor_queue_max_size() <= 0)
+  if (message.merger_queue_max_size() <= 0)
     ss << "MasterComponentConfig.merger_queue_max_size == "
        << message.merger_queue_max_size() << " is invalid; ";
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::MasterModelConfig& message) {
+  std::stringstream ss;
+
+  if (message.class_weight_size() != message.class_id_size())
+    ss << "Length mismatch in fields MasterModelConfig.class_id and MasterModelConfig.class_weight; ";
+
+  if (!message.has_pwt_name() || message.pwt_name().empty())
+    ss << "Field MasterModelConfig.pwt_name must not be empty; ";
+
+  if (message.inner_iterations_count() < 0)
+    ss << "Field MasterModelConfig.inner_iterations_count must be non-negative; ";
+
+  for (int i = 0; i < message.regularizer_config_size(); ++i) {
+    const RegularizerConfig& config = message.regularizer_config(i);
+    if (!config.has_tau())
+      ss << "Field MasterModelConfig.RegularizerConfig.tau must not be empty "
+         << "(regularizer name: " << config.name() << "); ";
+  }
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::FitOfflineMasterModelArgs& message) {
+  std::stringstream ss;
+
+  if (message.batch_filename_size() == 0)
+    ss << "Fields FitOfflineMasterModelArgs.batch_filename must not be empty; ";
+
+  if (message.batch_filename_size() != message.batch_weight_size())
+    ss << "Length mismatch in fields FitOfflineMasterModelArgs.batch_filename "
+       << "and FitOfflineMasterModelArgs.batch_weight; ";
+
+  if (message.passes() <= 0)
+    ss << "FitOfflineMasterModelArgs.passes() must be a positive number";
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::FitOnlineMasterModelArgs& message) {
+  std::stringstream ss;
+
+  if (message.batch_filename_size() == 0)
+    ss << "Fields FitOnlineMasterModelArgs.batch_filename must not be empty; ";
+
+  if (message.batch_filename_size() != message.batch_weight_size())
+    ss << "Length mismatch in fields FitOnlineMasterModelArgs.batch_filename "
+    << "and FitOnlineMasterModelArgs.batch_weight; ";
+
+  if (message.update_after_size() == 0)
+    ss << "Field FitOnlineMasterModelArgs.update_after must not be empty; ";
+
+  if (message.update_after_size() != message.apply_weight_size() ||
+      message.update_after_size() != message.decay_weight_size()) {
+    ss << "Length mismatch in fields FitOnlineMasterModelArgs.update_after, "
+       << "FitOnlineMasterModelArgs.apply_weight and FitOnlineMasterModelArgs.decay_weight; ";
+  }
+
+  for (int i = 0; i < message.update_after_size(); i++) {
+    int value = message.update_after(i);
+    if (value <= 0) {
+      ss << "FitOnlineMasterModelArgs.update_after[" << i << "] == " << value
+         << ", expected value must be greater than zero; ";
+      break;
+    }
+    if (value > message.batch_filename_size()) {
+      ss << "FitOnlineMasterModelArgs.update_after[" << i << "] == " << value
+         << ", expected value must not exceed FitOnlineMasterModelArgs.batch_filename_size(); ";
+      break;
+    }
+    if ((i > 0) && (message.update_after(i) <= message.update_after(i - 1))) {
+      ss << "FitOnlineMasterModelArgs.update_after[" << i << "] "
+         << "is less than previous value; expect strictly increasing sequence; ";
+      break;
+    }
+    if ((i + 1) == message.update_after_size()) {
+      if (message.update_after(i) != message.batch_filename_size()) {
+        ss << "Last element in FitOnlineMasterModelArgs.update_after is " << message.update_after(i) << ", "
+           << "expected value is FitOnlineMasterModelArgs.batch_filename_size(), which was "
+           << message.batch_filename_size() << "; ";
+        break;
+      }
+    }
+  }
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::TransformMasterModelArgs& message) {
+  std::stringstream ss;
+
+  if (message.batch_filename_size() == 0)
+    ss << "Fields TransformMasterModelArgs.batch_filename must not be empty; ";
 
   return ss.str();
 }
@@ -504,25 +595,6 @@ inline void FixMessage(::artm::FilterDictionaryArgs* message) {
 }
 
 template<>
-inline void FixMessage(::artm::MasterComponentConfig* message) {
-  if (!message->has_processors_count() || message->processors_count() <= 0) {
-    unsigned int n = std::thread::hardware_concurrency();
-    if (n == 0) {
-      LOG(INFO) << "MasterComponentConfig.processors_count is set to 1 (default)";
-      message->set_processors_count(1);
-    } else {
-      LOG(INFO) << "MasterComponentConfig.processors_count is automatically set to " << n;
-      message->set_processors_count(n);
-    }
-  }
-
-  if (!message->has_processor_queue_max_size()) {
-    // The default setting for processor queue max size is to use the number of processors.
-    message->set_processor_queue_max_size(message->processors_count());
-  }
-}
-
-template<>
 inline void FixMessage(::artm::DictionaryData* message) {
   if (message->class_id_size() == 0) {
     for (int i = 0; i < message->token_size(); ++i) {
@@ -536,6 +608,41 @@ inline void FixMessage(::artm::ProcessBatchesArgs* message) {
   if (message->batch_weight_size() == 0) {
     for (int i = 0; i < message->batch_filename_size(); ++i)
       message->add_batch_weight(1.0f);
+  }
+}
+
+template<>
+inline void FixMessage(::artm::MasterModelConfig* message) {
+  if (message->class_weight_size() == 0) {
+    for (int i = 0; i < message->class_id_size(); ++i)
+      message->add_class_weight(1.0f);
+  }
+}
+
+template<>
+inline void FixMessage(::artm::FitOfflineMasterModelArgs* message) {
+  if (message->batch_weight_size() == 0) {
+    for (int i = 0; i < message->batch_filename_size(); ++i)
+      message->add_batch_weight(1.0f);
+  }
+}
+
+template<>
+inline void FixMessage(::artm::FitOnlineMasterModelArgs* message) {
+  if (message->batch_weight_size() == 0) {
+    for (int i = 0; i < message->batch_filename_size(); ++i)
+      message->add_batch_weight(1.0f);
+  }
+
+  if (message->apply_weight_size() == 0) {
+    for (int i = 0; i < message->decay_weight_size(); ++i)
+      message->add_apply_weight(1.0f - message->decay_weight(i));
+  }
+
+  if (message->decay_weight_size() == 0) {
+    for (int i = 0; i < message->apply_weight_size(); ++i) {
+      message->add_decay_weight(1.0f - message->apply_weight(i));
+    }
   }
 }
 
@@ -704,6 +811,68 @@ inline std::string DescribeMessage(const ::artm::RegularizeModelArgs& message) {
   ss << ", nwt_source_name=" << message.nwt_source_name();
   for (int i = 0; i < message.regularizer_settings_size(); ++i)
     DescribeMessage(message.regularizer_settings(i));
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
+  std::stringstream ss;
+  ss << "MasterModelConfig";
+  ss << ": topic_name_size=" << message.topic_name_size();
+  for (int i = 0; i < message.class_id_size(); ++i)
+    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
+  ss << ", score_config_size=" << message.score_config_size();
+  ss << ", threads=" << message.threads();
+  ss << ", pwt_name=" << message.pwt_name();
+  ss << ", nwt_name=" << message.nwt_name();
+  ss << ", inner_iterations_count=" << message.inner_iterations_count();
+  for (int i = 0; i < message.regularizer_config_size(); ++i)
+    ss << ", regularizer=("
+       << message.regularizer_config(i).name() << ":"
+       << message.regularizer_config(i).tau() << ")";
+  ss << ", reuse_theta=" << message.reuse_theta() ? "yes" : "no";
+  ss << ", opt_for_avx=" << message.opt_for_avx() ? "yes" : "no";
+  ss << ", use_sparse_bow=" << message.use_sparse_bow() ? "yes" : "no";
+  ss << ", disk_cache_path" << message.disk_cache_path();
+
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::FitOfflineMasterModelArgs& message) {
+  std::stringstream ss;
+  ss << "FitOfflineMasterModelArgs";
+  ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", batch_weight_size=" << message.batch_weight_size();
+  ss << ", passes=" << message.passes();
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::FitOnlineMasterModelArgs& message) {
+  std::stringstream ss;
+  ss << "FitOnlineMasterModelArgs";
+  ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", batch_weight_size=" << message.batch_weight_size();
+  ss << ", update_after:apply_weight:decay_weight=(";
+  for (int i = 0; i < message.update_after_size(); ++i) {
+    if (i != 0) ss << ", ";
+    ss << message.update_after(i) << ":";
+    ss << message.apply_weight(i) << ":";
+    ss << message.decay_weight(i);
+  }
+  ss << ")";
+  ss << ", async=" << message.async() ? "yes" : "no";
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& message) {
+  std::stringstream ss;
+  ss << "TransformMasterModelArgs";
+  ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", theta_matrix_type=" << message.theta_matrix_type();
+  ss << ", predict_class_id=" << message.predict_class_id();
   return ss.str();
 }
 

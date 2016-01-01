@@ -42,6 +42,7 @@ class ThreadSafeHolder : boost::noncopyable {
 
   std::shared_ptr<T> get_copy() const {
     boost::lock_guard<boost::mutex> guard(lock_);
+    if (object_ == nullptr) return std::make_shared<T>();
     return std::make_shared<T>(*object_);
   }
 

@@ -57,7 +57,7 @@ class RegularizerInterface {
 
   virtual bool RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
                              const ::artm::core::PhiMatrix& n_wt,
-                             ::artm::core::PhiMatrix* result) { return true; }
+                             ::artm::core::PhiMatrix* result) { return false; }
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize() {
     return google::protobuf::RepeatedPtrField<std::string>();

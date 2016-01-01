@@ -210,6 +210,20 @@ int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicat
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmCreateMasterModel(int length, const char* master_model_config) {
+  try {
+    EnableLogging();
+
+    artm::MasterModelConfig config;
+    ParseFromArray(master_model_config, length, &config);
+    ::artm::core::FixAndValidateMessage(&config, /* throw_error =*/ true);
+    auto& mcm = MasterComponentManager::singleton();
+    int retval = mcm.Store(std::make_shared< ::artm::core::MasterComponent>(config));
+    LOG(INFO) << "Creating MasterModel (id=" << retval << ")...";
+    return retval;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batches_args) {
   try {
     artm::ProcessBatchesArgs args;
@@ -402,6 +416,19 @@ int ArtmReconfigureMasterComponent(int master_id, int length, const char* config
   return ArtmExecute< ::artm::MasterComponentConfig>(master_id, length, config, &MasterComponent::Reconfigure);
 }
 
+int ArtmReconfigureMasterModel(int master_id, int length, const char* master_model_config) {
+  set_last_error("Method is not implemented yet");
+  return ARTM_INTERNAL_ERROR;
+}
+
+int ArtmFitOfflineMasterModel(int master_id, int length, const char* args) {
+  return ArtmExecute< ::artm::FitOfflineMasterModelArgs>(master_id, length, args, &MasterComponent::FitOffline);
+}
+
+int ArtmFitOnlineMasterModel(int master_id, int length, const char* args) {
+  return ArtmExecute< ::artm::FitOnlineMasterModelArgs>(master_id, length, args, &MasterComponent::FitOnline);
+}
+
 int ArtmDisposeRegularizer(int master_id, const char* name) {
   return ArtmExecute(master_id, name, &MasterComponent::DisposeRegularizer);
 }
@@ -498,4 +525,14 @@ int ArtmRequestTopicModelExternal(int master_id, int length, const char* args) {
 int ArtmRequestRegularizerState(int master_id, int length, const char* args) {
   return ArtmRequest< ::artm::GetRegularizerStateArgs,
                       ::artm::RegularizerInternalState>(master_id, length, args);
+}
+
+int ArtmRequestTransformMasterModel(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::TransformMasterModelArgs,
+                      ::artm::ThetaMatrix>(master_id, length, args);
+}
+
+int ArtmRequestTransformMasterModelExternal(int master_id, int length, const char* args) {
+  return ArtmRequestExternal< ::artm::TransformMasterModelArgs,
+                              ::artm::ThetaMatrix>(master_id, length, args);
 }

@@ -37,8 +37,11 @@ class TestMother {
   ModelConfig GenerateModelConfig() const;
   RegularizerConfig GenerateRegularizerConfig() const;
   static void GenerateBatches(int batches_size, int nTokens,
-                              std::vector<std::shared_ptr< ::artm::Batch>>* batches);
+                              std::vector<std::shared_ptr< ::artm::Batch>>* batches,
+                              ::artm::DictionaryData* dictionary = nullptr);
   static void GenerateBatches(int batches_size, int nTokens, const std::string& target_folder);
+  static void GenerateBatches(int batches_size, int nTokens, ::artm::ImportBatchesArgs* args,
+                              ::artm::DictionaryData* dictionary = nullptr);
 
  private:
   const int nTopics;

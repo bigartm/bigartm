@@ -261,7 +261,12 @@ void PhiMatrixOperations::InvokePhiRegularizers(
        reg_iterator++) {
     auto regularizer = schema->regularizer(reg_iterator->name().c_str());
 
-    if (regularizer != nullptr) {
+    if (regularizer == nullptr) {
+      LOG(ERROR) << "Phi Regularizer with name <" << reg_iterator->name().c_str() << "> does not exist.\n";
+      continue;
+    }
+
+    {
       double tau = reg_iterator->tau();
       bool relative_reg = reg_iterator->use_relative_regularization();
 
@@ -275,6 +280,8 @@ void PhiMatrixOperations::InvokePhiRegularizers(
       }
 
       bool retval = regularizer->RegularizePhi(p_wt, n_wt, &local_r_wt);
+      if (!retval)
+        continue;
 
       // count n and r_i for relative regularization, if necessary
       // prepare next structure with parameters:
@@ -358,15 +365,6 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         }
       }
       local_r_wt.Reset();
-
-      if (!retval) {
-        LOG(ERROR) << "Problems with type or number of parameters in Phi regularizer <" <<
-          reg_iterator->name().c_str() <<
-          ">. On this iteration this regularizer was turned off.\n";
-      }
-    } else {
-      LOG(ERROR) << "Phi Regularizer with name <" <<
-        reg_iterator->name().c_str() << "> does not exist.\n";
     }
   }
 }

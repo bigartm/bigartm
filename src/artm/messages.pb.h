@@ -119,6 +119,10 @@ class MasterComponentInfo_ModelInfo;
 class MasterComponentInfo_CacheEntryInfo;
 class ImportBatchesArgs;
 class AwaitOperationArgs;
+class MasterModelConfig;
+class FitOfflineMasterModelArgs;
+class FitOnlineMasterModelArgs;
+class TransformMasterModelArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -474,6 +478,29 @@ inline bool CopyRequestResultArgs_RequestType_Parse(
     const ::std::string& name, CopyRequestResultArgs_RequestType* value) {
   return ::google::protobuf::internal::ParseNamedEnum<CopyRequestResultArgs_RequestType>(
     CopyRequestResultArgs_RequestType_descriptor(), name, value);
+}
+enum TransformMasterModelArgs_ThetaMatrixType {
+  TransformMasterModelArgs_ThetaMatrixType_None = 0,
+  TransformMasterModelArgs_ThetaMatrixType_Dense = 1,
+  TransformMasterModelArgs_ThetaMatrixType_Sparse = 2,
+  TransformMasterModelArgs_ThetaMatrixType_Cache = 3,
+  TransformMasterModelArgs_ThetaMatrixType_DensePtdw = 4,
+  TransformMasterModelArgs_ThetaMatrixType_SparsePtdw = 5
+};
+bool TransformMasterModelArgs_ThetaMatrixType_IsValid(int value);
+const TransformMasterModelArgs_ThetaMatrixType TransformMasterModelArgs_ThetaMatrixType_ThetaMatrixType_MIN = TransformMasterModelArgs_ThetaMatrixType_None;
+const TransformMasterModelArgs_ThetaMatrixType TransformMasterModelArgs_ThetaMatrixType_ThetaMatrixType_MAX = TransformMasterModelArgs_ThetaMatrixType_SparsePtdw;
+const int TransformMasterModelArgs_ThetaMatrixType_ThetaMatrixType_ARRAYSIZE = TransformMasterModelArgs_ThetaMatrixType_ThetaMatrixType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* TransformMasterModelArgs_ThetaMatrixType_descriptor();
+inline const ::std::string& TransformMasterModelArgs_ThetaMatrixType_Name(TransformMasterModelArgs_ThetaMatrixType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    TransformMasterModelArgs_ThetaMatrixType_descriptor(), value);
+}
+inline bool TransformMasterModelArgs_ThetaMatrixType_Parse(
+    const ::std::string& name, TransformMasterModelArgs_ThetaMatrixType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<TransformMasterModelArgs_ThetaMatrixType>(
+    TransformMasterModelArgs_ThetaMatrixType_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -2322,6 +2349,13 @@ class RegularizerConfig : public ::google::protobuf::Message {
   inline ::std::string* release_config();
   inline void set_allocated_config(::std::string* config);
 
+  // optional float tau = 4;
+  inline bool has_tau() const;
+  inline void clear_tau();
+  static const int kTauFieldNumber = 4;
+  inline float tau() const;
+  inline void set_tau(float value);
+
   // @@protoc_insertion_point(class_scope:artm.RegularizerConfig)
  private:
   inline void set_has_name();
@@ -2330,15 +2364,18 @@ class RegularizerConfig : public ::google::protobuf::Message {
   inline void clear_has_type();
   inline void set_has_config();
   inline void clear_has_config();
+  inline void set_has_tau();
+  inline void clear_has_tau();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* name_;
   ::std::string* config_;
   int type_;
+  float tau_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -11595,6 +11632,652 @@ class AwaitOperationArgs : public ::google::protobuf::Message {
   void InitAsDefaultInstance();
   static AwaitOperationArgs* default_instance_;
 };
+// -------------------------------------------------------------------
+
+class MasterModelConfig : public ::google::protobuf::Message {
+ public:
+  MasterModelConfig();
+  virtual ~MasterModelConfig();
+
+  MasterModelConfig(const MasterModelConfig& from);
+
+  inline MasterModelConfig& operator=(const MasterModelConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MasterModelConfig& default_instance();
+
+  void Swap(MasterModelConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  MasterModelConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const MasterModelConfig& from);
+  void MergeFrom(const MasterModelConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string topic_name = 1;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 1;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
+  // repeated string class_id = 2;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
+  // repeated float class_weight = 3;
+  inline int class_weight_size() const;
+  inline void clear_class_weight();
+  static const int kClassWeightFieldNumber = 3;
+  inline float class_weight(int index) const;
+  inline void set_class_weight(int index, float value);
+  inline void add_class_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      class_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_class_weight();
+
+  // repeated .artm.ScoreConfig score_config = 4;
+  inline int score_config_size() const;
+  inline void clear_score_config();
+  static const int kScoreConfigFieldNumber = 4;
+  inline const ::artm::ScoreConfig& score_config(int index) const;
+  inline ::artm::ScoreConfig* mutable_score_config(int index);
+  inline ::artm::ScoreConfig* add_score_config();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >&
+      score_config() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >*
+      mutable_score_config();
+
+  // repeated .artm.RegularizerConfig regularizer_config = 5;
+  inline int regularizer_config_size() const;
+  inline void clear_regularizer_config();
+  static const int kRegularizerConfigFieldNumber = 5;
+  inline const ::artm::RegularizerConfig& regularizer_config(int index) const;
+  inline ::artm::RegularizerConfig* mutable_regularizer_config(int index);
+  inline ::artm::RegularizerConfig* add_regularizer_config();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::RegularizerConfig >&
+      regularizer_config() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerConfig >*
+      mutable_regularizer_config();
+
+  // optional int32 threads = 6;
+  inline bool has_threads() const;
+  inline void clear_threads();
+  static const int kThreadsFieldNumber = 6;
+  inline ::google::protobuf::int32 threads() const;
+  inline void set_threads(::google::protobuf::int32 value);
+
+  // optional string pwt_name = 7;
+  inline bool has_pwt_name() const;
+  inline void clear_pwt_name();
+  static const int kPwtNameFieldNumber = 7;
+  inline const ::std::string& pwt_name() const;
+  inline void set_pwt_name(const ::std::string& value);
+  inline void set_pwt_name(const char* value);
+  inline void set_pwt_name(const char* value, size_t size);
+  inline ::std::string* mutable_pwt_name();
+  inline ::std::string* release_pwt_name();
+  inline void set_allocated_pwt_name(::std::string* pwt_name);
+
+  // optional string nwt_name = 8 [default = "nwt"];
+  inline bool has_nwt_name() const;
+  inline void clear_nwt_name();
+  static const int kNwtNameFieldNumber = 8;
+  inline const ::std::string& nwt_name() const;
+  inline void set_nwt_name(const ::std::string& value);
+  inline void set_nwt_name(const char* value);
+  inline void set_nwt_name(const char* value, size_t size);
+  inline ::std::string* mutable_nwt_name();
+  inline ::std::string* release_nwt_name();
+  inline void set_allocated_nwt_name(::std::string* nwt_name);
+
+  // optional int32 inner_iterations_count = 9;
+  inline bool has_inner_iterations_count() const;
+  inline void clear_inner_iterations_count();
+  static const int kInnerIterationsCountFieldNumber = 9;
+  inline ::google::protobuf::int32 inner_iterations_count() const;
+  inline void set_inner_iterations_count(::google::protobuf::int32 value);
+
+  // optional bool reuse_theta = 10 [default = false];
+  inline bool has_reuse_theta() const;
+  inline void clear_reuse_theta();
+  static const int kReuseThetaFieldNumber = 10;
+  inline bool reuse_theta() const;
+  inline void set_reuse_theta(bool value);
+
+  // optional bool opt_for_avx = 11 [default = true];
+  inline bool has_opt_for_avx() const;
+  inline void clear_opt_for_avx();
+  static const int kOptForAvxFieldNumber = 11;
+  inline bool opt_for_avx() const;
+  inline void set_opt_for_avx(bool value);
+
+  // optional bool use_sparse_bow = 12 [default = true];
+  inline bool has_use_sparse_bow() const;
+  inline void clear_use_sparse_bow();
+  static const int kUseSparseBowFieldNumber = 12;
+  inline bool use_sparse_bow() const;
+  inline void set_use_sparse_bow(bool value);
+
+  // optional string disk_cache_path = 13;
+  inline bool has_disk_cache_path() const;
+  inline void clear_disk_cache_path();
+  static const int kDiskCachePathFieldNumber = 13;
+  inline const ::std::string& disk_cache_path() const;
+  inline void set_disk_cache_path(const ::std::string& value);
+  inline void set_disk_cache_path(const char* value);
+  inline void set_disk_cache_path(const char* value, size_t size);
+  inline ::std::string* mutable_disk_cache_path();
+  inline ::std::string* release_disk_cache_path();
+  inline void set_allocated_disk_cache_path(::std::string* disk_cache_path);
+
+  // @@protoc_insertion_point(class_scope:artm.MasterModelConfig)
+ private:
+  inline void set_has_threads();
+  inline void clear_has_threads();
+  inline void set_has_pwt_name();
+  inline void clear_has_pwt_name();
+  inline void set_has_nwt_name();
+  inline void clear_has_nwt_name();
+  inline void set_has_inner_iterations_count();
+  inline void clear_has_inner_iterations_count();
+  inline void set_has_reuse_theta();
+  inline void clear_has_reuse_theta();
+  inline void set_has_opt_for_avx();
+  inline void clear_has_opt_for_avx();
+  inline void set_has_use_sparse_bow();
+  inline void clear_has_use_sparse_bow();
+  inline void set_has_disk_cache_path();
+  inline void clear_has_disk_cache_path();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
+  ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
+  ::google::protobuf::RepeatedPtrField< ::artm::RegularizerConfig > regularizer_config_;
+  ::std::string* pwt_name_;
+  ::google::protobuf::int32 threads_;
+  ::google::protobuf::int32 inner_iterations_count_;
+  ::std::string* nwt_name_;
+  static ::std::string* _default_nwt_name_;
+  ::std::string* disk_cache_path_;
+  bool reuse_theta_;
+  bool opt_for_avx_;
+  bool use_sparse_bow_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static MasterModelConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class FitOfflineMasterModelArgs : public ::google::protobuf::Message {
+ public:
+  FitOfflineMasterModelArgs();
+  virtual ~FitOfflineMasterModelArgs();
+
+  FitOfflineMasterModelArgs(const FitOfflineMasterModelArgs& from);
+
+  inline FitOfflineMasterModelArgs& operator=(const FitOfflineMasterModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const FitOfflineMasterModelArgs& default_instance();
+
+  void Swap(FitOfflineMasterModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  FitOfflineMasterModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const FitOfflineMasterModelArgs& from);
+  void MergeFrom(const FitOfflineMasterModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string batch_filename = 1;
+  inline int batch_filename_size() const;
+  inline void clear_batch_filename();
+  static const int kBatchFilenameFieldNumber = 1;
+  inline const ::std::string& batch_filename(int index) const;
+  inline ::std::string* mutable_batch_filename(int index);
+  inline void set_batch_filename(int index, const ::std::string& value);
+  inline void set_batch_filename(int index, const char* value);
+  inline void set_batch_filename(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_filename();
+  inline void add_batch_filename(const ::std::string& value);
+  inline void add_batch_filename(const char* value);
+  inline void add_batch_filename(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
+
+  // repeated float batch_weight = 2;
+  inline int batch_weight_size() const;
+  inline void clear_batch_weight();
+  static const int kBatchWeightFieldNumber = 2;
+  inline float batch_weight(int index) const;
+  inline void set_batch_weight(int index, float value);
+  inline void add_batch_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      batch_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_batch_weight();
+
+  // optional int32 passes = 3 [default = 1];
+  inline bool has_passes() const;
+  inline void clear_passes();
+  static const int kPassesFieldNumber = 3;
+  inline ::google::protobuf::int32 passes() const;
+  inline void set_passes(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:artm.FitOfflineMasterModelArgs)
+ private:
+  inline void set_has_passes();
+  inline void clear_has_passes();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
+  ::google::protobuf::RepeatedField< float > batch_weight_;
+  ::google::protobuf::int32 passes_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static FitOfflineMasterModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class FitOnlineMasterModelArgs : public ::google::protobuf::Message {
+ public:
+  FitOnlineMasterModelArgs();
+  virtual ~FitOnlineMasterModelArgs();
+
+  FitOnlineMasterModelArgs(const FitOnlineMasterModelArgs& from);
+
+  inline FitOnlineMasterModelArgs& operator=(const FitOnlineMasterModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const FitOnlineMasterModelArgs& default_instance();
+
+  void Swap(FitOnlineMasterModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  FitOnlineMasterModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const FitOnlineMasterModelArgs& from);
+  void MergeFrom(const FitOnlineMasterModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string batch_filename = 1;
+  inline int batch_filename_size() const;
+  inline void clear_batch_filename();
+  static const int kBatchFilenameFieldNumber = 1;
+  inline const ::std::string& batch_filename(int index) const;
+  inline ::std::string* mutable_batch_filename(int index);
+  inline void set_batch_filename(int index, const ::std::string& value);
+  inline void set_batch_filename(int index, const char* value);
+  inline void set_batch_filename(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_filename();
+  inline void add_batch_filename(const ::std::string& value);
+  inline void add_batch_filename(const char* value);
+  inline void add_batch_filename(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
+
+  // repeated float batch_weight = 2;
+  inline int batch_weight_size() const;
+  inline void clear_batch_weight();
+  static const int kBatchWeightFieldNumber = 2;
+  inline float batch_weight(int index) const;
+  inline void set_batch_weight(int index, float value);
+  inline void add_batch_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      batch_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_batch_weight();
+
+  // repeated int32 update_after = 3;
+  inline int update_after_size() const;
+  inline void clear_update_after();
+  static const int kUpdateAfterFieldNumber = 3;
+  inline ::google::protobuf::int32 update_after(int index) const;
+  inline void set_update_after(int index, ::google::protobuf::int32 value);
+  inline void add_update_after(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      update_after() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_update_after();
+
+  // repeated float apply_weight = 4;
+  inline int apply_weight_size() const;
+  inline void clear_apply_weight();
+  static const int kApplyWeightFieldNumber = 4;
+  inline float apply_weight(int index) const;
+  inline void set_apply_weight(int index, float value);
+  inline void add_apply_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      apply_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_apply_weight();
+
+  // repeated float decay_weight = 5;
+  inline int decay_weight_size() const;
+  inline void clear_decay_weight();
+  static const int kDecayWeightFieldNumber = 5;
+  inline float decay_weight(int index) const;
+  inline void set_decay_weight(int index, float value);
+  inline void add_decay_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      decay_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_decay_weight();
+
+  // optional bool async = 6 [default = false];
+  inline bool has_async() const;
+  inline void clear_async();
+  static const int kAsyncFieldNumber = 6;
+  inline bool async() const;
+  inline void set_async(bool value);
+
+  // @@protoc_insertion_point(class_scope:artm.FitOnlineMasterModelArgs)
+ private:
+  inline void set_has_async();
+  inline void clear_has_async();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
+  ::google::protobuf::RepeatedField< float > batch_weight_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > update_after_;
+  ::google::protobuf::RepeatedField< float > apply_weight_;
+  ::google::protobuf::RepeatedField< float > decay_weight_;
+  bool async_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static FitOnlineMasterModelArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class TransformMasterModelArgs : public ::google::protobuf::Message {
+ public:
+  TransformMasterModelArgs();
+  virtual ~TransformMasterModelArgs();
+
+  TransformMasterModelArgs(const TransformMasterModelArgs& from);
+
+  inline TransformMasterModelArgs& operator=(const TransformMasterModelArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TransformMasterModelArgs& default_instance();
+
+  void Swap(TransformMasterModelArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  TransformMasterModelArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TransformMasterModelArgs& from);
+  void MergeFrom(const TransformMasterModelArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef TransformMasterModelArgs_ThetaMatrixType ThetaMatrixType;
+  static const ThetaMatrixType None = TransformMasterModelArgs_ThetaMatrixType_None;
+  static const ThetaMatrixType Dense = TransformMasterModelArgs_ThetaMatrixType_Dense;
+  static const ThetaMatrixType Sparse = TransformMasterModelArgs_ThetaMatrixType_Sparse;
+  static const ThetaMatrixType Cache = TransformMasterModelArgs_ThetaMatrixType_Cache;
+  static const ThetaMatrixType DensePtdw = TransformMasterModelArgs_ThetaMatrixType_DensePtdw;
+  static const ThetaMatrixType SparsePtdw = TransformMasterModelArgs_ThetaMatrixType_SparsePtdw;
+  static inline bool ThetaMatrixType_IsValid(int value) {
+    return TransformMasterModelArgs_ThetaMatrixType_IsValid(value);
+  }
+  static const ThetaMatrixType ThetaMatrixType_MIN =
+    TransformMasterModelArgs_ThetaMatrixType_ThetaMatrixType_MIN;
+  static const ThetaMatrixType ThetaMatrixType_MAX =
+    TransformMasterModelArgs_ThetaMatrixType_ThetaMatrixType_MAX;
+  static const int ThetaMatrixType_ARRAYSIZE =
+    TransformMasterModelArgs_ThetaMatrixType_ThetaMatrixType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  ThetaMatrixType_descriptor() {
+    return TransformMasterModelArgs_ThetaMatrixType_descriptor();
+  }
+  static inline const ::std::string& ThetaMatrixType_Name(ThetaMatrixType value) {
+    return TransformMasterModelArgs_ThetaMatrixType_Name(value);
+  }
+  static inline bool ThetaMatrixType_Parse(const ::std::string& name,
+      ThetaMatrixType* value) {
+    return TransformMasterModelArgs_ThetaMatrixType_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // repeated string batch_filename = 1;
+  inline int batch_filename_size() const;
+  inline void clear_batch_filename();
+  static const int kBatchFilenameFieldNumber = 1;
+  inline const ::std::string& batch_filename(int index) const;
+  inline ::std::string* mutable_batch_filename(int index);
+  inline void set_batch_filename(int index, const ::std::string& value);
+  inline void set_batch_filename(int index, const char* value);
+  inline void set_batch_filename(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_filename();
+  inline void add_batch_filename(const ::std::string& value);
+  inline void add_batch_filename(const char* value);
+  inline void add_batch_filename(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
+
+  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 2 [default = Cache];
+  inline bool has_theta_matrix_type() const;
+  inline void clear_theta_matrix_type();
+  static const int kThetaMatrixTypeFieldNumber = 2;
+  inline ::artm::TransformMasterModelArgs_ThetaMatrixType theta_matrix_type() const;
+  inline void set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType value);
+
+  // optional string predict_class_id = 3;
+  inline bool has_predict_class_id() const;
+  inline void clear_predict_class_id();
+  static const int kPredictClassIdFieldNumber = 3;
+  inline const ::std::string& predict_class_id() const;
+  inline void set_predict_class_id(const ::std::string& value);
+  inline void set_predict_class_id(const char* value);
+  inline void set_predict_class_id(const char* value, size_t size);
+  inline ::std::string* mutable_predict_class_id();
+  inline ::std::string* release_predict_class_id();
+  inline void set_allocated_predict_class_id(::std::string* predict_class_id);
+
+  // @@protoc_insertion_point(class_scope:artm.TransformMasterModelArgs)
+ private:
+  inline void set_has_theta_matrix_type();
+  inline void clear_has_theta_matrix_type();
+  inline void set_has_predict_class_id();
+  inline void clear_has_predict_class_id();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
+  ::std::string* predict_class_id_;
+  int theta_matrix_type_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static TransformMasterModelArgs* default_instance_;
+};
 // ===================================================================
 
 
@@ -14192,6 +14875,28 @@ inline void RegularizerConfig::set_allocated_config(::std::string* config) {
     clear_has_config();
     config_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
+}
+
+// optional float tau = 4;
+inline bool RegularizerConfig::has_tau() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void RegularizerConfig::set_has_tau() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void RegularizerConfig::clear_has_tau() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void RegularizerConfig::clear_tau() {
+  tau_ = 0;
+  clear_has_tau();
+}
+inline float RegularizerConfig::tau() const {
+  return tau_;
+}
+inline void RegularizerConfig::set_tau(float value) {
+  set_has_tau();
+  tau_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -25891,6 +26596,899 @@ inline void AwaitOperationArgs::set_timeout_milliseconds(::google::protobuf::int
   timeout_milliseconds_ = value;
 }
 
+// -------------------------------------------------------------------
+
+// MasterModelConfig
+
+// repeated string topic_name = 1;
+inline int MasterModelConfig::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void MasterModelConfig::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& MasterModelConfig::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* MasterModelConfig::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void MasterModelConfig::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void MasterModelConfig::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void MasterModelConfig::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterModelConfig::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void MasterModelConfig::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void MasterModelConfig::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void MasterModelConfig::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+MasterModelConfig::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+MasterModelConfig::mutable_topic_name() {
+  return &topic_name_;
+}
+
+// repeated string class_id = 2;
+inline int MasterModelConfig::class_id_size() const {
+  return class_id_.size();
+}
+inline void MasterModelConfig::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& MasterModelConfig::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* MasterModelConfig::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void MasterModelConfig::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void MasterModelConfig::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void MasterModelConfig::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterModelConfig::add_class_id() {
+  return class_id_.Add();
+}
+inline void MasterModelConfig::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void MasterModelConfig::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void MasterModelConfig::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+MasterModelConfig::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+MasterModelConfig::mutable_class_id() {
+  return &class_id_;
+}
+
+// repeated float class_weight = 3;
+inline int MasterModelConfig::class_weight_size() const {
+  return class_weight_.size();
+}
+inline void MasterModelConfig::clear_class_weight() {
+  class_weight_.Clear();
+}
+inline float MasterModelConfig::class_weight(int index) const {
+  return class_weight_.Get(index);
+}
+inline void MasterModelConfig::set_class_weight(int index, float value) {
+  class_weight_.Set(index, value);
+}
+inline void MasterModelConfig::add_class_weight(float value) {
+  class_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+MasterModelConfig::class_weight() const {
+  return class_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+MasterModelConfig::mutable_class_weight() {
+  return &class_weight_;
+}
+
+// repeated .artm.ScoreConfig score_config = 4;
+inline int MasterModelConfig::score_config_size() const {
+  return score_config_.size();
+}
+inline void MasterModelConfig::clear_score_config() {
+  score_config_.Clear();
+}
+inline const ::artm::ScoreConfig& MasterModelConfig::score_config(int index) const {
+  return score_config_.Get(index);
+}
+inline ::artm::ScoreConfig* MasterModelConfig::mutable_score_config(int index) {
+  return score_config_.Mutable(index);
+}
+inline ::artm::ScoreConfig* MasterModelConfig::add_score_config() {
+  return score_config_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >&
+MasterModelConfig::score_config() const {
+  return score_config_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >*
+MasterModelConfig::mutable_score_config() {
+  return &score_config_;
+}
+
+// repeated .artm.RegularizerConfig regularizer_config = 5;
+inline int MasterModelConfig::regularizer_config_size() const {
+  return regularizer_config_.size();
+}
+inline void MasterModelConfig::clear_regularizer_config() {
+  regularizer_config_.Clear();
+}
+inline const ::artm::RegularizerConfig& MasterModelConfig::regularizer_config(int index) const {
+  return regularizer_config_.Get(index);
+}
+inline ::artm::RegularizerConfig* MasterModelConfig::mutable_regularizer_config(int index) {
+  return regularizer_config_.Mutable(index);
+}
+inline ::artm::RegularizerConfig* MasterModelConfig::add_regularizer_config() {
+  return regularizer_config_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::RegularizerConfig >&
+MasterModelConfig::regularizer_config() const {
+  return regularizer_config_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerConfig >*
+MasterModelConfig::mutable_regularizer_config() {
+  return &regularizer_config_;
+}
+
+// optional int32 threads = 6;
+inline bool MasterModelConfig::has_threads() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void MasterModelConfig::set_has_threads() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void MasterModelConfig::clear_has_threads() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void MasterModelConfig::clear_threads() {
+  threads_ = 0;
+  clear_has_threads();
+}
+inline ::google::protobuf::int32 MasterModelConfig::threads() const {
+  return threads_;
+}
+inline void MasterModelConfig::set_threads(::google::protobuf::int32 value) {
+  set_has_threads();
+  threads_ = value;
+}
+
+// optional string pwt_name = 7;
+inline bool MasterModelConfig::has_pwt_name() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void MasterModelConfig::set_has_pwt_name() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void MasterModelConfig::clear_has_pwt_name() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void MasterModelConfig::clear_pwt_name() {
+  if (pwt_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    pwt_name_->clear();
+  }
+  clear_has_pwt_name();
+}
+inline const ::std::string& MasterModelConfig::pwt_name() const {
+  return *pwt_name_;
+}
+inline void MasterModelConfig::set_pwt_name(const ::std::string& value) {
+  set_has_pwt_name();
+  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    pwt_name_ = new ::std::string;
+  }
+  pwt_name_->assign(value);
+}
+inline void MasterModelConfig::set_pwt_name(const char* value) {
+  set_has_pwt_name();
+  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    pwt_name_ = new ::std::string;
+  }
+  pwt_name_->assign(value);
+}
+inline void MasterModelConfig::set_pwt_name(const char* value, size_t size) {
+  set_has_pwt_name();
+  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    pwt_name_ = new ::std::string;
+  }
+  pwt_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterModelConfig::mutable_pwt_name() {
+  set_has_pwt_name();
+  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    pwt_name_ = new ::std::string;
+  }
+  return pwt_name_;
+}
+inline ::std::string* MasterModelConfig::release_pwt_name() {
+  clear_has_pwt_name();
+  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = pwt_name_;
+    pwt_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterModelConfig::set_allocated_pwt_name(::std::string* pwt_name) {
+  if (pwt_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete pwt_name_;
+  }
+  if (pwt_name) {
+    set_has_pwt_name();
+    pwt_name_ = pwt_name;
+  } else {
+    clear_has_pwt_name();
+    pwt_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string nwt_name = 8 [default = "nwt"];
+inline bool MasterModelConfig::has_nwt_name() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void MasterModelConfig::set_has_nwt_name() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void MasterModelConfig::clear_has_nwt_name() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void MasterModelConfig::clear_nwt_name() {
+  if (nwt_name_ != _default_nwt_name_) {
+    nwt_name_->assign(*_default_nwt_name_);
+  }
+  clear_has_nwt_name();
+}
+inline const ::std::string& MasterModelConfig::nwt_name() const {
+  return *nwt_name_;
+}
+inline void MasterModelConfig::set_nwt_name(const ::std::string& value) {
+  set_has_nwt_name();
+  if (nwt_name_ == _default_nwt_name_) {
+    nwt_name_ = new ::std::string;
+  }
+  nwt_name_->assign(value);
+}
+inline void MasterModelConfig::set_nwt_name(const char* value) {
+  set_has_nwt_name();
+  if (nwt_name_ == _default_nwt_name_) {
+    nwt_name_ = new ::std::string;
+  }
+  nwt_name_->assign(value);
+}
+inline void MasterModelConfig::set_nwt_name(const char* value, size_t size) {
+  set_has_nwt_name();
+  if (nwt_name_ == _default_nwt_name_) {
+    nwt_name_ = new ::std::string;
+  }
+  nwt_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterModelConfig::mutable_nwt_name() {
+  set_has_nwt_name();
+  if (nwt_name_ == _default_nwt_name_) {
+    nwt_name_ = new ::std::string(*_default_nwt_name_);
+  }
+  return nwt_name_;
+}
+inline ::std::string* MasterModelConfig::release_nwt_name() {
+  clear_has_nwt_name();
+  if (nwt_name_ == _default_nwt_name_) {
+    return NULL;
+  } else {
+    ::std::string* temp = nwt_name_;
+    nwt_name_ = const_cast< ::std::string*>(_default_nwt_name_);
+    return temp;
+  }
+}
+inline void MasterModelConfig::set_allocated_nwt_name(::std::string* nwt_name) {
+  if (nwt_name_ != _default_nwt_name_) {
+    delete nwt_name_;
+  }
+  if (nwt_name) {
+    set_has_nwt_name();
+    nwt_name_ = nwt_name;
+  } else {
+    clear_has_nwt_name();
+    nwt_name_ = const_cast< ::std::string*>(_default_nwt_name_);
+  }
+}
+
+// optional int32 inner_iterations_count = 9;
+inline bool MasterModelConfig::has_inner_iterations_count() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void MasterModelConfig::set_has_inner_iterations_count() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void MasterModelConfig::clear_has_inner_iterations_count() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void MasterModelConfig::clear_inner_iterations_count() {
+  inner_iterations_count_ = 0;
+  clear_has_inner_iterations_count();
+}
+inline ::google::protobuf::int32 MasterModelConfig::inner_iterations_count() const {
+  return inner_iterations_count_;
+}
+inline void MasterModelConfig::set_inner_iterations_count(::google::protobuf::int32 value) {
+  set_has_inner_iterations_count();
+  inner_iterations_count_ = value;
+}
+
+// optional bool reuse_theta = 10 [default = false];
+inline bool MasterModelConfig::has_reuse_theta() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void MasterModelConfig::set_has_reuse_theta() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void MasterModelConfig::clear_has_reuse_theta() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void MasterModelConfig::clear_reuse_theta() {
+  reuse_theta_ = false;
+  clear_has_reuse_theta();
+}
+inline bool MasterModelConfig::reuse_theta() const {
+  return reuse_theta_;
+}
+inline void MasterModelConfig::set_reuse_theta(bool value) {
+  set_has_reuse_theta();
+  reuse_theta_ = value;
+}
+
+// optional bool opt_for_avx = 11 [default = true];
+inline bool MasterModelConfig::has_opt_for_avx() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void MasterModelConfig::set_has_opt_for_avx() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void MasterModelConfig::clear_has_opt_for_avx() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void MasterModelConfig::clear_opt_for_avx() {
+  opt_for_avx_ = true;
+  clear_has_opt_for_avx();
+}
+inline bool MasterModelConfig::opt_for_avx() const {
+  return opt_for_avx_;
+}
+inline void MasterModelConfig::set_opt_for_avx(bool value) {
+  set_has_opt_for_avx();
+  opt_for_avx_ = value;
+}
+
+// optional bool use_sparse_bow = 12 [default = true];
+inline bool MasterModelConfig::has_use_sparse_bow() const {
+  return (_has_bits_[0] & 0x00000800u) != 0;
+}
+inline void MasterModelConfig::set_has_use_sparse_bow() {
+  _has_bits_[0] |= 0x00000800u;
+}
+inline void MasterModelConfig::clear_has_use_sparse_bow() {
+  _has_bits_[0] &= ~0x00000800u;
+}
+inline void MasterModelConfig::clear_use_sparse_bow() {
+  use_sparse_bow_ = true;
+  clear_has_use_sparse_bow();
+}
+inline bool MasterModelConfig::use_sparse_bow() const {
+  return use_sparse_bow_;
+}
+inline void MasterModelConfig::set_use_sparse_bow(bool value) {
+  set_has_use_sparse_bow();
+  use_sparse_bow_ = value;
+}
+
+// optional string disk_cache_path = 13;
+inline bool MasterModelConfig::has_disk_cache_path() const {
+  return (_has_bits_[0] & 0x00001000u) != 0;
+}
+inline void MasterModelConfig::set_has_disk_cache_path() {
+  _has_bits_[0] |= 0x00001000u;
+}
+inline void MasterModelConfig::clear_has_disk_cache_path() {
+  _has_bits_[0] &= ~0x00001000u;
+}
+inline void MasterModelConfig::clear_disk_cache_path() {
+  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_->clear();
+  }
+  clear_has_disk_cache_path();
+}
+inline const ::std::string& MasterModelConfig::disk_cache_path() const {
+  return *disk_cache_path_;
+}
+inline void MasterModelConfig::set_disk_cache_path(const ::std::string& value) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(value);
+}
+inline void MasterModelConfig::set_disk_cache_path(const char* value) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(value);
+}
+inline void MasterModelConfig::set_disk_cache_path(const char* value, size_t size) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterModelConfig::mutable_disk_cache_path() {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  return disk_cache_path_;
+}
+inline ::std::string* MasterModelConfig::release_disk_cache_path() {
+  clear_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = disk_cache_path_;
+    disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterModelConfig::set_allocated_disk_cache_path(::std::string* disk_cache_path) {
+  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete disk_cache_path_;
+  }
+  if (disk_cache_path) {
+    set_has_disk_cache_path();
+    disk_cache_path_ = disk_cache_path;
+  } else {
+    clear_has_disk_cache_path();
+    disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// FitOfflineMasterModelArgs
+
+// repeated string batch_filename = 1;
+inline int FitOfflineMasterModelArgs::batch_filename_size() const {
+  return batch_filename_.size();
+}
+inline void FitOfflineMasterModelArgs::clear_batch_filename() {
+  batch_filename_.Clear();
+}
+inline const ::std::string& FitOfflineMasterModelArgs::batch_filename(int index) const {
+  return batch_filename_.Get(index);
+}
+inline ::std::string* FitOfflineMasterModelArgs::mutable_batch_filename(int index) {
+  return batch_filename_.Mutable(index);
+}
+inline void FitOfflineMasterModelArgs::set_batch_filename(int index, const ::std::string& value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void FitOfflineMasterModelArgs::set_batch_filename(int index, const char* value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void FitOfflineMasterModelArgs::set_batch_filename(int index, const char* value, size_t size) {
+  batch_filename_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* FitOfflineMasterModelArgs::add_batch_filename() {
+  return batch_filename_.Add();
+}
+inline void FitOfflineMasterModelArgs::add_batch_filename(const ::std::string& value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void FitOfflineMasterModelArgs::add_batch_filename(const char* value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void FitOfflineMasterModelArgs::add_batch_filename(const char* value, size_t size) {
+  batch_filename_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+FitOfflineMasterModelArgs::batch_filename() const {
+  return batch_filename_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+FitOfflineMasterModelArgs::mutable_batch_filename() {
+  return &batch_filename_;
+}
+
+// repeated float batch_weight = 2;
+inline int FitOfflineMasterModelArgs::batch_weight_size() const {
+  return batch_weight_.size();
+}
+inline void FitOfflineMasterModelArgs::clear_batch_weight() {
+  batch_weight_.Clear();
+}
+inline float FitOfflineMasterModelArgs::batch_weight(int index) const {
+  return batch_weight_.Get(index);
+}
+inline void FitOfflineMasterModelArgs::set_batch_weight(int index, float value) {
+  batch_weight_.Set(index, value);
+}
+inline void FitOfflineMasterModelArgs::add_batch_weight(float value) {
+  batch_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+FitOfflineMasterModelArgs::batch_weight() const {
+  return batch_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+FitOfflineMasterModelArgs::mutable_batch_weight() {
+  return &batch_weight_;
+}
+
+// optional int32 passes = 3 [default = 1];
+inline bool FitOfflineMasterModelArgs::has_passes() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void FitOfflineMasterModelArgs::set_has_passes() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void FitOfflineMasterModelArgs::clear_has_passes() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void FitOfflineMasterModelArgs::clear_passes() {
+  passes_ = 1;
+  clear_has_passes();
+}
+inline ::google::protobuf::int32 FitOfflineMasterModelArgs::passes() const {
+  return passes_;
+}
+inline void FitOfflineMasterModelArgs::set_passes(::google::protobuf::int32 value) {
+  set_has_passes();
+  passes_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// FitOnlineMasterModelArgs
+
+// repeated string batch_filename = 1;
+inline int FitOnlineMasterModelArgs::batch_filename_size() const {
+  return batch_filename_.size();
+}
+inline void FitOnlineMasterModelArgs::clear_batch_filename() {
+  batch_filename_.Clear();
+}
+inline const ::std::string& FitOnlineMasterModelArgs::batch_filename(int index) const {
+  return batch_filename_.Get(index);
+}
+inline ::std::string* FitOnlineMasterModelArgs::mutable_batch_filename(int index) {
+  return batch_filename_.Mutable(index);
+}
+inline void FitOnlineMasterModelArgs::set_batch_filename(int index, const ::std::string& value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void FitOnlineMasterModelArgs::set_batch_filename(int index, const char* value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void FitOnlineMasterModelArgs::set_batch_filename(int index, const char* value, size_t size) {
+  batch_filename_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* FitOnlineMasterModelArgs::add_batch_filename() {
+  return batch_filename_.Add();
+}
+inline void FitOnlineMasterModelArgs::add_batch_filename(const ::std::string& value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void FitOnlineMasterModelArgs::add_batch_filename(const char* value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void FitOnlineMasterModelArgs::add_batch_filename(const char* value, size_t size) {
+  batch_filename_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+FitOnlineMasterModelArgs::batch_filename() const {
+  return batch_filename_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+FitOnlineMasterModelArgs::mutable_batch_filename() {
+  return &batch_filename_;
+}
+
+// repeated float batch_weight = 2;
+inline int FitOnlineMasterModelArgs::batch_weight_size() const {
+  return batch_weight_.size();
+}
+inline void FitOnlineMasterModelArgs::clear_batch_weight() {
+  batch_weight_.Clear();
+}
+inline float FitOnlineMasterModelArgs::batch_weight(int index) const {
+  return batch_weight_.Get(index);
+}
+inline void FitOnlineMasterModelArgs::set_batch_weight(int index, float value) {
+  batch_weight_.Set(index, value);
+}
+inline void FitOnlineMasterModelArgs::add_batch_weight(float value) {
+  batch_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+FitOnlineMasterModelArgs::batch_weight() const {
+  return batch_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+FitOnlineMasterModelArgs::mutable_batch_weight() {
+  return &batch_weight_;
+}
+
+// repeated int32 update_after = 3;
+inline int FitOnlineMasterModelArgs::update_after_size() const {
+  return update_after_.size();
+}
+inline void FitOnlineMasterModelArgs::clear_update_after() {
+  update_after_.Clear();
+}
+inline ::google::protobuf::int32 FitOnlineMasterModelArgs::update_after(int index) const {
+  return update_after_.Get(index);
+}
+inline void FitOnlineMasterModelArgs::set_update_after(int index, ::google::protobuf::int32 value) {
+  update_after_.Set(index, value);
+}
+inline void FitOnlineMasterModelArgs::add_update_after(::google::protobuf::int32 value) {
+  update_after_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+FitOnlineMasterModelArgs::update_after() const {
+  return update_after_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+FitOnlineMasterModelArgs::mutable_update_after() {
+  return &update_after_;
+}
+
+// repeated float apply_weight = 4;
+inline int FitOnlineMasterModelArgs::apply_weight_size() const {
+  return apply_weight_.size();
+}
+inline void FitOnlineMasterModelArgs::clear_apply_weight() {
+  apply_weight_.Clear();
+}
+inline float FitOnlineMasterModelArgs::apply_weight(int index) const {
+  return apply_weight_.Get(index);
+}
+inline void FitOnlineMasterModelArgs::set_apply_weight(int index, float value) {
+  apply_weight_.Set(index, value);
+}
+inline void FitOnlineMasterModelArgs::add_apply_weight(float value) {
+  apply_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+FitOnlineMasterModelArgs::apply_weight() const {
+  return apply_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+FitOnlineMasterModelArgs::mutable_apply_weight() {
+  return &apply_weight_;
+}
+
+// repeated float decay_weight = 5;
+inline int FitOnlineMasterModelArgs::decay_weight_size() const {
+  return decay_weight_.size();
+}
+inline void FitOnlineMasterModelArgs::clear_decay_weight() {
+  decay_weight_.Clear();
+}
+inline float FitOnlineMasterModelArgs::decay_weight(int index) const {
+  return decay_weight_.Get(index);
+}
+inline void FitOnlineMasterModelArgs::set_decay_weight(int index, float value) {
+  decay_weight_.Set(index, value);
+}
+inline void FitOnlineMasterModelArgs::add_decay_weight(float value) {
+  decay_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+FitOnlineMasterModelArgs::decay_weight() const {
+  return decay_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+FitOnlineMasterModelArgs::mutable_decay_weight() {
+  return &decay_weight_;
+}
+
+// optional bool async = 6 [default = false];
+inline bool FitOnlineMasterModelArgs::has_async() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void FitOnlineMasterModelArgs::set_has_async() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void FitOnlineMasterModelArgs::clear_has_async() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void FitOnlineMasterModelArgs::clear_async() {
+  async_ = false;
+  clear_has_async();
+}
+inline bool FitOnlineMasterModelArgs::async() const {
+  return async_;
+}
+inline void FitOnlineMasterModelArgs::set_async(bool value) {
+  set_has_async();
+  async_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// TransformMasterModelArgs
+
+// repeated string batch_filename = 1;
+inline int TransformMasterModelArgs::batch_filename_size() const {
+  return batch_filename_.size();
+}
+inline void TransformMasterModelArgs::clear_batch_filename() {
+  batch_filename_.Clear();
+}
+inline const ::std::string& TransformMasterModelArgs::batch_filename(int index) const {
+  return batch_filename_.Get(index);
+}
+inline ::std::string* TransformMasterModelArgs::mutable_batch_filename(int index) {
+  return batch_filename_.Mutable(index);
+}
+inline void TransformMasterModelArgs::set_batch_filename(int index, const ::std::string& value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void TransformMasterModelArgs::set_batch_filename(int index, const char* value) {
+  batch_filename_.Mutable(index)->assign(value);
+}
+inline void TransformMasterModelArgs::set_batch_filename(int index, const char* value, size_t size) {
+  batch_filename_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TransformMasterModelArgs::add_batch_filename() {
+  return batch_filename_.Add();
+}
+inline void TransformMasterModelArgs::add_batch_filename(const ::std::string& value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void TransformMasterModelArgs::add_batch_filename(const char* value) {
+  batch_filename_.Add()->assign(value);
+}
+inline void TransformMasterModelArgs::add_batch_filename(const char* value, size_t size) {
+  batch_filename_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TransformMasterModelArgs::batch_filename() const {
+  return batch_filename_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TransformMasterModelArgs::mutable_batch_filename() {
+  return &batch_filename_;
+}
+
+// optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 2 [default = Cache];
+inline bool TransformMasterModelArgs::has_theta_matrix_type() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void TransformMasterModelArgs::set_has_theta_matrix_type() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void TransformMasterModelArgs::clear_has_theta_matrix_type() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void TransformMasterModelArgs::clear_theta_matrix_type() {
+  theta_matrix_type_ = 3;
+  clear_has_theta_matrix_type();
+}
+inline ::artm::TransformMasterModelArgs_ThetaMatrixType TransformMasterModelArgs::theta_matrix_type() const {
+  return static_cast< ::artm::TransformMasterModelArgs_ThetaMatrixType >(theta_matrix_type_);
+}
+inline void TransformMasterModelArgs::set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType value) {
+  assert(::artm::TransformMasterModelArgs_ThetaMatrixType_IsValid(value));
+  set_has_theta_matrix_type();
+  theta_matrix_type_ = value;
+}
+
+// optional string predict_class_id = 3;
+inline bool TransformMasterModelArgs::has_predict_class_id() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void TransformMasterModelArgs::set_has_predict_class_id() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void TransformMasterModelArgs::clear_has_predict_class_id() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void TransformMasterModelArgs::clear_predict_class_id() {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_->clear();
+  }
+  clear_has_predict_class_id();
+}
+inline const ::std::string& TransformMasterModelArgs::predict_class_id() const {
+  return *predict_class_id_;
+}
+inline void TransformMasterModelArgs::set_predict_class_id(const ::std::string& value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void TransformMasterModelArgs::set_predict_class_id(const char* value) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(value);
+}
+inline void TransformMasterModelArgs::set_predict_class_id(const char* value, size_t size) {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  predict_class_id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* TransformMasterModelArgs::mutable_predict_class_id() {
+  set_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    predict_class_id_ = new ::std::string;
+  }
+  return predict_class_id_;
+}
+inline ::std::string* TransformMasterModelArgs::release_predict_class_id() {
+  clear_has_predict_class_id();
+  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = predict_class_id_;
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void TransformMasterModelArgs::set_allocated_predict_class_id(::std::string* predict_class_id) {
+  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete predict_class_id_;
+  }
+  if (predict_class_id) {
+    set_has_predict_class_id();
+    predict_class_id_ = predict_class_id;
+  } else {
+    clear_has_predict_class_id();
+    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
 
 // @@protoc_insertion_point(namespace_scope)
 
@@ -25967,6 +27565,10 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::ProcessBatchesArgs_Theta
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::CopyRequestResultArgs_RequestType>() {
   return ::artm::CopyRequestResultArgs_RequestType_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::TransformMasterModelArgs_ThetaMatrixType>() {
+  return ::artm::TransformMasterModelArgs_ThetaMatrixType_descriptor();
 }
 
 }  // namespace google

@@ -48,6 +48,54 @@ inline int HandleErrorCode(int artm_error_code) {
   }
 }
 
+template<typename ArgsT, typename FuncT>
+int ArtmExecute(const ArgsT& args, FuncT func) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  return HandleErrorCode(func(blob.size(), StringAsArray(&blob)));
+}
+
+template<typename ArgsT, typename FuncT>
+int ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
+  std::string blob;
+  args.SerializeToString(&blob);
+  return HandleErrorCode(func(master_id, blob.size(), StringAsArray(&blob)));
+}
+
+template<typename ResultT, typename ArgsT, typename FuncT>
+ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
+  int length = ArtmExecute(master_id, args, func);
+
+  std::string result_blob;
+  result_blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&result_blob)));
+
+  ResultT result;
+  result.ParseFromString(result_blob);
+  return result;
+}
+
+template<typename ResultT, typename ArgsT, typename FuncT>
+std::shared_ptr<ResultT> ArtmRequestShared(int master_id, const ArgsT& args, FuncT func) {
+  return std::make_shared<ResultT>(ArtmRequest<ResultT>(master_id, args, func));
+}
+
+void ArtmRequestEx(int no_rows, int no_cols, CopyRequestResultArgs_RequestType type, Matrix* matrix) {
+  if (matrix == nullptr)
+    return;
+
+  matrix->resize(no_rows, no_cols);
+
+  CopyRequestResultArgs copy_request_args;
+  copy_request_args.set_request_type(type);
+  std::string args_blob;
+  copy_request_args.SerializeToString(&args_blob);
+
+  int length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
+  HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
+    args_blob.size(), args_blob.c_str()));
+}
+
 void SaveBatch(const Batch& batch, const std::string& disk_path) {
   std::string config_blob;
   batch.SerializeToString(&config_blob);
@@ -68,23 +116,16 @@ std::shared_ptr<Batch> LoadBatch(const std::string& filename) {
 }
 
 void ParseCollection(const CollectionParserConfig& config) {
-  std::string config_blob;
-  config.SerializeToString(&config_blob);
-  HandleErrorCode(ArtmParseCollection(config_blob.size(), StringAsArray(&config_blob)));
+  ArtmExecute(config, ArtmParseCollection);
 }
 
 MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), config_(config) {
-  std::string config_blob;
-  config.SerializeToString(&config_blob);
-  id_ = HandleErrorCode(ArtmCreateMasterComponent(
-    config_blob.size(), StringAsArray(&config_blob)));
+  id_ = ArtmExecute(config, ArtmCreateMasterComponent);
 }
 
 MasterComponent::MasterComponent(const MasterComponent& rhs) : id_(0), config_(rhs.config_) {
   ::artm::DuplicateMasterComponentArgs args;
-  std::string config_blob;
-  args.SerializeToString(&config_blob);
-  id_ = HandleErrorCode(ArtmDuplicateMasterComponent(rhs.id_, config_blob.size(), StringAsArray(&config_blob)));
+  id_ = ArtmExecute(rhs.id_, args, ArtmDuplicateMasterComponent);
 }
 
 MasterComponent::~MasterComponent() {
@@ -92,9 +133,7 @@ MasterComponent::~MasterComponent() {
 }
 
 void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
-  std::string config_blob;
-  config.SerializeToString(&config_blob);
-  HandleErrorCode(ArtmReconfigureMasterComponent(id(), config_blob.size(), StringAsArray(&config_blob)));
+  ArtmExecute(id_, config, ArtmReconfigureMasterComponent);
   config_.CopyFrom(config);
 }
 
@@ -115,31 +154,10 @@ std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelAr
 }
 
 std::shared_ptr<TopicModel> MasterComponent::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
   auto func = (matrix == nullptr) ? ArtmRequestTopicModel : ArtmRequestTopicModelExternal;
-  int length = HandleErrorCode(func(id(), args_blob.size(), args_blob.c_str()));
-  std::string topic_model_blob;
-  topic_model_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&topic_model_blob)));
-
-  std::shared_ptr<TopicModel> retval(new TopicModel());
-  retval->ParseFromString(topic_model_blob);
-
-  if (matrix == nullptr)
-    return retval;
-
-  matrix->resize(retval->token_size(), retval->topics_count());
-
-  CopyRequestResultArgs copy_request_args;
-  copy_request_args.set_request_type(CopyRequestResultArgs_RequestType_GetModelSecondPass);
-
-  args_blob.clear();
-  copy_request_args.SerializeToString(&args_blob);
-
-  length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
-  HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
-    args_blob.size(), args_blob.c_str()));
+  auto retval = ArtmRequestShared<TopicModel>(id_, args, func);
+  auto type = CopyRequestResultArgs_RequestType_GetModelSecondPass;
+  ArtmRequestEx(retval->token_size(), retval->topics_count(), type, matrix);
   return retval;
 }
 
@@ -183,20 +201,10 @@ std::shared_ptr<Matrix> MasterComponent::AttachTopicModel(const std::string& mod
   return matrix;
 }
 
-std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(
-  const std::string& regularizer_name) {
+std::shared_ptr<RegularizerInternalState> MasterComponent::GetRegularizerState(const std::string& regularizer_name) {
   ::artm::GetRegularizerStateArgs args;
   args.set_name(regularizer_name);
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmRequestRegularizerState(id(), args_blob.length(), args_blob.c_str()));
-  std::string state_blob;
-  state_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&state_blob)));
-
-  std::shared_ptr<RegularizerInternalState> regularizer_state(new RegularizerInternalState());
-  regularizer_state->ParseFromString(state_blob);
-  return regularizer_state;
+  return ArtmRequestShared<RegularizerInternalState>(id_, args, ArtmRequestRegularizerState);
 }
 
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const std::string& model_name) {
@@ -224,58 +232,20 @@ std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatri
 }
 
 std::shared_ptr<ThetaMatrix> MasterComponent::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
   auto func = (matrix == nullptr) ? ArtmRequestThetaMatrix : ArtmRequestThetaMatrixExternal;
-  int length = HandleErrorCode(func(id(), args_blob.size(), args_blob.c_str()));
-  std::string blob;
-  blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));
-
-  std::shared_ptr<ThetaMatrix> retval(new ThetaMatrix());
-  retval->ParseFromString(blob);
-
-  if (matrix == nullptr)
-    return retval;
-
-  matrix->resize(retval->item_id_size(), retval->topics_count());
-
-  CopyRequestResultArgs copy_request_args;
-  copy_request_args.set_request_type(CopyRequestResultArgs_RequestType_GetThetaSecondPass);
-  args_blob.clear();
-  copy_request_args.SerializeToString(&args_blob);
-
-  length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
-  HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
-                                          args_blob.size(), args_blob.c_str()));
+  auto retval = ArtmRequestShared<ThetaMatrix>(id_, args, func);
+  auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
+  ArtmRequestEx(retval->item_id_size(), retval->topics_count(), type, matrix);
   return retval;
 }
 
 std::shared_ptr<ScoreData> MasterComponent::GetScore(const GetScoreValueArgs& args) {
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmRequestScore(id(), args_blob.size(), args_blob.c_str()));
-  std::string blob;
-  blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));
-
-  std::shared_ptr<ScoreData> score_data(new ScoreData());
-  score_data->ParseFromString(blob);
-  return score_data;
+  return ArtmRequestShared<ScoreData>(id_, args, ArtmRequestScore);
 }
 
 std::shared_ptr<MasterComponentInfo> MasterComponent::info() const {
   GetMasterComponentInfoArgs args;
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmRequestMasterComponentInfo(id(), args_blob.size(), args_blob.c_str()));
-  std::string blob;
-  blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&blob)));
-
-  std::shared_ptr<MasterComponentInfo> master_component_info(new MasterComponentInfo());
-  master_component_info->ParseFromString(blob);
-  return master_component_info;
+  return ArtmRequestShared<MasterComponentInfo>(id_, args, ArtmRequestMasterComponentInfo);
 }
 
 Model::Model(const MasterComponent& master_component, const ModelConfig& config)
@@ -481,15 +451,11 @@ void MasterComponent::RemoveStream(std::string stream_name) {
 }
 
 void MasterComponent::ExportModel(const ExportModelArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmExportModel(id_, blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmExportModel);
 }
 
 void MasterComponent::ImportModel(const ImportModelArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmImportModel(id_, blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmImportModel);
 }
 
 void MasterComponent::DisposeModel(const std::string& model_name) {
@@ -497,9 +463,7 @@ void MasterComponent::DisposeModel(const std::string& model_name) {
 }
 
 void MasterComponent::CreateDictionary(const DictionaryData& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmCreateDictionary(id_, blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmCreateDictionary);
 }
 
 void MasterComponent::DisposeDictionary(const std::string& dictionary_name) {
@@ -507,109 +471,182 @@ void MasterComponent::DisposeDictionary(const std::string& dictionary_name) {
 }
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmImportDictionary(id_, blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmImportDictionary);
 }
 
 void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmExportDictionary(id_, blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmExportDictionary);
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmGatherDictionary(id_, blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmGatherDictionary);
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmFilterDictionary(id_, blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmFilterDictionary);
 }
 
 std::shared_ptr<DictionaryData> MasterComponent::GetDictionary(const std::string& dictionary_name) {
   artm::GetDictionaryArgs args;
   args.set_dictionary_name(dictionary_name);
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  args.set_dictionary_name(dictionary_name);
-  int length = HandleErrorCode(ArtmRequestDictionary(id(), args_blob.size(), args_blob.c_str()));
-  std::string state_blob;
-  state_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&state_blob)));
-
-  std::shared_ptr<DictionaryData> result(new DictionaryData());
-  result->ParseFromString(state_blob);
-  return result;
+  return ArtmRequestShared<DictionaryData>(id_, args, ArtmRequestDictionary);
 }
 
 std::shared_ptr<ProcessBatchesResultObject> MasterComponent::ProcessBatches(const ProcessBatchesArgs& args) {
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  int length = HandleErrorCode(ArtmRequestProcessBatches(id(), args_blob.size(), args_blob.c_str()));
-  std::string process_batches_result_blob;
-  process_batches_result_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&process_batches_result_blob)));
-
-  ProcessBatchesResult process_batches_result;
-  process_batches_result.ParseFromString(process_batches_result_blob);
-
+  auto process_batches_result = ArtmRequest<ProcessBatchesResult>(id_, args, ArtmRequestProcessBatches);
   std::shared_ptr<ProcessBatchesResultObject> retval(new ProcessBatchesResultObject(process_batches_result));
   return retval;
 }
 
 int MasterComponent::AsyncProcessBatches(const ProcessBatchesArgs& args) {
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  return HandleErrorCode(ArtmAsyncProcessBatches(id(), args_blob.size(), args_blob.c_str()));
+  return ArtmExecute(id_, args, ArtmAsyncProcessBatches);
 }
 
 int MasterComponent::AwaitOperation(int operation_id) {
   ::artm::AwaitOperationArgs args;
-  // args.set_timeout_milliseconds(timeout_milliseconds);
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  int code = HandleErrorCode(ArtmAwaitOperation(operation_id, args_blob.size(), StringAsArray(&args_blob)));
+  int code = ArtmExecute(operation_id, args, ArtmAwaitOperation);
   if (code == ARTM_STILL_WORKING)
     return false;
   return true;
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& args) {
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  HandleErrorCode(ArtmMergeModel(id(), args_blob.size(), StringAsArray(&args_blob)));
+  ArtmExecute(id_, args, ArtmMergeModel);
 }
 
 void MasterComponent::NormalizeModel(const NormalizeModelArgs& args) {
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  HandleErrorCode(ArtmNormalizeModel(id(), args_blob.size(), StringAsArray(&args_blob)));
+  ArtmExecute(id_, args, ArtmNormalizeModel);
 }
 
 void MasterComponent::RegularizeModel(const RegularizeModelArgs& args) {
-  std::string args_blob;
-  args.SerializeToString(&args_blob);
-  HandleErrorCode(ArtmRegularizeModel(id(), args_blob.size(), StringAsArray(&args_blob)));
+  ArtmExecute(id_, args, ArtmRegularizeModel);
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmInitializeModel(id(), blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmInitializeModel);
 }
 
 void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
-  std::string blob;
-  args.SerializeToString(&blob);
-  HandleErrorCode(ArtmImportBatches(id(), blob.size(), blob.c_str()));
+  ArtmExecute(id_, args, ArtmImportBatches);
 }
 
 void MasterComponent::DisposeBatch(const std::string& batch_name) {
   ArtmDisposeBatch(id(), batch_name.c_str());
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// MasterModel implementation
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+MasterModel::MasterModel(const MasterModelConfig& config) : id_(0), config_(config) {
+  id_ = ArtmExecute(config, ArtmCreateMasterModel);
+}
+
+MasterModel::~MasterModel() {
+  ArtmDisposeMasterComponent(id_);
+}
+
+void MasterModel::Reconfigure() {
+  ArtmExecute(id_, config_, ArtmReconfigureMasterModel);
+}
+
+TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args) {
+  return ArtmRequest< ::artm::TopicModel>(id_, args, ArtmRequestTopicModel);
+}
+
+TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
+  auto retval = ArtmRequest< ::artm::TopicModel>(id_, args, ArtmRequestTopicModelExternal);
+  auto type = CopyRequestResultArgs_RequestType_GetModelSecondPass;
+  ArtmRequestEx(retval.token_size(), retval.topics_count(), type, matrix);
+  return retval;
+}
+
+ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args) {
+  return ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestThetaMatrix);
+}
+
+ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
+  auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestThetaMatrixExternal);
+  auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
+  ArtmRequestEx(retval.item_id_size(), retval.topics_count(), type, matrix);
+  return retval;
+}
+
+
+ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args) {
+  return ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestTransformMasterModel);
+}
+
+ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args, Matrix* matrix) {
+  auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestTransformMasterModelExternal);
+  auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
+  ArtmRequestEx(retval.item_id_size(), retval.topics_count(), type, matrix);
+  return retval;
+}
+
+ScoreData MasterModel::GetScore(const GetScoreValueArgs& args) {
+  return ArtmRequest<ScoreData>(id_, args, ArtmRequestScore);
+}
+
+MasterComponentInfo MasterModel::info() const {
+  GetMasterComponentInfoArgs args;
+  return ArtmRequest<MasterComponentInfo>(id_, args, ArtmRequestMasterComponentInfo);
+}
+
+void MasterModel::ExportModel(const ExportModelArgs& args) {
+  ArtmExecute(id_, args, ArtmExportModel);
+}
+
+void MasterModel::ImportModel(const ImportModelArgs& args) {
+  ArtmExecute(id_, args, ArtmImportModel);
+}
+
+void MasterModel::CreateDictionary(const DictionaryData& args) {
+  ArtmExecute(id_, args, ArtmCreateDictionary);
+}
+
+void MasterModel::DisposeDictionary(const std::string& dictionary_name) {
+  HandleErrorCode(ArtmDisposeDictionary(id_, dictionary_name.c_str()));
+}
+
+void MasterModel::ImportDictionary(const ImportDictionaryArgs& args) {
+  ArtmExecute(id_, args, ArtmImportDictionary);
+}
+
+void MasterModel::ExportDictionary(const ExportDictionaryArgs& args) {
+  ArtmExecute(id_, args, ArtmExportDictionary);
+}
+
+void MasterModel::GatherDictionary(const GatherDictionaryArgs& args) {
+  ArtmExecute(id_, args, ArtmGatherDictionary);
+}
+
+void MasterModel::FilterDictionary(const FilterDictionaryArgs& args) {
+  ArtmExecute(id_, args, ArtmFilterDictionary);
+}
+
+DictionaryData MasterModel::GetDictionary(const GetDictionaryArgs& args) {
+  return ArtmRequest<DictionaryData>(id_, args, ArtmRequestDictionary);
+}
+
+void MasterModel::InitializeModel(const InitializeModelArgs& args) {
+  ArtmExecute(id_, args, ArtmInitializeModel);
+}
+
+void MasterModel::ImportBatches(const ImportBatchesArgs& args) {
+  ArtmExecute(id_, args, ArtmImportBatches);
+}
+
+void MasterModel::FitOnlineModel(const FitOnlineMasterModelArgs& args) {
+  ArtmExecute(id_, args, ArtmFitOnlineMasterModel);
+}
+
+void MasterModel::FitOfflineModel(const FitOfflineMasterModelArgs& args) {
+  ArtmExecute(id_, args, ArtmFitOfflineMasterModel);
+}
+
+void MasterModel::DisposeBatch(const std::string& batch_name) {
+  ArtmDisposeBatch(id_, batch_name.c_str());
 }
 
 }  // namespace artm

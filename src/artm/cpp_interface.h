@@ -175,6 +175,63 @@ class MasterComponent {
   MasterComponent& operator=(const MasterComponent&);
 };
 
+class MasterModel {
+ public:
+  explicit MasterModel(const MasterModelConfig& config);
+  ~MasterModel();
+
+  int id() const { return id_; }
+  MasterComponentInfo info() const;  // misc. diagnostics information
+
+  const MasterModelConfig& config() const { return config_; }
+  MasterModelConfig* mutable_config() { return &config_; }
+  void Reconfigure();  // apply MasterModel::config()
+
+  // Operations to work with dictionary through disk
+  void GatherDictionary(const GatherDictionaryArgs& args);
+  void FilterDictionary(const FilterDictionaryArgs& args);
+  void ImportDictionary(const ImportDictionaryArgs& args);
+  void ExportDictionary(const ExportDictionaryArgs& args);
+  void DisposeDictionary(const std::string& dictionary_name);
+
+  // Operations to work with dictinoary through memory
+  void CreateDictionary(const DictionaryData& args);
+  DictionaryData GetDictionary(const GetDictionaryArgs& args);
+
+  // Operatinos to work with batches through memory
+  void ImportBatches(const ImportBatchesArgs& args);
+  void DisposeBatch(const std::string& batch_name);
+
+  // Operations to work with model
+  void InitializeModel(const InitializeModelArgs& args);
+  void ImportModel(const ImportModelArgs& args);
+  void ExportModel(const ExportModelArgs& args);
+  void FitOnlineModel(const FitOnlineMasterModelArgs& args);
+  void FitOfflineModel(const FitOfflineMasterModelArgs& args);
+
+  // Apply model to batches
+  ThetaMatrix Transform(const TransformMasterModelArgs& args);
+  ThetaMatrix Transform(const TransformMasterModelArgs& args, Matrix* matrix);
+
+  // Retrieve operations
+  TopicModel GetTopicModel(const GetTopicModelArgs& args);
+  TopicModel GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix);
+  ThetaMatrix GetThetaMatrix(const GetThetaMatrixArgs& args);
+  ThetaMatrix GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix);
+
+  // Retrieve scores
+  ScoreData GetScore(const GetScoreValueArgs& args);
+  template <typename T>
+  T GetScoreAs(const GetScoreValueArgs& args);
+
+ private:
+  int id_;
+  MasterModelConfig config_;
+
+  MasterModel(const MasterModel& rhs);
+  MasterModelConfig& operator=(const MasterModel&);
+};
+
 class Model {
  public:
   Model(const MasterComponent& master_component, const ModelConfig& config);
@@ -261,6 +318,14 @@ std::shared_ptr<T> ProcessBatchesResultObject::GetScoreAs(const std::string& sco
   }
 
   return nullptr;
+}
+
+template <typename T>
+T MasterModel::GetScoreAs(const GetScoreValueArgs& args) {
+  auto score_data = GetScore(args);
+  T score;
+  score.ParseFromString(score_data.data());
+  return score;
 }
 
 }  // namespace artm

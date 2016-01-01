@@ -63,7 +63,6 @@ Dictionary::ImportData(const ImportDictionaryArgs& args) {
   while (!fin.eof()) {
     int length;
     fin.read(reinterpret_cast<char *>(&length), sizeof(length));
-    LOG(INFO) << "READ LENGTH = " << length;
     if (fin.eof())
       break;
 
@@ -127,7 +126,6 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
   }
   std::string str = token_dict_data.SerializeAsString();
   int length = str.size();
-  LOG(INFO) << "WRITE LENGTH = " << str.size();
   fout.write(reinterpret_cast<char *>(&length), sizeof(length));
   fout << str;
 
@@ -151,7 +149,6 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
       if ((current_cooc_length >= max_cooc_length) || ((token_id + 1) == token_size)) {
         std::string str = cooc_dict_data.SerializeAsString();
         int length = str.size();
-        LOG(INFO) << "WRITE LENGTH = " << str.size();
         fout.write(reinterpret_cast<char *>(&length), sizeof(length));
         fout << str;
         cooc_dict_data.clear_cooc_first_index();
