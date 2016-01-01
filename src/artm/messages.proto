@@ -788,6 +788,10 @@ message MasterModelConfig {
   optional string pwt_name = 7;
   optional string nwt_name = 8 [default = "nwt"];
   optional int32 inner_iterations_count = 9;
+  optional bool reuse_theta = 10 [default = false];
+  optional bool opt_for_avx = 11 [default = true];
+  optional bool use_sparse_bow = 12 [default = true];
+  optional string disk_cache_path = 13;
 }
 
 message FitOfflineMasterModelArgs {
@@ -799,11 +803,10 @@ message FitOfflineMasterModelArgs {
 message FitOnlineMasterModelArgs {
   repeated string batch_filename = 1;
   repeated float batch_weight = 2;
-  optional int32 passes = 3 [default = 1];
-  optional int32 update_every = 4;
-  optional int32 tau0 = 5 [default = 1024];
-  optional double kappa = 6 [default = 0.7];
-  optional bool async = 7 [default = false];
+  repeated int32 update_after = 3;
+  repeated float apply_weight = 4;
+  repeated float decay_weight = 5;
+  optional bool async = 6 [default = false];
 }
 
 message TransformMasterModelArgs {

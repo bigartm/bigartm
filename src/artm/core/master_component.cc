@@ -69,17 +69,17 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
 
 MasterComponent::MasterComponent(const MasterComponentConfig& config)
     : master_model_config_(),
-      update_count_(0),
       instance_(std::make_shared<Instance>(config)) {
 }
 
 MasterComponent::MasterComponent(const MasterModelConfig& config)
     : master_model_config_(std::make_shared<MasterModelConfig>(config)),
-      update_count_(0),
       instance_(nullptr) {
   MasterComponentConfig master_component_config;
   master_component_config.set_processors_count(config.threads());
   master_component_config.mutable_score_config()->CopyFrom(config.score_config());
+  if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
+  if (config.reuse_theta()) master_component_config.set_cache_theta(true);
   instance_ = std::make_shared<Instance>(master_component_config);
 
   for (int i = 0; i < config.regularizer_config_size(); ++i)
@@ -88,7 +88,6 @@ MasterComponent::MasterComponent(const MasterModelConfig& config)
 
 MasterComponent::MasterComponent(const MasterComponent& rhs)
     : master_model_config_(rhs.master_model_config_.get_copy()),
-      update_count_(0),
       instance_(rhs.instance_->Duplicate()) {
 }
 
@@ -675,6 +674,10 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
     process_batches_args.add_regularizer_tau(regularizer.tau());
   }
 
+  if (config->has_opt_for_avx()) process_batches_args.set_opt_for_avx(config->opt_for_avx());
+  if (config->has_use_sparse_bow()) process_batches_args.set_use_sparse_bow(config->use_sparse_bow());
+  if (config->has_reuse_theta()) process_batches_args.set_reuse_theta(config->reuse_theta());
+
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
   process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
   process_batches_args.set_theta_matrix_type((::artm::ProcessBatchesArgs_ThetaMatrixType)args.theta_matrix_type());
@@ -697,39 +700,76 @@ void MasterComponent::Request(const TransformMasterModelArgs& args,
   HandleExternalThetaMatrixRequest(result, external);
 }
 
-
 class BatchesIterator {
- private:
-  ::google::protobuf::RepeatedPtrField<std::string> batch_filename_;
-  ::google::protobuf::RepeatedField<float> batch_weight_;
-  int step_;
-  unsigned current_;
-
  public:
-  BatchesIterator(::google::protobuf::RepeatedPtrField<std::string> batch_filename,
-                  ::google::protobuf::RepeatedField<float> batch_weight)
+  virtual ~BatchesIterator() {}
+  virtual void move(ProcessBatchesArgs* args) = 0;
+};
+
+class OfflineBatchesIterator : public BatchesIterator {
+ public:
+  OfflineBatchesIterator(const ::google::protobuf::RepeatedPtrField<std::string>& batch_filename,
+                         const ::google::protobuf::RepeatedField<float>& batch_weight)
+      : batch_filename_(batch_filename),
+        batch_weight_(batch_weight) {}
+
+  virtual ~OfflineBatchesIterator() {}
+
+ private:
+  const ::google::protobuf::RepeatedPtrField<std::string>& batch_filename_;
+  const ::google::protobuf::RepeatedField<float>& batch_weight_;
+
+  virtual void move(ProcessBatchesArgs* args) {
+    args->mutable_batch_filename()->CopyFrom(batch_filename_);
+    args->mutable_batch_weight()->CopyFrom(batch_weight_);
+  }
+};
+
+class OnlineBatchesIterator : public BatchesIterator {
+ public:
+  OnlineBatchesIterator(const ::google::protobuf::RepeatedPtrField<std::string>& batch_filename,
+                        const ::google::protobuf::RepeatedField<float>& batch_weight,
+                        const ::google::protobuf::RepeatedField<int>& update_after,
+                        const ::google::protobuf::RepeatedField<float>& apply_weight,
+                        const ::google::protobuf::RepeatedField<float>& decay_weight)
       : batch_filename_(batch_filename),
         batch_weight_(batch_weight),
-        step_(0),
+        update_after_(update_after),
+        apply_weight_(apply_weight),
+        decay_weight_(decay_weight),
         current_(0) {}
 
-  int step() const { return step_; }
-  void set_step(int step) { step_ = step; }
+  virtual ~OnlineBatchesIterator() {}
 
-  bool more() const { return current_ < batch_filename_.size(); }
+  bool more() const { return current_ < update_after_.size(); }
 
-  void move(ProcessBatchesArgs* args) {
+  virtual void move(ProcessBatchesArgs* args) {
     args->clear_batch_filename();
     args->clear_batch_weight();
-    unsigned last = std::min<unsigned>(current_ + step_, batch_filename_.size());
-    if (step_ <= 0) last = batch_filename_.size();  // move everything
-    for (; current_ < last; current_++) {
-      args->add_batch_filename(batch_filename_.Get(current_));
-      args->add_batch_weight(batch_weight_.Get(current_));
+    unsigned first = (current_ == 0) ? 0 : update_after_.Get(current_ - 1);
+    unsigned last = update_after_.Get(current_);
+    for (int i = first; i < last; ++i) {
+      args->add_batch_filename(batch_filename_.Get(i));
+      args->add_batch_weight(batch_weight_.Get(i));
     }
+
+    current_++;
   }
 
+  float apply_weight() { return apply_weight_.Get(current_); }
+  float decay_weight() { return decay_weight_.Get(current_); }
+  float apply_weight(int index) { return apply_weight_.Get(index); }
+  float decay_weight(int index) { return decay_weight_.Get(index); }
+
   void reset() { current_ = 0; }
+
+ private:
+  const ::google::protobuf::RepeatedPtrField<std::string>& batch_filename_;
+  const ::google::protobuf::RepeatedField<float>& batch_weight_;
+  const ::google::protobuf::RepeatedField<int>& update_after_;
+  const ::google::protobuf::RepeatedField<float>& apply_weight_;
+  const ::google::protobuf::RepeatedField<float>& decay_weight_;
+  unsigned current_;  // index in update_after_ array
 };
 
 class StringIndex {
@@ -771,45 +811,47 @@ class ArtmExecutor {
       settings->set_name(regularizer.name());
       settings->set_use_relative_regularization(false);
     }
+
+    if (master_model_config.has_opt_for_avx())
+      process_batches_args_.set_opt_for_avx(master_model_config.opt_for_avx());
+    if (master_model_config.has_use_sparse_bow())
+      process_batches_args_.set_use_sparse_bow(master_model_config.use_sparse_bow());
+    if (master_model_config.has_reuse_theta())
+      process_batches_args_.set_reuse_theta(master_model_config.reuse_theta());
   }
 
-  void ExecuteOfflineAlgorithm(int passes, BatchesIterator* iter) {
+  void ExecuteOfflineAlgorithm(int passes, OfflineBatchesIterator* iter) {
     const std::string rwt_name = "rwt";
-    int update_count = 0;
     for (int pass = 0; pass < passes; ++pass) {
-      ProcessBatches(pwt_name_, nwt_name_, iter, &update_count);
+      ProcessBatches(pwt_name_, nwt_name_, iter);
       Regularize(pwt_name_, nwt_name_, rwt_name);
       Normalize(pwt_name_, nwt_name_, rwt_name);
-      iter->reset();
     }
 
     Dispose(rwt_name);
   }
 
-  void ExecuteOnlineAlgorithm(int passes, float tau0, float kappa, BatchesIterator* iter, int* update_count) {
+  void ExecuteOnlineAlgorithm(OnlineBatchesIterator* iter) {
     const std::string nwt_hat_name = "nwt_hat";
     const std::string rwt_name = "rwt";
 
-    for (int pass = 0; pass < passes; pass++) {
-      process_batches_args_.set_reset_scores(true);  // reset scores at the beginning of each iteration
-      while (iter->more()) {
-        ProcessBatches(pwt_name_, nwt_hat_name, iter, update_count);
+    process_batches_args_.set_reset_scores(true);  // reset scores at the beginning of each iteration
+    while (iter->more()) {
+      float apply_weight = iter->apply_weight();
+      float decay_weight = iter->decay_weight();
 
-        double apply_weight = (*update_count == 1) ? 1.0 : pow(tau0 + (*update_count), -kappa);
-        double decay_weight = 1.0 - apply_weight;
+      ProcessBatches(pwt_name_, nwt_hat_name, iter);
+      Merge(nwt_name_, decay_weight, nwt_hat_name, apply_weight);
+      Regularize(pwt_name_, nwt_name_, rwt_name);
+      Normalize(pwt_name_, nwt_name_, rwt_name);
 
-        Merge(nwt_name_, decay_weight, nwt_hat_name, apply_weight);
-        Regularize(pwt_name_, nwt_name_, rwt_name);
-        Normalize(pwt_name_, nwt_name_, rwt_name);
+      process_batches_args_.set_reset_scores(false);
+    }  // while (iter->more())
 
-        process_batches_args_.set_reset_scores(false);
-      }  // while (iter->more())
-
-      iter->reset();
-    }
+    iter->reset();
   }
 
-  void ExecuteAsyncOnlineAlgorithm(int passes, float tau0, float kappa, BatchesIterator* iter, int* update_count) {
+  void ExecuteAsyncOnlineAlgorithm(OnlineBatchesIterator* iter) {
     /**************************************************
     1. Enough batches.
     i = 0: process(b1, pwt,  nwt0)
@@ -828,36 +870,34 @@ class ArtmExecutor {
     StringIndex pwt_index("pwt");
     StringIndex nwt_index("nwt");
 
-    for (int pass = 0; pass < passes; pass++) {
-      process_batches_args_.set_model_name_cache(pwt_name_);
-      process_batches_args_.set_reset_scores(true);  // reset scores at the beginning of each iteration
-      int op_id = AsyncProcessBatches(pwt_active, nwt_index, iter, update_count);
-      process_batches_args_.set_reset_scores(false);
+    process_batches_args_.set_model_name_cache(pwt_name_);
+    process_batches_args_.set_reset_scores(true);  // reset scores at the beginning of each iteration
+    int op_id = AsyncProcessBatches(pwt_active, nwt_index, iter);
+    process_batches_args_.set_reset_scores(false);
 
-      while (true) {
-        bool is_last = !iter->more();
-        pwt_index++; nwt_index++;
+    while (true) {
+      bool is_last = !iter->more();
+      pwt_index++; nwt_index++;
 
-        double apply_weight = (*update_count == 1) ? 1.0 : pow(tau0 + (*update_count), -kappa);
-        double decay_weight = 1.0 - apply_weight;
+      float apply_weight = iter->apply_weight(op_id);
+      float decay_weight = iter->decay_weight(op_id);
 
-        int temp_op_id = op_id;
-        if (!is_last) op_id = AsyncProcessBatches(pwt_active, nwt_index, iter, update_count);
-        Await(temp_op_id);
-        Merge(nwt_name_, decay_weight, nwt_index - 1, apply_weight);
-        Dispose(nwt_index - 1);
-        Regularize(pwt_active, nwt_name_, rwt_name);
+      int temp_op_id = op_id;
+      if (!is_last) op_id = AsyncProcessBatches(pwt_active, nwt_index, iter);
+      Await(temp_op_id);
+      Merge(nwt_name_, decay_weight, nwt_index - 1, apply_weight);
+      Dispose(nwt_index - 1);
+      Regularize(pwt_active, nwt_name_, rwt_name);
 
-        pwt_active = is_last ? pwt_name_ : std::string(pwt_index + 1);
-        Normalize(pwt_active, nwt_name_, rwt_name);
+      pwt_active = is_last ? pwt_name_ : std::string(pwt_index + 1);
+      Normalize(pwt_active, nwt_name_, rwt_name);
 
-        Dispose(pwt_index - 1);
-        if (is_last) Dispose(pwt_index);
-        if (is_last) break;
-      }
-
-      iter->reset();
+      Dispose(pwt_index - 1);
+      if (is_last) Dispose(pwt_index);
+      if (is_last) break;
     }
+
+    iter->reset();
   }
 
  private:
@@ -870,8 +910,7 @@ class ArtmExecutor {
   RegularizeModelArgs regularize_model_args_;
   std::vector<std::shared_ptr<BatchManager>> async_;
 
-  void ProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter, int* update_count) {
-    (*update_count)++;
+  void ProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter) {
     process_batches_args_.set_pwt_source_name(pwt);
     process_batches_args_.set_nwt_target_name(nwt);
     iter->move(&process_batches_args_);
@@ -886,8 +925,7 @@ class ArtmExecutor {
     process_batches_args_.clear_batch_filename();
   }
 
-  int AsyncProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter, int* update_count) {
-    (*update_count)++;
+  int AsyncProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter) {
     process_batches_args_.set_pwt_source_name(pwt);
     process_batches_args_.set_nwt_target_name(nwt);
     process_batches_args_.set_theta_matrix_type(ProcessBatchesArgs_ThetaMatrixType_None);
@@ -954,12 +992,12 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
 
   ArtmExecutor artm_executor(*config, this);
-  BatchesIterator iter(args.batch_filename(), args.batch_weight());
-  iter.set_step(args.update_every());
+  OnlineBatchesIterator iter(args.batch_filename(), args.batch_weight(), args.update_after(),
+                             args.apply_weight(), args.decay_weight());
   if (args.async()) {
-    artm_executor.ExecuteAsyncOnlineAlgorithm(args.passes(), args.tau0(), args.kappa(), &iter, &update_count_);
+    artm_executor.ExecuteAsyncOnlineAlgorithm(&iter);
   } else {
-    artm_executor.ExecuteOnlineAlgorithm(args.passes(), args.tau0(), args.kappa(), &iter, &update_count_);
+    artm_executor.ExecuteOnlineAlgorithm(&iter);
   }
 }
 
@@ -970,7 +1008,7 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
 
   ArtmExecutor artm_executor(*config, this);
-  BatchesIterator iter(args.batch_filename(), args.batch_weight());
+  OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());
   artm_executor.ExecuteOfflineAlgorithm(args.passes(), &iter);
 }
 

@@ -246,6 +246,7 @@ struct artm_options {
   float tau0;
   float kappa;
   std::vector<std::string> regularizer;
+  bool b_reuse_theta;
   int threads;
   bool async;
 
@@ -266,8 +267,11 @@ struct artm_options {
   std::string main_dictionary_name;
 
   // Other options
+  std::string disk_cache_folder;
   std::string response_file;
   bool b_paused;
+  bool b_disable_avx_opt;
+  bool b_use_dense_bow;
 
   artm_options() {
     pwt_model_name = "pwt";
@@ -872,6 +876,11 @@ int execute(const artm_options& options) {
     master_config.add_class_weight(class_id.second == 0.0f ? 1.0f : class_id.second);
   }
 
+  master_config.set_opt_for_avx(!options.b_disable_avx_opt);
+  master_config.set_use_sparse_bow(!options.b_use_dense_bow);
+  if (options.b_reuse_theta) master_config.set_reuse_theta(true);
+  if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
+
   // Step 1.1. Configure regularizers.
   std::map<std::string, std::string> dictionary_map;
   if (!options.use_dictionary.empty())
@@ -983,6 +992,7 @@ int execute(const artm_options& options) {
   }
 
   std::vector<std::string> batch_file_names = findFilesInDirectory(batch_vectorizer.batch_folder(), ".batch");
+  int update_count = 0;
   for (int iter = 0; iter < options.passes; ++iter) {
     if (iter == 0) std::cerr << "================= Processing started.\n";
     CuckooWatch timer("================= Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
@@ -990,9 +1000,15 @@ int execute(const artm_options& options) {
     if (options.update_every > 0) {  // online algorithm
       FitOnlineMasterModelArgs fit_online_args;
       fit_online_args.set_async(options.async);
-      fit_online_args.set_update_every(options.update_every);
-      fit_online_args.set_kappa(options.kappa);
-      fit_online_args.set_tau0(options.tau0);
+
+      int update_after = options.update_every;
+      do {
+        update_count++;
+        fit_online_args.add_update_after(std::min<int>(update_after, batch_file_names.size()));
+        fit_online_args.add_apply_weight((update_count == 1) ? 1.0 : pow(options.tau0 + update_count, -options.kappa));
+        update_after += options.update_every;
+      } while (update_after < batch_file_names.size());
+
       for (auto& batch_file_name : batch_file_names)
         fit_online_args.add_batch_filename(batch_file_name);
 
@@ -1139,6 +1155,7 @@ int main(int argc, char * argv[]) {
       ("update-every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
+      ("reuse-theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
       ("threads", po::value(&options.threads)->default_value(0), "number of concurrent processors (default: auto-detect)")
       ("async", po::bool_switch(&options.async)->default_value(false), "invoke asynchronous version of the online algorithm")
@@ -1165,6 +1182,9 @@ int main(int argc, char * argv[]) {
       ("help,h", "display this help message")
       ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response file")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
+      ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
+      ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
+      ("use-dense-bow", po::bool_switch(&options.b_use_dense_bow)->default_value(false), "use dense representation of bag-of-words data in processors")
     ;
 
     all_options.add(input_data_options);

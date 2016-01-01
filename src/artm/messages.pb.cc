@@ -1871,7 +1871,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AwaitOperationArgs));
   MasterModelConfig_descriptor_ = file->message_type(77);
-  static const int MasterModelConfig_offsets_[9] = {
+  static const int MasterModelConfig_offsets_[13] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, topic_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, class_weight_),
@@ -1881,6 +1881,10 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, pwt_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, nwt_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, inner_iterations_count_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, reuse_theta_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, opt_for_avx_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, use_sparse_bow_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, disk_cache_path_),
   };
   MasterModelConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1911,13 +1915,12 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FitOfflineMasterModelArgs));
   FitOnlineMasterModelArgs_descriptor_ = file->message_type(79);
-  static const int FitOnlineMasterModelArgs_offsets_[7] = {
+  static const int FitOnlineMasterModelArgs_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, batch_filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, batch_weight_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, passes_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, update_every_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, tau0_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, kappa_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, update_after_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, apply_weight_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, decay_weight_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, async_),
   };
   FitOnlineMasterModelArgs_reflection_ =
@@ -2665,27 +2668,29 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     " \001(\005\"C\n\021ImportBatchesArgs\022\022\n\nbatch_name\030"
     "\001 \003(\t\022\032\n\005batch\030\003 \003(\0132\013.artm.Batch\"6\n\022Awa"
     "itOperationArgs\022 \n\024timeout_milliseconds\030"
-    "\001 \001(\005:\002-1\"\207\002\n\021MasterModelConfig\022\022\n\ntopic"
+    "\001 \001(\005:\002-1\"\365\002\n\021MasterModelConfig\022\022\n\ntopic"
     "_name\030\001 \003(\t\022\020\n\010class_id\030\002 \003(\t\022\024\n\014class_w"
     "eight\030\003 \003(\002\022\'\n\014score_config\030\004 \003(\0132\021.artm"
     ".ScoreConfig\0223\n\022regularizer_config\030\005 \003(\013"
     "2\027.artm.RegularizerConfig\022\017\n\007threads\030\006 \001"
     "(\005\022\020\n\010pwt_name\030\007 \001(\t\022\025\n\010nwt_name\030\010 \001(\t:\003"
-    "nwt\022\036\n\026inner_iterations_count\030\t \001(\005\"\\\n\031F"
-    "itOfflineMasterModelArgs\022\026\n\016batch_filena"
-    "me\030\001 \003(\t\022\024\n\014batch_weight\030\002 \003(\002\022\021\n\006passes"
-    "\030\003 \001(\005:\0011\"\257\001\n\030FitOnlineMasterModelArgs\022\026"
-    "\n\016batch_filename\030\001 \003(\t\022\024\n\014batch_weight\030\002"
-    " \003(\002\022\021\n\006passes\030\003 \001(\005:\0011\022\024\n\014update_every\030"
-    "\004 \001(\005\022\022\n\004tau0\030\005 \001(\005:\0041024\022\022\n\005kappa\030\006 \001(\001"
-    ":\0030.7\022\024\n\005async\030\007 \001(\010:\005false\"\374\001\n\030Transfor"
-    "mMasterModelArgs\022\026\n\016batch_filename\030\001 \003(\t"
-    "\022P\n\021theta_matrix_type\030\002 \001(\0162..artm.Trans"
-    "formMasterModelArgs.ThetaMatrixType:\005Cac"
-    "he\022\030\n\020predict_class_id\030\003 \001(\t\"\\\n\017ThetaMat"
-    "rixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002"
-    "\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSparsePtdw"
-    "\020\005", 13242);
+    "nwt\022\036\n\026inner_iterations_count\030\t \001(\005\022\032\n\013r"
+    "euse_theta\030\n \001(\010:\005false\022\031\n\013opt_for_avx\030\013"
+    " \001(\010:\004true\022\034\n\016use_sparse_bow\030\014 \001(\010:\004true"
+    "\022\027\n\017disk_cache_path\030\r \001(\t\"\\\n\031FitOfflineM"
+    "asterModelArgs\022\026\n\016batch_filename\030\001 \003(\t\022\024"
+    "\n\014batch_weight\030\002 \003(\002\022\021\n\006passes\030\003 \001(\005:\0011\""
+    "\240\001\n\030FitOnlineMasterModelArgs\022\026\n\016batch_fi"
+    "lename\030\001 \003(\t\022\024\n\014batch_weight\030\002 \003(\002\022\024\n\014up"
+    "date_after\030\003 \003(\005\022\024\n\014apply_weight\030\004 \003(\002\022\024"
+    "\n\014decay_weight\030\005 \003(\002\022\024\n\005async\030\006 \001(\010:\005fal"
+    "se\"\374\001\n\030TransformMasterModelArgs\022\026\n\016batch"
+    "_filename\030\001 \003(\t\022P\n\021theta_matrix_type\030\002 \001"
+    "(\0162..artm.TransformMasterModelArgs.Theta"
+    "MatrixType:\005Cache\022\030\n\020predict_class_id\030\003 "
+    "\001(\t\"\\\n\017ThetaMatrixType\022\010\n\004None\020\000\022\t\n\005Dens"
+    "e\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020"
+    "\004\022\016\n\nSparsePtdw\020\005", 13337);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -33963,6 +33968,10 @@ const int MasterModelConfig::kThreadsFieldNumber;
 const int MasterModelConfig::kPwtNameFieldNumber;
 const int MasterModelConfig::kNwtNameFieldNumber;
 const int MasterModelConfig::kInnerIterationsCountFieldNumber;
+const int MasterModelConfig::kReuseThetaFieldNumber;
+const int MasterModelConfig::kOptForAvxFieldNumber;
+const int MasterModelConfig::kUseSparseBowFieldNumber;
+const int MasterModelConfig::kDiskCachePathFieldNumber;
 #endif  // !_MSC_VER
 
 MasterModelConfig::MasterModelConfig()
@@ -33985,6 +33994,10 @@ void MasterModelConfig::SharedCtor() {
   pwt_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   nwt_name_ = const_cast< ::std::string*>(_default_nwt_name_);
   inner_iterations_count_ = 0;
+  reuse_theta_ = false;
+  opt_for_avx_ = true;
+  use_sparse_bow_ = true;
+  disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -33998,6 +34011,9 @@ void MasterModelConfig::SharedDtor() {
   }
   if (nwt_name_ != _default_nwt_name_) {
     delete nwt_name_;
+  }
+  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete disk_cache_path_;
   }
   if (this != default_instance_) {
   }
@@ -34040,6 +34056,14 @@ void MasterModelConfig::Clear() {
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     inner_iterations_count_ = 0;
+    reuse_theta_ = false;
+    opt_for_avx_ = true;
+    use_sparse_bow_ = true;
+    if (has_disk_cache_path()) {
+      if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
+        disk_cache_path_->clear();
+      }
+    }
   }
   topic_name_.Clear();
   class_id_.Clear();
@@ -34208,6 +34232,71 @@ bool MasterModelConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(80)) goto parse_reuse_theta;
+        break;
+      }
+
+      // optional bool reuse_theta = 10 [default = false];
+      case 10: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_reuse_theta:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &reuse_theta_)));
+          set_has_reuse_theta();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(88)) goto parse_opt_for_avx;
+        break;
+      }
+
+      // optional bool opt_for_avx = 11 [default = true];
+      case 11: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_opt_for_avx:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &opt_for_avx_)));
+          set_has_opt_for_avx();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(96)) goto parse_use_sparse_bow;
+        break;
+      }
+
+      // optional bool use_sparse_bow = 12 [default = true];
+      case 12: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_use_sparse_bow:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &use_sparse_bow_)));
+          set_has_use_sparse_bow();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(106)) goto parse_disk_cache_path;
+        break;
+      }
+
+      // optional string disk_cache_path = 13;
+      case 13: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_disk_cache_path:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_disk_cache_path()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->disk_cache_path().data(), this->disk_cache_path().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -34294,6 +34383,30 @@ void MasterModelConfig::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->inner_iterations_count(), output);
   }
 
+  // optional bool reuse_theta = 10 [default = false];
+  if (has_reuse_theta()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(10, this->reuse_theta(), output);
+  }
+
+  // optional bool opt_for_avx = 11 [default = true];
+  if (has_opt_for_avx()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(11, this->opt_for_avx(), output);
+  }
+
+  // optional bool use_sparse_bow = 12 [default = true];
+  if (has_use_sparse_bow()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(12, this->use_sparse_bow(), output);
+  }
+
+  // optional string disk_cache_path = 13;
+  if (has_disk_cache_path()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->disk_cache_path().data(), this->disk_cache_path().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      13, this->disk_cache_path(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -34370,6 +34483,31 @@ void MasterModelConfig::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->inner_iterations_count(), target);
   }
 
+  // optional bool reuse_theta = 10 [default = false];
+  if (has_reuse_theta()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(10, this->reuse_theta(), target);
+  }
+
+  // optional bool opt_for_avx = 11 [default = true];
+  if (has_opt_for_avx()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(11, this->opt_for_avx(), target);
+  }
+
+  // optional bool use_sparse_bow = 12 [default = true];
+  if (has_use_sparse_bow()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(12, this->use_sparse_bow(), target);
+  }
+
+  // optional string disk_cache_path = 13;
+  if (has_disk_cache_path()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->disk_cache_path().data(), this->disk_cache_path().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        13, this->disk_cache_path(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -34409,6 +34547,28 @@ int MasterModelConfig::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->inner_iterations_count());
+    }
+
+    // optional bool reuse_theta = 10 [default = false];
+    if (has_reuse_theta()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool opt_for_avx = 11 [default = true];
+    if (has_opt_for_avx()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool use_sparse_bow = 12 [default = true];
+    if (has_use_sparse_bow()) {
+      total_size += 1 + 1;
+    }
+
+    // optional string disk_cache_path = 13;
+    if (has_disk_cache_path()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->disk_cache_path());
     }
 
   }
@@ -34494,6 +34654,18 @@ void MasterModelConfig::MergeFrom(const MasterModelConfig& from) {
     if (from.has_inner_iterations_count()) {
       set_inner_iterations_count(from.inner_iterations_count());
     }
+    if (from.has_reuse_theta()) {
+      set_reuse_theta(from.reuse_theta());
+    }
+    if (from.has_opt_for_avx()) {
+      set_opt_for_avx(from.opt_for_avx());
+    }
+    if (from.has_use_sparse_bow()) {
+      set_use_sparse_bow(from.use_sparse_bow());
+    }
+    if (from.has_disk_cache_path()) {
+      set_disk_cache_path(from.disk_cache_path());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -34526,6 +34698,10 @@ void MasterModelConfig::Swap(MasterModelConfig* other) {
     std::swap(pwt_name_, other->pwt_name_);
     std::swap(nwt_name_, other->nwt_name_);
     std::swap(inner_iterations_count_, other->inner_iterations_count_);
+    std::swap(reuse_theta_, other->reuse_theta_);
+    std::swap(opt_for_avx_, other->opt_for_avx_);
+    std::swap(use_sparse_bow_, other->use_sparse_bow_);
+    std::swap(disk_cache_path_, other->disk_cache_path_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -34848,10 +35024,9 @@ void FitOfflineMasterModelArgs::Swap(FitOfflineMasterModelArgs* other) {
 #ifndef _MSC_VER
 const int FitOnlineMasterModelArgs::kBatchFilenameFieldNumber;
 const int FitOnlineMasterModelArgs::kBatchWeightFieldNumber;
-const int FitOnlineMasterModelArgs::kPassesFieldNumber;
-const int FitOnlineMasterModelArgs::kUpdateEveryFieldNumber;
-const int FitOnlineMasterModelArgs::kTau0FieldNumber;
-const int FitOnlineMasterModelArgs::kKappaFieldNumber;
+const int FitOnlineMasterModelArgs::kUpdateAfterFieldNumber;
+const int FitOnlineMasterModelArgs::kApplyWeightFieldNumber;
+const int FitOnlineMasterModelArgs::kDecayWeightFieldNumber;
 const int FitOnlineMasterModelArgs::kAsyncFieldNumber;
 #endif  // !_MSC_VER
 
@@ -34871,10 +35046,6 @@ FitOnlineMasterModelArgs::FitOnlineMasterModelArgs(const FitOnlineMasterModelArg
 
 void FitOnlineMasterModelArgs::SharedCtor() {
   _cached_size_ = 0;
-  passes_ = 1;
-  update_every_ = 0;
-  tau0_ = 1024;
-  kappa_ = 0.7;
   async_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -34910,15 +35081,14 @@ FitOnlineMasterModelArgs* FitOnlineMasterModelArgs::New() const {
 }
 
 void FitOnlineMasterModelArgs::Clear() {
-  if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
-    passes_ = 1;
-    update_every_ = 0;
-    tau0_ = 1024;
-    kappa_ = 0.7;
+  if (_has_bits_[5 / 32] & (0xffu << (5 % 32))) {
     async_ = false;
   }
   batch_filename_.Clear();
   batch_weight_.Clear();
+  update_after_.Clear();
+  apply_weight_.Clear();
+  decay_weight_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -34966,76 +35136,78 @@ bool FitOnlineMasterModelArgs::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(21)) goto parse_batch_weight;
-        if (input->ExpectTag(24)) goto parse_passes;
+        if (input->ExpectTag(24)) goto parse_update_after;
         break;
       }
 
-      // optional int32 passes = 3 [default = 1];
+      // repeated int32 update_after = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_passes:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+         parse_update_after:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &passes_)));
-          set_has_passes();
+                 1, 24, input, this->mutable_update_after())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, this->mutable_update_after())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(32)) goto parse_update_every;
+        if (input->ExpectTag(24)) goto parse_update_after;
+        if (input->ExpectTag(37)) goto parse_apply_weight;
         break;
       }
 
-      // optional int32 update_every = 4;
+      // repeated float apply_weight = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_update_every:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &update_every_)));
-          set_has_update_every();
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
+         parse_apply_weight:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 1, 37, input, this->mutable_apply_weight())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, this->mutable_apply_weight())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(40)) goto parse_tau0;
+        if (input->ExpectTag(37)) goto parse_apply_weight;
+        if (input->ExpectTag(45)) goto parse_decay_weight;
         break;
       }
 
-      // optional int32 tau0 = 5 [default = 1024];
+      // repeated float decay_weight = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_tau0:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &tau0_)));
-          set_has_tau0();
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
+         parse_decay_weight:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 1, 45, input, this->mutable_decay_weight())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_LENGTH_DELIMITED) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, this->mutable_decay_weight())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(49)) goto parse_kappa;
+        if (input->ExpectTag(45)) goto parse_decay_weight;
+        if (input->ExpectTag(48)) goto parse_async;
         break;
       }
 
-      // optional double kappa = 6 [default = 0.7];
+      // optional bool async = 6 [default = false];
       case 6: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
-         parse_kappa:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &kappa_)));
-          set_has_kappa();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(56)) goto parse_async;
-        break;
-      }
-
-      // optional bool async = 7 [default = false];
-      case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_async:
@@ -35083,29 +35255,27 @@ void FitOnlineMasterModelArgs::SerializeWithCachedSizes(
       2, this->batch_weight(i), output);
   }
 
-  // optional int32 passes = 3 [default = 1];
-  if (has_passes()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->passes(), output);
+  // repeated int32 update_after = 3;
+  for (int i = 0; i < this->update_after_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(
+      3, this->update_after(i), output);
   }
 
-  // optional int32 update_every = 4;
-  if (has_update_every()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->update_every(), output);
+  // repeated float apply_weight = 4;
+  for (int i = 0; i < this->apply_weight_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(
+      4, this->apply_weight(i), output);
   }
 
-  // optional int32 tau0 = 5 [default = 1024];
-  if (has_tau0()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->tau0(), output);
+  // repeated float decay_weight = 5;
+  for (int i = 0; i < this->decay_weight_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(
+      5, this->decay_weight(i), output);
   }
 
-  // optional double kappa = 6 [default = 0.7];
-  if (has_kappa()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->kappa(), output);
-  }
-
-  // optional bool async = 7 [default = false];
+  // optional bool async = 6 [default = false];
   if (has_async()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(7, this->async(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteBool(6, this->async(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -35131,29 +35301,27 @@ void FitOnlineMasterModelArgs::SerializeWithCachedSizes(
       WriteFloatToArray(2, this->batch_weight(i), target);
   }
 
-  // optional int32 passes = 3 [default = 1];
-  if (has_passes()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->passes(), target);
+  // repeated int32 update_after = 3;
+  for (int i = 0; i < this->update_after_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteInt32ToArray(3, this->update_after(i), target);
   }
 
-  // optional int32 update_every = 4;
-  if (has_update_every()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->update_every(), target);
+  // repeated float apply_weight = 4;
+  for (int i = 0; i < this->apply_weight_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteFloatToArray(4, this->apply_weight(i), target);
   }
 
-  // optional int32 tau0 = 5 [default = 1024];
-  if (has_tau0()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->tau0(), target);
+  // repeated float decay_weight = 5;
+  for (int i = 0; i < this->decay_weight_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteFloatToArray(5, this->decay_weight(i), target);
   }
 
-  // optional double kappa = 6 [default = 0.7];
-  if (has_kappa()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->kappa(), target);
-  }
-
-  // optional bool async = 7 [default = false];
+  // optional bool async = 6 [default = false];
   if (has_async()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(7, this->async(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(6, this->async(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -35166,34 +35334,8 @@ void FitOnlineMasterModelArgs::SerializeWithCachedSizes(
 int FitOnlineMasterModelArgs::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
-    // optional int32 passes = 3 [default = 1];
-    if (has_passes()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->passes());
-    }
-
-    // optional int32 update_every = 4;
-    if (has_update_every()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->update_every());
-    }
-
-    // optional int32 tau0 = 5 [default = 1024];
-    if (has_tau0()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->tau0());
-    }
-
-    // optional double kappa = 6 [default = 0.7];
-    if (has_kappa()) {
-      total_size += 1 + 8;
-    }
-
-    // optional bool async = 7 [default = false];
+  if (_has_bits_[5 / 32] & (0xffu << (5 % 32))) {
+    // optional bool async = 6 [default = false];
     if (has_async()) {
       total_size += 1 + 1;
     }
@@ -35211,6 +35353,30 @@ int FitOnlineMasterModelArgs::ByteSize() const {
     int data_size = 0;
     data_size = 4 * this->batch_weight_size();
     total_size += 1 * this->batch_weight_size() + data_size;
+  }
+
+  // repeated int32 update_after = 3;
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->update_after_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        Int32Size(this->update_after(i));
+    }
+    total_size += 1 * this->update_after_size() + data_size;
+  }
+
+  // repeated float apply_weight = 4;
+  {
+    int data_size = 0;
+    data_size = 4 * this->apply_weight_size();
+    total_size += 1 * this->apply_weight_size() + data_size;
+  }
+
+  // repeated float decay_weight = 5;
+  {
+    int data_size = 0;
+    data_size = 4 * this->decay_weight_size();
+    total_size += 1 * this->decay_weight_size() + data_size;
   }
 
   if (!unknown_fields().empty()) {
@@ -35240,19 +35406,10 @@ void FitOnlineMasterModelArgs::MergeFrom(const FitOnlineMasterModelArgs& from) {
   GOOGLE_CHECK_NE(&from, this);
   batch_filename_.MergeFrom(from.batch_filename_);
   batch_weight_.MergeFrom(from.batch_weight_);
-  if (from._has_bits_[2 / 32] & (0xffu << (2 % 32))) {
-    if (from.has_passes()) {
-      set_passes(from.passes());
-    }
-    if (from.has_update_every()) {
-      set_update_every(from.update_every());
-    }
-    if (from.has_tau0()) {
-      set_tau0(from.tau0());
-    }
-    if (from.has_kappa()) {
-      set_kappa(from.kappa());
-    }
+  update_after_.MergeFrom(from.update_after_);
+  apply_weight_.MergeFrom(from.apply_weight_);
+  decay_weight_.MergeFrom(from.decay_weight_);
+  if (from._has_bits_[5 / 32] & (0xffu << (5 % 32))) {
     if (from.has_async()) {
       set_async(from.async());
     }
@@ -35281,10 +35438,9 @@ void FitOnlineMasterModelArgs::Swap(FitOnlineMasterModelArgs* other) {
   if (other != this) {
     batch_filename_.Swap(&other->batch_filename_);
     batch_weight_.Swap(&other->batch_weight_);
-    std::swap(passes_, other->passes_);
-    std::swap(update_every_, other->update_every_);
-    std::swap(tau0_, other->tau0_);
-    std::swap(kappa_, other->kappa_);
+    update_after_.Swap(&other->update_after_);
+    apply_weight_.Swap(&other->apply_weight_);
+    decay_weight_.Swap(&other->decay_weight_);
     std::swap(async_, other->async_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);

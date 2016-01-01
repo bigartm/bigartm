@@ -71,28 +71,34 @@ TEST(MasterModel, Basic) {
     // std::cout << "#" << pass << ": " << perplexity_score.value() << "\n";
   }
 
-  ::artm::FitOnlineMasterModelArgs fit_online_args;
-  fit_online_args.set_update_every(2);
-  fit_online_args.mutable_batch_filename()->CopyFrom(import_batches_args.batch_name());
+  const int update_every = 2;
+  const float tau0 = 1024;
+  const float kappa = 0.7;
 
   // Execute online algorithm
-  master_model.InitializeModel(initialize_model_args);
-  float expected2[] = { 26.5443f, 26.3197f, 26.2796f, 26.2426f };
-  fit_online_args.set_async(false);
-  for (int pass = 0; pass < 4; pass++) {
-    master_model.FitOnlineModel(fit_online_args);
-    artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
-    ASSERT_APPROX_EQ(perplexity_score.value(), expected2[pass]);
-  }
+  float expected_sync[] = { 26.5443f, 26.3197f, 26.2796f, 26.2426f };
+  float expected_async[] = { 27.2682f, 26.3178f, 26.2775f, 26.2407f };
+  for (int is_async = 0; is_async <= 1; is_async++) {
+    master_model.InitializeModel(initialize_model_args);
+    float* expected = (is_async == 1) ? expected_async : expected_sync;
+    int total_update_count = 0;
+    for (int pass = 0; pass < 4; pass++) {
+      ::artm::FitOnlineMasterModelArgs fit_online_args;
+      fit_online_args.mutable_batch_filename()->CopyFrom(import_batches_args.batch_name());
+      fit_online_args.set_async(is_async == 1);
 
-  // Execute async online algorithm
-  master_model.InitializeModel(initialize_model_args);
-  fit_online_args.set_async(true);
-  float expected3[] = { 27.1744, 26.1734, 26.1399, 26.106 };
-  for (int pass = 0; pass < 4; pass++) {
-    master_model.FitOnlineModel(fit_online_args);
+      // Populate update_after and apply_weight fields
+      int update_after = 0;
+      do {
+        total_update_count++;
+        update_after += update_every;
+        fit_online_args.add_update_after(std::min<int>(update_after, fit_online_args.batch_filename_size()));
+        fit_online_args.add_apply_weight((total_update_count == 1) ? 1.0 : pow(tau0 + total_update_count, -kappa));
+      } while (update_after < fit_online_args.batch_filename_size());
 
-    artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
-    ASSERT_APPROX_EQ(perplexity_score.value(), expected3[pass]);
+      master_model.FitOnlineModel(fit_online_args);
+      artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
+      ASSERT_APPROX_EQ(perplexity_score.value(), expected[pass]);
+    }
   }
 }

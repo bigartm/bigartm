@@ -111,7 +111,6 @@ class MasterComponent : boost::noncopyable {
 
 
   ThreadSafeHolder<MasterModelConfig> master_model_config_;
-  int update_count_;
   std::shared_ptr<Instance> instance_;
 };
 

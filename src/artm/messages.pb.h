@@ -11794,6 +11794,39 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 inner_iterations_count() const;
   inline void set_inner_iterations_count(::google::protobuf::int32 value);
 
+  // optional bool reuse_theta = 10 [default = false];
+  inline bool has_reuse_theta() const;
+  inline void clear_reuse_theta();
+  static const int kReuseThetaFieldNumber = 10;
+  inline bool reuse_theta() const;
+  inline void set_reuse_theta(bool value);
+
+  // optional bool opt_for_avx = 11 [default = true];
+  inline bool has_opt_for_avx() const;
+  inline void clear_opt_for_avx();
+  static const int kOptForAvxFieldNumber = 11;
+  inline bool opt_for_avx() const;
+  inline void set_opt_for_avx(bool value);
+
+  // optional bool use_sparse_bow = 12 [default = true];
+  inline bool has_use_sparse_bow() const;
+  inline void clear_use_sparse_bow();
+  static const int kUseSparseBowFieldNumber = 12;
+  inline bool use_sparse_bow() const;
+  inline void set_use_sparse_bow(bool value);
+
+  // optional string disk_cache_path = 13;
+  inline bool has_disk_cache_path() const;
+  inline void clear_disk_cache_path();
+  static const int kDiskCachePathFieldNumber = 13;
+  inline const ::std::string& disk_cache_path() const;
+  inline void set_disk_cache_path(const ::std::string& value);
+  inline void set_disk_cache_path(const char* value);
+  inline void set_disk_cache_path(const char* value, size_t size);
+  inline ::std::string* mutable_disk_cache_path();
+  inline ::std::string* release_disk_cache_path();
+  inline void set_allocated_disk_cache_path(::std::string* disk_cache_path);
+
   // @@protoc_insertion_point(class_scope:artm.MasterModelConfig)
  private:
   inline void set_has_threads();
@@ -11804,6 +11837,14 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline void clear_has_nwt_name();
   inline void set_has_inner_iterations_count();
   inline void clear_has_inner_iterations_count();
+  inline void set_has_reuse_theta();
+  inline void clear_has_reuse_theta();
+  inline void set_has_opt_for_avx();
+  inline void clear_has_opt_for_avx();
+  inline void set_has_use_sparse_bow();
+  inline void clear_has_use_sparse_bow();
+  inline void set_has_disk_cache_path();
+  inline void clear_has_disk_cache_path();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -11817,9 +11858,13 @@ class MasterModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 inner_iterations_count_;
   ::std::string* nwt_name_;
   static ::std::string* _default_nwt_name_;
+  ::std::string* disk_cache_path_;
+  bool reuse_theta_;
+  bool opt_for_avx_;
+  bool use_sparse_bow_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12024,51 +12069,51 @@ class FitOnlineMasterModelArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_batch_weight();
 
-  // optional int32 passes = 3 [default = 1];
-  inline bool has_passes() const;
-  inline void clear_passes();
-  static const int kPassesFieldNumber = 3;
-  inline ::google::protobuf::int32 passes() const;
-  inline void set_passes(::google::protobuf::int32 value);
+  // repeated int32 update_after = 3;
+  inline int update_after_size() const;
+  inline void clear_update_after();
+  static const int kUpdateAfterFieldNumber = 3;
+  inline ::google::protobuf::int32 update_after(int index) const;
+  inline void set_update_after(int index, ::google::protobuf::int32 value);
+  inline void add_update_after(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      update_after() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_update_after();
 
-  // optional int32 update_every = 4;
-  inline bool has_update_every() const;
-  inline void clear_update_every();
-  static const int kUpdateEveryFieldNumber = 4;
-  inline ::google::protobuf::int32 update_every() const;
-  inline void set_update_every(::google::protobuf::int32 value);
+  // repeated float apply_weight = 4;
+  inline int apply_weight_size() const;
+  inline void clear_apply_weight();
+  static const int kApplyWeightFieldNumber = 4;
+  inline float apply_weight(int index) const;
+  inline void set_apply_weight(int index, float value);
+  inline void add_apply_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      apply_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_apply_weight();
 
-  // optional int32 tau0 = 5 [default = 1024];
-  inline bool has_tau0() const;
-  inline void clear_tau0();
-  static const int kTau0FieldNumber = 5;
-  inline ::google::protobuf::int32 tau0() const;
-  inline void set_tau0(::google::protobuf::int32 value);
+  // repeated float decay_weight = 5;
+  inline int decay_weight_size() const;
+  inline void clear_decay_weight();
+  static const int kDecayWeightFieldNumber = 5;
+  inline float decay_weight(int index) const;
+  inline void set_decay_weight(int index, float value);
+  inline void add_decay_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      decay_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_decay_weight();
 
-  // optional double kappa = 6 [default = 0.7];
-  inline bool has_kappa() const;
-  inline void clear_kappa();
-  static const int kKappaFieldNumber = 6;
-  inline double kappa() const;
-  inline void set_kappa(double value);
-
-  // optional bool async = 7 [default = false];
+  // optional bool async = 6 [default = false];
   inline bool has_async() const;
   inline void clear_async();
-  static const int kAsyncFieldNumber = 7;
+  static const int kAsyncFieldNumber = 6;
   inline bool async() const;
   inline void set_async(bool value);
 
   // @@protoc_insertion_point(class_scope:artm.FitOnlineMasterModelArgs)
  private:
-  inline void set_has_passes();
-  inline void clear_has_passes();
-  inline void set_has_update_every();
-  inline void clear_has_update_every();
-  inline void set_has_tau0();
-  inline void clear_has_tau0();
-  inline void set_has_kappa();
-  inline void clear_has_kappa();
   inline void set_has_async();
   inline void clear_has_async();
 
@@ -12076,14 +12121,13 @@ class FitOnlineMasterModelArgs : public ::google::protobuf::Message {
 
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
-  ::google::protobuf::int32 passes_;
-  ::google::protobuf::int32 update_every_;
-  double kappa_;
-  ::google::protobuf::int32 tau0_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > update_after_;
+  ::google::protobuf::RepeatedField< float > apply_weight_;
+  ::google::protobuf::RepeatedField< float > decay_weight_;
   bool async_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -26903,6 +26947,142 @@ inline void MasterModelConfig::set_inner_iterations_count(::google::protobuf::in
   inner_iterations_count_ = value;
 }
 
+// optional bool reuse_theta = 10 [default = false];
+inline bool MasterModelConfig::has_reuse_theta() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void MasterModelConfig::set_has_reuse_theta() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void MasterModelConfig::clear_has_reuse_theta() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void MasterModelConfig::clear_reuse_theta() {
+  reuse_theta_ = false;
+  clear_has_reuse_theta();
+}
+inline bool MasterModelConfig::reuse_theta() const {
+  return reuse_theta_;
+}
+inline void MasterModelConfig::set_reuse_theta(bool value) {
+  set_has_reuse_theta();
+  reuse_theta_ = value;
+}
+
+// optional bool opt_for_avx = 11 [default = true];
+inline bool MasterModelConfig::has_opt_for_avx() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void MasterModelConfig::set_has_opt_for_avx() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void MasterModelConfig::clear_has_opt_for_avx() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void MasterModelConfig::clear_opt_for_avx() {
+  opt_for_avx_ = true;
+  clear_has_opt_for_avx();
+}
+inline bool MasterModelConfig::opt_for_avx() const {
+  return opt_for_avx_;
+}
+inline void MasterModelConfig::set_opt_for_avx(bool value) {
+  set_has_opt_for_avx();
+  opt_for_avx_ = value;
+}
+
+// optional bool use_sparse_bow = 12 [default = true];
+inline bool MasterModelConfig::has_use_sparse_bow() const {
+  return (_has_bits_[0] & 0x00000800u) != 0;
+}
+inline void MasterModelConfig::set_has_use_sparse_bow() {
+  _has_bits_[0] |= 0x00000800u;
+}
+inline void MasterModelConfig::clear_has_use_sparse_bow() {
+  _has_bits_[0] &= ~0x00000800u;
+}
+inline void MasterModelConfig::clear_use_sparse_bow() {
+  use_sparse_bow_ = true;
+  clear_has_use_sparse_bow();
+}
+inline bool MasterModelConfig::use_sparse_bow() const {
+  return use_sparse_bow_;
+}
+inline void MasterModelConfig::set_use_sparse_bow(bool value) {
+  set_has_use_sparse_bow();
+  use_sparse_bow_ = value;
+}
+
+// optional string disk_cache_path = 13;
+inline bool MasterModelConfig::has_disk_cache_path() const {
+  return (_has_bits_[0] & 0x00001000u) != 0;
+}
+inline void MasterModelConfig::set_has_disk_cache_path() {
+  _has_bits_[0] |= 0x00001000u;
+}
+inline void MasterModelConfig::clear_has_disk_cache_path() {
+  _has_bits_[0] &= ~0x00001000u;
+}
+inline void MasterModelConfig::clear_disk_cache_path() {
+  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_->clear();
+  }
+  clear_has_disk_cache_path();
+}
+inline const ::std::string& MasterModelConfig::disk_cache_path() const {
+  return *disk_cache_path_;
+}
+inline void MasterModelConfig::set_disk_cache_path(const ::std::string& value) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(value);
+}
+inline void MasterModelConfig::set_disk_cache_path(const char* value) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(value);
+}
+inline void MasterModelConfig::set_disk_cache_path(const char* value, size_t size) {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  disk_cache_path_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* MasterModelConfig::mutable_disk_cache_path() {
+  set_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    disk_cache_path_ = new ::std::string;
+  }
+  return disk_cache_path_;
+}
+inline ::std::string* MasterModelConfig::release_disk_cache_path() {
+  clear_has_disk_cache_path();
+  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = disk_cache_path_;
+    disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void MasterModelConfig::set_allocated_disk_cache_path(::std::string* disk_cache_path) {
+  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete disk_cache_path_;
+  }
+  if (disk_cache_path) {
+    set_has_disk_cache_path();
+    disk_cache_path_ = disk_cache_path;
+  } else {
+    clear_has_disk_cache_path();
+    disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
 // -------------------------------------------------------------------
 
 // FitOfflineMasterModelArgs
@@ -27071,103 +27251,90 @@ FitOnlineMasterModelArgs::mutable_batch_weight() {
   return &batch_weight_;
 }
 
-// optional int32 passes = 3 [default = 1];
-inline bool FitOnlineMasterModelArgs::has_passes() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+// repeated int32 update_after = 3;
+inline int FitOnlineMasterModelArgs::update_after_size() const {
+  return update_after_.size();
 }
-inline void FitOnlineMasterModelArgs::set_has_passes() {
-  _has_bits_[0] |= 0x00000004u;
+inline void FitOnlineMasterModelArgs::clear_update_after() {
+  update_after_.Clear();
 }
-inline void FitOnlineMasterModelArgs::clear_has_passes() {
-  _has_bits_[0] &= ~0x00000004u;
+inline ::google::protobuf::int32 FitOnlineMasterModelArgs::update_after(int index) const {
+  return update_after_.Get(index);
 }
-inline void FitOnlineMasterModelArgs::clear_passes() {
-  passes_ = 1;
-  clear_has_passes();
+inline void FitOnlineMasterModelArgs::set_update_after(int index, ::google::protobuf::int32 value) {
+  update_after_.Set(index, value);
 }
-inline ::google::protobuf::int32 FitOnlineMasterModelArgs::passes() const {
-  return passes_;
+inline void FitOnlineMasterModelArgs::add_update_after(::google::protobuf::int32 value) {
+  update_after_.Add(value);
 }
-inline void FitOnlineMasterModelArgs::set_passes(::google::protobuf::int32 value) {
-  set_has_passes();
-  passes_ = value;
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+FitOnlineMasterModelArgs::update_after() const {
+  return update_after_;
 }
-
-// optional int32 update_every = 4;
-inline bool FitOnlineMasterModelArgs::has_update_every() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void FitOnlineMasterModelArgs::set_has_update_every() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void FitOnlineMasterModelArgs::clear_has_update_every() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void FitOnlineMasterModelArgs::clear_update_every() {
-  update_every_ = 0;
-  clear_has_update_every();
-}
-inline ::google::protobuf::int32 FitOnlineMasterModelArgs::update_every() const {
-  return update_every_;
-}
-inline void FitOnlineMasterModelArgs::set_update_every(::google::protobuf::int32 value) {
-  set_has_update_every();
-  update_every_ = value;
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+FitOnlineMasterModelArgs::mutable_update_after() {
+  return &update_after_;
 }
 
-// optional int32 tau0 = 5 [default = 1024];
-inline bool FitOnlineMasterModelArgs::has_tau0() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+// repeated float apply_weight = 4;
+inline int FitOnlineMasterModelArgs::apply_weight_size() const {
+  return apply_weight_.size();
 }
-inline void FitOnlineMasterModelArgs::set_has_tau0() {
-  _has_bits_[0] |= 0x00000010u;
+inline void FitOnlineMasterModelArgs::clear_apply_weight() {
+  apply_weight_.Clear();
 }
-inline void FitOnlineMasterModelArgs::clear_has_tau0() {
-  _has_bits_[0] &= ~0x00000010u;
+inline float FitOnlineMasterModelArgs::apply_weight(int index) const {
+  return apply_weight_.Get(index);
 }
-inline void FitOnlineMasterModelArgs::clear_tau0() {
-  tau0_ = 1024;
-  clear_has_tau0();
+inline void FitOnlineMasterModelArgs::set_apply_weight(int index, float value) {
+  apply_weight_.Set(index, value);
 }
-inline ::google::protobuf::int32 FitOnlineMasterModelArgs::tau0() const {
-  return tau0_;
+inline void FitOnlineMasterModelArgs::add_apply_weight(float value) {
+  apply_weight_.Add(value);
 }
-inline void FitOnlineMasterModelArgs::set_tau0(::google::protobuf::int32 value) {
-  set_has_tau0();
-  tau0_ = value;
+inline const ::google::protobuf::RepeatedField< float >&
+FitOnlineMasterModelArgs::apply_weight() const {
+  return apply_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+FitOnlineMasterModelArgs::mutable_apply_weight() {
+  return &apply_weight_;
 }
 
-// optional double kappa = 6 [default = 0.7];
-inline bool FitOnlineMasterModelArgs::has_kappa() const {
+// repeated float decay_weight = 5;
+inline int FitOnlineMasterModelArgs::decay_weight_size() const {
+  return decay_weight_.size();
+}
+inline void FitOnlineMasterModelArgs::clear_decay_weight() {
+  decay_weight_.Clear();
+}
+inline float FitOnlineMasterModelArgs::decay_weight(int index) const {
+  return decay_weight_.Get(index);
+}
+inline void FitOnlineMasterModelArgs::set_decay_weight(int index, float value) {
+  decay_weight_.Set(index, value);
+}
+inline void FitOnlineMasterModelArgs::add_decay_weight(float value) {
+  decay_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+FitOnlineMasterModelArgs::decay_weight() const {
+  return decay_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+FitOnlineMasterModelArgs::mutable_decay_weight() {
+  return &decay_weight_;
+}
+
+// optional bool async = 6 [default = false];
+inline bool FitOnlineMasterModelArgs::has_async() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void FitOnlineMasterModelArgs::set_has_kappa() {
+inline void FitOnlineMasterModelArgs::set_has_async() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void FitOnlineMasterModelArgs::clear_has_kappa() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void FitOnlineMasterModelArgs::clear_kappa() {
-  kappa_ = 0.7;
-  clear_has_kappa();
-}
-inline double FitOnlineMasterModelArgs::kappa() const {
-  return kappa_;
-}
-inline void FitOnlineMasterModelArgs::set_kappa(double value) {
-  set_has_kappa();
-  kappa_ = value;
-}
-
-// optional bool async = 7 [default = false];
-inline bool FitOnlineMasterModelArgs::has_async() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void FitOnlineMasterModelArgs::set_has_async() {
-  _has_bits_[0] |= 0x00000040u;
-}
 inline void FitOnlineMasterModelArgs::clear_has_async() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void FitOnlineMasterModelArgs::clear_async() {
   async_ = false;
