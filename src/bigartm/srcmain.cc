@@ -1090,29 +1090,25 @@ int execute(const artm_options& options) {
     }
   }
 
-  TransformMasterModelArgs transform_args;
-  transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
-  for (auto& batch_filename : batch_file_names)
-    transform_args.add_batch_filename(batch_filename);
-
-  if (!options.write_predictions.empty()) {
+  if (!options.write_predictions.empty() || !options.write_class_predictions.empty()) {
     ProgressScope scope(std::string("Generating predictions"));
 
-    ::artm::Matrix theta_matrix;
-    ThetaMatrix theta_metadata = master_component->Transform(transform_args, &theta_matrix);
-    score_helper.showScores(pwt_model_name);
-    WritePredictions(options, theta_metadata, theta_matrix);
-  }
-
-  if (!options.write_class_predictions.empty() && !options.predict_class.empty()) {
-    ProgressScope scope(std::string("Generating class predictions"));
-
-    transform_args.set_predict_class_id(options.predict_class);
+    TransformMasterModelArgs transform_args;
+    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    if (!options.predict_class.empty())
+      transform_args.set_predict_class_id(options.predict_class);
+    for (auto& batch_filename : batch_file_names)
+      transform_args.add_batch_filename(batch_filename);
 
     ::artm::Matrix theta_matrix;
     ThetaMatrix theta_metadata = master_component->Transform(transform_args, &theta_matrix);
     score_helper.showScores(pwt_model_name);
-    WriteClassPredictions(options, theta_metadata, theta_matrix);
+
+    if (!options.write_predictions.empty())
+      WritePredictions(options, theta_metadata, theta_matrix);
+
+    if (!options.write_class_predictions.empty())
+      WriteClassPredictions(options, theta_metadata, theta_matrix);
   }
 
   return 0;
