@@ -683,6 +683,8 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   process_batches_args.set_theta_matrix_type((::artm::ProcessBatchesArgs_ThetaMatrixType)args.theta_matrix_type());
   if (args.has_predict_class_id()) process_batches_args.set_predict_class_id(args.predict_class_id());
 
+  FixMessage(&process_batches_args);
+
   BatchManager batch_manager;
   RequestProcessBatchesImpl(process_batches_args, &batch_manager,
                             /* async =*/ false, /*score_data =*/ nullptr, result);
@@ -691,8 +693,8 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 void MasterComponent::Request(const TransformMasterModelArgs& args,
                               ::artm::ThetaMatrix* result,
                               std::string* external) {
-  const bool is_dense_theta = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_Dense;
-  const bool is_dense_ptdw = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_DensePtdw;
+  const bool is_dense_theta = args.theta_matrix_type() == artm::TransformMasterModelArgs_ThetaMatrixType_Dense;
+  const bool is_dense_ptdw = args.theta_matrix_type() == artm::TransformMasterModelArgs_ThetaMatrixType_DensePtdw;
   if (!is_dense_theta && !is_dense_ptdw)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestProcessBatchesExternal"));
 

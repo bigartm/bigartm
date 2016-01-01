@@ -1001,12 +1001,12 @@ int execute(const artm_options& options) {
       FitOnlineMasterModelArgs fit_online_args;
       fit_online_args.set_async(options.async);
 
-      int update_after = options.update_every;
+      int update_after = 0;
       do {
         update_count++;
+        update_after += options.update_every;
         fit_online_args.add_update_after(std::min<int>(update_after, batch_file_names.size()));
         fit_online_args.add_apply_weight((update_count == 1) ? 1.0 : pow(options.tau0 + update_count, -options.kappa));
-        update_after += options.update_every;
       } while (update_after < batch_file_names.size());
 
       for (auto& batch_file_name : batch_file_names)
@@ -1091,6 +1091,7 @@ int execute(const artm_options& options) {
   }
 
   TransformMasterModelArgs transform_args;
+  transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
   for (auto& batch_filename : batch_file_names)
     transform_args.add_batch_filename(batch_filename);
 

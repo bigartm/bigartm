@@ -310,8 +310,9 @@ inline std::string DescribeErrors(const ::artm::FitOnlineMasterModelArgs& messag
     }
     if ((i + 1) == message.update_after_size()) {
       if (message.update_after(i) != message.batch_filename_size()) {
-        ss << "Last element in FitOnlineMasterModelArgs.update_after must match "
-           << "FitOnlineMasterModelArgs.batch_filename_size(); ";
+        ss << "Last element in FitOnlineMasterModelArgs.update_after is " << message.update_after(i) << ", "
+           << "expected value is FitOnlineMasterModelArgs.batch_filename_size(), which was "
+           << message.batch_filename_size() << "; ";
         break;
       }
     }
