@@ -240,6 +240,7 @@ struct artm_options {
 
   // Learning
   int passes;
+  int time_limit;
   int inner_iterations_count;
   int update_every;
   float tau0;
@@ -296,7 +297,8 @@ struct artm_options {
       write_predictions.empty() &&
       write_model_readable.empty() &&
       save_model.empty() &&
-      (passes == 0);
+      (passes <= 0) &&
+      (time_limit <= 0);
 
     return !model_is_not_required;
   }
@@ -1044,7 +1046,15 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
   std::vector<std::string> batch_file_names = findFilesInDirectory(batch_vectorizer.batch_folder(), ".batch");
   int update_count = 0;
-  for (int iter = 0; iter < options.passes; ++iter) {
+  CuckooWatch total_timer;
+  for (int iter = 0;; ++iter) {
+    if ((options.passes <= 0) && (options.time_limit <= 0)) break;
+    if ((options.passes > 0) && (iter >= options.passes)) break;
+    if ((options.time_limit > 0) && (total_timer.elapsed_ms() >= options.time_limit)) {
+      std::cerr << "Stopping iterations, time limit is reached." << std::endl;
+      break;
+    }
+
     CuckooWatch timer;
     if (iter == 0) std::cerr << "================= Processing started.\n";
 
@@ -1075,7 +1085,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     score_helper.showScores(pwt_model_name, iter + 1, timer.elapsed_ms());
   }  // iter
 
-  if (options.passes > 0)
+  if ((options.passes > 0) || (options.time_limit > 0))
     final_score_helper.showScores(pwt_model_name);
 
   if (!options.save_model.empty()) {
@@ -1234,6 +1244,7 @@ int main(int argc, char * argv[]) {
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
       ("use-dense-bow", po::bool_switch(&options.b_use_dense_bow)->default_value(false), "use dense representation of bag-of-words data in processors")
+      ("time-limit", po::value(&options.time_limit)->default_value(0), "limit execution time in milliseconds")
     ;
 
     all_options.add(input_data_options);
