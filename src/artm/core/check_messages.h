@@ -365,9 +365,6 @@ inline std::string DescribeErrors(const ::artm::FilterDictionaryArgs& message) {
   if (!message.has_dictionary_target_name())
      ss << "FilterDictionaryArgs has no target dictionary name; ";
 
-  if (!message.has_class_id())
-    ss << "FilterDictionaryArgs has no class_id; ";
-
   return ss.str();
 }
 
@@ -586,12 +583,6 @@ inline void FixMessage(::artm::InitializeModelArgs* message) {
   } else {
     message->set_topics_count(message->topic_name_size());
   }
-}
-
-template<>
-inline void FixMessage(::artm::FilterDictionaryArgs* message) {
-  if (!message->has_class_id())
-    message->set_class_id(DefaultClass);
 }
 
 template<>

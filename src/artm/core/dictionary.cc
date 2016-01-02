@@ -392,7 +392,7 @@ Dictionary::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollect
 
   int accepted_tokens_count = 0;
   for (auto& entry : src_entries) {
-    if (args.has_class_id() && entry.token().class_id == args.class_id()) {
+    if (!args.has_class_id() || (entry.token().class_id == args.class_id())) {
       if (args.has_min_df() && entry.token_df() < args.min_df()) continue;
       if (args.has_max_df() && entry.token_df() >= args.max_df()) continue;
 
