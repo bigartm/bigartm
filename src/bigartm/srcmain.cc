@@ -30,16 +30,15 @@ using namespace artm;
 
 class CuckooWatch {
  public:
-  explicit CuckooWatch(std::string message)
-    : message_(message), start_(std::chrono::system_clock::now()) {}
-  ~CuckooWatch() {
+  explicit CuckooWatch() : start_(std::chrono::system_clock::now()) {}
+
+  long long elapsed_ms() const {
     auto delta = (std::chrono::system_clock::now() - start_);
     auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-    std::cerr << message_ << " " << delta_ms.count() << " milliseconds.\n";
+    return delta_ms.count();
   }
 
  private:
-  std::string message_;
   std::chrono::time_point<std::chrono::system_clock> start_;
 };
 
@@ -259,6 +258,7 @@ struct artm_options {
   std::string write_dictionary_readable;
   std::string write_predictions;
   std::string write_class_predictions;
+  std::string write_scores;
   std::string csv_separator;
   int score_level;
   std::vector<std::string> score;
@@ -516,13 +516,23 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 
 class ScoreHelper {
  private:
+   const artm_options& artm_options_;
    ::artm::MasterModel* master_;
    ::artm::MasterModelConfig* config_;
    std::map<std::string, std::string>* dictionary_map_;
    std::vector<std::pair<std::string, ::artm::ScoreConfig_Type>> score_name_;
+   std::ofstream output_;
  public:
-   ScoreHelper(::artm::MasterModelConfig* config, std::map<std::string, std::string>* dictionary_map)
-       : master_(nullptr), config_(config), dictionary_map_(dictionary_map) {}
+   ScoreHelper(const artm_options& artm_options,
+               ::artm::MasterModelConfig* config,
+               std::map<std::string, std::string>* dictionary_map)
+       : artm_options_(artm_options),
+         master_(nullptr),
+         config_(config),
+         dictionary_map_(dictionary_map) {
+     if (!artm_options_.write_scores.empty())
+       output_.open(artm_options_.write_scores, std::ofstream::app);
+   }
 
    void setMasterModel(::artm::MasterModel* master) { master_ = master; }
 
@@ -625,7 +635,8 @@ class ScoreHelper {
      score_name_.push_back(std::make_pair(score, score_config.type()));
    }
 
-   void showScore(const std::string model_name, std::string& score_name, ::artm::ScoreConfig_Type type) {
+   std::string showScore(const std::string model_name, std::string& score_name, ::artm::ScoreConfig_Type type) {
+     std::string retval;
      GetScoreValueArgs get_score_args;
      get_score_args.set_model_name(model_name);
      get_score_args.set_score_name(score_name);
@@ -635,18 +646,21 @@ class ScoreHelper {
        std::cerr << "Perplexity      = " << score_data.value();
        if (boost::to_lower_copy(score_name) != "perplexity") std::cerr << "\t(" << score_name << ")";
        std::cerr << "\n";
+       retval = boost::lexical_cast<std::string>(score_data.value());
      }
      else if (type == ::artm::ScoreConfig_Type_SparsityTheta) {
        auto score_data = master_->GetScoreAs< ::artm::SparsityThetaScore>(get_score_args);
        std::cerr << "SparsityTheta   = " << score_data.value();
        if (boost::to_lower_copy(score_name) != "sparsitytheta") std::cerr << "\t(" << score_name << ")";
        std::cerr << "\n";
+       retval = boost::lexical_cast<std::string>(score_data.value());
      }
      else if (type == ::artm::ScoreConfig_Type_SparsityPhi) {
        auto score_data = master_->GetScoreAs< ::artm::SparsityPhiScore>(get_score_args);
        std::cerr << "SparsityPhi     = " << score_data.value();
        if (boost::to_lower_copy(score_name) != "sparsityphi") std::cerr << "\t(" << score_name << ")";
        std::cerr << "\n";
+       retval = boost::lexical_cast<std::string>(score_data.value());
      }
      else if (type == ::artm::ScoreConfig_Type_TopTokens) {
        auto score_data = master_->GetScoreAs< ::artm::TopTokensScore>(get_score_args);
@@ -692,10 +706,45 @@ class ScoreHelper {
        std::stringstream suffix;
        if (boost::to_lower_copy(score_name) != "classprecision") suffix << "\t(" << score_name << ")";
        std::cerr << "ClassPrecision  = " << score_data.value() << suffix.str() << "\n";
+       retval = boost::lexical_cast<std::string>(score_data.value());
      }
      else {
        throw std::invalid_argument("Unknown score config type: " + boost::lexical_cast<std::string>(type));
      }
+     return retval;
+   }
+
+   void showScoresHeader(int argc, char* argv[]) {
+     if (!output_.is_open())
+       return;
+     for (int i = 0; i < argc; ++i) {
+       bool has_space = (std::string(argv[i]).find(' ') != std::string::npos);
+       if (has_space) output_ << "\"";
+       output_ << argv[i];
+       if (has_space) output_ << "\"";
+       if ((i + 1) != argc) output_ << " ";
+       else output_ << std::endl;
+     }
+
+     CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
+     const std::string sep = artm_options_.csv_separator;
+     output_ << "Iteration" << sep << "Time(ms)";
+     for (int i = 0; i < score_name_.size(); ++i) {
+       output_ << sep << escape.apply(score_name_[i].first);
+     }
+     output_ << std::endl;
+   }
+
+   void showScores(const std::string model_name, int iter, long long elapsed_ms) {
+     CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
+     const std::string sep = artm_options_.csv_separator;
+     if (output_.is_open()) output_ << iter << sep << elapsed_ms;
+     for (int i = 0; i < score_name_.size(); ++i) {
+       std::string score_value = showScore(model_name, score_name_[i].first, score_name_[i].second);
+       if (output_.is_open()) output_ << sep << score_value;
+     }
+     if (output_.is_open()) output_ << std::endl;
+     std::cerr << "================= Iteration " << iter << " took " << elapsed_ms << std::endl;
    }
 
    void showScores(const std::string model_name) {
@@ -849,7 +898,7 @@ void WriteClassPredictions(const artm_options& options,
   }
 }
 
-int execute(const artm_options& options) {
+int execute(const artm_options& options, int argc, char* argv[]) {
   const std::string pwt_model_name = options.pwt_model_name;
 
   if (options.b_paused) {
@@ -889,10 +938,12 @@ int execute(const artm_options& options) {
     configureRegularizer(regularizer, options.topics, &dictionary_map, &master_config);
 
   // Step 1.2. Configure scores.
-  ScoreHelper score_helper(&master_config, &dictionary_map);
-  ScoreHelper final_score_helper(&master_config, &dictionary_map);
+  ScoreHelper score_helper(options, &master_config, &dictionary_map);
+  ScoreHelper final_score_helper(options, &master_config, &dictionary_map);
   for (auto& score : options.score) score_helper.addScore(score, options.topics);
   for (auto& score : options.final_score) final_score_helper.addScore(score, options.topics);
+
+  score_helper.showScoresHeader(argc, argv);
 
   // Step 2. Collection parsing
   BatchVectorizer batch_vectorizer(options);
@@ -994,8 +1045,8 @@ int execute(const artm_options& options) {
   std::vector<std::string> batch_file_names = findFilesInDirectory(batch_vectorizer.batch_folder(), ".batch");
   int update_count = 0;
   for (int iter = 0; iter < options.passes; ++iter) {
+    CuckooWatch timer;
     if (iter == 0) std::cerr << "================= Processing started.\n";
-    CuckooWatch timer("================= Iteration " + boost::lexical_cast<std::string>(iter + 1) + " took ");
 
     if (options.update_every > 0) {  // online algorithm
       FitOnlineMasterModelArgs fit_online_args;
@@ -1021,7 +1072,7 @@ int execute(const artm_options& options) {
       master_component->FitOfflineModel(fit_offline_args);
     }
 
-    score_helper.showScores(pwt_model_name);
+    score_helper.showScores(pwt_model_name, iter + 1, timer.elapsed_ms());
   }  // iter
 
   if (options.passes > 0)
@@ -1167,6 +1218,7 @@ int main(int argc, char * argv[]) {
       ("write-dictionary-readable", po::value(&options.write_dictionary_readable)->default_value(""), "output the dictionary in a human-readable format")
       ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
       ("write-class-predictions", po::value(&options.write_class_predictions)->default_value(""), "write class prediction in a human-readable format")
+      ("write-scores", po::value(&options.write_scores)->default_value(""), "write scores in a human-readable format")
       ("force", po::bool_switch(&options.force)->default_value(false), "force overwrite existing output files")
       ("csv-separator", po::value(&options.csv_separator)->default_value(";"), "columns separator for --write-model-readable and --write-predictions. Use \\t or TAB to indicate tab.")
       ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level (0, 1, 2, or 3")
@@ -1301,7 +1353,7 @@ int main(int argc, char * argv[]) {
     if (!verifyOptions(options))
       return 1;  // verifyOptions should log an error upon failures
 
-    return execute(options);
+    return execute(options, argc, argv);
   } catch (std::exception& e) {
     std::cerr << "Exception  : " << e.what() << "\n";
     return 1;
