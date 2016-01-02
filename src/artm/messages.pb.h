@@ -358,6 +358,25 @@ inline bool CollectionParserConfig_Format_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<CollectionParserConfig_Format>(
     CollectionParserConfig_Format_descriptor(), name, value);
 }
+enum CollectionParserConfig_NameType {
+  CollectionParserConfig_NameType_Guid = 0,
+  CollectionParserConfig_NameType_Code = 1
+};
+bool CollectionParserConfig_NameType_IsValid(int value);
+const CollectionParserConfig_NameType CollectionParserConfig_NameType_NameType_MIN = CollectionParserConfig_NameType_Guid;
+const CollectionParserConfig_NameType CollectionParserConfig_NameType_NameType_MAX = CollectionParserConfig_NameType_Code;
+const int CollectionParserConfig_NameType_NameType_ARRAYSIZE = CollectionParserConfig_NameType_NameType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* CollectionParserConfig_NameType_descriptor();
+inline const ::std::string& CollectionParserConfig_NameType_Name(CollectionParserConfig_NameType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    CollectionParserConfig_NameType_descriptor(), value);
+}
+inline bool CollectionParserConfig_NameType_Parse(
+    const ::std::string& name, CollectionParserConfig_NameType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<CollectionParserConfig_NameType>(
+    CollectionParserConfig_NameType_descriptor(), name, value);
+}
 enum InitializeModelArgs_SourceType {
   InitializeModelArgs_SourceType_Dictionary = 0,
   InitializeModelArgs_SourceType_Batches = 1
@@ -6993,6 +7012,30 @@ class CollectionParserConfig : public ::google::protobuf::Message {
     return CollectionParserConfig_Format_Parse(name, value);
   }
 
+  typedef CollectionParserConfig_NameType NameType;
+  static const NameType Guid = CollectionParserConfig_NameType_Guid;
+  static const NameType Code = CollectionParserConfig_NameType_Code;
+  static inline bool NameType_IsValid(int value) {
+    return CollectionParserConfig_NameType_IsValid(value);
+  }
+  static const NameType NameType_MIN =
+    CollectionParserConfig_NameType_NameType_MIN;
+  static const NameType NameType_MAX =
+    CollectionParserConfig_NameType_NameType_MAX;
+  static const int NameType_ARRAYSIZE =
+    CollectionParserConfig_NameType_NameType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  NameType_descriptor() {
+    return CollectionParserConfig_NameType_descriptor();
+  }
+  static inline const ::std::string& NameType_Name(NameType value) {
+    return CollectionParserConfig_NameType_Name(value);
+  }
+  static inline bool NameType_Parse(const ::std::string& name,
+      NameType* value) {
+    return CollectionParserConfig_NameType_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
 
   // optional .artm.CollectionParserConfig.Format format = 1 [default = BagOfWordsUci];
@@ -7052,10 +7095,17 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline bool use_unity_based_indices() const;
   inline void set_use_unity_based_indices(bool value);
 
-  // repeated string cooccurrence_token = 7;
+  // optional .artm.CollectionParserConfig.NameType name_type = 7 [default = Guid];
+  inline bool has_name_type() const;
+  inline void clear_name_type();
+  static const int kNameTypeFieldNumber = 7;
+  inline ::artm::CollectionParserConfig_NameType name_type() const;
+  inline void set_name_type(::artm::CollectionParserConfig_NameType value);
+
+  // repeated string cooccurrence_token = 8;
   inline int cooccurrence_token_size() const;
   inline void clear_cooccurrence_token();
-  static const int kCooccurrenceTokenFieldNumber = 7;
+  static const int kCooccurrenceTokenFieldNumber = 8;
   inline const ::std::string& cooccurrence_token(int index) const;
   inline ::std::string* mutable_cooccurrence_token(int index);
   inline void set_cooccurrence_token(int index, const ::std::string& value);
@@ -7068,10 +7118,10 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& cooccurrence_token() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_cooccurrence_token();
 
-  // optional bool gather_cooc = 8;
+  // optional bool gather_cooc = 9;
   inline bool has_gather_cooc() const;
   inline void clear_gather_cooc();
-  static const int kGatherCoocFieldNumber = 8;
+  static const int kGatherCoocFieldNumber = 9;
   inline bool gather_cooc() const;
   inline void set_gather_cooc(bool value);
 
@@ -7112,6 +7162,8 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   inline void clear_has_num_items_per_batch();
   inline void set_has_use_unity_based_indices();
   inline void clear_has_use_unity_based_indices();
+  inline void set_has_name_type();
+  inline void clear_has_name_type();
   inline void set_has_gather_cooc();
   inline void clear_has_gather_cooc();
   inline void set_has_use_symmetric_cooc_values();
@@ -7125,13 +7177,14 @@ class CollectionParserConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 num_items_per_batch_;
   ::std::string* target_folder_;
   ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_token_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_class_id_;
+  int name_type_;
   bool use_unity_based_indices_;
   bool gather_cooc_;
   bool use_symmetric_cooc_values_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> cooccurrence_class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(11 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -20409,7 +20462,30 @@ inline void CollectionParserConfig::set_use_unity_based_indices(bool value) {
   use_unity_based_indices_ = value;
 }
 
-// repeated string cooccurrence_token = 7;
+// optional .artm.CollectionParserConfig.NameType name_type = 7 [default = Guid];
+inline bool CollectionParserConfig::has_name_type() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void CollectionParserConfig::set_has_name_type() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void CollectionParserConfig::clear_has_name_type() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void CollectionParserConfig::clear_name_type() {
+  name_type_ = 0;
+  clear_has_name_type();
+}
+inline ::artm::CollectionParserConfig_NameType CollectionParserConfig::name_type() const {
+  return static_cast< ::artm::CollectionParserConfig_NameType >(name_type_);
+}
+inline void CollectionParserConfig::set_name_type(::artm::CollectionParserConfig_NameType value) {
+  assert(::artm::CollectionParserConfig_NameType_IsValid(value));
+  set_has_name_type();
+  name_type_ = value;
+}
+
+// repeated string cooccurrence_token = 8;
 inline int CollectionParserConfig::cooccurrence_token_size() const {
   return cooccurrence_token_.size();
 }
@@ -20453,15 +20529,15 @@ CollectionParserConfig::mutable_cooccurrence_token() {
   return &cooccurrence_token_;
 }
 
-// optional bool gather_cooc = 8;
+// optional bool gather_cooc = 9;
 inline bool CollectionParserConfig::has_gather_cooc() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void CollectionParserConfig::set_has_gather_cooc() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void CollectionParserConfig::clear_has_gather_cooc() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void CollectionParserConfig::clear_gather_cooc() {
   gather_cooc_ = false;
@@ -20521,13 +20597,13 @@ CollectionParserConfig::mutable_cooccurrence_class_id() {
 
 // optional bool use_symmetric_cooc_values = 11 [default = false];
 inline bool CollectionParserConfig::has_use_symmetric_cooc_values() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void CollectionParserConfig::set_has_use_symmetric_cooc_values() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void CollectionParserConfig::clear_has_use_symmetric_cooc_values() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void CollectionParserConfig::clear_use_symmetric_cooc_values() {
   use_symmetric_cooc_values_ = false;
@@ -27541,6 +27617,10 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::TopicModel_OperationType
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::CollectionParserConfig_Format>() {
   return ::artm::CollectionParserConfig_Format_descriptor();
+}
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::artm::CollectionParserConfig_NameType>() {
+  return ::artm::CollectionParserConfig_NameType_descriptor();
 }
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::InitializeModelArgs_SourceType>() {

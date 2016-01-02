@@ -477,15 +477,21 @@ message CollectionParserConfig {
     VowpalWabbit = 2;
   }
 
+  enum NameType {
+    Guid = 0;
+    Code = 1;
+  }
+
   optional Format format = 1 [default = BagOfWordsUci];
   optional string docword_file_path = 2;
   optional string vocab_file_path = 3;
   optional string target_folder = 4;
   optional int32 num_items_per_batch = 5 [default = 1000];
   optional bool use_unity_based_indices = 6 [default = true];
+  optional NameType name_type = 7 [default = Guid];
 
-  repeated string cooccurrence_token = 7;  // obsoleted
-  optional bool gather_cooc = 8;  // obsoleted
+  repeated string cooccurrence_token = 8;  // obsoleted
+  optional bool gather_cooc = 9;  // obsoleted
   repeated string cooccurrence_class_id = 10;  // obsoleted
   optional bool use_symmetric_cooc_values = 11 [default = false];  // obsoleted
 }

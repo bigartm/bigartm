@@ -43,9 +43,11 @@ class BatchVectorizer(object):
       target_folder(str): full path to folder for future batches storing
       batches(list of str): list with non-full file names of batches (necessary parameters are
       batches + data_path + data_fromat=='batches' in this case)
+      batch_name_type(str): name batches in natural order ('code') or using random guids (guid),
+      default='code'
     """
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
-                 target_folder='', batch_size=1000):
+                 target_folder='', batch_size=1000, batch_name_type='code'):
         self._batches_list = []
         if data_format == 'batches':
             if batches is None:
@@ -59,6 +61,11 @@ class BatchVectorizer(object):
         elif data_format == 'bow_uci' or data_format == 'vowpal_wabbit':
             parser_config = messages.CollectionParserConfig()
             parser_config.num_items_per_batch = batch_size
+
+            parser_config.name_type = CollectionParserConfig_NameType_Code
+            if batch_name_type == 'guid':
+                parser_config.name_type = CollectionParserConfig_NameType_Guid
+
             if data_format == 'bow_uci':
                 parser_config.docword_file_path = os.path.join(
                     data_path, 'docword.{0}.txt'.format(collection_name))

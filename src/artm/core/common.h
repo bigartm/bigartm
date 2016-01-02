@@ -89,6 +89,8 @@ const std::string kBatchExtension = ".batch";
 
 const int kIdleLoopFrequency = 1;  // 1 ms
 
+const int kBatchNameLength = 6;
+
 class CuckooWatch {
  public:
   explicit CuckooWatch(std::string message)
