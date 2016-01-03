@@ -243,7 +243,7 @@ void BatchHelpers::SaveMessage(const std::string& filename, const std::string& d
 
   boost::filesystem::path full_filename = dir / boost::filesystem::path(filename);
   if (boost::filesystem::exists(full_filename))
-    BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + full_filename.string()));
+    LOG(WARNING) << "File already exists: " << full_filename.string();
 
   SaveMessage(full_filename.string(), message);
 }
