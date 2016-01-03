@@ -316,6 +316,7 @@ int ArtmRequestLoadBatch(const char* filename) {
 template<typename FuncT>
 int ArtmExecute(int master_id, const char* args, FuncT func) {
   try {
+    LOG(INFO) << "Pass " << args << " to " << typeid(FuncT).name();
     (master_component(master_id).get()->*func)(args);
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
@@ -456,6 +457,8 @@ int ArtmRequest(int master_id, int length, const char* args_blob) {
     ResultT result;
     ParseFromArray(args_blob, length, &args);
     ::artm::core::FixAndValidateMessage(&args, /* throw_error =*/ true);
+    std::string description = ::artm::core::DescribeMessage(args);
+    LOG_IF(INFO, !description.empty()) << "Pass " << description << " to MasterComponent::Request";
     master_component(master_id)->Request(args, &result);
     ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
@@ -470,6 +473,8 @@ int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
     ResultT result;
     ParseFromArray(args_blob, length, &args);
     ::artm::core::FixAndValidateMessage(&args, /* throw_error =*/ true);
+    std::string description = ::artm::core::DescribeMessage(args);
+    LOG_IF(INFO, !description.empty()) << "Pass " << description << " to MasterComponent::Request (extended)";
     master_component(master_id)->Request(args, &result, last_message_ex());
     ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
