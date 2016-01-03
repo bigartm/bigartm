@@ -5136,24 +5136,34 @@ class ItemsProcessedScore : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional int32 value = 1;
+  // optional int32 value = 1 [default = 0];
   inline bool has_value() const;
   inline void clear_value();
   static const int kValueFieldNumber = 1;
   inline ::google::protobuf::int32 value() const;
   inline void set_value(::google::protobuf::int32 value);
 
+  // optional int32 num_batches = 2 [default = 0];
+  inline bool has_num_batches() const;
+  inline void clear_num_batches();
+  static const int kNumBatchesFieldNumber = 2;
+  inline ::google::protobuf::int32 num_batches() const;
+  inline void set_num_batches(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:artm.ItemsProcessedScore)
  private:
   inline void set_has_value();
   inline void clear_has_value();
+  inline void set_has_num_batches();
+  inline void clear_has_num_batches();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::int32 value_;
+  ::google::protobuf::int32 num_batches_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -11880,6 +11890,13 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline ::std::string* release_disk_cache_path();
   inline void set_allocated_disk_cache_path(::std::string* disk_cache_path);
 
+  // optional bool use_v06_api = 14 [default = false];
+  inline bool has_use_v06_api() const;
+  inline void clear_use_v06_api();
+  static const int kUseV06ApiFieldNumber = 14;
+  inline bool use_v06_api() const;
+  inline void set_use_v06_api(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.MasterModelConfig)
  private:
   inline void set_has_threads();
@@ -11898,6 +11915,8 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_sparse_bow();
   inline void set_has_disk_cache_path();
   inline void clear_has_disk_cache_path();
+  inline void set_has_use_v06_api();
+  inline void clear_has_use_v06_api();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -11915,9 +11934,10 @@ class MasterModelConfig : public ::google::protobuf::Message {
   bool reuse_theta_;
   bool opt_for_avx_;
   bool use_sparse_bow_;
+  bool use_v06_api_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -17852,7 +17872,7 @@ inline void ItemsProcessedScoreConfig::set_allocated_stream_name(::std::string* 
 
 // ItemsProcessedScore
 
-// optional int32 value = 1;
+// optional int32 value = 1 [default = 0];
 inline bool ItemsProcessedScore::has_value() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -17872,6 +17892,28 @@ inline ::google::protobuf::int32 ItemsProcessedScore::value() const {
 inline void ItemsProcessedScore::set_value(::google::protobuf::int32 value) {
   set_has_value();
   value_ = value;
+}
+
+// optional int32 num_batches = 2 [default = 0];
+inline bool ItemsProcessedScore::has_num_batches() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ItemsProcessedScore::set_has_num_batches() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ItemsProcessedScore::clear_has_num_batches() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ItemsProcessedScore::clear_num_batches() {
+  num_batches_ = 0;
+  clear_has_num_batches();
+}
+inline ::google::protobuf::int32 ItemsProcessedScore::num_batches() const {
+  return num_batches_;
+}
+inline void ItemsProcessedScore::set_num_batches(::google::protobuf::int32 value) {
+  set_has_num_batches();
+  num_batches_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -27157,6 +27199,28 @@ inline void MasterModelConfig::set_allocated_disk_cache_path(::std::string* disk
     clear_has_disk_cache_path();
     disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
+}
+
+// optional bool use_v06_api = 14 [default = false];
+inline bool MasterModelConfig::has_use_v06_api() const {
+  return (_has_bits_[0] & 0x00002000u) != 0;
+}
+inline void MasterModelConfig::set_has_use_v06_api() {
+  _has_bits_[0] |= 0x00002000u;
+}
+inline void MasterModelConfig::clear_has_use_v06_api() {
+  _has_bits_[0] &= ~0x00002000u;
+}
+inline void MasterModelConfig::clear_use_v06_api() {
+  use_v06_api_ = false;
+  clear_has_use_v06_api();
+}
+inline bool MasterModelConfig::use_v06_api() const {
+  return use_v06_api_;
+}
+inline void MasterModelConfig::set_use_v06_api(bool value) {
+  set_has_use_v06_api();
+  use_v06_api_ = value;
 }
 
 // -------------------------------------------------------------------

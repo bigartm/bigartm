@@ -853,6 +853,8 @@ CalcScores(ScoreCalculatorInterface* score_calc, const Batch& batch,
     score_calc->AppendScore(item, token_dict, p_wt, model_config, theta_vec, score.get());
   }
 
+  score_calc->AppendScore(batch, score.get());
+
   return score;
 }
 

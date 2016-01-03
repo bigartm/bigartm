@@ -41,6 +41,10 @@ class ItemsProcessed : public ScoreCalculatorInterface {
       const std::vector<float>& theta,
       Score* score);
 
+  virtual void AppendScore(
+      const Batch& batch,
+      Score* score);
+
   virtual ScoreData_Type score_type() const { return ::artm::ScoreData_Type_ItemsProcessed; }
 
  private:

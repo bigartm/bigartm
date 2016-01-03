@@ -43,6 +43,10 @@ class ScoreCalculatorInterface {
       const std::vector<float>& theta,
       Score* score) { }
 
+  virtual void AppendScore(
+      const Batch& batch,
+      Score* score) {}
+
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
   void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 

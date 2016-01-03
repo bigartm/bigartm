@@ -344,7 +344,8 @@ message ItemsProcessedScoreConfig {
 
 // Represents a result of calculation of an items processed score
 message ItemsProcessedScore {
-  optional int32 value = 1;
+  optional int32 value = 1 [default = 0];
+  optional int32 num_batches = 2 [default = 0];
 }
 
 // Represents a configuration of a top tokens score
@@ -798,6 +799,7 @@ message MasterModelConfig {
   optional bool opt_for_avx = 11 [default = true];
   optional bool use_sparse_bow = 12 [default = true];
   optional string disk_cache_path = 13;
+  optional bool use_v06_api = 14 [default = false];  // obsolete in BigARTM v0.7.4
 }
 
 message FitOfflineMasterModelArgs {

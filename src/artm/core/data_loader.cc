@@ -67,6 +67,9 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
     }
   }
 
+  if (args.reset_scores())
+    instance_->merger()->scores_merger()->ResetScores(ModelName());
+
   std::vector<ModelName> model_names = schema->GetModelNames();
   std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {  // NOLINT
     if (!schema->has_model_config(model_name))
@@ -83,8 +86,10 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
       pi->set_reuse_theta_cache_manager(instance_->cache_manager());
     }
     pi->set_model_name(model_name);
-    if (batch != nullptr) pi->mutable_batch()->CopyFrom(*batch);
-    else pi->set_batch_filename(args.batch_file_name());
+    if (batch != nullptr)
+      pi->mutable_batch()->CopyFrom(*batch);
+    else
+      pi->set_batch_filename(args.batch_file_name());
     pi->mutable_model_config()->CopyFrom(schema->model_config(model_name));
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::AddBatch);

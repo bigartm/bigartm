@@ -80,10 +80,35 @@ MasterComponent::MasterComponent(const MasterModelConfig& config)
   master_component_config.mutable_score_config()->CopyFrom(config.score_config());
   if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
   if (config.reuse_theta()) master_component_config.set_cache_theta(true);
+  if (config.use_v06_api()) {
+    ScoreConfig* items_processed = master_component_config.add_score_config();
+    items_processed->set_type(ScoreConfig_Type_ItemsProcessed);
+    items_processed->set_name("ItemsProcessedScore-2b632a39-8c6b-4b7b-a0c4-ee60d1434522");
+    items_processed->set_config(::artm::ItemsProcessedScoreConfig().SerializeAsString());
+  }
+
   instance_ = std::make_shared<Instance>(master_component_config);
 
   for (int i = 0; i < config.regularizer_config_size(); ++i)
     CreateOrReconfigureRegularizer(config.regularizer_config(i));
+
+  if (config.use_v06_api()) {
+    ::artm::ModelConfig model_config;
+    model_config.set_name(config.pwt_name());
+    model_config.mutable_topic_name()->CopyFrom(config.topic_name());
+    model_config.set_inner_iterations_count(config.inner_iterations_count());
+    if (config.has_reuse_theta()) model_config.set_reuse_theta(config.reuse_theta());
+    for (auto& reg : config.regularizer_config()) {
+      model_config.add_regularizer_name(reg.name());
+      model_config.add_regularizer_tau(reg.tau());
+    }
+    model_config.mutable_class_id()->CopyFrom(config.class_id());
+    model_config.mutable_class_weight()->CopyFrom(config.class_weight());
+    if (config.has_use_sparse_bow()) model_config.set_use_sparse_bow(config.use_sparse_bow());
+    if (config.has_opt_for_avx()) model_config.set_opt_for_avx(config.opt_for_avx());
+    FixAndValidateMessage(&model_config, /*throw_error =*/ true);
+    CreateOrReconfigureModel(model_config);
+  }
 }
 
 MasterComponent::MasterComponent(const MasterComponent& rhs)
@@ -748,6 +773,10 @@ class OnlineBatchesIterator : public BatchesIterator {
   virtual void move(ProcessBatchesArgs* args) {
     args->clear_batch_filename();
     args->clear_batch_weight();
+
+    if (current_ >= update_after_.size())
+      return;
+
     unsigned first = (current_ == 0) ? 0 : update_after_.Get(current_ - 1);
     unsigned last = update_after_.Get(current_);
     for (int i = first; i < last; ++i) {
@@ -760,8 +789,11 @@ class OnlineBatchesIterator : public BatchesIterator {
 
   float apply_weight() { return apply_weight_.Get(current_); }
   float decay_weight() { return decay_weight_.Get(current_); }
+  int update_after() { return update_after_.Get(current_); }
+
   float apply_weight(int index) { return apply_weight_.Get(index); }
   float decay_weight(int index) { return decay_weight_.Get(index); }
+  int update_after(int index) { return update_after_.Get(index); }
 
   void reset() { current_ = 0; }
 
@@ -832,6 +864,47 @@ class ArtmExecutor {
     }
 
     Dispose(rwt_name);
+  }
+
+  void ExecuteLegacyOnlineAlgorithm(OnlineBatchesIterator* iter) {
+    ::artm::ProcessBatchesArgs process_batches_args;
+    bool reset_scores = true;
+    while (iter->more()) {
+      iter->move(&process_batches_args);
+      for (auto& batch_file_name : process_batches_args.batch_filename()) {
+        ::artm::AddBatchArgs add_batch_args;
+        add_batch_args.set_reset_scores(reset_scores);
+        add_batch_args.set_batch_file_name(batch_file_name);
+        master_component_->AddBatch(add_batch_args);
+        reset_scores = false;
+      }
+    }
+
+    iter->reset();
+
+    bool done = false;
+    while (!done) {
+      ::artm::WaitIdleArgs wait_idle_args;
+      wait_idle_args.set_timeout_milliseconds(10);
+      done = master_component_->WaitIdle(wait_idle_args);
+
+      ::artm::GetScoreValueArgs get_score_value_args;
+      get_score_value_args.set_model_name(master_model_config_.pwt_name());
+      get_score_value_args.set_score_name("ItemsProcessedScore-2b632a39-8c6b-4b7b-a0c4-ee60d1434522");
+      ::artm::ScoreData score_data;
+      master_component_->Request(get_score_value_args, &score_data);
+      ::artm::ItemsProcessedScore items_processed_score;
+      items_processed_score.ParseFromString(score_data.data());
+
+      if (iter->more() && (done || (items_processed_score.num_batches() >= iter->update_after()))) {
+        ::artm::SynchronizeModelArgs synchronize_model_args;
+        synchronize_model_args.set_model_name(master_model_config_.pwt_name());
+        synchronize_model_args.set_apply_weight(iter->apply_weight());
+        synchronize_model_args.set_decay_weight(iter->decay_weight());
+        master_component_->SynchronizeModel(synchronize_model_args);
+        iter->move(&process_batches_args);
+      }
+    }
   }
 
   void ExecuteOnlineAlgorithm(OnlineBatchesIterator* iter) {
@@ -1000,6 +1073,11 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
   ArtmExecutor artm_executor(*config, this);
   OnlineBatchesIterator iter(args.batch_filename(), args.batch_weight(), args.update_after(),
                              args.apply_weight(), args.decay_weight());
+  if (config->use_v06_api()) {
+    artm_executor.ExecuteLegacyOnlineAlgorithm(&iter);
+    return;
+  }
+
   if (args.async()) {
     artm_executor.ExecuteAsyncOnlineAlgorithm(&iter);
   } else {
