@@ -62,9 +62,9 @@ class BatchVectorizer(object):
             parser_config = messages.CollectionParserConfig()
             parser_config.num_items_per_batch = batch_size
 
-            parser_config.name_type = CollectionParserConfig_NameType_Code
+            parser_config.name_type = const.CollectionParserConfig_NameType_Code
             if batch_name_type == 'guid':
-                parser_config.name_type = CollectionParserConfig_NameType_Guid
+                parser_config.name_type = const.CollectionParserConfig_NameType_Guid
 
             if data_format == 'bow_uci':
                 parser_config.docword_file_path = os.path.join(

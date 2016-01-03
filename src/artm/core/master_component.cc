@@ -528,6 +528,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 }
 
 void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
+  VLOG(0) << "MasterComponent: start merging models";
   if (merge_model_args.nwt_source_name_size() == 0)
     BOOST_THROW_EXCEPTION(InvalidOperation("MergeModelArgs.nwt_source_name must not be empty"));
   if (merge_model_args.nwt_source_name_size() != merge_model_args.source_weight_size())
@@ -568,9 +569,11 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
       "ArtmMergeModel() have not found any models to merge. "
       "Verify that at least one of the following models exist: " + ss.str()));
   instance_->merger()->SetPhiMatrix(merge_model_args.nwt_target_name(), nwt_target);
+  VLOG(0) << "MasterComponent: complete merging models";
 }
 
 void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_model_args) {
+  VLOG(0) << "MasterComponent: start regularizing model " << regularize_model_args.pwt_source_name();
   const std::string& pwt_source_name = regularize_model_args.pwt_source_name();
   const std::string& nwt_source_name = regularize_model_args.nwt_source_name();
   const std::string& rwt_target_name = regularize_model_args.rwt_target_name();
@@ -599,9 +602,11 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
   PhiMatrixOperations::InvokePhiRegularizers(instance_->schema(), regularize_model_args.regularizer_settings(),
                                              p_wt, n_wt, rwt_target.get());
   instance_->merger()->SetPhiMatrix(rwt_target_name, rwt_target);
+  VLOG(0) << "MasterComponent: complete regularizing model " << regularize_model_args.pwt_source_name();
 }
 
 void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_args) {
+  VLOG(0) << "MasterComponent: start normalizing model " << normalize_model_args.nwt_source_name();
   const std::string& pwt_target_name = normalize_model_args.pwt_target_name();
   const std::string& nwt_source_name = normalize_model_args.nwt_source_name();
   const std::string& rwt_source_name = normalize_model_args.rwt_source_name();
@@ -631,6 +636,7 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
   if (r_wt == nullptr) PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
   else                 PhiMatrixOperations::FindPwt(n_wt, *r_wt, pwt_target.get());
   instance_->merger()->SetPhiMatrix(pwt_target_name, pwt_target);
+  VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
 }
 
 void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
