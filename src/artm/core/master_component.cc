@@ -824,6 +824,7 @@ class ArtmExecutor {
 
   void ExecuteOfflineAlgorithm(int passes, OfflineBatchesIterator* iter) {
     const std::string rwt_name = "rwt";
+    process_batches_args_.set_reset_scores(true);
     for (int pass = 0; pass < passes; ++pass) {
       ProcessBatches(pwt_name_, nwt_name_, iter);
       Regularize(pwt_name_, nwt_name_, rwt_name);
@@ -834,20 +835,22 @@ class ArtmExecutor {
   }
 
   void ExecuteOnlineAlgorithm(OnlineBatchesIterator* iter) {
-    const std::string nwt_hat_name = "nwt_hat";
     const std::string rwt_name = "rwt";
+    StringIndex nwt_hat_index("nwt_hat");
 
     process_batches_args_.set_reset_scores(true);  // reset scores at the beginning of each iteration
     while (iter->more()) {
       float apply_weight = iter->apply_weight();
       float decay_weight = iter->decay_weight();
 
-      ProcessBatches(pwt_name_, nwt_hat_name, iter);
-      Merge(nwt_name_, decay_weight, nwt_hat_name, apply_weight);
+      ProcessBatches(pwt_name_, nwt_hat_index, iter);
+      Merge(nwt_name_, decay_weight, nwt_hat_index, apply_weight);
+      Dispose(nwt_hat_index);
       Regularize(pwt_name_, nwt_name_, rwt_name);
       Normalize(pwt_name_, nwt_name_, rwt_name);
 
       process_batches_args_.set_reset_scores(false);
+      nwt_hat_index++;
     }  // while (iter->more())
 
     iter->reset();
@@ -870,25 +873,25 @@ class ArtmExecutor {
     const std::string rwt_name = "rwt";
     std::string pwt_active = pwt_name_;
     StringIndex pwt_index("pwt");
-    StringIndex nwt_index("nwt");
+    StringIndex nwt_hat_index("nwt_hat");
 
     process_batches_args_.set_model_name_cache(pwt_name_);
     process_batches_args_.set_reset_scores(true);  // reset scores at the beginning of each iteration
-    int op_id = AsyncProcessBatches(pwt_active, nwt_index, iter);
+    int op_id = AsyncProcessBatches(pwt_active, nwt_hat_index, iter);
     process_batches_args_.set_reset_scores(false);
 
     while (true) {
       bool is_last = !iter->more();
-      pwt_index++; nwt_index++;
+      pwt_index++; nwt_hat_index++;
 
       float apply_weight = iter->apply_weight(op_id);
       float decay_weight = iter->decay_weight(op_id);
 
       int temp_op_id = op_id;
-      if (!is_last) op_id = AsyncProcessBatches(pwt_active, nwt_index, iter);
+      if (!is_last) op_id = AsyncProcessBatches(pwt_active, nwt_hat_index, iter);
       Await(temp_op_id);
-      Merge(nwt_name_, decay_weight, nwt_index - 1, apply_weight);
-      Dispose(nwt_index - 1);
+      Merge(nwt_name_, decay_weight, nwt_hat_index - 1, apply_weight);
+      Dispose(nwt_hat_index - 1);
       Regularize(pwt_active, nwt_name_, rwt_name);
 
       pwt_active = is_last ? pwt_name_ : std::string(pwt_index + 1);
@@ -983,6 +986,7 @@ class ArtmExecutor {
   }
 
   void Dispose(std::string model_name) {
+    LOG(INFO) << "DisposeModel " << model_name;
     master_component_->DisposeModel(model_name);
   }
 };
