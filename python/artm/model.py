@@ -618,7 +618,7 @@ class ARTM(object):
         self._score_tracker = {}
         self._synchronizations_processed = 0
 
-    def get_phi(self, topic_names=None, class_ids=None):
+    def get_phi(self, topic_names=None, class_ids=None, model_name=None):
         """ARTM.get_phi() --- get custom Phi matrix of model. The
                               extraction of the whole Phi matrix expects
                               ARTM.phi_ call.
@@ -628,6 +628,8 @@ class ARTM(object):
           default=None (means all topics)
           class_ids (list of str): list with class ids to extract,
           default=None (means all class ids)
+          model_name (str): self.model_pwt by default,
+          self.model_nwt also reasonable to extract unnormalized counters
 
         Returns:
           pandas.DataFrame: (data, columns, rows), where:
@@ -638,8 +640,11 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        phi_info = self.master.get_phi_info(model=self.model_pwt)
-        nd_array = self.master.get_phi_matrix(model=self.model_pwt,
+        if model_name is None:
+            model_name = self.model_pwt
+
+        phi_info = self.master.get_phi_info(model=model_name)
+        nd_array = self.master.get_phi_matrix(model=model_name,
                                               topic_names=topic_names,
                                               class_ids=class_ids)
 
@@ -653,7 +658,7 @@ class ARTM(object):
 
         return phi_data_frame
 
-    def fit_transform(self, topic_names=None, remove_theta=False):
+    def get_theta(self, topic_names=None, remove_theta=False, use_doc_titles=False):
         """ARTM.fit_transform() --- get Theta matrix for training set
         of documents
 
@@ -662,6 +667,8 @@ class ARTM(object):
           default=None (means all topics)
           remove_theta (bool): flag indicates save or remove Theta from model
           after extraction, default=False
+          use_doc_titles (bool): name columns of theta dataframe by document titles,
+          othervise document ids are used, default=False (resulting in ids)
 
         Returns:
           pandas.DataFrame: (data, columns, rows), where:
@@ -678,7 +685,12 @@ class ARTM(object):
 
         theta_info = self.master.get_theta_info(model=self.model_pwt)
 
-        document_ids = [item_id for item_id in theta_info.item_id]
+        column_names = []
+        if use_doc_titles:
+            column_names = [item_title for item_title in theta_info.item_title]
+        else:
+            column_names = [item_id for item_id in theta_info.item_id]
+
         all_topic_names = [topic_name for topic_name in theta_info.topic_name]
         use_topic_names = topic_names if topic_names is not None else all_topic_names
         nd_array = self.master.get_theta_matrix(model=self.model_pwt,
@@ -686,7 +698,7 @@ class ARTM(object):
                                                 clean_cache=remove_theta)
 
         theta_data_frame = DataFrame(data=nd_array.transpose(),
-                                     columns=document_ids,
+                                     columns=column_names,
                                      index=use_topic_names)
         return theta_data_frame
 
