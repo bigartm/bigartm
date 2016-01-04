@@ -88,6 +88,10 @@ ARTM_API = [
         [('master_id', int), ('args', messages.ImportDictionaryArgs)],
     ),
     CallSpec(
+        'ArtmExportDictionary',
+        [('master_id', int), ('args', messages.ExportDictionaryArgs)],
+    ),
+    CallSpec(
         'ArtmParseCollection',
         [('config', messages.CollectionParserConfig)],
     ),
