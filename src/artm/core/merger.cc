@@ -433,7 +433,7 @@ void Merger::InitializeModel(const InitializeModelArgs& args) {
   if (model_config != nullptr) {
     auto new_ttm = std::make_shared< ::artm::core::TopicModel>(args.model_name(), topic_model.topic_name());
     PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm->mutable_nwt());
-
+    PhiMatrixOperations::FindPwt(new_ttm->GetNwt(), new_ttm->mutable_nwt());
     new_ttm->CalcPwt();   // calculate pwt matrix
     topic_model_.set(args.model_name(), new_ttm);
   } else {

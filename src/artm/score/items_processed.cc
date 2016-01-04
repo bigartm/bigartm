@@ -17,7 +17,13 @@ void ItemsProcessed::AppendScore(
     const std::vector<float>& theta,
     Score* score) {
   ItemsProcessedScore items_processed_score;
-  items_processed_score.set_value(items_processed_score.value() + 1);
+  items_processed_score.set_value(1);
+  AppendScore(items_processed_score, score);
+}
+
+void ItemsProcessed::AppendScore(const Batch& batch, Score* score) {
+  ItemsProcessedScore items_processed_score;
+  items_processed_score.set_num_batches(1);
   AppendScore(items_processed_score, score);
 }
 
@@ -43,6 +49,8 @@ void ItemsProcessed::AppendScore(const Score& score, Score* target) {
 
   items_processed_target->set_value(items_processed_target->value() +
                                     items_processed_score->value());
+  items_processed_target->set_num_batches(items_processed_target->num_batches() +
+                                          items_processed_score->num_batches());
 }
 
 }  // namespace score

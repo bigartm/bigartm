@@ -45,22 +45,19 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
   std::shared_ptr<InstanceSchema> schema = instance()->schema();
   const MasterComponentConfig& config = schema->config();
 
-  std::shared_ptr<Batch> batch = std::make_shared< ::artm::Batch>();
-  if (args.has_batch_file_name()) {
-    ::artm::core::BatchHelpers::LoadMessage(args.batch_file_name(), batch.get());
-  } else {
-    batch = std::make_shared<Batch>(args.batch());  // copy constructor
-  }
-
-  if (config.compact_batches()) {
-    std::shared_ptr<Batch> modified_batch = std::make_shared<Batch>();  // constructor
-    BatchHelpers::CompactBatch(*batch, modified_batch.get());
-    batch = modified_batch;
+  std::shared_ptr<Batch> batch;
+  if (args.has_batch()) {
+    batch = std::make_shared< ::artm::Batch>();
+    if (config.compact_batches())
+      BatchHelpers::CompactBatch(args.batch(), batch.get());
+    else
+      batch = std::make_shared<Batch>(args.batch());  // copy constructor
   }
 
   auto time_start = boost::posix_time::microsec_clock::local_time();
   for (;;) {
     if (instance_->processor_queue()->size() < config.processor_queue_max_size()) break;
+    if (batch == nullptr) break;
 
     boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
 
@@ -69,6 +66,9 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
       if ((time_end - time_start).total_milliseconds() >= timeout) return false;
     }
   }
+
+  if (args.reset_scores())
+    instance_->merger()->scores_merger()->ResetScores(ModelName());
 
   std::vector<ModelName> model_names = schema->GetModelNames();
   std::for_each(model_names.begin(), model_names.end(), [&](ModelName model_name) {  // NOLINT
@@ -86,7 +86,10 @@ bool DataLoader::AddBatch(const AddBatchArgs& args) {
       pi->set_reuse_theta_cache_manager(instance_->cache_manager());
     }
     pi->set_model_name(model_name);
-    pi->mutable_batch()->CopyFrom(*batch);
+    if (batch != nullptr)
+      pi->mutable_batch()->CopyFrom(*batch);
+    else
+      pi->set_batch_filename(args.batch_file_name());
     pi->mutable_model_config()->CopyFrom(schema->model_config(model_name));
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::AddBatch);
