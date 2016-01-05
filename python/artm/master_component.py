@@ -83,6 +83,18 @@ class MasterComponent(object):
 
         self._lib.ArtmExportDictionary(self.master_id, args)
 
+    def create_dictionary(self, dictionary_data, dictionary_name=None):
+        """Args:
+           - dictionary_data: an instance of DictionaryData with info
+             about dictionary
+           - dictionary_name(str): name of exported dictionary
+        """
+
+        if dictionary_name is not None:
+            dictionary_data.name = dictionary_name
+
+        self._lib.ArtmCreateDictionary(self.master_id, dictionary_data)
+
     def gather_dictionary(self, dictionary_target_name=None, data_path=None, cooc_file_path=None,
                           vocab_file_path=None, symmetric_cooc_values=None, args=None):
         """Args:
