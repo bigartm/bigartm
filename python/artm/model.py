@@ -317,6 +317,22 @@ class ARTM(object):
         else:
             raise IOError('dictionary_name is None')
 
+    def create_dictionary(self, dictionary_name=None, dictionary_data=None):
+        """ARTM.save_dictionary() --- save the BigARTM dictionary of
+        the collection on the disk
+
+        Args:
+          dictionary_name (str): the name of the dictionary in the lib, default=None
+          dictionary_data (DictionaryData instance): configuration of dictionary, default=None
+        """
+        if dictionary_data is not None and dictionary_name is not None:
+            self.master.create_dictionary(dictionary_data=dictionary_data,
+                                          dictionary_name=dictionary_name)
+        elif dictionary_data is None:
+            raise IOError('dictionary_data is None')
+        else:
+            raise IOError('dictionary_name is None')
+
     def gather_dictionary(self, dictionary_target_name=None, data_path=None, cooc_file_path=None,
                           vocab_file_path=None, symmetric_cooc_values=False):
         """ARTM.gather_dictionary() --- create the BigARTM dictionary of
