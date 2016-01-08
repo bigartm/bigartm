@@ -22,7 +22,7 @@ void SparsityTheta::AppendScore(
   int topic_size = p_wt.topic_size();
 
   std::vector<bool> topics_to_score;
-  int topics_to_score_size = topic_size;
+  ::google::protobuf::int64 topics_to_score_size = topic_size;
   if (config_.topic_name_size() == 0) {
     topics_to_score.assign(topic_size, true);
   } else {
@@ -30,7 +30,7 @@ void SparsityTheta::AppendScore(
     topics_to_score_size = config_.topic_name_size();
   }
 
-  int zero_topics_count = 0;
+  ::google::protobuf::int64 zero_topics_count = 0;
   for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
     if ((fabs(theta[topic_index]) < config_.eps()) &&
         topics_to_score[topic_index]) {

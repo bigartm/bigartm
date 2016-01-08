@@ -4461,12 +4461,12 @@ class PerplexityScore : public ::google::protobuf::Message {
   inline double normalizer() const;
   inline void set_normalizer(double value);
 
-  // optional int32 zero_words = 4;
+  // optional int64 zero_words = 4;
   inline bool has_zero_words() const;
   inline void clear_zero_words();
   static const int kZeroWordsFieldNumber = 4;
-  inline ::google::protobuf::int32 zero_words() const;
-  inline void set_zero_words(::google::protobuf::int32 value);
+  inline ::google::protobuf::int64 zero_words() const;
+  inline void set_zero_words(::google::protobuf::int64 value);
 
   // optional double theta_sparsity_value = 5;
   inline bool has_theta_sparsity_value() const;
@@ -4511,8 +4511,8 @@ class PerplexityScore : public ::google::protobuf::Message {
   double value_;
   double raw_;
   double normalizer_;
+  ::google::protobuf::int64 zero_words_;
   double theta_sparsity_value_;
-  ::google::protobuf::int32 zero_words_;
   ::google::protobuf::int32 theta_sparsity_zero_topics_;
   ::google::protobuf::int32 theta_sparsity_total_topics_;
 
@@ -4720,19 +4720,19 @@ class SparsityThetaScore : public ::google::protobuf::Message {
   inline double value() const;
   inline void set_value(double value);
 
-  // optional int32 zero_topics = 2;
+  // optional int64 zero_topics = 2;
   inline bool has_zero_topics() const;
   inline void clear_zero_topics();
   static const int kZeroTopicsFieldNumber = 2;
-  inline ::google::protobuf::int32 zero_topics() const;
-  inline void set_zero_topics(::google::protobuf::int32 value);
+  inline ::google::protobuf::int64 zero_topics() const;
+  inline void set_zero_topics(::google::protobuf::int64 value);
 
-  // optional int32 total_topics = 3;
+  // optional int64 total_topics = 3;
   inline bool has_total_topics() const;
   inline void clear_total_topics();
   static const int kTotalTopicsFieldNumber = 3;
-  inline ::google::protobuf::int32 total_topics() const;
-  inline void set_total_topics(::google::protobuf::int32 value);
+  inline ::google::protobuf::int64 total_topics() const;
+  inline void set_total_topics(::google::protobuf::int64 value);
 
   // @@protoc_insertion_point(class_scope:artm.SparsityThetaScore)
  private:
@@ -4746,8 +4746,8 @@ class SparsityThetaScore : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   double value_;
-  ::google::protobuf::int32 zero_topics_;
-  ::google::protobuf::int32 total_topics_;
+  ::google::protobuf::int64 zero_topics_;
+  ::google::protobuf::int64 total_topics_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -4937,19 +4937,19 @@ class SparsityPhiScore : public ::google::protobuf::Message {
   inline double value() const;
   inline void set_value(double value);
 
-  // optional int32 zero_tokens = 2;
+  // optional int64 zero_tokens = 2;
   inline bool has_zero_tokens() const;
   inline void clear_zero_tokens();
   static const int kZeroTokensFieldNumber = 2;
-  inline ::google::protobuf::int32 zero_tokens() const;
-  inline void set_zero_tokens(::google::protobuf::int32 value);
+  inline ::google::protobuf::int64 zero_tokens() const;
+  inline void set_zero_tokens(::google::protobuf::int64 value);
 
-  // optional int32 total_tokens = 3;
+  // optional int64 total_tokens = 3;
   inline bool has_total_tokens() const;
   inline void clear_total_tokens();
   static const int kTotalTokensFieldNumber = 3;
-  inline ::google::protobuf::int32 total_tokens() const;
-  inline void set_total_tokens(::google::protobuf::int32 value);
+  inline ::google::protobuf::int64 total_tokens() const;
+  inline void set_total_tokens(::google::protobuf::int64 value);
 
   // @@protoc_insertion_point(class_scope:artm.SparsityPhiScore)
  private:
@@ -4963,8 +4963,8 @@ class SparsityPhiScore : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   double value_;
-  ::google::protobuf::int32 zero_tokens_;
-  ::google::protobuf::int32 total_tokens_;
+  ::google::protobuf::int64 zero_tokens_;
+  ::google::protobuf::int64 total_tokens_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -17146,7 +17146,7 @@ inline void PerplexityScore::set_normalizer(double value) {
   normalizer_ = value;
 }
 
-// optional int32 zero_words = 4;
+// optional int64 zero_words = 4;
 inline bool PerplexityScore::has_zero_words() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -17157,13 +17157,13 @@ inline void PerplexityScore::clear_has_zero_words() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void PerplexityScore::clear_zero_words() {
-  zero_words_ = 0;
+  zero_words_ = GOOGLE_LONGLONG(0);
   clear_has_zero_words();
 }
-inline ::google::protobuf::int32 PerplexityScore::zero_words() const {
+inline ::google::protobuf::int64 PerplexityScore::zero_words() const {
   return zero_words_;
 }
-inline void PerplexityScore::set_zero_words(::google::protobuf::int32 value) {
+inline void PerplexityScore::set_zero_words(::google::protobuf::int64 value) {
   set_has_zero_words();
   zero_words_ = value;
 }
@@ -17470,7 +17470,7 @@ inline void SparsityThetaScore::set_value(double value) {
   value_ = value;
 }
 
-// optional int32 zero_topics = 2;
+// optional int64 zero_topics = 2;
 inline bool SparsityThetaScore::has_zero_topics() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -17481,18 +17481,18 @@ inline void SparsityThetaScore::clear_has_zero_topics() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void SparsityThetaScore::clear_zero_topics() {
-  zero_topics_ = 0;
+  zero_topics_ = GOOGLE_LONGLONG(0);
   clear_has_zero_topics();
 }
-inline ::google::protobuf::int32 SparsityThetaScore::zero_topics() const {
+inline ::google::protobuf::int64 SparsityThetaScore::zero_topics() const {
   return zero_topics_;
 }
-inline void SparsityThetaScore::set_zero_topics(::google::protobuf::int32 value) {
+inline void SparsityThetaScore::set_zero_topics(::google::protobuf::int64 value) {
   set_has_zero_topics();
   zero_topics_ = value;
 }
 
-// optional int32 total_topics = 3;
+// optional int64 total_topics = 3;
 inline bool SparsityThetaScore::has_total_topics() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -17503,13 +17503,13 @@ inline void SparsityThetaScore::clear_has_total_topics() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void SparsityThetaScore::clear_total_topics() {
-  total_topics_ = 0;
+  total_topics_ = GOOGLE_LONGLONG(0);
   clear_has_total_topics();
 }
-inline ::google::protobuf::int32 SparsityThetaScore::total_topics() const {
+inline ::google::protobuf::int64 SparsityThetaScore::total_topics() const {
   return total_topics_;
 }
-inline void SparsityThetaScore::set_total_topics(::google::protobuf::int32 value) {
+inline void SparsityThetaScore::set_total_topics(::google::protobuf::int64 value) {
   set_has_total_topics();
   total_topics_ = value;
 }
@@ -17680,7 +17680,7 @@ inline void SparsityPhiScore::set_value(double value) {
   value_ = value;
 }
 
-// optional int32 zero_tokens = 2;
+// optional int64 zero_tokens = 2;
 inline bool SparsityPhiScore::has_zero_tokens() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -17691,18 +17691,18 @@ inline void SparsityPhiScore::clear_has_zero_tokens() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void SparsityPhiScore::clear_zero_tokens() {
-  zero_tokens_ = 0;
+  zero_tokens_ = GOOGLE_LONGLONG(0);
   clear_has_zero_tokens();
 }
-inline ::google::protobuf::int32 SparsityPhiScore::zero_tokens() const {
+inline ::google::protobuf::int64 SparsityPhiScore::zero_tokens() const {
   return zero_tokens_;
 }
-inline void SparsityPhiScore::set_zero_tokens(::google::protobuf::int32 value) {
+inline void SparsityPhiScore::set_zero_tokens(::google::protobuf::int64 value) {
   set_has_zero_tokens();
   zero_tokens_ = value;
 }
 
-// optional int32 total_tokens = 3;
+// optional int64 total_tokens = 3;
 inline bool SparsityPhiScore::has_total_tokens() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -17713,13 +17713,13 @@ inline void SparsityPhiScore::clear_has_total_tokens() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void SparsityPhiScore::clear_total_tokens() {
-  total_tokens_ = 0;
+  total_tokens_ = GOOGLE_LONGLONG(0);
   clear_has_total_tokens();
 }
-inline ::google::protobuf::int32 SparsityPhiScore::total_tokens() const {
+inline ::google::protobuf::int64 SparsityPhiScore::total_tokens() const {
   return total_tokens_;
 }
-inline void SparsityPhiScore::set_total_tokens(::google::protobuf::int32 value) {
+inline void SparsityPhiScore::set_total_tokens(::google::protobuf::int64 value) {
   set_has_total_tokens();
   total_tokens_ = value;
 }

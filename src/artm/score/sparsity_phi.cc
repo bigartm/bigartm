@@ -15,11 +15,11 @@ namespace score {
 std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::PhiMatrix& p_wt) {
   int topic_size = p_wt.topic_size();
   int token_size = p_wt.token_size();
-  int zero_tokens_count = 0;
+  ::google::protobuf::int64 zero_tokens_count = 0;
 
   // parameters preparation
   std::vector<bool> topics_to_score;
-  int topics_to_score_size = topic_size;
+  ::google::protobuf::int64 topics_to_score_size = topic_size;
   if (config_.topic_name_size() == 0) {
     topics_to_score.assign(topic_size, true);
   } else {
@@ -31,7 +31,7 @@ std::shared_ptr<Score> SparsityPhi::CalculateScore(const artm::core::PhiMatrix& 
   if (config_.has_class_id())
     class_id = config_.class_id();
 
-  int class_tokens_count = 0;
+  ::google::protobuf::int64 class_tokens_count = 0;
   for (int token_index = 0; token_index < token_size; token_index++) {
     if (p_wt.token(token_index).class_id == class_id) {
       class_tokens_count++;

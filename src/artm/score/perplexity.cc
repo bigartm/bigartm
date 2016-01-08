@@ -87,7 +87,7 @@ void Perplexity::AppendScore(
     }
   }
 
-  int zero_words = 0;
+  ::google::protobuf::int64 zero_words = 0;
   double normalizer = 0;
   double raw = 0;
 
