@@ -301,10 +301,10 @@ message PerplexityScore {
   optional double value = 1;
   optional double raw = 2;
   optional double normalizer = 3;
-  optional int32 zero_words = 4;
+  optional int64 zero_words = 4;
   optional double theta_sparsity_value = 5;
-  optional int32 theta_sparsity_zero_topics = 6;
-  optional int32 theta_sparsity_total_topics = 7;
+  optional int32 theta_sparsity_zero_topics = 6;  // obsolete in BigARTM v0.7.4
+  optional int32 theta_sparsity_total_topics = 7;  // obsolete in BigARTM v0.7.4
 }
 
 // Represents a configuration of a theta sparsity score
@@ -318,8 +318,8 @@ message SparsityThetaScoreConfig {
 // Represents a result of calculation of a theta sparsity score
 message SparsityThetaScore {
   optional double value = 1;
-  optional int32 zero_topics = 2;
-  optional int32 total_topics = 3;
+  optional int64 zero_topics = 2;
+  optional int64 total_topics = 3;
 }
 
 // Represents a configuration of a sparsity phi score
@@ -332,8 +332,8 @@ message SparsityPhiScoreConfig {
 // Represents a result of calculation of a phi sparsity score
 message SparsityPhiScore {
   optional double value = 1;
-  optional int32 zero_tokens = 2;
-  optional int32 total_tokens = 3;
+  optional int64 zero_tokens = 2;
+  optional int64 total_tokens = 3;
 }
 
 // Represents a configuration of an items processed score

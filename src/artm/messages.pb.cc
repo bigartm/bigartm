@@ -2474,20 +2474,20 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\003(\t\"<\n\004Type\022\030\n\024UnigramDocumentModel\020\000\022\032\n"
     "\026UnigramCollectionModel\020\001\"\274\001\n\017Perplexity"
     "Score\022\r\n\005value\030\001 \001(\001\022\013\n\003raw\030\002 \001(\001\022\022\n\nnor"
-    "malizer\030\003 \001(\001\022\022\n\nzero_words\030\004 \001(\005\022\034\n\024the"
+    "malizer\030\003 \001(\001\022\022\n\nzero_words\030\004 \001(\003\022\034\n\024the"
     "ta_sparsity_value\030\005 \001(\001\022\"\n\032theta_sparsit"
     "y_zero_topics\030\006 \001(\005\022#\n\033theta_sparsity_to"
     "tal_topics\030\007 \001(\005\"|\n\030SparsityThetaScoreCo"
     "nfig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013strea"
     "m_name\030\002 \001(\t:\007@global\022\023\n\003eps\030\003 \001(\002:\0061e-0"
     "37\022\022\n\ntopic_name\030\004 \003(\t\"N\n\022SparsityThetaS"
-    "core\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_topics\030\002 \001(\005"
-    "\022\024\n\014total_topics\030\003 \001(\005\"c\n\026SparsityPhiSco"
+    "core\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_topics\030\002 \001(\003"
+    "\022\024\n\014total_topics\030\003 \001(\003\"c\n\026SparsityPhiSco"
     "reConfig\022\023\n\003eps\030\001 \001(\002:\0061e-037\022 \n\010class_i"
     "d\030\002 \001(\t:\016@default_class\022\022\n\ntopic_name\030\003 "
     "\003(\t\"L\n\020SparsityPhiScore\022\r\n\005value\030\001 \001(\001\022\023"
-    "\n\013zero_tokens\030\002 \001(\005\022\024\n\014total_tokens\030\003 \001("
-    "\005\"T\n\031ItemsProcessedScoreConfig\022\031\n\nfield_"
+    "\n\013zero_tokens\030\002 \001(\003\022\024\n\014total_tokens\030\003 \001("
+    "\003\"T\n\031ItemsProcessedScoreConfig\022\031\n\nfield_"
     "name\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007"
     "@global\"\?\n\023ItemsProcessedScore\022\020\n\005value\030"
     "\001 \001(\005:\0010\022\026\n\013num_batches\030\002 \001(\005:\0010\"\212\001\n\024Top"
@@ -13514,7 +13514,7 @@ void PerplexityScore::SharedCtor() {
   value_ = 0;
   raw_ = 0;
   normalizer_ = 0;
-  zero_words_ = 0;
+  zero_words_ = GOOGLE_LONGLONG(0);
   theta_sparsity_value_ = 0;
   theta_sparsity_zero_topics_ = 0;
   theta_sparsity_total_topics_ = 0;
@@ -13556,7 +13556,7 @@ void PerplexityScore::Clear() {
     value_ = 0;
     raw_ = 0;
     normalizer_ = 0;
-    zero_words_ = 0;
+    zero_words_ = GOOGLE_LONGLONG(0);
     theta_sparsity_value_ = 0;
     theta_sparsity_zero_topics_ = 0;
     theta_sparsity_total_topics_ = 0;
@@ -13618,13 +13618,13 @@ bool PerplexityScore::MergePartialFromCodedStream(
         break;
       }
 
-      // optional int32 zero_words = 4;
+      // optional int64 zero_words = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_zero_words:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
                  input, &zero_words_)));
           set_has_zero_words();
         } else {
@@ -13715,9 +13715,9 @@ void PerplexityScore::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(3, this->normalizer(), output);
   }
 
-  // optional int32 zero_words = 4;
+  // optional int64 zero_words = 4;
   if (has_zero_words()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->zero_words(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(4, this->zero_words(), output);
   }
 
   // optional double theta_sparsity_value = 5;
@@ -13758,9 +13758,9 @@ void PerplexityScore::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(3, this->normalizer(), target);
   }
 
-  // optional int32 zero_words = 4;
+  // optional int64 zero_words = 4;
   if (has_zero_words()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->zero_words(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(4, this->zero_words(), target);
   }
 
   // optional double theta_sparsity_value = 5;
@@ -13804,10 +13804,10 @@ int PerplexityScore::ByteSize() const {
       total_size += 1 + 8;
     }
 
-    // optional int32 zero_words = 4;
+    // optional int64 zero_words = 4;
     if (has_zero_words()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->zero_words());
     }
 
@@ -14318,8 +14318,8 @@ SparsityThetaScore::SparsityThetaScore(const SparsityThetaScore& from)
 void SparsityThetaScore::SharedCtor() {
   _cached_size_ = 0;
   value_ = 0;
-  zero_topics_ = 0;
-  total_topics_ = 0;
+  zero_topics_ = GOOGLE_LONGLONG(0);
+  total_topics_ = GOOGLE_LONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -14356,8 +14356,8 @@ SparsityThetaScore* SparsityThetaScore::New() const {
 void SparsityThetaScore::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     value_ = 0;
-    zero_topics_ = 0;
-    total_topics_ = 0;
+    zero_topics_ = GOOGLE_LONGLONG(0);
+    total_topics_ = GOOGLE_LONGLONG(0);
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -14384,13 +14384,13 @@ bool SparsityThetaScore::MergePartialFromCodedStream(
         break;
       }
 
-      // optional int32 zero_topics = 2;
+      // optional int64 zero_topics = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_zero_topics:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
                  input, &zero_topics_)));
           set_has_zero_topics();
         } else {
@@ -14400,13 +14400,13 @@ bool SparsityThetaScore::MergePartialFromCodedStream(
         break;
       }
 
-      // optional int32 total_topics = 3;
+      // optional int64 total_topics = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_total_topics:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
                  input, &total_topics_)));
           set_has_total_topics();
         } else {
@@ -14439,14 +14439,14 @@ void SparsityThetaScore::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(1, this->value(), output);
   }
 
-  // optional int32 zero_topics = 2;
+  // optional int64 zero_topics = 2;
   if (has_zero_topics()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->zero_topics(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(2, this->zero_topics(), output);
   }
 
-  // optional int32 total_topics = 3;
+  // optional int64 total_topics = 3;
   if (has_total_topics()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->total_topics(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(3, this->total_topics(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -14462,14 +14462,14 @@ void SparsityThetaScore::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(1, this->value(), target);
   }
 
-  // optional int32 zero_topics = 2;
+  // optional int64 zero_topics = 2;
   if (has_zero_topics()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->zero_topics(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(2, this->zero_topics(), target);
   }
 
-  // optional int32 total_topics = 3;
+  // optional int64 total_topics = 3;
   if (has_total_topics()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->total_topics(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(3, this->total_topics(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -14488,17 +14488,17 @@ int SparsityThetaScore::ByteSize() const {
       total_size += 1 + 8;
     }
 
-    // optional int32 zero_topics = 2;
+    // optional int64 zero_topics = 2;
     if (has_zero_topics()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->zero_topics());
     }
 
-    // optional int32 total_topics = 3;
+    // optional int64 total_topics = 3;
     if (has_total_topics()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->total_topics());
     }
 
@@ -14916,8 +14916,8 @@ SparsityPhiScore::SparsityPhiScore(const SparsityPhiScore& from)
 void SparsityPhiScore::SharedCtor() {
   _cached_size_ = 0;
   value_ = 0;
-  zero_tokens_ = 0;
-  total_tokens_ = 0;
+  zero_tokens_ = GOOGLE_LONGLONG(0);
+  total_tokens_ = GOOGLE_LONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -14954,8 +14954,8 @@ SparsityPhiScore* SparsityPhiScore::New() const {
 void SparsityPhiScore::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     value_ = 0;
-    zero_tokens_ = 0;
-    total_tokens_ = 0;
+    zero_tokens_ = GOOGLE_LONGLONG(0);
+    total_tokens_ = GOOGLE_LONGLONG(0);
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -14982,13 +14982,13 @@ bool SparsityPhiScore::MergePartialFromCodedStream(
         break;
       }
 
-      // optional int32 zero_tokens = 2;
+      // optional int64 zero_tokens = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_zero_tokens:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
                  input, &zero_tokens_)));
           set_has_zero_tokens();
         } else {
@@ -14998,13 +14998,13 @@ bool SparsityPhiScore::MergePartialFromCodedStream(
         break;
       }
 
-      // optional int32 total_tokens = 3;
+      // optional int64 total_tokens = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_total_tokens:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
                  input, &total_tokens_)));
           set_has_total_tokens();
         } else {
@@ -15037,14 +15037,14 @@ void SparsityPhiScore::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(1, this->value(), output);
   }
 
-  // optional int32 zero_tokens = 2;
+  // optional int64 zero_tokens = 2;
   if (has_zero_tokens()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->zero_tokens(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(2, this->zero_tokens(), output);
   }
 
-  // optional int32 total_tokens = 3;
+  // optional int64 total_tokens = 3;
   if (has_total_tokens()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->total_tokens(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(3, this->total_tokens(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -15060,14 +15060,14 @@ void SparsityPhiScore::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(1, this->value(), target);
   }
 
-  // optional int32 zero_tokens = 2;
+  // optional int64 zero_tokens = 2;
   if (has_zero_tokens()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->zero_tokens(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(2, this->zero_tokens(), target);
   }
 
-  // optional int32 total_tokens = 3;
+  // optional int64 total_tokens = 3;
   if (has_total_tokens()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->total_tokens(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(3, this->total_tokens(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -15086,17 +15086,17 @@ int SparsityPhiScore::ByteSize() const {
       total_size += 1 + 8;
     }
 
-    // optional int32 zero_tokens = 2;
+    // optional int64 zero_tokens = 2;
     if (has_zero_tokens()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->zero_tokens());
     }
 
-    // optional int32 total_tokens = 3;
+    // optional int64 total_tokens = 3;
     if (has_total_tokens()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->total_tokens());
     }
 
