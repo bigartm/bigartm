@@ -317,6 +317,64 @@ class ARTM(object):
         else:
             raise IOError('dictionary_name is None')
 
+    def save_text_dictionary(self, dictionary_name=None, dictionary_path=None, encoding='utf-8'):
+        """ARTM.save_text_dictionary() --- save the BigARTM dictionary of
+        the collection on the disk in the human readable text format
+
+        Args:
+          dictionary_name (str): the name of the dictionary in the lib, default=None
+          dictionary_path (str): full file name for the text dictionary file, default=None
+          encoding (str): an encoding of text in diciotnary
+        """
+        if dictionary_path is not None and dictionary_name is not None:
+            dictionary_data = self.master.get_dictionary(dictionary_name)
+            with codecs.open(dictionary_path, 'w', encoding) as fout:
+                fout.write(u'name: {}\n'.format(dictionary_data.name))
+                fout.write(u'token, class_id, token_value, token_tf, token_df\n')
+
+                for i in xrange(len(dictionary_data.token)):
+                    fout.write(u'{0}, {1}, {2}, {3}, {4}\n'.format(dictionary_data.token[i],
+                                                                   dictionary_data.class_id[i],
+                                                                   dictionary_data.token_value[i],
+                                                                   dictionary_data.token_tf[i],
+                                                                   dictionary_data.token_df[i]))
+
+        elif dictionary_path is None:
+            raise IOError('dictionary_path is None')
+        else:
+            raise IOError('dictionary_name is None')
+
+    def load_text_dictionary(self, dictionary_name=None, dictionary_path=None, encoding='utf-8'):
+        """ARTM.load_text_dictionary() --- load the BigARTM dictionary of
+        the collection from the disk in the human readable text format
+
+        Args:
+          dictionary_name (str): the name for the dictionary in the lib, default=None
+          dictionary_path (str): full file name of the text dictionary file, default=None
+          encoding (str): an encoding of text in diciotnary
+        """
+        if dictionary_path is not None and dictionary_name is not None:
+            dictionary_data = messages.DictionaryData()
+            with codecs.open(dictionary_path, 'r', encoding) as fin:
+                dictionary_data.name = fin.next().split(' ')[1][0: -1]
+                fin.next()  # skip comment line
+
+                for line in fin:
+                    line_list = line.split(' ')
+                    dictionary_data.token.append(line_list[0][0: -1])
+                    dictionary_data.class_id.append(line_list[1][0: -1])
+                    dictionary_data.token_value.append(float(line_list[2][0: -1]))
+                    dictionary_data.token_tf.append(float(line_list[3][0: -1]))
+                    dictionary_data.token_df.append(float(line_list[4][0: -1]))
+
+            self.master.create_dictionary(dictionary_data=dictionary_data,
+                                          dictionary_name=dictionary_name)
+
+        elif dictionary_path is None:
+            raise IOError('dictionary_path is None')
+        else:
+            raise IOError('dictionary_name is None')
+
     def create_dictionary(self, dictionary_name=None, dictionary_data=None):
         """ARTM.save_dictionary() --- save the BigARTM dictionary of
         the collection on the disk
