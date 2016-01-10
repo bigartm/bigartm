@@ -67,20 +67,13 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
   theta_matrix->clear_item_weights();
 }
 
-MasterComponent::MasterComponent(const MasterComponentConfig& config)
-    : master_model_config_(),
-      instance_(std::make_shared<Instance>(config)) {
-}
-
-MasterComponent::MasterComponent(const MasterModelConfig& config)
-    : master_model_config_(std::make_shared<MasterModelConfig>(config)),
-      instance_(nullptr) {
+void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure) {
   MasterComponentConfig master_component_config;
   master_component_config.set_processors_count(config.threads());
   master_component_config.mutable_score_config()->CopyFrom(config.score_config());
   if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
   if (config.reuse_theta()) master_component_config.set_cache_theta(true);
-  if (config.use_v06_api()) {
+  if (config.use_v06_api() && !reconfigure) {
     ScoreConfig* items_processed = master_component_config.add_score_config();
     items_processed->set_type(ScoreConfig_Type_ItemsProcessed);
     items_processed->set_name("ItemsProcessedScore-2b632a39-8c6b-4b7b-a0c4-ee60d1434522");
@@ -88,11 +81,19 @@ MasterComponent::MasterComponent(const MasterModelConfig& config)
   }
 
   instance_ = std::make_shared<Instance>(master_component_config);
+  master_model_config_.set(std::make_shared<MasterModelConfig>(config));
 
+  if (reconfigure) {  // remove all regularizers
+    auto regularizers_list = instance_->schema()->regularizers_list();
+    for (auto name : *regularizers_list)
+      instance_->DisposeRegularizer(name);
+  }
+
+  // create (or re-create the regularizers)
   for (int i = 0; i < config.regularizer_config_size(); ++i)
     CreateOrReconfigureRegularizer(config.regularizer_config(i));
 
-  if (config.use_v06_api()) {
+  if (config.use_v06_api() && !reconfigure) {
     ::artm::ModelConfig model_config;
     model_config.set_name(config.pwt_name());
     model_config.mutable_topic_name()->CopyFrom(config.topic_name());
@@ -109,6 +110,17 @@ MasterComponent::MasterComponent(const MasterModelConfig& config)
     FixAndValidateMessage(&model_config, /*throw_error =*/ true);
     CreateOrReconfigureModel(model_config);
   }
+}
+
+MasterComponent::MasterComponent(const MasterComponentConfig& config)
+    : master_model_config_(),
+      instance_(std::make_shared<Instance>(config)) {
+}
+
+MasterComponent::MasterComponent(const MasterModelConfig& config)
+    : master_model_config_(nullptr),
+      instance_(nullptr) {
+  CreateOrReconfigureMasterComponent(config, /*reconfigure =*/ false);
 }
 
 MasterComponent::MasterComponent(const MasterComponent& rhs)
@@ -335,7 +347,7 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   // temp code to be removed with ModelConfig and old dictionaries
   instance_->merger()->InitializeModel(args);
 
-  // ToDo: (MelLain) implement the initialization of new-style models with new-style dicts
+  // ToDo(MelLain): implement the initialization of new-style models with new-style dicts
   // instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
@@ -358,6 +370,10 @@ void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Changing disk_path is not supported."));
 
   instance_->Reconfigure(config);
+}
+
+void MasterComponent::ReconfigureMasterModel(const MasterModelConfig& config) {
+  CreateOrReconfigureMasterComponent(config, /*reconfigure = */ true);
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result) {

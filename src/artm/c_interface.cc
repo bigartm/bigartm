@@ -417,9 +417,8 @@ int ArtmReconfigureMasterComponent(int master_id, int length, const char* config
   return ArtmExecute< ::artm::MasterComponentConfig>(master_id, length, config, &MasterComponent::Reconfigure);
 }
 
-int ArtmReconfigureMasterModel(int master_id, int length, const char* master_model_config) {
-  set_last_error("Method is not implemented yet");
-  return ARTM_INTERNAL_ERROR;
+int ArtmReconfigureMasterModel(int master_id, int length, const char* config) {
+  return ArtmExecute< ::artm::MasterModelConfig>(master_id, length, config, &MasterComponent::ReconfigureMasterModel);
 }
 
 int ArtmFitOfflineMasterModel(int master_id, int length, const char* args) {

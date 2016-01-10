@@ -87,6 +87,7 @@ class MasterComponent : boost::noncopyable {
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
 
   void Reconfigure(const MasterComponentConfig& config);
+  void ReconfigureMasterModel(const MasterModelConfig& config);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
 
@@ -109,6 +110,7 @@ class MasterComponent : boost::noncopyable {
                                  ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data,
                                  ::artm::ThetaMatrix* theta_matrix);
 
+  void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure);
 
   ThreadSafeHolder<MasterModelConfig> master_model_config_;
   std::shared_ptr<Instance> instance_;
