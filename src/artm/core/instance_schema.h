@@ -40,6 +40,7 @@ class InstanceSchema {
                        const std::shared_ptr<RegularizerInterface>& regularizer);
   bool has_regularizer(const std::string& name) const;
   void clear_regularizer(const std::string& name);
+  std::shared_ptr<std::vector<std::string> > regularizers_list();
 
   std::shared_ptr<ScoreCalculatorInterface> score_calculator(const ScoreName& name) const;
   void set_score_calculator(const ScoreName& name,

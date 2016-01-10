@@ -106,6 +106,14 @@ void InstanceSchema::clear_regularizer(const std::string& name) {
   }
 }
 
+std::shared_ptr<std::vector<std::string> > InstanceSchema::regularizers_list() {
+  auto retval = std::make_shared<std::vector<std::string>>(std::vector<std::string>());
+  for (auto iter = regularizers_.begin(); iter != regularizers_.end(); ++iter)
+    retval->push_back(iter->first);
+
+  return retval;
+}
+
 std::shared_ptr<RegularizerInterface> InstanceSchema::regularizer(const std::string& name) const {
   auto iter = regularizers_.find(name);
   if (iter != regularizers_.end()) {
