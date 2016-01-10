@@ -1,5 +1,6 @@
 import os
 import numpy
+import codecs
 
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants
@@ -94,6 +95,20 @@ class MasterComponent(object):
             dictionary_data.name = dictionary_name
 
         self._lib.ArtmCreateDictionary(self.master_id, dictionary_data)
+
+    def get_dictionary(self, dictionary_name):
+        """Args:
+           - dictionary_name(str): name of dictionary to get
+        """
+        args = messages.GetDictionaryArgs()
+        args.dictionary_name = dictionary_name
+
+        result = self._lib.ArtmRequestDictionary(self.master_id, args)
+
+        dictionary_data = messages.DictionaryData()
+        dictionary_data.ParseFromString(result)
+
+        return dictionary_data
 
     def gather_dictionary(self, dictionary_target_name=None, data_path=None, cooc_file_path=None,
                           vocab_file_path=None, symmetric_cooc_values=None, args=None):
