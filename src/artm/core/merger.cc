@@ -177,8 +177,10 @@ void Merger::ThreadFunction() {
 
         {
           CuckooWatch cuckoo2("Merger::ApplyTopicModelOperation()");
+          VLOG(0) << "MasterComponent: start merging processor increments";
           PhiMatrixOperations::ApplyTopicModelOperation(
             model_increment->topic_model(), 1.0f, iter->second->mutable_nwt());
+          VLOG(0) << "MasterComponent: complete merging processor increments";
         }
       }  // MAIN FOR LOOP
     }
@@ -320,6 +322,7 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
     std::shared_ptr<ModelConfig> target_config = target_model_config_.get(name);
 
     // Accumulate counters in topic model with decay coefficient.
+    VLOG(0) << "MasterComponent: start merging models";
     std::shared_ptr< ::artm::core::TopicModel> new_ttm;
     {
       CuckooWatch cuckoo2("copy&decay, ", &cuckoo);
@@ -343,8 +346,10 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       inc_ttm->second->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
       PhiMatrixOperations::ApplyTopicModelOperation(topic_model, apply_weight, new_ttm->mutable_nwt());
     }
+    VLOG(0) << "MasterComponent: complete merging models";
 
     if (invoke_regularizers && (current_config.regularizer_settings_size() > 0)) {
+      VLOG(0) << "MasterComponent: start regularizing model " << name;
       CuckooWatch cuckoo2("InvokePhiRegularizers, ", &cuckoo);
 
       // call CalcPwt() to allow regularizers GetPwt() usage
@@ -354,9 +359,13 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       global_r_wt.Reshape(new_ttm->GetNwt());
       PhiMatrixOperations::InvokePhiRegularizers(schema_->get(), current_config.regularizer_settings(),
                                                  new_ttm->GetPwt(), new_ttm->GetNwt(), &global_r_wt);
+      VLOG(0) << "MasterComponent: complete regularizing model " << name;
+
 
       // merge final r_wt with n_wt in p_wt (n_wt is const)
+      VLOG(0) << "MasterComponent: start normalizing model " << name;
       new_ttm->CalcPwt(global_r_wt);
+      VLOG(0) << "MasterComponent: complete normalizing model " << name;
 
       // Verify if model became overregularized
       std::map<ClassId, std::vector<float>> new_ttm_normalizers =
@@ -378,7 +387,9 @@ void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
       }
     } else {
       CuckooWatch cuckoo2("CalcPwt", &cuckoo);
+      VLOG(0) << "MasterComponent: start normalizing model " << name;
       new_ttm->CalcPwt();   // calculate pwt matrix
+      VLOG(0) << "MasterComponent: complete normalizing model " << name;
     }
 
     topic_model_.set(name, new_ttm);

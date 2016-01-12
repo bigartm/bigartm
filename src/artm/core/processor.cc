@@ -1010,7 +1010,6 @@ void Processor::ThreadFunction() {
       }
 
       const Batch& batch = batch_ptr != nullptr ? *batch_ptr : part->batch();
-      VLOG(0) << "Processor: start processing batch " << batch.id() << " into model " << part->nwt_target_name();
 
       if (batch.class_id_size() != batch.token_size())
         BOOST_THROW_EXCEPTION(InternalError(
@@ -1061,6 +1060,13 @@ void Processor::ThreadFunction() {
             continue;
           }
         }
+
+        std::stringstream model_description;
+        if (part->has_nwt_target_name())
+          model_description << part->nwt_target_name();
+        else
+          model_description << &p_wt;
+        VLOG(0) << "Processor: start processing batch " << batch.id() << " into model " << model_description.str();
 
         std::shared_ptr<CsrMatrix<float>> sparse_ndw;
         std::shared_ptr<DenseMatrix<float>> dense_ndw;
@@ -1189,7 +1195,7 @@ void Processor::ThreadFunction() {
         }
 
         if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
-        VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << part->nwt_target_name();
+        VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << model_description.str();
       }
     }
   }
