@@ -826,10 +826,18 @@ class ARTM(object):
             class_ids.append(class_id)
             class_weights.append(class_weight)
 
+        theta_reg_name, theta_reg_tau = [], []
+        for name, config in self._regularizers.data.iteritems():
+            if str(config.__class__.__bases__[0].__name__) == 'BaseRegularizerTheta':
+                theta_reg_name.append(name)
+                theta_reg_tau.append(config.tau)
+
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         theta_info, nd_array = self.master.process_batches(pwt=self.model_pwt,
                                                            batches=batches_list,
                                                            nwt='nwt_hat',
+                                                           regularizer_name=theta_reg_name,
+                                                           regularizer_tau=theta_reg_tau,
                                                            num_inner_iterations=num_document_passes,
                                                            class_ids=class_ids,
                                                            class_weights=class_weights,
