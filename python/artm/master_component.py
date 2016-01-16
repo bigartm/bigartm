@@ -232,7 +232,8 @@ class MasterComponent(object):
         """
         args = messages.ProcessBatchesArgs()
         args.pwt_source_name = pwt
-        args.nwt_target_name = nwt
+        if nwt is not None:
+            args.nwt_target_name = nwt
         if batches_folder is not None:
             for name in os.listdir(batches_folder):
                 _, extension = os.path.splitext(name)
