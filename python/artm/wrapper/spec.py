@@ -106,27 +106,6 @@ ARTM_API = [
 
     ## deprecated
     #CallSpec(
-    #    'ArtmAddBatch',
-    #    [('master_id', int), ('args', messages.AddBatchArgs)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmInvokeIteration',
-    #    [('master_id', int), ('args', messages.InvokeIterationArgs)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmWaitIdle',
-    #    [('master_id', int), ('args', messages.WaitIdleArgs)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmSynchronizeModel',
-    #    [('master_id', int), ('args', messages.SynchronizeModelArgs)],
-    #),
-
-    ## deprecated
-    #CallSpec(
     #    'ArtmOverwriteTopicModel',
     #    [('master_id', int), ('model', messages.TopicModel)],
     #),
