@@ -29,28 +29,9 @@ message StringArray {
 // Represents a unit of textual information.
 message Item {
   optional int32 id = 1;
-  repeated Field field = 2;
-  optional string title = 3;
-}
-
-// Represents a field withing an item.
-message Field {
-  optional string name = 1 [default = "@body"];
-  repeated int32 token_id = 2;
-  repeated int32 token_count = 3;  // obsolete in BigARTM v0.7.2
-  repeated int32 token_offset = 4;
-
-  optional string string_value = 5;
-  optional int64 int_value = 6;
-  optional double double_value = 7;
-  optional string date_value = 8;
-
-  repeated string string_array = 16;
-  repeated int64 int_array = 17;
-  repeated double double_array = 18;
-  repeated string date_array = 19;
-
-  repeated float token_weight = 20;
+  optional string title = 2;
+  repeated int32 token_id = 3;
+  repeated float token_weight = 4;
 }
 
 // Represents a set of items.
@@ -103,7 +84,6 @@ message ModelConfig {
   repeated string topic_name = 3;
   optional bool enabled = 4 [default = true];
   optional int32 inner_iterations_count = 5 [default = 10];
-  optional string field_name = 6 [default = "@body"];  // obsolete in BigARTM v0.5.8
   optional string stream_name = 7 [default = "@global"];
   repeated string score_name = 8;  // obsolete in BigARTM v0.6.3
   optional bool reuse_theta = 9 [default = false];
@@ -287,7 +267,6 @@ message PerplexityScoreConfig {
     UnigramDocumentModel = 0;
     UnigramCollectionModel = 1;
   }
-  optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
   optional string stream_name = 2 [default = "@global"];
   optional Type model_type = 3 [default = UnigramDocumentModel];
   optional string dictionary_name = 4;
@@ -309,7 +288,6 @@ message PerplexityScore {
 
 // Represents a configuration of a theta sparsity score
 message SparsityThetaScoreConfig {
-  optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
   optional string stream_name = 2 [default = "@global"];
   optional float eps = 3 [default = 1e-37];
   repeated string topic_name = 4;
@@ -338,7 +316,6 @@ message SparsityPhiScore {
 
 // Represents a configuration of an items processed score
 message ItemsProcessedScoreConfig {
-  optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
   optional string stream_name = 2 [default = "@global"];
 }
 
@@ -369,7 +346,6 @@ message TopTokensScore {
 
 // Represents a configuration of a theta snippet score
 message ThetaSnippetScoreConfig {
-  optional string field_name = 1 [default = "@body"];
   optional string stream_name = 2 [default = "@global"];
   repeated int32 item_id = 3 [packed = true];  // obsolete in BigARTM v0.5.8
   optional int32 item_count = 4 [default = 10];
