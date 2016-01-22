@@ -79,6 +79,8 @@ set(SRC_LIST
 	score/class_precision.h
 	score/items_processed.cc
 	score/items_processed.h
+	score/peak_memory.cc
+	score/peak_memory.h
 	score/perplexity.cc
 	score/perplexity.h
 	score/sparsity_phi.cc

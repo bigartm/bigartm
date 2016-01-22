@@ -564,7 +564,7 @@ class ScoreHelper {
 
      std::string dictionary_name = addToDictionaryMap(dictionary_map_, dictionary_path);
 
-     // Perplexity,SparsityTheta,SparsityPhi,TopTokens,ThetaSnippet,TopicKernel
+     // Perplexity,SparsityTheta,SparsityPhi,TopTokens,ThetaSnippet,TopicKernel,PeakMemory
      std::string score_type = boost::to_lower_copy(strs[0]);
      size_t langle = score_type.find('(');
      size_t rangle = score_type.find(')');
@@ -632,6 +632,11 @@ class ScoreHelper {
      else if (score_type == "classprecision") {
        ClassPrecisionScoreConfig specific_config;
        score_config.set_type(::artm::ScoreConfig_Type_ClassPrecision);
+       score_config.set_config(specific_config.SerializeAsString());
+     }
+     else if (score_type == "peakmemory") {
+       PeakMemoryScoreConfig specific_config;
+       score_config.set_type(::artm::ScoreConfig_Type_PeakMemory);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else {
@@ -711,6 +716,13 @@ class ScoreHelper {
        std::stringstream suffix;
        if (boost::to_lower_copy(score_name) != "classprecision") suffix << "\t(" << score_name << ")";
        std::cerr << "ClassPrecision  = " << score_data.value() << suffix.str() << "\n";
+       retval = boost::lexical_cast<std::string>(score_data.value());
+     }
+     else if (type == ::artm::ScoreConfig_Type_PeakMemory) {
+       auto score_data = master_->GetScoreAs< ::artm::PeakMemoryScore>(get_score_args);
+       std::cerr << "PeakMemory      = " << score_data.value() / 1024 << "KB";
+       if (boost::to_lower_copy(score_name) != "peakmemory") std::cerr << "\t(" << score_name << ")";
+       std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
      else {

@@ -38,6 +38,7 @@
 #include "artm/score/top_tokens.h"
 #include "artm/score/topic_kernel.h"
 #include "artm/score/theta_snippet.h"
+#include "artm/score/peak_memory.h"
 #include "artm/score/perplexity.h"
 #include "artm/score/topic_mass_phi.h"
 #include "artm/score/class_precision.h"
@@ -365,6 +366,12 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
     case artm::ScoreConfig_Type_ClassPrecision: {
       CREATE_SCORE_CALCULATOR(::artm::ClassPrecisionScoreConfig,
                               ::artm::score::ClassPrecision);
+      break;
+    }
+
+    case artm::ScoreConfig_Type_PeakMemory: {
+      CREATE_SCORE_CALCULATOR(::artm::PeakMemoryScoreConfig,
+                              ::artm::score::PeakMemory);
       break;
     }
 
