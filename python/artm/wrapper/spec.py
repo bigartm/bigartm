@@ -46,18 +46,6 @@ ARTM_API = [
     ),
 
     CallSpec(
-        'ArtmCreateRegularizer',
-        [('master_id', int), ('config', messages.RegularizerConfig)],
-    ),
-    CallSpec(
-        'ArtmReconfigureRegularizer',
-        [('master_id', int), ('config', messages.RegularizerConfig)],
-    ),
-    CallSpec(
-        'ArtmDisposeRegularizer',
-        [('master_id', int), ('name', str)],
-    ),
-    CallSpec(
         'ArtmCreateDictionary',
         [('master_id', int), ('config', messages.DictionaryData)],
     ),
@@ -153,12 +141,6 @@ ARTM_API = [
         [('master_id', int), ('args', messages.GetTopicModelArgs)],
         request=messages.TopicModel,
     ),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmRequestRegularizerState',
-    #    [('master_id', int), ('args', message.GetRegularizerStateArgs)],
-    #    request=messages.RegularizerInternalState,
-    #),
     CallSpec(
         'ArtmRequestScore',
         [('master_id', int), ('args', messages.GetScoreValueArgs)],
@@ -170,21 +152,10 @@ ARTM_API = [
         request=messages.MasterComponentInfo,
     ),
     CallSpec(
-        'ArtmRequestLoadBatch',
-        [('filename', str)],
-        request=messages.Batch,
-    ),
-    CallSpec(
         'ArtmRequestDictionary',
         [('master_id', int), ('args', messages.GetDictionaryArgs)],
         request=messages.DictionaryData,
     ),
-
-    CallSpec(
-        'ArtmSaveBatch',
-        [('filename', str), ('batch', messages.Batch)],
-    ),
-
     CallSpec(
         'ArtmCopyRequestResultEx',
         [('array', numpy.ndarray), ('args', messages.CopyRequestResultArgs)],

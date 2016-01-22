@@ -48,6 +48,7 @@ message MasterComponentConfig {
   optional bool cache_theta = 5 [default = false];
   optional int32 processors_count = 6;
   repeated ScoreConfig score_config = 9;
+  repeated RegularizerConfig regularizer_config = 10;
   optional string disk_cache_path = 15;
 }
 
