@@ -183,14 +183,6 @@ message ScoreData {
 
 // Represents a configuration of a perplexity score
 message PerplexityScoreConfig {
-  enum Type {
-    UnigramDocumentModel = 0;
-    UnigramCollectionModel = 1;
-  }
-  optional Type model_type = 3 [default = UnigramDocumentModel];
-  optional float theta_sparsity_eps = 5 [default = 1e-37];
-  repeated string theta_sparsity_topic_name = 6;
-  repeated string class_id = 7;
 }
 
 // Represents a result of calculation of a perplexity score
