@@ -11,11 +11,6 @@ message FloatArray {
   repeated float value = 1 [packed = true];
 }
 
-// Represents an array of boolean values
-message BoolArray {
-  repeated bool value = 1 [packed = true];
-}
-
 // Represents an array of integer values
 message IntArray {
   repeated int32 value = 1 [packed = true];
@@ -234,7 +229,6 @@ message TopicModel {
   repeated string class_id = 6;
 
   repeated IntArray topic_index = 8;
-  optional int32 seed = 10;
 }
 
 // Represents a theta matrix.
@@ -391,7 +385,6 @@ message ProcessBatchesArgs {
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
-  optional bool use_sparse_bow = 12 [default = true];
   optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
@@ -508,13 +501,12 @@ message MasterModelConfig {
   repeated float class_weight = 3;
   repeated ScoreConfig score_config = 4;
   repeated RegularizerConfig regularizer_config = 5;
-  optional int32 threads = 6;
+  optional int32 processors_count = 6;
   optional string pwt_name = 7;
   optional string nwt_name = 8 [default = "nwt"];
   optional int32 inner_iterations_count = 9;
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
-  optional bool use_sparse_bow = 12 [default = true];
   optional string disk_cache_path = 13;
 }
 
