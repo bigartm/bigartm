@@ -176,6 +176,9 @@ message ScoreData {
   optional string name = 1;
   optional ScoreType score_type = 2;
   optional bytes data = 3;
+  optional double value = 4;
+  optional double numerator = 5;
+  optional double denominator = 6;
 }
 
 // Represents a configuration of a perplexity score
@@ -192,9 +195,6 @@ message PerplexityScoreConfig {
 
 // Represents a result of calculation of a perplexity score
 message PerplexityScore {
-  optional double value = 1;
-  optional double raw = 2;
-  optional double normalizer = 3;
   optional int64 zero_words = 4;
 }
 
@@ -204,9 +204,6 @@ message SparsityThetaScoreConfig {
 
 // Represents a result of calculation of a theta sparsity score
 message SparsityThetaScore {
-  optional double value = 1;
-  optional int64 zero_topics = 2;
-  optional int64 total_topics = 3;
 }
 
 // Represents a configuration of a sparsity phi score
@@ -215,9 +212,6 @@ message SparsityPhiScoreConfig {
 
 // Represents a result of calculation of a phi sparsity score
 message SparsityPhiScore {
-  optional double value = 1;
-  optional int64 zero_tokens = 2;
-  optional int64 total_tokens = 3;
 }
 
 // Represents a configuration of an items processed score
@@ -226,7 +220,6 @@ message ItemsProcessedScoreConfig {
 
 // Represents a result of calculation of an items processed score
 message ItemsProcessedScore {
-  optional int32 value = 1 [default = 0];
   optional int32 num_batches = 2 [default = 0];
 }
 
@@ -283,7 +276,6 @@ message TopicMassPhiScoreConfig {
 
 // Represents a result of calculation of a topic part in nwt score
 message TopicMassPhiScore {
-  optional double value = 1;
   repeated string topic_name = 2;
   repeated double topic_ratio = 3;
   repeated double topic_mass = 4;
@@ -295,9 +287,6 @@ message ClassPrecisionScoreConfig {
 
 // Represents a result of calculation of a class precision score
 message ClassPrecisionScore {
-  optional double value = 1;
-  optional double error = 2;
-  optional double total = 3;
 }
 
 // Represents a topic model (or an operation on topic model)
