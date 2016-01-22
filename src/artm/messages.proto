@@ -86,17 +86,6 @@ message SmoothSparsePhiConfig {
   optional TransformConfig transform_config = 4;
 }
 
-// Represents a configuration of a Decorrelator Phi regularizer
-message DecorrelatorPhiConfig {
-}
-
-// Represents a configuration of a MultiLanguage Phi regularizer
-message MultiLanguagePhiConfig {
-}
-
-message LabelRegularizationPhiConfig {
-}
-
 message SpecifiedSparsePhiConfig {
   enum Mode {
     SparseTopics = 0;
@@ -106,10 +95,6 @@ message SpecifiedSparsePhiConfig {
   optional int32 max_elements_count = 3 [default = 20];
   optional float probability_threshold = 4 [default = 0.99];
   optional Mode mode = 5 [default = SparseTopics];
-}
-
-// Represents a configuration of a ImproveCoherence Phi regularizer
-message ImproveCoherencePhiConfig {
 }
 
 // Represents a configuration of a Smooth Ptdw regularizer
@@ -152,7 +137,6 @@ enum ScoreType {
   Perplexity = 0;
   SparsityTheta = 1;
   SparsityPhi = 2;
-  ItemsProcessed = 3;
   TopTokens = 4;
   ThetaSnippet = 5;
   TopicKernel = 6;
@@ -181,38 +165,9 @@ message ScoreData {
   optional double denominator = 6;
 }
 
-// Represents a configuration of a perplexity score
-message PerplexityScoreConfig {
-}
-
 // Represents a result of calculation of a perplexity score
 message PerplexityScore {
   optional int64 zero_words = 4;
-}
-
-// Represents a configuration of a theta sparsity score
-message SparsityThetaScoreConfig {
-}
-
-// Represents a result of calculation of a theta sparsity score
-message SparsityThetaScore {
-}
-
-// Represents a configuration of a sparsity phi score
-message SparsityPhiScoreConfig {
-}
-
-// Represents a result of calculation of a phi sparsity score
-message SparsityPhiScore {
-}
-
-// Represents a configuration of an items processed score
-message ItemsProcessedScoreConfig {
-}
-
-// Represents a result of calculation of an items processed score
-message ItemsProcessedScore {
-  optional int32 num_batches = 2 [default = 0];
 }
 
 // Represents a configuration of a top tokens score
@@ -235,7 +190,6 @@ message TopTokensScore {
 message ThetaSnippetScoreConfig {
   optional int32 item_count = 4 [default = 10];
 }
-
 
 // Represents a result of calculation of a theta snippet score
 message ThetaSnippetScore {
@@ -262,23 +216,11 @@ message TopicKernelScore {
   optional StringArray topic_name = 10;
 }
 
-// Represents a configuration of a topic part in nwt score
-message TopicMassPhiScoreConfig {
-}
-
 // Represents a result of calculation of a topic part in nwt score
 message TopicMassPhiScore {
   repeated string topic_name = 2;
   repeated double topic_ratio = 3;
   repeated double topic_mass = 4;
-}
-
-// Represents a configuration of a class precision score
-message ClassPrecisionScoreConfig {
-}
-
-// Represents a result of calculation of a class precision score
-message ClassPrecisionScore {
 }
 
 // Represents a topic model (or an operation on topic model)
