@@ -199,19 +199,20 @@ message ThetaSnippetScore {
 
 // Represents a configuration of a topic kernel score
 message TopicKernelScoreConfig {
+  enum Type {
+    Size = 0;
+    Purity = 1;
+    Contrast = 2;
+    Coherence = 3;
+  }
+
+  optional Type type = 1 [default = Size];
   optional double probability_mass_threshold = 4 [default = 0.1];
 }
 
 // Represents a result of calculation of a topic kernel score
 message TopicKernelScore {
-  optional DoubleArray kernel_size = 1;
-  optional DoubleArray kernel_purity = 2;
-  optional DoubleArray kernel_contrast = 3;
-  optional double average_kernel_size = 4;
-  optional double average_kernel_purity = 5;
-  optional double average_kernel_contrast = 6;
-  optional DoubleArray coherence = 7;
-  optional float average_coherence = 8;
+  optional DoubleArray values = 1;
   repeated StringArray kernel_tokens = 9;
   optional StringArray topic_name = 10;
 }
