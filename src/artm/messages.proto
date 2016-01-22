@@ -384,7 +384,6 @@ message ProcessBatchesArgs {
   repeated string class_id = 8;
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
-  optional bool opt_for_avx = 11 [default = true];
   optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
@@ -506,7 +505,6 @@ message MasterModelConfig {
   optional string nwt_name = 8 [default = "nwt"];
   optional int32 inner_iterations_count = 9;
   optional bool reuse_theta = 10 [default = false];
-  optional bool opt_for_avx = 11 [default = true];
   optional string disk_cache_path = 13;
 }
 
