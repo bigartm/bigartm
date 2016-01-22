@@ -45,8 +45,6 @@ message Batch {
 
 // Represents a configuration of a master component
 message MasterComponentConfig {
-  optional string disk_path = 2;
-  optional bool compact_batches = 4 [default = true];
   optional bool cache_theta = 5 [default = false];
   optional int32 processors_count = 6;
   repeated ScoreConfig score_config = 9;
