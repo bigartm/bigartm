@@ -70,27 +70,24 @@ message RegularizerConfig {
   optional bytes config = 3;
   optional float tau = 4;
   optional float gamma = 5;
+  repeated string topic_name = 6;
+  repeated string class_id = 7;
+  repeated string dictionary_name = 8;
 }
 
 // Represents a configuration of a SmoothSparse Theta regularizer
 message SmoothSparseThetaConfig {
-  repeated string topic_name = 1;
   repeated float alpha_iter = 2;
   optional TransformConfig transform_config = 3;
 }
 
 // Represents a configuration of a SmoothSparse Phi regularizer
 message SmoothSparsePhiConfig {
-  repeated string topic_name = 1;
-  repeated string class_id = 2;
-  optional string dictionary_name = 3;
   optional TransformConfig transform_config = 4;
 }
 
 // Represents a configuration of a Decorrelator Phi regularizer
 message DecorrelatorPhiConfig {
-  repeated string topic_name = 1;
-  repeated string class_id = 2;
 }
 
 // Represents a configuration of a MultiLanguage Phi regularizer
@@ -98,9 +95,6 @@ message MultiLanguagePhiConfig {
 }
 
 message LabelRegularizationPhiConfig {
-  repeated string topic_name = 1;
-  repeated string class_id = 2;
-  optional string dictionary_name = 3;
 }
 
 message SpecifiedSparsePhiConfig {
@@ -109,8 +103,6 @@ message SpecifiedSparsePhiConfig {
     SparseTokens = 1;
   }
 
-  repeated string topic_name = 1;
-  optional string class_id = 2 [default = "@default_class"];
   optional int32 max_elements_count = 3 [default = 20];
   optional float probability_threshold = 4 [default = 0.99];
   optional Mode mode = 5 [default = SparseTopics];
@@ -118,9 +110,6 @@ message SpecifiedSparsePhiConfig {
 
 // Represents a configuration of a ImproveCoherence Phi regularizer
 message ImproveCoherencePhiConfig {
-  repeated string topic_name = 1;
-  repeated string class_id = 2;
-  optional string dictionary_name = 3;
 }
 
 // Represents a configuration of a Smooth Ptdw regularizer
@@ -137,7 +126,6 @@ message SmoothPtdwConfig {
 
 // Represents a configuration of a TopicSelection Theta regularizer
 message TopicSelectionThetaConfig {
-  repeated string topic_name = 1;
   repeated float topic_value = 2;  // user-counted value = n / (n_t * |T|)
   repeated float alpha_iter = 3;
 }
@@ -177,6 +165,9 @@ message ScoreConfig {
   optional string name = 1;
   optional ScoreType score_type = 2;
   optional bytes config = 3;
+  repeated string topic_name = 4;
+  repeated string class_id = 5;
+  repeated string dictionary_name = 6;
 }
 
 // Represents a result of score calculation
@@ -193,7 +184,6 @@ message PerplexityScoreConfig {
     UnigramCollectionModel = 1;
   }
   optional Type model_type = 3 [default = UnigramDocumentModel];
-  optional string dictionary_name = 4;
   optional float theta_sparsity_eps = 5 [default = 1e-37];
   repeated string theta_sparsity_topic_name = 6;
   repeated string class_id = 7;
@@ -210,7 +200,6 @@ message PerplexityScore {
 // Represents a configuration of a theta sparsity score
 message SparsityThetaScoreConfig {
   optional float eps = 3 [default = 1e-37];
-  repeated string topic_name = 4;
 }
 
 // Represents a result of calculation of a theta sparsity score
@@ -223,8 +212,6 @@ message SparsityThetaScore {
 // Represents a configuration of a sparsity phi score
 message SparsityPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2 [default = "@default_class"];
-  repeated string topic_name = 3;
 }
 
 // Represents a result of calculation of a phi sparsity score
@@ -247,9 +234,6 @@ message ItemsProcessedScore {
 // Represents a configuration of a top tokens score
 message TopTokensScoreConfig {
   optional int32 num_tokens = 1 [default = 10];
-  optional string class_id = 2 [default = "@default_class"];
-  repeated string topic_name = 3;
-  optional string cooccurrence_dictionary_name = 4;
 }
 
 // Represents a result of calculation of a top tokens score
@@ -278,10 +262,7 @@ message ThetaSnippetScore {
 // Represents a configuration of a topic kernel score
 message TopicKernelScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2 [default = "@default_class"];
-  repeated string topic_name = 3;
   optional double probability_mass_threshold = 4 [default = 0.1];
-  optional string cooccurrence_dictionary_name = 5;
 }
 
 // Represents a result of calculation of a topic kernel score
@@ -301,8 +282,6 @@ message TopicKernelScore {
 // Represents a configuration of a topic part in nwt score
 message TopicMassPhiScoreConfig {
   optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2 [default = "@default_class"];
-  repeated string topic_name = 3;
 }
 
 // Represents a result of calculation of a topic part in nwt score
