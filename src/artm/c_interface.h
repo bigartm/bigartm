@@ -25,6 +25,7 @@ extern "C" {
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);
 
   DLL_PUBLIC int ArtmDisposeModel(int master_id, const char* model_name);
+  DLL_PUBLIC int ArtmResetCache(int master_id, int length, const char* reset_cache_args);
 
   DLL_PUBLIC int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionary_args);
   DLL_PUBLIC int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionary_args);

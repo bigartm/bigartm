@@ -340,7 +340,6 @@ message GetThetaMatrixArgs {
 
   optional string model_name = 1;
   repeated string topic_name = 3;
-  optional bool clean_cache = 5 [default = false];
   optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
   optional MatrixLayout matrix_layout = 8 [default = Dense];
@@ -384,7 +383,6 @@ message ProcessBatchesArgs {
   repeated string class_id = 8;
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
-  optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
   optional string model_name_cache = 16;
@@ -536,4 +534,10 @@ message TransformMasterModelArgs {
   repeated string batch_filename = 1;
   optional ThetaMatrixType theta_matrix_type = 2 [default = Cache];
   optional string predict_class_id = 3;
+}
+
+message ResetCacheArgs {
+  optional string model_name = 1;
+  optional bool reset_cache = 2 [default = true];
+  optional bool reset_scores = 3 [default = true];
 }
