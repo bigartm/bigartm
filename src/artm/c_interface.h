@@ -68,13 +68,11 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestTopicModelExternal(int master_id, int length, const char* get_model_args);
   DLL_PUBLIC int ArtmRequestScore(int master_id, int length, const char* get_score_args);
   DLL_PUBLIC int ArtmRequestMasterComponentInfo(int master_id, int length, const char* get_master_info_args);
-  DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int ArtmCopyRequestResult(int length, char* address);
   DLL_PUBLIC int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args);
 
   DLL_PUBLIC int ArtmAwaitOperation(int operation_id, int length, const char* await_operation_args);
 
-  DLL_PUBLIC int ArtmSaveBatch(const char* disk_path, int length, const char* batch);
   DLL_PUBLIC const char* ArtmGetLastErrorMessage();
 }
 
