@@ -168,6 +168,7 @@ message ScoreConfig {
   repeated string topic_name = 4;
   repeated string class_id = 5;
   repeated string dictionary_name = 6;
+  optional float eps = 3 [default = 1e-37];
 }
 
 // Represents a result of score calculation
@@ -199,7 +200,6 @@ message PerplexityScore {
 
 // Represents a configuration of a theta sparsity score
 message SparsityThetaScoreConfig {
-  optional float eps = 3 [default = 1e-37];
 }
 
 // Represents a result of calculation of a theta sparsity score
@@ -211,7 +211,6 @@ message SparsityThetaScore {
 
 // Represents a configuration of a sparsity phi score
 message SparsityPhiScoreConfig {
-  optional float eps = 1 [default = 1e-37];
 }
 
 // Represents a result of calculation of a phi sparsity score
@@ -261,7 +260,6 @@ message ThetaSnippetScore {
 
 // Represents a configuration of a topic kernel score
 message TopicKernelScoreConfig {
-  optional float eps = 1 [default = 1e-37];
   optional double probability_mass_threshold = 4 [default = 0.1];
 }
 
@@ -281,7 +279,6 @@ message TopicKernelScore {
 
 // Represents a configuration of a topic part in nwt score
 message TopicMassPhiScoreConfig {
-  optional float eps = 1 [default = 1e-37];
 }
 
 // Represents a result of calculation of a topic part in nwt score
