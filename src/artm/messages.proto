@@ -49,8 +49,6 @@ message MasterComponentConfig {
   optional bool compact_batches = 4 [default = true];
   optional bool cache_theta = 5 [default = false];
   optional int32 processors_count = 6;
-  optional int32 processor_queue_max_size = 7 [default = 10];
-  optional int32 merger_queue_max_size = 8 [default = 10];
   repeated ScoreConfig score_config = 9;
   optional string disk_cache_path = 15;
 }
@@ -60,27 +58,6 @@ message RegularizerSettings {
   optional double tau = 2;
   optional bool use_relative_regularization = 3;
   optional double gamma = 4;
-}
-
-// Represents a configuration of a topic model.
-message ModelConfig {
-  optional string name = 1 [default = "@model"];
-  optional int32 topics_count = 2 [default = 32];
-  repeated string topic_name = 3;
-  optional bool enabled = 4 [default = true];
-  optional int32 inner_iterations_count = 5 [default = 10];
-  optional bool reuse_theta = 9 [default = false];
-  repeated string regularizer_name = 10;
-  repeated double regularizer_tau = 11;
-  repeated string class_id = 12;
-  repeated float class_weight = 13;
-  optional bool use_sparse_bow = 14 [default = true];
-  optional bool use_random_theta = 15 [default = false];
-  optional bool use_new_tokens = 16 [default = true];
-  optional bool opt_for_avx = 17 [default = true];
-  repeated RegularizerSettings regularizer_settings = 18;
-  optional string model_name_cache = 19;
-  optional string predict_class_id = 20;
 }
 
 // Represents a configuration of a general regularizer
@@ -384,14 +361,6 @@ message ClassPrecisionScore {
 
 // Represents a topic model (or an operation on topic model)
 message TopicModel {
-  enum OperationType {
-    Initialize = 0;   // Initialize n_wt with random 0..1 values
-    Increment = 1;    // Increment n_wt values by token_weights
-    Overwrite = 2;    // Overwrite n_wt values by token_weights
-    Remove = 3;       // Remove token
-    Ignore = 4;       // Ignore token
-  }
-
   optional string name = 1 [default = "@model"];
   optional int32 topics_count = 2;
   repeated string topic_name = 3;
@@ -400,7 +369,6 @@ message TopicModel {
   repeated string class_id = 6;
 
   repeated IntArray topic_index = 8;
-  repeated OperationType operation_type = 9;
   optional int32 seed = 10;
 }
 
@@ -664,8 +632,6 @@ message MasterComponentInfo {
   repeated DictionaryInfo dictionary = 5;
   repeated ModelInfo model = 6;
   repeated CacheEntryInfo cache_entry = 7;
-  optional int32 merger_queue_size = 8;
-  optional int32 processor_queue_size = 9;
   repeated BatchInfo batch = 10;
 }
 

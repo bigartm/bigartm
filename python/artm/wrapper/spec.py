@@ -40,16 +40,6 @@ ARTM_API = [
         [('master_id', int)],
     ),
 
-    ## deprecated
-    #CallSpec(
-    #    'ArtmCreateModel',
-    #    [('master_id', int), ('config', messages.ModelConfig)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmReconfigureModel',
-    #    [('master_id', int), ('config', messages.ModelConfig)],
-    #),
     CallSpec(
         'ArtmDisposeModel',
         [('master_id', int), ('name', str)],
@@ -103,12 +93,6 @@ ARTM_API = [
         'ArtmDisposeBatch',
         [('master_id', int), ('name', str)],
     ),
-
-    ## deprecated
-    #CallSpec(
-    #    'ArtmOverwriteTopicModel',
-    #    [('master_id', int), ('model', messages.TopicModel)],
-    #),
     CallSpec(
         'ArtmInitializeModel',
         [('master_id', int), ('args', messages.InitializeModelArgs)],
