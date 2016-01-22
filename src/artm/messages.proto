@@ -473,7 +473,6 @@ message GetThetaMatrixArgs {
   }
 
   optional string model_name = 1;
-  optional Batch batch = 2;
   repeated string topic_name = 3;
   optional bool clean_cache = 5 [default = false];
   optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
@@ -484,7 +483,6 @@ message GetThetaMatrixArgs {
 message GetScoreValueArgs {
   optional string model_name = 1;
   optional string score_name = 2;
-  optional Batch batch = 3;
 }
 
 message ExportModelArgs {
