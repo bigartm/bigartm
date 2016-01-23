@@ -311,36 +311,27 @@ message GetDictionaryArgs {
 
 message GetTopicModelArgs {
   enum RequestType {
-    Pwt = 0;
-    Nwt = 1;
-    TopicNames = 2;
-    Tokens = 3;
-  }
-
-  enum MatrixLayout {
     Dense = 0;
     Sparse = 1;
+    Metadata = 2;
   }
 
   optional string model_name = 1;
   repeated string topic_name = 2;
   repeated string token = 3;
   repeated string class_id = 4;
-  optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
-  optional RequestType request_type = 7 [default = Pwt];
-  optional MatrixLayout matrix_layout = 8 [default = Dense];
+  optional RequestType request_type = 7 [default = Dense];
 }
 
 message GetThetaMatrixArgs {
-  enum MatrixLayout {
+  enum RequestType {
     Dense = 0;
     Sparse = 1;
   }
 
   optional string model_name = 1;
   repeated string topic_name = 3;
-  optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
   optional MatrixLayout matrix_layout = 8 [default = Dense];
 }
@@ -365,7 +356,7 @@ message AttachModelArgs {
 }
 
 message ProcessBatchesArgs {
-  enum ThetaMatrixType {
+  enum RequestType {
     None = 0;
     Dense = 1;
     Sparse = 2;
@@ -383,7 +374,7 @@ message ProcessBatchesArgs {
   repeated string class_id = 8;
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
-  optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
+  optional RequestType request_type = 14 [default = Cache];
   repeated float batch_weight = 15;
   optional string model_name_cache = 16;
   optional string predict_class_id = 17;
