@@ -111,11 +111,6 @@ message TopicSelectionThetaConfig {
   repeated float alpha_iter = 3;
 }
 
-// Represents an internal state of a MultiLanguage Phi regularizer
-message MultiLanguagePhiInternalState {
-  optional int32 no_regularization_calls = 1 [default = 0];
-}
-
 // Represents the transform functions
 message TransformConfig {
   enum TransformType {
