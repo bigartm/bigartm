@@ -11,11 +11,6 @@ message FloatArray {
   repeated float value = 1 [packed = true];
 }
 
-// Represents an array of boolean values
-message BoolArray {
-  repeated bool value = 1 [packed = true];
-}
-
 // Represents an array of integer values
 message IntArray {
   repeated int32 value = 1 [packed = true];
@@ -29,28 +24,9 @@ message StringArray {
 // Represents a unit of textual information.
 message Item {
   optional int32 id = 1;
-  repeated Field field = 2;
-  optional string title = 3;
-}
-
-// Represents a field withing an item.
-message Field {
-  optional string name = 1 [default = "@body"];
-  repeated int32 token_id = 2;
-  repeated int32 token_count = 3;  // obsolete in BigARTM v0.7.2
-  repeated int32 token_offset = 4;
-
-  optional string string_value = 5;
-  optional int64 int_value = 6;
-  optional double double_value = 7;
-  optional string date_value = 8;
-
-  repeated string string_array = 16;
-  repeated int64 int_array = 17;
-  repeated double double_array = 18;
-  repeated string date_array = 19;
-
-  repeated float token_weight = 20;
+  optional string title = 2;
+  repeated int32 token_id = 3;
+  repeated float token_weight = 4;
 }
 
 // Represents a set of items.
@@ -62,113 +38,48 @@ message Batch {
   optional string id = 5;
 }
 
-// Represents a configuration of a stream.
-message Stream {
-  enum Type {
-    Global = 0;
-    ItemIdModulus = 1;
-  }
-
-  optional Type type = 1 [default = Global];
-  optional string name = 2 [default = "@global"];
-  optional int32 modulus = 3;
-  repeated int32 residuals = 4;
-}
-
 // Represents a configuration of a master component
 message MasterComponentConfig {
-  optional string disk_path = 2;
-  repeated Stream stream = 3;
-  optional bool compact_batches = 4 [default = true];
   optional bool cache_theta = 5 [default = false];
   optional int32 processors_count = 6;
-  optional int32 processor_queue_max_size = 7 [default = 10];
-  optional int32 merger_queue_max_size = 8 [default = 10];
   repeated ScoreConfig score_config = 9;
-  optional bool online_batch_processing = 13 [default = false];  // obsolete in BigARTM v0.5.8
+  repeated RegularizerConfig regularizer_config = 10;
   optional string disk_cache_path = 15;
 }
 
-message RegularizerSettings {
-  optional string name = 1;
-  optional double tau = 2;
-  optional bool use_relative_regularization = 3;
-  optional double gamma = 4;
-}
-
-// Represents a configuration of a topic model.
-message ModelConfig {
-  optional string name = 1 [default = "@model"];
-  optional int32 topics_count = 2 [default = 32];
-  repeated string topic_name = 3;
-  optional bool enabled = 4 [default = true];
-  optional int32 inner_iterations_count = 5 [default = 10];
-  optional string field_name = 6 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 7 [default = "@global"];
-  repeated string score_name = 8;  // obsolete in BigARTM v0.6.3
-  optional bool reuse_theta = 9 [default = false];
-  repeated string regularizer_name = 10;
-  repeated double regularizer_tau = 11;
-  repeated string class_id = 12;
-  repeated float class_weight = 13;
-  optional bool use_sparse_bow = 14 [default = true];
-  optional bool use_random_theta = 15 [default = false];
-  optional bool use_new_tokens = 16 [default = true];
-  optional bool opt_for_avx = 17 [default = true];
-  repeated RegularizerSettings regularizer_settings = 18;
-  optional string model_name_cache = 19;
-  optional string predict_class_id = 20;
+enum RegularizerType {
+  SmoothSparseTheta = 0;
+  SmoothSparsePhi = 1;
+  DecorrelatorPhi = 2;
+  MultiLanguagePhi = 3;
+  LabelRegularizationPhi = 4;
+  SpecifiedSparsePhi = 5;
+  ImproveCoherencePhi = 6;
+  SmoothPtdw = 7;
+  TopicSelectionTheta = 8;
 }
 
 // Represents a configuration of a general regularizer
 message RegularizerConfig {
-  enum Type {
-    SmoothSparseTheta = 0;
-    SmoothSparsePhi = 1;
-    DecorrelatorPhi = 2;
-    MultiLanguagePhi = 3;
-    LabelRegularizationPhi = 4;
-    SpecifiedSparsePhi = 5;
-    ImproveCoherencePhi = 6;
-    SmoothPtdw = 7;
-    TopicSelectionTheta = 8;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional RegularizerType regularizer_type = 2;
   optional bytes config = 3;
   optional float tau = 4;
+  optional float gamma = 5;
+  repeated string topic_name = 6;
+  repeated string class_id = 7;
+  repeated string dictionary_name = 8;
 }
 
 // Represents a configuration of a SmoothSparse Theta regularizer
 message SmoothSparseThetaConfig {
-  repeated string topic_name = 1;
   repeated float alpha_iter = 2;
   optional TransformConfig transform_config = 3;
 }
 
 // Represents a configuration of a SmoothSparse Phi regularizer
 message SmoothSparsePhiConfig {
-  repeated string topic_name = 1;
-  repeated string class_id = 2;
-  optional string dictionary_name = 3;
   optional TransformConfig transform_config = 4;
-}
-
-// Represents a configuration of a Decorrelator Phi regularizer
-message DecorrelatorPhiConfig {
-  repeated string topic_name = 1;
-  repeated string class_id = 2;
-}
-
-// Represents a configuration of a MultiLanguage Phi regularizer
-message MultiLanguagePhiConfig {
-}
-
-message LabelRegularizationPhiConfig {
-  repeated string topic_name = 1;
-  repeated string class_id = 2;
-  optional string dictionary_name = 3;
 }
 
 message SpecifiedSparsePhiConfig {
@@ -177,18 +88,9 @@ message SpecifiedSparsePhiConfig {
     SparseTokens = 1;
   }
 
-  repeated string topic_name = 1;
-  optional string class_id = 2 [default = "@default_class"];
   optional int32 max_elements_count = 3 [default = 20];
   optional float probability_threshold = 4 [default = 0.99];
   optional Mode mode = 5 [default = SparseTopics];
-}
-
-// Represents a configuration of a ImproveCoherence Phi regularizer
-message ImproveCoherencePhiConfig {
-  repeated string topic_name = 1;
-  repeated string class_id = 2;
-  optional string dictionary_name = 3;
 }
 
 // Represents a configuration of a Smooth Ptdw regularizer
@@ -205,29 +107,8 @@ message SmoothPtdwConfig {
 
 // Represents a configuration of a TopicSelection Theta regularizer
 message TopicSelectionThetaConfig {
-  repeated string topic_name = 1;
   repeated float topic_value = 2;  // user-counted value = n / (n_t * |T|)
   repeated float alpha_iter = 3;
-}
-
-message GetRegularizerStateArgs {
-  optional string name = 1;
-}
-
-// Represents an internal state of a general regularizer
-message RegularizerInternalState {
-  enum Type {
-    MultiLanguagePhi = 3;
-  }
-
-  optional string name = 1;
-  optional Type type = 2;
-  optional bytes data = 3;
-}
-
-// Represents an internal state of a MultiLanguage Phi regularizer
-message MultiLanguagePhiInternalState {
-  optional int32 no_regularization_calls = 1 [default = 0];
 }
 
 // Represents the transform functions
@@ -243,117 +124,46 @@ message TransformConfig {
   optional double a = 3 [default = 1];
 }
 
+enum ScoreType {
+  Perplexity = 0;
+  SparsityTheta = 1;
+  SparsityPhi = 2;
+  TopTokens = 4;
+  ThetaSnippet = 5;
+  TopicKernel = 6;
+  TopicMassPhi = 7;
+  ClassPrecision = 8;
+}
+
 // Represents a configuration of a general score
 message ScoreConfig {
-  enum Type {
-    Perplexity = 0;
-    SparsityTheta = 1;
-    SparsityPhi = 2;
-    ItemsProcessed = 3;
-    TopTokens = 4;
-    ThetaSnippet = 5;
-    TopicKernel = 6;
-    TopicMassPhi = 7;
-    ClassPrecision = 8;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional ScoreType score_type = 2;
   optional bytes config = 3;
+  repeated string topic_name = 4;
+  repeated string class_id = 5;
+  repeated string dictionary_name = 6;
+  optional float eps = 3 [default = 1e-37];
 }
 
 // Represents a result of score calculation
 message ScoreData {
-  enum Type {
-    Perplexity = 0;
-    SparsityTheta = 1;
-    SparsityPhi = 2;
-    ItemsProcessed = 3;
-    TopTokens = 4;
-    ThetaSnippet = 5;
-    TopicKernel = 6;
-    TopicMassPhi = 7;
-    ClassPrecision = 8;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional ScoreType score_type = 2;
   optional bytes data = 3;
-}
-
-// Represents a configuration of a perplexity score
-message PerplexityScoreConfig {
-  enum Type {
-    UnigramDocumentModel = 0;
-    UnigramCollectionModel = 1;
-  }
-  optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
-  optional Type model_type = 3 [default = UnigramDocumentModel];
-  optional string dictionary_name = 4;
-  optional float theta_sparsity_eps = 5 [default = 1e-37];
-  repeated string theta_sparsity_topic_name = 6;
-  repeated string class_id = 7;
+  optional double value = 4;
+  optional double numerator = 5;
+  optional double denominator = 6;
 }
 
 // Represents a result of calculation of a perplexity score
 message PerplexityScore {
-  optional double value = 1;
-  optional double raw = 2;
-  optional double normalizer = 3;
   optional int64 zero_words = 4;
-  optional double theta_sparsity_value = 5;
-  optional int32 theta_sparsity_zero_topics = 6;  // obsolete in BigARTM v0.7.4
-  optional int32 theta_sparsity_total_topics = 7;  // obsolete in BigARTM v0.7.4
-}
-
-// Represents a configuration of a theta sparsity score
-message SparsityThetaScoreConfig {
-  optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
-  optional float eps = 3 [default = 1e-37];
-  repeated string topic_name = 4;
-}
-
-// Represents a result of calculation of a theta sparsity score
-message SparsityThetaScore {
-  optional double value = 1;
-  optional int64 zero_topics = 2;
-  optional int64 total_topics = 3;
-}
-
-// Represents a configuration of a sparsity phi score
-message SparsityPhiScoreConfig {
-  optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2 [default = "@default_class"];
-  repeated string topic_name = 3;
-}
-
-// Represents a result of calculation of a phi sparsity score
-message SparsityPhiScore {
-  optional double value = 1;
-  optional int64 zero_tokens = 2;
-  optional int64 total_tokens = 3;
-}
-
-// Represents a configuration of an items processed score
-message ItemsProcessedScoreConfig {
-  optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
-}
-
-// Represents a result of calculation of an items processed score
-message ItemsProcessedScore {
-  optional int32 value = 1 [default = 0];
-  optional int32 num_batches = 2 [default = 0];
 }
 
 // Represents a configuration of a top tokens score
 message TopTokensScoreConfig {
   optional int32 num_tokens = 1 [default = 10];
-  optional string class_id = 2 [default = "@default_class"];
-  repeated string topic_name = 3;
-  optional string cooccurrence_dictionary_name = 4;
 }
 
 // Represents a result of calculation of a top tokens score
@@ -369,12 +179,8 @@ message TopTokensScore {
 
 // Represents a configuration of a theta snippet score
 message ThetaSnippetScoreConfig {
-  optional string field_name = 1 [default = "@body"];
-  optional string stream_name = 2 [default = "@global"];
-  repeated int32 item_id = 3 [packed = true];  // obsolete in BigARTM v0.5.8
   optional int32 item_count = 4 [default = 10];
 }
-
 
 // Represents a result of calculation of a theta snippet score
 message ThetaSnippetScore {
@@ -384,79 +190,40 @@ message ThetaSnippetScore {
 
 // Represents a configuration of a topic kernel score
 message TopicKernelScoreConfig {
-  optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2 [default = "@default_class"];
-  repeated string topic_name = 3;
+  enum Type {
+    Size = 0;
+    Purity = 1;
+    Contrast = 2;
+    Coherence = 3;
+  }
+
+  optional Type type = 1 [default = Size];
   optional double probability_mass_threshold = 4 [default = 0.1];
-  optional string cooccurrence_dictionary_name = 5;
 }
 
 // Represents a result of calculation of a topic kernel score
 message TopicKernelScore {
-  optional DoubleArray kernel_size = 1;
-  optional DoubleArray kernel_purity = 2;
-  optional DoubleArray kernel_contrast = 3;
-  optional double average_kernel_size = 4;
-  optional double average_kernel_purity = 5;
-  optional double average_kernel_contrast = 6;
-  optional DoubleArray coherence = 7;
-  optional float average_coherence = 8;
+  optional DoubleArray values = 1;
   repeated StringArray kernel_tokens = 9;
   optional StringArray topic_name = 10;
 }
 
-// Represents a configuration of a topic part in nwt score
-message TopicMassPhiScoreConfig {
-  optional float eps = 1 [default = 1e-37];
-  optional string class_id = 2 [default = "@default_class"];
-  repeated string topic_name = 3;
-}
-
 // Represents a result of calculation of a topic part in nwt score
 message TopicMassPhiScore {
-  optional double value = 1;
   repeated string topic_name = 2;
   repeated double topic_ratio = 3;
   repeated double topic_mass = 4;
 }
 
-// Represents a configuration of a class precision score
-message ClassPrecisionScoreConfig {
-  optional string stream_name = 1 [default = "@global"];
-}
-
-// Represents a result of calculation of a class precision score
-message ClassPrecisionScore {
-  optional double value = 1;
-  optional double error = 2;
-  optional double total = 3;
-}
-
 // Represents a topic model (or an operation on topic model)
 message TopicModel {
-  enum OperationType {
-    Initialize = 0;   // Initialize n_wt with random 0..1 values
-    Increment = 1;    // Increment n_wt values by token_weights
-    Overwrite = 2;    // Overwrite n_wt values by token_weights
-    Remove = 3;       // Remove token
-    Ignore = 4;       // Ignore token
-  }
-
   optional string name = 1 [default = "@model"];
-  optional int32 topics_count = 2;
   repeated string topic_name = 3;
   repeated string token = 4;
   repeated FloatArray token_weights = 5;
   repeated string class_id = 6;
 
-  message TopicModelInternals {
-    repeated FloatArray n_wt = 1;
-  }
-
-  optional bytes internals = 7;  // obsolete in BigARTM v0.6.3
   repeated IntArray topic_index = 8;
-  repeated OperationType operation_type = 9;
-  optional int32 seed = 10;
 }
 
 // Represents a theta matrix.
@@ -465,7 +232,6 @@ message ThetaMatrix {
   repeated int32 item_id = 2;
   repeated FloatArray item_weights = 3;
   repeated string topic_name = 4;
-  optional int32 topics_count = 5;
   repeated string item_title = 6;
   repeated IntArray topic_index = 7;
 }
@@ -490,48 +256,14 @@ message CollectionParserConfig {
   optional int32 num_items_per_batch = 5 [default = 1000];
   optional bool use_unity_based_indices = 6 [default = true];
   optional NameType name_type = 7 [default = Guid];
-
-  repeated string cooccurrence_token = 8;  // obsoleted
-  optional bool gather_cooc = 9;  // obsoleted
-  repeated string cooccurrence_class_id = 10;  // obsoleted
-  optional bool use_symmetric_cooc_values = 11 [default = false];  // obsoleted
-}
-
-// Represents an argument of 'synchronize model' operation
-message SynchronizeModelArgs {
-  optional string model_name = 1;
-  optional float decay_weight = 2 [default = 0.0];
-  optional bool invoke_regularizers = 3 [default = true];
-  optional float apply_weight = 4 [default = 1.0];
 }
 
 // Represents an argument of 'initialize model' operation
 message InitializeModelArgs {
-  enum SourceType {  // obsoleted
-    Dictionary = 0;
-    Batches = 1;
-  }
-
-  message Filter {  // obsoleted
-    optional string class_id = 1;
-    optional float min_percentage = 2;
-    optional float max_percentage = 3;
-    optional int32 min_items = 4;
-    optional int32 max_items = 5;
-    optional int32 min_total_count = 6;
-    optional int32 min_one_item_count = 7;
-  }
-
   optional string model_name = 1;
   optional string dictionary_name = 2;
-  optional int32 topics_count = 3;
   repeated string topic_name = 4;
   optional int32 seed = 5 [default = -1];
-
-  optional SourceType source_type = 6;  // obsoleted
-  optional string disk_path = 7;  // obsoleted
-  repeated Filter filter = 8;  // obsoleted
-  repeated string batch_filename = 9;  // obsoleted
 }
 
 // Represents a static dictionary.
@@ -574,39 +306,27 @@ message GetDictionaryArgs {
 
 message GetTopicModelArgs {
   enum RequestType {
-    Pwt = 0;
-    Nwt = 1;
-    TopicNames = 2;
-    Tokens = 3;
-  }
-
-  enum MatrixLayout {
     Dense = 0;
     Sparse = 1;
+    Metadata = 2;
   }
 
   optional string model_name = 1;
   repeated string topic_name = 2;
   repeated string token = 3;
   repeated string class_id = 4;
-  optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
-  optional RequestType request_type = 7 [default = Pwt];
-  optional MatrixLayout matrix_layout = 8 [default = Dense];
+  optional RequestType request_type = 7 [default = Dense];
 }
 
 message GetThetaMatrixArgs {
-  enum MatrixLayout {
+  enum RequestType {
     Dense = 0;
     Sparse = 1;
   }
 
   optional string model_name = 1;
-  optional Batch batch = 2;
   repeated string topic_name = 3;
-  repeated int32 topic_index = 4;
-  optional bool clean_cache = 5 [default = false];
-  optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
   optional MatrixLayout matrix_layout = 8 [default = Dense];
 }
@@ -614,24 +334,6 @@ message GetThetaMatrixArgs {
 message GetScoreValueArgs {
   optional string model_name = 1;
   optional string score_name = 2;
-  optional Batch batch = 3;
-}
-
-message AddBatchArgs {
-  optional Batch batch = 1;
-  optional int32 timeout_milliseconds = 2 [default = -1];
-  optional bool reset_scores = 3 [default = false];
-  optional string batch_file_name = 4;
-}
-
-message InvokeIterationArgs {
-  optional int32 iterations_count = 1 [default = 1];
-  optional bool reset_scores = 2 [default = true];
-  optional string disk_path = 3;
-}
-
-message WaitIdleArgs {
-  optional int32 timeout_milliseconds = 1 [default = -1];
 }
 
 message ExportModelArgs {
@@ -649,7 +351,7 @@ message AttachModelArgs {
 }
 
 message ProcessBatchesArgs {
-  enum ThetaMatrixType {
+  enum RequestType {
     None = 0;
     Dense = 1;
     Sparse = 2;
@@ -663,16 +365,11 @@ message ProcessBatchesArgs {
   repeated string batch_filename = 2;
   optional string pwt_source_name = 3;
   optional int32 inner_iterations_count = 4 [default = 10];
-  optional string stream_name = 5 [default = "@global"];
   repeated string regularizer_name = 6;
-  repeated double regularizer_tau = 7;
   repeated string class_id = 8;
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
-  optional bool opt_for_avx = 11 [default = true];
-  optional bool use_sparse_bow = 12 [default = true];
-  optional bool reset_scores = 13 [default = true];
-  optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
+  optional RequestType request_type = 14 [default = Cache];
   repeated float batch_weight = 15;
   optional string model_name_cache = 16;
   optional string predict_class_id = 17;
@@ -694,8 +391,7 @@ message RegularizeModelArgs {
   optional string rwt_target_name = 1;
   optional string pwt_source_name = 2;
   optional string nwt_source_name = 3;
-
-  repeated RegularizerSettings regularizer_settings = 4;
+  repeated string regularizer_name = 4;
 }
 
 message NormalizeModelArgs {
@@ -764,20 +460,16 @@ message MasterComponentInfo {
     optional int32 byte_size = 2;
   }
 
-  optional int32 master_id = 1;  // obsolete in BigARTM v0.7.4
   optional MasterComponentConfig config = 2;
   repeated RegularizerInfo regularizer = 3;
   repeated ScoreInfo score = 4;
   repeated DictionaryInfo dictionary = 5;
   repeated ModelInfo model = 6;
   repeated CacheEntryInfo cache_entry = 7;
-  optional int32 merger_queue_size = 8;
-  optional int32 processor_queue_size = 9;
   repeated BatchInfo batch = 10;
 }
 
 message ImportBatchesArgs {
-  repeated string batch_name = 1;
   repeated Batch batch = 3;
 }
 
@@ -791,15 +483,12 @@ message MasterModelConfig {
   repeated float class_weight = 3;
   repeated ScoreConfig score_config = 4;
   repeated RegularizerConfig regularizer_config = 5;
-  optional int32 threads = 6;
+  optional int32 processors_count = 6;
   optional string pwt_name = 7;
   optional string nwt_name = 8 [default = "nwt"];
   optional int32 inner_iterations_count = 9;
   optional bool reuse_theta = 10 [default = false];
-  optional bool opt_for_avx = 11 [default = true];
-  optional bool use_sparse_bow = 12 [default = true];
   optional string disk_cache_path = 13;
-  optional bool use_v06_api = 14 [default = false];  // obsolete in BigARTM v0.7.4
 }
 
 message FitOfflineMasterModelArgs {
@@ -830,4 +519,10 @@ message TransformMasterModelArgs {
   repeated string batch_filename = 1;
   optional ThetaMatrixType theta_matrix_type = 2 [default = Cache];
   optional string predict_class_id = 3;
+}
+
+message ResetCacheArgs {
+  optional string model_name = 1;
+  optional bool reset_cache = 2 [default = true];
+  optional bool reset_scores = 3 [default = true];
 }

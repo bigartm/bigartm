@@ -1227,7 +1227,6 @@ int main(int argc, char * argv[]) {
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
       ("threads", po::value(&options.threads)->default_value(0), "number of concurrent processors (default: auto-detect)")
       ("async", po::bool_switch(&options.async)->default_value(false), "invoke asynchronous version of the online algorithm")
-      ("model-v06", po::bool_switch(&options.model_v06)->default_value(false), "use legacy model from BigARTM v0.6.4")
     ;
 
     po::options_description output_options("Output");
