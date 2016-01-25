@@ -3,6 +3,8 @@
 #include "artm/core/processor.h"
 
 #include <stdlib.h>
+
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
@@ -510,14 +512,22 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
   // 1. explicit loops instead of blas->saxpy and blas->sdot
   //    makes compiler generate AVX instructions (vectorized 128-bit float-point operations)
   // 2. better memory usage (reduced bandwith to DRAM and more sequential accesss)
+
+  int max_local_token_size = 0;  // find the longest document from the batch
+  for (int d = 0; d < docs_count; ++d) {
+    const int begin_index = sparse_ndw.row_ptr()[d];
+    const int end_index = sparse_ndw.row_ptr()[d + 1];
+    const int local_token_size = end_index - begin_index;
+    max_local_token_size = std::max(max_local_token_size, local_token_size);
+  }
+  DenseMatrix<float> local_phi(max_local_token_size, topics_count);
+
   for (int d = 0; d < docs_count; ++d) {
     float* ntd_ptr = &n_td(0, d);
     float* theta_ptr = &(*theta_matrix)(0, d);  // NOLINT
 
     const int begin_index = sparse_ndw.row_ptr()[d];
     const int end_index = sparse_ndw.row_ptr()[d + 1];
-    const int local_token_size = end_index - begin_index;
-    DenseMatrix<float> local_phi(local_token_size, topics_count);
     local_phi.InitializeZeros();
     bool item_has_tokens = false;
     for (int i = begin_index; i < end_index; ++i) {
