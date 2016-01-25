@@ -255,6 +255,7 @@ message ScoreConfig {
     TopicKernel = 6;
     TopicMassPhi = 7;
     ClassPrecision = 8;
+    PeakMemory = 9;
   }
 
   optional string name = 1;
@@ -274,6 +275,7 @@ message ScoreData {
     TopicKernel = 6;
     TopicMassPhi = 7;
     ClassPrecision = 8;
+    PeakMemory = 9;
   }
 
   optional string name = 1;
@@ -430,6 +432,15 @@ message ClassPrecisionScore {
   optional double value = 1;
   optional double error = 2;
   optional double total = 3;
+}
+
+// Represents a configuration of a class precision score
+message PeakMemoryScoreConfig {
+}
+
+// Represents a result of calculation of a class precision score
+message PeakMemoryScore {
+  optional int64 value = 1;
 }
 
 // Represents a topic model (or an operation on topic model)

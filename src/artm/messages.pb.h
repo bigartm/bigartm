@@ -80,6 +80,8 @@ class TopicMassPhiScoreConfig;
 class TopicMassPhiScore;
 class ClassPrecisionScoreConfig;
 class ClassPrecisionScore;
+class PeakMemoryScoreConfig;
+class PeakMemoryScore;
 class TopicModel;
 class TopicModel_TopicModelInternals;
 class ThetaMatrix;
@@ -254,11 +256,12 @@ enum ScoreConfig_Type {
   ScoreConfig_Type_ThetaSnippet = 5,
   ScoreConfig_Type_TopicKernel = 6,
   ScoreConfig_Type_TopicMassPhi = 7,
-  ScoreConfig_Type_ClassPrecision = 8
+  ScoreConfig_Type_ClassPrecision = 8,
+  ScoreConfig_Type_PeakMemory = 9
 };
 bool ScoreConfig_Type_IsValid(int value);
 const ScoreConfig_Type ScoreConfig_Type_Type_MIN = ScoreConfig_Type_Perplexity;
-const ScoreConfig_Type ScoreConfig_Type_Type_MAX = ScoreConfig_Type_ClassPrecision;
+const ScoreConfig_Type ScoreConfig_Type_Type_MAX = ScoreConfig_Type_PeakMemory;
 const int ScoreConfig_Type_Type_ARRAYSIZE = ScoreConfig_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ScoreConfig_Type_descriptor();
@@ -280,11 +283,12 @@ enum ScoreData_Type {
   ScoreData_Type_ThetaSnippet = 5,
   ScoreData_Type_TopicKernel = 6,
   ScoreData_Type_TopicMassPhi = 7,
-  ScoreData_Type_ClassPrecision = 8
+  ScoreData_Type_ClassPrecision = 8,
+  ScoreData_Type_PeakMemory = 9
 };
 bool ScoreData_Type_IsValid(int value);
 const ScoreData_Type ScoreData_Type_Type_MIN = ScoreData_Type_Perplexity;
-const ScoreData_Type ScoreData_Type_Type_MAX = ScoreData_Type_ClassPrecision;
+const ScoreData_Type ScoreData_Type_Type_MAX = ScoreData_Type_PeakMemory;
 const int ScoreData_Type_Type_ARRAYSIZE = ScoreData_Type_Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ScoreData_Type_descriptor();
@@ -3965,6 +3969,7 @@ class ScoreConfig : public ::google::protobuf::Message {
   static const Type TopicKernel = ScoreConfig_Type_TopicKernel;
   static const Type TopicMassPhi = ScoreConfig_Type_TopicMassPhi;
   static const Type ClassPrecision = ScoreConfig_Type_ClassPrecision;
+  static const Type PeakMemory = ScoreConfig_Type_PeakMemory;
   static inline bool Type_IsValid(int value) {
     return ScoreConfig_Type_IsValid(value);
   }
@@ -4108,6 +4113,7 @@ class ScoreData : public ::google::protobuf::Message {
   static const Type TopicKernel = ScoreData_Type_TopicKernel;
   static const Type TopicMassPhi = ScoreData_Type_TopicMassPhi;
   static const Type ClassPrecision = ScoreData_Type_ClassPrecision;
+  static const Type PeakMemory = ScoreData_Type_PeakMemory;
   static inline bool Type_IsValid(int value) {
     return ScoreData_Type_IsValid(value);
   }
@@ -6446,6 +6452,160 @@ class ClassPrecisionScore : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static ClassPrecisionScore* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class PeakMemoryScoreConfig : public ::google::protobuf::Message {
+ public:
+  PeakMemoryScoreConfig();
+  virtual ~PeakMemoryScoreConfig();
+
+  PeakMemoryScoreConfig(const PeakMemoryScoreConfig& from);
+
+  inline PeakMemoryScoreConfig& operator=(const PeakMemoryScoreConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PeakMemoryScoreConfig& default_instance();
+
+  void Swap(PeakMemoryScoreConfig* other);
+
+  // implements Message ----------------------------------------------
+
+  PeakMemoryScoreConfig* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const PeakMemoryScoreConfig& from);
+  void MergeFrom(const PeakMemoryScoreConfig& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:artm.PeakMemoryScoreConfig)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[1];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static PeakMemoryScoreConfig* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class PeakMemoryScore : public ::google::protobuf::Message {
+ public:
+  PeakMemoryScore();
+  virtual ~PeakMemoryScore();
+
+  PeakMemoryScore(const PeakMemoryScore& from);
+
+  inline PeakMemoryScore& operator=(const PeakMemoryScore& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PeakMemoryScore& default_instance();
+
+  void Swap(PeakMemoryScore* other);
+
+  // implements Message ----------------------------------------------
+
+  PeakMemoryScore* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const PeakMemoryScore& from);
+  void MergeFrom(const PeakMemoryScore& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int64 value = 1;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 1;
+  inline ::google::protobuf::int64 value() const;
+  inline void set_value(::google::protobuf::int64 value);
+
+  // @@protoc_insertion_point(class_scope:artm.PeakMemoryScore)
+ private:
+  inline void set_has_value();
+  inline void clear_has_value();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::int64 value_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static PeakMemoryScore* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -19536,6 +19696,36 @@ inline double ClassPrecisionScore::total() const {
 inline void ClassPrecisionScore::set_total(double value) {
   set_has_total();
   total_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// PeakMemoryScoreConfig
+
+// -------------------------------------------------------------------
+
+// PeakMemoryScore
+
+// optional int64 value = 1;
+inline bool PeakMemoryScore::has_value() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void PeakMemoryScore::set_has_value() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void PeakMemoryScore::clear_has_value() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void PeakMemoryScore::clear_value() {
+  value_ = GOOGLE_LONGLONG(0);
+  clear_has_value();
+}
+inline ::google::protobuf::int64 PeakMemoryScore::value() const {
+  return value_;
+}
+inline void PeakMemoryScore::set_value(::google::protobuf::int64 value) {
+  set_has_value();
+  value_ = value;
 }
 
 // -------------------------------------------------------------------
