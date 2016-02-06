@@ -81,17 +81,21 @@ The following example illustrate how to work with new dictionaries from Python.
                                            collection_name='kos',
                                            target_folder=r'D:\Datasets\kos_batches')
 
-   # Initialize the model. For now dictionaries exist within the model, btu we will address this in the future.
+   # Initialize the model. For now dictionaries exist within the model,
+   # but we will address this in the future.
    model = artm.ARTM(...)
 
    
    # Gather dictionary named `dict` from batches.
-   # The resulting dictionary will contain all distinct tokens that occur in those batches, and their term frequencies
+   # The resulting dictionary will contain all distinct tokens that occur
+   # in those batches, and their term frequencies
    model.gather_dictionary("dict", "D:\Datasets\kos_batches")
    
    # Filter dictionary by removing tokens with too high or too low term frequency
-   # Save the result as `my_filtered_dictionary`"
-   model.filter_dictionary(dictionary_name='dict', dictionary_target_name='filtered_dict', min_df=10, max_df_rate=0.4)
+   # Save the result as `filtered_dict`"
+   model.filter_dictionary(dictionary_name='dict',
+                           dictionary_target_name='filtered_dict',
+                           min_df=10, max_df_rate=0.4)
    
    # Initialize model from `diltered_dict`
    model.initialize("filtered_dict")
@@ -106,8 +110,6 @@ Changes in the infrastructure
 * Static linkage for bigartm command-line executable on Linux.
   To disable static linkage use ``cmake -DBUILD_STATIC_BIGARTM=OFF ..``
 * Install BigARTM python API via ``python setup.py install``
-
-
   
 Changes in core functionality
 -----------------------------

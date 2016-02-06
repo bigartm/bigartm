@@ -14,13 +14,13 @@ Then you can use ``bigartm`` as described by ``bigartm --help``:
 
 .. code-block:: bash
 
-    >bigartm --help
     BigARTM - library for advanced topic modeling (http://bigartm.org):
 
     Input data:
       -c [ --read-vw-corpus ] arg         Raw corpus in Vowpal Wabbit format
       -d [ --read-uci-docword ] arg       docword file in UCI format
       -v [ --read-uci-vocab ] arg         vocab file in UCI format
+      --read-cooc arg                     read co-occurrences format
       --batch-size arg (=500)             number of items per batch
       --use-batches arg                   folder with batches to use
 
@@ -35,9 +35,11 @@ Then you can use ``bigartm`` as described by ``bigartm --help``:
       --load-model arg                    load model from file before processing
       -t [ --topics ] arg (=16)           number of topics
       --use-modality arg                  modalities (class_ids) and their weights
+      --predict-class arg                 target modality to predict by theta
+                                          matrix
 
     Learning:
-      -p [ --passes ] arg (=10)           number of outer iterations
+      -p [ --passes ] arg (=0)            number of outer iterations
       --inner-iterations-count arg (=10)  number of inner iterations
       --update-every arg (=0)             [online algorithm] requests an update of
                                           the model after update_every document
@@ -50,6 +52,9 @@ Then you can use ``bigartm`` as described by ``bigartm --help``:
                                           heta,SparseTheta,Decorrelation)
       --threads arg (=0)                  number of concurrent processors (default:
                                           auto-detect)
+      --async                             invoke asynchronous version of the online
+                                          algorithm
+      --model-v06                         use legacy model from BigARTM v0.6.4
 
     Output:
       --save-model arg                    save the model to binary file after
@@ -58,8 +63,18 @@ Then you can use ``bigartm`` as described by ``bigartm --help``:
       --save-dictionary arg               filename of dictionary file
       --write-model-readable arg          output the model in a human-readable
                                           format
+      --write-dictionary-readable arg     output the dictionary in a human-readable
+                                          format
       --write-predictions arg             write prediction in a human-readable
                                           format
+      --write-class-predictions arg       write class prediction in a
+                                          human-readable format
+      --write-scores arg                  write scores in a human-readable format
+      --force                             force overwrite existing output files
+      --csv-separator arg (=;)            columns separator for
+                                          --write-model-readable and
+                                          --write-predictions. Use \t or TAB to
+                                          indicate tab.
       --score-level arg (=2)              score level (0, 1, 2, or 3
       --score arg                         scores (Perplexity, SparsityTheta,
                                           SparsityPhi, TopTokens, ThetaSnippet, or
@@ -77,7 +92,57 @@ Then you can use ``bigartm`` as described by ``bigartm --help``:
                                           BigARTM v0.5.4)
       --use-dense-bow                     use dense representation of bag-of-words
                                           data in processors
+      --time-limit arg (=0)               limit execution time in milliseconds
 
     Examples:
-            bigartm -d docword.kos.txt -v vocab.kos.txt
-            set GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt
+
+    * Download input data:
+      wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt
+      wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt
+      wget https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt
+
+    * Parse docword and vocab files from UCI bag-of-word format; then fit topic model with 20 topics:
+      bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10
+
+    * Parse VW format; then save the resulting batches and dictionary:
+      bigartm --read-vw-corpus vw.mmro.txt --save-batches mmro_batches --save-dictionary mmro.dict
+
+    * Parse VW format from standard input; note usage of single dash '-' after --read-vw-corpus:
+      cat vw.mmro.txt | bigartm --read-vw-corpus - --save-batches mmro2_batches --save-dictionary mmro2.dict
+
+    * Load and filter the dictionary on document frequency; save the result into a new file:
+      bigartm --use-dictionary mmro.dict --dictionary-min-df 5 dictionary-max-df 40% --save-dictionary mmro-filter.dict
+
+    * Load the dictionary and export it in a human-readable format:
+      bigartm --use-dictionary mmro.dict --write-dictionary-readable mmro.dict.txt
+
+    * Use batches to fit a model with 20 topics; then save the model in a binary format:
+      bigartm --use-batches mmro_batches --passes 10 -t 20 --save-model mmro.model
+
+    * Load the model and export it in a human-readable format:
+      bigartm --load-model mmro.model --write-model-readable mmro.model.txt
+
+    * Load the model and use it to generate predictions:
+      bigartm --read-vw-corpus vw.mmro.txt --load-model mmro.model --write-predictions mmro.predict.txt
+
+    * Fit model with two modalities (@default_class and @target), and use it to predict @target label:
+      bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --passes 10 --save-model model.bin
+      bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --load-model model.bin
+              --write-predictions pred.txt --csv-separator=tab
+              --predict-class @target --write-class-predictions pred_class.txt --score ClassPrecision
+
+    * Fit simple regularized model (increase sparsity up to 60-70%):
+      bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2
+              --passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt
+              --regularizer "0.05 SparsePhi" "0.05 SparseTheta"
+
+    * Fit more advanced regularize model, with 10 sparse objective topics, and 2 smooth background topics:
+      bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2
+              --passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt
+              --regularizer "0.05 SparsePhi #obj"
+              --regularizer "0.05 SparseTheta #obj"
+              --regularizer "0.25 SmoothPhi #background"
+              --regularizer "0.25 SmoothTheta #background"
+
+    * Configure logger to output into stderr:
+      tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10
