@@ -2,7 +2,67 @@
 C++ interface
 =============
 
-This document explains C++ interface of BigARTM library.
+BigARTM C++ interface is currently not documented.
+The main entry point is ``MasterModel`` class from ``src/artm/cpp_interface.cc``.
+Please referto ``src/bigartm//srcmain.cc`` for usage examples,
+and ask questions at `bigartm-users <https://groups.google.com/group/bigartm-users>`_
+or open a new `issue <https://github.com/bigartm/bigartm/issues>`_.
+
+.. code-block:: bash
+
+  class MasterModel {
+   public:
+    explicit MasterModel(const MasterModelConfig& config);
+    ~MasterModel();
+
+    int id() const { return id_; }
+    MasterComponentInfo info() const;  // misc. diagnostics information
+
+    const MasterModelConfig& config() const { return config_; }
+    MasterModelConfig* mutable_config() { return &config_; }
+    void Reconfigure();  // apply MasterModel::config()
+
+    // Operations to work with dictionary through disk
+    void GatherDictionary(const GatherDictionaryArgs& args);
+    void FilterDictionary(const FilterDictionaryArgs& args);
+    void ImportDictionary(const ImportDictionaryArgs& args);
+    void ExportDictionary(const ExportDictionaryArgs& args);
+    void DisposeDictionary(const std::string& dictionary_name);
+
+    // Operations to work with dictinoary through memory
+    void CreateDictionary(const DictionaryData& args);
+    DictionaryData GetDictionary(const GetDictionaryArgs& args);
+
+    // Operatinos to work with batches through memory
+    void ImportBatches(const ImportBatchesArgs& args);
+    void DisposeBatch(const std::string& batch_name);
+
+    // Operations to work with model
+    void InitializeModel(const InitializeModelArgs& args);
+    void ImportModel(const ImportModelArgs& args);
+    void ExportModel(const ExportModelArgs& args);
+    void FitOnlineModel(const FitOnlineMasterModelArgs& args);
+    void FitOfflineModel(const FitOfflineMasterModelArgs& args);
+
+    // Apply model to batches
+    ThetaMatrix Transform(const TransformMasterModelArgs& args);
+    ThetaMatrix Transform(const TransformMasterModelArgs& args, Matrix* matrix);
+
+    // Retrieve operations
+    TopicModel GetTopicModel(const GetTopicModelArgs& args);
+    TopicModel GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix);
+    ThetaMatrix GetThetaMatrix(const GetThetaMatrixArgs& args);
+    ThetaMatrix GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix);
+
+    // Retrieve scores
+    ScoreData GetScore(const GetScoreValueArgs& args);
+    template <typename T>
+    T GetScoreAs(const GetScoreValueArgs& args);
+
+.. warning::
+
+   What follows below in this page is really outdated.
+
 
 In addition to this page consider to look at :doc:`c_interface`, 
 :doc:`python_interface` or :doc:`messages`.
