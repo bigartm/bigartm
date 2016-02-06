@@ -1,0 +1,145 @@
+BigARTM v0.7.4 Release notes
+============================
+
+BigARTM v0.7.4 is a big release that includes major rework of dictionaries and `MasterModel <https://github.com/bigartm/bigartm/issues/325>`_.
+
+`bigartm/stable` branch
+-----------------------
+
+Up until now BigARTM has only one ``master`` branch, containing the latest code.
+This branch potentially includes untested code and unfinished features.
+We are now introducing ``bigartm/stable`` branch, and encourage all users to
+stop using ``master`` and start fetching from ``stable``.
+``stable`` branch will be lagging behind ``master``, and moved forward to ``master``
+as soon as mainteiners decide that it is ready.
+At the same point we will introduce a new tag (something like `v0.7.3 <https://github.com/bigartm/bigartm/tree/v0.7.3>`_ )
+and produce a new release for Windows.
+In addition, ``stable`` branch also might receive small urgent fixes in between releases,
+typically to address critical issues reported by our users.
+Such fixes will be also included in ``master`` branch.
+
+
+MasterModel
+-----------
+
+MasterModel is a new set of low-level APIs that allow users of C-interface to infer models and apply them to new data.
+The APIs are ``ArtmCreateMasterModel``, ``ArtmReconfigureMasterModel``, ``ArtmFitOfflineMasterModel``, ``ArtmFitOnlineMasterModel`` and ``ArtmRequestTransformMasterModel``,
+togehter with corresponding protobuf messages. For a usage example see ``src/bigartm/srcmain.cc``.
+
+This APIs should be easy to understand for the users who are familiar with Python interface. Basically, we take ``ARTM`` class in Python,
+and push it down to the core.
+Now users can create their model via ``MasterModelConfig`` (protobuf message),
+fit via ``ArtmFitOfflineMasterModel`` or ``ArtmFitOnlineMasterModel``, and apply to the new data via ``ArtmRequestTransformMasterModel``.
+This means that the user no longer has to orchestrate low-level building blocks such as ``ArtmProcessBatches``, ``ArtmMergeModel``, ``ArtmRegularizeModel`` and ``ArtmNormalizeModel``.
+
+``ArtmCreateMasterModel`` is similar to ``ArtmCreateMasterComponent`` in a sence that it returns ``master_id``,
+which can be later passed to all other APIs. This mean that most APIs will continue working as before.
+This applies to ``ArtmRequestThetaMatrix``, ``ArtmRequestTopicModel``, ``ArtmRequestScore``, and many others.
+
+Rework of dictionaries
+----------------------
+
+Previous implementation of the dictionaries was really messy, and we are trying to clean this up. This effort is not finished yet, however we decided to release current version because
+it is a major improvement comparing to the previous version.
+At the low-level (``c_interface``), we now have the following methods to work with dictionaries:
+
+*  ``ArtmGatherDictionary`` collects a dictionary based on a folder with batches,
+*  ``ArtmFilterDictionary`` filter tokens from the dictinoary based on their term frequency or document frequency,
+*  ``ArtmCreateDictionary`` creates a dictionary from a custom ``DictionaryData`` object (protobuf message),
+*  ``ArtmRequestDictionary`` retrieves a dictionary as ``DictionaryData`` object (protobuf message),
+*  ``ArtmDisposeDictionary`` deletes dictionary object from BigARTM,
+*  ``ArtmImportDictionary`` import dictionary from binary file,
+*  ``ArtmExportDictionary`` expor tdictionary into binary file.
+
+All dictionaries are identified by a string ID (``dictionary_name``).
+Dictionaries can be used to initialize the model, in regularizers or in scores.
+
+Note that ``ArtmImportDictionary`` and ``ArtmExportDictionary`` now uses a different format.
+For this reason we require that all imported or exported files end with ``.dict`` extension.
+This limitation is only introduced to make users aware of the change in binary format.
+
+.. warning::
+
+   Please note that you have to re-generate all dictionaries, created in previous BigARTM versions.
+   To force this limitation we decided that
+   ``ArtmImportDictionary`` and ``ArtmExportDictionary`` will require 
+   all imported or exported files end with ``.dict`` extension.
+   This limitation is only introduced to make users aware of the change in binary format.
+   
+   Please note that in the next version (`BigARTM v0.8.0`) we are planing to break dictionary format once again.
+   This is because we will introduce ``boost.serialize`` library for all import and export methods.
+   From that point ``boost.serialize`` library will allow us to upgrade formats without breaking backwards compatibility.
+
+The following example illustrate how to work with new dictionaries from Python.
+
+.. code-block:: bash
+
+   # Parse collection in UCI format from D:\Datasets\docword.kos.txt and D:\Datasets\vocab.kos.txt 
+   # and store the resulting batches into D:\Datasets\kos_batches
+   batch_vectorizer = artm.BatchVectorizer(data_format='bow_uci',
+                                           data_path=r'D:\Datasets',
+                                           collection_name='kos',
+                                           target_folder=r'D:\Datasets\kos_batches')
+
+   # Initialize the model. For now dictionaries exist within the model, btu we will address this in the future.
+   model = artm.ARTM(...)
+
+   
+   # Gather dictionary named `dict` from batches.
+   # The resulting dictionary will contain all distinct tokens that occur in those batches, and their term frequencies
+   model.gather_dictionary("dict", "D:\Datasets\kos_batches")
+   
+   # Filter dictionary by removing tokens with too high or too low term frequency
+   # Save the result as `my_filtered_dictionary`"
+   model.filter_dictionary(dictionary_name='dict', dictionary_target_name='filtered_dict', min_df=10, max_df_rate=0.4)
+   
+   # Initialize model from `diltered_dict`
+   model.initialize("filtered_dict")
+
+   # Import/export functionality
+   model.save_dictionary("filtered_dict", "D:\Datasets\kos.dict")
+   model.load_dictionary("filtered_dict2",  "D:\Datasets\kos.dict")
+   
+Changes in the infrastructure
+-----------------------------
+
+* Static linkage for bigartm command-line executable on Linux.
+  To disable static linkage use ``cmake -DBUILD_STATIC_BIGARTM=OFF ..``
+* Install BigARTM python API via ``python setup.py install``
+
+
+  
+Changes in core functionality
+-----------------------------
+
+* Custom transform function for KL-div regularizers
+* Ability to initialize the model with custom seed
+* ``TopicSelection`` regularizers
+* ``PeakMemory`` score (Windows only)
+* Different options to name batches when parsing collection
+  (``GUID`` as today, and ``CODE`` for sequential numbering)
+
+Changes in Python API
+---------------------
+
+* ``ARTM.dispose()`` method for managing native memory
+* ``ARTM.get_info()`` method to retrieve internal state
+* Performance fixes
+* Expose class prediction functionality
+
+Changes in C++ interface
+------------------------
+
+* Consume ``MasterModel`` APIs in C++ interface.
+  Going forward this is the only C++ interface that we will support.
+
+Changes in console interface
+----------------------------
+
+* Better options to work with dictionaries
+* ``--write-dictionary-readable`` to export dictionary
+* ``--force`` switch to let user overwrite existing files
+* ``--help`` generates much better examples
+* ``--model-v06`` to experiment with old APIs (``ArtmInvokeIteration`` / ``ArtmWaitIdle`` / ``ArtmSynchronizeModel``)
+* ``--write-scores`` switch to export scores into file
+* ``--time-limit`` option to time-box model inference(as an alternative to ``--passes`` switch)

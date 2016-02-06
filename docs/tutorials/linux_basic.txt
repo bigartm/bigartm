@@ -16,7 +16,7 @@ and build it via CMake as in the following script.
 
    sudo apt-get install git make cmake build-essential libboost-all-dev
    cd ~
-   git clone https://github.com/bigartm/bigartm.git
+   git clone --branch=stable https://github.com/bigartm/bigartm.git
    cd bigartm
    mkdir build && cd build
    cmake ..
