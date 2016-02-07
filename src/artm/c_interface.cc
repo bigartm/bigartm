@@ -449,6 +449,17 @@ int ArtmDisposeBatch(int master_id, const char* name) {
 // REQUEST routines (public ARTM interface)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+template<typename ResultT>
+int ArtmRequest(int master_id) {
+  try {
+    ResultT result;
+    master_component(master_id)->Request(&result);
+    ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
+    result.SerializeToString(last_message());
+    return last_message()->size();
+  } CATCH_EXCEPTIONS;
+}
+
 template<typename ArgsT, typename ResultT>
 int ArtmRequest(int master_id, int length, const char* args_blob) {
   try {
@@ -504,6 +515,10 @@ int ArtmRequestProcessBatches(int master_id, int length, const char* args) {
 int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* args) {
   return ArtmRequestExternal< ::artm::ProcessBatchesArgs,
                               ::artm::ProcessBatchesResult>(master_id, length, args);
+}
+
+int ArtmRequestMasterModelConfig(int master_id) {
+  return ArtmRequest< ::artm::MasterModelConfig>(master_id);
 }
 
 int ArtmRequestThetaMatrix(int master_id, int length, const char* args) {

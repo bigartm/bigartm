@@ -41,6 +41,7 @@ class MasterComponent : boost::noncopyable {
   std::shared_ptr<MasterComponent> Duplicate() const;
 
   // REQUEST functionality
+  void Request(::artm::MasterModelConfig* result);
   void Request(const GetTopicModelArgs& args, ::artm::TopicModel* result);
   void Request(const GetTopicModelArgs& args, ::artm::TopicModel* result, std::string* external);
   void Request(const GetThetaMatrixArgs& args, ThetaMatrix* result);

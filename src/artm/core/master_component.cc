@@ -200,6 +200,15 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   LOG(INFO) << "Import completed, token_size = " << token_size;
 }
 
+void MasterComponent::Request(::artm::MasterModelConfig* result) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
+
+  result->CopyFrom(*config);
+}
+
 void MasterComponent::Request(const GetDictionaryArgs& args, DictionaryData* result) {
   std::shared_ptr<Dictionary> dict_ptr = instance_->dictionaries()->get(args.dictionary_name());
   if (dict_ptr == nullptr)
@@ -234,7 +243,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 
   std::ofstream fout(args.file_name(), std::ofstream::binary);
   if (!fout.is_open())
-    BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + args.file_name()));
+    BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create file " + args.file_name()));
 
   std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(args.model_name());
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(args.model_name());
@@ -345,7 +354,7 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
   instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
-
+// ToDo(sashafrey): do not require args.topic_name when we are initializing master model
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   // temp code to be removed with ModelConfig and old dictionaries
   instance_->merger()->InitializeModel(args);
@@ -708,6 +717,8 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args,
   HandleExternalThetaMatrixRequest(result, external);
 }
 
+// ToDo(sashafrey): what should be the default cache policy for TransformMasterModel?
+//                  Currently it saves the result in the cache. The result is then empty...
 void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::ThetaMatrix* result) {
   std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
   if (config == nullptr)
@@ -728,6 +739,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   if (config->has_use_sparse_bow()) process_batches_args.set_use_sparse_bow(config->use_sparse_bow());
   if (config->has_reuse_theta()) process_batches_args.set_reuse_theta(config->reuse_theta());
 
+  process_batches_args.set_reset_scores(true);
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
   process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
   process_batches_args.set_theta_matrix_type((::artm::ProcessBatchesArgs_ThetaMatrixType)args.theta_matrix_type());
