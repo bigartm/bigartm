@@ -33,18 +33,14 @@ class Helpers {
 
 class TestMother {
  public:
-  TestMother() : nTopics(10), regularizer_name("regularizer1") {}
-  ModelConfig GenerateModelConfig() const;
+  TestMother() : regularizer_name("regularizer1") {}
   RegularizerConfig GenerateRegularizerConfig() const;
-  static void GenerateBatches(int batches_size, int nTokens,
-                              std::vector<std::shared_ptr< ::artm::Batch>>* batches,
-                              ::artm::DictionaryData* dictionary = nullptr);
+  static MasterModelConfig GenerateMasterModelConfig(int nTopics);
+  static std::vector<std::shared_ptr< ::artm::Batch>> GenerateBatches(
+    int batches_size, int nTokens, ::artm::DictionaryData* dictionary = nullptr);
   static void GenerateBatches(int batches_size, int nTokens, const std::string& target_folder);
-  static void GenerateBatches(int batches_size, int nTokens, ::artm::ImportBatchesArgs* args,
-                              ::artm::DictionaryData* dictionary = nullptr);
 
  private:
-  const int nTopics;
   const std::string regularizer_name;
 };
 

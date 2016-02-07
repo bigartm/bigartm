@@ -38,6 +38,7 @@ src/artm/score/theta_snippet.cc
 src/artm/score/topic_kernel.cc
 src/artm/score/topic_mass_phi.cc
 src/artm/utility/blas.cc
+src/artm_tests/api.cc
 src/artm_tests/boost_thread_test.cc
 src/artm_tests/blas_test.cc
 src/artm_tests/cache_manager_test.cc
@@ -81,6 +82,7 @@ src/artm/core/template_manager.h
 src/artm/core/thread_safe_holder.h
 src/artm/core/topic_model.h
 src/artm/core/transform_function.h
+src/artm_tests/api.h
 src/artm_tests/test_mother.h
 src/artm/regularizer/decorrelator_phi.h
 src/artm/regularizer/multilanguage_phi.h
