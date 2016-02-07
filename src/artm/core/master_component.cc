@@ -72,7 +72,7 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
   master_component_config.set_processors_count(config.threads());
   master_component_config.mutable_score_config()->CopyFrom(config.score_config());
   if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
-  if (config.reuse_theta()) master_component_config.set_cache_theta(true);
+  if (config.reuse_theta() || config.cache_theta()) master_component_config.set_cache_theta(true);
   if (config.use_v06_api() && !reconfigure) {
     ScoreConfig* items_processed = master_component_config.add_score_config();
     items_processed->set_type(ScoreConfig_Type_ItemsProcessed);
@@ -80,7 +80,10 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
     items_processed->set_config(::artm::ItemsProcessedScoreConfig().SerializeAsString());
   }
 
-  instance_ = std::make_shared<Instance>(master_component_config);
+  if (!reconfigure)
+    instance_ = std::make_shared<Instance>(master_component_config);
+  else
+    instance_->Reconfigure(master_component_config);
   master_model_config_.set(std::make_shared<MasterModelConfig>(config));
 
   if (reconfigure) {  // remove all regularizers
@@ -359,7 +362,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
-  auto data = Dictionary::Gather(args);
+  auto data = Dictionary::Gather(args, *instance_->batches());
   CreateDictionary(*(data.first));
   if (data.second->cooc_first_index_size() > 0)
     AppendDictionary(*(data.second));

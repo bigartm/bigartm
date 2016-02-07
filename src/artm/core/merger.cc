@@ -76,16 +76,18 @@ void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
 
 void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
   auto ttm = this->GetLatestTopicModel(topic_model.name());
-  if (ttm == nullptr) {
-    std::stringstream ss;
-    ss << "Model '" << topic_model.name();
-    ss << "' can not be overwritten because it has no ModelConfig.";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  if (ttm != nullptr) {
+    // Create old-style model
+    auto model_increment = std::make_shared<ModelIncrement>();
+    model_increment->mutable_topic_model()->CopyFrom(topic_model);
+    merger_queue_->push(model_increment);
+    return;
   }
 
-  auto model_increment = std::make_shared<ModelIncrement>();
-  model_increment->mutable_topic_model()->CopyFrom(topic_model);
-  merger_queue_->push(model_increment);
+  // Create new-style model
+  auto target = std::make_shared<DensePhiMatrix>(topic_model.name(), topic_model.topic_name());
+  PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, target.get());
+  SetPhiMatrix(topic_model.name(), target);
 }
 
 void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {

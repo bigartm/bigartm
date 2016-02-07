@@ -8334,6 +8334,22 @@ class GatherDictionaryArgs : public ::google::protobuf::Message {
   inline bool symmetric_cooc_values() const;
   inline void set_symmetric_cooc_values(bool value);
 
+  // repeated string batch_path = 6;
+  inline int batch_path_size() const;
+  inline void clear_batch_path();
+  static const int kBatchPathFieldNumber = 6;
+  inline const ::std::string& batch_path(int index) const;
+  inline ::std::string* mutable_batch_path(int index);
+  inline void set_batch_path(int index, const ::std::string& value);
+  inline void set_batch_path(int index, const char* value);
+  inline void set_batch_path(int index, const char* value, size_t size);
+  inline ::std::string* add_batch_path();
+  inline void add_batch_path(const ::std::string& value);
+  inline void add_batch_path(const char* value);
+  inline void add_batch_path(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_path() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_path();
+
   // @@protoc_insertion_point(class_scope:artm.GatherDictionaryArgs)
  private:
   inline void set_has_dictionary_target_name();
@@ -8353,10 +8369,11 @@ class GatherDictionaryArgs : public ::google::protobuf::Message {
   ::std::string* data_path_;
   ::std::string* cooc_file_path_;
   ::std::string* vocab_file_path_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> batch_path_;
   bool symmetric_cooc_values_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12057,6 +12074,13 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline bool use_v06_api() const;
   inline void set_use_v06_api(bool value);
 
+  // optional bool cache_theta = 15 [default = false];
+  inline bool has_cache_theta() const;
+  inline void clear_cache_theta();
+  static const int kCacheThetaFieldNumber = 15;
+  inline bool cache_theta() const;
+  inline void set_cache_theta(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.MasterModelConfig)
  private:
   inline void set_has_threads();
@@ -12077,6 +12101,8 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline void clear_has_disk_cache_path();
   inline void set_has_use_v06_api();
   inline void clear_has_use_v06_api();
+  inline void set_has_cache_theta();
+  inline void clear_has_cache_theta();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -12090,14 +12116,15 @@ class MasterModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 inner_iterations_count_;
   ::std::string* nwt_name_;
   static ::std::string* _default_nwt_name_;
-  ::std::string* disk_cache_path_;
   bool reuse_theta_;
   bool opt_for_avx_;
   bool use_sparse_bow_;
   bool use_v06_api_;
+  bool cache_theta_;
+  ::std::string* disk_cache_path_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -22553,6 +22580,50 @@ inline void GatherDictionaryArgs::set_symmetric_cooc_values(bool value) {
   symmetric_cooc_values_ = value;
 }
 
+// repeated string batch_path = 6;
+inline int GatherDictionaryArgs::batch_path_size() const {
+  return batch_path_.size();
+}
+inline void GatherDictionaryArgs::clear_batch_path() {
+  batch_path_.Clear();
+}
+inline const ::std::string& GatherDictionaryArgs::batch_path(int index) const {
+  return batch_path_.Get(index);
+}
+inline ::std::string* GatherDictionaryArgs::mutable_batch_path(int index) {
+  return batch_path_.Mutable(index);
+}
+inline void GatherDictionaryArgs::set_batch_path(int index, const ::std::string& value) {
+  batch_path_.Mutable(index)->assign(value);
+}
+inline void GatherDictionaryArgs::set_batch_path(int index, const char* value) {
+  batch_path_.Mutable(index)->assign(value);
+}
+inline void GatherDictionaryArgs::set_batch_path(int index, const char* value, size_t size) {
+  batch_path_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GatherDictionaryArgs::add_batch_path() {
+  return batch_path_.Add();
+}
+inline void GatherDictionaryArgs::add_batch_path(const ::std::string& value) {
+  batch_path_.Add()->assign(value);
+}
+inline void GatherDictionaryArgs::add_batch_path(const char* value) {
+  batch_path_.Add()->assign(value);
+}
+inline void GatherDictionaryArgs::add_batch_path(const char* value, size_t size) {
+  batch_path_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+GatherDictionaryArgs::batch_path() const {
+  return batch_path_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+GatherDictionaryArgs::mutable_batch_path() {
+  return &batch_path_;
+}
+
 // -------------------------------------------------------------------
 
 // GetDictionaryArgs
@@ -27411,6 +27482,28 @@ inline bool MasterModelConfig::use_v06_api() const {
 inline void MasterModelConfig::set_use_v06_api(bool value) {
   set_has_use_v06_api();
   use_v06_api_ = value;
+}
+
+// optional bool cache_theta = 15 [default = false];
+inline bool MasterModelConfig::has_cache_theta() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+inline void MasterModelConfig::set_has_cache_theta() {
+  _has_bits_[0] |= 0x00004000u;
+}
+inline void MasterModelConfig::clear_has_cache_theta() {
+  _has_bits_[0] &= ~0x00004000u;
+}
+inline void MasterModelConfig::clear_cache_theta() {
+  cache_theta_ = false;
+  clear_has_cache_theta();
+}
+inline bool MasterModelConfig::cache_theta() const {
+  return cache_theta_;
+}
+inline void MasterModelConfig::set_cache_theta(bool value) {
+  set_has_cache_theta();
+  cache_theta_ = value;
 }
 
 // -------------------------------------------------------------------

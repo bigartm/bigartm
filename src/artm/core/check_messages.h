@@ -246,9 +246,6 @@ inline std::string DescribeErrors(const ::artm::MasterModelConfig& message) {
   if (message.class_weight_size() != message.class_id_size())
     ss << "Length mismatch in fields MasterModelConfig.class_id and MasterModelConfig.class_weight; ";
 
-  if (!message.has_pwt_name() || message.pwt_name().empty())
-    ss << "Field MasterModelConfig.pwt_name must not be empty; ";
-
   if (message.inner_iterations_count() < 0)
     ss << "Field MasterModelConfig.inner_iterations_count must be non-negative; ";
 
@@ -392,8 +389,8 @@ inline std::string DescribeErrors(const ::artm::GatherDictionaryArgs& message) {
   if (!message.has_dictionary_target_name())
     ss << "GatherDictionaryArgs has no target dictionary name; ";
 
-  if (!message.has_data_path())
-    ss << "GatherDictionaryArgs has no data_path to batches folder; ";
+  if (!message.has_data_path() && (message.batch_path_size() == 0))
+    ss << "GatherDictionaryArgs has neither batch_path nor data_path set; ";
 
   return ss.str();
 }
