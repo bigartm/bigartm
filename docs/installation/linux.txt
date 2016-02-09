@@ -1,0 +1,141 @@
+Installation for Linux and Mac OS-X users
+=========================================
+
+Currently there is no distribution package of BigARTM for Linux.
+BigARTM had been tested on several Linux OS, and it is known to work well,
+but you have to get the source code and compile it locally on your machine.
+
+System dependencies
+-------------------
+
+Building BigARTM requires the following components:
+
+    * `git <https://git-scm.org>`_ (any recent version) -- for obtaining source code;
+    * `cmake <https://cmake.org>`_ (at least of version 2.8), *make*,
+      *g++* or *clang* compiler with c++11 support,
+      `boost <boost.org>`_ (at least of version 1.40) --
+      for building library and binary executable;
+    * `python <https://python.org>`_ (version 2.7) --
+      for building Python API for BigARTM.
+
+To simplify things, you may type:
+
+* **On deb-based distributions**:
+  ``sudo apt-get install git make cmake build-essential libboost-all-dev``
+
+* **On rpm-based distributions**:
+  ``sudo yum install git make cmake gcc-c++ glibc-static libstdc++-static boost boost-static python``
+  (for Fedora 22 or higher use ``dnf`` instead of ``yum``) 
+
+
+Download sources and build
+--------------------------
+
+Clone the latest BigARTM code from our github repository,
+and build it via CMake as in the following script.
+
+.. code-block:: bash
+
+   cd ~
+   git clone --branch=stable https://github.com/bigartm/bigartm.git
+   cd bigartm
+   mkdir build && cd build
+   cmake ..
+   make
+
+**Note for Linux users:** By default building
+binary executable ``bigartm`` requiers static versions of Boost, C and C++ libraries.
+To alter it, run ``cmake`` command with option ``-DBUILD_STATIC_BIGARTM=OFF``.
+
+
+System-wide installation
+------------------------
+
+To install command-line utility, shared library module and Python interface for BigARTM,
+you can type:
+
+.. code-block:: bash
+
+   sudo make install
+
+Normally this will install:
+
+- ``bigartm`` utility into folder ``/usr/local/bin/``;
+- shared library ``libartm.so`` (``artm.dylib`` for Max OS-X)
+  into folder ``/usr/local/lib/``;
+- Python interface for BigARTM into Python-specific system directories, along
+  with necessary dependencies.
+
+If you want to alter target folders for binary and shared library objects,
+you may specify common prefix while running ``cmake`` command
+via option ``-DCMAKE_INSTALL_PREFIX=path_to_folder``.
+By default ``CMAKE_INSTALL_PREFIX=/usr/local/``.
+
+
+Configure BigARTM Python API
+----------------------------
+
+If you want to use only Python interface for BigARTM, you may run following commands:
+
+.. code-block:: bash
+
+   # Step 1 - install Google Protobuf as dependency
+   cd ~/bigartm/3rdparty/protobuf/python
+   sudo python setup.py install
+
+   # Step 2 - install Python interface for BigARTM
+   cd ~/bigartm/python
+   sudo python setup.py install
+
+   # Step 3 - point ARTM_SHARED_LIBRARY variable to libartm.so (libartm.dylib) location
+   export ARTM_SHARED_LIBRARY=~/bigartm/build/src/artm/libartm.so        # for linux
+   export ARTM_SHARED_LIBRARY=~/bigartm/build/src/artm/libartm.dylib     # for Mac OS X
+
+We strongly recommend system-wide installation as
+there is no need to keep BigARTM code after it, so you may safely
+remove folder ``~bigartm/``.
+
+Troubleshooting
+---------------
+
+While building BigARTM you can see lines similar to the following:
+
+.. code-block:: bash
+
+    Building python package protobuf 2.5.1-pre
+      File "/home/ubuntu/bigartm/3rdparty/protobuf/python/setup.py", line 52
+        print "Generating %s..." % output
+                                 ^
+    SyntaxError: Missing parentheses in call to 'print'
+
+This error may happen during google protobuf installation.
+It indicates that you are using ``Python 3``, which is not supported by BigARTM.
+(see `this <http://stackoverflow.com/questions/826948/syntax-error-on-print-with-python-3>`_ 
+question on StackOverflow for more details on the error around `print`).
+Please use ``Python 2.7`` (e.g ``Python 2.7.11``) to workaround this issue.
+
+----------------
+
+Using BigARTM Python API you can encounter this error:
+
+.. code-block:: bash
+
+    Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "build/bdist.linux-x86_64/egg/artm/wrapper/api.py", line 19, in __init__
+    File "build/bdist.linux-x86_64/egg/artm/wrapper/api.py", line 53, in _load_cdll
+    OSError: libartm.so: cannot open shared object file: No such file or directory
+    Failed to load artm shared library. Try to add the location of `libartm.so` file into your LD_LIBRARY_PATH system variable, or to set ARTM_SHARED_LIBRARY - a specific system variable which may point to `libartm.so` file, including the full path. 
+ 
+This error indicates that BigARTM's python interface can not locate libartm.so (libartm.dylib) files.
+In such case type ``export ARTM_SHARED_LIBRARY=path_to_artm_shared_library``.
+
+BigARTM on Travis-CI
+--------------------
+
+To get a live usage example of BigARTM you may check BigARTM's
+`.travis.yml <https://raw.githubusercontent.com/bigartm/bigartm/master/.travis.yml>`_
+script and the latest `continuous integration build
+<https://travis-ci.org/bigartm/bigartm>`_.
+
+.. vim:ft=rst

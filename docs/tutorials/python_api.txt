@@ -1,0 +1,7 @@
+Running BigARTM from Python API
+===============================
+
+Refer to ARTM notebook 
+(`in Russian <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_RU.ipynb>`_
+or `in English <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb>`_),
+which describes high-level Python API of BigARTM.
