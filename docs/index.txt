@@ -44,6 +44,7 @@ Welcome to BigARTM's documentation!
    intro
    download
    formats
+   installation/index
    tutorials/index
    faq
    devguide

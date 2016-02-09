@@ -11,6 +11,7 @@ Tutorials
 .. toctree::
    :maxdepth: 2
 
-   windows_basic
-   linux_basic
    bigartm_cli
+   python_api
+
+.. vim:ft=rst

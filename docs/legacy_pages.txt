@@ -14,6 +14,8 @@ Legacy pages are kept to preserve existing user's links (favourites in browser, 
    :maxdepth: 2
 
    tutorials/typical_python_example
+   tutorials/linux_basic
+   tutorials/windows_basic
    stories/experiment02_artm
    stories/cloud_service
    ref/algorithm
