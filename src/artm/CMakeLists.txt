@@ -49,6 +49,7 @@ set(SRC_LIST
 	core/phi_matrix_operations.h
 	core/scores_merger.cc
 	core/scores_merger.h
+	core/serializer.h
 	core/sync_event.cc
 	core/sync_event.h
 	core/template_manager.h

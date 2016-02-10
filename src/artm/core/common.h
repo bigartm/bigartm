@@ -31,6 +31,7 @@ typedef std::string ClassId;
 
 struct Token {
  public:
+  Token() : keyword(), class_id(), hash_(0) {}  // Default constructor - used for serialization only
   Token(const ClassId& _class_id, const std::string& _keyword)
       : keyword(_keyword), class_id(_class_id),
         hash_(calcHash(_class_id, _keyword)) {}

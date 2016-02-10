@@ -21,6 +21,7 @@ typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionary
 
 class DictionaryEntry {
  public:
+  DictionaryEntry() { }  // Default constructor - used for serialization only
   DictionaryEntry(Token token, float value, float tf, float df)
     : token_(token), token_value_(value), token_tf_(tf), token_df_(df) { }
 
@@ -30,6 +31,9 @@ class DictionaryEntry {
   float token_df() const { return token_df_; }
 
  private:
+  template<class Archive>
+  void serialize(Archive& ar, ::artm::core::DictionaryEntry& obj, const unsigned int version);  // NOLINT
+
   Token token_;
   float token_value_;
   float token_tf_;

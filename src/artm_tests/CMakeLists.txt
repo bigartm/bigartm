@@ -15,6 +15,7 @@ set(SRC_LIST
 	multiple_classes_test.cc
 	regularizers_test.cc
 	repeatable_result_test.cc
+	serializer_test.cc
 	template_manager_test.cc
 	test_mother.cc
 	thread_safe_holder_test.cc
