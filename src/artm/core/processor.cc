@@ -959,6 +959,35 @@ void Processor::FindThetaMatrix(const Batch& batch,
   }
 }
 
+bool fillTokensInBatch(const PhiMatrix& phi_matrix, Batch* batch) {
+  if (batch->token_size() > 0)
+    return true;
+
+  // Verify that max token_id is compatible with topic model.
+  const int token_size = phi_matrix.token_size();
+  for (auto& item : batch->item()) {
+    for (auto& field : item.field()) {
+      for (int token_id : field.token_id()) {
+        if (token_id < 0 || token_id >= token_size) {
+          LOG(ERROR) << "Batch " << batch->id() << " is incompatible with model " << phi_matrix.model_name()
+                     << " (batch.token_size() = 0 && item.token_id >= phi_matrix.token_size())";
+          return false;
+        }
+      }
+    }
+  }
+
+  batch->mutable_token()->Reserve(token_size);
+  batch->mutable_class_id()->Reserve(token_size);
+  for (int token_index = 0; token_index < token_size; ++token_index) {
+    const Token& token = phi_matrix.token(token_index);
+    batch->add_token(token.keyword);
+    batch->add_class_id(token.class_id);
+  }
+
+  return true;
+}
+
 void Processor::ThreadFunction() {
   try {
     int total_processed_batches = 0;  // counter
@@ -1004,26 +1033,25 @@ void Processor::ThreadFunction() {
         }
       });
 
-      std::shared_ptr<Batch> batch_ptr;
-      if (part->has_batch_filename()) {
-        batch_ptr = batches_.get(part->batch_filename());
-        if (batch_ptr == nullptr) {
-          try {
-            CuckooWatch cuckoo2("LoadMessage", &cuckoo, kTimeLoggingThreshold);
-            batch_ptr.reset(new Batch());
-            ::artm::core::BatchHelpers::LoadMessage(part->batch_filename(), batch_ptr.get());
-          } catch (std::exception& ex) {
-            LOG(ERROR) << ex.what() << ", the batch will be skipped.";
-            continue;
+      Batch batch;
+      {
+        CuckooWatch cuckoo2("LoadMessage", &cuckoo, kTimeLoggingThreshold);
+        if (part->has_batch_filename()) {
+          auto mem_batch = batches_.get(part->batch_filename());
+          if (mem_batch != nullptr) {
+            batch.CopyFrom(*mem_batch);
+          } else {
+            try {
+              ::artm::core::BatchHelpers::LoadMessage(part->batch_filename(), &batch);
+            } catch (std::exception& ex) {
+              LOG(ERROR) << ex.what() << ", the batch will be skipped.";
+              continue;
+            }
           }
+        } else {  // part->has_batch_filename()
+          batch.CopyFrom(part->batch());
         }
       }
-
-      const Batch& batch = batch_ptr != nullptr ? *batch_ptr : part->batch();
-
-      if (batch.class_id_size() != batch.token_size())
-        BOOST_THROW_EXCEPTION(InternalError(
-            "batch.class_id_size() != batch.token_size()"));
 
       std::shared_ptr<InstanceSchema> schema = schema_.get();
       const MasterComponentConfig& master_config = schema->config();
@@ -1050,6 +1078,12 @@ void Processor::ThreadFunction() {
           continue;
         }
         const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
+
+        if (batch.token_size() == 0) {
+          if (!fillTokensInBatch(p_wt, &batch)) {
+            continue;
+          }
+        }
 
         int topic_size = p_wt.topic_size();
         if (topic_size != model_config.topics_count())

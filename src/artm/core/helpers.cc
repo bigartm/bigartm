@@ -151,6 +151,11 @@ boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,
 }
 
 void BatchHelpers::CompactBatch(const Batch& batch, Batch* compacted_batch) {
+  if (batch.token_size() == 0) {
+    compacted_batch->CopyFrom(batch);
+    return;
+  }
+
   if (batch.has_description()) compacted_batch->set_description(batch.description());
   if (batch.has_id()) compacted_batch->set_id(batch.id());
 

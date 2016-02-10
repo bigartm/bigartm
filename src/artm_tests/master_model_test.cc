@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "boost/filesystem.hpp"
+
 #include "gtest/gtest.h"
 
 #include "artm/cpp_interface.h"
@@ -9,9 +11,7 @@
 
 #include "artm_tests/test_mother.h"
 
-// To run this particular test:
-// artm_tests.exe --gtest_filter=MasterModel.Basic
-TEST(MasterModel, Basic) {
+void runBasicTest(bool skip_batch_dict) {
   // Configure MasterModel
   ::artm::MasterModelConfig config;
   config.set_threads(2);
@@ -46,6 +46,30 @@ TEST(MasterModel, Basic) {
   ::artm::DictionaryData dictionary_data;
   ::artm::test::TestMother::GenerateBatches(/*nBatches =*/ 20, /* nTokens =*/ 30,
                                             &import_batches_args, &dictionary_data);
+
+  if (skip_batch_dict) {
+    std::string target_folder = artm::test::Helpers::getUniqueString();
+    for (int i = 0; i < import_batches_args.batch_size(); ++i) {
+      ::artm::Batch* batch = import_batches_args.mutable_batch(i);
+      batch->clear_class_id();
+      batch->clear_token();  // cast tokens away!!!
+      artm::SaveBatch(*batch, target_folder);
+    }
+
+    try {
+      ::artm::GatherDictionaryArgs gather_args;
+      gather_args.set_dictionary_target_name("tmp_dict");
+      gather_args.set_data_path(target_folder);
+      master_model.GatherDictionary(gather_args);
+      ASSERT_TRUE(false);  // exception expected because batches have no tokens
+    }
+    catch (const ::artm::InvalidOperationException& ex) {
+    }
+
+    try { boost::filesystem::remove_all(target_folder); }
+    catch (...) {}
+  }
+
   master_model.ImportBatches(import_batches_args);
 
   // Create dictionary
@@ -101,4 +125,16 @@ TEST(MasterModel, Basic) {
       ASSERT_APPROX_EQ(perplexity_score.value(), expected[pass]);
     }
   }
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=MasterModel.Basic
+TEST(MasterModel, Basic) {
+  runBasicTest(/*skip_batch_dict=*/ false);
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=MasterModel.SkipBatchDict
+TEST(MasterModel, SkipBatchDict) {
+  runBasicTest(/*skip_batch_dict=*/ true);
 }

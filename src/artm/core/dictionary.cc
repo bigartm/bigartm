@@ -196,6 +196,10 @@ Dictionary::Gather(const GatherDictionaryArgs& args) {
         continue;
     }
 
+    if (batch_ptr->token_size() == 0)
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "Dictionary::Gather() can not process batches with empty Batch.token field."));
+
     const Batch& batch = *batch_ptr;
 
     std::vector<float> token_df(batch.token_size(), 0);

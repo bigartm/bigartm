@@ -167,7 +167,13 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
     return ss.str();
   }
 
-  if (message.class_id_size() != message.token_size()) {
+  const bool has_tokens = (message.token_size() > 0);
+  if (!has_tokens && (message.class_id_size() > 0)) {
+    ss << "Empty Batch.token require that Batch.class_id must also be empty, batch.id = " << message.id();
+    return ss.str();
+  }
+
+  if (has_tokens && (message.class_id_size() != message.token_size())) {
     ss << "Length mismatch in fields Batch.class_id and Batch.token, batch.id = " << message.id();
     return ss.str();
   }
@@ -184,9 +190,9 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
         break;
       }
 
-      for (int token_index = 0; token_index < field.token_count_size(); token_index++) {
+      for (int token_index = 0; token_index < field.token_id_size(); token_index++) {
         int token_id = field.token_id(token_index);
-        if (token_id < 0 || token_id >= message.token_size()) {
+        if ((token_id < 0) || (has_tokens && (token_id >= message.token_size()))) {
           ss << "Value " << token_id << " in Batch.Item(" << item_id
              << ").token_id is negative or exceeds Batch.token_size";
           return ss.str();
