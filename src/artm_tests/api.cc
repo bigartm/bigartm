@@ -90,6 +90,10 @@ void Api::OverwriteModel(const TopicModel& args) {
   ArtmExecute(master_model_.id(), args, ArtmOverwriteTopicModel);
 }
 
+int Api::Duplicate(const DuplicateMasterComponentArgs& args) {
+  return ArtmExecute(master_model_.id(), args, ArtmDuplicateMasterComponent);
+}
+
 ::artm::FitOfflineMasterModelArgs Api::Initialize(const std::vector<std::shared_ptr< ::artm::Batch> >& batches,
                                                   ::artm::ImportBatchesArgs* import_batches_args,
                                                   ::artm::InitializeModelArgs* initialize_model_args) {

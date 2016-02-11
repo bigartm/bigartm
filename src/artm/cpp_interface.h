@@ -80,14 +80,14 @@ class Matrix {
 class MasterModel {
  public:
   explicit MasterModel(const MasterModelConfig& config);
+  explicit MasterModel(int id);
   ~MasterModel();
 
   int id() const { return id_; }
   MasterComponentInfo info() const;  // misc. diagnostics information
 
-  const MasterModelConfig& config() const { return config_; }
-  MasterModelConfig* mutable_config() { return &config_; }
-  void Reconfigure();  // apply MasterModel::config()
+  MasterModelConfig config() const;
+  void Reconfigure(const MasterModelConfig& config);
 
   // Operations to work with dictionary through disk
   void GatherDictionary(const GatherDictionaryArgs& args);
@@ -111,6 +111,7 @@ class MasterModel {
   void ExportModel(const ExportModelArgs& args);
   void FitOnlineModel(const FitOnlineMasterModelArgs& args);
   void FitOfflineModel(const FitOfflineMasterModelArgs& args);
+  void DisposeModel(const std::string& model_name);
 
   // Apply model to batches
   ThetaMatrix Transform(const TransformMasterModelArgs& args);
@@ -133,8 +134,7 @@ class MasterModel {
 
  private:
   int id_;
-  MasterModelConfig config_;
-
+  bool is_weak_ref_;
   MasterModel(const MasterModel& rhs);
   MasterModelConfig& operator=(const MasterModel&);
 };

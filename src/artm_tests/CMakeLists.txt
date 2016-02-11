@@ -10,7 +10,7 @@ set(SRC_LIST
 	boost_thread_test.cc
 	cache_manager_test.cc
 	collection_parser_test.cc
-	#cpp_interface_test.cc
+	cpp_interface_test.cc
 	instance_test.cc
 	master_model_test.cc
 	#multiple_classes_test.cc

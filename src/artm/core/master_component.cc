@@ -757,6 +757,8 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args,
   HandleExternalThetaMatrixRequest(result, external);
 }
 
+// ToDo(sashafrey): what should be the default cache policy for TransformMasterModel?
+//                  Currently it saves the result in the cache. The result is then empty...
 void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::ThetaMatrix* result) {
   std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
   if (config == nullptr)

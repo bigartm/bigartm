@@ -62,6 +62,19 @@ int ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
   return HandleErrorCode(func(master_id, blob.size(), StringAsArray(&blob)));
 }
 
+template<typename ResultT, typename FuncT>
+ResultT ArtmRequest(int master_id, FuncT func) {
+  int length = func(master_id);
+
+  std::string result_blob;
+  result_blob.resize(length);
+  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&result_blob)));
+
+  ResultT result;
+  result.ParseFromString(result_blob);
+  return result;
+}
+
 template<typename ResultT, typename ArgsT, typename FuncT>
 ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
   int length = ArtmExecute(master_id, args, func);
@@ -108,21 +121,31 @@ void ConfigureLogging(const ConfigureLoggingArgs& args) {
 // MasterModel implementation
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-MasterModel::MasterModel(const MasterModelConfig& config) : id_(0), config_(config) {
+MasterModel::MasterModel(const MasterModelConfig& config) : id_(0), is_weak_ref_(false) {
   id_ = ArtmExecute(config, ArtmCreateMasterModel);
 }
 
+MasterModel::MasterModel(int id) : id_(id), is_weak_ref_(true) {
+}
+
 MasterModel::~MasterModel() {
+  if (is_weak_ref_)
+    return;
+
   ArtmDisposeMasterComponent(id_);
 }
 
-void MasterModel::Reconfigure() {
-  ArtmExecute(id_, config_, ArtmReconfigureMasterModel);
+MasterModelConfig MasterModel::config() const {
+  return ArtmRequest< ::artm::MasterModelConfig>(id_, ArtmRequestMasterModelConfig);
+}
+
+void MasterModel::Reconfigure(const MasterModelConfig& config) {
+  ArtmExecute(id_, config, ArtmReconfigureMasterModel);
 }
 
 TopicModel MasterModel::GetTopicModel() {
   GetTopicModelArgs args;
-  args.set_model_name(config_.pwt_name());
+  args.set_model_name(config().pwt_name());
   return GetTopicModel(args);
 }
 
@@ -132,7 +155,7 @@ TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args) {
 
 TopicModel MasterModel::GetTopicModel(Matrix* matrix) {
   GetTopicModelArgs args;
-  args.set_model_name(config_.pwt_name());
+  args.set_model_name(config().pwt_name());
   return GetTopicModel(args, matrix);
 }
 
@@ -145,7 +168,7 @@ TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args, Matrix* mat
 
 ThetaMatrix MasterModel::GetThetaMatrix() {
   GetThetaMatrixArgs args;
-  args.set_model_name(config_.pwt_name());
+  args.set_model_name(config().pwt_name());
   return GetThetaMatrix(args);
 }
 
@@ -155,7 +178,7 @@ ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args) {
 
 ThetaMatrix MasterModel::GetThetaMatrix(Matrix* matrix) {
   GetThetaMatrixArgs args;
-  args.set_model_name(config_.pwt_name());
+  args.set_model_name(config().pwt_name());
   return GetThetaMatrix(args, matrix);
 }
 
@@ -201,6 +224,10 @@ void MasterModel::CreateDictionary(const DictionaryData& args) {
 
 void MasterModel::DisposeDictionary(const std::string& dictionary_name) {
   HandleErrorCode(ArtmDisposeDictionary(id_, dictionary_name.c_str()));
+}
+
+void MasterModel::DisposeModel(const std::string& model_name) {
+  HandleErrorCode(ArtmDisposeModel(id_, model_name.c_str()));
 }
 
 void MasterModel::ImportDictionary(const ImportDictionaryArgs& args) {

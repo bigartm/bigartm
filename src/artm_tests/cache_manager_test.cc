@@ -45,8 +45,9 @@ void RunTest(bool disk_cache) {
   ::artm::ThetaMatrix theta1 = master_component.GetThetaMatrix();
   EXPECT_EQ(theta1.topics_count(), nTopics);
   EXPECT_GE(theta1.item_id_size(), 1);
-  master_component.mutable_config()->set_inner_iterations_count(0);
-  master_component.Reconfigure();
+  auto config = master_component.config();
+  config.set_inner_iterations_count(0);
+  master_component.Reconfigure(config);
   master_component.FitOfflineModel(fit_offline_args);
 
   ::artm::ThetaMatrix theta2 = master_component.GetThetaMatrix();
