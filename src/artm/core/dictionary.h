@@ -47,7 +47,7 @@ class Dictionary {
                      ThreadSafeDictionaryCollection* dictionaries);
 
   static std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
-    Gather(const GatherDictionaryArgs& args);
+    Gather(const GatherDictionaryArgs& args, const ThreadSafeCollectionHolder<std::string, Batch>& mem_batches);
 
   static std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
     Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollection* dictionaries);

@@ -70,6 +70,8 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestTransformMasterModelExternal(int master_id, int length,
                                                          const char* transform_master_model_args);
 
+  DLL_PUBLIC int ArtmRequestMasterModelConfig(int master_id);
+
   DLL_PUBLIC int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* get_theta_args);
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
