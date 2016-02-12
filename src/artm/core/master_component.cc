@@ -1143,6 +1143,21 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
 
+  if (args.batch_filename_size() == 0) {
+    // Default to processing all in-memory batches
+    auto batch_names = instance_->batches()->keys();
+    if (batch_names.empty()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "FitOfflineMasterModelArgs.batch_filename is empty. "
+        "Populate this field or provide batches via ArtmImportBatches API"));
+    }
+
+    FitOfflineMasterModelArgs* mutable_args = const_cast<FitOfflineMasterModelArgs*>(&args);
+    for (auto& batch_name : batch_names)
+      mutable_args->add_batch_filename(batch_name);
+    FixMessage(mutable_args);
+  }
+
   ArtmExecutor artm_executor(*config, this);
   OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());
   artm_executor.ExecuteOfflineAlgorithm(args.passes(), &iter);

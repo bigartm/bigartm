@@ -13,7 +13,7 @@
 #include "artm/cpp_interface.h"
 #include "artm/messages.pb.h"
 
-void GenerateBatches(std::vector<::artm::Batch>* batches, ::artm::DictionaryData* dictionary = nullptr) {
+void GenerateBatches(std::vector< ::artm::Batch>* batches, ::artm::DictionaryData* dictionary = nullptr) {
   int nBatches = 10;
   int nItemsPerBatch = 5;
   int nTokens = 40;
@@ -73,7 +73,7 @@ void describeTheta(const ::artm::ThetaMatrix& theta, int first_items) {
 }
 
 // Static object to pass topic model through memory between two test cases (Fit and TransformAfterOverwrite)
-static std::shared_ptr<::artm::TopicModel> topic_model;
+static std::shared_ptr< ::artm::TopicModel> topic_model;
 
 // To run this particular test:
 // artm_tests.exe --gtest_filter=Supcry.Fit
@@ -106,10 +106,8 @@ TEST(Supcry, Fit) {
 
   // Step 3. Import batches into BigARTM memory
   ::artm::ImportBatchesArgs import_batches_args;
-  for (auto& batch : batches) {
+  for (auto& batch : batches)
     import_batches_args.add_batch()->CopyFrom(batch);
-    import_batches_args.add_batch_name(batch.id());
-  }
   master_model.ImportBatches(import_batches_args);
 
   // Step 4. Import dictionary into BigARTM memory
@@ -124,11 +122,8 @@ TEST(Supcry, Fit) {
   master_model.InitializeModel(initialize_model_args);
 
   // Step 6. Fit topic model using offline algorithm
-  ::artm::FitOfflineMasterModelArgs fit_offline_args;
-  fit_offline_args.mutable_batch_filename()->CopyFrom(import_batches_args.batch_name());
-
   for (int pass = 0; pass < 4; pass++) {
-    master_model.FitOfflineModel(fit_offline_args);
+    master_model.FitOfflineModel(::artm::FitOfflineMasterModelArgs());
 
     ::artm::GetScoreValueArgs get_score_args;
     get_score_args.set_model_name(config.pwt_name());

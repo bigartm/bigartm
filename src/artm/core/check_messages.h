@@ -262,9 +262,6 @@ inline std::string DescribeErrors(const ::artm::MasterModelConfig& message) {
 inline std::string DescribeErrors(const ::artm::FitOfflineMasterModelArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_filename_size() == 0)
-    ss << "Fields FitOfflineMasterModelArgs.batch_filename must not be empty; ";
-
   if (message.batch_filename_size() != message.batch_weight_size())
     ss << "Length mismatch in fields FitOfflineMasterModelArgs.batch_filename "
        << "and FitOfflineMasterModelArgs.batch_weight; ";
@@ -466,10 +463,18 @@ inline std::string DescribeErrors(const ::artm::ProcessBatchesArgs& message) {
   return ss.str();
 }
 
+inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
+  std::stringstream ss;
+
+  if (message.batch_name_size() != 0 && message.batch_name_size() != message.batch_size())
+    ss << "Length mismatch in fields ImportBatchesArgs.batch_name and ImportBatchesArgs.batch";
+
+  return ss.str();
+}
+
 // Empty ValidateMessage routines
 inline std::string DescribeErrors(const ::artm::GetTopicModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizerInternalState& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::InvokeIterationArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizeModelArgs& message) { return std::string(); }
@@ -660,6 +665,17 @@ template<>
 inline void FixMessage(::artm::TransformMasterModelArgs* message) {
   for (int i = 0; i < message->batch_size(); ++i)
     FixMessage(message->mutable_batch(i));
+}
+
+template<>
+inline void FixMessage(::artm::ImportBatchesArgs* message) {
+  for (int i = 0; i < message->batch_size(); ++i)
+    FixMessage(message->mutable_batch(i));
+
+  if (message->batch_name_size() == 0) {
+    for (int i = 0; i < message->batch_size(); ++i)
+      message->add_batch_name(message->batch(i).id());
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
