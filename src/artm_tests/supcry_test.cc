@@ -1,0 +1,214 @@
+// Copyright 2014, Additive Regularization of Topic Models.
+
+#include <vector>
+
+#include "boost/filesystem.hpp"
+#include "boost/lexical_cast.hpp"
+#include "boost/uuid/uuid.hpp"
+#include "boost/uuid/uuid_generators.hpp"
+#include "boost/uuid/uuid_io.hpp"
+
+#include "gtest/gtest.h"
+
+#include "artm/cpp_interface.h"
+#include "artm/messages.pb.h"
+
+void GenerateBatches(std::vector<::artm::Batch>* batches, ::artm::DictionaryData* dictionary = nullptr) {
+  int nBatches = 10;
+  int nItemsPerBatch = 5;
+  int nTokens = 40;
+
+  // Generate global dictionary
+  for (int i = 0; i < nTokens; i++) {
+    std::stringstream str;
+    str << "token" << i;
+    if (dictionary != nullptr)
+      dictionary->add_token(str.str());
+  }
+
+  // Keep batch.token empty; batch.item.field.token_id point straight to global dictionary
+  int itemId = 0;
+  for (int iBatch = 0; iBatch < nBatches; ++iBatch) {
+    ::artm::Batch batch;
+    batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
+
+    for (int iItem = 0; iItem < nItemsPerBatch; ++iItem) {
+      artm::Item* item = batch.add_item();
+      item->set_id(itemId++);
+      artm::Field* field = item->add_field();
+      for (int iToken = 0; iToken < nTokens; ++iToken) {
+        // Add each third token (randomly)
+        if (rand() % 3 == 0) {  // NOLINT
+          field->add_token_id(iToken);
+          field->add_token_weight(1.0);
+        }
+      }
+    }
+
+    batches->push_back(batch);
+  }
+}
+
+std::vector<std::string> getTopicNames() {
+  std::vector<std::string> topic_names;
+  int nTopics = 10;
+  for (int i = 0; i < nTopics; i++) {
+    std::stringstream str;
+    str << "token" << i;
+    topic_names.push_back(str.str());
+  }
+  return topic_names;
+}
+
+void describeTheta(const ::artm::ThetaMatrix& theta, int first_items) {
+  std::cout << "Total items: " << theta.item_id_size() << "\n";
+  for (int item = 0; item < std::min(first_items, theta.item_id_size()); ++item) {
+    std::cout << "Item#" << item << " topics: ";
+    for (int i = 0; i < theta.item_weights(item).value_size(); ++i)
+      std::cout << theta.item_weights(item).value(i) << " ";
+    std::cout << "\n";
+  }
+  if (first_items < theta.item_id_size())
+    std::cout << "...\n";
+}
+
+// Static object to pass topic model through memory between two test cases (Fit and TransformAfterOverwrite)
+static std::shared_ptr<::artm::TopicModel> topic_model;
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=Supcry.Fit
+TEST(Supcry, Fit) {
+  // Step 1. Configure and create MasterModel
+  ::artm::MasterModelConfig config;
+
+  // Add topic names (this steps defines how many topics it will be in the topic model)
+  for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
+
+  ::artm::ScoreConfig* score_config = config.add_score_config();
+  score_config->set_type(::artm::ScoreConfig_Type_Perplexity);
+  score_config->set_name("Perplexity");
+  score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
+
+  ::artm::RegularizerConfig* reg_theta = config.add_regularizer_config();
+  reg_theta->set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
+  reg_theta->set_tau(-0.2);
+  reg_theta->set_name("SparseTheta");
+  reg_theta->set_config(::artm::SmoothSparseThetaConfig().SerializeAsString());
+
+  config.set_pwt_name("pwt");
+
+  ::artm::MasterModel master_model(config);
+
+  // Step 2. Generate dictionary and batches
+  std::vector< ::artm::Batch> batches;
+  ::artm::DictionaryData dictionary_data;
+  GenerateBatches(&batches, &dictionary_data);
+
+  // Step 3. Import batches into BigARTM memory
+  ::artm::ImportBatchesArgs import_batches_args;
+  for (auto& batch : batches) {
+    import_batches_args.add_batch()->CopyFrom(batch);
+    import_batches_args.add_batch_name(batch.id());
+  }
+  master_model.ImportBatches(import_batches_args);
+
+  // Step 4. Import dictionary into BigARTM memory
+  dictionary_data.set_name("dictionary");
+  master_model.CreateDictionary(dictionary_data);
+
+  // Step 5. Initialize model
+  ::artm::InitializeModelArgs initialize_model_args;
+  initialize_model_args.set_dictionary_name(dictionary_data.name());
+  initialize_model_args.set_model_name(config.pwt_name());
+  initialize_model_args.mutable_topic_name()->CopyFrom(config.topic_name());
+  master_model.InitializeModel(initialize_model_args);
+
+  // Step 6. Fit topic model using offline algorithm
+  ::artm::FitOfflineMasterModelArgs fit_offline_args;
+  fit_offline_args.mutable_batch_filename()->CopyFrom(import_batches_args.batch_name());
+
+  for (int pass = 0; pass < 4; pass++) {
+    master_model.FitOfflineModel(fit_offline_args);
+
+    ::artm::GetScoreValueArgs get_score_args;
+    get_score_args.set_model_name(config.pwt_name());
+    get_score_args.set_score_name(score_config->name());
+    artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
+    std::cout << "Perplexity@" << pass << " = " << perplexity_score.value() << "\n";
+  }
+
+  // Step 6. Export topic model
+  ::artm::ExportModelArgs export_model_args;
+  export_model_args.set_model_name(config.pwt_name());
+  export_model_args.set_file_name("artm_model.bin");
+
+  try { boost::filesystem::remove("artm_model.bin"); } catch (...) {}  // NOLINT
+  master_model.ExportModel(export_model_args);
+
+  // Step 7. Memory export
+  ::artm::GetTopicModelArgs get_model_args;
+  get_model_args.set_model_name(config.pwt_name());
+  topic_model = std::make_shared< ::artm::TopicModel>(master_model.GetTopicModel(get_model_args));
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=Supcry.Transform
+TEST(Supcry, TransformAfterImport) {
+  // Step 1. Configure and create MasterModel
+  ::artm::MasterModelConfig config;
+
+  // Add topic names (this steps defines how many topics it will be in the topic model)
+  for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
+
+  config.set_pwt_name("pwt");
+
+  ::artm::MasterModel master_model(config);
+
+  // Step 2. Generate batches
+  std::vector< ::artm::Batch> batches;
+  GenerateBatches(&batches);
+
+  // Step 3. Import topic model
+  ::artm::ImportModelArgs import_model_args;
+  import_model_args.set_model_name("pwt");
+  import_model_args.set_file_name("artm_model.bin");
+  master_model.ImportModel(import_model_args);
+
+  // Step 4. Find theta matrix
+  ::artm::TransformMasterModelArgs transform_args;
+  for (auto& batch : batches)
+    transform_args.add_batch()->CopyFrom(batch);
+  ::artm::ThetaMatrix theta = master_model.Transform(transform_args);
+
+  describeTheta(theta, 5);
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=Supcry.Transform
+TEST(Supcry, TransformAfterOverwrite) {
+  // Step 1. Configure and create MasterModel
+  ::artm::MasterModelConfig config;
+
+  // Add topic names (this steps defines how many topics it will be in the topic model)
+  for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
+
+  config.set_pwt_name("pwt");
+
+  ::artm::MasterModel master_model(config);
+
+  // Step 2. Generate batches
+  std::vector< ::artm::Batch> batches;
+  GenerateBatches(&batches);
+
+  // Step 3. Import topic model
+  topic_model->set_name("pwt");
+  master_model.OverwriteModel(*topic_model);
+
+  // Step 4. Find theta matrix
+  ::artm::TransformMasterModelArgs transform_args;
+  for (auto& batch : batches)
+    transform_args.add_batch()->CopyFrom(batch);
+  ::artm::ThetaMatrix theta = master_model.Transform(transform_args);
+
+  describeTheta(theta, 5);
+}

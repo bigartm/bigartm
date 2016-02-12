@@ -633,6 +633,10 @@ void MasterModel::InitializeModel(const InitializeModelArgs& args) {
   ArtmExecute(id_, args, ArtmInitializeModel);
 }
 
+void MasterModel::OverwriteModel(const TopicModel& args) {
+  ArtmExecute(id_, args, ArtmOverwriteTopicModel);
+}
+
 void MasterModel::ImportBatches(const ImportBatchesArgs& args) {
   ArtmExecute(id_, args, ArtmImportBatches);
 }
