@@ -327,8 +327,11 @@ inline std::string DescribeErrors(const ::artm::FitOnlineMasterModelArgs& messag
 inline std::string DescribeErrors(const ::artm::TransformMasterModelArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_filename_size() == 0)
-    ss << "Fields TransformMasterModelArgs.batch_filename must not be empty; ";
+  if (message.batch_filename_size() == 0 && message.batch_size() == 0)
+    ss << "Either TransformMasterModelArgs.batch_filename or TransformMasterModelArgs.batch must be specified; ";
+  if (message.batch_filename_size() != 0 && message.batch_size() != 0)
+    ss << "Only one of TransformMasterModelArgs.batch_filename, "
+       << "TransformMasterModelArgs.batch must be specified; ";
 
   return ss.str();
 }
@@ -448,7 +451,16 @@ inline std::string DescribeErrors(const ::artm::ImportDictionaryArgs& message) {
 inline std::string DescribeErrors(const ::artm::ProcessBatchesArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_filename_size() != message.batch_weight_size())
+  if (message.batch_filename_size() == 0 && message.batch_size() == 0)
+    ss << "Either ProcessBatchesArgs.batch_filename or ProcessBatchesArgs.batch must be specified; ";
+  if (message.batch_filename_size() != 0 && message.batch_size() != 0)
+    ss << "Only one of ProcessBatchesArgs.batch_filename, "
+       << "ProcessBatchesArgs.batch must be specified; ";
+
+  if (message.batch_filename_size() != 0 && message.batch_filename_size() != message.batch_weight_size())
+    ss << "Length mismatch in fields ProcessBatchesArgs.batch_filename and ProcessBatchesArgs.batch_weight";
+
+  if (message.batch_size() != 0 && message.batch_size() != message.batch_weight_size())
     ss << "Length mismatch in fields ProcessBatchesArgs.batch_filename and ProcessBatchesArgs.batch_weight";
 
   return ss.str();
@@ -600,9 +612,13 @@ inline void FixMessage(::artm::DictionaryData* message) {
 template<>
 inline void FixMessage(::artm::ProcessBatchesArgs* message) {
   if (message->batch_weight_size() == 0) {
-    for (int i = 0; i < message->batch_filename_size(); ++i)
+    int size = message->batch_filename_size() > 0 ? message->batch_filename_size() : message->batch_size();
+    for (int i = 0; i < size; ++i)
       message->add_batch_weight(1.0f);
   }
+
+  for (int i = 0; i < message->batch_size(); ++i)
+    FixMessage(message->mutable_batch(i));
 }
 
 template<>
@@ -638,6 +654,12 @@ inline void FixMessage(::artm::FitOnlineMasterModelArgs* message) {
       message->add_decay_weight(1.0f - message->apply_weight(i));
     }
   }
+}
+
+template<>
+inline void FixMessage(::artm::TransformMasterModelArgs* message) {
+  for (int i = 0; i < message->batch_size(); ++i)
+    FixMessage(message->mutable_batch(i));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -759,6 +781,7 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << "ProcessBatchesArgs";
   ss << ": nwt_target_name=" << message.nwt_target_name();
   ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", batch_size=" << message.batch_size();
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", pwt_source_name=" << message.pwt_source_name();
   ss << ", inner_iterations_count=" << message.inner_iterations_count();
@@ -865,6 +888,7 @@ inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& messa
   std::stringstream ss;
   ss << "TransformMasterModelArgs";
   ss << ", batch_filename_size=" << message.batch_filename_size();
+  ss << ", batch_size=" << message.batch_size();
   ss << ", theta_matrix_type=" << message.theta_matrix_type();
   ss << ", predict_class_id=" << message.predict_class_id();
   return ss.str();

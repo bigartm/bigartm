@@ -688,6 +688,7 @@ message ProcessBatchesArgs {
   repeated float batch_weight = 15;
   optional string model_name_cache = 16;
   optional string predict_class_id = 17;
+  repeated Batch batch = 18;
 }
 
 message ProcessBatchesResult {
@@ -840,7 +841,8 @@ message TransformMasterModelArgs {
     SparsePtdw = 5;
   }
 
-  repeated string batch_filename = 1;
-  optional ThetaMatrixType theta_matrix_type = 2 [default = Cache];
-  optional string predict_class_id = 3;
+  repeated Batch batch = 1;
+  repeated string batch_filename = 2;
+  optional ThetaMatrixType theta_matrix_type = 3 [default = Cache];
+  optional string predict_class_id = 4;
 }

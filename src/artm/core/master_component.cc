@@ -524,7 +524,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
                          << "), which may cause suboptimal performance.";
   }
 
-  for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
+  auto createProcessorInput = [&](){  // NOLINT
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
     batch_manager->Add(task_id, std::string(), model_name);
 
@@ -534,8 +534,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
-    pi->set_batch_filename(args.batch_filename(batch_index));
-    pi->set_batch_weight(args.batch_weight(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);
@@ -546,6 +544,22 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     if (args.has_nwt_target_name())
       pi->set_nwt_target_name(args.nwt_target_name());
 
+    return pi;
+  };
+
+  // Enqueue tasks based on args.batch_filename
+  for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
+    auto pi = createProcessorInput();
+    pi->set_batch_filename(args.batch_filename(batch_index));
+    pi->set_batch_weight(args.batch_weight(batch_index));
+    instance_->processor_queue()->push(pi);
+  }
+
+  // Enqueue tasks based on args.batch
+  for (int batch_index = 0; batch_index < args.batch_size(); ++batch_index) {
+    auto pi = createProcessorInput();
+    pi->mutable_batch()->CopyFrom(args.batch(batch_index));
+    pi->set_batch_weight(args.batch_weight(batch_index));
     instance_->processor_queue()->push(pi);
   }
 
@@ -727,6 +741,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 
   ProcessBatchesArgs process_batches_args;
   process_batches_args.mutable_batch_filename()->CopyFrom(args.batch_filename());
+  process_batches_args.mutable_batch()->CopyFrom(args.batch());
   process_batches_args.set_pwt_source_name(config->pwt_name());
   if (config->has_inner_iterations_count())
     process_batches_args.set_inner_iterations_count(config->inner_iterations_count());

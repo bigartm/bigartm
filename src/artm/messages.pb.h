@@ -9873,6 +9873,18 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::std::string* release_predict_class_id();
   inline void set_allocated_predict_class_id(::std::string* predict_class_id);
 
+  // repeated .artm.Batch batch = 18;
+  inline int batch_size() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 18;
+  inline const ::artm::Batch& batch(int index) const;
+  inline ::artm::Batch* mutable_batch(int index);
+  inline ::artm::Batch* add_batch();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::Batch >&
+      batch() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
+      mutable_batch();
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -9917,10 +9929,11 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< float > batch_weight_;
   ::std::string* model_name_cache_;
   ::std::string* predict_class_id_;
+  ::google::protobuf::RepeatedPtrField< ::artm::Batch > batch_;
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12480,10 +12493,22 @@ class TransformMasterModelArgs : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // repeated string batch_filename = 1;
+  // repeated .artm.Batch batch = 1;
+  inline int batch_size() const;
+  inline void clear_batch();
+  static const int kBatchFieldNumber = 1;
+  inline const ::artm::Batch& batch(int index) const;
+  inline ::artm::Batch* mutable_batch(int index);
+  inline ::artm::Batch* add_batch();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::Batch >&
+      batch() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
+      mutable_batch();
+
+  // repeated string batch_filename = 2;
   inline int batch_filename_size() const;
   inline void clear_batch_filename();
-  static const int kBatchFilenameFieldNumber = 1;
+  static const int kBatchFilenameFieldNumber = 2;
   inline const ::std::string& batch_filename(int index) const;
   inline ::std::string* mutable_batch_filename(int index);
   inline void set_batch_filename(int index, const ::std::string& value);
@@ -12496,17 +12521,17 @@ class TransformMasterModelArgs : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
 
-  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 2 [default = Cache];
+  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Cache];
   inline bool has_theta_matrix_type() const;
   inline void clear_theta_matrix_type();
-  static const int kThetaMatrixTypeFieldNumber = 2;
+  static const int kThetaMatrixTypeFieldNumber = 3;
   inline ::artm::TransformMasterModelArgs_ThetaMatrixType theta_matrix_type() const;
   inline void set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType value);
 
-  // optional string predict_class_id = 3;
+  // optional string predict_class_id = 4;
   inline bool has_predict_class_id() const;
   inline void clear_predict_class_id();
-  static const int kPredictClassIdFieldNumber = 3;
+  static const int kPredictClassIdFieldNumber = 4;
   inline const ::std::string& predict_class_id() const;
   inline void set_predict_class_id(const ::std::string& value);
   inline void set_predict_class_id(const char* value);
@@ -12524,12 +12549,13 @@ class TransformMasterModelArgs : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
+  ::google::protobuf::RepeatedPtrField< ::artm::Batch > batch_;
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
   ::std::string* predict_class_id_;
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -24802,6 +24828,31 @@ inline void ProcessBatchesArgs::set_allocated_predict_class_id(::std::string* pr
   }
 }
 
+// repeated .artm.Batch batch = 18;
+inline int ProcessBatchesArgs::batch_size() const {
+  return batch_.size();
+}
+inline void ProcessBatchesArgs::clear_batch() {
+  batch_.Clear();
+}
+inline const ::artm::Batch& ProcessBatchesArgs::batch(int index) const {
+  return batch_.Get(index);
+}
+inline ::artm::Batch* ProcessBatchesArgs::mutable_batch(int index) {
+  return batch_.Mutable(index);
+}
+inline ::artm::Batch* ProcessBatchesArgs::add_batch() {
+  return batch_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::Batch >&
+ProcessBatchesArgs::batch() const {
+  return batch_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
+ProcessBatchesArgs::mutable_batch() {
+  return &batch_;
+}
+
 // -------------------------------------------------------------------
 
 // ProcessBatchesResult
@@ -27775,7 +27826,32 @@ inline void FitOnlineMasterModelArgs::set_async(bool value) {
 
 // TransformMasterModelArgs
 
-// repeated string batch_filename = 1;
+// repeated .artm.Batch batch = 1;
+inline int TransformMasterModelArgs::batch_size() const {
+  return batch_.size();
+}
+inline void TransformMasterModelArgs::clear_batch() {
+  batch_.Clear();
+}
+inline const ::artm::Batch& TransformMasterModelArgs::batch(int index) const {
+  return batch_.Get(index);
+}
+inline ::artm::Batch* TransformMasterModelArgs::mutable_batch(int index) {
+  return batch_.Mutable(index);
+}
+inline ::artm::Batch* TransformMasterModelArgs::add_batch() {
+  return batch_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::Batch >&
+TransformMasterModelArgs::batch() const {
+  return batch_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
+TransformMasterModelArgs::mutable_batch() {
+  return &batch_;
+}
+
+// repeated string batch_filename = 2;
 inline int TransformMasterModelArgs::batch_filename_size() const {
   return batch_filename_.size();
 }
@@ -27819,15 +27895,15 @@ TransformMasterModelArgs::mutable_batch_filename() {
   return &batch_filename_;
 }
 
-// optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 2 [default = Cache];
+// optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Cache];
 inline bool TransformMasterModelArgs::has_theta_matrix_type() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void TransformMasterModelArgs::set_has_theta_matrix_type() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void TransformMasterModelArgs::clear_has_theta_matrix_type() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void TransformMasterModelArgs::clear_theta_matrix_type() {
   theta_matrix_type_ = 3;
@@ -27842,15 +27918,15 @@ inline void TransformMasterModelArgs::set_theta_matrix_type(::artm::TransformMas
   theta_matrix_type_ = value;
 }
 
-// optional string predict_class_id = 3;
+// optional string predict_class_id = 4;
 inline bool TransformMasterModelArgs::has_predict_class_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void TransformMasterModelArgs::set_has_predict_class_id() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void TransformMasterModelArgs::clear_has_predict_class_id() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void TransformMasterModelArgs::clear_predict_class_id() {
   if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {

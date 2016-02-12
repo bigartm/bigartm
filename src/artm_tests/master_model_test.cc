@@ -44,7 +44,9 @@ void runBasicTest(bool skip_batch_dict) {
   // Generate batches and load them into MasterModel
   ::artm::ImportBatchesArgs import_batches_args;
   ::artm::DictionaryData dictionary_data;
-  ::artm::test::TestMother::GenerateBatches(/*nBatches =*/ 20, /* nTokens =*/ 30,
+  const int nBatches = 20;
+  const int nTokens = 30;
+  ::artm::test::TestMother::GenerateBatches(nBatches, nTokens,
                                             &import_batches_args, &dictionary_data);
 
   if (skip_batch_dict) {
@@ -124,6 +126,14 @@ void runBasicTest(bool skip_batch_dict) {
       artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
       ASSERT_APPROX_EQ(perplexity_score.value(), expected[pass]);
     }
+
+    ::artm::TransformMasterModelArgs transform_args;
+    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    transform_args.mutable_batch()->CopyFrom(import_batches_args.batch());
+    ::artm::ThetaMatrix theta = master_model.Transform(transform_args);
+    ASSERT_EQ(theta.item_id_size(), nBatches);  // test_mother generates one item per batch
+    ASSERT_EQ(theta.item_weights_size(), nBatches);
+    ASSERT_EQ(theta.item_weights(0).value_size(), config.topic_name_size());
   }
 }
 
