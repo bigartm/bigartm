@@ -4,6 +4,7 @@ import uuid
 import glob
 import shutil
 import tempfile
+import codecs
 
 from pandas import DataFrame
 
