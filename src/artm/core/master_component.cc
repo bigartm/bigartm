@@ -72,7 +72,7 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
   master_component_config.set_processors_count(config.threads());
   master_component_config.mutable_score_config()->CopyFrom(config.score_config());
   if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
-  if (config.reuse_theta()) master_component_config.set_cache_theta(true);
+  if (config.reuse_theta() || config.cache_theta()) master_component_config.set_cache_theta(true);
   if (config.use_v06_api() && !reconfigure) {
     ScoreConfig* items_processed = master_component_config.add_score_config();
     items_processed->set_type(ScoreConfig_Type_ItemsProcessed);
@@ -80,7 +80,10 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
     items_processed->set_config(::artm::ItemsProcessedScoreConfig().SerializeAsString());
   }
 
-  instance_ = std::make_shared<Instance>(master_component_config);
+  if (!reconfigure)
+    instance_ = std::make_shared<Instance>(master_component_config);
+  else
+    instance_->Reconfigure(master_component_config);
   master_model_config_.set(std::make_shared<MasterModelConfig>(config));
 
   if (reconfigure) {  // remove all regularizers
@@ -197,6 +200,15 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
   LOG(INFO) << "Import completed, token_size = " << token_size;
 }
 
+void MasterComponent::Request(::artm::MasterModelConfig* result) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
+
+  result->CopyFrom(*config);
+}
+
 void MasterComponent::Request(const GetDictionaryArgs& args, DictionaryData* result) {
   std::shared_ptr<Dictionary> dict_ptr = instance_->dictionaries()->get(args.dictionary_name());
   if (dict_ptr == nullptr)
@@ -226,12 +238,16 @@ void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
 }
 
 void MasterComponent::ExportModel(const ExportModelArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<ExportModelArgs*>(&args)->set_model_name(config->pwt_name());
+
   if (boost::filesystem::exists(args.file_name()))
     BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + args.file_name()));
 
   std::ofstream fout(args.file_name(), std::ofstream::binary);
   if (!fout.is_open())
-    BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + args.file_name()));
+    BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create file " + args.file_name()));
 
   std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(args.model_name());
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(args.model_name());
@@ -278,6 +294,10 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 }
 
 void MasterComponent::ImportModel(const ImportModelArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<ImportModelArgs*>(&args)->set_model_name(config->pwt_name());
+
   std::ifstream fin(args.file_name(), std::ifstream::binary);
   if (!fin.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + args.file_name()));
@@ -342,8 +362,15 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
   instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
-
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr) {
+    InitializeModelArgs* mutable_args = const_cast<InitializeModelArgs*>(&args);
+    if (!args.has_model_name()) mutable_args->set_model_name(config->pwt_name());
+    if (args.topic_name_size() == 0) mutable_args->mutable_topic_name()->CopyFrom(config->topic_name());
+    FixMessage(mutable_args);
+  }
+
   // temp code to be removed with ModelConfig and old dictionaries
   instance_->merger()->InitializeModel(args);
 
@@ -359,7 +386,7 @@ void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
-  auto data = Dictionary::Gather(args);
+  auto data = Dictionary::Gather(args, *instance_->batches());
   CreateDictionary(*(data.first));
   if (data.second->cooc_first_index_size() > 0)
     AppendDictionary(*(data.second));
@@ -377,6 +404,10 @@ void MasterComponent::ReconfigureMasterModel(const MasterModelConfig& config) {
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<GetTopicModelArgs*>(&args)->set_model_name(config->pwt_name());
+
   instance_->merger()->RetrieveExternalTopicModel(args, result);
 }
 
@@ -394,6 +425,10 @@ void MasterComponent::Request(const GetRegularizerStateArgs& args,
 }
 
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<GetScoreValueArgs*>(&args)->set_model_name(config->pwt_name());
+
   if (!args.has_batch()) {
     instance_->merger()->RequestScore(args, result);
   } else {
@@ -512,7 +547,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
                          << "), which may cause suboptimal performance.";
   }
 
-  for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
+  auto createProcessorInput = [&](){  // NOLINT
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
     batch_manager->Add(task_id, std::string(), model_name);
 
@@ -522,8 +557,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
-    pi->set_batch_filename(args.batch_filename(batch_index));
-    pi->set_batch_weight(args.batch_weight(batch_index));
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
     pi->set_caller(ProcessorInput::Caller::ProcessBatches);
@@ -534,6 +567,22 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     if (args.has_nwt_target_name())
       pi->set_nwt_target_name(args.nwt_target_name());
 
+    return pi;
+  };
+
+  // Enqueue tasks based on args.batch_filename
+  for (int batch_index = 0; batch_index < args.batch_filename_size(); ++batch_index) {
+    auto pi = createProcessorInput();
+    pi->set_batch_filename(args.batch_filename(batch_index));
+    pi->set_batch_weight(args.batch_weight(batch_index));
+    instance_->processor_queue()->push(pi);
+  }
+
+  // Enqueue tasks based on args.batch
+  for (int batch_index = 0; batch_index < args.batch_size(); ++batch_index) {
+    auto pi = createProcessorInput();
+    pi->mutable_batch()->CopyFrom(args.batch(batch_index));
+    pi->set_batch_weight(args.batch_weight(batch_index));
     instance_->processor_queue()->push(pi);
   }
 
@@ -713,6 +762,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 
   ProcessBatchesArgs process_batches_args;
   process_batches_args.mutable_batch_filename()->CopyFrom(args.batch_filename());
+  process_batches_args.mutable_batch()->CopyFrom(args.batch());
   process_batches_args.set_pwt_source_name(config->pwt_name());
   if (config->has_inner_iterations_count())
     process_batches_args.set_inner_iterations_count(config->inner_iterations_count());
@@ -725,6 +775,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   if (config->has_use_sparse_bow()) process_batches_args.set_use_sparse_bow(config->use_sparse_bow());
   if (config->has_reuse_theta()) process_batches_args.set_reuse_theta(config->reuse_theta());
 
+  process_batches_args.set_reset_scores(true);
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
   process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
   process_batches_args.set_theta_matrix_type((::artm::ProcessBatchesArgs_ThetaMatrixType)args.theta_matrix_type());
@@ -1112,6 +1163,21 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
+
+  if (args.batch_filename_size() == 0) {
+    // Default to processing all in-memory batches
+    auto batch_names = instance_->batches()->keys();
+    if (batch_names.empty()) {
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "FitOfflineMasterModelArgs.batch_filename is empty. "
+        "Populate this field or provide batches via ArtmImportBatches API"));
+    }
+
+    FitOfflineMasterModelArgs* mutable_args = const_cast<FitOfflineMasterModelArgs*>(&args);
+    for (auto& batch_name : batch_names)
+      mutable_args->add_batch_filename(batch_name);
+    FixMessage(mutable_args);
+  }
 
   ArtmExecutor artm_executor(*config, this);
   OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());

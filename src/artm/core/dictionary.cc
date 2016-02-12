@@ -174,7 +174,8 @@ class TokenValues {
 };
 
 std::pair<std::shared_ptr<DictionaryData>, std::shared_ptr<DictionaryData> >
-Dictionary::Gather(const GatherDictionaryArgs& args) {
+Dictionary::Gather(const GatherDictionaryArgs& args,
+                   const ThreadSafeCollectionHolder<std::string, Batch>& mem_batches) {
   std::unordered_map<Token, TokenValues, TokenHasher> token_freq_map;
   std::vector<std::string> batches;
 
@@ -182,15 +183,19 @@ Dictionary::Gather(const GatherDictionaryArgs& args) {
     batches = BatchHelpers::ListAllBatches(args.data_path());
     LOG(INFO) << "Found " << batches.size() << " batches in '" << args.data_path() << "' folder";
   } else {
-    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary::Gather() requires data_path in it's args"));
+    for (auto& batch : args.batch_path())
+      batches.push_back(batch);
   }
 
   int total_items_count = 0;
   double sum_w_tf = 0.0;
   for (const std::string& batch_file : batches) {
-    std::shared_ptr<Batch> batch_ptr = std::make_shared<Batch>();
+    std::shared_ptr<Batch> batch_ptr = mem_batches.get(batch_file);
     try {
-      ::artm::core::BatchHelpers::LoadMessage(batch_file, batch_ptr.get());
+      if (batch_ptr == nullptr) {
+        batch_ptr = std::make_shared<Batch>();
+        ::artm::core::BatchHelpers::LoadMessage(batch_file, batch_ptr.get());
+      }
     } catch(std::exception& ex) {
         LOG(ERROR) << ex.what() << ", the batch will be skipped.";
         continue;

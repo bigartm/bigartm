@@ -577,6 +577,7 @@ message GatherDictionaryArgs {
   optional string cooc_file_path = 3;
   optional string vocab_file_path = 4;
   optional bool symmetric_cooc_values = 5 [default = false];
+  repeated string batch_path = 6;
 }
 
 message GetDictionaryArgs {
@@ -687,6 +688,7 @@ message ProcessBatchesArgs {
   repeated float batch_weight = 15;
   optional string model_name_cache = 16;
   optional string predict_class_id = 17;
+  repeated Batch batch = 18;
 }
 
 message ProcessBatchesResult {
@@ -803,7 +805,7 @@ message MasterModelConfig {
   repeated ScoreConfig score_config = 4;
   repeated RegularizerConfig regularizer_config = 5;
   optional int32 threads = 6;
-  optional string pwt_name = 7;
+  optional string pwt_name = 7 [default = "pwt"];
   optional string nwt_name = 8 [default = "nwt"];
   optional int32 inner_iterations_count = 9;
   optional bool reuse_theta = 10 [default = false];
@@ -811,6 +813,7 @@ message MasterModelConfig {
   optional bool use_sparse_bow = 12 [default = true];
   optional string disk_cache_path = 13;
   optional bool use_v06_api = 14 [default = false];  // obsolete in BigARTM v0.7.4
+  optional bool cache_theta = 15 [default = false];
 }
 
 message FitOfflineMasterModelArgs {
@@ -838,7 +841,8 @@ message TransformMasterModelArgs {
     SparsePtdw = 5;
   }
 
-  repeated string batch_filename = 1;
-  optional ThetaMatrixType theta_matrix_type = 2 [default = Cache];
-  optional string predict_class_id = 3;
+  repeated Batch batch = 1;
+  repeated string batch_filename = 2;
+  optional ThetaMatrixType theta_matrix_type = 3 [default = Dense];
+  optional string predict_class_id = 4;
 }

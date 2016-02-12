@@ -204,6 +204,7 @@ class MasterModel {
 
   // Operations to work with model
   void InitializeModel(const InitializeModelArgs& args);
+  void OverwriteModel(const TopicModel& args);
   void ImportModel(const ImportModelArgs& args);
   void ExportModel(const ExportModelArgs& args);
   void FitOnlineModel(const FitOnlineMasterModelArgs& args);
