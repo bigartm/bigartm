@@ -238,6 +238,10 @@ void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
 }
 
 void MasterComponent::ExportModel(const ExportModelArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<ExportModelArgs*>(&args)->set_model_name(config->pwt_name());
+
   if (boost::filesystem::exists(args.file_name()))
     BOOST_THROW_EXCEPTION(DiskWriteException("File already exists: " + args.file_name()));
 
@@ -290,6 +294,10 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 }
 
 void MasterComponent::ImportModel(const ImportModelArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<ImportModelArgs*>(&args)->set_model_name(config->pwt_name());
+
   std::ifstream fin(args.file_name(), std::ifstream::binary);
   if (!fin.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + args.file_name()));
@@ -354,8 +362,15 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
   instance_->merger()->SetPhiMatrix(model_name, attached);
 }
 
-// ToDo(sashafrey): do not require args.topic_name when we are initializing master model
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr) {
+    InitializeModelArgs* mutable_args = const_cast<InitializeModelArgs*>(&args);
+    if (!args.has_model_name()) mutable_args->set_model_name(config->pwt_name());
+    if (args.topic_name_size() == 0) mutable_args->mutable_topic_name()->CopyFrom(config->topic_name());
+    FixMessage(mutable_args);
+  }
+
   // temp code to be removed with ModelConfig and old dictionaries
   instance_->merger()->InitializeModel(args);
 
@@ -389,6 +404,10 @@ void MasterComponent::ReconfigureMasterModel(const MasterModelConfig& config) {
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<GetTopicModelArgs*>(&args)->set_model_name(config->pwt_name());
+
   instance_->merger()->RetrieveExternalTopicModel(args, result);
 }
 
@@ -406,6 +425,10 @@ void MasterComponent::Request(const GetRegularizerStateArgs& args,
 }
 
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<GetScoreValueArgs*>(&args)->set_model_name(config->pwt_name());
+
   if (!args.has_batch()) {
     instance_->merger()->RequestScore(args, result);
   } else {
@@ -731,8 +754,6 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args,
   HandleExternalThetaMatrixRequest(result, external);
 }
 
-// ToDo(sashafrey): what should be the default cache policy for TransformMasterModel?
-//                  Currently it saves the result in the cache. The result is then empty...
 void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::ThetaMatrix* result) {
   std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
   if (config == nullptr)

@@ -95,8 +95,6 @@ TEST(Supcry, Fit) {
   reg_theta->set_name("SparseTheta");
   reg_theta->set_config(::artm::SmoothSparseThetaConfig().SerializeAsString());
 
-  config.set_pwt_name("pwt");
-
   ::artm::MasterModel master_model(config);
 
   // Step 2. Generate dictionary and batches
@@ -117,8 +115,6 @@ TEST(Supcry, Fit) {
   // Step 5. Initialize model
   ::artm::InitializeModelArgs initialize_model_args;
   initialize_model_args.set_dictionary_name(dictionary_data.name());
-  initialize_model_args.set_model_name(config.pwt_name());
-  initialize_model_args.mutable_topic_name()->CopyFrom(config.topic_name());
   master_model.InitializeModel(initialize_model_args);
 
   // Step 6. Fit topic model using offline algorithm
@@ -126,7 +122,6 @@ TEST(Supcry, Fit) {
     master_model.FitOfflineModel(::artm::FitOfflineMasterModelArgs());
 
     ::artm::GetScoreValueArgs get_score_args;
-    get_score_args.set_model_name(config.pwt_name());
     get_score_args.set_score_name(score_config->name());
     artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
     std::cout << "Perplexity@" << pass << " = " << perplexity_score.value() << "\n";
@@ -134,7 +129,6 @@ TEST(Supcry, Fit) {
 
   // Step 6. Export topic model
   ::artm::ExportModelArgs export_model_args;
-  export_model_args.set_model_name(config.pwt_name());
   export_model_args.set_file_name("artm_model.bin");
 
   try { boost::filesystem::remove("artm_model.bin"); } catch (...) {}  // NOLINT
@@ -142,7 +136,6 @@ TEST(Supcry, Fit) {
 
   // Step 7. Memory export
   ::artm::GetTopicModelArgs get_model_args;
-  get_model_args.set_model_name(config.pwt_name());
   topic_model = std::make_shared< ::artm::TopicModel>(master_model.GetTopicModel(get_model_args));
 }
 
@@ -155,8 +148,6 @@ TEST(Supcry, TransformAfterImport) {
   // Add topic names (this steps defines how many topics it will be in the topic model)
   for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
 
-  config.set_pwt_name("pwt");
-
   ::artm::MasterModel master_model(config);
 
   // Step 2. Generate batches
@@ -165,7 +156,6 @@ TEST(Supcry, TransformAfterImport) {
 
   // Step 3. Import topic model
   ::artm::ImportModelArgs import_model_args;
-  import_model_args.set_model_name("pwt");
   import_model_args.set_file_name("artm_model.bin");
   master_model.ImportModel(import_model_args);
 
@@ -187,8 +177,6 @@ TEST(Supcry, TransformAfterOverwrite) {
   // Add topic names (this steps defines how many topics it will be in the topic model)
   for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
 
-  config.set_pwt_name("pwt");
-
   ::artm::MasterModel master_model(config);
 
   // Step 2. Generate batches
@@ -196,7 +184,6 @@ TEST(Supcry, TransformAfterOverwrite) {
   GenerateBatches(&batches);
 
   // Step 3. Import topic model
-  topic_model->set_name("pwt");
   master_model.OverwriteModel(*topic_model);
 
   // Step 4. Find theta matrix

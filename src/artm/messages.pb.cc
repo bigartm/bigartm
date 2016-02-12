@@ -2393,6 +2393,7 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete AwaitOperationArgs_reflection_;
   delete MasterModelConfig::default_instance_;
   delete MasterModelConfig_reflection_;
+  delete MasterModelConfig::_default_pwt_name_;
   delete MasterModelConfig::_default_nwt_name_;
   delete FitOfflineMasterModelArgs::default_instance_;
   delete FitOfflineMasterModelArgs_reflection_;
@@ -2726,32 +2727,32 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "y\030\001 \001(\t\022\021\n\tbyte_size\030\002 \001(\005\"C\n\021ImportBatc"
     "hesArgs\022\022\n\nbatch_name\030\001 \003(\t\022\032\n\005batch\030\003 \003"
     "(\0132\013.artm.Batch\"6\n\022AwaitOperationArgs\022 \n"
-    "\024timeout_milliseconds\030\001 \001(\005:\002-1\"\255\003\n\021Mast"
+    "\024timeout_milliseconds\030\001 \001(\005:\002-1\"\262\003\n\021Mast"
     "erModelConfig\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010cla"
     "ss_id\030\002 \003(\t\022\024\n\014class_weight\030\003 \003(\002\022\'\n\014sco"
     "re_config\030\004 \003(\0132\021.artm.ScoreConfig\0223\n\022re"
     "gularizer_config\030\005 \003(\0132\027.artm.Regularize"
-    "rConfig\022\017\n\007threads\030\006 \001(\005\022\020\n\010pwt_name\030\007 \001"
-    "(\t\022\025\n\010nwt_name\030\010 \001(\t:\003nwt\022\036\n\026inner_itera"
-    "tions_count\030\t \001(\005\022\032\n\013reuse_theta\030\n \001(\010:\005"
-    "false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true\022\034\n\016use_"
-    "sparse_bow\030\014 \001(\010:\004true\022\027\n\017disk_cache_pat"
-    "h\030\r \001(\t\022\032\n\013use_v06_api\030\016 \001(\010:\005false\022\032\n\013c"
-    "ache_theta\030\017 \001(\010:\005false\"\\\n\031FitOfflineMas"
-    "terModelArgs\022\026\n\016batch_filename\030\001 \003(\t\022\024\n\014"
-    "batch_weight\030\002 \003(\002\022\021\n\006passes\030\003 \001(\005:\0011\"\240\001"
-    "\n\030FitOnlineMasterModelArgs\022\026\n\016batch_file"
-    "name\030\001 \003(\t\022\024\n\014batch_weight\030\002 \003(\002\022\024\n\014upda"
-    "te_after\030\003 \003(\005\022\024\n\014apply_weight\030\004 \003(\002\022\024\n\014"
-    "decay_weight\030\005 \003(\002\022\024\n\005async\030\006 \001(\010:\005false"
-    "\"\230\002\n\030TransformMasterModelArgs\022\032\n\005batch\030\001"
-    " \003(\0132\013.artm.Batch\022\026\n\016batch_filename\030\002 \003("
-    "\t\022P\n\021theta_matrix_type\030\003 \001(\0162..artm.Tran"
-    "sformMasterModelArgs.ThetaMatrixType:\005De"
-    "nse\022\030\n\020predict_class_id\030\004 \001(\t\"\\\n\017ThetaMa"
-    "trixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020"
-    "\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSparsePtd"
-    "w\020\005", 13683);
+    "rConfig\022\017\n\007threads\030\006 \001(\005\022\025\n\010pwt_name\030\007 \001"
+    "(\t:\003pwt\022\025\n\010nwt_name\030\010 \001(\t:\003nwt\022\036\n\026inner_"
+    "iterations_count\030\t \001(\005\022\032\n\013reuse_theta\030\n "
+    "\001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true\022\034\n"
+    "\016use_sparse_bow\030\014 \001(\010:\004true\022\027\n\017disk_cach"
+    "e_path\030\r \001(\t\022\032\n\013use_v06_api\030\016 \001(\010:\005false"
+    "\022\032\n\013cache_theta\030\017 \001(\010:\005false\"\\\n\031FitOffli"
+    "neMasterModelArgs\022\026\n\016batch_filename\030\001 \003("
+    "\t\022\024\n\014batch_weight\030\002 \003(\002\022\021\n\006passes\030\003 \001(\005:"
+    "\0011\"\240\001\n\030FitOnlineMasterModelArgs\022\026\n\016batch"
+    "_filename\030\001 \003(\t\022\024\n\014batch_weight\030\002 \003(\002\022\024\n"
+    "\014update_after\030\003 \003(\005\022\024\n\014apply_weight\030\004 \003("
+    "\002\022\024\n\014decay_weight\030\005 \003(\002\022\024\n\005async\030\006 \001(\010:\005"
+    "false\"\230\002\n\030TransformMasterModelArgs\022\032\n\005ba"
+    "tch\030\001 \003(\0132\013.artm.Batch\022\026\n\016batch_filename"
+    "\030\002 \003(\t\022P\n\021theta_matrix_type\030\003 \001(\0162..artm"
+    ".TransformMasterModelArgs.ThetaMatrixTyp"
+    "e:\005Dense\022\030\n\020predict_class_id\030\004 \001(\t\"\\\n\017Th"
+    "etaMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sp"
+    "arse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSpar"
+    "sePtdw\020\005", 13688);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -2885,6 +2886,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   MasterComponentInfo_CacheEntryInfo::default_instance_ = new MasterComponentInfo_CacheEntryInfo();
   ImportBatchesArgs::default_instance_ = new ImportBatchesArgs();
   AwaitOperationArgs::default_instance_ = new AwaitOperationArgs();
+  MasterModelConfig::_default_pwt_name_ =
+      new ::std::string("pwt", 3);
   MasterModelConfig::_default_nwt_name_ =
       new ::std::string("nwt", 3);
   MasterModelConfig::default_instance_ = new MasterModelConfig();
@@ -34585,6 +34588,7 @@ void AwaitOperationArgs::Swap(AwaitOperationArgs* other) {
 
 // ===================================================================
 
+::std::string* MasterModelConfig::_default_pwt_name_ = NULL;
 ::std::string* MasterModelConfig::_default_nwt_name_ = NULL;
 #ifndef _MSC_VER
 const int MasterModelConfig::kTopicNameFieldNumber;
@@ -34621,7 +34625,7 @@ MasterModelConfig::MasterModelConfig(const MasterModelConfig& from)
 void MasterModelConfig::SharedCtor() {
   _cached_size_ = 0;
   threads_ = 0;
-  pwt_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  pwt_name_ = const_cast< ::std::string*>(_default_pwt_name_);
   nwt_name_ = const_cast< ::std::string*>(_default_nwt_name_);
   inner_iterations_count_ = 0;
   reuse_theta_ = false;
@@ -34638,7 +34642,7 @@ MasterModelConfig::~MasterModelConfig() {
 }
 
 void MasterModelConfig::SharedDtor() {
-  if (pwt_name_ != &::google::protobuf::internal::GetEmptyString()) {
+  if (pwt_name_ != _default_pwt_name_) {
     delete pwt_name_;
   }
   if (nwt_name_ != _default_nwt_name_) {
@@ -34676,8 +34680,8 @@ void MasterModelConfig::Clear() {
   if (_has_bits_[5 / 32] & (0xffu << (5 % 32))) {
     threads_ = 0;
     if (has_pwt_name()) {
-      if (pwt_name_ != &::google::protobuf::internal::GetEmptyString()) {
-        pwt_name_->clear();
+      if (pwt_name_ != _default_pwt_name_) {
+        pwt_name_->assign(*_default_pwt_name_);
       }
     }
     if (has_nwt_name()) {
@@ -34820,7 +34824,7 @@ bool MasterModelConfig::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string pwt_name = 7;
+      // optional string pwt_name = 7 [default = "pwt"];
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -35026,7 +35030,7 @@ void MasterModelConfig::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->threads(), output);
   }
 
-  // optional string pwt_name = 7;
+  // optional string pwt_name = 7 [default = "pwt"];
   if (has_pwt_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->pwt_name().data(), this->pwt_name().length(),
@@ -35134,7 +35138,7 @@ void MasterModelConfig::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->threads(), target);
   }
 
-  // optional string pwt_name = 7;
+  // optional string pwt_name = 7 [default = "pwt"];
   if (has_pwt_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->pwt_name().data(), this->pwt_name().length(),
@@ -35212,7 +35216,7 @@ int MasterModelConfig::ByteSize() const {
           this->threads());
     }
 
-    // optional string pwt_name = 7;
+    // optional string pwt_name = 7 [default = "pwt"];
     if (has_pwt_name()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(

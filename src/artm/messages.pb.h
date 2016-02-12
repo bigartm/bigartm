@@ -12016,7 +12016,7 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 threads() const;
   inline void set_threads(::google::protobuf::int32 value);
 
-  // optional string pwt_name = 7;
+  // optional string pwt_name = 7 [default = "pwt"];
   inline bool has_pwt_name() const;
   inline void clear_pwt_name();
   static const int kPwtNameFieldNumber = 7;
@@ -12125,6 +12125,7 @@ class MasterModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerConfig > regularizer_config_;
   ::std::string* pwt_name_;
+  static ::std::string* _default_pwt_name_;
   ::google::protobuf::int32 threads_;
   ::google::protobuf::int32 inner_iterations_count_;
   ::std::string* nwt_name_;
@@ -27215,7 +27216,7 @@ inline void MasterModelConfig::set_threads(::google::protobuf::int32 value) {
   threads_ = value;
 }
 
-// optional string pwt_name = 7;
+// optional string pwt_name = 7 [default = "pwt"];
 inline bool MasterModelConfig::has_pwt_name() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -27226,8 +27227,8 @@ inline void MasterModelConfig::clear_has_pwt_name() {
   _has_bits_[0] &= ~0x00000040u;
 }
 inline void MasterModelConfig::clear_pwt_name() {
-  if (pwt_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    pwt_name_->clear();
+  if (pwt_name_ != _default_pwt_name_) {
+    pwt_name_->assign(*_default_pwt_name_);
   }
   clear_has_pwt_name();
 }
@@ -27236,44 +27237,44 @@ inline const ::std::string& MasterModelConfig::pwt_name() const {
 }
 inline void MasterModelConfig::set_pwt_name(const ::std::string& value) {
   set_has_pwt_name();
-  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (pwt_name_ == _default_pwt_name_) {
     pwt_name_ = new ::std::string;
   }
   pwt_name_->assign(value);
 }
 inline void MasterModelConfig::set_pwt_name(const char* value) {
   set_has_pwt_name();
-  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (pwt_name_ == _default_pwt_name_) {
     pwt_name_ = new ::std::string;
   }
   pwt_name_->assign(value);
 }
 inline void MasterModelConfig::set_pwt_name(const char* value, size_t size) {
   set_has_pwt_name();
-  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (pwt_name_ == _default_pwt_name_) {
     pwt_name_ = new ::std::string;
   }
   pwt_name_->assign(reinterpret_cast<const char*>(value), size);
 }
 inline ::std::string* MasterModelConfig::mutable_pwt_name() {
   set_has_pwt_name();
-  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    pwt_name_ = new ::std::string;
+  if (pwt_name_ == _default_pwt_name_) {
+    pwt_name_ = new ::std::string(*_default_pwt_name_);
   }
   return pwt_name_;
 }
 inline ::std::string* MasterModelConfig::release_pwt_name() {
   clear_has_pwt_name();
-  if (pwt_name_ == &::google::protobuf::internal::GetEmptyString()) {
+  if (pwt_name_ == _default_pwt_name_) {
     return NULL;
   } else {
     ::std::string* temp = pwt_name_;
-    pwt_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    pwt_name_ = const_cast< ::std::string*>(_default_pwt_name_);
     return temp;
   }
 }
 inline void MasterModelConfig::set_allocated_pwt_name(::std::string* pwt_name) {
-  if (pwt_name_ != &::google::protobuf::internal::GetEmptyString()) {
+  if (pwt_name_ != _default_pwt_name_) {
     delete pwt_name_;
   }
   if (pwt_name) {
@@ -27281,7 +27282,7 @@ inline void MasterModelConfig::set_allocated_pwt_name(::std::string* pwt_name) {
     pwt_name_ = pwt_name;
   } else {
     clear_has_pwt_name();
-    pwt_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    pwt_name_ = const_cast< ::std::string*>(_default_pwt_name_);
   }
 }
 

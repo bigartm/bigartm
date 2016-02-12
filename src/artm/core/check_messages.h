@@ -218,8 +218,10 @@ inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
   if (message.has_batch())
     ss << DescribeErrors(message.batch());
 
-  if (!message.has_model_name() || message.model_name().empty())
-    ss << "GetScoreValueArgs.model_name is missing; ";
+  if (!message.has_model_name() || message.model_name().empty()) {
+    // Allow this to default to MasterComponentConfig.pwt_name
+    // ss << "GetScoreValueArgs.model_name is missing; ";
+  }
   if (!message.has_score_name() || message.score_name().empty())
     ss << "GetScoreValueArgs.score_name is missing; ";
 
@@ -342,7 +344,8 @@ inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
   }
 
   if (!message.has_model_name()) {
-    ss << "InitializeModelArgs.model_name is not defined; ";
+    // Allow this to default to MasterComponentConfig.pwt_name
+    // ss << "InitializeModelArgs.model_name is not defined; ";
   }
 
   if (!message.has_dictionary_name()) {
@@ -423,7 +426,9 @@ inline std::string DescribeErrors(const ::artm::DictionaryData& message) {
 inline std::string DescribeErrors(const ::artm::ExportModelArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ExportModelArgs.file_name is not defined; ";
-  if (!message.has_model_name()) ss << "ExportModelArgs.model_name is not defined; ";
+
+  // Allow this to default to MasterComponentConfig.pwt_name
+  // if (!message.has_model_name()) ss << "ExportModelArgs.model_name is not defined; ";
 
   return ss.str();
 }
@@ -431,7 +436,9 @@ inline std::string DescribeErrors(const ::artm::ExportModelArgs& message) {
 inline std::string DescribeErrors(const ::artm::ImportModelArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ImportModelArgs.file_name is not defined; ";
-  if (!message.has_model_name()) ss << "ImportModelArgs.model_name is not defined; ";
+
+  // Allow this to default to MasterComponentConfig.pwt_name
+  // if (!message.has_model_name()) ss << "ImportModelArgs.model_name is not defined; ";
 
   return ss.str();
 }
