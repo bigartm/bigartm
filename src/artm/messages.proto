@@ -843,6 +843,6 @@ message TransformMasterModelArgs {
 
   repeated Batch batch = 1;
   repeated string batch_filename = 2;
-  optional ThetaMatrixType theta_matrix_type = 3 [default = Cache];
+  optional ThetaMatrixType theta_matrix_type = 3 [default = Dense];
   optional string predict_class_id = 4;
 }

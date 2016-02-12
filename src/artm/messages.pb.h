@@ -12521,7 +12521,7 @@ class TransformMasterModelArgs : public ::google::protobuf::Message {
   inline const ::google::protobuf::RepeatedPtrField< ::std::string>& batch_filename() const;
   inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_batch_filename();
 
-  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Cache];
+  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
   inline bool has_theta_matrix_type() const;
   inline void clear_theta_matrix_type();
   static const int kThetaMatrixTypeFieldNumber = 3;
@@ -27895,7 +27895,7 @@ TransformMasterModelArgs::mutable_batch_filename() {
   return &batch_filename_;
 }
 
-// optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Cache];
+// optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
 inline bool TransformMasterModelArgs::has_theta_matrix_type() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -27906,7 +27906,7 @@ inline void TransformMasterModelArgs::clear_has_theta_matrix_type() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void TransformMasterModelArgs::clear_theta_matrix_type() {
-  theta_matrix_type_ = 3;
+  theta_matrix_type_ = 1;
   clear_has_theta_matrix_type();
 }
 inline ::artm::TransformMasterModelArgs_ThetaMatrixType TransformMasterModelArgs::theta_matrix_type() const {

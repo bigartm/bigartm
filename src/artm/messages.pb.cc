@@ -2747,8 +2747,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\"\230\002\n\030TransformMasterModelArgs\022\032\n\005batch\030\001"
     " \003(\0132\013.artm.Batch\022\026\n\016batch_filename\030\002 \003("
     "\t\022P\n\021theta_matrix_type\030\003 \001(\0162..artm.Tran"
-    "sformMasterModelArgs.ThetaMatrixType:\005Ca"
-    "che\022\030\n\020predict_class_id\030\004 \001(\t\"\\\n\017ThetaMa"
+    "sformMasterModelArgs.ThetaMatrixType:\005De"
+    "nse\022\030\n\020predict_class_id\030\004 \001(\t\"\\\n\017ThetaMa"
     "trixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020"
     "\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSparsePtd"
     "w\020\005", 13683);
@@ -36215,7 +36215,7 @@ TransformMasterModelArgs::TransformMasterModelArgs(const TransformMasterModelArg
 
 void TransformMasterModelArgs::SharedCtor() {
   _cached_size_ = 0;
-  theta_matrix_type_ = 3;
+  theta_matrix_type_ = 1;
   predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -36255,7 +36255,7 @@ TransformMasterModelArgs* TransformMasterModelArgs::New() const {
 
 void TransformMasterModelArgs::Clear() {
   if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
-    theta_matrix_type_ = 3;
+    theta_matrix_type_ = 1;
     if (has_predict_class_id()) {
       if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
         predict_class_id_->clear();
@@ -36308,7 +36308,7 @@ bool TransformMasterModelArgs::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Cache];
+      // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -36379,7 +36379,7 @@ void TransformMasterModelArgs::SerializeWithCachedSizes(
       2, this->batch_filename(i), output);
   }
 
-  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Cache];
+  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
   if (has_theta_matrix_type()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       3, this->theta_matrix_type(), output);
@@ -36418,7 +36418,7 @@ void TransformMasterModelArgs::SerializeWithCachedSizes(
       WriteStringToArray(2, this->batch_filename(i), target);
   }
 
-  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Cache];
+  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
   if (has_theta_matrix_type()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       3, this->theta_matrix_type(), target);
@@ -36445,7 +36445,7 @@ int TransformMasterModelArgs::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
-    // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Cache];
+    // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
     if (has_theta_matrix_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->theta_matrix_type());

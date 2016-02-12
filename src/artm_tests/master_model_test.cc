@@ -128,7 +128,6 @@ void runBasicTest(bool skip_batch_dict) {
     }
 
     ::artm::TransformMasterModelArgs transform_args;
-    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
     transform_args.mutable_batch()->CopyFrom(import_batches_args.batch());
     ::artm::ThetaMatrix theta = master_model.Transform(transform_args);
     ASSERT_EQ(theta.item_id_size(), nBatches);  // test_mother generates one item per batch
