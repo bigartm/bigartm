@@ -57,19 +57,41 @@ static void set_last_error(const std::string& error) {
   last_error_->assign(error);
 }
 
-static void EnableLogging() {
+static void EnableLogging(artm::ConfigureLoggingArgs* args_ptr = nullptr) {
   static bool logging_enabled = false;
-  if (!logging_enabled) {
-    FLAGS_log_dir = ".";
-    FLAGS_logbufsecs = 0;
-    try {
-      ::google::InitGoogleLogging(".");
+
+  int minloglevel = args_ptr != nullptr && args_ptr->has_minloglevel() ?
+                      args_ptr->minloglevel() : artm::core::kMaxLoggingLevel;
+
+  std::string log_dir = args_ptr != nullptr && args_ptr->has_log_dir() ? args_ptr->log_dir() : ".";
+
+  try {
+    if (!logging_enabled) {
+      FLAGS_log_dir = log_dir;
+      FLAGS_logbufsecs = 0;
+
+      ::google::InitGoogleLogging(log_dir.c_str());
       ::google::SetStderrLogging(google::GLOG_WARNING);
+
+      // ::google::SetVLOGLevel() is not supported in non-gcc compilers
+      // https://groups.google.com/forum/#!topic/google-glog/f8D7qpXLWXw
+      FLAGS_v = minloglevel;
+
       logging_enabled = true;
+    } else {
+      if (args_ptr != nullptr) {
+        FLAGS_v = minloglevel;
+
+        if (args_ptr->has_log_dir())
+          LOG(WARNING) << "Logging directory can't be change after the logging started.";
+      }
     }
-    catch (...) {
-      std::cerr << "InitGoogleLogging() failed.\n";
-    }
+  }
+  catch (...) {
+    if (args_ptr == nullptr)  // every call except one from the ArtmConfigureLogging()
+      std::cerr << "InitGoogleLogging() or glog flags modification failed.\n";
+    else
+      throw ::artm::core::InvalidOperation("Some error occurred when starting logging.");
   }
 }
 
@@ -101,6 +123,15 @@ const char* ArtmGetLastErrorMessage() {
   }
 
   return last_error_->c_str();
+}
+
+int ArtmConfigureLogging(int length, const char* configure_logging_args) {
+  try {
+    ::artm::ConfigureLoggingArgs args;
+    ParseFromArray(configure_logging_args, length, &args);
+    EnableLogging(&args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
 }
 
 int ArtmCopyRequestResult(int length, char* address) {

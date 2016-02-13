@@ -4,7 +4,9 @@
 #include "gtest/gtest.h"
 
 #include "boost/filesystem.hpp"
+#include "glog/logging.h"
 
+#include "artm/c_interface.h"
 #include "artm/cpp_interface.h"
 #include "artm/core/exceptions.h"
 #include "artm/messages.pb.h"
@@ -20,6 +22,14 @@ TEST(CppInterface, Canary) {
 }
 
 void BasicTest() {
+  artm::ConfigureLoggingArgs log_args;
+  log_args.set_minloglevel(2);
+  std::string args_str;
+  log_args.SerializeToString(&args_str);
+
+  ArtmConfigureLogging(args_str.size(), args_str.c_str());
+  EXPECT_EQ(FLAGS_v, log_args.minloglevel());
+
   std::string target_path = artm::test::Helpers::getUniqueString();
   const int nTopics = 5;
 
@@ -37,6 +47,14 @@ void BasicTest() {
   std::unique_ptr<artm::MasterComponent> master_component;
   master_component.reset(new ::artm::MasterComponent(master_config));
   EXPECT_EQ(master_component->info()->score_size(), 1);
+
+  // check log level
+  EXPECT_EQ(FLAGS_v, log_args.minloglevel());
+  log_args.set_minloglevel(1);
+  log_args.SerializeToString(&args_str);
+
+  ArtmConfigureLogging(args_str.size(), args_str.c_str());
+  EXPECT_EQ(FLAGS_v, log_args.minloglevel());
 
   // Create regularizers
   std::string reg_decor_name = "decorrelator";
