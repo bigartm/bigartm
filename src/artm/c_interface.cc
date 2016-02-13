@@ -57,19 +57,37 @@ static void set_last_error(const std::string& error) {
   last_error_->assign(error);
 }
 
-static void EnableLogging() {
+static void EnableLogging(std::shared_ptr<artm::ConfigureLoggingArgs> args_ptr = nullptr) {
   static bool logging_enabled = false;
-  if (!logging_enabled) {
-    FLAGS_log_dir = ".";
-    FLAGS_logbufsecs = 0;
-    try {
-      ::google::InitGoogleLogging(".");
+
+  int logging_level = args_ptr != nullptr && args_ptr->has_min_logging_level() ?
+                          args_ptr->min_logging_level() : artm::core::kMaxLoggingLevel;
+
+  std::string logging_dir = args_ptr != nullptr && args_ptr->has_logging_directory() ?
+                                args_ptr->logging_directory() : ".";
+  try {
+    if (!logging_enabled) {
+      FLAGS_log_dir = logging_dir;
+      FLAGS_logbufsecs = 0;
+
+      ::google::InitGoogleLogging(logging_dir.c_str());
       ::google::SetStderrLogging(google::GLOG_WARNING);
+
+      // ::google::SetVLOGLevel() is not supported in non-gcc compilers
+      // https://groups.google.com/forum/#!topic/google-glog/f8D7qpXLWXw
+      FLAGS_v = logging_level;
+
       logging_enabled = true;
+    } else {
+      if (args_ptr != nullptr) {
+        FLAGS_v = logging_level;
+
+        if (args_ptr->has_logging_directory())
+          LOG(WARNING) << "Logging directory can't be change after the logging started.";
+      }
     }
-    catch (...) {
-      std::cerr << "InitGoogleLogging() failed.\n";
-    }
+  } catch (...) {
+      std::cerr << "InitGoogleLogging() or glog flags modification failed.\n";
   }
 }
 
@@ -101,6 +119,14 @@ const char* ArtmGetLastErrorMessage() {
   }
 
   return last_error_->c_str();
+}
+
+int ArtmConfigureLogging(int length, const char* configure_logging_args) {
+  ::artm::ConfigureLoggingArgs args;
+  ParseFromArray(configure_logging_args, length, &args);
+  EnableLogging(std::make_shared<artm::ConfigureLoggingArgs>(args));
+
+  return ARTM_SUCCESS;
 }
 
 int ArtmCopyRequestResult(int length, char* address) {

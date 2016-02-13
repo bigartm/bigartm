@@ -846,3 +846,8 @@ message TransformMasterModelArgs {
   optional ThetaMatrixType theta_matrix_type = 3 [default = Dense];
   optional string predict_class_id = 4;
 }
+
+message ConfigureLoggingArgs {
+  optional int32 min_logging_level = 1;
+  optional string logging_directory = 2;
+}
