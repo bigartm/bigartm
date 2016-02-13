@@ -4,7 +4,9 @@
 #include "gtest/gtest.h"
 
 #include "boost/filesystem.hpp"
+#include "glog/logging.h"
 
+#include "artm/c_interface.h"
 #include "artm/cpp_interface.h"
 #include "artm/core/exceptions.h"
 #include "artm/messages.pb.h"
@@ -20,6 +22,14 @@ TEST(CppInterface, Canary) {
 }
 
 void BasicTest() {
+  artm::ConfigureLoggingArgs log_args;
+  log_args.set_min_logging_level(2);
+  std::string args_str;
+  log_args.SerializeToString(&args_str);
+
+  ArtmConfigureLogging(args_str.size(), args_str.c_str());
+  EXPECT_EQ(FLAGS_v, log_args.min_logging_level());
+
   std::string target_path = artm::test::Helpers::getUniqueString();
   const int nTopics = 5;
 
@@ -37,6 +47,14 @@ void BasicTest() {
   std::unique_ptr<artm::MasterComponent> master_component;
   master_component.reset(new ::artm::MasterComponent(master_config));
   EXPECT_EQ(master_component->info()->score_size(), 1);
+
+  // check log level
+  EXPECT_EQ(FLAGS_v, log_args.min_logging_level());
+  log_args.set_min_logging_level(1);
+  log_args.SerializeToString(&args_str);
+
+  ArtmConfigureLogging(args_str.size(), args_str.c_str());
+  EXPECT_EQ(FLAGS_v, log_args.min_logging_level());
 
   // Create regularizers
   std::string reg_decor_name = "decorrelator";
@@ -105,7 +123,7 @@ void BasicTest() {
   EXPECT_EQ(batch.item().size(), nDocs);
   for (int i = 0; i < batch.item().size(); i++) {
     EXPECT_EQ(batch.item().Get(i).field().Get(0).token_id().size(),
-        nTokens);
+      nTokens);
   }
 
   // Index doc-token matrix
@@ -151,13 +169,13 @@ void BasicTest() {
       EXPECT_GT(expected_normalizer, 0);
 
       try {
-      master_component->GetRegularizerState(reg_decor_name);
-      EXPECT_FALSE(true);
-      } catch (std::runtime_error& err_obj) {
+        master_component->GetRegularizerState(reg_decor_name);
+        EXPECT_FALSE(true);
+      }
+      catch (std::runtime_error& err_obj) {
         std::cout << err_obj.what() << std::endl;
         EXPECT_TRUE(true);
       }
-
     } else if (iter >= 2) {
       // Verify that normalizer does not grow starting from second iteration.
       // This confirms that the Instance::ForceResetScores() function works as expected.
@@ -468,7 +486,7 @@ TEST(CppInterface, GatherNewTokens) {
   auto tm3 = master.GetTopicModel(model.name());
   ASSERT_EQ(tm3->token_size(), 2);  // now new token is picked up
   ASSERT_TRUE((tm3->token(0) == token1 && tm3->token(1) == token2) ||
-              (tm3->token(0) == token2 && tm3->token(1) == token1));
+    (tm3->token(0) == token2 && tm3->token(1) == token1));
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.ProcessBatchesApi
@@ -617,7 +635,7 @@ TEST(CppInterface, ProcessBatchesApi) {
     ASSERT_EQ(clone_master_info->regularizer_size(), master_info->regularizer_size());
 
     ::artm::test::Helpers::CompareTopicModels(*master_clone.GetTopicModel("pwt"),
-                                              *master.GetTopicModel("pwt"), &ok);
+      *master.GetTopicModel("pwt"), &ok);
     ASSERT_TRUE(ok);
   }
 
@@ -713,7 +731,7 @@ TEST(CppInterface, AttachModel) {
   for (int token_index = 0; token_index < nwt_merge_model->token_size(); ++token_index) {
     for (int topic_index = 0; topic_index < nwt_merge_model->topics_count(); ++topic_index) {
       EXPECT_EQ((*attached_nwt_merge)(token_index, topic_index),
-                nwt_merge_model->token_weights(token_index).value(topic_index));
+        nwt_merge_model->token_weights(token_index).value(topic_index));
       (*attached_nwt_merge)(token_index, topic_index) = 2.0f * token_index + 3.0f * topic_index;
     }
   }
@@ -722,7 +740,7 @@ TEST(CppInterface, AttachModel) {
   for (int token_index = 0; token_index < nwt_merge_model->token_size(); ++token_index) {
     for (int topic_index = 0; topic_index < nwt_merge_model->topics_count(); ++topic_index) {
       EXPECT_EQ(updated_model->token_weights(token_index).value(topic_index),
-                2.0f * token_index + 3.0f * topic_index);
+        2.0f * token_index + 3.0f * topic_index);
     }
   }
 

@@ -312,6 +312,9 @@ const ::google::protobuf::Descriptor* TransformMasterModelArgs_descriptor_ = NUL
 const ::google::protobuf::internal::GeneratedMessageReflection*
   TransformMasterModelArgs_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* TransformMasterModelArgs_ThetaMatrixType_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* ConfigureLoggingArgs_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ConfigureLoggingArgs_reflection_ = NULL;
 
 }  // namespace
 
@@ -1384,13 +1387,12 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FilterDictionaryArgs));
   GatherDictionaryArgs_descriptor_ = file->message_type(55);
-  static const int GatherDictionaryArgs_offsets_[6] = {
+  static const int GatherDictionaryArgs_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, dictionary_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, data_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, cooc_file_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, vocab_file_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, symmetric_cooc_values_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, batch_path_),
   };
   GatherDictionaryArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1580,7 +1582,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AttachModelArgs));
   ProcessBatchesArgs_descriptor_ = file->message_type(66);
-  static const int ProcessBatchesArgs_offsets_[18] = {
+  static const int ProcessBatchesArgs_offsets_[17] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, nwt_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, batch_filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, pwt_source_name_),
@@ -1598,7 +1600,6 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, batch_weight_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, model_name_cache_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, predict_class_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, batch_),
   };
   ProcessBatchesArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1912,7 +1913,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AwaitOperationArgs));
   MasterModelConfig_descriptor_ = file->message_type(79);
-  static const int MasterModelConfig_offsets_[15] = {
+  static const int MasterModelConfig_offsets_[14] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, topic_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, class_weight_),
@@ -1927,7 +1928,6 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, use_sparse_bow_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, disk_cache_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, use_v06_api_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, cache_theta_),
   };
   MasterModelConfig_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1978,8 +1978,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FitOnlineMasterModelArgs));
   TransformMasterModelArgs_descriptor_ = file->message_type(82);
-  static const int TransformMasterModelArgs_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransformMasterModelArgs, batch_),
+  static const int TransformMasterModelArgs_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransformMasterModelArgs, batch_filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransformMasterModelArgs, theta_matrix_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransformMasterModelArgs, predict_class_id_),
@@ -1996,6 +1995,22 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TransformMasterModelArgs));
   TransformMasterModelArgs_ThetaMatrixType_descriptor_ = TransformMasterModelArgs_descriptor_->enum_type(0);
+  ConfigureLoggingArgs_descriptor_ = file->message_type(83);
+  static const int ConfigureLoggingArgs_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, min_logging_level_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, logging_directory_),
+  };
+  ConfigureLoggingArgs_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ConfigureLoggingArgs_descriptor_,
+      ConfigureLoggingArgs::default_instance_,
+      ConfigureLoggingArgs_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(ConfigureLoggingArgs));
 }
 
 namespace {
@@ -2190,6 +2205,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     FitOnlineMasterModelArgs_descriptor_, &FitOnlineMasterModelArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     TransformMasterModelArgs_descriptor_, &TransformMasterModelArgs::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ConfigureLoggingArgs_descriptor_, &ConfigureLoggingArgs::default_instance());
 }
 
 }  // namespace
@@ -2393,7 +2410,6 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete AwaitOperationArgs_reflection_;
   delete MasterModelConfig::default_instance_;
   delete MasterModelConfig_reflection_;
-  delete MasterModelConfig::_default_pwt_name_;
   delete MasterModelConfig::_default_nwt_name_;
   delete FitOfflineMasterModelArgs::default_instance_;
   delete FitOfflineMasterModelArgs_reflection_;
@@ -2401,6 +2417,8 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete FitOnlineMasterModelArgs_reflection_;
   delete TransformMasterModelArgs::default_instance_;
   delete TransformMasterModelArgs_reflection_;
+  delete ConfigureLoggingArgs::default_instance_;
+  delete ConfigureLoggingArgs_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fmessages_2eproto() {
@@ -2630,129 +2648,128 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "ary_target_name\030\002 \001(\t\022\020\n\010class_id\030\003 \001(\t\022"
     "\016\n\006min_df\030\004 \001(\002\022\016\n\006max_df\030\005 \001(\002\022\023\n\013min_d"
     "f_rate\030\006 \001(\002\022\023\n\013max_df_rate\030\007 \001(\002\022\016\n\006min"
-    "_tf\030\010 \001(\002\022\016\n\006max_tf\030\t \001(\002\"\264\001\n\024GatherDict"
+    "_tf\030\010 \001(\002\022\016\n\006max_tf\030\t \001(\002\"\240\001\n\024GatherDict"
     "ionaryArgs\022\036\n\026dictionary_target_name\030\001 \001"
     "(\t\022\021\n\tdata_path\030\002 \001(\t\022\026\n\016cooc_file_path\030"
     "\003 \001(\t\022\027\n\017vocab_file_path\030\004 \001(\t\022$\n\025symmet"
-    "ric_cooc_values\030\005 \001(\010:\005false\022\022\n\nbatch_pa"
-    "th\030\006 \003(\t\",\n\021GetDictionaryArgs\022\027\n\017diction"
-    "ary_name\030\001 \001(\t\"\364\002\n\021GetTopicModelArgs\022\022\n\n"
-    "model_name\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005"
-    "token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\022\031\n\021use_spa"
-    "rse_format\030\005 \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n"
-    "\014request_type\030\007 \001(\0162#.artm.GetTopicModel"
-    "Args.RequestType:\003Pwt\022B\n\rmatrix_layout\030\010"
-    " \001(\0162$.artm.GetTopicModelArgs.MatrixLayo"
-    "ut:\005Dense\";\n\013RequestType\022\007\n\003Pwt\020\000\022\007\n\003Nwt"
-    "\020\001\022\016\n\nTopicNames\020\002\022\n\n\006Tokens\020\003\"%\n\014Matrix"
-    "Layout\022\t\n\005Dense\020\000\022\n\n\006Sparse\020\001\"\245\002\n\022GetThe"
-    "taMatrixArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batc"
-    "h\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic_name\030\003 \003(\t"
-    "\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001"
-    "(\010:\005false\022\031\n\021use_sparse_format\030\006 \001(\010\022\023\n\003"
-    "eps\030\007 \001(\002:\0061e-037\022C\n\rmatrix_layout\030\010 \001(\016"
-    "2%.artm.GetThetaMatrixArgs.MatrixLayout:"
-    "\005Dense\"%\n\014MatrixLayout\022\t\n\005Dense\020\000\022\n\n\006Spa"
-    "rse\020\001\"W\n\021GetScoreValueArgs\022\022\n\nmodel_name"
-    "\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001("
-    "\0132\013.artm.Batch\"\202\001\n\014AddBatchArgs\022\032\n\005batch"
-    "\030\001 \001(\0132\013.artm.Batch\022 \n\024timeout_milliseco"
-    "nds\030\002 \001(\005:\002-1\022\033\n\014reset_scores\030\003 \001(\010:\005fal"
-    "se\022\027\n\017batch_file_name\030\004 \001(\t\"a\n\023InvokeIte"
-    "rationArgs\022\033\n\020iterations_count\030\001 \001(\005:\0011\022"
-    "\032\n\014reset_scores\030\002 \001(\010:\004true\022\021\n\tdisk_path"
-    "\030\003 \001(\t\"0\n\014WaitIdleArgs\022 \n\024timeout_millis"
-    "econds\030\001 \001(\005:\002-1\"8\n\017ExportModelArgs\022\021\n\tf"
-    "ile_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"8\n\017Im"
-    "portModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmode"
-    "l_name\030\002 \001(\t\"%\n\017AttachModelArgs\022\022\n\nmodel"
-    "_name\030\001 \001(\t\"\374\004\n\022ProcessBatchesArgs\022\027\n\017nw"
-    "t_target_name\030\001 \001(\t\022\026\n\016batch_filename\030\002 "
-    "\003(\t\022\027\n\017pwt_source_name\030\003 \001(\t\022\"\n\026inner_it"
-    "erations_count\030\004 \001(\005:\00210\022\034\n\013stream_name\030"
-    "\005 \001(\t:\007@global\022\030\n\020regularizer_name\030\006 \003(\t"
-    "\022\027\n\017regularizer_tau\030\007 \003(\001\022\020\n\010class_id\030\010 "
-    "\003(\t\022\024\n\014class_weight\030\t \003(\002\022\032\n\013reuse_theta"
-    "\030\n \001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true"
-    "\022\034\n\016use_sparse_bow\030\014 \001(\010:\004true\022\032\n\014reset_"
-    "scores\030\r \001(\010:\004true\022J\n\021theta_matrix_type\030"
-    "\016 \001(\0162(.artm.ProcessBatchesArgs.ThetaMat"
-    "rixType:\005Cache\022\024\n\014batch_weight\030\017 \003(\002\022\030\n\020"
-    "model_name_cache\030\020 \001(\t\022\030\n\020predict_class_"
-    "id\030\021 \001(\t\022\032\n\005batch\030\022 \003(\0132\013.artm.Batch\"\\\n\017"
-    "ThetaMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006"
-    "Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSp"
-    "arsePtdw\020\005\"d\n\024ProcessBatchesResult\022#\n\nsc"
-    "ore_data\030\001 \003(\0132\017.artm.ScoreData\022\'\n\014theta"
-    "_matrix\030\002 \001(\0132\021.artm.ThetaMatrix\"m\n\016Merg"
-    "eModelArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\027\n\017n"
-    "wt_source_name\030\002 \003(\t\022\025\n\rsource_weight\030\003 "
-    "\003(\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023RegularizeMo"
-    "delArgs\022\027\n\017rwt_target_name\030\001 \001(\t\022\027\n\017pwt_"
-    "source_name\030\002 \001(\t\022\027\n\017nwt_source_name\030\003 \001"
-    "(\t\0227\n\024regularizer_settings\030\004 \003(\0132\031.artm."
-    "RegularizerSettings\"_\n\022NormalizeModelArg"
-    "s\022\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017nwt_source"
-    "_name\030\002 \001(\t\022\027\n\017rwt_source_name\030\003 \001(\t\"B\n\024"
-    "ImportDictionaryArgs\022\021\n\tfile_name\030\001 \001(\t\022"
-    "\027\n\017dictionary_name\030\002 \001(\t\"B\n\024ExportDictio"
-    "naryArgs\022\021\n\tfile_name\030\001 \001(\t\022\027\n\017dictionar"
-    "y_name\030\002 \001(\t\"\301\001\n\025CopyRequestResultArgs\022Q"
-    "\n\014request_type\030\001 \001(\0162\'.artm.CopyRequestR"
-    "esultArgs.RequestType:\022DefaultRequestTyp"
-    "e\"U\n\013RequestType\022\026\n\022DefaultRequestType\020\000"
-    "\022\026\n\022GetThetaSecondPass\020\001\022\026\n\022GetModelSeco"
-    "ndPass\020\002\"\036\n\034DuplicateMasterComponentArgs"
-    "\"\034\n\032GetMasterComponentInfoArgs\"\301\006\n\023Maste"
-    "rComponentInfo\022\021\n\tmaster_id\030\001 \001(\005\022+\n\006con"
-    "fig\030\002 \001(\0132\033.artm.MasterComponentConfig\022>"
-    "\n\013regularizer\030\003 \003(\0132).artm.MasterCompone"
-    "ntInfo.RegularizerInfo\0222\n\005score\030\004 \003(\0132#."
-    "artm.MasterComponentInfo.ScoreInfo\022<\n\ndi"
-    "ctionary\030\005 \003(\0132(.artm.MasterComponentInf"
-    "o.DictionaryInfo\0222\n\005model\030\006 \003(\0132#.artm.M"
-    "asterComponentInfo.ModelInfo\022=\n\013cache_en"
-    "try\030\007 \003(\0132(.artm.MasterComponentInfo.Cac"
-    "heEntryInfo\022\031\n\021merger_queue_size\030\010 \001(\005\022\034"
-    "\n\024processor_queue_size\030\t \001(\005\0222\n\005batch\030\n "
-    "\003(\0132#.artm.MasterComponentInfo.BatchInfo"
-    "\032-\n\017RegularizerInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004typ"
-    "e\030\002 \001(\t\032\'\n\tScoreInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004ty"
-    "pe\030\002 \001(\t\0325\n\016DictionaryInfo\022\014\n\004name\030\001 \001(\t"
-    "\022\025\n\rentries_count\030\002 \001(\003\032C\n\tBatchInfo\022\014\n\004"
-    "name\030\001 \001(\t\022\023\n\013items_count\030\002 \001(\005\022\023\n\013token"
-    "_count\030\003 \001(\005\032R\n\tModelInfo\022\014\n\004name\030\001 \001(\t\022"
-    "\014\n\004type\030\002 \001(\t\022\024\n\014topics_count\030\003 \001(\005\022\023\n\013t"
-    "oken_count\030\004 \001(\005\0320\n\016CacheEntryInfo\022\013\n\003ke"
-    "y\030\001 \001(\t\022\021\n\tbyte_size\030\002 \001(\005\"C\n\021ImportBatc"
-    "hesArgs\022\022\n\nbatch_name\030\001 \003(\t\022\032\n\005batch\030\003 \003"
-    "(\0132\013.artm.Batch\"6\n\022AwaitOperationArgs\022 \n"
-    "\024timeout_milliseconds\030\001 \001(\005:\002-1\"\262\003\n\021Mast"
-    "erModelConfig\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010cla"
-    "ss_id\030\002 \003(\t\022\024\n\014class_weight\030\003 \003(\002\022\'\n\014sco"
-    "re_config\030\004 \003(\0132\021.artm.ScoreConfig\0223\n\022re"
-    "gularizer_config\030\005 \003(\0132\027.artm.Regularize"
-    "rConfig\022\017\n\007threads\030\006 \001(\005\022\025\n\010pwt_name\030\007 \001"
-    "(\t:\003pwt\022\025\n\010nwt_name\030\010 \001(\t:\003nwt\022\036\n\026inner_"
-    "iterations_count\030\t \001(\005\022\032\n\013reuse_theta\030\n "
-    "\001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true\022\034\n"
-    "\016use_sparse_bow\030\014 \001(\010:\004true\022\027\n\017disk_cach"
-    "e_path\030\r \001(\t\022\032\n\013use_v06_api\030\016 \001(\010:\005false"
-    "\022\032\n\013cache_theta\030\017 \001(\010:\005false\"\\\n\031FitOffli"
-    "neMasterModelArgs\022\026\n\016batch_filename\030\001 \003("
-    "\t\022\024\n\014batch_weight\030\002 \003(\002\022\021\n\006passes\030\003 \001(\005:"
-    "\0011\"\240\001\n\030FitOnlineMasterModelArgs\022\026\n\016batch"
-    "_filename\030\001 \003(\t\022\024\n\014batch_weight\030\002 \003(\002\022\024\n"
-    "\014update_after\030\003 \003(\005\022\024\n\014apply_weight\030\004 \003("
-    "\002\022\024\n\014decay_weight\030\005 \003(\002\022\024\n\005async\030\006 \001(\010:\005"
-    "false\"\230\002\n\030TransformMasterModelArgs\022\032\n\005ba"
-    "tch\030\001 \003(\0132\013.artm.Batch\022\026\n\016batch_filename"
-    "\030\002 \003(\t\022P\n\021theta_matrix_type\030\003 \001(\0162..artm"
-    ".TransformMasterModelArgs.ThetaMatrixTyp"
-    "e:\005Dense\022\030\n\020predict_class_id\030\004 \001(\t\"\\\n\017Th"
-    "etaMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sp"
-    "arse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSpar"
-    "sePtdw\020\005", 13688);
+    "ric_cooc_values\030\005 \001(\010:\005false\",\n\021GetDicti"
+    "onaryArgs\022\027\n\017dictionary_name\030\001 \001(\t\"\364\002\n\021G"
+    "etTopicModelArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\n"
+    "topic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022\020\n\010class"
+    "_id\030\004 \003(\t\022\031\n\021use_sparse_format\030\005 \001(\010\022\023\n\003"
+    "eps\030\006 \001(\002:\0061e-037\022>\n\014request_type\030\007 \001(\0162"
+    "#.artm.GetTopicModelArgs.RequestType:\003Pw"
+    "t\022B\n\rmatrix_layout\030\010 \001(\0162$.artm.GetTopic"
+    "ModelArgs.MatrixLayout:\005Dense\";\n\013Request"
+    "Type\022\007\n\003Pwt\020\000\022\007\n\003Nwt\020\001\022\016\n\nTopicNames\020\002\022\n"
+    "\n\006Tokens\020\003\"%\n\014MatrixLayout\022\t\n\005Dense\020\000\022\n\n"
+    "\006Sparse\020\001\"\245\002\n\022GetThetaMatrixArgs\022\022\n\nmode"
+    "l_name\030\001 \001(\t\022\032\n\005batch\030\002 \001(\0132\013.artm.Batch"
+    "\022\022\n\ntopic_name\030\003 \003(\t\022\023\n\013topic_index\030\004 \003("
+    "\005\022\032\n\013clean_cache\030\005 \001(\010:\005false\022\031\n\021use_spa"
+    "rse_format\030\006 \001(\010\022\023\n\003eps\030\007 \001(\002:\0061e-037\022C\n"
+    "\rmatrix_layout\030\010 \001(\0162%.artm.GetThetaMatr"
+    "ixArgs.MatrixLayout:\005Dense\"%\n\014MatrixLayo"
+    "ut\022\t\n\005Dense\020\000\022\n\n\006Sparse\020\001\"W\n\021GetScoreVal"
+    "ueArgs\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\nscore_name"
+    "\030\002 \001(\t\022\032\n\005batch\030\003 \001(\0132\013.artm.Batch\"\202\001\n\014A"
+    "ddBatchArgs\022\032\n\005batch\030\001 \001(\0132\013.artm.Batch\022"
+    " \n\024timeout_milliseconds\030\002 \001(\005:\002-1\022\033\n\014res"
+    "et_scores\030\003 \001(\010:\005false\022\027\n\017batch_file_nam"
+    "e\030\004 \001(\t\"a\n\023InvokeIterationArgs\022\033\n\020iterat"
+    "ions_count\030\001 \001(\005:\0011\022\032\n\014reset_scores\030\002 \001("
+    "\010:\004true\022\021\n\tdisk_path\030\003 \001(\t\"0\n\014WaitIdleAr"
+    "gs\022 \n\024timeout_milliseconds\030\001 \001(\005:\002-1\"8\n\017"
+    "ExportModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmo"
+    "del_name\030\002 \001(\t\"8\n\017ImportModelArgs\022\021\n\tfil"
+    "e_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"%\n\017Atta"
+    "chModelArgs\022\022\n\nmodel_name\030\001 \001(\t\"\340\004\n\022Proc"
+    "essBatchesArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022"
+    "\026\n\016batch_filename\030\002 \003(\t\022\027\n\017pwt_source_na"
+    "me\030\003 \001(\t\022\"\n\026inner_iterations_count\030\004 \001(\005"
+    ":\00210\022\034\n\013stream_name\030\005 \001(\t:\007@global\022\030\n\020re"
+    "gularizer_name\030\006 \003(\t\022\027\n\017regularizer_tau\030"
+    "\007 \003(\001\022\020\n\010class_id\030\010 \003(\t\022\024\n\014class_weight\030"
+    "\t \003(\002\022\032\n\013reuse_theta\030\n \001(\010:\005false\022\031\n\013opt"
+    "_for_avx\030\013 \001(\010:\004true\022\034\n\016use_sparse_bow\030\014"
+    " \001(\010:\004true\022\032\n\014reset_scores\030\r \001(\010:\004true\022J"
+    "\n\021theta_matrix_type\030\016 \001(\0162(.artm.Process"
+    "BatchesArgs.ThetaMatrixType:\005Cache\022\024\n\014ba"
+    "tch_weight\030\017 \003(\002\022\030\n\020model_name_cache\030\020 \001"
+    "(\t\022\030\n\020predict_class_id\030\021 \001(\t\"\\\n\017ThetaMat"
+    "rixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002"
+    "\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSparsePtdw"
+    "\020\005\"d\n\024ProcessBatchesResult\022#\n\nscore_data"
+    "\030\001 \003(\0132\017.artm.ScoreData\022\'\n\014theta_matrix\030"
+    "\002 \001(\0132\021.artm.ThetaMatrix\"m\n\016MergeModelAr"
+    "gs\022\027\n\017nwt_target_name\030\001 \001(\t\022\027\n\017nwt_sourc"
+    "e_name\030\002 \003(\t\022\025\n\rsource_weight\030\003 \003(\002\022\022\n\nt"
+    "opic_name\030\004 \003(\t\"\231\001\n\023RegularizeModelArgs\022"
+    "\027\n\017rwt_target_name\030\001 \001(\t\022\027\n\017pwt_source_n"
+    "ame\030\002 \001(\t\022\027\n\017nwt_source_name\030\003 \001(\t\0227\n\024re"
+    "gularizer_settings\030\004 \003(\0132\031.artm.Regulari"
+    "zerSettings\"_\n\022NormalizeModelArgs\022\027\n\017pwt"
+    "_target_name\030\001 \001(\t\022\027\n\017nwt_source_name\030\002 "
+    "\001(\t\022\027\n\017rwt_source_name\030\003 \001(\t\"B\n\024ImportDi"
+    "ctionaryArgs\022\021\n\tfile_name\030\001 \001(\t\022\027\n\017dicti"
+    "onary_name\030\002 \001(\t\"B\n\024ExportDictionaryArgs"
+    "\022\021\n\tfile_name\030\001 \001(\t\022\027\n\017dictionary_name\030\002"
+    " \001(\t\"\301\001\n\025CopyRequestResultArgs\022Q\n\014reques"
+    "t_type\030\001 \001(\0162\'.artm.CopyRequestResultArg"
+    "s.RequestType:\022DefaultRequestType\"U\n\013Req"
+    "uestType\022\026\n\022DefaultRequestType\020\000\022\026\n\022GetT"
+    "hetaSecondPass\020\001\022\026\n\022GetModelSecondPass\020\002"
+    "\"\036\n\034DuplicateMasterComponentArgs\"\034\n\032GetM"
+    "asterComponentInfoArgs\"\301\006\n\023MasterCompone"
+    "ntInfo\022\021\n\tmaster_id\030\001 \001(\005\022+\n\006config\030\002 \001("
+    "\0132\033.artm.MasterComponentConfig\022>\n\013regula"
+    "rizer\030\003 \003(\0132).artm.MasterComponentInfo.R"
+    "egularizerInfo\0222\n\005score\030\004 \003(\0132#.artm.Mas"
+    "terComponentInfo.ScoreInfo\022<\n\ndictionary"
+    "\030\005 \003(\0132(.artm.MasterComponentInfo.Dictio"
+    "naryInfo\0222\n\005model\030\006 \003(\0132#.artm.MasterCom"
+    "ponentInfo.ModelInfo\022=\n\013cache_entry\030\007 \003("
+    "\0132(.artm.MasterComponentInfo.CacheEntryI"
+    "nfo\022\031\n\021merger_queue_size\030\010 \001(\005\022\034\n\024proces"
+    "sor_queue_size\030\t \001(\005\0222\n\005batch\030\n \003(\0132#.ar"
+    "tm.MasterComponentInfo.BatchInfo\032-\n\017Regu"
+    "larizerInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\032"
+    "\'\n\tScoreInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t"
+    "\0325\n\016DictionaryInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rentr"
+    "ies_count\030\002 \001(\003\032C\n\tBatchInfo\022\014\n\004name\030\001 \001"
+    "(\t\022\023\n\013items_count\030\002 \001(\005\022\023\n\013token_count\030\003"
+    " \001(\005\032R\n\tModelInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030"
+    "\002 \001(\t\022\024\n\014topics_count\030\003 \001(\005\022\023\n\013token_cou"
+    "nt\030\004 \001(\005\0320\n\016CacheEntryInfo\022\013\n\003key\030\001 \001(\t\022"
+    "\021\n\tbyte_size\030\002 \001(\005\"C\n\021ImportBatchesArgs\022"
+    "\022\n\nbatch_name\030\001 \003(\t\022\032\n\005batch\030\003 \003(\0132\013.art"
+    "m.Batch\"6\n\022AwaitOperationArgs\022 \n\024timeout"
+    "_milliseconds\030\001 \001(\005:\002-1\"\221\003\n\021MasterModelC"
+    "onfig\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010class_id\030\002 "
+    "\003(\t\022\024\n\014class_weight\030\003 \003(\002\022\'\n\014score_confi"
+    "g\030\004 \003(\0132\021.artm.ScoreConfig\0223\n\022regularize"
+    "r_config\030\005 \003(\0132\027.artm.RegularizerConfig\022"
+    "\017\n\007threads\030\006 \001(\005\022\020\n\010pwt_name\030\007 \001(\t\022\025\n\010nw"
+    "t_name\030\010 \001(\t:\003nwt\022\036\n\026inner_iterations_co"
+    "unt\030\t \001(\005\022\032\n\013reuse_theta\030\n \001(\010:\005false\022\031\n"
+    "\013opt_for_avx\030\013 \001(\010:\004true\022\034\n\016use_sparse_b"
+    "ow\030\014 \001(\010:\004true\022\027\n\017disk_cache_path\030\r \001(\t\022"
+    "\032\n\013use_v06_api\030\016 \001(\010:\005false\"\\\n\031FitOfflin"
+    "eMasterModelArgs\022\026\n\016batch_filename\030\001 \003(\t"
+    "\022\024\n\014batch_weight\030\002 \003(\002\022\021\n\006passes\030\003 \001(\005:\001"
+    "1\"\240\001\n\030FitOnlineMasterModelArgs\022\026\n\016batch_"
+    "filename\030\001 \003(\t\022\024\n\014batch_weight\030\002 \003(\002\022\024\n\014"
+    "update_after\030\003 \003(\005\022\024\n\014apply_weight\030\004 \003(\002"
+    "\022\024\n\014decay_weight\030\005 \003(\002\022\024\n\005async\030\006 \001(\010:\005f"
+    "alse\"\374\001\n\030TransformMasterModelArgs\022\026\n\016bat"
+    "ch_filename\030\001 \003(\t\022P\n\021theta_matrix_type\030\002"
+    " \001(\0162..artm.TransformMasterModelArgs.The"
+    "taMatrixType:\005Cache\022\030\n\020predict_class_id\030"
+    "\003 \001(\t\"\\\n\017ThetaMatrixType\022\010\n\004None\020\000\022\t\n\005De"
+    "nse\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtd"
+    "w\020\004\022\016\n\nSparsePtdw\020\005\"L\n\024ConfigureLoggingA"
+    "rgs\022\031\n\021min_logging_level\030\001 \001(\005\022\031\n\021loggin"
+    "g_directory\030\002 \001(\t", 13657);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -2886,14 +2903,13 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   MasterComponentInfo_CacheEntryInfo::default_instance_ = new MasterComponentInfo_CacheEntryInfo();
   ImportBatchesArgs::default_instance_ = new ImportBatchesArgs();
   AwaitOperationArgs::default_instance_ = new AwaitOperationArgs();
-  MasterModelConfig::_default_pwt_name_ =
-      new ::std::string("pwt", 3);
   MasterModelConfig::_default_nwt_name_ =
       new ::std::string("nwt", 3);
   MasterModelConfig::default_instance_ = new MasterModelConfig();
   FitOfflineMasterModelArgs::default_instance_ = new FitOfflineMasterModelArgs();
   FitOnlineMasterModelArgs::default_instance_ = new FitOnlineMasterModelArgs();
   TransformMasterModelArgs::default_instance_ = new TransformMasterModelArgs();
+  ConfigureLoggingArgs::default_instance_ = new ConfigureLoggingArgs();
   DoubleArray::default_instance_->InitAsDefaultInstance();
   FloatArray::default_instance_->InitAsDefaultInstance();
   BoolArray::default_instance_->InitAsDefaultInstance();
@@ -2985,6 +3001,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   FitOfflineMasterModelArgs::default_instance_->InitAsDefaultInstance();
   FitOnlineMasterModelArgs::default_instance_->InitAsDefaultInstance();
   TransformMasterModelArgs::default_instance_->InitAsDefaultInstance();
+  ConfigureLoggingArgs::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fmessages_2eproto);
 }
 
@@ -24480,7 +24497,6 @@ const int GatherDictionaryArgs::kDataPathFieldNumber;
 const int GatherDictionaryArgs::kCoocFilePathFieldNumber;
 const int GatherDictionaryArgs::kVocabFilePathFieldNumber;
 const int GatherDictionaryArgs::kSymmetricCoocValuesFieldNumber;
-const int GatherDictionaryArgs::kBatchPathFieldNumber;
 #endif  // !_MSC_VER
 
 GatherDictionaryArgs::GatherDictionaryArgs()
@@ -24573,7 +24589,6 @@ void GatherDictionaryArgs::Clear() {
     }
     symmetric_cooc_values_ = false;
   }
-  batch_path_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -24663,25 +24678,6 @@ bool GatherDictionaryArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_batch_path;
-        break;
-      }
-
-      // repeated string batch_path = 6;
-      case 6: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch_path:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->add_batch_path()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->batch_path(this->batch_path_size() - 1).data(),
-            this->batch_path(this->batch_path_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(50)) goto parse_batch_path;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -24745,15 +24741,6 @@ void GatherDictionaryArgs::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(5, this->symmetric_cooc_values(), output);
   }
 
-  // repeated string batch_path = 6;
-  for (int i = 0; i < this->batch_path_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-    this->batch_path(i).data(), this->batch_path(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      6, this->batch_path(i), output);
-  }
-
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -24807,15 +24794,6 @@ void GatherDictionaryArgs::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(5, this->symmetric_cooc_values(), target);
   }
 
-  // repeated string batch_path = 6;
-  for (int i = 0; i < this->batch_path_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->batch_path(i).data(), this->batch_path(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(6, this->batch_path(i), target);
-  }
-
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -24861,13 +24839,6 @@ int GatherDictionaryArgs::ByteSize() const {
     }
 
   }
-  // repeated string batch_path = 6;
-  total_size += 1 * this->batch_path_size();
-  for (int i = 0; i < this->batch_path_size(); i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-      this->batch_path(i));
-  }
-
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -24893,7 +24864,6 @@ void GatherDictionaryArgs::MergeFrom(const ::google::protobuf::Message& from) {
 
 void GatherDictionaryArgs::MergeFrom(const GatherDictionaryArgs& from) {
   GOOGLE_CHECK_NE(&from, this);
-  batch_path_.MergeFrom(from.batch_path_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_dictionary_target_name()) {
       set_dictionary_target_name(from.dictionary_target_name());
@@ -24938,7 +24908,6 @@ void GatherDictionaryArgs::Swap(GatherDictionaryArgs* other) {
     std::swap(cooc_file_path_, other->cooc_file_path_);
     std::swap(vocab_file_path_, other->vocab_file_path_);
     std::swap(symmetric_cooc_values_, other->symmetric_cooc_values_);
-    batch_path_.Swap(&other->batch_path_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -28334,7 +28303,6 @@ const int ProcessBatchesArgs::kThetaMatrixTypeFieldNumber;
 const int ProcessBatchesArgs::kBatchWeightFieldNumber;
 const int ProcessBatchesArgs::kModelNameCacheFieldNumber;
 const int ProcessBatchesArgs::kPredictClassIdFieldNumber;
-const int ProcessBatchesArgs::kBatchFieldNumber;
 #endif  // !_MSC_VER
 
 ProcessBatchesArgs::ProcessBatchesArgs()
@@ -28456,7 +28424,6 @@ void ProcessBatchesArgs::Clear() {
   class_id_.Clear();
   class_weight_.Clear();
   batch_weight_.Clear();
-  batch_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -28771,21 +28738,6 @@ bool ProcessBatchesArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(146)) goto parse_batch;
-        break;
-      }
-
-      // repeated .artm.Batch batch = 18;
-      case 18: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_batch()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(146)) goto parse_batch;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -28929,12 +28881,6 @@ void ProcessBatchesArgs::SerializeWithCachedSizes(
       17, this->predict_class_id(), output);
   }
 
-  // repeated .artm.Batch batch = 18;
-  for (int i = 0; i < this->batch_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      18, this->batch(i), output);
-  }
-
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -29069,13 +29015,6 @@ void ProcessBatchesArgs::SerializeWithCachedSizes(
         17, this->predict_class_id(), target);
   }
 
-  // repeated .artm.Batch batch = 18;
-  for (int i = 0; i < this->batch_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        18, this->batch(i), target);
-  }
-
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -29202,14 +29141,6 @@ int ProcessBatchesArgs::ByteSize() const {
     total_size += 1 * this->batch_weight_size() + data_size;
   }
 
-  // repeated .artm.Batch batch = 18;
-  total_size += 2 * this->batch_size();
-  for (int i = 0; i < this->batch_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->batch(i));
-  }
-
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -29241,7 +29172,6 @@ void ProcessBatchesArgs::MergeFrom(const ProcessBatchesArgs& from) {
   class_id_.MergeFrom(from.class_id_);
   class_weight_.MergeFrom(from.class_weight_);
   batch_weight_.MergeFrom(from.batch_weight_);
-  batch_.MergeFrom(from.batch_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_nwt_target_name()) {
       set_nwt_target_name(from.nwt_target_name());
@@ -29320,7 +29250,6 @@ void ProcessBatchesArgs::Swap(ProcessBatchesArgs* other) {
     batch_weight_.Swap(&other->batch_weight_);
     std::swap(model_name_cache_, other->model_name_cache_);
     std::swap(predict_class_id_, other->predict_class_id_);
-    batch_.Swap(&other->batch_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -34588,7 +34517,6 @@ void AwaitOperationArgs::Swap(AwaitOperationArgs* other) {
 
 // ===================================================================
 
-::std::string* MasterModelConfig::_default_pwt_name_ = NULL;
 ::std::string* MasterModelConfig::_default_nwt_name_ = NULL;
 #ifndef _MSC_VER
 const int MasterModelConfig::kTopicNameFieldNumber;
@@ -34605,7 +34533,6 @@ const int MasterModelConfig::kOptForAvxFieldNumber;
 const int MasterModelConfig::kUseSparseBowFieldNumber;
 const int MasterModelConfig::kDiskCachePathFieldNumber;
 const int MasterModelConfig::kUseV06ApiFieldNumber;
-const int MasterModelConfig::kCacheThetaFieldNumber;
 #endif  // !_MSC_VER
 
 MasterModelConfig::MasterModelConfig()
@@ -34625,7 +34552,7 @@ MasterModelConfig::MasterModelConfig(const MasterModelConfig& from)
 void MasterModelConfig::SharedCtor() {
   _cached_size_ = 0;
   threads_ = 0;
-  pwt_name_ = const_cast< ::std::string*>(_default_pwt_name_);
+  pwt_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   nwt_name_ = const_cast< ::std::string*>(_default_nwt_name_);
   inner_iterations_count_ = 0;
   reuse_theta_ = false;
@@ -34633,7 +34560,6 @@ void MasterModelConfig::SharedCtor() {
   use_sparse_bow_ = true;
   disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   use_v06_api_ = false;
-  cache_theta_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -34642,7 +34568,7 @@ MasterModelConfig::~MasterModelConfig() {
 }
 
 void MasterModelConfig::SharedDtor() {
-  if (pwt_name_ != _default_pwt_name_) {
+  if (pwt_name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete pwt_name_;
   }
   if (nwt_name_ != _default_nwt_name_) {
@@ -34680,8 +34606,8 @@ void MasterModelConfig::Clear() {
   if (_has_bits_[5 / 32] & (0xffu << (5 % 32))) {
     threads_ = 0;
     if (has_pwt_name()) {
-      if (pwt_name_ != _default_pwt_name_) {
-        pwt_name_->assign(*_default_pwt_name_);
+      if (pwt_name_ != &::google::protobuf::internal::GetEmptyString()) {
+        pwt_name_->clear();
       }
     }
     if (has_nwt_name()) {
@@ -34701,7 +34627,6 @@ void MasterModelConfig::Clear() {
       }
     }
     use_v06_api_ = false;
-    cache_theta_ = false;
   }
   topic_name_.Clear();
   class_id_.Clear();
@@ -34824,7 +34749,7 @@ bool MasterModelConfig::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string pwt_name = 7 [default = "pwt"];
+      // optional string pwt_name = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -34951,22 +34876,6 @@ bool MasterModelConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(120)) goto parse_cache_theta;
-        break;
-      }
-
-      // optional bool cache_theta = 15 [default = false];
-      case 15: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_cache_theta:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &cache_theta_)));
-          set_has_cache_theta();
-        } else {
-          goto handle_uninterpreted;
-        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -35030,7 +34939,7 @@ void MasterModelConfig::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->threads(), output);
   }
 
-  // optional string pwt_name = 7 [default = "pwt"];
+  // optional string pwt_name = 7;
   if (has_pwt_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->pwt_name().data(), this->pwt_name().length(),
@@ -35080,11 +34989,6 @@ void MasterModelConfig::SerializeWithCachedSizes(
   // optional bool use_v06_api = 14 [default = false];
   if (has_use_v06_api()) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(14, this->use_v06_api(), output);
-  }
-
-  // optional bool cache_theta = 15 [default = false];
-  if (has_cache_theta()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(15, this->cache_theta(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -35138,7 +35042,7 @@ void MasterModelConfig::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->threads(), target);
   }
 
-  // optional string pwt_name = 7 [default = "pwt"];
+  // optional string pwt_name = 7;
   if (has_pwt_name()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->pwt_name().data(), this->pwt_name().length(),
@@ -35193,11 +35097,6 @@ void MasterModelConfig::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(14, this->use_v06_api(), target);
   }
 
-  // optional bool cache_theta = 15 [default = false];
-  if (has_cache_theta()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(15, this->cache_theta(), target);
-  }
-
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -35216,7 +35115,7 @@ int MasterModelConfig::ByteSize() const {
           this->threads());
     }
 
-    // optional string pwt_name = 7 [default = "pwt"];
+    // optional string pwt_name = 7;
     if (has_pwt_name()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -35263,11 +35162,6 @@ int MasterModelConfig::ByteSize() const {
 
     // optional bool use_v06_api = 14 [default = false];
     if (has_use_v06_api()) {
-      total_size += 1 + 1;
-    }
-
-    // optional bool cache_theta = 15 [default = false];
-    if (has_cache_theta()) {
       total_size += 1 + 1;
     }
 
@@ -35369,9 +35263,6 @@ void MasterModelConfig::MergeFrom(const MasterModelConfig& from) {
     if (from.has_use_v06_api()) {
       set_use_v06_api(from.use_v06_api());
     }
-    if (from.has_cache_theta()) {
-      set_cache_theta(from.cache_theta());
-    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -35409,7 +35300,6 @@ void MasterModelConfig::Swap(MasterModelConfig* other) {
     std::swap(use_sparse_bow_, other->use_sparse_bow_);
     std::swap(disk_cache_path_, other->disk_cache_path_);
     std::swap(use_v06_api_, other->use_v06_api_);
-    std::swap(cache_theta_, other->cache_theta_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -36197,7 +36087,6 @@ const TransformMasterModelArgs_ThetaMatrixType TransformMasterModelArgs::ThetaMa
 const int TransformMasterModelArgs::ThetaMatrixType_ARRAYSIZE;
 #endif  // _MSC_VER
 #ifndef _MSC_VER
-const int TransformMasterModelArgs::kBatchFieldNumber;
 const int TransformMasterModelArgs::kBatchFilenameFieldNumber;
 const int TransformMasterModelArgs::kThetaMatrixTypeFieldNumber;
 const int TransformMasterModelArgs::kPredictClassIdFieldNumber;
@@ -36219,7 +36108,7 @@ TransformMasterModelArgs::TransformMasterModelArgs(const TransformMasterModelArg
 
 void TransformMasterModelArgs::SharedCtor() {
   _cached_size_ = 0;
-  theta_matrix_type_ = 1;
+  theta_matrix_type_ = 3;
   predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -36258,15 +36147,14 @@ TransformMasterModelArgs* TransformMasterModelArgs::New() const {
 }
 
 void TransformMasterModelArgs::Clear() {
-  if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
-    theta_matrix_type_ = 1;
+  if (_has_bits_[1 / 32] & (0xffu << (1 % 32))) {
+    theta_matrix_type_ = 3;
     if (has_predict_class_id()) {
       if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
         predict_class_id_->clear();
       }
     }
   }
-  batch_.Clear();
   batch_filename_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -36278,23 +36166,8 @@ bool TransformMasterModelArgs::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .artm.Batch batch = 1;
+      // repeated string batch_filename = 1;
       case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_batch()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(10)) goto parse_batch;
-        if (input->ExpectTag(18)) goto parse_batch_filename;
-        break;
-      }
-
-      // repeated string batch_filename = 2;
-      case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_batch_filename:
@@ -36307,13 +36180,13 @@ bool TransformMasterModelArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_batch_filename;
-        if (input->ExpectTag(24)) goto parse_theta_matrix_type;
+        if (input->ExpectTag(10)) goto parse_batch_filename;
+        if (input->ExpectTag(16)) goto parse_theta_matrix_type;
         break;
       }
 
-      // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
-      case 3: {
+      // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 2 [default = Cache];
+      case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_theta_matrix_type:
@@ -36324,17 +36197,17 @@ bool TransformMasterModelArgs::MergePartialFromCodedStream(
           if (::artm::TransformMasterModelArgs_ThetaMatrixType_IsValid(value)) {
             set_theta_matrix_type(static_cast< ::artm::TransformMasterModelArgs_ThetaMatrixType >(value));
           } else {
-            mutable_unknown_fields()->AddVarint(3, value);
+            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_predict_class_id;
+        if (input->ExpectTag(26)) goto parse_predict_class_id;
         break;
       }
 
-      // optional string predict_class_id = 4;
-      case 4: {
+      // optional string predict_class_id = 3;
+      case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_predict_class_id:
@@ -36368,34 +36241,28 @@ bool TransformMasterModelArgs::MergePartialFromCodedStream(
 
 void TransformMasterModelArgs::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated .artm.Batch batch = 1;
-  for (int i = 0; i < this->batch_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->batch(i), output);
-  }
-
-  // repeated string batch_filename = 2;
+  // repeated string batch_filename = 1;
   for (int i = 0; i < this->batch_filename_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
     this->batch_filename(i).data(), this->batch_filename(i).length(),
     ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->batch_filename(i), output);
+      1, this->batch_filename(i), output);
   }
 
-  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
+  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 2 [default = Cache];
   if (has_theta_matrix_type()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      3, this->theta_matrix_type(), output);
+      2, this->theta_matrix_type(), output);
   }
 
-  // optional string predict_class_id = 4;
+  // optional string predict_class_id = 3;
   if (has_predict_class_id()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->predict_class_id().data(), this->predict_class_id().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      4, this->predict_class_id(), output);
+      3, this->predict_class_id(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -36406,36 +36273,29 @@ void TransformMasterModelArgs::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* TransformMasterModelArgs::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // repeated .artm.Batch batch = 1;
-  for (int i = 0; i < this->batch_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        1, this->batch(i), target);
-  }
-
-  // repeated string batch_filename = 2;
+  // repeated string batch_filename = 1;
   for (int i = 0; i < this->batch_filename_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->batch_filename(i).data(), this->batch_filename(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(2, this->batch_filename(i), target);
+      WriteStringToArray(1, this->batch_filename(i), target);
   }
 
-  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
+  // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 2 [default = Cache];
   if (has_theta_matrix_type()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->theta_matrix_type(), target);
+      2, this->theta_matrix_type(), target);
   }
 
-  // optional string predict_class_id = 4;
+  // optional string predict_class_id = 3;
   if (has_predict_class_id()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->predict_class_id().data(), this->predict_class_id().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        4, this->predict_class_id(), target);
+        3, this->predict_class_id(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -36448,14 +36308,14 @@ void TransformMasterModelArgs::SerializeWithCachedSizes(
 int TransformMasterModelArgs::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
-    // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 3 [default = Dense];
+  if (_has_bits_[1 / 32] & (0xffu << (1 % 32))) {
+    // optional .artm.TransformMasterModelArgs.ThetaMatrixType theta_matrix_type = 2 [default = Cache];
     if (has_theta_matrix_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->theta_matrix_type());
     }
 
-    // optional string predict_class_id = 4;
+    // optional string predict_class_id = 3;
     if (has_predict_class_id()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -36463,15 +36323,7 @@ int TransformMasterModelArgs::ByteSize() const {
     }
 
   }
-  // repeated .artm.Batch batch = 1;
-  total_size += 1 * this->batch_size();
-  for (int i = 0; i < this->batch_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->batch(i));
-  }
-
-  // repeated string batch_filename = 2;
+  // repeated string batch_filename = 1;
   total_size += 1 * this->batch_filename_size();
   for (int i = 0; i < this->batch_filename_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -36503,9 +36355,8 @@ void TransformMasterModelArgs::MergeFrom(const ::google::protobuf::Message& from
 
 void TransformMasterModelArgs::MergeFrom(const TransformMasterModelArgs& from) {
   GOOGLE_CHECK_NE(&from, this);
-  batch_.MergeFrom(from.batch_);
   batch_filename_.MergeFrom(from.batch_filename_);
-  if (from._has_bits_[2 / 32] & (0xffu << (2 % 32))) {
+  if (from._has_bits_[1 / 32] & (0xffu << (1 % 32))) {
     if (from.has_theta_matrix_type()) {
       set_theta_matrix_type(from.theta_matrix_type());
     }
@@ -36535,7 +36386,6 @@ bool TransformMasterModelArgs::IsInitialized() const {
 
 void TransformMasterModelArgs::Swap(TransformMasterModelArgs* other) {
   if (other != this) {
-    batch_.Swap(&other->batch_);
     batch_filename_.Swap(&other->batch_filename_);
     std::swap(theta_matrix_type_, other->theta_matrix_type_);
     std::swap(predict_class_id_, other->predict_class_id_);
@@ -36550,6 +36400,271 @@ void TransformMasterModelArgs::Swap(TransformMasterModelArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = TransformMasterModelArgs_descriptor_;
   metadata.reflection = TransformMasterModelArgs_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int ConfigureLoggingArgs::kMinLoggingLevelFieldNumber;
+const int ConfigureLoggingArgs::kLoggingDirectoryFieldNumber;
+#endif  // !_MSC_VER
+
+ConfigureLoggingArgs::ConfigureLoggingArgs()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void ConfigureLoggingArgs::InitAsDefaultInstance() {
+}
+
+ConfigureLoggingArgs::ConfigureLoggingArgs(const ConfigureLoggingArgs& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void ConfigureLoggingArgs::SharedCtor() {
+  _cached_size_ = 0;
+  min_logging_level_ = 0;
+  logging_directory_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ConfigureLoggingArgs::~ConfigureLoggingArgs() {
+  SharedDtor();
+}
+
+void ConfigureLoggingArgs::SharedDtor() {
+  if (logging_directory_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete logging_directory_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void ConfigureLoggingArgs::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ConfigureLoggingArgs::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ConfigureLoggingArgs_descriptor_;
+}
+
+const ConfigureLoggingArgs& ConfigureLoggingArgs::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
+  return *default_instance_;
+}
+
+ConfigureLoggingArgs* ConfigureLoggingArgs::default_instance_ = NULL;
+
+ConfigureLoggingArgs* ConfigureLoggingArgs::New() const {
+  return new ConfigureLoggingArgs;
+}
+
+void ConfigureLoggingArgs::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    min_logging_level_ = 0;
+    if (has_logging_directory()) {
+      if (logging_directory_ != &::google::protobuf::internal::GetEmptyString()) {
+        logging_directory_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool ConfigureLoggingArgs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional int32 min_logging_level = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &min_logging_level_)));
+          set_has_min_logging_level();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_logging_directory;
+        break;
+      }
+
+      // optional string logging_directory = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_logging_directory:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_logging_directory()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->logging_directory().data(), this->logging_directory().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void ConfigureLoggingArgs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional int32 min_logging_level = 1;
+  if (has_min_logging_level()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->min_logging_level(), output);
+  }
+
+  // optional string logging_directory = 2;
+  if (has_logging_directory()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->logging_directory().data(), this->logging_directory().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->logging_directory(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* ConfigureLoggingArgs::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional int32 min_logging_level = 1;
+  if (has_min_logging_level()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->min_logging_level(), target);
+  }
+
+  // optional string logging_directory = 2;
+  if (has_logging_directory()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->logging_directory().data(), this->logging_directory().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->logging_directory(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int ConfigureLoggingArgs::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional int32 min_logging_level = 1;
+    if (has_min_logging_level()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->min_logging_level());
+    }
+
+    // optional string logging_directory = 2;
+    if (has_logging_directory()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->logging_directory());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ConfigureLoggingArgs::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const ConfigureLoggingArgs* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ConfigureLoggingArgs*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void ConfigureLoggingArgs::MergeFrom(const ConfigureLoggingArgs& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_min_logging_level()) {
+      set_min_logging_level(from.min_logging_level());
+    }
+    if (from.has_logging_directory()) {
+      set_logging_directory(from.logging_directory());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void ConfigureLoggingArgs::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ConfigureLoggingArgs::CopyFrom(const ConfigureLoggingArgs& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ConfigureLoggingArgs::IsInitialized() const {
+
+  return true;
+}
+
+void ConfigureLoggingArgs::Swap(ConfigureLoggingArgs* other) {
+  if (other != this) {
+    std::swap(min_logging_level_, other->min_logging_level_);
+    std::swap(logging_directory_, other->logging_directory_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata ConfigureLoggingArgs::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ConfigureLoggingArgs_descriptor_;
+  metadata.reflection = ConfigureLoggingArgs_reflection_;
   return metadata;
 }
 

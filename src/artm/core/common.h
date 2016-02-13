@@ -91,6 +91,8 @@ const int kIdleLoopFrequency = 1;  // 1 ms
 
 const int kBatchNameLength = 6;
 
+const int kMaxLoggingLevel = 3;
+
 class CuckooWatch {
  public:
   explicit CuckooWatch(std::string message)

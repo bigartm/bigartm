@@ -20,6 +20,16 @@ void RunTest(bool disk_cache) {
 
   std::string target_path = artm::test::Helpers::getUniqueString();
 
+  artm::ConfigureLoggingArgs log_args;
+  std::string log_dir = "../artm";
+  log_args.set_logging_directory(log_dir);
+  std::string args_str;
+  log_args.SerializeToString(&args_str);
+
+  ArtmConfigureLogging(args_str.size(), args_str.c_str());
+  EXPECT_EQ(log_dir, ::google::GetLoggingDirectories()[0]);
+  EXPECT_EQ(::google::GetLoggingDirectories().size(), 1);
+
   ::artm::MasterComponentConfig master_config;
   master_config.set_cache_theta(true);
   if (disk_cache) master_config.set_disk_cache_path(target_path);
