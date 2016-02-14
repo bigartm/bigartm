@@ -820,6 +820,7 @@ message FitOfflineMasterModelArgs {
   repeated string batch_filename = 1;
   repeated float batch_weight = 2;
   optional int32 passes = 3 [default = 1];
+  optional string batch_folder = 4;
 }
 
 message FitOnlineMasterModelArgs {

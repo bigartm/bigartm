@@ -194,3 +194,51 @@ TEST(Supcry, TransformAfterOverwrite) {
 
   describeTheta(theta, 5);
 }
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=Supcry.FitFromDiskFolder
+TEST(Supcry, FitFromDiskFolder) {
+  // Step 1. Configure and create MasterModel
+  ::artm::MasterModelConfig config;
+  for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
+  ::artm::ScoreConfig* score_config = config.add_score_config();
+  score_config->set_type(::artm::ScoreConfig_Type_Perplexity);
+  score_config->set_name("Perplexity");
+  score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
+  ::artm::MasterModel master_model(config);
+
+  // Step 2. Generate batches and save them to disk
+  std::string batch_folder = "./batch_folder";
+  try { boost::filesystem::remove_all(batch_folder); } catch (...) {}  // NOLINT
+  boost::filesystem::create_directory(batch_folder);
+
+  std::vector< ::artm::Batch> batches;
+  ::artm::DictionaryData dictionary_data;
+  GenerateBatches(&batches, &dictionary_data);
+  for (auto& batch : batches) {
+    auto batch_path = boost::filesystem::path(batch_folder) / (batch.id() + ".batch");
+    std::ofstream fout(batch_path.string().c_str(), std::ofstream::binary);
+    ASSERT_TRUE(batch.SerializeToOstream(&fout));
+  }
+
+  // Step 3. Import dictionary into BigARTM memory
+  dictionary_data.set_name("dictionary");
+  master_model.CreateDictionary(dictionary_data);
+
+  // Step 5. Initialize model
+  ::artm::InitializeModelArgs initialize_model_args;
+  initialize_model_args.set_dictionary_name(dictionary_data.name());
+  master_model.InitializeModel(initialize_model_args);
+
+  // Step 6. Fit topic model using offline algorithm
+  for (int pass = 0; pass < 4; pass++) {
+    ::artm::FitOfflineMasterModelArgs fit_offline_args;
+    fit_offline_args.set_batch_folder(batch_folder);
+    master_model.FitOfflineModel(fit_offline_args);
+
+    ::artm::GetScoreValueArgs get_score_args;
+    get_score_args.set_score_name(score_config->name());
+    artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
+    std::cout << "Perplexity@" << pass << " = " << perplexity_score.value() << "\n";
+  }
+}
