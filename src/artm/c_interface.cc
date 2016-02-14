@@ -362,6 +362,26 @@ int ArtmExecute(int master_id, int length, const char* args_blob, FuncT func) {
   } CATCH_EXCEPTIONS;
 }
 
+// Execute a method of MasterComponent with args parsed from a protobuf blob (name is overwritten)
+template<typename ArgsT, typename FuncT>
+int ArtmExecute(int master_id, int length, const char* args_blob, const char* name, FuncT func) {
+  try {
+    ArgsT args;
+    ParseFromArray(args_blob, length, &args);
+
+    if (name != nullptr)
+      args.set_name(name);
+    else
+      args.clear_name();
+
+    ::artm::core::FixAndValidateMessage(&args, /* throw_error =*/ true);
+    std::string description = ::artm::core::DescribeMessage(args);
+    LOG_IF(INFO, !description.empty()) << "Pass " << description << " to " << typeid(FuncT).name();
+    (master_component(master_id).get()->*func)(args);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmImportBatches(int master_id, int length, const char* args) {
   return ArtmExecute< ::artm::ImportBatchesArgs>(master_id, length, args, &MasterComponent::ImportBatches);
 }
@@ -391,6 +411,10 @@ int ArtmNormalizeModel(int master_id, int length, const char* args) {
 
 int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) {
   return ArtmExecute< ::artm::TopicModel>(master_id, length, topic_model, &MasterComponent::OverwriteTopicModel);
+}
+
+int ArtmOverwriteTopicModelNamed(int master_id, int length, const char* topic_model, const char* name) {
+  return ArtmExecute< ::artm::TopicModel>(master_id, length, topic_model, name, &MasterComponent::OverwriteTopicModel);
 }
 
 int ArtmInitializeModel(int master_id, int length, const char* args) {
@@ -429,6 +453,10 @@ int ArtmFilterDictionary(int master_id, int length, const char* args) {
 
 int ArtmCreateDictionary(int master_id, int length, const char* data) {
   return ArtmExecute< ::artm::DictionaryData>(master_id, length, data, &MasterComponent::CreateDictionary);
+}
+
+int ArtmCreateDictionaryNamed(int master_id, int length, const char* data, const char* name) {
+  return ArtmExecute< ::artm::DictionaryData>(master_id, length, data, name, &MasterComponent::CreateDictionary);
 }
 
 int ArtmImportDictionary(int master_id, int length, const char* args) {

@@ -184,7 +184,10 @@ TEST(Supcry, TransformAfterOverwrite) {
   GenerateBatches(&batches);
 
   // Step 3. Import topic model
-  master_model.OverwriteModel(*topic_model);
+  topic_model->set_name("garbage");  // to test ArtmOverwriteTopicModelNamed
+  std::string blob;
+  topic_model->SerializeToString(&blob);
+  ArtmOverwriteTopicModelNamed(master_model.id(), blob.size(), &*(blob.begin()), /*name=*/ nullptr);
 
   // Step 4. Find theta matrix
   ::artm::TransformMasterModelArgs transform_args;

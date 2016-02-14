@@ -729,8 +729,11 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
   VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
 }
 
-void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
-  instance_->merger()->OverwriteTopicModel(topic_model);
+void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_name()) const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
+  instance_->merger()->OverwriteTopicModel(args);
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatrix* result) {
