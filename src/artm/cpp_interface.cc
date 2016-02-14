@@ -119,6 +119,10 @@ void ParseCollection(const CollectionParserConfig& config) {
   ArtmExecute(config, ArtmParseCollection);
 }
 
+void ConfigureLogging(const ConfigureLoggingArgs& args) {
+  ArtmExecute(args, ArtmConfigureLogging);
+}
+
 MasterComponent::MasterComponent(const MasterComponentConfig& config) : id_(0), config_(config) {
   id_ = ArtmExecute(config, ArtmCreateMasterComponent);
 }

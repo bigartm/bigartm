@@ -28,7 +28,7 @@ void BasicTest() {
   log_args.SerializeToString(&args_str);
 
   ArtmConfigureLogging(args_str.size(), args_str.c_str());
-  EXPECT_EQ(FLAGS_v, log_args.minloglevel());
+  EXPECT_EQ(FLAGS_minloglevel, log_args.minloglevel());
 
   std::string target_path = artm::test::Helpers::getUniqueString();
   const int nTopics = 5;
@@ -49,12 +49,12 @@ void BasicTest() {
   EXPECT_EQ(master_component->info()->score_size(), 1);
 
   // check log level
-  EXPECT_EQ(FLAGS_v, log_args.minloglevel());
+  EXPECT_EQ(FLAGS_minloglevel, log_args.minloglevel());
   log_args.set_minloglevel(1);
   log_args.SerializeToString(&args_str);
 
   ArtmConfigureLogging(args_str.size(), args_str.c_str());
-  EXPECT_EQ(FLAGS_v, log_args.minloglevel());
+  EXPECT_EQ(FLAGS_minloglevel, log_args.minloglevel());
 
   // Create regularizers
   std::string reg_decor_name = "decorrelator";

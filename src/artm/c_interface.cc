@@ -60,30 +60,24 @@ static void set_last_error(const std::string& error) {
 static void EnableLogging(artm::ConfigureLoggingArgs* args_ptr) {
   static bool logging_enabled = false;
 
-  int minloglevel = args_ptr != nullptr && args_ptr->has_minloglevel() ?
-                      args_ptr->minloglevel() : artm::core::kMaxLoggingLevel;
-
-  std::string log_dir = args_ptr != nullptr && args_ptr->has_log_dir() ? args_ptr->log_dir() : ".";
+  if (logging_enabled && args_ptr != nullptr && args_ptr->has_log_dir())
+    LOG(WARNING) << "Logging directory can't be change after the logging started.";
 
   if (!logging_enabled) {
+    std::string log_dir = args_ptr != nullptr && args_ptr->has_log_dir() ? args_ptr->log_dir() : ".";
     FLAGS_log_dir = log_dir;
     FLAGS_logbufsecs = 0;
 
     ::google::InitGoogleLogging(log_dir.c_str());
     ::google::SetStderrLogging(google::GLOG_WARNING);
 
+    logging_enabled = true;
+  }
+
+  if (args_ptr != nullptr && args_ptr->has_minloglevel()) {
     // ::google::SetVLOGLevel() is not supported in non-gcc compilers
     // https://groups.google.com/forum/#!topic/google-glog/f8D7qpXLWXw
-    FLAGS_v = minloglevel;
-
-    logging_enabled = true;
-  } else {
-    if (args_ptr != nullptr) {
-      FLAGS_v = minloglevel;
-
-      if (args_ptr->has_log_dir())
-        LOG(WARNING) << "Logging directory can't be change after the logging started.";
-    }
+    FLAGS_minloglevel = args_ptr->minloglevel();
   }
 }
 

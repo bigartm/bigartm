@@ -58,6 +58,7 @@ DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
 void SaveBatch(const Batch& batch, const std::string& disk_path);
 std::shared_ptr<Batch> LoadBatch(const std::string& filename);
 void ParseCollection(const CollectionParserConfig& config);
+void ConfigureLogging(const ConfigureLoggingArgs& args);
 
 class Matrix {
  public:
