@@ -312,6 +312,9 @@ const ::google::protobuf::Descriptor* TransformMasterModelArgs_descriptor_ = NUL
 const ::google::protobuf::internal::GeneratedMessageReflection*
   TransformMasterModelArgs_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* TransformMasterModelArgs_ThetaMatrixType_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* ConfigureLoggingArgs_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ConfigureLoggingArgs_reflection_ = NULL;
 
 }  // namespace
 
@@ -1996,6 +1999,22 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TransformMasterModelArgs));
   TransformMasterModelArgs_ThetaMatrixType_descriptor_ = TransformMasterModelArgs_descriptor_->enum_type(0);
+  ConfigureLoggingArgs_descriptor_ = file->message_type(83);
+  static const int ConfigureLoggingArgs_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, minloglevel_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, log_dir_),
+  };
+  ConfigureLoggingArgs_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ConfigureLoggingArgs_descriptor_,
+      ConfigureLoggingArgs::default_instance_,
+      ConfigureLoggingArgs_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(ConfigureLoggingArgs));
 }
 
 namespace {
@@ -2190,6 +2209,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     FitOnlineMasterModelArgs_descriptor_, &FitOnlineMasterModelArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     TransformMasterModelArgs_descriptor_, &TransformMasterModelArgs::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ConfigureLoggingArgs_descriptor_, &ConfigureLoggingArgs::default_instance());
 }
 
 }  // namespace
@@ -2401,6 +2422,8 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete FitOnlineMasterModelArgs_reflection_;
   delete TransformMasterModelArgs::default_instance_;
   delete TransformMasterModelArgs_reflection_;
+  delete ConfigureLoggingArgs::default_instance_;
+  delete ConfigureLoggingArgs_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fmessages_2eproto() {
@@ -2752,7 +2775,8 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "e:\005Dense\022\030\n\020predict_class_id\030\004 \001(\t\"\\\n\017Th"
     "etaMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sp"
     "arse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSpar"
-    "sePtdw\020\005", 13688);
+    "sePtdw\020\005\"<\n\024ConfigureLoggingArgs\022\023\n\013minl"
+    "oglevel\030\001 \001(\005\022\017\n\007log_dir\030\002 \001(\t", 13750);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -2894,6 +2918,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   FitOfflineMasterModelArgs::default_instance_ = new FitOfflineMasterModelArgs();
   FitOnlineMasterModelArgs::default_instance_ = new FitOnlineMasterModelArgs();
   TransformMasterModelArgs::default_instance_ = new TransformMasterModelArgs();
+  ConfigureLoggingArgs::default_instance_ = new ConfigureLoggingArgs();
   DoubleArray::default_instance_->InitAsDefaultInstance();
   FloatArray::default_instance_->InitAsDefaultInstance();
   BoolArray::default_instance_->InitAsDefaultInstance();
@@ -2985,6 +3010,7 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   FitOfflineMasterModelArgs::default_instance_->InitAsDefaultInstance();
   FitOnlineMasterModelArgs::default_instance_->InitAsDefaultInstance();
   TransformMasterModelArgs::default_instance_->InitAsDefaultInstance();
+  ConfigureLoggingArgs::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fmessages_2eproto);
 }
 
@@ -36550,6 +36576,271 @@ void TransformMasterModelArgs::Swap(TransformMasterModelArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = TransformMasterModelArgs_descriptor_;
   metadata.reflection = TransformMasterModelArgs_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+#ifndef _MSC_VER
+const int ConfigureLoggingArgs::kMinloglevelFieldNumber;
+const int ConfigureLoggingArgs::kLogDirFieldNumber;
+#endif  // !_MSC_VER
+
+ConfigureLoggingArgs::ConfigureLoggingArgs()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void ConfigureLoggingArgs::InitAsDefaultInstance() {
+}
+
+ConfigureLoggingArgs::ConfigureLoggingArgs(const ConfigureLoggingArgs& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void ConfigureLoggingArgs::SharedCtor() {
+  _cached_size_ = 0;
+  minloglevel_ = 0;
+  log_dir_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ConfigureLoggingArgs::~ConfigureLoggingArgs() {
+  SharedDtor();
+}
+
+void ConfigureLoggingArgs::SharedDtor() {
+  if (log_dir_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete log_dir_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void ConfigureLoggingArgs::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ConfigureLoggingArgs::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ConfigureLoggingArgs_descriptor_;
+}
+
+const ConfigureLoggingArgs& ConfigureLoggingArgs::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
+  return *default_instance_;
+}
+
+ConfigureLoggingArgs* ConfigureLoggingArgs::default_instance_ = NULL;
+
+ConfigureLoggingArgs* ConfigureLoggingArgs::New() const {
+  return new ConfigureLoggingArgs;
+}
+
+void ConfigureLoggingArgs::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    minloglevel_ = 0;
+    if (has_log_dir()) {
+      if (log_dir_ != &::google::protobuf::internal::GetEmptyString()) {
+        log_dir_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool ConfigureLoggingArgs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional int32 minloglevel = 1;
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &minloglevel_)));
+          set_has_minloglevel();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_log_dir;
+        break;
+      }
+
+      // optional string log_dir = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_log_dir:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_log_dir()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->log_dir().data(), this->log_dir().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void ConfigureLoggingArgs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional int32 minloglevel = 1;
+  if (has_minloglevel()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->minloglevel(), output);
+  }
+
+  // optional string log_dir = 2;
+  if (has_log_dir()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->log_dir().data(), this->log_dir().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->log_dir(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* ConfigureLoggingArgs::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional int32 minloglevel = 1;
+  if (has_minloglevel()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->minloglevel(), target);
+  }
+
+  // optional string log_dir = 2;
+  if (has_log_dir()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->log_dir().data(), this->log_dir().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->log_dir(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int ConfigureLoggingArgs::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional int32 minloglevel = 1;
+    if (has_minloglevel()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->minloglevel());
+    }
+
+    // optional string log_dir = 2;
+    if (has_log_dir()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->log_dir());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ConfigureLoggingArgs::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const ConfigureLoggingArgs* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ConfigureLoggingArgs*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void ConfigureLoggingArgs::MergeFrom(const ConfigureLoggingArgs& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_minloglevel()) {
+      set_minloglevel(from.minloglevel());
+    }
+    if (from.has_log_dir()) {
+      set_log_dir(from.log_dir());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void ConfigureLoggingArgs::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ConfigureLoggingArgs::CopyFrom(const ConfigureLoggingArgs& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ConfigureLoggingArgs::IsInitialized() const {
+
+  return true;
+}
+
+void ConfigureLoggingArgs::Swap(ConfigureLoggingArgs* other) {
+  if (other != this) {
+    std::swap(minloglevel_, other->minloglevel_);
+    std::swap(log_dir_, other->log_dir_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata ConfigureLoggingArgs::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ConfigureLoggingArgs_descriptor_;
+  metadata.reflection = ConfigureLoggingArgs_reflection_;
   return metadata;
 }
 
