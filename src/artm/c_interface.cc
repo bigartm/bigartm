@@ -57,7 +57,7 @@ static void set_last_error(const std::string& error) {
   last_error_->assign(error);
 }
 
-static void EnableLogging(artm::ConfigureLoggingArgs* args_ptr = nullptr) {
+static void EnableLogging(artm::ConfigureLoggingArgs* args_ptr) {
   static bool logging_enabled = false;
 
   int minloglevel = args_ptr != nullptr && args_ptr->has_minloglevel() ?
@@ -65,33 +65,34 @@ static void EnableLogging(artm::ConfigureLoggingArgs* args_ptr = nullptr) {
 
   std::string log_dir = args_ptr != nullptr && args_ptr->has_log_dir() ? args_ptr->log_dir() : ".";
 
-  try {
-    if (!logging_enabled) {
-      FLAGS_log_dir = log_dir;
-      FLAGS_logbufsecs = 0;
+  if (!logging_enabled) {
+    FLAGS_log_dir = log_dir;
+    FLAGS_logbufsecs = 0;
 
-      ::google::InitGoogleLogging(log_dir.c_str());
-      ::google::SetStderrLogging(google::GLOG_WARNING);
+    ::google::InitGoogleLogging(log_dir.c_str());
+    ::google::SetStderrLogging(google::GLOG_WARNING);
 
-      // ::google::SetVLOGLevel() is not supported in non-gcc compilers
-      // https://groups.google.com/forum/#!topic/google-glog/f8D7qpXLWXw
+    // ::google::SetVLOGLevel() is not supported in non-gcc compilers
+    // https://groups.google.com/forum/#!topic/google-glog/f8D7qpXLWXw
+    FLAGS_v = minloglevel;
+
+    logging_enabled = true;
+  } else {
+    if (args_ptr != nullptr) {
       FLAGS_v = minloglevel;
 
-      logging_enabled = true;
-    } else {
-      if (args_ptr != nullptr) {
-        FLAGS_v = minloglevel;
-
-        if (args_ptr->has_log_dir())
-          LOG(WARNING) << "Logging directory can't be change after the logging started.";
-      }
+      if (args_ptr->has_log_dir())
+        LOG(WARNING) << "Logging directory can't be change after the logging started.";
     }
   }
+}
+
+static void EnableLogging() {
+  try {
+    EnableLogging(nullptr);
+  }
   catch (...) {
-    if (args_ptr == nullptr)  // every call except one from the ArtmConfigureLogging()
-      std::cerr << "InitGoogleLogging() or glog flags modification failed.\n";
-    else
-      throw ::artm::core::InvalidOperation("Some error occurred when starting logging.");
+    std::cerr << "InitGoogleLogging() or glog flags modification failed.\n";
   }
 }
 
