@@ -1,5 +1,6 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
+#include <fstream>  // NOLINT
 #include <vector>
 
 #include "boost/filesystem.hpp"
@@ -72,6 +73,26 @@ void describeTheta(const ::artm::ThetaMatrix& theta, int first_items) {
     std::cout << "...\n";
 }
 
+void describeTopTokensScore(const ::artm::TopTokensScore& top_tokens) {
+  /*
+  message TopTokensScore{
+    optional int32 num_entries;
+    repeated string topic_name;
+    repeated string token;
+    repeated float weight;
+  }
+  */
+  for (int i = 0; i < top_tokens.num_entries(); ++i) {
+    bool is_new_topic = (i == 0 || top_tokens.topic_name(i) != top_tokens.topic_name(i - 1));
+    if (is_new_topic)
+      std::cout << std::endl << top_tokens.topic_name(i) << ": ";
+    else
+      std::cout << ", ";
+    std::cout << top_tokens.token(i) << "(" << std::setprecision(3) << top_tokens.weight(i) << ")";
+  }
+  std::cout << std::endl;
+}
+
 // Static object to pass topic model through memory between two test cases (Fit and TransformAfterOverwrite)
 static std::shared_ptr< ::artm::TopicModel> topic_model;
 
@@ -88,6 +109,11 @@ TEST(Supcry, Fit) {
   score_config->set_type(::artm::ScoreConfig_Type_Perplexity);
   score_config->set_name("Perplexity");
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
+
+  ::artm::ScoreConfig* tts_config = config.add_score_config();
+  tts_config->set_type(::artm::ScoreConfig_Type_TopTokens);
+  tts_config->set_name("TopTokens");
+  tts_config->set_config(::artm::TopTokensScoreConfig().SerializeAsString());
 
   ::artm::RegularizerConfig* reg_theta = config.add_regularizer_config();
   reg_theta->set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
@@ -118,23 +144,28 @@ TEST(Supcry, Fit) {
   master_model.InitializeModel(initialize_model_args);
 
   // Step 6. Fit topic model using offline algorithm
+  ::artm::GetScoreValueArgs get_score_args;
   for (int pass = 0; pass < 4; pass++) {
     master_model.FitOfflineModel(::artm::FitOfflineMasterModelArgs());
 
-    ::artm::GetScoreValueArgs get_score_args;
     get_score_args.set_score_name(score_config->name());
     artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
     std::cout << "Perplexity@" << pass << " = " << perplexity_score.value() << "\n";
   }
 
-  // Step 6. Export topic model
+  // Step 7. Show top tokens score
+  get_score_args.set_score_name(tts_config->name());
+  auto top_tokens = master_model.GetScoreAs< ::artm::TopTokensScore>(get_score_args);
+  describeTopTokensScore(top_tokens);
+
+  // Step 8. Export topic model
   ::artm::ExportModelArgs export_model_args;
   export_model_args.set_file_name("artm_model.bin");
 
   try { boost::filesystem::remove("artm_model.bin"); } catch (...) {}  // NOLINT
   master_model.ExportModel(export_model_args);
 
-  // Step 7. Memory export
+  // Step 9. Memory export
   ::artm::GetTopicModelArgs get_model_args;
   topic_model = std::make_shared< ::artm::TopicModel>(master_model.GetTopicModel(get_model_args));
 }
