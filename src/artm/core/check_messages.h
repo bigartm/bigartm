@@ -271,6 +271,10 @@ inline std::string DescribeErrors(const ::artm::FitOfflineMasterModelArgs& messa
   if (message.passes() <= 0)
     ss << "FitOfflineMasterModelArgs.passes() must be a positive number";
 
+  if (message.has_batch_folder() && (message.batch_filename_size() != 0))
+    ss << "Only one of FitOfflineMasterModelArgs.batch_folder, "
+       << "FitOfflineMasterModelArgs.batch_filename must be specified; ";
+
   return ss.str();
 }
 

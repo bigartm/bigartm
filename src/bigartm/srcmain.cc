@@ -272,6 +272,8 @@ struct artm_options {
   // Other options
   std::string disk_cache_folder;
   std::string response_file;
+  std::string log_dir;
+  int log_level;
   bool b_paused;
   bool b_disable_avx_opt;
   bool b_use_dense_bow;
@@ -918,11 +920,6 @@ void WriteClassPredictions(const artm_options& options,
 int execute(const artm_options& options, int argc, char* argv[]) {
   const std::string pwt_model_name = options.pwt_model_name;
 
-  if (options.b_paused) {
-    std::cerr << "Press any key to continue. ";
-    getchar();
-  }
-
   std::vector<std::string> topic_names = parseTopics(options.topics);
 
   // Step 1. Configuration
@@ -1268,6 +1265,8 @@ int main(int argc, char * argv[]) {
       ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
       ("use-dense-bow", po::bool_switch(&options.b_use_dense_bow)->default_value(false), "use dense representation of bag-of-words data in processors")
       ("time-limit", po::value(&options.time_limit)->default_value(0), "limit execution time in milliseconds")
+      ("log-dir", po::value(&options.log_dir), "target directory for logging (GLOG_log_dir)")
+      ("log-level", po::value(&options.log_level), "min logging level (GLOG_minloglevel; INFO=0, WARNING=1, ERROR=2, and FATAL=3)")
     ;
 
     all_options.add(input_data_options);
@@ -1280,6 +1279,11 @@ int main(int argc, char * argv[]) {
     po::variables_map vm;
     store(po::command_line_parser(argc, argv).options(all_options).run(), vm);
     notify(vm);
+
+    if (options.b_paused) {
+      std::cerr << "Press any key to continue. ";
+      getchar();
+    }
 
     if (vm.count("response-file") && !options.response_file.empty()) {
       // Load the file and tokenize it
@@ -1386,6 +1390,13 @@ int main(int argc, char * argv[]) {
     fixOptions(&options);
     if (!verifyOptions(options))
       return 1;  // verifyOptions should log an error upon failures
+
+    if (vm.count("log-dir") || vm.count("log-level")) {
+      ::artm::ConfigureLoggingArgs args;
+      if (vm.count("log-dir")) args.set_log_dir(options.log_dir);
+      if (vm.count("log-level")) args.set_minloglevel(options.log_level);
+      ::artm::ConfigureLogging(args);
+    }
 
     return execute(options, argc, argv);
   } catch (std::exception& e) {

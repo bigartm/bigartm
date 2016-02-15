@@ -35,6 +35,7 @@ extern "C" {
   DLL_PUBLIC int ArtmGatherDictionary(int master_id, int length, const char* gather_dictionary_args);
   DLL_PUBLIC int ArtmFilterDictionary(int master_id, int length, const char* filter_dictionary_args);
   DLL_PUBLIC int ArtmCreateDictionary(int master_id, int length, const char* dictionary_data);
+  DLL_PUBLIC int ArtmCreateDictionaryNamed(int master_id, int length, const char* dictionary_data, const char* name);
   DLL_PUBLIC int ArtmRequestDictionary(int master_id, int length, const char* request_dictionary_args);
   DLL_PUBLIC int ArtmDisposeDictionary(int master_id, const char* dictionary_name);
 
@@ -51,6 +52,7 @@ extern "C" {
   DLL_PUBLIC int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args);
 
   DLL_PUBLIC int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model);
+  DLL_PUBLIC int ArtmOverwriteTopicModelNamed(int master_id, int length, const char* topic_model, const char* name);
   DLL_PUBLIC int ArtmInitializeModel(int master_id, int length, const char* init_model_args);
   DLL_PUBLIC int ArtmExportModel(int master_id, int length, const char* export_model_args);
   DLL_PUBLIC int ArtmImportModel(int master_id, int length, const char* import_model_args);

@@ -1944,10 +1944,11 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MasterModelConfig));
   FitOfflineMasterModelArgs_descriptor_ = file->message_type(80);
-  static const int FitOfflineMasterModelArgs_offsets_[3] = {
+  static const int FitOfflineMasterModelArgs_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOfflineMasterModelArgs, batch_filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOfflineMasterModelArgs, batch_weight_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOfflineMasterModelArgs, passes_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOfflineMasterModelArgs, batch_folder_),
   };
   FitOfflineMasterModelArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -2761,22 +2762,23 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "\001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true\022\034\n"
     "\016use_sparse_bow\030\014 \001(\010:\004true\022\027\n\017disk_cach"
     "e_path\030\r \001(\t\022\032\n\013use_v06_api\030\016 \001(\010:\005false"
-    "\022\032\n\013cache_theta\030\017 \001(\010:\005false\"\\\n\031FitOffli"
+    "\022\032\n\013cache_theta\030\017 \001(\010:\005false\"r\n\031FitOffli"
     "neMasterModelArgs\022\026\n\016batch_filename\030\001 \003("
     "\t\022\024\n\014batch_weight\030\002 \003(\002\022\021\n\006passes\030\003 \001(\005:"
-    "\0011\"\240\001\n\030FitOnlineMasterModelArgs\022\026\n\016batch"
-    "_filename\030\001 \003(\t\022\024\n\014batch_weight\030\002 \003(\002\022\024\n"
-    "\014update_after\030\003 \003(\005\022\024\n\014apply_weight\030\004 \003("
-    "\002\022\024\n\014decay_weight\030\005 \003(\002\022\024\n\005async\030\006 \001(\010:\005"
-    "false\"\230\002\n\030TransformMasterModelArgs\022\032\n\005ba"
-    "tch\030\001 \003(\0132\013.artm.Batch\022\026\n\016batch_filename"
-    "\030\002 \003(\t\022P\n\021theta_matrix_type\030\003 \001(\0162..artm"
-    ".TransformMasterModelArgs.ThetaMatrixTyp"
-    "e:\005Dense\022\030\n\020predict_class_id\030\004 \001(\t\"\\\n\017Th"
-    "etaMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006Sp"
-    "arse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSpar"
-    "sePtdw\020\005\"<\n\024ConfigureLoggingArgs\022\023\n\013minl"
-    "oglevel\030\001 \001(\005\022\017\n\007log_dir\030\002 \001(\t", 13750);
+    "\0011\022\024\n\014batch_folder\030\004 \001(\t\"\240\001\n\030FitOnlineMa"
+    "sterModelArgs\022\026\n\016batch_filename\030\001 \003(\t\022\024\n"
+    "\014batch_weight\030\002 \003(\002\022\024\n\014update_after\030\003 \003("
+    "\005\022\024\n\014apply_weight\030\004 \003(\002\022\024\n\014decay_weight\030"
+    "\005 \003(\002\022\024\n\005async\030\006 \001(\010:\005false\"\230\002\n\030Transfor"
+    "mMasterModelArgs\022\032\n\005batch\030\001 \003(\0132\013.artm.B"
+    "atch\022\026\n\016batch_filename\030\002 \003(\t\022P\n\021theta_ma"
+    "trix_type\030\003 \001(\0162..artm.TransformMasterMo"
+    "delArgs.ThetaMatrixType:\005Dense\022\030\n\020predic"
+    "t_class_id\030\004 \001(\t\"\\\n\017ThetaMatrixType\022\010\n\004N"
+    "one\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022"
+    "\r\n\tDensePtdw\020\004\022\016\n\nSparsePtdw\020\005\"<\n\024Config"
+    "ureLoggingArgs\022\023\n\013minloglevel\030\001 \001(\005\022\017\n\007l"
+    "og_dir\030\002 \001(\t", 13772);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -35457,6 +35459,7 @@ void MasterModelConfig::Swap(MasterModelConfig* other) {
 const int FitOfflineMasterModelArgs::kBatchFilenameFieldNumber;
 const int FitOfflineMasterModelArgs::kBatchWeightFieldNumber;
 const int FitOfflineMasterModelArgs::kPassesFieldNumber;
+const int FitOfflineMasterModelArgs::kBatchFolderFieldNumber;
 #endif  // !_MSC_VER
 
 FitOfflineMasterModelArgs::FitOfflineMasterModelArgs()
@@ -35476,6 +35479,7 @@ FitOfflineMasterModelArgs::FitOfflineMasterModelArgs(const FitOfflineMasterModel
 void FitOfflineMasterModelArgs::SharedCtor() {
   _cached_size_ = 0;
   passes_ = 1;
+  batch_folder_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -35484,6 +35488,9 @@ FitOfflineMasterModelArgs::~FitOfflineMasterModelArgs() {
 }
 
 void FitOfflineMasterModelArgs::SharedDtor() {
+  if (batch_folder_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete batch_folder_;
+  }
   if (this != default_instance_) {
   }
 }
@@ -35512,6 +35519,11 @@ FitOfflineMasterModelArgs* FitOfflineMasterModelArgs::New() const {
 void FitOfflineMasterModelArgs::Clear() {
   if (_has_bits_[2 / 32] & (0xffu << (2 % 32))) {
     passes_ = 1;
+    if (has_batch_folder()) {
+      if (batch_folder_ != &::google::protobuf::internal::GetEmptyString()) {
+        batch_folder_->clear();
+      }
+    }
   }
   batch_filename_.Clear();
   batch_weight_.Clear();
@@ -35578,6 +35590,23 @@ bool FitOfflineMasterModelArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(34)) goto parse_batch_folder;
+        break;
+      }
+
+      // optional string batch_folder = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_batch_folder:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_batch_folder()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->batch_folder().data(), this->batch_folder().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -35620,6 +35649,15 @@ void FitOfflineMasterModelArgs::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->passes(), output);
   }
 
+  // optional string batch_folder = 4;
+  if (has_batch_folder()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->batch_folder().data(), this->batch_folder().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      4, this->batch_folder(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -35648,6 +35686,16 @@ void FitOfflineMasterModelArgs::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->passes(), target);
   }
 
+  // optional string batch_folder = 4;
+  if (has_batch_folder()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->batch_folder().data(), this->batch_folder().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        4, this->batch_folder(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -35664,6 +35712,13 @@ int FitOfflineMasterModelArgs::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->passes());
+    }
+
+    // optional string batch_folder = 4;
+    if (has_batch_folder()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->batch_folder());
     }
 
   }
@@ -35712,6 +35767,9 @@ void FitOfflineMasterModelArgs::MergeFrom(const FitOfflineMasterModelArgs& from)
     if (from.has_passes()) {
       set_passes(from.passes());
     }
+    if (from.has_batch_folder()) {
+      set_batch_folder(from.batch_folder());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -35738,6 +35796,7 @@ void FitOfflineMasterModelArgs::Swap(FitOfflineMasterModelArgs* other) {
     batch_filename_.Swap(&other->batch_filename_);
     batch_weight_.Swap(&other->batch_weight_);
     std::swap(passes_, other->passes_);
+    std::swap(batch_folder_, other->batch_folder_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

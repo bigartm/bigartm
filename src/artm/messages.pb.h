@@ -12239,19 +12239,34 @@ class FitOfflineMasterModelArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 passes() const;
   inline void set_passes(::google::protobuf::int32 value);
 
+  // optional string batch_folder = 4;
+  inline bool has_batch_folder() const;
+  inline void clear_batch_folder();
+  static const int kBatchFolderFieldNumber = 4;
+  inline const ::std::string& batch_folder() const;
+  inline void set_batch_folder(const ::std::string& value);
+  inline void set_batch_folder(const char* value);
+  inline void set_batch_folder(const char* value, size_t size);
+  inline ::std::string* mutable_batch_folder();
+  inline ::std::string* release_batch_folder();
+  inline void set_allocated_batch_folder(::std::string* batch_folder);
+
   // @@protoc_insertion_point(class_scope:artm.FitOfflineMasterModelArgs)
  private:
   inline void set_has_passes();
   inline void clear_has_passes();
+  inline void set_has_batch_folder();
+  inline void clear_has_batch_folder();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
+  ::std::string* batch_folder_;
   ::google::protobuf::int32 passes_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -27749,6 +27764,76 @@ inline ::google::protobuf::int32 FitOfflineMasterModelArgs::passes() const {
 inline void FitOfflineMasterModelArgs::set_passes(::google::protobuf::int32 value) {
   set_has_passes();
   passes_ = value;
+}
+
+// optional string batch_folder = 4;
+inline bool FitOfflineMasterModelArgs::has_batch_folder() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void FitOfflineMasterModelArgs::set_has_batch_folder() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void FitOfflineMasterModelArgs::clear_has_batch_folder() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void FitOfflineMasterModelArgs::clear_batch_folder() {
+  if (batch_folder_ != &::google::protobuf::internal::GetEmptyString()) {
+    batch_folder_->clear();
+  }
+  clear_has_batch_folder();
+}
+inline const ::std::string& FitOfflineMasterModelArgs::batch_folder() const {
+  return *batch_folder_;
+}
+inline void FitOfflineMasterModelArgs::set_batch_folder(const ::std::string& value) {
+  set_has_batch_folder();
+  if (batch_folder_ == &::google::protobuf::internal::GetEmptyString()) {
+    batch_folder_ = new ::std::string;
+  }
+  batch_folder_->assign(value);
+}
+inline void FitOfflineMasterModelArgs::set_batch_folder(const char* value) {
+  set_has_batch_folder();
+  if (batch_folder_ == &::google::protobuf::internal::GetEmptyString()) {
+    batch_folder_ = new ::std::string;
+  }
+  batch_folder_->assign(value);
+}
+inline void FitOfflineMasterModelArgs::set_batch_folder(const char* value, size_t size) {
+  set_has_batch_folder();
+  if (batch_folder_ == &::google::protobuf::internal::GetEmptyString()) {
+    batch_folder_ = new ::std::string;
+  }
+  batch_folder_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* FitOfflineMasterModelArgs::mutable_batch_folder() {
+  set_has_batch_folder();
+  if (batch_folder_ == &::google::protobuf::internal::GetEmptyString()) {
+    batch_folder_ = new ::std::string;
+  }
+  return batch_folder_;
+}
+inline ::std::string* FitOfflineMasterModelArgs::release_batch_folder() {
+  clear_has_batch_folder();
+  if (batch_folder_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = batch_folder_;
+    batch_folder_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void FitOfflineMasterModelArgs::set_allocated_batch_folder(::std::string* batch_folder) {
+  if (batch_folder_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete batch_folder_;
+  }
+  if (batch_folder) {
+    set_has_batch_folder();
+    batch_folder_ = batch_folder;
+  } else {
+    clear_has_batch_folder();
+    batch_folder_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------

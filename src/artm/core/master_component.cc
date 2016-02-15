@@ -729,8 +729,11 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
   VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
 }
 
-void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
-  instance_->merger()->OverwriteTopicModel(topic_model);
+void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_name()) const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
+  instance_->merger()->OverwriteTopicModel(args);
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatrix* result) {
@@ -1165,12 +1168,19 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
 
   if (args.batch_filename_size() == 0) {
-    // Default to processing all in-memory batches
-    auto batch_names = instance_->batches()->keys();
-    if (batch_names.empty()) {
-      BOOST_THROW_EXCEPTION(InvalidOperation(
-        "FitOfflineMasterModelArgs.batch_filename is empty. "
-        "Populate this field or provide batches via ArtmImportBatches API"));
+    std::vector<std::string> batch_names;
+    if (!args.has_batch_folder()) {
+      // Default to processing all in-memory batches
+      batch_names = instance_->batches()->keys();
+      if (batch_names.empty()) {
+        BOOST_THROW_EXCEPTION(InvalidOperation(
+          "FitOfflineMasterModelArgs.batch_filename is empty. "
+          "Populate this field or provide batches via ArtmImportBatches API"));
+      }
+    } else {
+      batch_names = ::artm::core::BatchHelpers::ListAllBatches(args.batch_folder());
+      if (batch_names.empty())
+        BOOST_THROW_EXCEPTION(InvalidOperation("No batches found in " + args.batch_folder() + " folder"));
     }
 
     FitOfflineMasterModelArgs* mutable_args = const_cast<FitOfflineMasterModelArgs*>(&args);

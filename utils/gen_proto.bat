@@ -9,4 +9,6 @@ REM 3. cd $(BIGARTM_ROOT)/src/
 REM 4. run this script.
 
 .\protoc.exe --cpp_out=. --python_out=. .\artm\messages.proto
-.\protoc.exe --cpp_out=. --rpcz_plugin_out=. .\artm\core\internals.proto
+.\protoc.exe --cpp_out=. .\artm\core\internals.proto
+
+copy artm\messages_pb2.py ..\python\artm\wrapper\ /Y
