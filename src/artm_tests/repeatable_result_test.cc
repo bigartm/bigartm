@@ -15,6 +15,7 @@
 #include "artm/core/call_on_destruction.h"
 
 #include "artm_tests/test_mother.h"
+#include "artm_tests/api.h"
 
 using artm::core::Helpers;
 using artm::core::Token;
@@ -22,40 +23,31 @@ using artm::core::Token;
 std::string runOfflineTest() {
   const int nTopics = 5;
 
-  ::artm::MasterComponentConfig master_config;
+  ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
   master_config.set_cache_theta(true);
-  master_config.set_processors_count(1);
-  ::artm::MasterComponent master_component(master_config);
+  master_config.set_threads(1);
+  master_config.set_pwt_name(artm::test::Helpers::getUniqueString());
+  ::artm::MasterModel master_component(master_config);
+  ::artm::test::Api api(master_component);
 
-  // Create model
-  artm::ModelConfig model_config;
-  model_config.set_topics_count(nTopics);
-  model_config.set_name(artm::test::Helpers::getUniqueString());
-  artm::Model model(master_component, model_config);
-
-  std::vector<std::shared_ptr< ::artm::Batch>> batches;
   int batches_size = 2;
   int nTokens = 10;
-  ::artm::test::TestMother::GenerateBatches(batches_size, nTokens, &batches);
-  for (int iter = 0; iter < 3; ++iter) {
-    for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
-      master_component.AddBatch(*batches[iBatch]);
-    }
+  auto batches = ::artm::test::TestMother::GenerateBatches(batches_size, nTokens);
+  auto offline_args = api.Initialize(batches);
 
-    master_component.WaitIdle();
-    model.Synchronize(0.0);
-  }
+  for (int iter = 0; iter < 3; ++iter)
+    master_component.FitOfflineModel(offline_args);
 
-  std::shared_ptr< ::artm::TopicModel> topic_model = master_component.GetTopicModel(model.name());
+  ::artm::TopicModel topic_model = master_component.GetTopicModel();
   std::stringstream ss;
-  ss << "Topic model:\n" << ::artm::test::Helpers::DescribeTopicModel(*topic_model);
+  ss << "Topic model:\n" << ::artm::test::Helpers::DescribeTopicModel(topic_model);
   ss << "Theta matrix:\n";
   for (unsigned i = 0; i < batches.size(); ++i) {
-    ::artm::GetThetaMatrixArgs args;
-    args.set_model_name(model.name());
-    args.mutable_batch()->CopyFrom(*batches[i]);
-    std::shared_ptr< ::artm::ThetaMatrix> theta_matrix = master_component.GetThetaMatrix(args);
-    ss << ::artm::test::Helpers::DescribeThetaMatrix(*theta_matrix);
+    ::artm::TransformMasterModelArgs args;
+    args.add_batch_filename(batches[i]->id());
+    args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    auto theta_matrix = master_component.Transform(args);
+    ss << ::artm::test::Helpers::DescribeThetaMatrix(theta_matrix);
   }
 
   return ss.str();
@@ -95,155 +87,118 @@ TEST(RepeatableResult, TokenHasher) {
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_2", "token_2"))[0], 0.410061);
 }
 
-void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_RequestType request_type,
-                                  ::artm::GetTopicModelArgs_MatrixLayout matrix_layout) {
+void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_layout) {
   const int nTopics = 16;
-
-  ::artm::MasterComponentConfig master_config;
-  master_config.set_cache_theta(true);
-  master_config.set_processors_count(1);
-  ::artm::MasterComponent master_component(master_config);
-
-  ::artm::RegularizerConfig sparse_phi_config;
-  sparse_phi_config.set_name("sparse_phi");
-  sparse_phi_config.set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
-  sparse_phi_config.set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
-  ::artm::Regularizer sparse_phi(master_component, sparse_phi_config);
-
-  // Create model
-  artm::ModelConfig model_config;
-  model_config.add_regularizer_name(sparse_phi_config.name());
-  model_config.add_regularizer_tau(-0.05);
-  for (int i = 0; i < nTopics; ++i) {
-    std::stringstream ss;
-    ss << "@topic_" << i;
-    model_config.add_topic_name(ss.str());
-  }
-
-  model_config.set_name(artm::test::Helpers::getUniqueString());
-  artm::Model model(master_component, model_config);
-
-  std::vector<std::shared_ptr< ::artm::Batch>> batches;
-
   int batches_size = 2;
   int nTokens = 10;
-  ::artm::test::TestMother::GenerateBatches(batches_size, nTokens, &batches);
 
-  for (int iter = 0; iter < 3; ++iter) {
-    for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
-      master_component.AddBatch(*batches[iBatch]);
-    }
+  auto master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
+  master_config.set_cache_theta(true);
+  master_config.set_threads(1);
 
-    master_component.WaitIdle();
-    model.Synchronize(0.0);
-  }
+  ::artm::RegularizerConfig* sparse_phi_config = master_config.add_regularizer_config();
+  sparse_phi_config->set_name("sparse_phi");
+  sparse_phi_config->set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+  sparse_phi_config->set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
+  sparse_phi_config->set_tau(-0.05);
 
-  ::artm::MasterComponent master2(master_config);
-  ::artm::MasterComponent master3(master_config);
-  ::artm::Regularizer sparse_phi2(master2, sparse_phi_config);
-  ::artm::Regularizer sparse_phi3(master3, sparse_phi_config);
-  ::artm::Model model2(master2, model_config);
-  ::artm::Model model3(master3, model_config);
+  ::artm::MasterModel master_component(master_config);
+  ::artm::test::Api api(master_component);
 
-  ::artm::GetTopicModelArgs_RequestType request_types[2] = {
-    artm::GetTopicModelArgs_RequestType_Pwt,
-    artm::GetTopicModelArgs_RequestType_Nwt };
+  // Create model
+  auto batches = ::artm::test::TestMother::GenerateBatches(batches_size, nTokens);
+  ::artm::ImportBatchesArgs import_args;
+  auto offline_args = api.Initialize(batches, &import_args);
 
-  bool pwt_request = request_type == artm::GetTopicModelArgs_RequestType_Pwt;
-  bool nwt_request = !pwt_request;
+  for (int iter = 0; iter < 3; ++iter)
+    master_component.FitOfflineModel(offline_args);
 
-  int slices = 3;
-  for (int i = 0; i < slices; ++i) {
-    ::artm::GetTopicModelArgs get_topic_model_args;
-    get_topic_model_args.set_model_name(model.name());
-    get_topic_model_args.set_request_type(request_type);
-    get_topic_model_args.set_matrix_layout(matrix_layout);
-    for (int topic_index = i; topic_index < nTopics; topic_index += slices) {
-      get_topic_model_args.add_topic_name(model_config.topic_name(topic_index));
-    }
+  ::artm::MasterModel master2(master_config);
+  master2.ImportBatches(import_args);
+  ::artm::test::Api api2(master2);
 
-    // To precisely overwrite topic model via n_wt counters one has manually
-    // commit the model via model.Synchronize() method. This ensures that regularizers
-    // are calculated for the model. Using "commit" argument gives wrong result
-    // because it synchronizes model without regularizers. This is a reasonable
-    // option when Overwrite is called through Pwt values, but for Nwt it is simply wrong.
-    model2.Overwrite(*master_component.GetTopicModel(get_topic_model_args), false);
-  }
-  master2.WaitIdle();
-  model2.Synchronize(/* decay_weight =*/ 0.0,
-                      /* apply_weight =*/ 1.0,
-                      /* invoke_regularizers =*/ nwt_request);  // invoke regularizers only for nwt_request
+  ::artm::MasterModel master3(master_config);
+  master3.ImportBatches(import_args);
+  ::artm::test::Api api3(master3);
+
+  ::artm::GetTopicModelArgs get_topic_model_args;
+  get_topic_model_args.set_model_name(master_config.pwt_name());
+  get_topic_model_args.set_matrix_layout(matrix_layout);
+  api2.OverwriteModel(master_component.GetTopicModel(get_topic_model_args));
+
   std::string file_name = ::artm::test::Helpers::getUniqueString();
   artm::core::call_on_destruction c([&]() { try { boost::filesystem::remove(file_name); } catch (...) {} });  // NOLINT
-  model.Export(file_name);
-  model3.Import(file_name);
+  ::artm::ExportModelArgs export_args;
+  export_args.set_model_name(master_config.pwt_name());
+  export_args.set_file_name(file_name);
+  master_component.ExportModel(export_args);
+
+  ::artm::ImportModelArgs import_model_args;
+  import_model_args.set_model_name(master_config.pwt_name());
+  import_model_args.set_file_name(file_name);
+  master3.ImportModel(import_model_args);
 
   bool ok = false, ok2 = false;
-  ::artm::test::Helpers::CompareTopicModels(*master2.GetTopicModel(model2.name()),
-                                            *master_component.GetTopicModel(model.name()), &ok);
-  ::artm::test::Helpers::CompareTopicModels(*master3.GetTopicModel(model3.name()),
-                                            *master_component.GetTopicModel(model.name()), &ok2);
+  ::artm::test::Helpers::CompareTopicModels(master2.GetTopicModel(),
+                                            master_component.GetTopicModel(), &ok);
+  ::artm::test::Helpers::CompareTopicModels(master3.GetTopicModel(),
+                                            master_component.GetTopicModel(), &ok2);
   if (!ok) {
     std::cout << "New topic model:\n"
-              << ::artm::test::Helpers::DescribeTopicModel(*master2.GetTopicModel(model2.name()));
+              << ::artm::test::Helpers::DescribeTopicModel(master2.GetTopicModel());
     std::cout << "Old topic model:\n"
-              << ::artm::test::Helpers::DescribeTopicModel(*master_component.GetTopicModel(model.name()));
+              << ::artm::test::Helpers::DescribeTopicModel(master_component.GetTopicModel());
   }
   if (!ok2) {
     std::cout << "Imported topic model:\n"
-              << ::artm::test::Helpers::DescribeTopicModel(*master3.GetTopicModel(model3.name()));
+              << ::artm::test::Helpers::DescribeTopicModel(master3.GetTopicModel());
     std::cout << "Exported topic model:\n"
-              << ::artm::test::Helpers::DescribeTopicModel(*master_component.GetTopicModel(model.name()));
+              << ::artm::test::Helpers::DescribeTopicModel(master_component.GetTopicModel());
   }
   ASSERT_TRUE(ok && ok2);
   for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
-    ::artm::test::Helpers::CompareThetaMatrices(*master2.GetThetaMatrix(model.name(), *batches[iBatch]),
-                                                *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok);
-    ::artm::test::Helpers::CompareThetaMatrices(*master3.GetThetaMatrix(model.name(), *batches[iBatch]),
-                                                *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok2);
+    ::artm::TransformMasterModelArgs transform_args;
+    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    transform_args.add_batch_filename(batches[iBatch]->id());
+    ::artm::test::Helpers::CompareThetaMatrices(master2.Transform(transform_args),
+                                                master_component.Transform(transform_args), &ok);
+    ::artm::test::Helpers::CompareThetaMatrices(master3.Transform(transform_args),
+                                                master_component.Transform(transform_args), &ok2);
   }
   ASSERT_TRUE(ok && ok2);
-
-  if (pwt_request)
-    return;  // do not validate further model inference for pwt_request
 
   // Run extra iteration and validate that model is stil still the same
-  for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
-    master_component.AddBatch(*batches[iBatch]);
-    master2.AddBatch(*batches[iBatch]);
-    master3.AddBatch(*batches[iBatch]);
-  }
+  master_component.FitOfflineModel(offline_args);
+  master2.FitOfflineModel(offline_args);
+  master3.FitOfflineModel(offline_args);
 
-  master_component.WaitIdle(); master2.WaitIdle(); master3.WaitIdle();
-  model.Synchronize(0.5); model2.Synchronize(0.5); model3.Synchronize(0.5);
-
-  ::artm::test::Helpers::CompareTopicModels(*master2.GetTopicModel(model2.name()),
-                                            *master_component.GetTopicModel(model.name()), &ok);
+  ::artm::test::Helpers::CompareTopicModels(master2.GetTopicModel(),
+                                            master_component.GetTopicModel(), &ok);
   ASSERT_TRUE(ok);
 
-  ::artm::test::Helpers::CompareTopicModels(*master3.GetTopicModel(model3.name()),
-                                            *master_component.GetTopicModel(model.name()), &ok2);
+  ::artm::test::Helpers::CompareTopicModels(master3.GetTopicModel(),
+                                            master_component.GetTopicModel(), &ok2);
   ASSERT_TRUE(ok2);
 
   for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
-    ::artm::test::Helpers::CompareThetaMatrices(*master2.GetThetaMatrix(model.name(), *batches[iBatch]),
-                                                *master_component.GetThetaMatrix(model.name(), *batches[iBatch]), &ok);
-    ASSERT_TRUE(ok);
-
-    ::artm::test::Helpers::CompareThetaMatrices(*master3.GetThetaMatrix(model.name(), *batches[iBatch]),
-                                                *master_component.GetThetaMatrix(model.name(),
-                                                *batches[iBatch]), &ok2);
-    ASSERT_TRUE(ok2);
+    ::artm::TransformMasterModelArgs transform_args;
+    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    transform_args.add_batch_filename(batches[iBatch]->id());
+    ::artm::test::Helpers::CompareThetaMatrices(master2.Transform(transform_args),
+                                                master_component.Transform(transform_args), &ok);
+    ::artm::test::Helpers::CompareThetaMatrices(master3.Transform(transform_args),
+                                                master_component.Transform(transform_args), &ok2);
   }
+  ASSERT_TRUE(ok && ok2);
 }
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_dense
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_dense) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, artm::GetTopicModelArgs_MatrixLayout_Dense);
+  OverwriteTopicModel_internal(artm::GetTopicModelArgs_MatrixLayout_Dense);
 }
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_sparse
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_sparse) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_RequestType_Pwt, artm::GetTopicModelArgs_MatrixLayout_Sparse);
+  OverwriteTopicModel_internal(artm::GetTopicModelArgs_MatrixLayout_Sparse);
 }
 

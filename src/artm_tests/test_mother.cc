@@ -7,18 +7,18 @@
 #include "gtest/gtest.h"
 
 #include "artm/cpp_interface.h"
+#include "artm/core/helpers.h"
 
 namespace artm {
 namespace test {
 
-ModelConfig TestMother::GenerateModelConfig() const {
-  ModelConfig config;
-  config.set_enabled(true);
-  config.set_topics_count(nTopics);
-  config.add_regularizer_name(regularizer_name);
+MasterModelConfig TestMother::GenerateMasterModelConfig(int nTopics) {
+  MasterModelConfig config;
+  for (int i = 0; i < nTopics; ++i)
+    config.add_topic_name("Topic" + boost::lexical_cast<std::string>(i));
   ::artm::core::ModelName model_name =
     boost::lexical_cast<std::string>(boost::uuids::random_generator()());
-  config.set_name(boost::lexical_cast<std::string>(model_name));
+  config.set_pwt_name(boost::lexical_cast<std::string>(model_name));
   return config;
 }
 
@@ -35,19 +35,9 @@ RegularizerConfig TestMother::GenerateRegularizerConfig() const {
   return general_regularizer_1_config;
 }
 
-void TestMother::GenerateBatches(int batches_size, int nTokens, ImportBatchesArgs* args,
-                                 DictionaryData* dictionary) {
-  std::vector<std::shared_ptr< ::artm::Batch>> batches;
-  GenerateBatches(batches_size, nTokens, &batches, dictionary);
-  for (auto& batch : batches) {
-    args->add_batch()->CopyFrom(*batch);
-    args->add_batch_name(artm::test::Helpers::getUniqueString());
-  }
-}
-
-void TestMother::GenerateBatches(int batches_size, int nTokens,
-                                 std::vector<std::shared_ptr< ::artm::Batch>>* batches,
-                                 ::artm::DictionaryData* dictionary) {
+std::vector<std::shared_ptr< ::artm::Batch>>
+TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryData* dictionary) {
+  std::vector<std::shared_ptr< ::artm::Batch>> retval;
   for (int iBatch = 0; iBatch < batches_size; ++iBatch) {
     ::artm::Batch batch;
     batch.set_id(artm::test::Helpers::getUniqueString());
@@ -57,7 +47,8 @@ void TestMother::GenerateBatches(int batches_size, int nTokens,
       std::stringstream str;
       str << "token" << i;
       batch.add_token(str.str());
-      if (iBatch == 0 && dictionary != nullptr)
+
+      if (dictionary != nullptr)
         dictionary->add_token(str.str());
     }
 
@@ -72,8 +63,9 @@ void TestMother::GenerateBatches(int batches_size, int nTokens,
       }
     }
 
-    batches->push_back(std::make_shared< ::artm::Batch>(batch));
+    retval.push_back(std::make_shared< ::artm::Batch>(batch));
   }
+  return retval;
 }
 
 std::string Helpers::DescribeTopicModel(const ::artm::TopicModel& topic_model) {
@@ -154,10 +146,9 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
 }
 
 void TestMother::GenerateBatches(int batches_size, int nTokens, const std::string& target_folder) {
-  std::vector<std::shared_ptr< ::artm::Batch>> batches;
-  GenerateBatches(batches_size, nTokens, &batches);
+  auto batches = GenerateBatches(batches_size, nTokens);
   for (unsigned i = 0; i < batches.size(); ++i)
-    artm::SaveBatch(*batches[i], target_folder);
+    artm::core::BatchHelpers::SaveBatch(*batches[i], target_folder, batches[i]->id());
 }
 
 }  // namespace test
