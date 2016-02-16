@@ -737,6 +737,10 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatrix* result) {
+  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  if (config != nullptr)
+    if (!args.has_model_name()) const_cast<GetThetaMatrixArgs*>(&args)->set_model_name(config->pwt_name());
+
   if (!args.has_batch()) {
     instance_->cache_manager()->RequestThetaMatrix(args, result);
   } else {
