@@ -96,7 +96,8 @@ int Api::Duplicate(const DuplicateMasterComponentArgs& args) {
 
 ::artm::FitOfflineMasterModelArgs Api::Initialize(const std::vector<std::shared_ptr< ::artm::Batch> >& batches,
                                                   ::artm::ImportBatchesArgs* import_batches_args,
-                                                  ::artm::InitializeModelArgs* initialize_model_args) {
+                                                  ::artm::InitializeModelArgs* initialize_model_args,
+                                                  const ::artm::DictionaryData* dictionary_data) {
   ImportBatchesArgs import_args;
   for (auto& batch : batches) {
     import_args.add_batch()->CopyFrom(*batch);
@@ -106,10 +107,15 @@ int Api::Duplicate(const DuplicateMasterComponentArgs& args) {
   if (import_batches_args != nullptr)
     import_batches_args->CopyFrom(import_args);
 
-  ::artm::GatherDictionaryArgs gather_args;
-  gather_args.mutable_batch_path()->CopyFrom(import_args.batch_name());
-  gather_args.set_dictionary_target_name("dictionary");
-  master_model_.GatherDictionary(gather_args);
+  if (dictionary_data == nullptr) {
+    ::artm::GatherDictionaryArgs gather_args;
+    gather_args.mutable_batch_path()->CopyFrom(import_args.batch_name());
+    gather_args.set_dictionary_target_name("dictionary");
+    master_model_.GatherDictionary(gather_args);
+  } else {
+    const_cast< ::artm::DictionaryData*>(dictionary_data)->set_name("dictionary");
+    master_model_.CreateDictionary(*dictionary_data);
+  }
 
   ::artm::InitializeModelArgs init_model_args;
   init_model_args.set_dictionary_name("dictionary");

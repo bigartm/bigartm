@@ -26,10 +26,7 @@ TEST(CppInterface, Canary) {
 TEST(CppInterface, BasicTest) {
   artm::ConfigureLoggingArgs log_args;
   log_args.set_minloglevel(2);
-  std::string args_str;
-  log_args.SerializeToString(&args_str);
-
-  ArtmConfigureLogging(args_str.size(), args_str.c_str());
+  artm::ConfigureLogging(log_args);
   EXPECT_EQ(FLAGS_minloglevel, log_args.minloglevel());
 
   std::string target_path = artm::test::Helpers::getUniqueString();
@@ -54,9 +51,7 @@ TEST(CppInterface, BasicTest) {
   // check log level
   EXPECT_EQ(FLAGS_minloglevel, log_args.minloglevel());
   log_args.set_minloglevel(1);
-  log_args.SerializeToString(&args_str);
-
-  ArtmConfigureLogging(args_str.size(), args_str.c_str());
+  artm::ConfigureLogging(log_args);
   EXPECT_EQ(FLAGS_minloglevel, log_args.minloglevel());
 
   ::artm::RegularizerConfig* reg_decor_config = master_config.add_regularizer_config();
@@ -77,8 +72,8 @@ TEST(CppInterface, BasicTest) {
   int nTokens = 10;
   int nDocs = 15;
 
-  std::vector< std::shared_ptr<::artm::Batch>> batches;
-  batches.push_back(std::make_shared<::artm::Batch>());
+  std::vector< std::shared_ptr< ::artm::Batch>> batches;
+  batches.push_back(std::make_shared< ::artm::Batch>());
   artm::Batch& batch = *batches.back();
   batch.set_id("00b6d631-46a6-4edf-8ef6-016c7b27d9f0");
   for (int i = 0; i < nTokens; i++) {

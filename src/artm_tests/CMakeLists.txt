@@ -13,7 +13,7 @@ set(SRC_LIST
 	cpp_interface_test.cc
 	instance_test.cc
 	master_model_test.cc
-	#multiple_classes_test.cc
+	multiple_classes_test.cc
 	regularizers_test.cc
 	repeatable_result_test.cc
 	supcry_test.cc

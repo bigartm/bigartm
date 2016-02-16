@@ -33,7 +33,8 @@ class Api {
   // Test helpers
   ::artm::FitOfflineMasterModelArgs Initialize(const std::vector<std::shared_ptr< ::artm::Batch> >& batches,
                                                ::artm::ImportBatchesArgs* import_batches_args = nullptr,
-                                               ::artm::InitializeModelArgs* initialize_model_args = nullptr);
+                                               ::artm::InitializeModelArgs* initialize_model_args = nullptr,
+                                               const ::artm::DictionaryData* dictionary_data = nullptr);
 
  private:
   MasterModel& master_model_;

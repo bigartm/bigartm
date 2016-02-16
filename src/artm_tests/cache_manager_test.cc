@@ -22,9 +22,7 @@ void RunTest(bool disk_cache) {
 
   artm::ConfigureLoggingArgs log_args;
   log_args.set_log_dir("../artm");
-  std::string args_str;
-  log_args.SerializeToString(&args_str);
-  ArtmConfigureLogging(args_str.size(), args_str.c_str());
+  ::artm::ConfigureLogging(log_args);
   EXPECT_EQ(log_args.log_dir(), ::google::GetLoggingDirectories()[0]);
   EXPECT_EQ(::google::GetLoggingDirectories().size(), 1);
 
