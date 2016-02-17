@@ -68,11 +68,13 @@ class LibArtm(object):
             else:
                 raise RuntimeError(error_message)
 
-    def _get_requested_message(self, length):
+    def _get_requested_message(self, length, func):
         message_blob = ctypes.create_string_buffer(length)
         error_code = self.cdll.ArtmCopyRequestResult(length, message_blob)
         self._check_error(error_code)
-        return message_blob
+        message = func()
+        message.ParseFromString(message_blob)
+        return message
 
     def _wrap_call(self, func, spec):
 
@@ -130,7 +132,7 @@ class LibArtm(object):
 
             # return result value
             if spec.request_type is not None:
-                return self._get_requested_message(length=result)
+                return self._get_requested_message(length=result, func=spec.request_type)
             if spec.result_type is not None:
                 return result
 

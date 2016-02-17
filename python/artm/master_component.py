@@ -115,9 +115,6 @@ def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors
         if nwt_name is not None:
             master_config.nwt_name = nwt_name
 
-        if pwt_name is not None:
-            master_config.pwt_name = pwt_name
-
         if num_document_passes is not None:
             master_config.inner_iterations_count = num_document_passes
 
@@ -179,10 +176,7 @@ class MasterComponent(object):
            - filename(str): full name of dictionary file
            - dictionary_name(str): name of imported dictionary
         """
-        args = messages.ImportDictionaryArgs()
-        args.dictionary_name = dictionary_name
-        args.file_name = filename
-
+        args = messages.ImportDictionaryArgs(dictionary_name=dictionary_name, file_name=filename)
         self._lib.ArtmImportDictionary(self.master_id, args)
 
     def export_dictionary(self, filename, dictionary_name):
@@ -190,10 +184,7 @@ class MasterComponent(object):
            - filename(str): full name for dictionary file
            - dictionary_name(str): name of exported dictionary
         """
-        args = messages.ExportDictionaryArgs()
-        args.dictionary_name = dictionary_name
-        args.file_name = filename
-
+        args = messages.ExportDictionaryArgs(dictionary_name=dictionary_name, file_name=filename)
         self._lib.ArtmExportDictionary(self.master_id, args)
 
     def create_dictionary(self, dictionary_data, dictionary_name=None):
@@ -212,14 +203,8 @@ class MasterComponent(object):
         """Args:
            - dictionary_name(str): name of dictionary to get
         """
-        args = messages.GetDictionaryArgs()
-        args.dictionary_name = dictionary_name
-
-        result = self._lib.ArtmRequestDictionary(self.master_id, args)
-
-        dictionary_data = messages.DictionaryData()
-        dictionary_data.ParseFromString(result)
-
+        args = messages.GetDictionaryArgs(dictionary_name=dictionary_name)
+        dictionary_data = self._lib.ArtmRequestDictionary(self.master_id, args)
         return dictionary_data
 
     def gather_dictionary(self, dictionary_target_name=None, data_path=None, cooc_file_path=None,
@@ -342,8 +327,9 @@ class MasterComponent(object):
            - tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta (find_theta==True)
            - messages.ThetaMatrix --- the info about Theta (find_theta==False)
         """
-        args = messages.ProcessBatchesArgs()
-        args.pwt_source_name = pwt
+        args = messages.ProcessBatchesArgs(pwt_source_name=pwt,
+                                           reset_scores=reset_scores,
+                                           reuse_theta=reuse_theta)
         if nwt is not None:
             args.nwt_target_name = nwt
         if batches_folder is not None:
@@ -357,9 +343,6 @@ class MasterComponent(object):
 
         if num_inner_iterations is not None:
             args.inner_iterations_count = num_inner_iterations
-
-        args.reset_scores = reset_scores
-        args.reuse_theta = reuse_theta
 
         if regularizer_name is not None and regularizer_tau is not None:
             for name, tau in zip(regularizer_name, regularizer_tau):
@@ -383,10 +366,7 @@ class MasterComponent(object):
         elif not find_theta or find_theta is None:
             func = self._lib.ArtmRequestProcessBatches
 
-        retval = func(self.master_id, args)
-
-        result = messages.ProcessBatchesResult()
-        result.ParseFromString(retval)
+        result = func(self.master_id, args)
 
         if not find_theta and not find_ptdw:
             return result.theta_matrix
@@ -409,10 +389,9 @@ class MasterComponent(object):
            - regularizer_name(list of str): list of names of Phi regularizers to use
            - regularizer_tau(list of double): list of tau coefficients for Phi regularizers
         """
-        args = messages.RegularizeModelArgs()
-        args.pwt_source_name = pwt
-        args.nwt_source_name = nwt
-        args.rwt_target_name = rwt
+        args = messages.RegularizeModelArgs(pwt_source_name=pwt,
+                                            nwt_source_name=nwt,
+                                            rwt_target_name=rwt)
 
         for name, tau in zip(regularizer_name, regularizer_tau):
             reg_set = args.regularizer_settings.add()
@@ -428,9 +407,7 @@ class MasterComponent(object):
            - nwt(str): name of nwt matrix in BigARTM
            - rwt(str): name of rwt matrix in BigARTM
         """
-        args = messages.NormalizeModelArgs()
-        args.pwt_target_name = pwt
-        args.nwt_source_name = nwt
+        args = messages.NormalizeModelArgs(pwt_target_name=pwt, nwt_source_name=nwt)
         if rwt is not None:
             args.rwt_source_name = rwt
 
@@ -446,8 +423,7 @@ class MasterComponent(object):
         - topic_names(list of str): names of topics in the resulting model. By default model
                                     names are taken from the first model in the list.
         """
-        args = messages.MergeModelArgs()
-        args.nwt_target_name = nwt
+        args = messages.MergeModelArgs(nwt_target_name=nwt)
         if topic_names is not None:
             args.ClearField('topic_name')
             for topic_name in topic_names:
@@ -476,8 +452,7 @@ class MasterComponent(object):
                                   messages.AttachModelArgs(model_name=model),
                                   numpy_ndarray)
 
-        topic_model = messages.TopicModel()
-        topic_model.topics_count = topics.topics_count
+        topic_model = messages.TopicModel(topics_count=topics.topics_count)
         topic_model.topic_name.MergeFrom(topics.topic_name)
         topic_model.class_id.MergeFrom(tokens.class_id)
         topic_model.token.MergeFrom(tokens.token)
@@ -538,13 +513,8 @@ class MasterComponent(object):
            - score_name(str): the user defined name of score to retrieve
            - score_config: reference to score data object
         """
-        args = messages.GetScoreValueArgs()
-        args.model_name = model_name
-        args.score_name = score_name
-
-        results = self._lib.ArtmRequestScore(self.master_id, args)
-        score_data = messages.ScoreData()
-        score_data.ParseFromString(results)
+        args = messages.GetScoreValueArgs(model_name=model_name, score_name=score_name)
+        score_data = self._lib.ArtmRequestScore(self.master_id, args)
 
         score_info = _score_data_func(score_data.type)()
         score_info.ParseFromString(score_data.data)
@@ -568,14 +538,10 @@ class MasterComponent(object):
            Returns:
            - messages.ThetaMatrix object
         """
-        args = messages.GetThetaMatrixArgs()
-        args.model_name = model
+        args = messages.GetThetaMatrixArgs(model_name=model)
         args.eps = 1.001  # hack to not get any data back
         args.matrix_layout = 1  # GetThetaMatrixArgs_MatrixLayout_Sparse
-        result = self._lib.ArtmRequestThetaMatrix(self.master_id, args)
-
-        theta_matrix_info = messages.ThetaMatrix()
-        theta_matrix_info.ParseFromString(result)
+        theta_matrix_info = self._lib.ArtmRequestThetaMatrix(self.master_id, args)
 
         return theta_matrix_info
 
@@ -587,8 +553,7 @@ class MasterComponent(object):
            Returns:
            - numpy.ndarray with Theta data (e.g. p(t|d) values)
         """
-        args = messages.GetThetaMatrixArgs()
-        args.model_name = model
+        args = messages.GetThetaMatrixArgs(model_name=model)
         if clean_cache is not None:
             args.clean_cache = clean_cache
         if topic_names is not None:
@@ -596,10 +561,7 @@ class MasterComponent(object):
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
 
-        result = self._lib.ArtmRequestThetaMatrixExternal(self.master_id, args)
-
-        theta_matrix_info = messages.ThetaMatrix()
-        theta_matrix_info.ParseFromString(result)
+        theta_matrix_info = self._lib.ArtmRequestThetaMatrixExternal(self.master_id, args)
 
         num_rows = len(theta_matrix_info.item_id)
         num_cols = theta_matrix_info.topics_count
@@ -622,10 +584,7 @@ class MasterComponent(object):
         if request_type is not None:
             args.request_type = request_type
 
-        result = self._lib.ArtmRequestTopicModel(self.master_id, args)
-
-        phi_matrix_info = messages.TopicModel()
-        phi_matrix_info.ParseFromString(result)
+        phi_matrix_info = self._lib.ArtmRequestTopicModel(self.master_id, args)
 
         return phi_matrix_info
 
@@ -638,8 +597,7 @@ class MasterComponent(object):
            Returns:
            - numpy.ndarray with Phi data (e.g. p(w|t) values)
         """
-        args = messages.GetTopicModelArgs()
-        args.model_name = model
+        args = messages.GetTopicModelArgs(model_name=model)
         if topic_names is not None:
             args.ClearField('topic_name')
             for topic_name in topic_names:
@@ -651,10 +609,7 @@ class MasterComponent(object):
         if use_sparse_format is not None:
             args.matrix_layout = constants.GetTopicModelArgs_MatrixLayout_Sparse
 
-        result = self._lib.ArtmRequestTopicModelExternal(self.master_id, args)
-
-        phi_matrix_info = messages.TopicModel()
-        phi_matrix_info.ParseFromString(result)
+        phi_matrix_info = self._lib.ArtmRequestTopicModelExternal(self.master_id, args)
 
         num_rows = len(phi_matrix_info.token)
         num_cols = phi_matrix_info.topics_count
@@ -667,10 +622,7 @@ class MasterComponent(object):
         return numpy_ndarray
 
     def export_model(self, model, filename):
-        args = messages.ExportModelArgs()
-        args.model_name = model
-        args.file_name = filename
-
+        args = messages.ExportModelArgs(model_name=model, file_name=filename)
         result = self._lib.ArtmExportModel(self.master_id, args)
 
     def import_model(self, model, filename):
@@ -678,17 +630,12 @@ class MasterComponent(object):
            - model(str): name of matrix in BigARTM
            - filename(str): the name of file to load model from binary format
         """
-        args = messages.ImportModelArgs()
-        args.model_name = model
-        args.file_name = filename
-
+        args = messages.ImportModelArgs(model_name=model, file_name=filename)
         result = self._lib.ArtmImportModel(self.master_id, args)
 
     def get_info(self):
-        result = self._lib.ArtmRequestMasterComponentInfo(self.master_id,
-                                                          messages.GetMasterComponentInfoArgs())
-        info = messages.MasterComponentInfo()
-        info.ParseFromString(result)
+        info = self._lib.ArtmRequestMasterComponentInfo(self.master_id,
+                                                        messages.GetMasterComponentInfoArgs())
         return info
 
     def fit_offline(self, batch_filenames=None, batch_weights=None,
@@ -794,9 +741,6 @@ class MasterComponent(object):
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
 
-        result = self._lib.ArtmRequestTransformMasterModel(self.master_id, args)
-
-        theta_matrix = messages.ThetaMatrix()
-        theta_matrix.ParseFromString(result)
+        theta_matrix = self._lib.ArtmRequestTransformMasterModel(self.master_id, args)
 
         return theta_matrix
