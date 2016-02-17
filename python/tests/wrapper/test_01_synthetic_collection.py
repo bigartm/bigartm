@@ -63,8 +63,8 @@ def test_func():
         lib.ArtmSaveBatch(batches_folder, batch)
 
         # Create master component and scores
-        scores = [('PerplexityScore', messages.PerplexityScoreConfig()),
-                  ('TopTokensScore', messages.TopTokensScoreConfig(num_tokens = num_top_tokens))]
+        scores = {'PerplexityScore': messages.PerplexityScoreConfig(),
+                  'TopTokensScore': messages.TopTokensScoreConfig(num_tokens = num_top_tokens)}
         master = mc.MasterComponent(lib, scores=scores)
 
         # Create collection dictionary and import it
@@ -81,12 +81,12 @@ def test_func():
             master.normalize_model(pwt, nwt)
 
             # Retrieve and print perplexity score
-            perplexity_score = master.retrieve_score(pwt, 'PerplexityScore')
+            perplexity_score = master.get_score(pwt, 'PerplexityScore')
             assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < perplexity_tol
             print 'Iteration#{0} : Perplexity = {1:.3f}'.format(iter, perplexity_score.value)
 
         # Retrieve and print top tokens score
-        top_tokens_score = master.retrieve_score(pwt, 'TopTokensScore')
+        top_tokens_score = master.get_score(pwt, 'TopTokensScore')
 
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))

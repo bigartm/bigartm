@@ -54,7 +54,6 @@ ARTM_API = [
         'ArtmDisposeModel',
         [('master_id', int), ('name', str)],
     ),
-
     CallSpec(
         'ArtmCreateRegularizer',
         [('master_id', int), ('config', messages.RegularizerConfig)],
@@ -146,7 +145,6 @@ ARTM_API = [
         'ArtmAttachModel',
         [('master_id', int), ('args', messages.AttachModelArgs), ('matrix', numpy.ndarray)],
     ),
-
     CallSpec(
         'ArtmRequestProcessBatches',
         [('master_id', int), ('args', messages.ProcessBatchesArgs)],
@@ -169,7 +167,6 @@ ARTM_API = [
         'ArtmNormalizeModel',
         [('master_id', int), ('args', messages.NormalizeModelArgs)],
     ),
-
     CallSpec(
         'ArtmRequestThetaMatrix',
         [('master_id', int), ('args', messages.GetThetaMatrixArgs)],
@@ -216,15 +213,34 @@ ARTM_API = [
         [('master_id', int), ('args', messages.GetDictionaryArgs)],
         request=messages.DictionaryData,
     ),
-
     CallSpec(
         'ArtmSaveBatch',
         [('filename', str), ('batch', messages.Batch)],
     ),
-
     CallSpec(
         'ArtmCopyRequestResultEx',
         [('array', numpy.ndarray), ('args', messages.CopyRequestResultArgs)],
     ),
-
+    CallSpec(
+        'ArtmCreateMasterModel',
+        [('config', messages.MasterModelConfig)],
+        result=ctypes.c_int,
+    ),
+    CallSpec(
+        'ArtmReconfigureMasterModel',
+        [('master_id', int), ('config', messages.MasterModelConfig)],
+    ),
+    CallSpec(
+        'ArtmFitOfflineMasterModel',
+        [('master_id', int), ('config', messages.FitOfflineMasterModelArgs)],
+    ),
+    CallSpec(
+        'ArtmFitOnlineMasterModel',
+        [('master_id', int), ('config', messages.FitOnlineMasterModelArgs)],
+    ),
+    CallSpec(
+        'ArtmRequestTransformMasterModel',
+        [('master_id', int), ('config', messages.TransformMasterModelArgs)],
+        request=messages.ThetaMatrix,
+    ),
 ]
