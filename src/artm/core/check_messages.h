@@ -486,12 +486,10 @@ inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
 // Empty ValidateMessage routines
 inline std::string DescribeErrors(const ::artm::GetTopicModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizerInternalState& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::InvokeIterationArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::NormalizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizerConfig& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::SynchronizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ExportDictionaryArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ScoreData& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::MasterComponentInfo& message) { return std::string(); }

@@ -64,16 +64,6 @@ void Merger::DisposeModel(ModelName model_name) {
   internal_task_queue_.push(MergerTask(kDisposeModel, model_name, 0.0f, 0.0f, false, nullptr));
 }
 
-void Merger::CreateOrReconfigureModel(const ModelConfig& model) {
-  if (!topic_model_.has_key(model.name())) {
-    auto ttm = std::make_shared<TopicModel>(model.name(), model.topic_name());
-    topic_model_.set(model.name(), ttm);
-    target_model_config_.set(model.name(), nullptr);
-  } else {
-    target_model_config_.set(model.name(), std::make_shared<artm::ModelConfig>(model));
-  }
-}
-
 void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
   auto ttm = this->GetLatestTopicModel(topic_model.name());
   if (ttm != nullptr) {
@@ -88,14 +78,6 @@ void Merger::OverwriteTopicModel(const ::artm::TopicModel& topic_model) {
   auto target = std::make_shared<DensePhiMatrix>(topic_model.name(), topic_model.topic_name());
   PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, target.get());
   SetPhiMatrix(topic_model.name(), target);
-}
-
-void Merger::ForceSynchronizeModel(const SynchronizeModelArgs& args) {
-  SyncEvent sync_event;
-  internal_task_queue_.push(MergerTask(kForceSynchronizeTopicModel, args.model_name(),
-                            args.decay_weight(), args.apply_weight(), args.invoke_regularizers(),
-                            &sync_event));
-  sync_event.wait();
 }
 
 void Merger::ForceResetScores(ModelName model_name) {
@@ -140,10 +122,6 @@ void Merger::ThreadFunction() {
           switch (merger_task.task_type) {
             case kDisposeModel:
               topic_model_inc_.erase(merger_task.model_name);
-              break;
-            case kForceSynchronizeTopicModel:
-              SynchronizeModel(merger_task.model_name, merger_task.decay_weight,
-                               merger_task.apply_weight, merger_task.invoke_regularizers);
               break;
             case kForceResetScores:
               ResetScores(merger_task.model_name);
@@ -224,22 +202,6 @@ void Merger::RequestRegularizerState(RegularizerName regularizer_name,
   }
 }
 
-bool Merger::WaitIdle(const WaitIdleArgs& args) {
-  int timeout = args.timeout_milliseconds();
-  auto time_start = boost::posix_time::microsec_clock::local_time();
-  for (;;) {
-    if (is_idle_ && merger_queue_->empty())
-      break;
-
-    boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-    auto time_end = boost::posix_time::microsec_clock::local_time();
-    if (timeout >= 0) {
-      if ((time_end - time_start).total_milliseconds() >= timeout) return false;
-    }
-  }
-  return true;
-}
-
 void Merger::RequestScore(const GetScoreValueArgs& args,
                           ScoreData *score_data) const {
   LOG(INFO) << "Merger::RequestScore(score_name=" << args.score_name() << ")";
@@ -286,117 +248,6 @@ std::vector<ModelName> Merger::model_name() const {
   retval.insert(retval.begin(), new_models.begin(), new_models.end());
   retval.insert(retval.begin(), old_models.begin(), old_models.end());
   return retval;
-}
-
-void Merger::SynchronizeModel(const ModelName& model_name, float decay_weight,
-                              float apply_weight, bool invoke_regularizers) {
-  std::stringstream ss;
-  ss << "Merger::SynchronizeModel (" << model_name
-     << ", decay_weight=" << decay_weight
-     << ", apply_weight=" << apply_weight
-     << ", invoke_regularizers=" << (invoke_regularizers ? "true" : "false")
-     << ")";
-
-  CuckooWatch cuckoo(ss.str());
-  auto model_names = topic_model_.keys();
-  if (!model_name.empty()) {
-    model_names.clear();
-    model_names.push_back(model_name);
-  }
-
-  for (auto &name : model_names) {
-    auto old_ttm = topic_model_.get(name);
-    if (old_ttm.get() == nullptr) {
-      LOG(ERROR) << "Topic model " << name << " does not exist.";
-      return;
-    }
-
-    std::shared_ptr<InstanceSchema> schema = schema_->get();
-    if (!schema->has_model_config(name))
-      return;
-
-    const ModelConfig& current_config = schema->model_config(name);
-
-    auto inc_ttm = topic_model_inc_.find(name);
-    if (inc_ttm == topic_model_inc_.end())
-      LOG(WARNING) << "SynchronizeModel() did not found any increments to topic model " << name;
-
-    std::shared_ptr<ModelConfig> target_config = target_model_config_.get(name);
-
-    // Accumulate counters in topic model with decay coefficient.
-    VLOG(0) << "MasterComponent: start merging models";
-    std::shared_ptr< ::artm::core::TopicModel> new_ttm;
-    {
-      CuckooWatch cuckoo2("copy&decay, ", &cuckoo);
-
-      new_ttm = std::make_shared< ::artm::core::TopicModel>(
-        name, target_config != nullptr ? target_config->topic_name() : current_config.topic_name());
-
-      ::artm::TopicModel topic_model;
-      GetTopicModelArgs get_topic_model_args;
-      get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
-      old_ttm->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
-      PhiMatrixOperations::ApplyTopicModelOperation(topic_model, decay_weight, new_ttm->mutable_nwt());
-    }
-    target_model_config_.set(name, nullptr);
-
-    if (inc_ttm != topic_model_inc_.end()) {
-      CuckooWatch cuckoo2("ApplyTopicModelOperation, ", &cuckoo);
-      ::artm::TopicModel topic_model;
-      GetTopicModelArgs get_topic_model_args;
-      get_topic_model_args.set_request_type(GetTopicModelArgs_RequestType_Nwt);
-      inc_ttm->second->RetrieveExternalTopicModel(get_topic_model_args, &topic_model);
-      PhiMatrixOperations::ApplyTopicModelOperation(topic_model, apply_weight, new_ttm->mutable_nwt());
-    }
-    VLOG(0) << "MasterComponent: complete merging models";
-
-    if (invoke_regularizers && (current_config.regularizer_settings_size() > 0)) {
-      VLOG(0) << "MasterComponent: start regularizing model " << name;
-      CuckooWatch cuckoo2("InvokePhiRegularizers, ", &cuckoo);
-
-      // call CalcPwt() to allow regularizers GetPwt() usage
-      new_ttm->CalcPwt();
-
-      ::artm::core::DensePhiMatrix global_r_wt(new_ttm->model_name(), new_ttm->topic_name());
-      global_r_wt.Reshape(new_ttm->GetNwt());
-      PhiMatrixOperations::InvokePhiRegularizers(schema_->get(), current_config.regularizer_settings(),
-                                                 new_ttm->GetPwt(), new_ttm->GetNwt(), &global_r_wt);
-      VLOG(0) << "MasterComponent: complete regularizing model " << name;
-
-
-      // merge final r_wt with n_wt in p_wt (n_wt is const)
-      VLOG(0) << "MasterComponent: start normalizing model " << name;
-      new_ttm->CalcPwt(global_r_wt);
-      VLOG(0) << "MasterComponent: complete normalizing model " << name;
-
-      // Verify if model became overregularized
-      std::map<ClassId, std::vector<float>> new_ttm_normalizers =
-        PhiMatrixOperations::FindNormalizers(new_ttm->GetNwt(), global_r_wt);
-      for (auto iter : new_ttm_normalizers) {
-        int bad_topics = 0;
-        for (unsigned topic_index = 0; topic_index < iter.second.size(); ++topic_index) {
-          if (iter.second[topic_index] < 1e-20) {
-            bad_topics++;
-          }
-        }
-
-        LOG_IF(WARNING, bad_topics > 0)
-          << bad_topics << " of " << new_ttm->topic_size()
-          << " topics have zero probability mass."
-          << " Consider reducing values of ModelConfig.regularizer_tau"
-          << " (or ModelConfig.regularizer_settings.tau)"
-          << " for model '" << model_name << "', class_id=" << iter.first;
-      }
-    } else {
-      CuckooWatch cuckoo2("CalcPwt", &cuckoo);
-      VLOG(0) << "MasterComponent: start normalizing model " << name;
-      new_ttm->CalcPwt();   // calculate pwt matrix
-      VLOG(0) << "MasterComponent: complete normalizing model " << name;
-    }
-
-    topic_model_.set(name, new_ttm);
-    topic_model_inc_.erase(name);
-  }
 }
 
 struct TokenInfo {

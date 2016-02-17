@@ -1137,7 +1137,6 @@ void Processor::ThreadFunction() {
         if (p_wt.token_size() == 0) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
             "would not be processed on this iteration";
-          if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
           continue;
         }
 
@@ -1226,19 +1225,6 @@ void Processor::ThreadFunction() {
             part->scores_merger()->Append(schema, model_name_cache, score_name, score_value->SerializeAsString());
         }
 
-        if (part->caller() != ProcessorInput::Caller::ProcessBatches) {
-          CuckooWatch cuckoo2("await merger queue", &cuckoo, kTimeLoggingThreshold);
-          // Wait until merger queue has space for a new element
-          int merger_queue_max_size = master_config.merger_queue_max_size();
-          for (;;) {
-            if (merger_queue_->size() < merger_queue_max_size)
-              break;
-
-            boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-          }
-        }
-
-        if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
         VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << model_description.str();
       }
     }

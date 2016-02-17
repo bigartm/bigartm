@@ -22,7 +22,6 @@
 
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
-#include "artm/core/data_loader.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/check_messages.h"
@@ -73,12 +72,6 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
   master_component_config.mutable_score_config()->CopyFrom(config.score_config());
   if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
   if (config.reuse_theta() || config.cache_theta()) master_component_config.set_cache_theta(true);
-  if (config.use_v06_api() && !reconfigure) {
-    ScoreConfig* items_processed = master_component_config.add_score_config();
-    items_processed->set_type(ScoreConfig_Type_ItemsProcessed);
-    items_processed->set_name("ItemsProcessedScore-2b632a39-8c6b-4b7b-a0c4-ee60d1434522");
-    items_processed->set_config(::artm::ItemsProcessedScoreConfig().SerializeAsString());
-  }
 
   if (!reconfigure)
     instance_ = std::make_shared<Instance>(master_component_config);
@@ -95,24 +88,6 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
   // create (or re-create the regularizers)
   for (int i = 0; i < config.regularizer_config_size(); ++i)
     CreateOrReconfigureRegularizer(config.regularizer_config(i));
-
-  if (config.use_v06_api() && !reconfigure) {
-    ::artm::ModelConfig model_config;
-    model_config.set_name(config.pwt_name());
-    model_config.mutable_topic_name()->CopyFrom(config.topic_name());
-    model_config.set_inner_iterations_count(config.inner_iterations_count());
-    if (config.has_reuse_theta()) model_config.set_reuse_theta(config.reuse_theta());
-    for (auto& reg : config.regularizer_config()) {
-      model_config.add_regularizer_name(reg.name());
-      model_config.add_regularizer_tau(reg.tau());
-    }
-    model_config.mutable_class_id()->CopyFrom(config.class_id());
-    model_config.mutable_class_weight()->CopyFrom(config.class_weight());
-    if (config.has_use_sparse_bow()) model_config.set_use_sparse_bow(config.use_sparse_bow());
-    if (config.has_opt_for_avx()) model_config.set_opt_for_avx(config.opt_for_avx());
-    FixAndValidateMessage(&model_config, /*throw_error =*/ true);
-    CreateOrReconfigureModel(model_config);
-  }
 }
 
 MasterComponent::MasterComponent(const MasterComponentConfig& config)
@@ -135,17 +110,6 @@ MasterComponent::~MasterComponent() {}
 
 std::shared_ptr<MasterComponent> MasterComponent::Duplicate() const {
   return std::shared_ptr<MasterComponent>(new MasterComponent(*this));
-}
-
-void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
-  if ((config.class_weight_size() != 0 || config.class_id_size() != 0) && !config.use_sparse_bow()) {
-    std::stringstream ss;
-    ss << "You have configured use_sparse_bow=false. "
-       << "Fields ModelConfig.class_id and ModelConfig.class_weight not supported in this mode.";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  }
-
-  instance_->CreateOrReconfigureModel(config);
 }
 
 void MasterComponent::DisposeModel(const std::string& name) {
@@ -231,10 +195,6 @@ void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
 
 void MasterComponent::DisposeBatch(const std::string& name) {
   instance_->batches()->erase(name);
-}
-
-void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
-  instance_->merger()->ForceSynchronizeModel(args);
 }
 
 void MasterComponent::ExportModel(const ExportModelArgs& args) {
@@ -559,8 +519,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     pi->set_model_name(model_name);
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
-    pi->set_caller(ProcessorInput::Caller::ProcessBatches);
-
+    
     if (args.reuse_theta())
       pi->set_reuse_theta_cache_manager(instance_->cache_manager());
 
@@ -948,47 +907,6 @@ class ArtmExecutor {
     Dispose(rwt_name);
   }
 
-  void ExecuteLegacyOnlineAlgorithm(OnlineBatchesIterator* iter) {
-    ::artm::ProcessBatchesArgs process_batches_args;
-    bool reset_scores = true;
-    while (iter->more()) {
-      iter->move(&process_batches_args);
-      for (auto& batch_file_name : process_batches_args.batch_filename()) {
-        ::artm::AddBatchArgs add_batch_args;
-        add_batch_args.set_reset_scores(reset_scores);
-        add_batch_args.set_batch_file_name(batch_file_name);
-        master_component_->AddBatch(add_batch_args);
-        reset_scores = false;
-      }
-    }
-
-    iter->reset();
-
-    bool done = false;
-    while (!done) {
-      ::artm::WaitIdleArgs wait_idle_args;
-      wait_idle_args.set_timeout_milliseconds(10);
-      done = master_component_->WaitIdle(wait_idle_args);
-
-      ::artm::GetScoreValueArgs get_score_value_args;
-      get_score_value_args.set_model_name(master_model_config_.pwt_name());
-      get_score_value_args.set_score_name("ItemsProcessedScore-2b632a39-8c6b-4b7b-a0c4-ee60d1434522");
-      ::artm::ScoreData score_data;
-      master_component_->Request(get_score_value_args, &score_data);
-      ::artm::ItemsProcessedScore items_processed_score;
-      items_processed_score.ParseFromString(score_data.data());
-
-      if (iter->more() && (done || (items_processed_score.num_batches() >= iter->update_after()))) {
-        ::artm::SynchronizeModelArgs synchronize_model_args;
-        synchronize_model_args.set_model_name(master_model_config_.pwt_name());
-        synchronize_model_args.set_apply_weight(iter->apply_weight());
-        synchronize_model_args.set_decay_weight(iter->decay_weight());
-        master_component_->SynchronizeModel(synchronize_model_args);
-        iter->move(&process_batches_args);
-      }
-    }
-  }
-
   void ExecuteOnlineAlgorithm(OnlineBatchesIterator* iter) {
     const std::string rwt_name = "rwt";
     StringIndex nwt_hat_index("nwt_hat");
@@ -1155,11 +1073,6 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
   ArtmExecutor artm_executor(*config, this);
   OnlineBatchesIterator iter(args.batch_filename(), args.batch_weight(), args.update_after(),
                              args.apply_weight(), args.decay_weight());
-  if (config->use_v06_api()) {
-    artm_executor.ExecuteLegacyOnlineAlgorithm(&iter);
-    return;
-  }
-
   if (args.async()) {
     artm_executor.ExecuteAsyncOnlineAlgorithm(&iter);
   } else {
@@ -1198,41 +1111,6 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
   ArtmExecutor artm_executor(*config, this);
   OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());
   artm_executor.ExecuteOfflineAlgorithm(args.passes(), &iter);
-}
-
-bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
-  int timeout = args.timeout_milliseconds();
-  LOG_IF(WARNING, timeout == 0) << "WaitIdleArgs.timeout_milliseconds == 0";
-  WaitIdleArgs new_args;
-  new_args.CopyFrom(args);
-  auto time_start = boost::posix_time::microsec_clock::local_time();
-
-  bool retval = instance_->data_loader()->WaitIdle(args);
-  if (!retval) return false;
-
-  auto time_end = boost::posix_time::microsec_clock::local_time();
-  if (timeout != -1) {
-    timeout -= (time_end - time_start).total_milliseconds();
-    new_args.set_timeout_milliseconds(timeout);
-  }
-
-  return instance_->merger()->WaitIdle(new_args);
-}
-
-void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
-  if (args.reset_scores())
-    instance_->merger()->ForceResetScores(ModelName());
-
-  instance_->data_loader()->InvokeIteration(args);
-}
-
-bool MasterComponent::AddBatch(const AddBatchArgs& args) {
-  int timeout = args.timeout_milliseconds();
-  LOG_IF(WARNING, timeout == 0) << "AddBatchArgs.timeout_milliseconds == 0";
-  if (args.reset_scores())
-    instance_->merger()->ForceResetScores(ModelName());
-
-  return instance_->data_loader()->AddBatch(args);
 }
 
 }  // namespace core

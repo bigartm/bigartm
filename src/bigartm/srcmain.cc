@@ -249,7 +249,6 @@ struct artm_options {
   bool b_reuse_theta;
   int threads;
   bool async;
-  bool model_v06;
 
   // Output
   bool force;
@@ -944,7 +943,6 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   master_config.set_use_sparse_bow(!options.b_use_dense_bow);
   if (options.b_reuse_theta) master_config.set_reuse_theta(true);
   if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
-  if (options.model_v06) master_config.set_use_v06_api(options.model_v06);
 
   // Step 1.1. Configure regularizers.
   std::map<std::string, std::string> dictionary_map;
@@ -1236,7 +1234,6 @@ int main(int argc, char * argv[]) {
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
       ("threads", po::value(&options.threads)->default_value(0), "number of concurrent processors (default: auto-detect)")
       ("async", po::bool_switch(&options.async)->default_value(false), "invoke asynchronous version of the online algorithm")
-      ("model-v06", po::bool_switch(&options.model_v06)->default_value(false), "use legacy model from BigARTM v0.6.4")
     ;
 
     po::options_description output_options("Output");

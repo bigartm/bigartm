@@ -24,8 +24,6 @@ extern "C" {
   DLL_PUBLIC int ArtmReconfigureMasterModel(int master_id, int length, const char* master_model_config);
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);
 
-  DLL_PUBLIC int ArtmCreateModel(int master_id, int length, const char* model_config);
-  DLL_PUBLIC int ArtmReconfigureModel(int master_id, int length, const char* model_config);
   DLL_PUBLIC int ArtmDisposeModel(int master_id, const char* model_name);
 
   DLL_PUBLIC int ArtmCreateRegularizer(int master_id, int length, const char* regularizer_config);
@@ -45,11 +43,6 @@ extern "C" {
 
   DLL_PUBLIC int ArtmImportBatches(int master_id, int length, const char* import_batches_args);
   DLL_PUBLIC int ArtmDisposeBatch(int master_id, const char* batch_name);
-
-  DLL_PUBLIC int ArtmAddBatch(int master_id, int length, const char* add_batch_args);
-  DLL_PUBLIC int ArtmInvokeIteration(int master_id, int length, const char* invoke_iteration_args);
-  DLL_PUBLIC int ArtmWaitIdle(int master_id, int length, const char* wait_idle_args);
-  DLL_PUBLIC int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args);
 
   DLL_PUBLIC int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model);
   DLL_PUBLIC int ArtmOverwriteTopicModelNamed(int master_id, int length, const char* topic_model, const char* name);

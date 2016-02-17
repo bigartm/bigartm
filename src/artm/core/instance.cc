@@ -11,7 +11,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/helpers.h"
-#include "artm/core/data_loader.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/dictionary.h"
@@ -79,7 +78,6 @@ Instance::Instance(const MasterComponentConfig& config)
       merger_queue_(),
       cache_manager_(),
       batch_manager_(),
-      data_loader_(nullptr),
       merger_(),
       processors_() {
   Reconfigure(config);
@@ -94,7 +92,6 @@ Instance::Instance(const Instance& rhs)
       merger_queue_(),
       cache_manager_(),
       batch_manager_(),
-      data_loader_(nullptr),
       merger_(),
       processors_() {
   Reconfigure(schema_.get()->config());
@@ -172,10 +169,6 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
   master_info->set_processor_queue_size(processor_queue_.size());
 }
 
-DataLoader* Instance::data_loader() {
-  return data_loader_.get();
-}
-
 BatchManager* Instance::batch_manager() {
   return batch_manager_.get();
 }
@@ -186,18 +179,6 @@ CacheManager* Instance::cache_manager() {
 
 Merger* Instance::merger() {
   return merger_.get();
-}
-
-void Instance::CreateOrReconfigureModel(const ModelConfig& config) {
-  auto corrected_config = std::make_shared<artm::ModelConfig>(config);
-  if (merger_ != nullptr) {
-    merger_->CreateOrReconfigureModel(*corrected_config);
-  }
-
-  auto new_schema = schema_.get_copy();
-  auto const_config = std::const_pointer_cast<const ModelConfig>(corrected_config);
-  new_schema->set_model_config(const_config->name(), const_config);
-  schema_.set(new_schema);
 }
 
 void Instance::DisposeModel(ModelName model_name) {
@@ -420,7 +401,6 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     // First reconfiguration.
     cache_manager_.reset(new CacheManager());
     batch_manager_.reset(new BatchManager());
-    data_loader_.reset(new DataLoader(this));
     merger_.reset(new Merger(&merger_queue_, &schema_, &batches_, &dictionaries_));
 
     is_configured_  = true;

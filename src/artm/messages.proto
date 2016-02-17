@@ -508,14 +508,6 @@ message CollectionParserConfig {
   optional bool use_symmetric_cooc_values = 11 [default = false];  // obsoleted
 }
 
-// Represents an argument of 'synchronize model' operation
-message SynchronizeModelArgs {
-  optional string model_name = 1;
-  optional float decay_weight = 2 [default = 0.0];
-  optional bool invoke_regularizers = 3 [default = true];
-  optional float apply_weight = 4 [default = 1.0];
-}
-
 // Represents an argument of 'initialize model' operation
 message InitializeModelArgs {
   enum SourceType {  // obsoleted
@@ -627,23 +619,6 @@ message GetScoreValueArgs {
   optional string model_name = 1;
   optional string score_name = 2;
   optional Batch batch = 3;
-}
-
-message AddBatchArgs {
-  optional Batch batch = 1;
-  optional int32 timeout_milliseconds = 2 [default = -1];
-  optional bool reset_scores = 3 [default = false];
-  optional string batch_file_name = 4;
-}
-
-message InvokeIterationArgs {
-  optional int32 iterations_count = 1 [default = 1];
-  optional bool reset_scores = 2 [default = true];
-  optional string disk_path = 3;
-}
-
-message WaitIdleArgs {
-  optional int32 timeout_milliseconds = 1 [default = -1];
 }
 
 message ExportModelArgs {
@@ -812,7 +787,6 @@ message MasterModelConfig {
   optional bool opt_for_avx = 11 [default = true];
   optional bool use_sparse_bow = 12 [default = true];
   optional string disk_cache_path = 13;
-  optional bool use_v06_api = 14 [default = false];  // obsolete in BigARTM v0.7.4
   optional bool cache_theta = 15 [default = false];
 }
 

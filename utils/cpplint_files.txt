@@ -4,7 +4,6 @@ src/artm/c_interface.cc
 src/artm/core/batch_manager.cc
 src/artm/core/cache_manager.cc
 src/artm/core/collection_parser.cc
-src/artm/core/data_loader.cc
 src/artm/core/dictionary.cc
 src/artm/core/dense_phi_matrix.cc
 src/artm/core/helpers.cc
@@ -47,7 +46,6 @@ src/artm_tests/cpp_interface_test.cc
 src/artm_tests/template_manager_test.cc
 src/artm_tests/regularizers_test.cc
 src/artm_tests/repeatable_result_test.cc
-src/artm_tests/instance_test.cc
 src/artm_tests/master_model_test.cc
 src/artm_tests/multiple_classes_test.cc
 src/artm_tests/supcry_test.cc
@@ -63,7 +61,6 @@ src/artm/core/call_on_destruction.h
 src/artm/core/check_messages.h
 src/artm/core/collection_parser.h
 src/artm/core/common.h
-src/artm/core/data_loader.h
 src/artm/core/dense_phi_matrix.h
 src/artm/core/dictionary.h
 src/artm/core/exceptions.h

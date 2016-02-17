@@ -43,12 +43,8 @@ class Merger : boost::noncopyable {
   ~Merger();
 
   void DisposeModel(ModelName model_name);
-  void CreateOrReconfigureModel(const ModelConfig& model);
   void ForceResetScores(ModelName model_name);
 
-  // Returns false if BigARTM is still processing the collection, otherwise true.
-  bool WaitIdle(const WaitIdleArgs& args);
-  void ForceSynchronizeModel(const SynchronizeModelArgs& args);
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
   void InitializeModel(const InitializeModelArgs& args);
   ScoresMerger* scores_merger() { return &scores_merger_; }
@@ -70,7 +66,6 @@ class Merger : boost::noncopyable {
  private:
   enum MergerTaskType {
     kDisposeModel,
-    kForceSynchronizeTopicModel,
     kForceResetScores,
   };
 
@@ -109,8 +104,6 @@ class Merger : boost::noncopyable {
   boost::thread thread_;
   void ThreadFunction();
 
-  void SynchronizeModel(const ModelName& model_name, float decay_weight, float apply_weight,
-                        bool invoke_regularizers);
   void ResetScores(ModelName model_name);
 };
 

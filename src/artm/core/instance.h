@@ -23,7 +23,6 @@
 namespace artm {
 namespace core {
 
-class DataLoader;
 class BatchManager;
 class CacheManager;
 class Processor;
@@ -51,7 +50,6 @@ class Instance {
   ThreadSafeDictionaryCollection* dictionaries() { return &dictionaries_; }
   ThreadSafeBatchCollection* batches() { return &batches_; }
 
-  DataLoader* data_loader();
   BatchManager* batch_manager();
   CacheManager* cache_manager();
   Merger* merger();
@@ -60,7 +58,6 @@ class Instance {
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
 
   void Reconfigure(const MasterComponentConfig& master_config);
-  void CreateOrReconfigureModel(const ModelConfig& config);
   void DisposeModel(ModelName model_name);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
@@ -72,7 +69,7 @@ class Instance {
   bool is_configured_;
 
   // The order of the class members defines the order in which obects are created and destroyed.
-  // Pay special attantion to the order of data_loader_, merger_ and processor_,
+  // Pay special attantion to the order of merger_ and processor_,
   // because all this objects has an associated thread.
   // Such threads must be terminated prior to all the objects that the thread might potentially access.
 
@@ -89,9 +86,6 @@ class Instance {
 
   // Depends on schema_
   std::shared_ptr<BatchManager> batch_manager_;
-
-  // Depends on schema_, processor_queue_, batch_manager_
-  std::shared_ptr<DataLoader> data_loader_;
 
   // Depends on schema_, merger_queue_, data_loader_
   std::shared_ptr<Merger> merger_;

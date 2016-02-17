@@ -24,17 +24,10 @@ class CacheManager;
 
 class ProcessorInput {
  public:
-  enum Caller {
-    Unknown,
-    InvokeIteration,
-    AddBatch,
-    ProcessBatches,
-  };
-
   ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
                      batch_filename_(), batch_weight_(1.0f), task_id_(), notifiable_(nullptr),
                      scores_merger_(nullptr), cache_manager_(nullptr),
-                     caller_(Caller::Unknown), ptdw_cache_manager_(nullptr),
+                     ptdw_cache_manager_(nullptr),
                      reuse_theta_cache_manager_(nullptr) {}
 
   Batch* mutable_batch() { return &batch_; }
@@ -78,9 +71,6 @@ class ProcessorInput {
   const boost::uuids::uuid& task_id() const { return task_id_; }
   void set_task_id(const boost::uuids::uuid& task_id) { task_id_ = task_id; }
 
-  Caller caller() const { return caller_; }
-  void set_caller(const Caller caller) { caller_ = caller; }
-
  private:
   Batch batch_;
   ModelConfig model_config_;
@@ -92,7 +82,6 @@ class ProcessorInput {
   Notifiable* notifiable_;
   ScoresMerger* scores_merger_;
   CacheManager* cache_manager_;
-  Caller caller_;
   CacheManager* ptdw_cache_manager_;
   CacheManager* reuse_theta_cache_manager_;
 };
