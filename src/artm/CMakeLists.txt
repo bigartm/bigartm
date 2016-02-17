@@ -51,8 +51,6 @@ set(SRC_LIST
 	core/sync_event.h
 	core/template_manager.h
 	core/thread_safe_holder.h
-	core/topic_model.cc
-	core/topic_model.h
 	regularizer/decorrelator_phi.cc
 	regularizer/decorrelator_phi.h
 	regularizer/multilanguage_phi.cc

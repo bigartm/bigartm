@@ -28,7 +28,6 @@
 #include "artm/core/instance.h"
 #include "artm/core/processor.h"
 #include "artm/core/phi_matrix_operations.h"
-#include "artm/core/topic_model.h"
 #include "artm/core/scores_merger.h"
 #include "artm/core/merger.h"
 #include "artm/core/dense_phi_matrix.h"
@@ -209,11 +208,8 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   if (!fout.is_open())
     BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create file " + args.file_name()));
 
-  std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(args.model_name());
-  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(args.model_name());
-  if (topic_model == nullptr && phi_matrix == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + args.model_name() + " does not exist"));
-  const PhiMatrix& n_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrixSafe(args.model_name());
+  const PhiMatrix& n_wt = *phi_matrix;
 
   LOG(INFO) << "Exporting model " << args.model_name() << " to " << args.file_name();
 
@@ -310,9 +306,7 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
   ModelName model_name = args.model_name();
   LOG(INFO) << "Attaching model " << model_name << " to " << address << " (" << address_length << " bytes)";
 
-  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
-  if (phi_matrix == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrixSafe(model_name);
 
   PhiMatrixFrame* frame = dynamic_cast<PhiMatrixFrame*>(const_cast<PhiMatrix*>(phi_matrix.get()));
   if (frame == nullptr)
@@ -389,13 +383,7 @@ void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) 
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetScoreValueArgs*>(&args)->set_model_name(config->pwt_name());
 
-  if (!args.has_batch()) {
-    instance_->merger()->RequestScore(args, result);
-  } else {
-    if (instance_->processor_size() == 0)
-      BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
-    instance_->processor(0)->FindThetaMatrix(args.batch(), GetThetaMatrixArgs(), nullptr, args, result);
-  }
+  instance_->merger()->RequestScore(args, result);
 }
 
 void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, MasterComponentInfo* result) {
@@ -447,11 +435,8 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   if (args.has_model_name_cache()) model_config.set_model_name_cache(args.model_name_cache());
   if (args.has_predict_class_id()) model_config.set_predict_class_id(args.predict_class_id());
 
-  std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
-  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
-  if (topic_model == nullptr && phi_matrix == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
-  const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrixSafe(model_name);
+  const PhiMatrix& p_wt = *phi_matrix;
 
   if (args.has_nwt_target_name()) {
     if (args.nwt_target_name() == args.pwt_source_name())
@@ -519,7 +504,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     pi->set_model_name(model_name);
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
-    
+
     if (args.reuse_theta())
       pi->set_reuse_theta_cache_manager(instance_->cache_manager());
 
@@ -592,13 +577,12 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
 
     float weight = merge_model_args.source_weight(i);
 
-    std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
     std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
-    if (topic_model == nullptr && phi_matrix == nullptr) {
+    if (phi_matrix == nullptr) {
       LOG(WARNING) << "Model " << model_name << " does not exist";
       continue;
     }
-    const PhiMatrix& n_wt = (topic_model != nullptr) ? topic_model->GetNwt() : *phi_matrix;
+    const PhiMatrix& n_wt = *phi_matrix;
 
     if (nwt_target == nullptr) {
       nwt_target = std::make_shared<DensePhiMatrix>(
@@ -634,17 +618,11 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
   if (!regularize_model_args.has_rwt_target_name())
     BOOST_THROW_EXCEPTION(InvalidOperation("RegularizeModelArgs.rwt_target_name is missing"));
 
-  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrix(nwt_source_name);
-  std::shared_ptr<const TopicModel> nwt_topic_model = instance_->merger()->GetLatestTopicModel(nwt_source_name);
-  if (nwt_phi_matrix == nullptr && nwt_topic_model == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + nwt_source_name + " does not exist"));
-  const PhiMatrix& n_wt = (nwt_topic_model != nullptr) ? nwt_topic_model->GetNwt() : *nwt_phi_matrix;
+  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrixSafe(nwt_source_name);
+  const PhiMatrix& n_wt = *nwt_phi_matrix;
 
-  std::shared_ptr<const PhiMatrix> pwt_phi_matrix = instance_->merger()->GetPhiMatrix(pwt_source_name);
-  std::shared_ptr<const TopicModel> pwt_topic_model = instance_->merger()->GetLatestTopicModel(pwt_source_name);
-  if (pwt_phi_matrix == nullptr && pwt_topic_model == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + pwt_source_name + " does not exist"));
-  const PhiMatrix& p_wt = (pwt_topic_model != nullptr) ? pwt_topic_model->GetPwt() : *pwt_phi_matrix;
+  std::shared_ptr<const PhiMatrix> pwt_phi_matrix = instance_->merger()->GetPhiMatrixSafe(pwt_source_name);
+  const PhiMatrix& p_wt = *pwt_phi_matrix;
 
   auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name, nwt_phi_matrix->topic_name()));
   rwt_target->Reshape(*nwt_phi_matrix);
@@ -665,25 +643,17 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
   if (!normalize_model_args.has_nwt_source_name())
     BOOST_THROW_EXCEPTION(InvalidOperation("NormalizeModelArgs.pwt_target_name is missing"));
 
-  std::shared_ptr<const TopicModel> nwt_topic_model = instance_->merger()->GetLatestTopicModel(nwt_source_name);
-  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrix(nwt_source_name);
-  if ((nwt_topic_model == nullptr) && (nwt_phi_matrix == nullptr))
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + nwt_source_name + " does not exist"));
-  const PhiMatrix& n_wt = (nwt_topic_model != nullptr) ? nwt_topic_model->GetPwt() : *nwt_phi_matrix;
+  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrixSafe(nwt_source_name);
+  const PhiMatrix& n_wt = *nwt_phi_matrix;
 
-  const PhiMatrix* r_wt = nullptr;
-  std::shared_ptr<const TopicModel> rwt_topic_model = instance_->merger()->GetLatestTopicModel(rwt_source_name);
-  std::shared_ptr<const PhiMatrix> rwt_phi_matrix = instance_->merger()->GetPhiMatrix(rwt_source_name);
-  if (normalize_model_args.has_rwt_source_name()) {
-    if ((rwt_topic_model == nullptr) && (rwt_phi_matrix == nullptr))
-      BOOST_THROW_EXCEPTION(InvalidOperation("Model " + rwt_source_name + " does not exist"));
-    r_wt = (rwt_topic_model != nullptr) ? &rwt_topic_model->GetPwt() : rwt_phi_matrix.get();
-  }
+  std::shared_ptr<const PhiMatrix> rwt_phi_matrix;
+  if (normalize_model_args.has_rwt_source_name())
+    rwt_phi_matrix = instance_->merger()->GetPhiMatrixSafe(rwt_source_name);
 
   auto pwt_target(std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name()));
   pwt_target->Reshape(n_wt);
-  if (r_wt == nullptr) PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
-  else                 PhiMatrixOperations::FindPwt(n_wt, *r_wt, pwt_target.get());
+  if (rwt_phi_matrix == nullptr) PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
+  else                           PhiMatrixOperations::FindPwt(n_wt, *rwt_phi_matrix, pwt_target.get());
   instance_->merger()->SetPhiMatrix(pwt_target_name, pwt_target);
   VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
 }
@@ -700,14 +670,7 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatri
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetThetaMatrixArgs*>(&args)->set_model_name(config->pwt_name());
 
-  if (!args.has_batch()) {
-    instance_->cache_manager()->RequestThetaMatrix(args, result);
-  } else {
-    if (instance_->processor_size() == 0)
-      BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
-    instance_->processor(0)->FindThetaMatrix(
-      args.batch(), args, result, GetScoreValueArgs(), nullptr);
-  }
+  instance_->cache_manager()->RequestThetaMatrix(args, result);
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args,

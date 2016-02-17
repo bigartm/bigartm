@@ -17,7 +17,6 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/processor.h"
 #include "artm/core/merger.h"
-#include "artm/core/topic_model.h"
 #include "artm/core/instance_schema.h"
 
 #include "artm/regularizer_interface.h"
@@ -75,7 +74,6 @@ Instance::Instance(const MasterComponentConfig& config)
       dictionaries_(),
       batches_(),
       processor_queue_(),
-      merger_queue_(),
       cache_manager_(),
       batch_manager_(),
       merger_(),
@@ -89,7 +87,6 @@ Instance::Instance(const Instance& rhs)
       dictionaries_(),
       batches_(),
       processor_queue_(),
-      merger_queue_(),
       cache_manager_(),
       batch_manager_(),
       merger_(),
@@ -152,20 +149,16 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
   }
 
   for (auto& name : merger_->model_name()) {
-    std::shared_ptr<const PhiMatrix> phi_matrix = merger_->GetPhiMatrix(name);
-    std::shared_ptr<const TopicModel> topic_model = merger_->GetLatestTopicModel(name);
-    if (phi_matrix == nullptr && topic_model == nullptr)
-      continue;
-    const PhiMatrix& p_wt = topic_model != nullptr ? topic_model->GetPwt() : *phi_matrix;
-
-    MasterComponentInfo::ModelInfo* info = master_info->add_model();
-    info->set_name(p_wt.model_name());
-    info->set_token_count(p_wt.token_size());
-    info->set_topics_count(p_wt.topic_size());
-    info->set_type(topic_model != nullptr ? typeid(*topic_model).name() : typeid(*phi_matrix).name());
+    std::shared_ptr<const PhiMatrix> p_wt = merger_->GetPhiMatrix(name);
+    if (p_wt != nullptr) {
+      MasterComponentInfo::ModelInfo* info = master_info->add_model();
+      info->set_name(p_wt->model_name());
+      info->set_token_count(p_wt->token_size());
+      info->set_topics_count(p_wt->topic_size());
+      info->set_type(typeid(*p_wt).name());
+    }
   }
 
-  master_info->set_merger_queue_size(merger_queue_.size());
   master_info->set_processor_queue_size(processor_queue_.size());
 }
 
@@ -401,7 +394,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     // First reconfiguration.
     cache_manager_.reset(new CacheManager());
     batch_manager_.reset(new BatchManager());
-    merger_.reset(new Merger(&merger_queue_, &schema_, &batches_, &dictionaries_));
+    merger_.reset(new Merger(&schema_, &batches_, &dictionaries_));
 
     is_configured_  = true;
   }
@@ -416,7 +409,6 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
       processors_.push_back(
         std::shared_ptr<Processor>(new Processor(
           &processor_queue_,
-          &merger_queue_,
           batches_,
           *merger_,
           schema_)));

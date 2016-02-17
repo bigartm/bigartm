@@ -32,7 +32,6 @@ class Dictionary;
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 typedef ThreadSafeCollectionHolder<std::string, Batch> ThreadSafeBatchCollection;
 typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
-typedef ThreadSafeQueue<std::shared_ptr<ModelIncrement>> MergerQueue;
 
 // Class Instance is respondible for joint hosting of many other components
 // (processors, merger, data loader) and data structures (schema, queues, etc).
@@ -46,7 +45,6 @@ class Instance {
 
   std::shared_ptr<InstanceSchema> schema() const { return schema_.get(); }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
-  MergerQueue* merger_queue() { return &merger_queue_; }
   ThreadSafeDictionaryCollection* dictionaries() { return &dictionaries_; }
   ThreadSafeBatchCollection* batches() { return &batches_; }
 
@@ -79,18 +77,16 @@ class Instance {
 
   ProcessorQueue processor_queue_;
 
-  MergerQueue merger_queue_;
-
   // Depends on schema_
   std::shared_ptr<CacheManager> cache_manager_;
 
   // Depends on schema_
   std::shared_ptr<BatchManager> batch_manager_;
 
-  // Depends on schema_, merger_queue_, data_loader_
+  // Depends on schema_, data_loader_
   std::shared_ptr<Merger> merger_;
 
-  // Depends on schema_, processor_queue_, merger_queue_, and merger_
+  // Depends on schema_, processor_queue_, and merger_
   std::vector<std::shared_ptr<Processor> > processors_;
 
   Instance(const Instance& rhs);

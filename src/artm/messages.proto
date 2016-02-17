@@ -83,7 +83,6 @@ message MasterComponentConfig {
   optional bool cache_theta = 5 [default = false];
   optional int32 processors_count = 6;
   optional int32 processor_queue_max_size = 7 [default = 10];
-  optional int32 merger_queue_max_size = 8 [default = 10];
   repeated ScoreConfig score_config = 9;
   optional bool online_batch_processing = 13 [default = false];  // obsolete in BigARTM v0.5.8
   optional string disk_cache_path = 15;
@@ -606,7 +605,6 @@ message GetThetaMatrixArgs {
   }
 
   optional string model_name = 1;
-  optional Batch batch = 2;
   repeated string topic_name = 3;
   repeated int32 topic_index = 4;
   optional bool clean_cache = 5 [default = false];
@@ -759,7 +757,6 @@ message MasterComponentInfo {
   repeated DictionaryInfo dictionary = 5;
   repeated ModelInfo model = 6;
   repeated CacheEntryInfo cache_entry = 7;
-  optional int32 merger_queue_size = 8;
   optional int32 processor_queue_size = 9;
   repeated BatchInfo batch = 10;
 }

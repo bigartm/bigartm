@@ -38,7 +38,6 @@ void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
 class Mask;
 class DataLoaderCacheEntry;
 class StreamMasks;
-class ModelIncrement;
 
 // ===================================================================
 
@@ -417,90 +416,6 @@ class StreamMasks : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static StreamMasks* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class ModelIncrement : public ::google::protobuf::Message {
- public:
-  ModelIncrement();
-  virtual ~ModelIncrement();
-
-  ModelIncrement(const ModelIncrement& from);
-
-  inline ModelIncrement& operator=(const ModelIncrement& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const ModelIncrement& default_instance();
-
-  void Swap(ModelIncrement* other);
-
-  // implements Message ----------------------------------------------
-
-  ModelIncrement* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const ModelIncrement& from);
-  void MergeFrom(const ModelIncrement& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional .artm.TopicModel topic_model = 1;
-  inline bool has_topic_model() const;
-  inline void clear_topic_model();
-  static const int kTopicModelFieldNumber = 1;
-  inline const ::artm::TopicModel& topic_model() const;
-  inline ::artm::TopicModel* mutable_topic_model();
-  inline ::artm::TopicModel* release_topic_model();
-  inline void set_allocated_topic_model(::artm::TopicModel* topic_model);
-
-  // @@protoc_insertion_point(class_scope:artm.core.ModelIncrement)
- private:
-  inline void set_has_topic_model();
-  inline void clear_has_topic_model();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::artm::TopicModel* topic_model_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
-  friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
-
-  void InitAsDefaultInstance();
-  static ModelIncrement* default_instance_;
 };
 // ===================================================================
 
@@ -982,48 +897,6 @@ StreamMasks::stream_name() const {
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 StreamMasks::mutable_stream_name() {
   return &stream_name_;
-}
-
-// -------------------------------------------------------------------
-
-// ModelIncrement
-
-// optional .artm.TopicModel topic_model = 1;
-inline bool ModelIncrement::has_topic_model() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ModelIncrement::set_has_topic_model() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ModelIncrement::clear_has_topic_model() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ModelIncrement::clear_topic_model() {
-  if (topic_model_ != NULL) topic_model_->::artm::TopicModel::Clear();
-  clear_has_topic_model();
-}
-inline const ::artm::TopicModel& ModelIncrement::topic_model() const {
-  return topic_model_ != NULL ? *topic_model_ : *default_instance_->topic_model_;
-}
-inline ::artm::TopicModel* ModelIncrement::mutable_topic_model() {
-  set_has_topic_model();
-  if (topic_model_ == NULL) topic_model_ = new ::artm::TopicModel;
-  return topic_model_;
-}
-inline ::artm::TopicModel* ModelIncrement::release_topic_model() {
-  clear_has_topic_model();
-  ::artm::TopicModel* temp = topic_model_;
-  topic_model_ = NULL;
-  return temp;
-}
-inline void ModelIncrement::set_allocated_topic_model(::artm::TopicModel* topic_model) {
-  delete topic_model_;
-  topic_model_ = topic_model;
-  if (topic_model) {
-    set_has_topic_model();
-  } else {
-    clear_has_topic_model();
-  }
 }
 
 

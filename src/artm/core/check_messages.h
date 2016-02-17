@@ -204,14 +204,6 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   return ss.str();
 }
 
-inline std::string DescribeErrors(const ::artm::GetThetaMatrixArgs& message) {
-  std::stringstream ss;
-  if (message.has_batch())
-    ss << DescribeErrors(message.batch());
-
-  return ss.str();
-}
-
 inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
   std::stringstream ss;
 
@@ -234,10 +226,6 @@ inline std::string DescribeErrors(const ::artm::MasterComponentConfig& message) 
   if (message.processor_queue_max_size() <= 0)
     ss << "MasterComponentConfig.processor_queue_max_size == "
        << message.processor_queue_max_size() << " is invalid; ";
-
-  if (message.merger_queue_max_size() <= 0)
-    ss << "MasterComponentConfig.merger_queue_max_size == "
-       << message.merger_queue_max_size() << " is invalid; ";
 
   return ss.str();
 }
@@ -485,6 +473,7 @@ inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
 
 // Empty ValidateMessage routines
 inline std::string DescribeErrors(const ::artm::GetTopicModelArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::GetThetaMatrixArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizerInternalState& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizeModelArgs& message) { return std::string(); }
@@ -585,9 +574,6 @@ inline void FixMessage(::artm::Batch* message) {
 
 template<>
 inline void FixMessage(::artm::GetThetaMatrixArgs* message) {
-  if (message->has_batch())
-    FixMessage(message->mutable_batch());
-
   if (message->has_use_sparse_format())
     message->set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
 }
@@ -738,7 +724,6 @@ inline std::string DescribeMessage(const ::artm::MasterComponentConfig& message)
   ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
   ss << ", processors_count=" << message.processors_count();
   ss << ", processor_queue_max_size=" << message.processor_queue_max_size();
-  ss << ", merger_queue_max_size=" << message.merger_queue_max_size();
   ss << ", score_config_size=" << message.score_config_size();
   ss << ", disk_cache_path" << message.disk_cache_path();
   return ss.str();

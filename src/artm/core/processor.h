@@ -33,20 +33,14 @@ class TopicModel;
 class Processor : boost::noncopyable {
  public:
   Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
-            ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
             const ThreadSafeCollectionHolder<std::string, Batch>& batches,
             const Merger& merger,
             const ThreadSafeHolder<InstanceSchema>& schema);
 
   ~Processor();
 
-  void FindThetaMatrix(const Batch& batch,
-                       const GetThetaMatrixArgs& args, ThetaMatrix* theta_matrix,
-                       const GetScoreValueArgs& score_args, ScoreData* score_result);
-
  private:
   ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue_;
-  ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
   const Merger& merger_;
   const ThreadSafeCollectionHolder<std::string, Batch>& batches_;
   const ThreadSafeHolder<InstanceSchema>& schema_;

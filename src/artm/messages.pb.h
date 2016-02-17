@@ -1717,13 +1717,6 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 processor_queue_max_size() const;
   inline void set_processor_queue_max_size(::google::protobuf::int32 value);
 
-  // optional int32 merger_queue_max_size = 8 [default = 10];
-  inline bool has_merger_queue_max_size() const;
-  inline void clear_merger_queue_max_size();
-  static const int kMergerQueueMaxSizeFieldNumber = 8;
-  inline ::google::protobuf::int32 merger_queue_max_size() const;
-  inline void set_merger_queue_max_size(::google::protobuf::int32 value);
-
   // repeated .artm.ScoreConfig score_config = 9;
   inline int score_config_size() const;
   inline void clear_score_config();
@@ -1767,8 +1760,6 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline void clear_has_processors_count();
   inline void set_has_processor_queue_max_size();
   inline void clear_has_processor_queue_max_size();
-  inline void set_has_merger_queue_max_size();
-  inline void clear_has_merger_queue_max_size();
   inline void set_has_online_batch_processing();
   inline void clear_has_online_batch_processing();
   inline void set_has_disk_cache_path();
@@ -1782,13 +1773,12 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   bool compact_batches_;
   bool cache_theta_;
   bool online_batch_processing_;
-  ::google::protobuf::int32 processor_queue_max_size_;
-  ::google::protobuf::int32 merger_queue_max_size_;
   ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
   ::std::string* disk_cache_path_;
+  ::google::protobuf::int32 processor_queue_max_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8669,15 +8659,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline ::std::string* release_model_name();
   inline void set_allocated_model_name(::std::string* model_name);
 
-  // optional .artm.Batch batch = 2;
-  inline bool has_batch() const;
-  inline void clear_batch();
-  static const int kBatchFieldNumber = 2;
-  inline const ::artm::Batch& batch() const;
-  inline ::artm::Batch* mutable_batch();
-  inline ::artm::Batch* release_batch();
-  inline void set_allocated_batch(::artm::Batch* batch);
-
   // repeated string topic_name = 3;
   inline int topic_name_size() const;
   inline void clear_topic_name();
@@ -8738,8 +8719,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
-  inline void set_has_batch();
-  inline void clear_has_batch();
   inline void set_has_clean_cache();
   inline void clear_has_clean_cache();
   inline void set_has_use_sparse_format();
@@ -8752,7 +8731,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
-  ::artm::Batch* batch_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
   bool clean_cache_;
@@ -8761,7 +8739,7 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   int matrix_layout_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -11213,13 +11191,6 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo >*
       mutable_cache_entry();
 
-  // optional int32 merger_queue_size = 8;
-  inline bool has_merger_queue_size() const;
-  inline void clear_merger_queue_size();
-  static const int kMergerQueueSizeFieldNumber = 8;
-  inline ::google::protobuf::int32 merger_queue_size() const;
-  inline void set_merger_queue_size(::google::protobuf::int32 value);
-
   // optional int32 processor_queue_size = 9;
   inline bool has_processor_queue_size() const;
   inline void clear_processor_queue_size();
@@ -11245,8 +11216,6 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   inline void clear_has_master_id();
   inline void set_has_config();
   inline void clear_has_config();
-  inline void set_has_merger_queue_size();
-  inline void clear_has_merger_queue_size();
   inline void set_has_processor_queue_size();
   inline void clear_has_processor_queue_size();
 
@@ -11256,15 +11225,14 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_RegularizerInfo > regularizer_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ScoreInfo > score_;
   ::google::protobuf::int32 master_id_;
-  ::google::protobuf::int32 merger_queue_size_;
+  ::google::protobuf::int32 processor_queue_size_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_DictionaryInfo > dictionary_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ModelInfo > model_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo > cache_entry_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo > batch_;
-  ::google::protobuf::int32 processor_queue_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -13691,28 +13659,6 @@ inline void MasterComponentConfig::set_processor_queue_max_size(::google::protob
   processor_queue_max_size_ = value;
 }
 
-// optional int32 merger_queue_max_size = 8 [default = 10];
-inline bool MasterComponentConfig::has_merger_queue_max_size() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void MasterComponentConfig::set_has_merger_queue_max_size() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void MasterComponentConfig::clear_has_merger_queue_max_size() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void MasterComponentConfig::clear_merger_queue_max_size() {
-  merger_queue_max_size_ = 10;
-  clear_has_merger_queue_max_size();
-}
-inline ::google::protobuf::int32 MasterComponentConfig::merger_queue_max_size() const {
-  return merger_queue_max_size_;
-}
-inline void MasterComponentConfig::set_merger_queue_max_size(::google::protobuf::int32 value) {
-  set_has_merger_queue_max_size();
-  merger_queue_max_size_ = value;
-}
-
 // repeated .artm.ScoreConfig score_config = 9;
 inline int MasterComponentConfig::score_config_size() const {
   return score_config_.size();
@@ -13740,13 +13686,13 @@ MasterComponentConfig::mutable_score_config() {
 
 // optional bool online_batch_processing = 13 [default = false];
 inline bool MasterComponentConfig::has_online_batch_processing() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void MasterComponentConfig::set_has_online_batch_processing() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void MasterComponentConfig::clear_has_online_batch_processing() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void MasterComponentConfig::clear_online_batch_processing() {
   online_batch_processing_ = false;
@@ -13762,13 +13708,13 @@ inline void MasterComponentConfig::set_online_batch_processing(bool value) {
 
 // optional string disk_cache_path = 15;
 inline bool MasterComponentConfig::has_disk_cache_path() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void MasterComponentConfig::set_has_disk_cache_path() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void MasterComponentConfig::clear_has_disk_cache_path() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void MasterComponentConfig::clear_disk_cache_path() {
   if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -22709,44 +22655,6 @@ inline void GetThetaMatrixArgs::set_allocated_model_name(::std::string* model_na
   }
 }
 
-// optional .artm.Batch batch = 2;
-inline bool GetThetaMatrixArgs::has_batch() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void GetThetaMatrixArgs::set_has_batch() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void GetThetaMatrixArgs::clear_has_batch() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void GetThetaMatrixArgs::clear_batch() {
-  if (batch_ != NULL) batch_->::artm::Batch::Clear();
-  clear_has_batch();
-}
-inline const ::artm::Batch& GetThetaMatrixArgs::batch() const {
-  return batch_ != NULL ? *batch_ : *default_instance_->batch_;
-}
-inline ::artm::Batch* GetThetaMatrixArgs::mutable_batch() {
-  set_has_batch();
-  if (batch_ == NULL) batch_ = new ::artm::Batch;
-  return batch_;
-}
-inline ::artm::Batch* GetThetaMatrixArgs::release_batch() {
-  clear_has_batch();
-  ::artm::Batch* temp = batch_;
-  batch_ = NULL;
-  return temp;
-}
-inline void GetThetaMatrixArgs::set_allocated_batch(::artm::Batch* batch) {
-  delete batch_;
-  batch_ = batch;
-  if (batch) {
-    set_has_batch();
-  } else {
-    clear_has_batch();
-  }
-}
-
 // repeated string topic_name = 3;
 inline int GetThetaMatrixArgs::topic_name_size() const {
   return topic_name_.size();
@@ -22818,13 +22726,13 @@ GetThetaMatrixArgs::mutable_topic_index() {
 
 // optional bool clean_cache = 5 [default = false];
 inline bool GetThetaMatrixArgs::has_clean_cache() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_clean_cache() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void GetThetaMatrixArgs::clear_has_clean_cache() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void GetThetaMatrixArgs::clear_clean_cache() {
   clean_cache_ = false;
@@ -22840,13 +22748,13 @@ inline void GetThetaMatrixArgs::set_clean_cache(bool value) {
 
 // optional bool use_sparse_format = 6;
 inline bool GetThetaMatrixArgs::has_use_sparse_format() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_use_sparse_format() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void GetThetaMatrixArgs::clear_has_use_sparse_format() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void GetThetaMatrixArgs::clear_use_sparse_format() {
   use_sparse_format_ = false;
@@ -22862,13 +22770,13 @@ inline void GetThetaMatrixArgs::set_use_sparse_format(bool value) {
 
 // optional float eps = 7 [default = 1e-037];
 inline bool GetThetaMatrixArgs::has_eps() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_eps() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void GetThetaMatrixArgs::clear_has_eps() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void GetThetaMatrixArgs::clear_eps() {
   eps_ = 1e-037f;
@@ -22884,13 +22792,13 @@ inline void GetThetaMatrixArgs::set_eps(float value) {
 
 // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Dense];
 inline bool GetThetaMatrixArgs::has_matrix_layout() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_matrix_layout() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void GetThetaMatrixArgs::clear_has_matrix_layout() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void GetThetaMatrixArgs::clear_matrix_layout() {
   matrix_layout_ = 0;
@@ -26173,37 +26081,15 @@ MasterComponentInfo::mutable_cache_entry() {
   return &cache_entry_;
 }
 
-// optional int32 merger_queue_size = 8;
-inline bool MasterComponentInfo::has_merger_queue_size() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void MasterComponentInfo::set_has_merger_queue_size() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void MasterComponentInfo::clear_has_merger_queue_size() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void MasterComponentInfo::clear_merger_queue_size() {
-  merger_queue_size_ = 0;
-  clear_has_merger_queue_size();
-}
-inline ::google::protobuf::int32 MasterComponentInfo::merger_queue_size() const {
-  return merger_queue_size_;
-}
-inline void MasterComponentInfo::set_merger_queue_size(::google::protobuf::int32 value) {
-  set_has_merger_queue_size();
-  merger_queue_size_ = value;
-}
-
 // optional int32 processor_queue_size = 9;
 inline bool MasterComponentInfo::has_processor_queue_size() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void MasterComponentInfo::set_has_processor_queue_size() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void MasterComponentInfo::clear_has_processor_queue_size() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void MasterComponentInfo::clear_processor_queue_size() {
   processor_queue_size_ = 0;

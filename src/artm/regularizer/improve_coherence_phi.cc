@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "artm/core/protobuf_helpers.h"
-#include "artm/core/topic_model.h"
+#include "artm/core/phi_matrix.h"
 
 #include "artm/regularizer/improve_coherence_phi.h"
 

@@ -35,22 +35,21 @@ typedef ThreadSafeCollectionHolder<std::string, Batch> ThreadSafeBatchCollection
 
 class Merger : boost::noncopyable {
  public:
-  Merger(ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
-         ThreadSafeHolder<InstanceSchema>* schema,
+  Merger(ThreadSafeHolder<InstanceSchema>* schema,
          const ::artm::core::ThreadSafeBatchCollection* batches,
          const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
   ~Merger();
 
   void DisposeModel(ModelName model_name);
-  void ForceResetScores(ModelName model_name);
+  void ResetScores(ModelName model_name);
 
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
   void InitializeModel(const InitializeModelArgs& args);
   ScoresMerger* scores_merger() { return &scores_merger_; }
 
-  std::shared_ptr<const ::artm::core::TopicModel> GetLatestTopicModel(ModelName model_name) const;
   std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(ModelName model_name) const;
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrixSafe(ModelName model_name) const;
   void SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix);
 
   void RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_model_args,
@@ -64,47 +63,12 @@ class Merger : boost::noncopyable {
   std::vector<ModelName> model_name() const;
 
  private:
-  enum MergerTaskType {
-    kDisposeModel,
-    kForceResetScores,
-  };
-
-  struct MergerTask {
-    MergerTask() {}
-
-    MergerTask(MergerTaskType _task_type, ModelName _model_name, float _decay_weight,
-               float _apply_weight, bool _invoke_regularizers, SyncEvent* _sync_event)
-        : task_type(_task_type), model_name(_model_name), decay_weight(_decay_weight),
-          apply_weight(_apply_weight), invoke_regularizers(_invoke_regularizers),
-          sync_event(_sync_event) {}
-
-    MergerTaskType task_type;
-    ModelName model_name;
-    float decay_weight;
-    float apply_weight;
-    bool invoke_regularizers;
-    SyncEvent* sync_event;
-  };
-
-  ThreadSafeCollectionHolder<ModelName, TopicModel> topic_model_;
-  std::map<ModelName, std::shared_ptr<TopicModel>> topic_model_inc_;
   ThreadSafeCollectionHolder<ModelName, PhiMatrix> phi_matrix_;
   ThreadSafeHolder<InstanceSchema>* schema_;
-  ThreadSafeCollectionHolder<ModelName, artm::ModelConfig> target_model_config_;
   ScoresMerger scores_merger_;
-
-  mutable std::atomic<bool> is_idle_;
-  ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
-  ThreadSafeQueue<MergerTask> internal_task_queue_;
 
   const ::artm::core::ThreadSafeBatchCollection* batches_;
   const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;
-
-  mutable std::atomic<bool> is_stopping;
-  boost::thread thread_;
-  void ThreadFunction();
-
-  void ResetScores(ModelName model_name);
 };
 
 }  // namespace core
