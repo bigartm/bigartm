@@ -243,4 +243,9 @@ ARTM_API = [
         [('master_id', int), ('config', messages.TransformMasterModelArgs)],
         request=messages.ThetaMatrix,
     ),
+    CallSpec(
+        'ArtmRequestTransformMasterModelExternal',
+        [('master_id', int), ('config', messages.TransformMasterModelArgs)],
+        request=messages.ThetaMatrix,
+    ),
 ]

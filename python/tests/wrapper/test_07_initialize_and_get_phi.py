@@ -51,7 +51,7 @@ def test_func():
 
         # Extract topic model and print extracted data
         info = master.get_phi_info(model=pwt)
-        matrix = master.get_phi_matrix(model=pwt)
+        _, matrix = master.get_phi_matrix(model=pwt)
         assert len(info.token) == num_tokens
         assert numpy.count_nonzero(matrix) == matrix.size
         print 'Number of tokens in Phi matrix = {0}'.format(len(info.token))

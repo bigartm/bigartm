@@ -18,6 +18,14 @@ __all__ = [
 ]
 
 
+def _topic_selection_regularizer_func(self, config, name):
+    if str(config.__class__.__name__) == 'TopicSelectionThetaRegularizer' and\
+            self._internal_topic_mass_score_name is None:
+        self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
+        self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
+                                          class_id='@default_class'))  # ugly hack!
+
+
 def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     if proto_field_name is None:
         proto_field_name = field_name
@@ -85,7 +93,10 @@ class Regularizers(object):
         if regularizer.name in self._data:
             raise ValueError('Regularizer with name {0} is already exist'.format(regularizer.name))
         else:
-            self._master.create_regularizer(regularizer.name, regularizer.type, regularizer.config)
+            # temp code for easy using of TopicSelectionThetaRegularizer from Python
+            _topic_selection_regularizer_func(self, regularizer.config, regularizer.name)
+
+            self._master.create_regularizer(regularizer.name, regularizer.config, regularizer.tau)
             regularizer._master = self._master
             self._data[regularizer.name] = regularizer
 

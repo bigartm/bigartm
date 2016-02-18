@@ -79,7 +79,7 @@ def test_func():
         # Getting a full theta matrix cached during last iteration
         # This does requires "master_component.cache_theta = True" and stores the entire Theta matrix in memory.
         theta_matrix_info = master.get_theta_info(model=pwt)
-        theta_numpy_matrix = master.get_theta_matrix(model=pwt, clean_cache=True)
+        _, theta_numpy_matrix = master.get_theta_matrix(model=pwt, clean_cache=True)
         print_string = 'Option 2. Full ThetaMatrix cached during last iteration,'
         print_string += '#items = {0}'.format(len(theta_matrix_info.item_id))
         print print_string
@@ -104,7 +104,7 @@ def test_func():
             # The following rule defines when to retrieve Theta matrix. You decide :)
             if ((batch_index + 1) % 2 == 0) or ((batch_index + 1) == len(batches)):
                 theta_matrix_info = master.get_theta_info(model=pwt)
-                theta_numpy_matrix = master.get_theta_matrix(model=pwt, clean_cache=True)
+                _, theta_numpy_matrix = master.get_theta_matrix(model=pwt, clean_cache=True)
                 print 'Option 3. ThetaMatrix from cache, online, #items = {0}'.format(len(theta_matrix_info.item_id))
                 print theta_numpy_matrix
                 assert numpy.count_nonzero(theta_numpy_matrix) == theta_numpy_matrix.size

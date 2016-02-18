@@ -68,8 +68,11 @@ def _score_data_func(score_data_type):
 
 
 def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors,
-                    pwt_name, nwt_name, num_document_passes, reuse_theta, cache_theta):
+                    pwt_name, nwt_name, num_document_passes, reuse_theta, cache_theta, args=None):
         master_config = messages.MasterModelConfig()
+
+        if args is not None:
+            master_config.CopyFrom(args)
 
         if topic_names is not None:
             master_config.ClearField('topic_name')
@@ -154,7 +157,7 @@ class MasterComponent(object):
         self._config = master_config
         self.master_id = self._lib.ArtmCreateMasterModel(master_config)
 
-    def reconfigure(self, library, topic_names=None, class_ids=None, scores=None, regularizers=None,
+    def reconfigure(self, topic_names=None, class_ids=None, scores=None, regularizers=None,
                     num_processors=None, pwt_name=None, nwt_name=None, num_document_passes=None,
                     reuse_theta=None, cache_theta=False):
         master_config = _prepare_config(topic_names=topic_names,
@@ -166,9 +169,10 @@ class MasterComponent(object):
                                         nwt_name=nwt_name,
                                         num_document_passes=num_document_passes,
                                         reuse_theta=reuse_theta,
-                                        cache_theta=cache_theta)
+                                        cache_theta=cache_theta,
+                                        args=self._config)
 
-        self._config = config
+        self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
     def import_dictionary(self, filename, dictionary_name):
@@ -571,7 +575,7 @@ class MasterComponent(object):
         cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
-        return numpy_ndarray
+        return theta_matrix_info, numpy_ndarray
 
     def get_phi_info(self, model, request_type=None):
         """Args:
@@ -619,7 +623,7 @@ class MasterComponent(object):
         cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetModelSecondPass
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
-        return numpy_ndarray
+        return phi_matrix_info, numpy_ndarray
 
     def export_model(self, model, filename):
         args = messages.ExportModelArgs(model_name=model, file_name=filename)
@@ -741,6 +745,14 @@ class MasterComponent(object):
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
 
-        theta_matrix = self._lib.ArtmRequestTransformMasterModel(self.master_id, args)
+        theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
 
-        return theta_matrix
+        num_rows = len(theta_matrix_info.item_id)
+        num_cols = theta_matrix_info.topics_count
+        numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+
+        cp_args = messages.CopyRequestResultArgs()
+        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
+        self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+
+        return theta_matrix_info, numpy_ndarray
