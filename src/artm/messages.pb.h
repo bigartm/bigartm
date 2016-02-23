@@ -12637,17 +12637,10 @@ class ConfigureLoggingArgs : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional int32 minloglevel = 1;
-  inline bool has_minloglevel() const;
-  inline void clear_minloglevel();
-  static const int kMinloglevelFieldNumber = 1;
-  inline ::google::protobuf::int32 minloglevel() const;
-  inline void set_minloglevel(::google::protobuf::int32 value);
-
-  // optional string log_dir = 2;
+  // optional string log_dir = 1;
   inline bool has_log_dir() const;
   inline void clear_log_dir();
-  static const int kLogDirFieldNumber = 2;
+  static const int kLogDirFieldNumber = 1;
   inline const ::std::string& log_dir() const;
   inline void set_log_dir(const ::std::string& value);
   inline void set_log_dir(const char* value);
@@ -12656,20 +12649,107 @@ class ConfigureLoggingArgs : public ::google::protobuf::Message {
   inline ::std::string* release_log_dir();
   inline void set_allocated_log_dir(::std::string* log_dir);
 
+  // optional int32 minloglevel = 2;
+  inline bool has_minloglevel() const;
+  inline void clear_minloglevel();
+  static const int kMinloglevelFieldNumber = 2;
+  inline ::google::protobuf::int32 minloglevel() const;
+  inline void set_minloglevel(::google::protobuf::int32 value);
+
+  // optional int32 stderrthreshold = 3;
+  inline bool has_stderrthreshold() const;
+  inline void clear_stderrthreshold();
+  static const int kStderrthresholdFieldNumber = 3;
+  inline ::google::protobuf::int32 stderrthreshold() const;
+  inline void set_stderrthreshold(::google::protobuf::int32 value);
+
+  // optional bool logtostderr = 4;
+  inline bool has_logtostderr() const;
+  inline void clear_logtostderr();
+  static const int kLogtostderrFieldNumber = 4;
+  inline bool logtostderr() const;
+  inline void set_logtostderr(bool value);
+
+  // optional bool colorlogtostderr = 5;
+  inline bool has_colorlogtostderr() const;
+  inline void clear_colorlogtostderr();
+  static const int kColorlogtostderrFieldNumber = 5;
+  inline bool colorlogtostderr() const;
+  inline void set_colorlogtostderr(bool value);
+
+  // optional bool alsologtostderr = 6;
+  inline bool has_alsologtostderr() const;
+  inline void clear_alsologtostderr();
+  static const int kAlsologtostderrFieldNumber = 6;
+  inline bool alsologtostderr() const;
+  inline void set_alsologtostderr(bool value);
+
+  // optional int32 logbufsecs = 7;
+  inline bool has_logbufsecs() const;
+  inline void clear_logbufsecs();
+  static const int kLogbufsecsFieldNumber = 7;
+  inline ::google::protobuf::int32 logbufsecs() const;
+  inline void set_logbufsecs(::google::protobuf::int32 value);
+
+  // optional int32 logbuflevel = 8;
+  inline bool has_logbuflevel() const;
+  inline void clear_logbuflevel();
+  static const int kLogbuflevelFieldNumber = 8;
+  inline ::google::protobuf::int32 logbuflevel() const;
+  inline void set_logbuflevel(::google::protobuf::int32 value);
+
+  // optional int32 max_log_size = 9;
+  inline bool has_max_log_size() const;
+  inline void clear_max_log_size();
+  static const int kMaxLogSizeFieldNumber = 9;
+  inline ::google::protobuf::int32 max_log_size() const;
+  inline void set_max_log_size(::google::protobuf::int32 value);
+
+  // optional bool stop_logging_if_full_disk = 10;
+  inline bool has_stop_logging_if_full_disk() const;
+  inline void clear_stop_logging_if_full_disk();
+  static const int kStopLoggingIfFullDiskFieldNumber = 10;
+  inline bool stop_logging_if_full_disk() const;
+  inline void set_stop_logging_if_full_disk(bool value);
+
   // @@protoc_insertion_point(class_scope:artm.ConfigureLoggingArgs)
  private:
-  inline void set_has_minloglevel();
-  inline void clear_has_minloglevel();
   inline void set_has_log_dir();
   inline void clear_has_log_dir();
+  inline void set_has_minloglevel();
+  inline void clear_has_minloglevel();
+  inline void set_has_stderrthreshold();
+  inline void clear_has_stderrthreshold();
+  inline void set_has_logtostderr();
+  inline void clear_has_logtostderr();
+  inline void set_has_colorlogtostderr();
+  inline void clear_has_colorlogtostderr();
+  inline void set_has_alsologtostderr();
+  inline void clear_has_alsologtostderr();
+  inline void set_has_logbufsecs();
+  inline void clear_has_logbufsecs();
+  inline void set_has_logbuflevel();
+  inline void clear_has_logbuflevel();
+  inline void set_has_max_log_size();
+  inline void clear_has_max_log_size();
+  inline void set_has_stop_logging_if_full_disk();
+  inline void clear_has_stop_logging_if_full_disk();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* log_dir_;
   ::google::protobuf::int32 minloglevel_;
+  ::google::protobuf::int32 stderrthreshold_;
+  bool logtostderr_;
+  bool colorlogtostderr_;
+  bool alsologtostderr_;
+  bool stop_logging_if_full_disk_;
+  ::google::protobuf::int32 logbufsecs_;
+  ::google::protobuf::int32 logbuflevel_;
+  ::google::protobuf::int32 max_log_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -28176,37 +28256,15 @@ inline void TransformMasterModelArgs::set_allocated_predict_class_id(::std::stri
 
 // ConfigureLoggingArgs
 
-// optional int32 minloglevel = 1;
-inline bool ConfigureLoggingArgs::has_minloglevel() const {
+// optional string log_dir = 1;
+inline bool ConfigureLoggingArgs::has_log_dir() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ConfigureLoggingArgs::set_has_minloglevel() {
+inline void ConfigureLoggingArgs::set_has_log_dir() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void ConfigureLoggingArgs::clear_has_minloglevel() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ConfigureLoggingArgs::clear_minloglevel() {
-  minloglevel_ = 0;
-  clear_has_minloglevel();
-}
-inline ::google::protobuf::int32 ConfigureLoggingArgs::minloglevel() const {
-  return minloglevel_;
-}
-inline void ConfigureLoggingArgs::set_minloglevel(::google::protobuf::int32 value) {
-  set_has_minloglevel();
-  minloglevel_ = value;
-}
-
-// optional string log_dir = 2;
-inline bool ConfigureLoggingArgs::has_log_dir() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ConfigureLoggingArgs::set_has_log_dir() {
-  _has_bits_[0] |= 0x00000002u;
-}
 inline void ConfigureLoggingArgs::clear_has_log_dir() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void ConfigureLoggingArgs::clear_log_dir() {
   if (log_dir_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -28266,6 +28324,204 @@ inline void ConfigureLoggingArgs::set_allocated_log_dir(::std::string* log_dir) 
     clear_has_log_dir();
     log_dir_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
+}
+
+// optional int32 minloglevel = 2;
+inline bool ConfigureLoggingArgs::has_minloglevel() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_minloglevel() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ConfigureLoggingArgs::clear_has_minloglevel() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ConfigureLoggingArgs::clear_minloglevel() {
+  minloglevel_ = 0;
+  clear_has_minloglevel();
+}
+inline ::google::protobuf::int32 ConfigureLoggingArgs::minloglevel() const {
+  return minloglevel_;
+}
+inline void ConfigureLoggingArgs::set_minloglevel(::google::protobuf::int32 value) {
+  set_has_minloglevel();
+  minloglevel_ = value;
+}
+
+// optional int32 stderrthreshold = 3;
+inline bool ConfigureLoggingArgs::has_stderrthreshold() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_stderrthreshold() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ConfigureLoggingArgs::clear_has_stderrthreshold() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ConfigureLoggingArgs::clear_stderrthreshold() {
+  stderrthreshold_ = 0;
+  clear_has_stderrthreshold();
+}
+inline ::google::protobuf::int32 ConfigureLoggingArgs::stderrthreshold() const {
+  return stderrthreshold_;
+}
+inline void ConfigureLoggingArgs::set_stderrthreshold(::google::protobuf::int32 value) {
+  set_has_stderrthreshold();
+  stderrthreshold_ = value;
+}
+
+// optional bool logtostderr = 4;
+inline bool ConfigureLoggingArgs::has_logtostderr() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_logtostderr() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ConfigureLoggingArgs::clear_has_logtostderr() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ConfigureLoggingArgs::clear_logtostderr() {
+  logtostderr_ = false;
+  clear_has_logtostderr();
+}
+inline bool ConfigureLoggingArgs::logtostderr() const {
+  return logtostderr_;
+}
+inline void ConfigureLoggingArgs::set_logtostderr(bool value) {
+  set_has_logtostderr();
+  logtostderr_ = value;
+}
+
+// optional bool colorlogtostderr = 5;
+inline bool ConfigureLoggingArgs::has_colorlogtostderr() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_colorlogtostderr() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ConfigureLoggingArgs::clear_has_colorlogtostderr() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ConfigureLoggingArgs::clear_colorlogtostderr() {
+  colorlogtostderr_ = false;
+  clear_has_colorlogtostderr();
+}
+inline bool ConfigureLoggingArgs::colorlogtostderr() const {
+  return colorlogtostderr_;
+}
+inline void ConfigureLoggingArgs::set_colorlogtostderr(bool value) {
+  set_has_colorlogtostderr();
+  colorlogtostderr_ = value;
+}
+
+// optional bool alsologtostderr = 6;
+inline bool ConfigureLoggingArgs::has_alsologtostderr() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_alsologtostderr() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void ConfigureLoggingArgs::clear_has_alsologtostderr() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void ConfigureLoggingArgs::clear_alsologtostderr() {
+  alsologtostderr_ = false;
+  clear_has_alsologtostderr();
+}
+inline bool ConfigureLoggingArgs::alsologtostderr() const {
+  return alsologtostderr_;
+}
+inline void ConfigureLoggingArgs::set_alsologtostderr(bool value) {
+  set_has_alsologtostderr();
+  alsologtostderr_ = value;
+}
+
+// optional int32 logbufsecs = 7;
+inline bool ConfigureLoggingArgs::has_logbufsecs() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_logbufsecs() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void ConfigureLoggingArgs::clear_has_logbufsecs() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void ConfigureLoggingArgs::clear_logbufsecs() {
+  logbufsecs_ = 0;
+  clear_has_logbufsecs();
+}
+inline ::google::protobuf::int32 ConfigureLoggingArgs::logbufsecs() const {
+  return logbufsecs_;
+}
+inline void ConfigureLoggingArgs::set_logbufsecs(::google::protobuf::int32 value) {
+  set_has_logbufsecs();
+  logbufsecs_ = value;
+}
+
+// optional int32 logbuflevel = 8;
+inline bool ConfigureLoggingArgs::has_logbuflevel() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_logbuflevel() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void ConfigureLoggingArgs::clear_has_logbuflevel() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void ConfigureLoggingArgs::clear_logbuflevel() {
+  logbuflevel_ = 0;
+  clear_has_logbuflevel();
+}
+inline ::google::protobuf::int32 ConfigureLoggingArgs::logbuflevel() const {
+  return logbuflevel_;
+}
+inline void ConfigureLoggingArgs::set_logbuflevel(::google::protobuf::int32 value) {
+  set_has_logbuflevel();
+  logbuflevel_ = value;
+}
+
+// optional int32 max_log_size = 9;
+inline bool ConfigureLoggingArgs::has_max_log_size() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_max_log_size() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void ConfigureLoggingArgs::clear_has_max_log_size() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void ConfigureLoggingArgs::clear_max_log_size() {
+  max_log_size_ = 0;
+  clear_has_max_log_size();
+}
+inline ::google::protobuf::int32 ConfigureLoggingArgs::max_log_size() const {
+  return max_log_size_;
+}
+inline void ConfigureLoggingArgs::set_max_log_size(::google::protobuf::int32 value) {
+  set_has_max_log_size();
+  max_log_size_ = value;
+}
+
+// optional bool stop_logging_if_full_disk = 10;
+inline bool ConfigureLoggingArgs::has_stop_logging_if_full_disk() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void ConfigureLoggingArgs::set_has_stop_logging_if_full_disk() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void ConfigureLoggingArgs::clear_has_stop_logging_if_full_disk() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void ConfigureLoggingArgs::clear_stop_logging_if_full_disk() {
+  stop_logging_if_full_disk_ = false;
+  clear_has_stop_logging_if_full_disk();
+}
+inline bool ConfigureLoggingArgs::stop_logging_if_full_disk() const {
+  return stop_logging_if_full_disk_;
+}
+inline void ConfigureLoggingArgs::set_stop_logging_if_full_disk(bool value) {
+  set_has_stop_logging_if_full_disk();
+  stop_logging_if_full_disk_ = value;
 }
 
 

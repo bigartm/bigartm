@@ -849,6 +849,18 @@ message TransformMasterModelArgs {
 }
 
 message ConfigureLoggingArgs {
-  optional int32 minloglevel = 1;
-  optional string log_dir = 2;
+  optional string log_dir = 1;        // If specified, logfiles are written into this directory instead of the default logging directory.
+
+  optional int32 minloglevel = 2;     // Messages logged at a lower level than this don't actually get logged anywhere
+
+  optional int32 stderrthreshold = 3; // Log messages at a level >= this flag are automatically sent to stderr in addition to log files.
+  optional bool logtostderr = 4;      // Log messages go to stderr instead of logfiles
+  optional bool colorlogtostderr = 5; // color messages logged to stderr (if supported by terminal)
+  optional bool alsologtostderr = 6;  // log messages go to stderr in addition to logfiles
+
+  optional int32 logbufsecs = 7;      // Buffer log messages for at most this many seconds
+  optional int32 logbuflevel = 8;     // Buffer log messages logged at this level or lower (-1 means don't buffer; 0 means buffer INFO only; ...)
+
+  optional int32 max_log_size = 9;    // approx. maximum log file size (in MB). A value of 0 will be silently overridden to 1.
+  optional bool stop_logging_if_full_disk = 10; // Stop attempting to log to disk if the disk is full.
 }
