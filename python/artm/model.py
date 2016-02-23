@@ -159,6 +159,7 @@ class ARTM(object):
         self._initialized = False
         self._phi_cached = None  # This field will be set during .phi_ call
         self._phi_synchronization = -1
+        self._num_online_processed_batches = 0
 
         # temp code for easy using of TopicSelectionThetaRegularizer from Python
         self._internal_topic_mass_score_name = None
@@ -239,6 +240,10 @@ class ARTM(object):
         return self._synchronizations_processed
 
     @property
+    def num_online_processed_batches(self):
+        return self._num_online_processed_batches
+
+    @property
     def phi_(self):
         if (self._phi_cached is None or
                 self._phi_synchronization != self._synchronizations_processed):
@@ -274,6 +279,13 @@ class ARTM(object):
         else:
             self.master.reconfigure(reuse_theta=reuse_theta)
             self._reuse_theta = reuse_theta
+
+    @num_online_processed_batches.setter
+    def num_online_processed_batches(self, num_online_processed_batches):
+        if num_online_processed_batches <= 0 or not isinstance(num_online_processed_batches, int):
+            raise IOError('Number of processed batches should be a positive integer')
+        else:
+            self._num_online_processed_batches = num_online_processed_batches
 
     @num_document_passes.setter
     def num_document_passes(self, num_document_passes):
@@ -585,14 +597,19 @@ class ARTM(object):
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
 
+        if reset_num_processed_documents:
+            self._num_online_processed_docs = 0
+
         update_after_final, apply_weight_final, decay_weight_final = [], [], []
         if (update_after is None) or (apply_weight is None) or (decay_weight is None):
             update_after_final = range(update_every, batch_vectorizer.num_batches + 1, update_every)
             if update_after_final[-1] != batch_vectorizer.num_batches:
                 update_after_final.append(batch_vectorizer.num_batches)
 
-            for value in update_after_final:
-                rho = pow(tau0 + value / update_every, -kappa)
+            for _ in update_after_final:
+                self._num_online_processed_batches += update_every
+                update_count = self._num_online_processed_docs / update_every
+                rho = pow(tau0 + update_count, -kappa)
                 apply_weight_final.append(rho)
                 decay_weight_final.append(1 - rho)
         else:
@@ -833,3 +850,4 @@ class ARTM(object):
         # Remove all info about previous iterations
         self._score_tracker = {}
         self._synchronizations_processed = 0
+        self._num_online_processed_batches = 0
