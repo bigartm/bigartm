@@ -2001,9 +2001,17 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(TransformMasterModelArgs));
   TransformMasterModelArgs_ThetaMatrixType_descriptor_ = TransformMasterModelArgs_descriptor_->enum_type(0);
   ConfigureLoggingArgs_descriptor_ = file->message_type(83);
-  static const int ConfigureLoggingArgs_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, minloglevel_),
+  static const int ConfigureLoggingArgs_offsets_[10] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, log_dir_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, minloglevel_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, stderrthreshold_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, logtostderr_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, colorlogtostderr_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, alsologtostderr_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, logbufsecs_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, logbuflevel_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, max_log_size_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, stop_logging_if_full_disk_),
   };
   ConfigureLoggingArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -2776,9 +2784,14 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "delArgs.ThetaMatrixType:\005Dense\022\030\n\020predic"
     "t_class_id\030\004 \001(\t\"\\\n\017ThetaMatrixType\022\010\n\004N"
     "one\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022"
-    "\r\n\tDensePtdw\020\004\022\016\n\nSparsePtdw\020\005\"<\n\024Config"
-    "ureLoggingArgs\022\023\n\013minloglevel\030\001 \001(\005\022\017\n\007l"
-    "og_dir\030\002 \001(\t", 13772);
+    "\r\n\tDensePtdw\020\004\022\016\n\nSparsePtdw\020\005\"\377\001\n\024Confi"
+    "gureLoggingArgs\022\017\n\007log_dir\030\001 \001(\t\022\023\n\013minl"
+    "oglevel\030\002 \001(\005\022\027\n\017stderrthreshold\030\003 \001(\005\022\023"
+    "\n\013logtostderr\030\004 \001(\010\022\030\n\020colorlogtostderr\030"
+    "\005 \001(\010\022\027\n\017alsologtostderr\030\006 \001(\010\022\022\n\nlogbuf"
+    "secs\030\007 \001(\005\022\023\n\013logbuflevel\030\010 \001(\005\022\024\n\014max_l"
+    "og_size\030\t \001(\005\022!\n\031stop_logging_if_full_di"
+    "sk\030\n \001(\010", 13968);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -36642,8 +36655,16 @@ void TransformMasterModelArgs::Swap(TransformMasterModelArgs* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int ConfigureLoggingArgs::kMinloglevelFieldNumber;
 const int ConfigureLoggingArgs::kLogDirFieldNumber;
+const int ConfigureLoggingArgs::kMinloglevelFieldNumber;
+const int ConfigureLoggingArgs::kStderrthresholdFieldNumber;
+const int ConfigureLoggingArgs::kLogtostderrFieldNumber;
+const int ConfigureLoggingArgs::kColorlogtostderrFieldNumber;
+const int ConfigureLoggingArgs::kAlsologtostderrFieldNumber;
+const int ConfigureLoggingArgs::kLogbufsecsFieldNumber;
+const int ConfigureLoggingArgs::kLogbuflevelFieldNumber;
+const int ConfigureLoggingArgs::kMaxLogSizeFieldNumber;
+const int ConfigureLoggingArgs::kStopLoggingIfFullDiskFieldNumber;
 #endif  // !_MSC_VER
 
 ConfigureLoggingArgs::ConfigureLoggingArgs()
@@ -36662,8 +36683,16 @@ ConfigureLoggingArgs::ConfigureLoggingArgs(const ConfigureLoggingArgs& from)
 
 void ConfigureLoggingArgs::SharedCtor() {
   _cached_size_ = 0;
-  minloglevel_ = 0;
   log_dir_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  minloglevel_ = 0;
+  stderrthreshold_ = 0;
+  logtostderr_ = false;
+  colorlogtostderr_ = false;
+  alsologtostderr_ = false;
+  logbufsecs_ = 0;
+  logbuflevel_ = 0;
+  max_log_size_ = 0;
+  stop_logging_if_full_disk_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -36702,12 +36731,22 @@ ConfigureLoggingArgs* ConfigureLoggingArgs::New() const {
 
 void ConfigureLoggingArgs::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    minloglevel_ = 0;
     if (has_log_dir()) {
       if (log_dir_ != &::google::protobuf::internal::GetEmptyString()) {
         log_dir_->clear();
       }
     }
+    minloglevel_ = 0;
+    stderrthreshold_ = 0;
+    logtostderr_ = false;
+    colorlogtostderr_ = false;
+    alsologtostderr_ = false;
+    logbufsecs_ = 0;
+    logbuflevel_ = 0;
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    max_log_size_ = 0;
+    stop_logging_if_full_disk_ = false;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -36719,10 +36758,27 @@ bool ConfigureLoggingArgs::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional int32 minloglevel = 1;
+      // optional string log_dir = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_log_dir()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->log_dir().data(), this->log_dir().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(16)) goto parse_minloglevel;
+        break;
+      }
+
+      // optional int32 minloglevel = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_minloglevel:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, &minloglevel_)));
@@ -36730,20 +36786,131 @@ bool ConfigureLoggingArgs::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_log_dir;
+        if (input->ExpectTag(24)) goto parse_stderrthreshold;
         break;
       }
 
-      // optional string log_dir = 2;
-      case 2: {
+      // optional int32 stderrthreshold = 3;
+      case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_log_dir:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_log_dir()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->log_dir().data(), this->log_dir().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_stderrthreshold:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &stderrthreshold_)));
+          set_has_stderrthreshold();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(32)) goto parse_logtostderr;
+        break;
+      }
+
+      // optional bool logtostderr = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_logtostderr:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &logtostderr_)));
+          set_has_logtostderr();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(40)) goto parse_colorlogtostderr;
+        break;
+      }
+
+      // optional bool colorlogtostderr = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_colorlogtostderr:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &colorlogtostderr_)));
+          set_has_colorlogtostderr();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(48)) goto parse_alsologtostderr;
+        break;
+      }
+
+      // optional bool alsologtostderr = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_alsologtostderr:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &alsologtostderr_)));
+          set_has_alsologtostderr();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(56)) goto parse_logbufsecs;
+        break;
+      }
+
+      // optional int32 logbufsecs = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_logbufsecs:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &logbufsecs_)));
+          set_has_logbufsecs();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(64)) goto parse_logbuflevel;
+        break;
+      }
+
+      // optional int32 logbuflevel = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_logbuflevel:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &logbuflevel_)));
+          set_has_logbuflevel();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(72)) goto parse_max_log_size;
+        break;
+      }
+
+      // optional int32 max_log_size = 9;
+      case 9: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_max_log_size:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &max_log_size_)));
+          set_has_max_log_size();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(80)) goto parse_stop_logging_if_full_disk;
+        break;
+      }
+
+      // optional bool stop_logging_if_full_disk = 10;
+      case 10: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_stop_logging_if_full_disk:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &stop_logging_if_full_disk_)));
+          set_has_stop_logging_if_full_disk();
         } else {
           goto handle_uninterpreted;
         }
@@ -36769,18 +36936,58 @@ bool ConfigureLoggingArgs::MergePartialFromCodedStream(
 
 void ConfigureLoggingArgs::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional int32 minloglevel = 1;
-  if (has_minloglevel()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->minloglevel(), output);
-  }
-
-  // optional string log_dir = 2;
+  // optional string log_dir = 1;
   if (has_log_dir()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->log_dir().data(), this->log_dir().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->log_dir(), output);
+      1, this->log_dir(), output);
+  }
+
+  // optional int32 minloglevel = 2;
+  if (has_minloglevel()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->minloglevel(), output);
+  }
+
+  // optional int32 stderrthreshold = 3;
+  if (has_stderrthreshold()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->stderrthreshold(), output);
+  }
+
+  // optional bool logtostderr = 4;
+  if (has_logtostderr()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(4, this->logtostderr(), output);
+  }
+
+  // optional bool colorlogtostderr = 5;
+  if (has_colorlogtostderr()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(5, this->colorlogtostderr(), output);
+  }
+
+  // optional bool alsologtostderr = 6;
+  if (has_alsologtostderr()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(6, this->alsologtostderr(), output);
+  }
+
+  // optional int32 logbufsecs = 7;
+  if (has_logbufsecs()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->logbufsecs(), output);
+  }
+
+  // optional int32 logbuflevel = 8;
+  if (has_logbuflevel()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->logbuflevel(), output);
+  }
+
+  // optional int32 max_log_size = 9;
+  if (has_max_log_size()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->max_log_size(), output);
+  }
+
+  // optional bool stop_logging_if_full_disk = 10;
+  if (has_stop_logging_if_full_disk()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(10, this->stop_logging_if_full_disk(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -36791,19 +36998,59 @@ void ConfigureLoggingArgs::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* ConfigureLoggingArgs::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // optional int32 minloglevel = 1;
-  if (has_minloglevel()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->minloglevel(), target);
-  }
-
-  // optional string log_dir = 2;
+  // optional string log_dir = 1;
   if (has_log_dir()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->log_dir().data(), this->log_dir().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->log_dir(), target);
+        1, this->log_dir(), target);
+  }
+
+  // optional int32 minloglevel = 2;
+  if (has_minloglevel()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->minloglevel(), target);
+  }
+
+  // optional int32 stderrthreshold = 3;
+  if (has_stderrthreshold()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->stderrthreshold(), target);
+  }
+
+  // optional bool logtostderr = 4;
+  if (has_logtostderr()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(4, this->logtostderr(), target);
+  }
+
+  // optional bool colorlogtostderr = 5;
+  if (has_colorlogtostderr()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(5, this->colorlogtostderr(), target);
+  }
+
+  // optional bool alsologtostderr = 6;
+  if (has_alsologtostderr()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(6, this->alsologtostderr(), target);
+  }
+
+  // optional int32 logbufsecs = 7;
+  if (has_logbufsecs()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->logbufsecs(), target);
+  }
+
+  // optional int32 logbuflevel = 8;
+  if (has_logbuflevel()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->logbuflevel(), target);
+  }
+
+  // optional int32 max_log_size = 9;
+  if (has_max_log_size()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->max_log_size(), target);
+  }
+
+  // optional bool stop_logging_if_full_disk = 10;
+  if (has_stop_logging_if_full_disk()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(10, this->stop_logging_if_full_disk(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -36817,18 +37064,68 @@ int ConfigureLoggingArgs::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional int32 minloglevel = 1;
+    // optional string log_dir = 1;
+    if (has_log_dir()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->log_dir());
+    }
+
+    // optional int32 minloglevel = 2;
     if (has_minloglevel()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->minloglevel());
     }
 
-    // optional string log_dir = 2;
-    if (has_log_dir()) {
+    // optional int32 stderrthreshold = 3;
+    if (has_stderrthreshold()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->log_dir());
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->stderrthreshold());
+    }
+
+    // optional bool logtostderr = 4;
+    if (has_logtostderr()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool colorlogtostderr = 5;
+    if (has_colorlogtostderr()) {
+      total_size += 1 + 1;
+    }
+
+    // optional bool alsologtostderr = 6;
+    if (has_alsologtostderr()) {
+      total_size += 1 + 1;
+    }
+
+    // optional int32 logbufsecs = 7;
+    if (has_logbufsecs()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->logbufsecs());
+    }
+
+    // optional int32 logbuflevel = 8;
+    if (has_logbuflevel()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->logbuflevel());
+    }
+
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional int32 max_log_size = 9;
+    if (has_max_log_size()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->max_log_size());
+    }
+
+    // optional bool stop_logging_if_full_disk = 10;
+    if (has_stop_logging_if_full_disk()) {
+      total_size += 1 + 1;
     }
 
   }
@@ -36858,11 +37155,37 @@ void ConfigureLoggingArgs::MergeFrom(const ::google::protobuf::Message& from) {
 void ConfigureLoggingArgs::MergeFrom(const ConfigureLoggingArgs& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_log_dir()) {
+      set_log_dir(from.log_dir());
+    }
     if (from.has_minloglevel()) {
       set_minloglevel(from.minloglevel());
     }
-    if (from.has_log_dir()) {
-      set_log_dir(from.log_dir());
+    if (from.has_stderrthreshold()) {
+      set_stderrthreshold(from.stderrthreshold());
+    }
+    if (from.has_logtostderr()) {
+      set_logtostderr(from.logtostderr());
+    }
+    if (from.has_colorlogtostderr()) {
+      set_colorlogtostderr(from.colorlogtostderr());
+    }
+    if (from.has_alsologtostderr()) {
+      set_alsologtostderr(from.alsologtostderr());
+    }
+    if (from.has_logbufsecs()) {
+      set_logbufsecs(from.logbufsecs());
+    }
+    if (from.has_logbuflevel()) {
+      set_logbuflevel(from.logbuflevel());
+    }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (from.has_max_log_size()) {
+      set_max_log_size(from.max_log_size());
+    }
+    if (from.has_stop_logging_if_full_disk()) {
+      set_stop_logging_if_full_disk(from.stop_logging_if_full_disk());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -36887,8 +37210,16 @@ bool ConfigureLoggingArgs::IsInitialized() const {
 
 void ConfigureLoggingArgs::Swap(ConfigureLoggingArgs* other) {
   if (other != this) {
-    std::swap(minloglevel_, other->minloglevel_);
     std::swap(log_dir_, other->log_dir_);
+    std::swap(minloglevel_, other->minloglevel_);
+    std::swap(stderrthreshold_, other->stderrthreshold_);
+    std::swap(logtostderr_, other->logtostderr_);
+    std::swap(colorlogtostderr_, other->colorlogtostderr_);
+    std::swap(alsologtostderr_, other->alsologtostderr_);
+    std::swap(logbufsecs_, other->logbufsecs_);
+    std::swap(logbuflevel_, other->logbuflevel_);
+    std::swap(max_log_size_, other->max_log_size_);
+    std::swap(stop_logging_if_full_disk_, other->stop_logging_if_full_disk_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
