@@ -12,6 +12,8 @@
 
 #include "boost/functional/hash.hpp"
 #include "boost/uuid/uuid.hpp"
+#include "boost/lexical_cast.hpp"
+#include "boost/uuid/uuid_io.hpp"
 
 #include "glog/logging.h"
 
@@ -132,6 +134,11 @@ class CuckooWatch {
   CuckooWatch* parent_;
   int threshold_ms_;
 };
+
+template <typename T>
+std::string to_string(T value) {
+  return boost::lexical_cast<std::string>(value);
+}
 
 }  // namespace core
 }  // namespace artm

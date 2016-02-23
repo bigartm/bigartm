@@ -921,6 +921,30 @@ inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& messa
   return ss.str();
 }
 
+template<>
+inline std::string DescribeMessage(const ::artm::ConfigureLoggingArgs& message) {
+  std::stringstream ss;
+  ss << "ConfigureLoggingArgs";
+  ss << ", log_dir=" << (message.has_log_dir() ? message.log_dir() : "");
+
+  ss << ", minloglevel=" << (message.has_minloglevel() ? to_string(message.minloglevel()) : "");
+  ss << ", stderrthreshold=" << (message.has_stderrthreshold() ? to_string(message.stderrthreshold()) : "");
+
+  ss << ", logtostderr=" << (message.has_logtostderr() ? (message.logtostderr() ? "yes" : "no") : "");
+  ss << ", colorlogtostderr=" << (message.has_colorlogtostderr() ? (message.colorlogtostderr() ? "yes" : "no") : "");
+  ss << ", alsologtostderr=" << (message.has_alsologtostderr() ? (message.alsologtostderr() ? "yes" : "no") : "");
+
+  ss << ", logbufsecs=" << (message.has_logbufsecs() ? to_string(message.logbufsecs()) : "");
+  ss << ", logbuflevel=" << (message.has_logbuflevel() ? to_string(message.logbuflevel()) : "");
+
+  ss << ", max_log_size=" << (message.has_max_log_size() ? to_string(message.max_log_size()) : "");
+
+  ss << ", stop_logging_if_full_disk=" <<
+    (message.has_stop_logging_if_full_disk() ? (message.stop_logging_if_full_disk() ? "yes" : "no") : "");
+
+  return ss.str();
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Templates
 ///////////////////////////////////////////////////////////////////////////////////////////////////

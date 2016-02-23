@@ -57,27 +57,41 @@ static void set_last_error(const std::string& error) {
   last_error_->assign(error);
 }
 
-static void EnableLogging(artm::ConfigureLoggingArgs* args_ptr) {
+static void EnableLogging(artm::ConfigureLoggingArgs* args) {
   static bool logging_enabled = false;
 
-  if (logging_enabled && args_ptr != nullptr && args_ptr->has_log_dir())
+  if (logging_enabled && args != nullptr && args->has_log_dir())
     LOG(WARNING) << "Logging directory can't be change after the logging started.";
 
+  // Special treatment for log_dir
   if (!logging_enabled) {
-    std::string log_dir = args_ptr != nullptr && args_ptr->has_log_dir() ? args_ptr->log_dir() : ".";
+    std::string log_dir = args != nullptr && args->has_log_dir() ? args->log_dir() : ".";
     FLAGS_log_dir = log_dir;
-    FLAGS_logbufsecs = 0;
 
     ::google::InitGoogleLogging(log_dir.c_str());
-    ::google::SetStderrLogging(google::GLOG_WARNING);
 
     logging_enabled = true;
+    LOG(INFO) << "Logging enabled to " << log_dir.c_str();
   }
 
-  if (args_ptr != nullptr && args_ptr->has_minloglevel()) {
+  // Setting all other flags except log_dir
+  if (args != nullptr) {
+    if (args->has_minloglevel()) FLAGS_minloglevel = args->minloglevel();
+    if (args->has_stderrthreshold()) FLAGS_stderrthreshold = args->stderrthreshold();
+    if (args->has_logtostderr()) FLAGS_logtostderr = args->logtostderr();
+
+    if (args->has_colorlogtostderr()) FLAGS_colorlogtostderr = args->colorlogtostderr();
+    if (args->has_alsologtostderr()) FLAGS_alsologtostderr = args->alsologtostderr();
+
+    if (args->has_logbufsecs()) FLAGS_logbufsecs = args->logbufsecs();
+    if (args->has_logbuflevel()) FLAGS_logbuflevel = args->logbuflevel();
+
+    if (args->has_max_log_size()) FLAGS_max_log_size = args->max_log_size();
+    if (args->has_stop_logging_if_full_disk()) FLAGS_stop_logging_if_full_disk = args->stop_logging_if_full_disk();
+
     // ::google::SetVLOGLevel() is not supported in non-gcc compilers
     // https://groups.google.com/forum/#!topic/google-glog/f8D7qpXLWXw
-    FLAGS_minloglevel = args_ptr->minloglevel();
+    // if (args->has_v()) FLAGS_v = args->v();
   }
 }
 
@@ -125,6 +139,8 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
     ::artm::ConfigureLoggingArgs args;
     ParseFromArray(configure_logging_args, length, &args);
     EnableLogging(&args);
+    std::string description = ::artm::core::DescribeMessage(args);
+    LOG_IF(INFO, !description.empty()) << "EnableLogging with " << description;
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
