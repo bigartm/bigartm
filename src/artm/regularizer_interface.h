@@ -72,11 +72,6 @@ class RegularizerInterface {
   // via constructor.
   virtual bool Reconfigure(const RegularizerConfig& config) { return false; }
 
-  virtual void SerializeInternalState(RegularizerInternalState* regularizer_state) {
-    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
-      "This regularizer has no internal state that can be retrieved."));
-  }
-
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
   void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 

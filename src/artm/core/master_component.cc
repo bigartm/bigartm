@@ -373,11 +373,6 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
   HandleExternalTopicModelRequest(result, external);
 }
 
-void MasterComponent::Request(const GetRegularizerStateArgs& args,
-                              ::artm::RegularizerInternalState* regularizer_state) {
-  instance_->merger()->RequestRegularizerState(args.name(), regularizer_state);
-}
-
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
   std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
   if (config != nullptr)

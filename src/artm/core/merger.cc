@@ -80,20 +80,6 @@ void Merger::RetrieveExternalTopicModel(const ::artm::GetTopicModelArgs& get_mod
   PhiMatrixOperations::RetrieveExternalTopicModel(*phi_matrix, get_model_args, topic_model);
 }
 
-void Merger::RequestRegularizerState(RegularizerName regularizer_name,
-                                     ::artm::RegularizerInternalState* regularizer_state) const {
-  auto schema = schema_->get();
-  if (schema->has_regularizer(regularizer_name)) {
-    auto regularizer = schema->regularizer(regularizer_name);
-    regularizer->SerializeInternalState(regularizer_state);
-    regularizer_state->set_name(regularizer_name);
-  } else {
-    LOG(ERROR) << "Requested internal state of non-exists regularizer.";
-    BOOST_THROW_EXCEPTION(InvalidOperation(
-      "Attemp to request a state from non-exists regularizer"));
-  }
-}
-
 void Merger::RequestScore(const GetScoreValueArgs& args,
                           ScoreData *score_data) const {
   LOG(INFO) << "Merger::RequestScore(score_name=" << args.score_name() << ")";
@@ -117,27 +103,9 @@ void Merger::RequestScore(const GetScoreValueArgs& args,
   score_data->set_name(args.score_name());
 }
 
-void Merger::RequestDictionary(const DictionaryName& dictionary_name, DictionaryData* dictionary_data) const {
-  if (dictionaries_->has_key(dictionary_name)) {
-    dictionaries_->get(dictionary_name)->StoreIntoDictionaryData(dictionary_data);
-  } else {
-    LOG(ERROR) << "Requested non-exists dictionary.";
-    BOOST_THROW_EXCEPTION(InvalidOperation(
-      "Attemp to request non-exist dictionary"));
-  }
-}
-
 std::vector<ModelName> Merger::model_name() const {
   return phi_matrix_.keys();
 }
-
-struct TokenInfo {
- public:
-  TokenInfo() : num_items(0), num_total_count(0), max_one_item_weight(0) {}
-  int num_items;  // number of items containing this token
-  int num_total_count;  // total number of token' occurencies in the collection
-  float max_one_item_weight;  // max number of token's toccurencies in one item
-};
 
 void Merger::InitializeModel(const InitializeModelArgs& args) {
   auto schema = schema_->get();

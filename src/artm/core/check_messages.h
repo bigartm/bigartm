@@ -474,7 +474,6 @@ inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
 // Empty ValidateMessage routines
 inline std::string DescribeErrors(const ::artm::GetTopicModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetThetaMatrixArgs& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::RegularizerInternalState& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::NormalizeModelArgs& message) { return std::string(); }
@@ -484,7 +483,6 @@ inline std::string DescribeErrors(const ::artm::ScoreData& message) { return std
 inline std::string DescribeErrors(const ::artm::MasterComponentInfo& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetDictionaryArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetMasterComponentInfoArgs& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::GetRegularizerStateArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ProcessBatchesResult& message) { return std::string(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

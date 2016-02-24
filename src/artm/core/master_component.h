@@ -53,7 +53,6 @@ class MasterComponent : boost::noncopyable {
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external);
   void Request(const GetDictionaryArgs& args, DictionaryData* result);
   void Request(const GetMasterComponentInfoArgs& args, MasterComponentInfo* result);
-  void Request(const GetRegularizerStateArgs& args, RegularizerInternalState* regularizer_state);
 
   // EXECUTE functionality
   void MergeModel(const MergeModelArgs& args);

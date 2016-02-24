@@ -209,26 +209,6 @@ message TopicSelectionThetaConfig {
   repeated float alpha_iter = 3;
 }
 
-message GetRegularizerStateArgs {
-  optional string name = 1;
-}
-
-// Represents an internal state of a general regularizer
-message RegularizerInternalState {
-  enum Type {
-    MultiLanguagePhi = 3;
-  }
-
-  optional string name = 1;
-  optional Type type = 2;
-  optional bytes data = 3;
-}
-
-// Represents an internal state of a MultiLanguage Phi regularizer
-message MultiLanguagePhiInternalState {
-  optional int32 no_regularization_calls = 1 [default = 0];
-}
-
 // Represents the transform functions
 message TransformConfig {
   enum TransformType {

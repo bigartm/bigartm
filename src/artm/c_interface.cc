@@ -566,11 +566,6 @@ int ArtmRequestTopicModelExternal(int master_id, int length, const char* args) {
                               ::artm::TopicModel>(master_id, length, args);
 }
 
-int ArtmRequestRegularizerState(int master_id, int length, const char* args) {
-  return ArtmRequest< ::artm::GetRegularizerStateArgs,
-                      ::artm::RegularizerInternalState>(master_id, length, args);
-}
-
 int ArtmRequestTransformMasterModel(int master_id, int length, const char* args) {
   return ArtmRequest< ::artm::TransformMasterModelArgs,
                       ::artm::ThetaMatrix>(master_id, length, args);

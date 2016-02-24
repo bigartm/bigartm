@@ -21,8 +21,6 @@ class MultiLanguagePhi : public RegularizerInterface {
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 
-  virtual void SerializeInternalState(RegularizerInternalState* regularizer_state);
-
  private:
   MultiLanguagePhiConfig config_;
   int no_regularization_calls_;
