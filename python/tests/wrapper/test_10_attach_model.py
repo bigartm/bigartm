@@ -34,7 +34,7 @@ def test_func():
                                  'target_folder': batches_folder})
 
         # Create master component and scores
-        scores = [('ThetaSnippet', messages.ThetaSnippetScoreConfig())]
+        scores = {'ThetaSnippet': messages.ThetaSnippetScoreConfig()}
         master = mc.MasterComponent(lib, scores=scores)
 
         # Create collection dictionary and import it
@@ -56,7 +56,7 @@ def test_func():
             master.process_batches(pwt, nwt, num_inner_iterations, batches_folder, reset_scores=True)
             master.normalize_model(pwt, nwt) 
 
-        theta_snippet_score = master.retrieve_score(pwt, 'ThetaSnippet')
+        theta_snippet_score = master.get_score(pwt, 'ThetaSnippet')
 
         print 'ThetaSnippetScore.'
          # Note that 5th topic is fully zero; this is because we performed "numpy_matrix[:, 4] = 0".

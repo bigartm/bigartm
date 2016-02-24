@@ -72,8 +72,8 @@ def test_func():
         perplexity_config.model_type = constants.PerplexityScoreConfig_Type_UnigramCollectionModel
         perplexity_config.dictionary_name = dictionary_name
         
-        scores = [('PerplexityDoc', messages.PerplexityScoreConfig()),
-                  ('PerplexityCol', perplexity_config)]
+        scores = {'PerplexityDoc': messages.PerplexityScoreConfig(),
+                  'PerplexityCol': perplexity_config}
         master = mc.MasterComponent(lib, scores=scores)
 
         # Create collection dictionary and import it
@@ -82,8 +82,10 @@ def test_func():
                                  vocab_file_path=os.path.join(os.getcwd(), vocab))
 
         # Configure basic regularizers
-        master.create_smooth_sparse_phi_regularizer(name='SmoothSparsePhi', dictionary_name=dictionary_name)
-        master.create_smooth_sparse_theta_regularizer(name='SmoothSparseTheta')
+        master.create_regularizer(name='SmoothSparsePhi',
+                                  config=messages.SmoothSparsePhiConfig(dictionary_name=dictionary_name),
+                                  tau=0.0)
+        master.create_regularizer(name='SmoothSparseTheta', config=messages.SmoothSparseThetaConfig(), tau=0.0)
 
         # Initialize model
         master.initialize_model(model_name=pwt,
@@ -103,8 +105,8 @@ def test_func():
             master.normalize_model(pwt, nwt, rwt)  
 
             # Retrieve perplexity score
-            perplexity_doc_score = master.retrieve_score(pwt, 'PerplexityDoc')
-            perplexity_col_score = master.retrieve_score(pwt, 'PerplexityCol')
+            perplexity_doc_score = master.get_score(pwt, 'PerplexityDoc')
+            perplexity_col_score = master.get_score(pwt, 'PerplexityCol')
 
             # Assert and print scores
             string = 'Iter#{0}'.format(iter)
