@@ -903,6 +903,15 @@ inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& messa
 }
 
 template<>
+inline std::string DescribeMessage(const ::artm::GetScoreValueArgs& message) {
+  std::stringstream ss;
+  ss << "GetScoreValueArgs";
+  ss << ", model_name=" << message.model_name();
+  ss << ", score_name=" << message.score_name();
+  return ss.str();
+}
+
+template<>
 inline std::string DescribeMessage(const ::artm::ConfigureLoggingArgs& message) {
   std::stringstream ss;
   ss << "ConfigureLoggingArgs";

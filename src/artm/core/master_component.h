@@ -27,7 +27,6 @@ namespace core {
 class ArtmExecutor;
 class Instance;
 class TopicModel;
-class Score;
 class BatchManager;
 
 class MasterComponent : boost::noncopyable {

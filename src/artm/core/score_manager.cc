@@ -1,6 +1,6 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
-#include "artm/core/scores_merger.h"
+#include "artm/core/score_manager.h"
 
 #include "boost/exception/diagnostic_information.hpp"
 
@@ -13,7 +13,7 @@
 namespace artm {
 namespace core {
 
-void ScoresMerger::Append(std::shared_ptr<InstanceSchema> schema,
+void ScoreManager::Append(std::shared_ptr<InstanceSchema> schema,
                           const ModelName& model_name, const ScoreName& score_name,
                           const std::string& score_blob) {
   auto key = std::make_pair(model_name, score_name);
@@ -39,7 +39,7 @@ void ScoresMerger::Append(std::shared_ptr<InstanceSchema> schema,
   }
 }
 
-void ScoresMerger::ResetScores(const ModelName& model_name) {
+void ScoreManager::ResetScores(const ModelName& model_name) {
   boost::lock_guard<boost::mutex> guard(lock_);
   if (model_name.empty()) {
     score_map_.clear();
@@ -56,7 +56,7 @@ void ScoresMerger::ResetScores(const ModelName& model_name) {
   }
 }
 
-bool ScoresMerger::RequestScore(std::shared_ptr<InstanceSchema> schema,
+bool ScoreManager::RequestScore(std::shared_ptr<InstanceSchema> schema,
                                 const ModelName& model_name, const ScoreName& score_name,
                                 ScoreData *score_data) const {
   auto score_calculator = schema->score_calculator(score_name);
@@ -80,6 +80,10 @@ bool ScoresMerger::RequestScore(std::shared_ptr<InstanceSchema> schema,
   score_data->set_type(score_calculator->score_type());
   score_data->set_name(score_name);
   return true;
+}
+
+void ScoreManager::DisposeModel(const ModelName& model_name) {
+  // TBD
 }
 
 }  // namespace core

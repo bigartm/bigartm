@@ -13,10 +13,10 @@
 #include "artm/core/helpers.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
+#include "artm/core/score_manager.h"
 #include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/processor.h"
-#include "artm/core/merger.h"
 #include "artm/core/instance_schema.h"
 
 #include "artm/regularizer_interface.h"
@@ -73,10 +73,11 @@ Instance::Instance(const MasterComponentConfig& config)
       schema_(std::make_shared<InstanceSchema>(config)),
       dictionaries_(),
       batches_(),
+      models_(),
       processor_queue_(),
       cache_manager_(),
       batch_manager_(),
-      merger_(),
+      score_manager_(),
       processors_() {
   Reconfigure(config);
 }
@@ -86,10 +87,11 @@ Instance::Instance(const Instance& rhs)
       schema_(rhs.schema()->Duplicate()),
       dictionaries_(),
       batches_(),
+      models_(),
       processor_queue_(),
       cache_manager_(),
       batch_manager_(),
-      merger_(),
+      score_manager_(),
       processors_() {
   Reconfigure(schema_.get()->config());
 
@@ -109,11 +111,11 @@ Instance::Instance(const Instance& rhs)
       batches_.set(key, value);  // store same batch as rhs (OK as batches here are read-only)
   }
 
-  std::vector<ModelName> model_name = rhs.merger_->model_name();
+  std::vector<ModelName> model_name = rhs.models_.keys();
   for (auto& key : model_name) {
-    std::shared_ptr<const PhiMatrix> value = rhs.merger_->GetPhiMatrix(key);
+    std::shared_ptr<const PhiMatrix> value = rhs.GetPhiMatrix(key);
     if (value != nullptr)
-      merger_->SetPhiMatrix(key, value->Duplicate());
+      this->SetPhiMatrix(key, value->Duplicate());
   }
 }
 
@@ -148,8 +150,8 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     info->set_items_count(batch->item_size());
   }
 
-  for (auto& name : merger_->model_name()) {
-    std::shared_ptr<const PhiMatrix> p_wt = merger_->GetPhiMatrix(name);
+  for (auto& name : models_.keys()) {
+    std::shared_ptr<const PhiMatrix> p_wt = this->GetPhiMatrix(name);
     if (p_wt != nullptr) {
       MasterComponentInfo::ModelInfo* info = master_info->add_model();
       info->set_name(p_wt->model_name());
@@ -170,8 +172,8 @@ CacheManager* Instance::cache_manager() {
   return cache_manager_.get();
 }
 
-Merger* Instance::merger() {
-  return merger_.get();
+ScoreManager* Instance::score_manager() {
+  return score_manager_.get();
 }
 
 void Instance::DisposeModel(ModelName model_name) {
@@ -179,8 +181,10 @@ void Instance::DisposeModel(ModelName model_name) {
   new_schema->clear_model_config(model_name);
   schema_.set(new_schema);
 
-  if (merger_ != nullptr) {
-    merger_->DisposeModel(model_name);
+  models_.erase(model_name);
+
+  if (score_manager_ != nullptr) {
+    score_manager_->DisposeModel(model_name);
   }
 
   if (batch_manager_ != nullptr) {
@@ -394,7 +398,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     // First reconfiguration.
     cache_manager_.reset(new CacheManager());
     batch_manager_.reset(new BatchManager());
-    merger_.reset(new Merger(&schema_, &batches_, &dictionaries_));
+    score_manager_.reset(new ScoreManager());
 
     is_configured_  = true;
   }
@@ -406,14 +410,27 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     }
 
     while (static_cast<int>(processors_.size()) < target_processors_count) {
-      processors_.push_back(
-        std::shared_ptr<Processor>(new Processor(
-          &processor_queue_,
-          batches_,
-          *merger_,
-          schema_)));
+      processors_.push_back(std::shared_ptr<Processor>(new Processor(this)));
     }
   }
+}
+
+std::shared_ptr<const ::artm::core::PhiMatrix>
+Instance::GetPhiMatrix(ModelName model_name) const {
+  return models_.get(model_name);
+}
+
+std::shared_ptr<const ::artm::core::PhiMatrix>
+Instance::GetPhiMatrixSafe(ModelName model_name) const {
+  std::shared_ptr<const PhiMatrix> retval = models_.get(model_name);
+  if (retval == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
+  return retval;
+}
+
+void Instance::SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix) {
+  models_.erase(model_name);
+  return models_.set(model_name, phi_matrix);
 }
 
 }  // namespace core

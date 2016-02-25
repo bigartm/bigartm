@@ -25,10 +25,11 @@
 #include "artm/core/call_on_destruction.h"
 #include "artm/core/helpers.h"
 #include "artm/core/instance_schema.h"
-#include "artm/core/merger.h"
 #include "artm/core/cache_manager.h"
+#include "artm/core/score_manager.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/phi_matrix_operations.h"
+#include "artm/core/instance.h"
 
 #include "artm/utility/blas.h"
 
@@ -199,14 +200,8 @@ class PhiMatrixWriter : public NwtWriteAdapter {
   PhiMatrix* n_wt_;
 };
 
-Processor::Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
-                     const ThreadSafeCollectionHolder<std::string, Batch>& batches,
-                     const Merger& merger,
-                     const ThreadSafeHolder<InstanceSchema>& schema)
-    : processor_queue_(processor_queue),
-      batches_(batches),
-      merger_(merger),
-      schema_(schema),
+Processor::Processor(Instance* instance)
+    : instance_(instance),
       is_stopping(false),
       thread_() {
   // Keep this at the last action in constructor.
@@ -845,7 +840,7 @@ void Processor::ThreadFunction() {
       }
 
       std::shared_ptr<ProcessorInput> part;
-      if (!processor_queue_->try_pop(&part)) {
+      if (!instance_->processor_queue()->try_pop(&part)) {
         pop_retries++;
         LOG_IF(INFO, pop_retries == pop_retries_max) << "No data in processing queue, waiting...";
 
@@ -872,7 +867,7 @@ void Processor::ThreadFunction() {
       {
         CuckooWatch cuckoo2("LoadMessage", &cuckoo, kTimeLoggingThreshold);
         if (part->has_batch_filename()) {
-          auto mem_batch = batches_.get(part->batch_filename());
+          auto mem_batch = instance_->batches()->get(part->batch_filename());
           if (mem_batch != nullptr) {
             batch.CopyFrom(*mem_batch);
           } else {
@@ -888,7 +883,7 @@ void Processor::ThreadFunction() {
         }
       }
 
-      std::shared_ptr<InstanceSchema> schema = schema_.get();
+      std::shared_ptr<InstanceSchema> schema = instance_->schema();
       const MasterComponentConfig& master_config = schema->config();
 
       StreamMasks stream_masks;
@@ -906,7 +901,7 @@ void Processor::ThreadFunction() {
           BOOST_THROW_EXCEPTION(InternalError(
               "model.class_id_size() != model.class_weight_size()"));
 
-        std::shared_ptr<const PhiMatrix> phi_matrix = merger_.GetPhiMatrix(model_name);
+        std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrix(model_name);
         if (phi_matrix == nullptr) {
           LOG(ERROR) << "Model " << model_name << " does not exist.";
           continue;
@@ -926,7 +921,7 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<const PhiMatrix> nwt_target;
         if (part->has_nwt_target_name()) {
-          nwt_target = merger_.GetPhiMatrix(part->nwt_target_name());
+          nwt_target = instance_->GetPhiMatrix(part->nwt_target_name());
           if (nwt_target == nullptr) {
             LOG(ERROR) << "Model " << part->nwt_target_name() << " does not exist.";
             continue;
@@ -1048,7 +1043,7 @@ void Processor::ThreadFunction() {
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config,
                                         *theta_matrix, &stream_masks);
           if (score_value != nullptr)
-            part->scores_merger()->Append(schema, model_name_cache, score_name, score_value->SerializeAsString());
+            part->score_manager()->Append(schema, model_name_cache, score_name, score_value->SerializeAsString());
         }
 
         VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << model_description.str();

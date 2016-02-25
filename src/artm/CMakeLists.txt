@@ -35,8 +35,6 @@ set(SRC_LIST
 	core/internals.pb.h
 	core/master_component.cc
 	core/master_component.h
-	core/merger.cc
-	core/merger.h
 	core/processor.cc
 	core/processor.h
 	core/processor_input.cc
@@ -45,8 +43,8 @@ set(SRC_LIST
 	core/phi_matrix.h
 	core/phi_matrix_operations.cc
 	core/phi_matrix_operations.h
-	core/scores_merger.cc
-	core/scores_merger.h
+	core/score_manager.cc
+	core/score_manager.h
 	core/sync_event.cc
 	core/sync_event.h
 	core/template_manager.h
