@@ -891,8 +891,6 @@ void Processor::ThreadFunction() {
 
       const ModelName& model_name = part->model_name();
       const ModelConfig& model_config = part->model_config();
-      const ModelName& model_name_cache = model_config.has_model_name_cache() ? model_config.model_name_cache()
-                                                                              : model_name;
       {
         // do not process disabled models.
         if (!model_config.enabled()) continue;
@@ -954,7 +952,7 @@ void Processor::ThreadFunction() {
         std::shared_ptr<DataLoaderCacheEntry> cache;
         boost::uuids::uuid batch_uuid = boost::lexical_cast<boost::uuids::uuid>(batch.id());
         if (part->has_reuse_theta_cache_manager())
-          cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch_uuid, model_config.name());
+          cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch_uuid);
         std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache.get());
 
         if (p_wt.token_size() == 0) {
@@ -981,13 +979,11 @@ void Processor::ThreadFunction() {
 
         if (new_cache_entry_ptr != nullptr) {
           new_cache_entry_ptr->set_batch_uuid(batch.id());
-          new_cache_entry_ptr->set_model_name(model_name_cache);
           new_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_config.topic_name());
         }
 
         if (new_ptdw_cache_entry_ptr != nullptr) {
           new_ptdw_cache_entry_ptr->set_batch_uuid(batch.id());
-          new_ptdw_cache_entry_ptr->set_model_name(model_name_cache);
           new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_config.topic_name());
         }
 
@@ -1043,7 +1039,7 @@ void Processor::ThreadFunction() {
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config,
                                         *theta_matrix, &stream_masks);
           if (score_value != nullptr)
-            part->score_manager()->Append(schema, model_name_cache, score_name, score_value->SerializeAsString());
+            part->score_manager()->Append(schema, score_name, score_value->SerializeAsString());
         }
 
         VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << model_description.str();

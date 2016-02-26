@@ -56,8 +56,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Mask));
   DataLoaderCacheEntry_descriptor_ = file->message_type(1);
-  static const int DataLoaderCacheEntry_offsets_[8] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, model_name_),
+  static const int DataLoaderCacheEntry_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, batch_uuid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, item_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, theta_),
@@ -134,14 +133,13 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\031artm/core/internals.proto\022\tartm.core\032\023"
     "artm/messages.proto\"\031\n\004Mask\022\021\n\005value\030\001 \003"
-    "(\010B\002\020\001\"\317\001\n\024DataLoaderCacheEntry\022\022\n\nmodel"
-    "_name\030\001 \001(\t\022\022\n\nbatch_uuid\030\002 \001(\t\022\017\n\007item_"
-    "id\030\003 \003(\005\022\037\n\005theta\030\004 \003(\0132\020.artm.FloatArra"
-    "y\022\022\n\ntopic_name\030\005 \003(\t\022\020\n\010filename\030\006 \001(\t\022"
-    "\022\n\nitem_title\030\007 \003(\t\022#\n\013topic_index\030\010 \003(\013"
-    "2\016.artm.IntArray\"H\n\013StreamMasks\022$\n\013strea"
-    "m_mask\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stream_"
-    "name\030\005 \003(\t", 370);
+    "(\010B\002\020\001\"\273\001\n\024DataLoaderCacheEntry\022\022\n\nbatch"
+    "_uuid\030\002 \001(\t\022\017\n\007item_id\030\003 \003(\005\022\037\n\005theta\030\004 "
+    "\003(\0132\020.artm.FloatArray\022\022\n\ntopic_name\030\005 \003("
+    "\t\022\020\n\010filename\030\006 \001(\t\022\022\n\nitem_title\030\007 \003(\t\022"
+    "#\n\013topic_index\030\010 \003(\0132\016.artm.IntArray\"H\n\013"
+    "StreamMasks\022$\n\013stream_mask\030\004 \003(\0132\017.artm."
+    "core.Mask\022\023\n\013stream_name\030\005 \003(\t", 350);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
@@ -388,7 +386,6 @@ void Mask::Swap(Mask* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int DataLoaderCacheEntry::kModelNameFieldNumber;
 const int DataLoaderCacheEntry::kBatchUuidFieldNumber;
 const int DataLoaderCacheEntry::kItemIdFieldNumber;
 const int DataLoaderCacheEntry::kThetaFieldNumber;
@@ -414,7 +411,6 @@ DataLoaderCacheEntry::DataLoaderCacheEntry(const DataLoaderCacheEntry& from)
 
 void DataLoaderCacheEntry::SharedCtor() {
   _cached_size_ = 0;
-  model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   batch_uuid_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   filename_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -425,9 +421,6 @@ DataLoaderCacheEntry::~DataLoaderCacheEntry() {
 }
 
 void DataLoaderCacheEntry::SharedDtor() {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_;
-  }
   if (batch_uuid_ != &::google::protobuf::internal::GetEmptyString()) {
     delete batch_uuid_;
   }
@@ -461,11 +454,6 @@ DataLoaderCacheEntry* DataLoaderCacheEntry::New() const {
 
 void DataLoaderCacheEntry::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_model_name()) {
-      if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-        model_name_->clear();
-      }
-    }
     if (has_batch_uuid()) {
       if (batch_uuid_ != &::google::protobuf::internal::GetEmptyString()) {
         batch_uuid_->clear();
@@ -492,27 +480,10 @@ bool DataLoaderCacheEntry::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string model_name = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_model_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->model_name().data(), this->model_name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(18)) goto parse_batch_uuid;
-        break;
-      }
-
       // optional string batch_uuid = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch_uuid:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_batch_uuid()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -650,15 +621,6 @@ bool DataLoaderCacheEntry::MergePartialFromCodedStream(
 
 void DataLoaderCacheEntry::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional string model_name = 1;
-  if (has_model_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->model_name().data(), this->model_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      1, this->model_name(), output);
-  }
-
   // optional string batch_uuid = 2;
   if (has_batch_uuid()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -721,16 +683,6 @@ void DataLoaderCacheEntry::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* DataLoaderCacheEntry::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // optional string model_name = 1;
-  if (has_model_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->model_name().data(), this->model_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->model_name(), target);
-  }
-
   // optional string batch_uuid = 2;
   if (has_batch_uuid()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -800,13 +752,6 @@ int DataLoaderCacheEntry::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string model_name = 1;
-    if (has_model_name()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->model_name());
-    }
-
     // optional string batch_uuid = 2;
     if (has_batch_uuid()) {
       total_size += 1 +
@@ -893,9 +838,6 @@ void DataLoaderCacheEntry::MergeFrom(const DataLoaderCacheEntry& from) {
   item_title_.MergeFrom(from.item_title_);
   topic_index_.MergeFrom(from.topic_index_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_model_name()) {
-      set_model_name(from.model_name());
-    }
     if (from.has_batch_uuid()) {
       set_batch_uuid(from.batch_uuid());
     }
@@ -925,7 +867,6 @@ bool DataLoaderCacheEntry::IsInitialized() const {
 
 void DataLoaderCacheEntry::Swap(DataLoaderCacheEntry* other) {
   if (other != this) {
-    std::swap(model_name_, other->model_name_);
     std::swap(batch_uuid_, other->batch_uuid_);
     item_id_.Swap(&other->item_id_);
     theta_.Swap(&other->theta_);

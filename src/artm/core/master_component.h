@@ -67,6 +67,8 @@ class MasterComponent : boost::noncopyable {
   void FitOffline(const FitOfflineMasterModelArgs& args);
   void FilterDictionary(const FilterDictionaryArgs& args);
   void GatherDictionary(const GatherDictionaryArgs& args);
+  void ClearThetaCache(const ClearThetaCacheArgs& args);
+  void ClearScoreCache(const ClearScoreCacheArgs& args);
 
   // DISPOSE functionality
   void DisposeModel(const std::string& name);

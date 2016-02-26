@@ -29,6 +29,8 @@ class Api {
   void RegularizeModel(const RegularizeModelArgs& args);
   void OverwriteModel(const TopicModel& args);
   int Duplicate(const DuplicateMasterComponentArgs& args);
+  int ClearThetaCache(const ClearThetaCacheArgs& args);
+  int ClearScoreCache(const ClearScoreCacheArgs& args);
 
   // Test helpers
   ::artm::FitOfflineMasterModelArgs Initialize(const std::vector<std::shared_ptr< ::artm::Batch> >& batches,

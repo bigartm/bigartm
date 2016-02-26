@@ -14,9 +14,8 @@ namespace artm {
 namespace core {
 
 void ScoreManager::Append(std::shared_ptr<InstanceSchema> schema,
-                          const ModelName& model_name, const ScoreName& score_name,
+                          const ScoreName& score_name,
                           const std::string& score_blob) {
-  auto key = std::make_pair(model_name, score_name);
   auto score_calculator = schema->score_calculator(score_name);
   if (score_calculator == nullptr) {
     LOG(ERROR) << "Unable to find score calculator: " << score_name;
@@ -29,35 +28,26 @@ void ScoreManager::Append(std::shared_ptr<InstanceSchema> schema,
     return;
   }
 
+  // Note that the following operation must be atomic
+  // (e.g. finding score / append score / setting score).
+  // This is the reason to use explicit lock around score_map_ instead of ThreadSafeCollectionHolder.
   boost::lock_guard<boost::mutex> guard(lock_);
-  auto iter = score_map_.find(key);
+  auto iter = score_map_.find(score_name);
   if (iter != score_map_.end()) {
     score_calculator->AppendScore(*iter->second, score_inc.get());
     iter->second = score_inc;
   } else {
-    score_map_.insert(std::pair<ScoreKey, std::shared_ptr<Score>>(key, score_inc));
+    score_map_.insert(std::pair<ScoreName, std::shared_ptr<Score>>(score_name, score_inc));
   }
 }
 
-void ScoreManager::ResetScores(const ModelName& model_name) {
+void ScoreManager::Clear() {
   boost::lock_guard<boost::mutex> guard(lock_);
-  if (model_name.empty()) {
-    score_map_.clear();
-    return;
-  }
-
-  // Scott Meyers, Effective STL. Item 9 - Choose carefully among erasing options.
-  for (auto iter = score_map_.begin(); iter != score_map_.end(); /* nothing */) {
-    if (iter->first.first == model_name) {
-      score_map_.erase(iter++);
-    } else {
-      ++iter;
-    }
-  }
+  score_map_.clear();
 }
 
 bool ScoreManager::RequestScore(std::shared_ptr<InstanceSchema> schema,
-                                const ModelName& model_name, const ScoreName& score_name,
+                                const ScoreName& score_name,
                                 ScoreData *score_data) const {
   auto score_calculator = schema->score_calculator(score_name);
   if (score_calculator == nullptr)
@@ -69,7 +59,7 @@ bool ScoreManager::RequestScore(std::shared_ptr<InstanceSchema> schema,
 
   {
     boost::lock_guard<boost::mutex> guard(lock_);
-    auto iter = score_map_.find(ScoreKey(model_name, score_name));
+    auto iter = score_map_.find(score_name);
     if (iter != score_map_.end()) {
       score_data->set_data(iter->second->SerializeAsString());
     } else {
@@ -80,10 +70,6 @@ bool ScoreManager::RequestScore(std::shared_ptr<InstanceSchema> schema,
   score_data->set_type(score_calculator->score_type());
   score_data->set_name(score_name);
   return true;
-}
-
-void ScoreManager::DisposeModel(const ModelName& model_name) {
-  // TBD
 }
 
 }  // namespace core

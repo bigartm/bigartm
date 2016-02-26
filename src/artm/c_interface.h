@@ -26,6 +26,9 @@ extern "C" {
 
   DLL_PUBLIC int ArtmDisposeModel(int master_id, const char* model_name);
 
+  DLL_PUBLIC int ArtmClearThetaCache(int master_id, int length, const char* clear_theta_cache_args);
+  DLL_PUBLIC int ArtmClearScoreCache(int master_id, int length, const char* clear_score_cache_args);
+
   DLL_PUBLIC int ArtmCreateRegularizer(int master_id, int length, const char* regularizer_config);
   DLL_PUBLIC int ArtmReconfigureRegularizer(int master_id, int length, const char* regularizer_config);
   DLL_PUBLIC int ArtmDisposeRegularizer(int master_id, const char* regularizer_name);

@@ -454,6 +454,14 @@ int ArtmFitOnlineMasterModel(int master_id, int length, const char* args) {
   return ArtmExecute< ::artm::FitOnlineMasterModelArgs>(master_id, length, args, &MasterComponent::FitOnline);
 }
 
+int ArtmClearThetaCache(int master_id, int length, const char* args) {
+  return ArtmExecute< ::artm::ClearThetaCacheArgs>(master_id, length, args, &MasterComponent::ClearThetaCache);
+}
+
+int ArtmClearScoreCache(int master_id, int length, const char* args) {
+  return ArtmExecute< ::artm::ClearScoreCacheArgs>(master_id, length, args, &MasterComponent::ClearScoreCache);
+}
+
 int ArtmDisposeRegularizer(int master_id, const char* name) {
   return ArtmExecute(master_id, name, &MasterComponent::DisposeRegularizer);
 }

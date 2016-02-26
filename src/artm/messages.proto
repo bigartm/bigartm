@@ -115,7 +115,6 @@ message ModelConfig {
   optional bool use_new_tokens = 16 [default = true];
   optional bool opt_for_avx = 17 [default = true];
   repeated RegularizerSettings regularizer_settings = 18;
-  optional string model_name_cache = 19;
   optional string predict_class_id = 20;
 }
 
@@ -451,7 +450,6 @@ message TopicModel {
 
 // Represents a theta matrix.
 message ThetaMatrix {
-  optional string model_name = 1 [default = "@model"];
   repeated int32 item_id = 2;
   repeated FloatArray item_weights = 3;
   repeated string topic_name = 4;
@@ -584,10 +582,8 @@ message GetThetaMatrixArgs {
     Sparse = 1;
   }
 
-  optional string model_name = 1;
   repeated string topic_name = 3;
   repeated int32 topic_index = 4;
-  optional bool clean_cache = 5 [default = false];
   optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
   optional MatrixLayout matrix_layout = 8 [default = Dense];
@@ -635,10 +631,8 @@ message ProcessBatchesArgs {
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
   optional bool use_sparse_bow = 12 [default = true];
-  optional bool reset_scores = 13 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
-  optional string model_name_cache = 16;
   optional string predict_class_id = 17;
   repeated Batch batch = 18;
 }
@@ -814,3 +808,6 @@ message ConfigureLoggingArgs {
   optional int32 max_log_size = 9;    // approx. maximum log file size (in MB). A value of 0 will be silently overridden to 1.
   optional bool stop_logging_if_full_disk = 10; // Stop attempting to log to disk if the disk is full.
 }
+
+message ClearThetaCacheArgs {}
+message ClearScoreCacheArgs {}
