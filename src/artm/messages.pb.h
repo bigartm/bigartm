@@ -8503,32 +8503,20 @@ class GetScoreValueArgs : public ::google::protobuf::Message {
   inline ::std::string* release_score_name();
   inline void set_allocated_score_name(::std::string* score_name);
 
-  // optional .artm.Batch batch = 3;
-  inline bool has_batch() const;
-  inline void clear_batch();
-  static const int kBatchFieldNumber = 3;
-  inline const ::artm::Batch& batch() const;
-  inline ::artm::Batch* mutable_batch();
-  inline ::artm::Batch* release_batch();
-  inline void set_allocated_batch(::artm::Batch* batch);
-
   // @@protoc_insertion_point(class_scope:artm.GetScoreValueArgs)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
   inline void set_has_score_name();
   inline void clear_has_score_name();
-  inline void set_has_batch();
-  inline void clear_has_batch();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
   ::std::string* score_name_;
-  ::artm::Batch* batch_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -22362,44 +22350,6 @@ inline void GetScoreValueArgs::set_allocated_score_name(::std::string* score_nam
   } else {
     clear_has_score_name();
     score_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// optional .artm.Batch batch = 3;
-inline bool GetScoreValueArgs::has_batch() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void GetScoreValueArgs::set_has_batch() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void GetScoreValueArgs::clear_has_batch() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void GetScoreValueArgs::clear_batch() {
-  if (batch_ != NULL) batch_->::artm::Batch::Clear();
-  clear_has_batch();
-}
-inline const ::artm::Batch& GetScoreValueArgs::batch() const {
-  return batch_ != NULL ? *batch_ : *default_instance_->batch_;
-}
-inline ::artm::Batch* GetScoreValueArgs::mutable_batch() {
-  set_has_batch();
-  if (batch_ == NULL) batch_ = new ::artm::Batch;
-  return batch_;
-}
-inline ::artm::Batch* GetScoreValueArgs::release_batch() {
-  clear_has_batch();
-  ::artm::Batch* temp = batch_;
-  batch_ = NULL;
-  return temp;
-}
-inline void GetScoreValueArgs::set_allocated_batch(::artm::Batch* batch) {
-  delete batch_;
-  batch_ = batch;
-  if (batch) {
-    set_has_batch();
-  } else {
-    clear_has_batch();
   }
 }
 

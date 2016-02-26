@@ -207,9 +207,6 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
 inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
   std::stringstream ss;
 
-  if (message.has_batch())
-    ss << DescribeErrors(message.batch());
-
   if (!message.has_model_name() || message.model_name().empty()) {
     // Allow this to default to MasterComponentConfig.pwt_name
     // ss << "GetScoreValueArgs.model_name is missing; ";
@@ -580,11 +577,6 @@ template<>
 inline void FixMessage(::artm::GetTopicModelArgs* message) {
   if (message->has_use_sparse_format())
     message->set_matrix_layout(GetTopicModelArgs_MatrixLayout_Sparse);
-}
-
-template<>
-inline void FixMessage(::artm::GetScoreValueArgs* message) {
-  if (message->has_batch()) FixMessage(message->mutable_batch());
 }
 
 template<>
