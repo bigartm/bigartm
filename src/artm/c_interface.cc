@@ -196,36 +196,6 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmAddBatch(int master_id, int length, const char* add_batch_args) {
-  try {
-    artm::AddBatchArgs args;
-    ParseFromArray(add_batch_args, length, &args);
-    if (args.has_batch()) ::artm::core::FixAndValidateMessage(args.mutable_batch());
-    bool result = master_component(master_id)->AddBatch(args);
-    if (result) {
-      return ARTM_SUCCESS;
-    } else {
-      set_last_error("Artm's processor queue is full. Call ArtmAddBatch() later.");
-      return ARTM_STILL_WORKING;
-    }
-  } CATCH_EXCEPTIONS;
-}
-
-int ArtmWaitIdle(int master_id, int length, const char* wait_idle_args) {
-  try {
-    artm::WaitIdleArgs wait_idle_args_object;
-    ParseFromArray(wait_idle_args, length, &wait_idle_args_object);
-    bool result = master_component(master_id)->WaitIdle(wait_idle_args_object);
-
-    if (result) {
-      return ARTM_SUCCESS;
-    } else {
-      set_last_error("Artm is still processing the collection. Call ArtmWaitIdle() later.");
-      return ARTM_STILL_WORKING;
-    }
-  } CATCH_EXCEPTIONS;
-}
-
 int ArtmCreateMasterComponent(int length, const char* master_component_config) {
   try {
     EnableLogging();
@@ -402,17 +372,6 @@ int ArtmImportBatches(int master_id, int length, const char* args) {
   return ArtmExecute< ::artm::ImportBatchesArgs>(master_id, length, args, &MasterComponent::ImportBatches);
 }
 
-int ArtmInvokeIteration(int master_id, int length, const char* args) {
-  return ArtmExecute< ::artm::InvokeIterationArgs>(master_id, length, args, &MasterComponent::InvokeIteration);
-}
-
-int ArtmCreateModel(int master_id, int length, const char* config) {
-  return ArtmExecute< ::artm::ModelConfig>(master_id, length, config, &MasterComponent::CreateOrReconfigureModel);
-}
-int ArtmReconfigureModel(int master_id, int length, const char* config) {
-  return ArtmExecute< ::artm::ModelConfig>(master_id, length, config, &MasterComponent::CreateOrReconfigureModel);
-}
-
 int ArtmMergeModel(int master_id, int length, const char* args) {
   return ArtmExecute< ::artm::MergeModelArgs>(master_id, length, args, &MasterComponent::MergeModel);
 }
@@ -453,10 +412,6 @@ int ArtmCreateRegularizer(int master_id, int length, const char* config) {
 int ArtmReconfigureRegularizer(int master_id, int length, const char* config) {
   return ArtmExecute< ::artm::RegularizerConfig>(
     master_id, length, config, &MasterComponent::CreateOrReconfigureRegularizer);
-}
-
-int ArtmSynchronizeModel(int master_id, int length, const char* args) {
-  return ArtmExecute< ::artm::SynchronizeModelArgs>(master_id, length, args, &MasterComponent::SynchronizeModel);
 }
 
 int ArtmGatherDictionary(int master_id, int length, const char* args) {
@@ -609,11 +564,6 @@ int ArtmRequestTopicModel(int master_id, int length, const char* args) {
 int ArtmRequestTopicModelExternal(int master_id, int length, const char* args) {
   return ArtmRequestExternal< ::artm::GetTopicModelArgs,
                               ::artm::TopicModel>(master_id, length, args);
-}
-
-int ArtmRequestRegularizerState(int master_id, int length, const char* args) {
-  return ArtmRequest< ::artm::GetRegularizerStateArgs,
-                      ::artm::RegularizerInternalState>(master_id, length, args);
 }
 
 int ArtmRequestTransformMasterModel(int master_id, int length, const char* args) {

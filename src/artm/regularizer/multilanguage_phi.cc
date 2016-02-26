@@ -30,12 +30,5 @@ bool MultiLanguagePhi::Reconfigure(const RegularizerConfig& config) {
   return true;
 }
 
-void MultiLanguagePhi::SerializeInternalState(RegularizerInternalState* regularizer_state) {
-  MultiLanguagePhiInternalState data;
-  data.set_no_regularization_calls(no_regularization_calls_);
-  regularizer_state->set_type(RegularizerInternalState_Type_MultiLanguagePhi);
-  regularizer_state->set_data(data.SerializeAsString());
-}
-
 }  // namespace regularizer
 }  // namespace artm

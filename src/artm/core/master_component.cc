@@ -22,16 +22,13 @@
 
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
-#include "artm/core/data_loader.h"
 #include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/check_messages.h"
 #include "artm/core/instance.h"
 #include "artm/core/processor.h"
 #include "artm/core/phi_matrix_operations.h"
-#include "artm/core/topic_model.h"
-#include "artm/core/scores_merger.h"
-#include "artm/core/merger.h"
+#include "artm/core/score_manager.h"
 #include "artm/core/dense_phi_matrix.h"
 #include "artm/core/template_manager.h"
 
@@ -73,12 +70,6 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
   master_component_config.mutable_score_config()->CopyFrom(config.score_config());
   if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
   if (config.reuse_theta() || config.cache_theta()) master_component_config.set_cache_theta(true);
-  if (config.use_v06_api() && !reconfigure) {
-    ScoreConfig* items_processed = master_component_config.add_score_config();
-    items_processed->set_type(ScoreConfig_Type_ItemsProcessed);
-    items_processed->set_name("ItemsProcessedScore-2b632a39-8c6b-4b7b-a0c4-ee60d1434522");
-    items_processed->set_config(::artm::ItemsProcessedScoreConfig().SerializeAsString());
-  }
 
   if (!reconfigure)
     instance_ = std::make_shared<Instance>(master_component_config);
@@ -95,24 +86,6 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
   // create (or re-create the regularizers)
   for (int i = 0; i < config.regularizer_config_size(); ++i)
     CreateOrReconfigureRegularizer(config.regularizer_config(i));
-
-  if (config.use_v06_api() && !reconfigure) {
-    ::artm::ModelConfig model_config;
-    model_config.set_name(config.pwt_name());
-    model_config.mutable_topic_name()->CopyFrom(config.topic_name());
-    model_config.set_inner_iterations_count(config.inner_iterations_count());
-    if (config.has_reuse_theta()) model_config.set_reuse_theta(config.reuse_theta());
-    for (auto& reg : config.regularizer_config()) {
-      model_config.add_regularizer_name(reg.name());
-      model_config.add_regularizer_tau(reg.tau());
-    }
-    model_config.mutable_class_id()->CopyFrom(config.class_id());
-    model_config.mutable_class_weight()->CopyFrom(config.class_weight());
-    if (config.has_use_sparse_bow()) model_config.set_use_sparse_bow(config.use_sparse_bow());
-    if (config.has_opt_for_avx()) model_config.set_opt_for_avx(config.opt_for_avx());
-    FixAndValidateMessage(&model_config, /*throw_error =*/ true);
-    CreateOrReconfigureModel(model_config);
-  }
 }
 
 MasterComponent::MasterComponent(const MasterComponentConfig& config)
@@ -135,17 +108,6 @@ MasterComponent::~MasterComponent() {}
 
 std::shared_ptr<MasterComponent> MasterComponent::Duplicate() const {
   return std::shared_ptr<MasterComponent>(new MasterComponent(*this));
-}
-
-void MasterComponent::CreateOrReconfigureModel(const ModelConfig& config) {
-  if ((config.class_weight_size() != 0 || config.class_id_size() != 0) && !config.use_sparse_bow()) {
-    std::stringstream ss;
-    ss << "You have configured use_sparse_bow=false. "
-       << "Fields ModelConfig.class_id and ModelConfig.class_weight not supported in this mode.";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  }
-
-  instance_->CreateOrReconfigureModel(config);
 }
 
 void MasterComponent::DisposeModel(const std::string& name) {
@@ -233,10 +195,6 @@ void MasterComponent::DisposeBatch(const std::string& name) {
   instance_->batches()->erase(name);
 }
 
-void MasterComponent::SynchronizeModel(const SynchronizeModelArgs& args) {
-  instance_->merger()->ForceSynchronizeModel(args);
-}
-
 void MasterComponent::ExportModel(const ExportModelArgs& args) {
   std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
   if (config != nullptr)
@@ -249,11 +207,8 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
   if (!fout.is_open())
     BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create file " + args.file_name()));
 
-  std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(args.model_name());
-  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(args.model_name());
-  if (topic_model == nullptr && phi_matrix == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + args.model_name() + " does not exist"));
-  const PhiMatrix& n_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(args.model_name());
+  const PhiMatrix& n_wt = *phi_matrix;
 
   LOG(INFO) << "Exporting model " << args.model_name() << " to " << args.file_name();
 
@@ -341,7 +296,7 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
   if (target == nullptr)
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
 
-  instance_->merger()->SetPhiMatrix(args.model_name(), target);
+  instance_->SetPhiMatrix(args.model_name(), target);
   LOG(INFO) << "Import completed, token_size = " << target->token_size()
     << ", topic_size = " << target->topic_size();
 }
@@ -350,16 +305,14 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
   ModelName model_name = args.model_name();
   LOG(INFO) << "Attaching model " << model_name << " to " << address << " (" << address_length << " bytes)";
 
-  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
-  if (phi_matrix == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
 
   PhiMatrixFrame* frame = dynamic_cast<PhiMatrixFrame*>(const_cast<PhiMatrix*>(phi_matrix.get()));
   if (frame == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Unable to attach to model " + model_name));
 
   std::shared_ptr<AttachedPhiMatrix> attached = std::make_shared<AttachedPhiMatrix>(address_length, address, frame);
-  instance_->merger()->SetPhiMatrix(model_name, attached);
+  instance_->SetPhiMatrix(model_name, attached);
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
@@ -371,11 +324,40 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     FixMessage(mutable_args);
   }
 
-  // temp code to be removed with ModelConfig and old dictionaries
-  instance_->merger()->InitializeModel(args);
+  artm::TopicModel topic_model;
+  topic_model.set_seed(args.seed());
+  topic_model.mutable_topic_name()->CopyFrom(args.topic_name());
+  topic_model.set_topics_count(topic_model.topic_name_size());
 
-  // ToDo(MelLain): implement the initialization of new-style models with new-style dicts
-  // instance_->merger()->SetPhiMatrix(model_name, attached);
+  auto dict = instance_->dictionaries()->get(args.dictionary_name());
+  if (dict == nullptr) {
+    std::stringstream ss;
+    ss << "Dictionary '" << args.dictionary_name() << "' does not exist";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  }
+
+  if (dict->size() == 0) {
+    std::stringstream ss;
+    ss << "Dictionary '" << args.dictionary_name() << "' has no entries";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  }
+
+  LOG(INFO) << "InitializeModel() with "
+            << topic_model.topic_name_size() << " topics and "
+            << dict->size() << " tokens";
+
+  for (int index = 0; index < dict->size(); ++index) {
+    topic_model.add_operation_type(TopicModel_OperationType_Initialize);
+    topic_model.add_class_id(dict->entry(index)->token().class_id);
+    topic_model.add_token(dict->entry(index)->token().keyword);
+    topic_model.add_token_weights();
+  }
+
+  auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), topic_model.topic_name());
+  PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm.get());
+  PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
+
+  instance_->SetPhiMatrix(args.model_name(), new_ttm);
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
@@ -408,7 +390,8 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetTopicModelArgs*>(&args)->set_model_name(config->pwt_name());
 
-  instance_->merger()->RetrieveExternalTopicModel(args, result);
+  auto phi_matrix = instance_->GetPhiMatrixSafe(args.model_name());
+  PhiMatrixOperations::RetrieveExternalTopicModel(*phi_matrix, args, result);
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result, std::string* external) {
@@ -419,23 +402,30 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
   HandleExternalTopicModelRequest(result, external);
 }
 
-void MasterComponent::Request(const GetRegularizerStateArgs& args,
-                              ::artm::RegularizerInternalState* regularizer_state) {
-  instance_->merger()->RequestRegularizerState(args.name(), regularizer_state);
-}
-
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
   std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetScoreValueArgs*>(&args)->set_model_name(config->pwt_name());
 
-  if (!args.has_batch()) {
-    instance_->merger()->RequestScore(args, result);
-  } else {
-    if (instance_->processor_size() == 0)
-      BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
-    instance_->processor(0)->FindThetaMatrix(args.batch(), GetThetaMatrixArgs(), nullptr, args, result);
-  }
+  std::shared_ptr<InstanceSchema> schema = instance_->schema();
+
+  if (instance_->score_manager()->RequestScore(schema, args.model_name(), args.score_name(), result))
+    return;  // success
+
+  auto score_calculator = schema->score_calculator(args.score_name());
+  if (score_calculator == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    std::string("Attempt to request non-existing score: " + args.score_name())));
+
+  if (score_calculator->is_cumulative())
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "Score " + args.score_name() + " is cumulative and has not been calculated for  " + args.model_name()));
+
+  std::shared_ptr<const ::artm::core::PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(args.model_name());
+  std::shared_ptr<Score> score = score_calculator->CalculateScore(*phi_matrix);
+  result->set_data(score->SerializeAsString());
+  result->set_type(score_calculator->score_type());
+  result->set_name(args.score_name());
 }
 
 void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, MasterComponentInfo* result) {
@@ -487,11 +477,8 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   if (args.has_model_name_cache()) model_config.set_model_name_cache(args.model_name_cache());
   if (args.has_predict_class_id()) model_config.set_predict_class_id(args.predict_class_id());
 
-  std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
-  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
-  if (topic_model == nullptr && phi_matrix == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + model_name + " does not exist"));
-  const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
+  std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
+  const PhiMatrix& p_wt = *phi_matrix;
 
   if (args.has_nwt_target_name()) {
     if (args.nwt_target_name() == args.pwt_source_name())
@@ -500,7 +487,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
     auto nwt_target(std::make_shared<DensePhiMatrix>(args.nwt_target_name(), p_wt.topic_name()));
     nwt_target->Reshape(p_wt);
-    instance_->merger()->SetPhiMatrix(args.nwt_target_name(), nwt_target);
+    instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
   }
 
   model_config.set_topics_count(p_wt.topic_size());
@@ -515,7 +502,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   // Since cache_manager lives on stack it will be destroyed once we return from this function.
   // Therefore, no pointers to cache_manager should exist upon return from RequestProcessBatchesImpl.
   CacheManager cache_manager;
-  ScoresMerger* scores_merger = instance_->merger()->scores_merger();
+  ScoreManager* score_manager = instance_->score_manager();
 
   bool return_theta = false;
   bool return_ptdw = false;
@@ -538,7 +525,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   }
 
   if (args.reset_scores())
-    scores_merger->ResetScores(model_name);
+    score_manager->ResetScores(model_name);
 
   if (args.batch_filename_size() < instance_->processor_size()) {
     LOG_FIRST_N(INFO, 1) << "Batches count (=" << args.batch_filename_size()
@@ -553,13 +540,12 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(batch_manager);
-    pi->set_scores_merger(scores_merger);
+    pi->set_score_manager(score_manager);
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
     pi->mutable_model_config()->CopyFrom(model_config);
     pi->set_task_id(task_id);
-    pi->set_caller(ProcessorInput::Caller::ProcessBatches);
 
     if (args.reuse_theta())
       pi->set_reuse_theta_cache_manager(instance_->cache_manager());
@@ -596,7 +582,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
     ScoreName score_name = config.score_config(score_index).name();
     ScoreData requested_score_data;
-    if ((score_data != nullptr) && scores_merger->RequestScore(schema, model_name, score_name, &requested_score_data))
+    if ((score_data != nullptr) && score_manager->RequestScore(schema, model_name, score_name, &requested_score_data))
       score_data->Add()->Swap(&requested_score_data);
   }
 
@@ -633,13 +619,12 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
 
     float weight = merge_model_args.source_weight(i);
 
-    std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
-    std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);
-    if (topic_model == nullptr && phi_matrix == nullptr) {
+    std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrix(model_name);
+    if (phi_matrix == nullptr) {
       LOG(WARNING) << "Model " << model_name << " does not exist";
       continue;
     }
-    const PhiMatrix& n_wt = (topic_model != nullptr) ? topic_model->GetNwt() : *phi_matrix;
+    const PhiMatrix& n_wt = *phi_matrix;
 
     if (nwt_target == nullptr) {
       nwt_target = std::make_shared<DensePhiMatrix>(
@@ -658,7 +643,7 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
     BOOST_THROW_EXCEPTION(InvalidOperation(
       "ArtmMergeModel() have not found any models to merge. "
       "Verify that at least one of the following models exist: " + ss.str()));
-  instance_->merger()->SetPhiMatrix(merge_model_args.nwt_target_name(), nwt_target);
+  instance_->SetPhiMatrix(merge_model_args.nwt_target_name(), nwt_target);
   VLOG(0) << "MasterComponent: complete merging models";
 }
 
@@ -675,23 +660,17 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
   if (!regularize_model_args.has_rwt_target_name())
     BOOST_THROW_EXCEPTION(InvalidOperation("RegularizeModelArgs.rwt_target_name is missing"));
 
-  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrix(nwt_source_name);
-  std::shared_ptr<const TopicModel> nwt_topic_model = instance_->merger()->GetLatestTopicModel(nwt_source_name);
-  if (nwt_phi_matrix == nullptr && nwt_topic_model == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + nwt_source_name + " does not exist"));
-  const PhiMatrix& n_wt = (nwt_topic_model != nullptr) ? nwt_topic_model->GetNwt() : *nwt_phi_matrix;
+  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->GetPhiMatrixSafe(nwt_source_name);
+  const PhiMatrix& n_wt = *nwt_phi_matrix;
 
-  std::shared_ptr<const PhiMatrix> pwt_phi_matrix = instance_->merger()->GetPhiMatrix(pwt_source_name);
-  std::shared_ptr<const TopicModel> pwt_topic_model = instance_->merger()->GetLatestTopicModel(pwt_source_name);
-  if (pwt_phi_matrix == nullptr && pwt_topic_model == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + pwt_source_name + " does not exist"));
-  const PhiMatrix& p_wt = (pwt_topic_model != nullptr) ? pwt_topic_model->GetPwt() : *pwt_phi_matrix;
+  std::shared_ptr<const PhiMatrix> pwt_phi_matrix = instance_->GetPhiMatrixSafe(pwt_source_name);
+  const PhiMatrix& p_wt = *pwt_phi_matrix;
 
   auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name, nwt_phi_matrix->topic_name()));
   rwt_target->Reshape(*nwt_phi_matrix);
   PhiMatrixOperations::InvokePhiRegularizers(instance_->schema(), regularize_model_args.regularizer_settings(),
                                              p_wt, n_wt, rwt_target.get());
-  instance_->merger()->SetPhiMatrix(rwt_target_name, rwt_target);
+  instance_->SetPhiMatrix(rwt_target_name, rwt_target);
   VLOG(0) << "MasterComponent: complete regularizing model " << regularize_model_args.pwt_source_name();
 }
 
@@ -706,26 +685,18 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
   if (!normalize_model_args.has_nwt_source_name())
     BOOST_THROW_EXCEPTION(InvalidOperation("NormalizeModelArgs.pwt_target_name is missing"));
 
-  std::shared_ptr<const TopicModel> nwt_topic_model = instance_->merger()->GetLatestTopicModel(nwt_source_name);
-  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->merger()->GetPhiMatrix(nwt_source_name);
-  if ((nwt_topic_model == nullptr) && (nwt_phi_matrix == nullptr))
-    BOOST_THROW_EXCEPTION(InvalidOperation("Model " + nwt_source_name + " does not exist"));
-  const PhiMatrix& n_wt = (nwt_topic_model != nullptr) ? nwt_topic_model->GetPwt() : *nwt_phi_matrix;
+  std::shared_ptr<const PhiMatrix> nwt_phi_matrix = instance_->GetPhiMatrixSafe(nwt_source_name);
+  const PhiMatrix& n_wt = *nwt_phi_matrix;
 
-  const PhiMatrix* r_wt = nullptr;
-  std::shared_ptr<const TopicModel> rwt_topic_model = instance_->merger()->GetLatestTopicModel(rwt_source_name);
-  std::shared_ptr<const PhiMatrix> rwt_phi_matrix = instance_->merger()->GetPhiMatrix(rwt_source_name);
-  if (normalize_model_args.has_rwt_source_name()) {
-    if ((rwt_topic_model == nullptr) && (rwt_phi_matrix == nullptr))
-      BOOST_THROW_EXCEPTION(InvalidOperation("Model " + rwt_source_name + " does not exist"));
-    r_wt = (rwt_topic_model != nullptr) ? &rwt_topic_model->GetPwt() : rwt_phi_matrix.get();
-  }
+  std::shared_ptr<const PhiMatrix> rwt_phi_matrix;
+  if (normalize_model_args.has_rwt_source_name())
+    rwt_phi_matrix = instance_->GetPhiMatrixSafe(rwt_source_name);
 
   auto pwt_target(std::make_shared<DensePhiMatrix>(pwt_target_name, n_wt.topic_name()));
   pwt_target->Reshape(n_wt);
-  if (r_wt == nullptr) PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
-  else                 PhiMatrixOperations::FindPwt(n_wt, *r_wt, pwt_target.get());
-  instance_->merger()->SetPhiMatrix(pwt_target_name, pwt_target);
+  if (rwt_phi_matrix == nullptr) PhiMatrixOperations::FindPwt(n_wt, pwt_target.get());
+  else                           PhiMatrixOperations::FindPwt(n_wt, *rwt_phi_matrix, pwt_target.get());
+  instance_->SetPhiMatrix(pwt_target_name, pwt_target);
   VLOG(0) << "MasterComponent: complete normalizing model " << normalize_model_args.nwt_source_name();
 }
 
@@ -733,7 +704,10 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
   std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
   if (config != nullptr)
     if (!args.has_name()) const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
-  instance_->merger()->OverwriteTopicModel(args);
+
+  auto target = std::make_shared<DensePhiMatrix>(args.name(), args.topic_name());
+  PhiMatrixOperations::ApplyTopicModelOperation(args, 1.0f, target.get());
+  instance_->SetPhiMatrix(args.name(), target);
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatrix* result) {
@@ -741,14 +715,7 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatri
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetThetaMatrixArgs*>(&args)->set_model_name(config->pwt_name());
 
-  if (!args.has_batch()) {
-    instance_->cache_manager()->RequestThetaMatrix(args, result);
-  } else {
-    if (instance_->processor_size() == 0)
-      BOOST_THROW_EXCEPTION(InternalError("No processors exist in the master component"));
-    instance_->processor(0)->FindThetaMatrix(
-      args.batch(), args, result, GetScoreValueArgs(), nullptr);
-  }
+  instance_->cache_manager()->RequestThetaMatrix(args, result);
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args,
@@ -948,47 +915,6 @@ class ArtmExecutor {
     Dispose(rwt_name);
   }
 
-  void ExecuteLegacyOnlineAlgorithm(OnlineBatchesIterator* iter) {
-    ::artm::ProcessBatchesArgs process_batches_args;
-    bool reset_scores = true;
-    while (iter->more()) {
-      iter->move(&process_batches_args);
-      for (auto& batch_file_name : process_batches_args.batch_filename()) {
-        ::artm::AddBatchArgs add_batch_args;
-        add_batch_args.set_reset_scores(reset_scores);
-        add_batch_args.set_batch_file_name(batch_file_name);
-        master_component_->AddBatch(add_batch_args);
-        reset_scores = false;
-      }
-    }
-
-    iter->reset();
-
-    bool done = false;
-    while (!done) {
-      ::artm::WaitIdleArgs wait_idle_args;
-      wait_idle_args.set_timeout_milliseconds(10);
-      done = master_component_->WaitIdle(wait_idle_args);
-
-      ::artm::GetScoreValueArgs get_score_value_args;
-      get_score_value_args.set_model_name(master_model_config_.pwt_name());
-      get_score_value_args.set_score_name("ItemsProcessedScore-2b632a39-8c6b-4b7b-a0c4-ee60d1434522");
-      ::artm::ScoreData score_data;
-      master_component_->Request(get_score_value_args, &score_data);
-      ::artm::ItemsProcessedScore items_processed_score;
-      items_processed_score.ParseFromString(score_data.data());
-
-      if (iter->more() && (done || (items_processed_score.num_batches() >= iter->update_after()))) {
-        ::artm::SynchronizeModelArgs synchronize_model_args;
-        synchronize_model_args.set_model_name(master_model_config_.pwt_name());
-        synchronize_model_args.set_apply_weight(iter->apply_weight());
-        synchronize_model_args.set_decay_weight(iter->decay_weight());
-        master_component_->SynchronizeModel(synchronize_model_args);
-        iter->move(&process_batches_args);
-      }
-    }
-  }
-
   void ExecuteOnlineAlgorithm(OnlineBatchesIterator* iter) {
     const std::string rwt_name = "rwt";
     StringIndex nwt_hat_index("nwt_hat");
@@ -1155,11 +1081,6 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
   ArtmExecutor artm_executor(*config, this);
   OnlineBatchesIterator iter(args.batch_filename(), args.batch_weight(), args.update_after(),
                              args.apply_weight(), args.decay_weight());
-  if (config->use_v06_api()) {
-    artm_executor.ExecuteLegacyOnlineAlgorithm(&iter);
-    return;
-  }
-
   if (args.async()) {
     artm_executor.ExecuteAsyncOnlineAlgorithm(&iter);
   } else {
@@ -1198,41 +1119,6 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
   ArtmExecutor artm_executor(*config, this);
   OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());
   artm_executor.ExecuteOfflineAlgorithm(args.passes(), &iter);
-}
-
-bool MasterComponent::WaitIdle(const WaitIdleArgs& args) {
-  int timeout = args.timeout_milliseconds();
-  LOG_IF(WARNING, timeout == 0) << "WaitIdleArgs.timeout_milliseconds == 0";
-  WaitIdleArgs new_args;
-  new_args.CopyFrom(args);
-  auto time_start = boost::posix_time::microsec_clock::local_time();
-
-  bool retval = instance_->data_loader()->WaitIdle(args);
-  if (!retval) return false;
-
-  auto time_end = boost::posix_time::microsec_clock::local_time();
-  if (timeout != -1) {
-    timeout -= (time_end - time_start).total_milliseconds();
-    new_args.set_timeout_milliseconds(timeout);
-  }
-
-  return instance_->merger()->WaitIdle(new_args);
-}
-
-void MasterComponent::InvokeIteration(const InvokeIterationArgs& args) {
-  if (args.reset_scores())
-    instance_->merger()->ForceResetScores(ModelName());
-
-  instance_->data_loader()->InvokeIteration(args);
-}
-
-bool MasterComponent::AddBatch(const AddBatchArgs& args) {
-  int timeout = args.timeout_milliseconds();
-  LOG_IF(WARNING, timeout == 0) << "AddBatchArgs.timeout_milliseconds == 0";
-  if (args.reset_scores())
-    instance_->merger()->ForceResetScores(ModelName());
-
-  return instance_->data_loader()->AddBatch(args);
 }
 
 }  // namespace core

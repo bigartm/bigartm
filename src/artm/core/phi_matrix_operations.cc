@@ -235,7 +235,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
 
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
-        "ModelIncrement.operation_type", operation_type));
+        "TopicModel.operation_type", operation_type));
     }
   }
 

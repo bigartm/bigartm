@@ -29,8 +29,3 @@ message StreamMasks {
   repeated Mask stream_mask = 4;
   repeated string stream_name = 5;
 }
-
-// All information, gathered by Processor for a particular batch and model.
-message ModelIncrement {
-  optional TopicModel topic_model = 1;
-}

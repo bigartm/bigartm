@@ -27,7 +27,6 @@ namespace core {
 class ArtmExecutor;
 class Instance;
 class TopicModel;
-class Score;
 class BatchManager;
 
 class MasterComponent : boost::noncopyable {
@@ -53,7 +52,6 @@ class MasterComponent : boost::noncopyable {
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external);
   void Request(const GetDictionaryArgs& args, DictionaryData* result);
   void Request(const GetMasterComponentInfoArgs& args, MasterComponentInfo* result);
-  void Request(const GetRegularizerStateArgs& args, RegularizerInternalState* regularizer_state);
 
   // EXECUTE functionality
   void MergeModel(const MergeModelArgs& args);
@@ -62,8 +60,6 @@ class MasterComponent : boost::noncopyable {
   void ImportDictionary(const ImportDictionaryArgs& args);
   void ExportDictionary(const ExportDictionaryArgs& args);
   void ImportBatches(const ImportBatchesArgs& args);
-  void InvokeIteration(const InvokeIterationArgs& args);
-  void SynchronizeModel(const SynchronizeModelArgs& args);
   void ExportModel(const ExportModelArgs& args);
   void ImportModel(const ImportModelArgs& args);
   void InitializeModel(const InitializeModelArgs& args);
@@ -71,7 +67,6 @@ class MasterComponent : boost::noncopyable {
   void FitOffline(const FitOfflineMasterModelArgs& args);
   void FilterDictionary(const FilterDictionaryArgs& args);
   void GatherDictionary(const GatherDictionaryArgs& args);
-  bool AddBatch(const AddBatchArgs& args);
 
   // DISPOSE functionality
   void DisposeModel(const std::string& name);
@@ -84,7 +79,6 @@ class MasterComponent : boost::noncopyable {
                                   BatchManager *batch_manager);
 
   // Reconfigures topic model if already exists, otherwise creates a new model.
-  void CreateOrReconfigureModel(const ModelConfig& config);
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
 
   void Reconfigure(const MasterComponentConfig& config);
@@ -94,9 +88,6 @@ class MasterComponent : boost::noncopyable {
 
   void CreateDictionary(const DictionaryData& data);
   void AppendDictionary(const DictionaryData& data);
-
-  // Returns false if BigARTM is still processing the collection, otherwise true.
-  bool WaitIdle(const WaitIdleArgs& args);
 
   void AttachModel(const AttachModelArgs& args, int address_length, float* address);
 

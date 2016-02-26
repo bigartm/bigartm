@@ -56,9 +56,6 @@ class SpecifiedSparsePhiConfig;
 class ImproveCoherencePhiConfig;
 class SmoothPtdwConfig;
 class TopicSelectionThetaConfig;
-class GetRegularizerStateArgs;
-class RegularizerInternalState;
-class MultiLanguagePhiInternalState;
 class TransformConfig;
 class ScoreConfig;
 class ScoreData;
@@ -86,7 +83,6 @@ class TopicModel;
 class TopicModel_TopicModelInternals;
 class ThetaMatrix;
 class CollectionParserConfig;
-class SynchronizeModelArgs;
 class InitializeModelArgs;
 class InitializeModelArgs_Filter;
 class DictionaryData;
@@ -96,9 +92,6 @@ class GetDictionaryArgs;
 class GetTopicModelArgs;
 class GetThetaMatrixArgs;
 class GetScoreValueArgs;
-class AddBatchArgs;
-class InvokeIterationArgs;
-class WaitIdleArgs;
 class ExportModelArgs;
 class ImportModelArgs;
 class AttachModelArgs;
@@ -209,24 +202,6 @@ inline bool SmoothPtdwConfig_Type_Parse(
     const ::std::string& name, SmoothPtdwConfig_Type* value) {
   return ::google::protobuf::internal::ParseNamedEnum<SmoothPtdwConfig_Type>(
     SmoothPtdwConfig_Type_descriptor(), name, value);
-}
-enum RegularizerInternalState_Type {
-  RegularizerInternalState_Type_MultiLanguagePhi = 3
-};
-bool RegularizerInternalState_Type_IsValid(int value);
-const RegularizerInternalState_Type RegularizerInternalState_Type_Type_MIN = RegularizerInternalState_Type_MultiLanguagePhi;
-const RegularizerInternalState_Type RegularizerInternalState_Type_Type_MAX = RegularizerInternalState_Type_MultiLanguagePhi;
-const int RegularizerInternalState_Type_Type_ARRAYSIZE = RegularizerInternalState_Type_Type_MAX + 1;
-
-const ::google::protobuf::EnumDescriptor* RegularizerInternalState_Type_descriptor();
-inline const ::std::string& RegularizerInternalState_Type_Name(RegularizerInternalState_Type value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    RegularizerInternalState_Type_descriptor(), value);
-}
-inline bool RegularizerInternalState_Type_Parse(
-    const ::std::string& name, RegularizerInternalState_Type* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<RegularizerInternalState_Type>(
-    RegularizerInternalState_Type_descriptor(), name, value);
 }
 enum TransformConfig_TransformType {
   TransformConfig_TransformType_Logarithm = 0,
@@ -1721,13 +1696,6 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 processor_queue_max_size() const;
   inline void set_processor_queue_max_size(::google::protobuf::int32 value);
 
-  // optional int32 merger_queue_max_size = 8 [default = 10];
-  inline bool has_merger_queue_max_size() const;
-  inline void clear_merger_queue_max_size();
-  static const int kMergerQueueMaxSizeFieldNumber = 8;
-  inline ::google::protobuf::int32 merger_queue_max_size() const;
-  inline void set_merger_queue_max_size(::google::protobuf::int32 value);
-
   // repeated .artm.ScoreConfig score_config = 9;
   inline int score_config_size() const;
   inline void clear_score_config();
@@ -1771,8 +1739,6 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline void clear_has_processors_count();
   inline void set_has_processor_queue_max_size();
   inline void clear_has_processor_queue_max_size();
-  inline void set_has_merger_queue_max_size();
-  inline void clear_has_merger_queue_max_size();
   inline void set_has_online_batch_processing();
   inline void clear_has_online_batch_processing();
   inline void set_has_disk_cache_path();
@@ -1786,13 +1752,12 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   bool compact_batches_;
   bool cache_theta_;
   bool online_batch_processing_;
-  ::google::protobuf::int32 processor_queue_max_size_;
-  ::google::protobuf::int32 merger_queue_max_size_;
   ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
   ::std::string* disk_cache_path_;
+  ::google::protobuf::int32 processor_queue_max_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -3474,310 +3439,6 @@ class TopicSelectionThetaConfig : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static TopicSelectionThetaConfig* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class GetRegularizerStateArgs : public ::google::protobuf::Message {
- public:
-  GetRegularizerStateArgs();
-  virtual ~GetRegularizerStateArgs();
-
-  GetRegularizerStateArgs(const GetRegularizerStateArgs& from);
-
-  inline GetRegularizerStateArgs& operator=(const GetRegularizerStateArgs& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const GetRegularizerStateArgs& default_instance();
-
-  void Swap(GetRegularizerStateArgs* other);
-
-  // implements Message ----------------------------------------------
-
-  GetRegularizerStateArgs* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const GetRegularizerStateArgs& from);
-  void MergeFrom(const GetRegularizerStateArgs& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:artm.GetRegularizerStateArgs)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static GetRegularizerStateArgs* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class RegularizerInternalState : public ::google::protobuf::Message {
- public:
-  RegularizerInternalState();
-  virtual ~RegularizerInternalState();
-
-  RegularizerInternalState(const RegularizerInternalState& from);
-
-  inline RegularizerInternalState& operator=(const RegularizerInternalState& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const RegularizerInternalState& default_instance();
-
-  void Swap(RegularizerInternalState* other);
-
-  // implements Message ----------------------------------------------
-
-  RegularizerInternalState* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const RegularizerInternalState& from);
-  void MergeFrom(const RegularizerInternalState& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  typedef RegularizerInternalState_Type Type;
-  static const Type MultiLanguagePhi = RegularizerInternalState_Type_MultiLanguagePhi;
-  static inline bool Type_IsValid(int value) {
-    return RegularizerInternalState_Type_IsValid(value);
-  }
-  static const Type Type_MIN =
-    RegularizerInternalState_Type_Type_MIN;
-  static const Type Type_MAX =
-    RegularizerInternalState_Type_Type_MAX;
-  static const int Type_ARRAYSIZE =
-    RegularizerInternalState_Type_Type_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  Type_descriptor() {
-    return RegularizerInternalState_Type_descriptor();
-  }
-  static inline const ::std::string& Type_Name(Type value) {
-    return RegularizerInternalState_Type_Name(value);
-  }
-  static inline bool Type_Parse(const ::std::string& name,
-      Type* value) {
-    return RegularizerInternalState_Type_Parse(name, value);
-  }
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1;
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // optional .artm.RegularizerInternalState.Type type = 2;
-  inline bool has_type() const;
-  inline void clear_type();
-  static const int kTypeFieldNumber = 2;
-  inline ::artm::RegularizerInternalState_Type type() const;
-  inline void set_type(::artm::RegularizerInternalState_Type value);
-
-  // optional bytes data = 3;
-  inline bool has_data() const;
-  inline void clear_data();
-  static const int kDataFieldNumber = 3;
-  inline const ::std::string& data() const;
-  inline void set_data(const ::std::string& value);
-  inline void set_data(const char* value);
-  inline void set_data(const void* value, size_t size);
-  inline ::std::string* mutable_data();
-  inline ::std::string* release_data();
-  inline void set_allocated_data(::std::string* data);
-
-  // @@protoc_insertion_point(class_scope:artm.RegularizerInternalState)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_type();
-  inline void clear_has_type();
-  inline void set_has_data();
-  inline void clear_has_data();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* name_;
-  ::std::string* data_;
-  int type_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static RegularizerInternalState* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class MultiLanguagePhiInternalState : public ::google::protobuf::Message {
- public:
-  MultiLanguagePhiInternalState();
-  virtual ~MultiLanguagePhiInternalState();
-
-  MultiLanguagePhiInternalState(const MultiLanguagePhiInternalState& from);
-
-  inline MultiLanguagePhiInternalState& operator=(const MultiLanguagePhiInternalState& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const MultiLanguagePhiInternalState& default_instance();
-
-  void Swap(MultiLanguagePhiInternalState* other);
-
-  // implements Message ----------------------------------------------
-
-  MultiLanguagePhiInternalState* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const MultiLanguagePhiInternalState& from);
-  void MergeFrom(const MultiLanguagePhiInternalState& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional int32 no_regularization_calls = 1 [default = 0];
-  inline bool has_no_regularization_calls() const;
-  inline void clear_no_regularization_calls();
-  static const int kNoRegularizationCallsFieldNumber = 1;
-  inline ::google::protobuf::int32 no_regularization_calls() const;
-  inline void set_no_regularization_calls(::google::protobuf::int32 value);
-
-  // @@protoc_insertion_point(class_scope:artm.MultiLanguagePhiInternalState)
- private:
-  inline void set_has_no_regularization_calls();
-  inline void clear_has_no_regularization_calls();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::int32 no_regularization_calls_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static MultiLanguagePhiInternalState* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -7366,123 +7027,6 @@ class CollectionParserConfig : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class SynchronizeModelArgs : public ::google::protobuf::Message {
- public:
-  SynchronizeModelArgs();
-  virtual ~SynchronizeModelArgs();
-
-  SynchronizeModelArgs(const SynchronizeModelArgs& from);
-
-  inline SynchronizeModelArgs& operator=(const SynchronizeModelArgs& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const SynchronizeModelArgs& default_instance();
-
-  void Swap(SynchronizeModelArgs* other);
-
-  // implements Message ----------------------------------------------
-
-  SynchronizeModelArgs* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const SynchronizeModelArgs& from);
-  void MergeFrom(const SynchronizeModelArgs& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string model_name = 1;
-  inline bool has_model_name() const;
-  inline void clear_model_name();
-  static const int kModelNameFieldNumber = 1;
-  inline const ::std::string& model_name() const;
-  inline void set_model_name(const ::std::string& value);
-  inline void set_model_name(const char* value);
-  inline void set_model_name(const char* value, size_t size);
-  inline ::std::string* mutable_model_name();
-  inline ::std::string* release_model_name();
-  inline void set_allocated_model_name(::std::string* model_name);
-
-  // optional float decay_weight = 2 [default = 0];
-  inline bool has_decay_weight() const;
-  inline void clear_decay_weight();
-  static const int kDecayWeightFieldNumber = 2;
-  inline float decay_weight() const;
-  inline void set_decay_weight(float value);
-
-  // optional bool invoke_regularizers = 3 [default = true];
-  inline bool has_invoke_regularizers() const;
-  inline void clear_invoke_regularizers();
-  static const int kInvokeRegularizersFieldNumber = 3;
-  inline bool invoke_regularizers() const;
-  inline void set_invoke_regularizers(bool value);
-
-  // optional float apply_weight = 4 [default = 1];
-  inline bool has_apply_weight() const;
-  inline void clear_apply_weight();
-  static const int kApplyWeightFieldNumber = 4;
-  inline float apply_weight() const;
-  inline void set_apply_weight(float value);
-
-  // @@protoc_insertion_point(class_scope:artm.SynchronizeModelArgs)
- private:
-  inline void set_has_model_name();
-  inline void clear_has_model_name();
-  inline void set_has_decay_weight();
-  inline void clear_has_decay_weight();
-  inline void set_has_invoke_regularizers();
-  inline void clear_has_invoke_regularizers();
-  inline void set_has_apply_weight();
-  inline void clear_has_apply_weight();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* model_name_;
-  float decay_weight_;
-  bool invoke_regularizers_;
-  float apply_weight_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static SynchronizeModelArgs* default_instance_;
-};
-// -------------------------------------------------------------------
-
 class InitializeModelArgs_Filter : public ::google::protobuf::Message {
  public:
   InitializeModelArgs_Filter();
@@ -8790,15 +8334,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline ::std::string* release_model_name();
   inline void set_allocated_model_name(::std::string* model_name);
 
-  // optional .artm.Batch batch = 2;
-  inline bool has_batch() const;
-  inline void clear_batch();
-  static const int kBatchFieldNumber = 2;
-  inline const ::artm::Batch& batch() const;
-  inline ::artm::Batch* mutable_batch();
-  inline ::artm::Batch* release_batch();
-  inline void set_allocated_batch(::artm::Batch* batch);
-
   // repeated string topic_name = 3;
   inline int topic_name_size() const;
   inline void clear_topic_name();
@@ -8859,8 +8394,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
-  inline void set_has_batch();
-  inline void clear_has_batch();
   inline void set_has_clean_cache();
   inline void clear_has_clean_cache();
   inline void set_has_use_sparse_format();
@@ -8873,7 +8406,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
-  ::artm::Batch* batch_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
   bool clean_cache_;
@@ -8882,7 +8414,7 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   int matrix_layout_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8971,32 +8503,20 @@ class GetScoreValueArgs : public ::google::protobuf::Message {
   inline ::std::string* release_score_name();
   inline void set_allocated_score_name(::std::string* score_name);
 
-  // optional .artm.Batch batch = 3;
-  inline bool has_batch() const;
-  inline void clear_batch();
-  static const int kBatchFieldNumber = 3;
-  inline const ::artm::Batch& batch() const;
-  inline ::artm::Batch* mutable_batch();
-  inline ::artm::Batch* release_batch();
-  inline void set_allocated_batch(::artm::Batch* batch);
-
   // @@protoc_insertion_point(class_scope:artm.GetScoreValueArgs)
  private:
   inline void set_has_model_name();
   inline void clear_has_model_name();
   inline void set_has_score_name();
   inline void clear_has_score_name();
-  inline void set_has_batch();
-  inline void clear_has_batch();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* model_name_;
   ::std::string* score_name_;
-  ::artm::Batch* batch_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9004,314 +8524,6 @@ class GetScoreValueArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static GetScoreValueArgs* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class AddBatchArgs : public ::google::protobuf::Message {
- public:
-  AddBatchArgs();
-  virtual ~AddBatchArgs();
-
-  AddBatchArgs(const AddBatchArgs& from);
-
-  inline AddBatchArgs& operator=(const AddBatchArgs& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const AddBatchArgs& default_instance();
-
-  void Swap(AddBatchArgs* other);
-
-  // implements Message ----------------------------------------------
-
-  AddBatchArgs* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const AddBatchArgs& from);
-  void MergeFrom(const AddBatchArgs& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional .artm.Batch batch = 1;
-  inline bool has_batch() const;
-  inline void clear_batch();
-  static const int kBatchFieldNumber = 1;
-  inline const ::artm::Batch& batch() const;
-  inline ::artm::Batch* mutable_batch();
-  inline ::artm::Batch* release_batch();
-  inline void set_allocated_batch(::artm::Batch* batch);
-
-  // optional int32 timeout_milliseconds = 2 [default = -1];
-  inline bool has_timeout_milliseconds() const;
-  inline void clear_timeout_milliseconds();
-  static const int kTimeoutMillisecondsFieldNumber = 2;
-  inline ::google::protobuf::int32 timeout_milliseconds() const;
-  inline void set_timeout_milliseconds(::google::protobuf::int32 value);
-
-  // optional bool reset_scores = 3 [default = false];
-  inline bool has_reset_scores() const;
-  inline void clear_reset_scores();
-  static const int kResetScoresFieldNumber = 3;
-  inline bool reset_scores() const;
-  inline void set_reset_scores(bool value);
-
-  // optional string batch_file_name = 4;
-  inline bool has_batch_file_name() const;
-  inline void clear_batch_file_name();
-  static const int kBatchFileNameFieldNumber = 4;
-  inline const ::std::string& batch_file_name() const;
-  inline void set_batch_file_name(const ::std::string& value);
-  inline void set_batch_file_name(const char* value);
-  inline void set_batch_file_name(const char* value, size_t size);
-  inline ::std::string* mutable_batch_file_name();
-  inline ::std::string* release_batch_file_name();
-  inline void set_allocated_batch_file_name(::std::string* batch_file_name);
-
-  // @@protoc_insertion_point(class_scope:artm.AddBatchArgs)
- private:
-  inline void set_has_batch();
-  inline void clear_has_batch();
-  inline void set_has_timeout_milliseconds();
-  inline void clear_has_timeout_milliseconds();
-  inline void set_has_reset_scores();
-  inline void clear_has_reset_scores();
-  inline void set_has_batch_file_name();
-  inline void clear_has_batch_file_name();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::artm::Batch* batch_;
-  ::google::protobuf::int32 timeout_milliseconds_;
-  bool reset_scores_;
-  ::std::string* batch_file_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static AddBatchArgs* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class InvokeIterationArgs : public ::google::protobuf::Message {
- public:
-  InvokeIterationArgs();
-  virtual ~InvokeIterationArgs();
-
-  InvokeIterationArgs(const InvokeIterationArgs& from);
-
-  inline InvokeIterationArgs& operator=(const InvokeIterationArgs& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const InvokeIterationArgs& default_instance();
-
-  void Swap(InvokeIterationArgs* other);
-
-  // implements Message ----------------------------------------------
-
-  InvokeIterationArgs* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const InvokeIterationArgs& from);
-  void MergeFrom(const InvokeIterationArgs& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional int32 iterations_count = 1 [default = 1];
-  inline bool has_iterations_count() const;
-  inline void clear_iterations_count();
-  static const int kIterationsCountFieldNumber = 1;
-  inline ::google::protobuf::int32 iterations_count() const;
-  inline void set_iterations_count(::google::protobuf::int32 value);
-
-  // optional bool reset_scores = 2 [default = true];
-  inline bool has_reset_scores() const;
-  inline void clear_reset_scores();
-  static const int kResetScoresFieldNumber = 2;
-  inline bool reset_scores() const;
-  inline void set_reset_scores(bool value);
-
-  // optional string disk_path = 3;
-  inline bool has_disk_path() const;
-  inline void clear_disk_path();
-  static const int kDiskPathFieldNumber = 3;
-  inline const ::std::string& disk_path() const;
-  inline void set_disk_path(const ::std::string& value);
-  inline void set_disk_path(const char* value);
-  inline void set_disk_path(const char* value, size_t size);
-  inline ::std::string* mutable_disk_path();
-  inline ::std::string* release_disk_path();
-  inline void set_allocated_disk_path(::std::string* disk_path);
-
-  // @@protoc_insertion_point(class_scope:artm.InvokeIterationArgs)
- private:
-  inline void set_has_iterations_count();
-  inline void clear_has_iterations_count();
-  inline void set_has_reset_scores();
-  inline void clear_has_reset_scores();
-  inline void set_has_disk_path();
-  inline void clear_has_disk_path();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::int32 iterations_count_;
-  bool reset_scores_;
-  ::std::string* disk_path_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static InvokeIterationArgs* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class WaitIdleArgs : public ::google::protobuf::Message {
- public:
-  WaitIdleArgs();
-  virtual ~WaitIdleArgs();
-
-  WaitIdleArgs(const WaitIdleArgs& from);
-
-  inline WaitIdleArgs& operator=(const WaitIdleArgs& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const WaitIdleArgs& default_instance();
-
-  void Swap(WaitIdleArgs* other);
-
-  // implements Message ----------------------------------------------
-
-  WaitIdleArgs* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const WaitIdleArgs& from);
-  void MergeFrom(const WaitIdleArgs& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional int32 timeout_milliseconds = 1 [default = -1];
-  inline bool has_timeout_milliseconds() const;
-  inline void clear_timeout_milliseconds();
-  static const int kTimeoutMillisecondsFieldNumber = 1;
-  inline ::google::protobuf::int32 timeout_milliseconds() const;
-  inline void set_timeout_milliseconds(::google::protobuf::int32 value);
-
-  // @@protoc_insertion_point(class_scope:artm.WaitIdleArgs)
- private:
-  inline void set_has_timeout_milliseconds();
-  inline void clear_has_timeout_milliseconds();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::int32 timeout_milliseconds_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static WaitIdleArgs* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -11642,13 +10854,6 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo >*
       mutable_cache_entry();
 
-  // optional int32 merger_queue_size = 8;
-  inline bool has_merger_queue_size() const;
-  inline void clear_merger_queue_size();
-  static const int kMergerQueueSizeFieldNumber = 8;
-  inline ::google::protobuf::int32 merger_queue_size() const;
-  inline void set_merger_queue_size(::google::protobuf::int32 value);
-
   // optional int32 processor_queue_size = 9;
   inline bool has_processor_queue_size() const;
   inline void clear_processor_queue_size();
@@ -11674,8 +10879,6 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   inline void clear_has_master_id();
   inline void set_has_config();
   inline void clear_has_config();
-  inline void set_has_merger_queue_size();
-  inline void clear_has_merger_queue_size();
   inline void set_has_processor_queue_size();
   inline void clear_has_processor_queue_size();
 
@@ -11685,15 +10888,14 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_RegularizerInfo > regularizer_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ScoreInfo > score_;
   ::google::protobuf::int32 master_id_;
-  ::google::protobuf::int32 merger_queue_size_;
+  ::google::protobuf::int32 processor_queue_size_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_DictionaryInfo > dictionary_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ModelInfo > model_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_CacheEntryInfo > cache_entry_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_BatchInfo > batch_;
-  ::google::protobuf::int32 processor_queue_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12081,13 +11283,6 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline ::std::string* release_disk_cache_path();
   inline void set_allocated_disk_cache_path(::std::string* disk_cache_path);
 
-  // optional bool use_v06_api = 14 [default = false];
-  inline bool has_use_v06_api() const;
-  inline void clear_use_v06_api();
-  static const int kUseV06ApiFieldNumber = 14;
-  inline bool use_v06_api() const;
-  inline void set_use_v06_api(bool value);
-
   // optional bool cache_theta = 15 [default = false];
   inline bool has_cache_theta() const;
   inline void clear_cache_theta();
@@ -12113,8 +11308,6 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_sparse_bow();
   inline void set_has_disk_cache_path();
   inline void clear_has_disk_cache_path();
-  inline void set_has_use_v06_api();
-  inline void clear_has_use_v06_api();
   inline void set_has_cache_theta();
   inline void clear_has_cache_theta();
 
@@ -12131,15 +11324,14 @@ class MasterModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 inner_iterations_count_;
   ::std::string* nwt_name_;
   static ::std::string* _default_nwt_name_;
+  ::std::string* disk_cache_path_;
   bool reuse_theta_;
   bool opt_for_avx_;
   bool use_sparse_bow_;
-  bool use_v06_api_;
   bool cache_theta_;
-  ::std::string* disk_cache_path_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -14130,28 +13322,6 @@ inline void MasterComponentConfig::set_processor_queue_max_size(::google::protob
   processor_queue_max_size_ = value;
 }
 
-// optional int32 merger_queue_max_size = 8 [default = 10];
-inline bool MasterComponentConfig::has_merger_queue_max_size() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void MasterComponentConfig::set_has_merger_queue_max_size() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void MasterComponentConfig::clear_has_merger_queue_max_size() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void MasterComponentConfig::clear_merger_queue_max_size() {
-  merger_queue_max_size_ = 10;
-  clear_has_merger_queue_max_size();
-}
-inline ::google::protobuf::int32 MasterComponentConfig::merger_queue_max_size() const {
-  return merger_queue_max_size_;
-}
-inline void MasterComponentConfig::set_merger_queue_max_size(::google::protobuf::int32 value) {
-  set_has_merger_queue_max_size();
-  merger_queue_max_size_ = value;
-}
-
 // repeated .artm.ScoreConfig score_config = 9;
 inline int MasterComponentConfig::score_config_size() const {
   return score_config_.size();
@@ -14179,13 +13349,13 @@ MasterComponentConfig::mutable_score_config() {
 
 // optional bool online_batch_processing = 13 [default = false];
 inline bool MasterComponentConfig::has_online_batch_processing() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void MasterComponentConfig::set_has_online_batch_processing() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void MasterComponentConfig::clear_has_online_batch_processing() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void MasterComponentConfig::clear_online_batch_processing() {
   online_batch_processing_ = false;
@@ -14201,13 +13371,13 @@ inline void MasterComponentConfig::set_online_batch_processing(bool value) {
 
 // optional string disk_cache_path = 15;
 inline bool MasterComponentConfig::has_disk_cache_path() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void MasterComponentConfig::set_has_disk_cache_path() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void MasterComponentConfig::clear_has_disk_cache_path() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void MasterComponentConfig::clear_disk_cache_path() {
   if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -16462,273 +15632,6 @@ TopicSelectionThetaConfig::alpha_iter() const {
 inline ::google::protobuf::RepeatedField< float >*
 TopicSelectionThetaConfig::mutable_alpha_iter() {
   return &alpha_iter_;
-}
-
-// -------------------------------------------------------------------
-
-// GetRegularizerStateArgs
-
-// optional string name = 1;
-inline bool GetRegularizerStateArgs::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void GetRegularizerStateArgs::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void GetRegularizerStateArgs::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void GetRegularizerStateArgs::clear_name() {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    name_->clear();
-  }
-  clear_has_name();
-}
-inline const ::std::string& GetRegularizerStateArgs::name() const {
-  return *name_;
-}
-inline void GetRegularizerStateArgs::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void GetRegularizerStateArgs::set_name(const char* value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void GetRegularizerStateArgs::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* GetRegularizerStateArgs::mutable_name() {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  return name_;
-}
-inline ::std::string* GetRegularizerStateArgs::release_name() {
-  clear_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void GetRegularizerStateArgs::set_allocated_name(::std::string* name) {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// -------------------------------------------------------------------
-
-// RegularizerInternalState
-
-// optional string name = 1;
-inline bool RegularizerInternalState::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void RegularizerInternalState::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void RegularizerInternalState::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void RegularizerInternalState::clear_name() {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    name_->clear();
-  }
-  clear_has_name();
-}
-inline const ::std::string& RegularizerInternalState::name() const {
-  return *name_;
-}
-inline void RegularizerInternalState::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void RegularizerInternalState::set_name(const char* value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void RegularizerInternalState::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* RegularizerInternalState::mutable_name() {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    name_ = new ::std::string;
-  }
-  return name_;
-}
-inline ::std::string* RegularizerInternalState::release_name() {
-  clear_has_name();
-  if (name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void RegularizerInternalState::set_allocated_name(::std::string* name) {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// optional .artm.RegularizerInternalState.Type type = 2;
-inline bool RegularizerInternalState::has_type() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void RegularizerInternalState::set_has_type() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void RegularizerInternalState::clear_has_type() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void RegularizerInternalState::clear_type() {
-  type_ = 3;
-  clear_has_type();
-}
-inline ::artm::RegularizerInternalState_Type RegularizerInternalState::type() const {
-  return static_cast< ::artm::RegularizerInternalState_Type >(type_);
-}
-inline void RegularizerInternalState::set_type(::artm::RegularizerInternalState_Type value) {
-  assert(::artm::RegularizerInternalState_Type_IsValid(value));
-  set_has_type();
-  type_ = value;
-}
-
-// optional bytes data = 3;
-inline bool RegularizerInternalState::has_data() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void RegularizerInternalState::set_has_data() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void RegularizerInternalState::clear_has_data() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void RegularizerInternalState::clear_data() {
-  if (data_ != &::google::protobuf::internal::GetEmptyString()) {
-    data_->clear();
-  }
-  clear_has_data();
-}
-inline const ::std::string& RegularizerInternalState::data() const {
-  return *data_;
-}
-inline void RegularizerInternalState::set_data(const ::std::string& value) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyString()) {
-    data_ = new ::std::string;
-  }
-  data_->assign(value);
-}
-inline void RegularizerInternalState::set_data(const char* value) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyString()) {
-    data_ = new ::std::string;
-  }
-  data_->assign(value);
-}
-inline void RegularizerInternalState::set_data(const void* value, size_t size) {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyString()) {
-    data_ = new ::std::string;
-  }
-  data_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* RegularizerInternalState::mutable_data() {
-  set_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyString()) {
-    data_ = new ::std::string;
-  }
-  return data_;
-}
-inline ::std::string* RegularizerInternalState::release_data() {
-  clear_has_data();
-  if (data_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = data_;
-    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void RegularizerInternalState::set_allocated_data(::std::string* data) {
-  if (data_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete data_;
-  }
-  if (data) {
-    set_has_data();
-    data_ = data;
-  } else {
-    clear_has_data();
-    data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// -------------------------------------------------------------------
-
-// MultiLanguagePhiInternalState
-
-// optional int32 no_regularization_calls = 1 [default = 0];
-inline bool MultiLanguagePhiInternalState::has_no_regularization_calls() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void MultiLanguagePhiInternalState::set_has_no_regularization_calls() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void MultiLanguagePhiInternalState::clear_has_no_regularization_calls() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void MultiLanguagePhiInternalState::clear_no_regularization_calls() {
-  no_regularization_calls_ = 0;
-  clear_has_no_regularization_calls();
-}
-inline ::google::protobuf::int32 MultiLanguagePhiInternalState::no_regularization_calls() const {
-  return no_regularization_calls_;
-}
-inline void MultiLanguagePhiInternalState::set_no_regularization_calls(::google::protobuf::int32 value) {
-  set_has_no_regularization_calls();
-  no_regularization_calls_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -21098,146 +20001,6 @@ inline void CollectionParserConfig::set_use_symmetric_cooc_values(bool value) {
 
 // -------------------------------------------------------------------
 
-// SynchronizeModelArgs
-
-// optional string model_name = 1;
-inline bool SynchronizeModelArgs::has_model_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void SynchronizeModelArgs::set_has_model_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void SynchronizeModelArgs::clear_has_model_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void SynchronizeModelArgs::clear_model_name() {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    model_name_->clear();
-  }
-  clear_has_model_name();
-}
-inline const ::std::string& SynchronizeModelArgs::model_name() const {
-  return *model_name_;
-}
-inline void SynchronizeModelArgs::set_model_name(const ::std::string& value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void SynchronizeModelArgs::set_model_name(const char* value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void SynchronizeModelArgs::set_model_name(const char* value, size_t size) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* SynchronizeModelArgs::mutable_model_name() {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  return model_name_;
-}
-inline ::std::string* SynchronizeModelArgs::release_model_name() {
-  clear_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = model_name_;
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void SynchronizeModelArgs::set_allocated_model_name(::std::string* model_name) {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_;
-  }
-  if (model_name) {
-    set_has_model_name();
-    model_name_ = model_name;
-  } else {
-    clear_has_model_name();
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// optional float decay_weight = 2 [default = 0];
-inline bool SynchronizeModelArgs::has_decay_weight() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void SynchronizeModelArgs::set_has_decay_weight() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void SynchronizeModelArgs::clear_has_decay_weight() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void SynchronizeModelArgs::clear_decay_weight() {
-  decay_weight_ = 0;
-  clear_has_decay_weight();
-}
-inline float SynchronizeModelArgs::decay_weight() const {
-  return decay_weight_;
-}
-inline void SynchronizeModelArgs::set_decay_weight(float value) {
-  set_has_decay_weight();
-  decay_weight_ = value;
-}
-
-// optional bool invoke_regularizers = 3 [default = true];
-inline bool SynchronizeModelArgs::has_invoke_regularizers() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void SynchronizeModelArgs::set_has_invoke_regularizers() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void SynchronizeModelArgs::clear_has_invoke_regularizers() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void SynchronizeModelArgs::clear_invoke_regularizers() {
-  invoke_regularizers_ = true;
-  clear_has_invoke_regularizers();
-}
-inline bool SynchronizeModelArgs::invoke_regularizers() const {
-  return invoke_regularizers_;
-}
-inline void SynchronizeModelArgs::set_invoke_regularizers(bool value) {
-  set_has_invoke_regularizers();
-  invoke_regularizers_ = value;
-}
-
-// optional float apply_weight = 4 [default = 1];
-inline bool SynchronizeModelArgs::has_apply_weight() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void SynchronizeModelArgs::set_has_apply_weight() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void SynchronizeModelArgs::clear_has_apply_weight() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void SynchronizeModelArgs::clear_apply_weight() {
-  apply_weight_ = 1;
-  clear_has_apply_weight();
-}
-inline float SynchronizeModelArgs::apply_weight() const {
-  return apply_weight_;
-}
-inline void SynchronizeModelArgs::set_apply_weight(float value) {
-  set_has_apply_weight();
-  apply_weight_ = value;
-}
-
-// -------------------------------------------------------------------
-
 // InitializeModelArgs_Filter
 
 // optional string class_id = 1;
@@ -23288,44 +22051,6 @@ inline void GetThetaMatrixArgs::set_allocated_model_name(::std::string* model_na
   }
 }
 
-// optional .artm.Batch batch = 2;
-inline bool GetThetaMatrixArgs::has_batch() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void GetThetaMatrixArgs::set_has_batch() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void GetThetaMatrixArgs::clear_has_batch() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void GetThetaMatrixArgs::clear_batch() {
-  if (batch_ != NULL) batch_->::artm::Batch::Clear();
-  clear_has_batch();
-}
-inline const ::artm::Batch& GetThetaMatrixArgs::batch() const {
-  return batch_ != NULL ? *batch_ : *default_instance_->batch_;
-}
-inline ::artm::Batch* GetThetaMatrixArgs::mutable_batch() {
-  set_has_batch();
-  if (batch_ == NULL) batch_ = new ::artm::Batch;
-  return batch_;
-}
-inline ::artm::Batch* GetThetaMatrixArgs::release_batch() {
-  clear_has_batch();
-  ::artm::Batch* temp = batch_;
-  batch_ = NULL;
-  return temp;
-}
-inline void GetThetaMatrixArgs::set_allocated_batch(::artm::Batch* batch) {
-  delete batch_;
-  batch_ = batch;
-  if (batch) {
-    set_has_batch();
-  } else {
-    clear_has_batch();
-  }
-}
-
 // repeated string topic_name = 3;
 inline int GetThetaMatrixArgs::topic_name_size() const {
   return topic_name_.size();
@@ -23397,13 +22122,13 @@ GetThetaMatrixArgs::mutable_topic_index() {
 
 // optional bool clean_cache = 5 [default = false];
 inline bool GetThetaMatrixArgs::has_clean_cache() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_clean_cache() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void GetThetaMatrixArgs::clear_has_clean_cache() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void GetThetaMatrixArgs::clear_clean_cache() {
   clean_cache_ = false;
@@ -23419,13 +22144,13 @@ inline void GetThetaMatrixArgs::set_clean_cache(bool value) {
 
 // optional bool use_sparse_format = 6;
 inline bool GetThetaMatrixArgs::has_use_sparse_format() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_use_sparse_format() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void GetThetaMatrixArgs::clear_has_use_sparse_format() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void GetThetaMatrixArgs::clear_use_sparse_format() {
   use_sparse_format_ = false;
@@ -23441,13 +22166,13 @@ inline void GetThetaMatrixArgs::set_use_sparse_format(bool value) {
 
 // optional float eps = 7 [default = 1e-037];
 inline bool GetThetaMatrixArgs::has_eps() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_eps() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void GetThetaMatrixArgs::clear_has_eps() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void GetThetaMatrixArgs::clear_eps() {
   eps_ = 1e-037f;
@@ -23463,13 +22188,13 @@ inline void GetThetaMatrixArgs::set_eps(float value) {
 
 // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Dense];
 inline bool GetThetaMatrixArgs::has_matrix_layout() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_matrix_layout() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void GetThetaMatrixArgs::clear_has_matrix_layout() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void GetThetaMatrixArgs::clear_matrix_layout() {
   matrix_layout_ = 0;
@@ -23626,344 +22351,6 @@ inline void GetScoreValueArgs::set_allocated_score_name(::std::string* score_nam
     clear_has_score_name();
     score_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
-}
-
-// optional .artm.Batch batch = 3;
-inline bool GetScoreValueArgs::has_batch() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void GetScoreValueArgs::set_has_batch() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void GetScoreValueArgs::clear_has_batch() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void GetScoreValueArgs::clear_batch() {
-  if (batch_ != NULL) batch_->::artm::Batch::Clear();
-  clear_has_batch();
-}
-inline const ::artm::Batch& GetScoreValueArgs::batch() const {
-  return batch_ != NULL ? *batch_ : *default_instance_->batch_;
-}
-inline ::artm::Batch* GetScoreValueArgs::mutable_batch() {
-  set_has_batch();
-  if (batch_ == NULL) batch_ = new ::artm::Batch;
-  return batch_;
-}
-inline ::artm::Batch* GetScoreValueArgs::release_batch() {
-  clear_has_batch();
-  ::artm::Batch* temp = batch_;
-  batch_ = NULL;
-  return temp;
-}
-inline void GetScoreValueArgs::set_allocated_batch(::artm::Batch* batch) {
-  delete batch_;
-  batch_ = batch;
-  if (batch) {
-    set_has_batch();
-  } else {
-    clear_has_batch();
-  }
-}
-
-// -------------------------------------------------------------------
-
-// AddBatchArgs
-
-// optional .artm.Batch batch = 1;
-inline bool AddBatchArgs::has_batch() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void AddBatchArgs::set_has_batch() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void AddBatchArgs::clear_has_batch() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void AddBatchArgs::clear_batch() {
-  if (batch_ != NULL) batch_->::artm::Batch::Clear();
-  clear_has_batch();
-}
-inline const ::artm::Batch& AddBatchArgs::batch() const {
-  return batch_ != NULL ? *batch_ : *default_instance_->batch_;
-}
-inline ::artm::Batch* AddBatchArgs::mutable_batch() {
-  set_has_batch();
-  if (batch_ == NULL) batch_ = new ::artm::Batch;
-  return batch_;
-}
-inline ::artm::Batch* AddBatchArgs::release_batch() {
-  clear_has_batch();
-  ::artm::Batch* temp = batch_;
-  batch_ = NULL;
-  return temp;
-}
-inline void AddBatchArgs::set_allocated_batch(::artm::Batch* batch) {
-  delete batch_;
-  batch_ = batch;
-  if (batch) {
-    set_has_batch();
-  } else {
-    clear_has_batch();
-  }
-}
-
-// optional int32 timeout_milliseconds = 2 [default = -1];
-inline bool AddBatchArgs::has_timeout_milliseconds() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void AddBatchArgs::set_has_timeout_milliseconds() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void AddBatchArgs::clear_has_timeout_milliseconds() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void AddBatchArgs::clear_timeout_milliseconds() {
-  timeout_milliseconds_ = -1;
-  clear_has_timeout_milliseconds();
-}
-inline ::google::protobuf::int32 AddBatchArgs::timeout_milliseconds() const {
-  return timeout_milliseconds_;
-}
-inline void AddBatchArgs::set_timeout_milliseconds(::google::protobuf::int32 value) {
-  set_has_timeout_milliseconds();
-  timeout_milliseconds_ = value;
-}
-
-// optional bool reset_scores = 3 [default = false];
-inline bool AddBatchArgs::has_reset_scores() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void AddBatchArgs::set_has_reset_scores() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void AddBatchArgs::clear_has_reset_scores() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void AddBatchArgs::clear_reset_scores() {
-  reset_scores_ = false;
-  clear_has_reset_scores();
-}
-inline bool AddBatchArgs::reset_scores() const {
-  return reset_scores_;
-}
-inline void AddBatchArgs::set_reset_scores(bool value) {
-  set_has_reset_scores();
-  reset_scores_ = value;
-}
-
-// optional string batch_file_name = 4;
-inline bool AddBatchArgs::has_batch_file_name() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void AddBatchArgs::set_has_batch_file_name() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void AddBatchArgs::clear_has_batch_file_name() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void AddBatchArgs::clear_batch_file_name() {
-  if (batch_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    batch_file_name_->clear();
-  }
-  clear_has_batch_file_name();
-}
-inline const ::std::string& AddBatchArgs::batch_file_name() const {
-  return *batch_file_name_;
-}
-inline void AddBatchArgs::set_batch_file_name(const ::std::string& value) {
-  set_has_batch_file_name();
-  if (batch_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    batch_file_name_ = new ::std::string;
-  }
-  batch_file_name_->assign(value);
-}
-inline void AddBatchArgs::set_batch_file_name(const char* value) {
-  set_has_batch_file_name();
-  if (batch_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    batch_file_name_ = new ::std::string;
-  }
-  batch_file_name_->assign(value);
-}
-inline void AddBatchArgs::set_batch_file_name(const char* value, size_t size) {
-  set_has_batch_file_name();
-  if (batch_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    batch_file_name_ = new ::std::string;
-  }
-  batch_file_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* AddBatchArgs::mutable_batch_file_name() {
-  set_has_batch_file_name();
-  if (batch_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    batch_file_name_ = new ::std::string;
-  }
-  return batch_file_name_;
-}
-inline ::std::string* AddBatchArgs::release_batch_file_name() {
-  clear_has_batch_file_name();
-  if (batch_file_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = batch_file_name_;
-    batch_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void AddBatchArgs::set_allocated_batch_file_name(::std::string* batch_file_name) {
-  if (batch_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete batch_file_name_;
-  }
-  if (batch_file_name) {
-    set_has_batch_file_name();
-    batch_file_name_ = batch_file_name;
-  } else {
-    clear_has_batch_file_name();
-    batch_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// -------------------------------------------------------------------
-
-// InvokeIterationArgs
-
-// optional int32 iterations_count = 1 [default = 1];
-inline bool InvokeIterationArgs::has_iterations_count() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void InvokeIterationArgs::set_has_iterations_count() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void InvokeIterationArgs::clear_has_iterations_count() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void InvokeIterationArgs::clear_iterations_count() {
-  iterations_count_ = 1;
-  clear_has_iterations_count();
-}
-inline ::google::protobuf::int32 InvokeIterationArgs::iterations_count() const {
-  return iterations_count_;
-}
-inline void InvokeIterationArgs::set_iterations_count(::google::protobuf::int32 value) {
-  set_has_iterations_count();
-  iterations_count_ = value;
-}
-
-// optional bool reset_scores = 2 [default = true];
-inline bool InvokeIterationArgs::has_reset_scores() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void InvokeIterationArgs::set_has_reset_scores() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void InvokeIterationArgs::clear_has_reset_scores() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void InvokeIterationArgs::clear_reset_scores() {
-  reset_scores_ = true;
-  clear_has_reset_scores();
-}
-inline bool InvokeIterationArgs::reset_scores() const {
-  return reset_scores_;
-}
-inline void InvokeIterationArgs::set_reset_scores(bool value) {
-  set_has_reset_scores();
-  reset_scores_ = value;
-}
-
-// optional string disk_path = 3;
-inline bool InvokeIterationArgs::has_disk_path() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void InvokeIterationArgs::set_has_disk_path() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void InvokeIterationArgs::clear_has_disk_path() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void InvokeIterationArgs::clear_disk_path() {
-  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_->clear();
-  }
-  clear_has_disk_path();
-}
-inline const ::std::string& InvokeIterationArgs::disk_path() const {
-  return *disk_path_;
-}
-inline void InvokeIterationArgs::set_disk_path(const ::std::string& value) {
-  set_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_ = new ::std::string;
-  }
-  disk_path_->assign(value);
-}
-inline void InvokeIterationArgs::set_disk_path(const char* value) {
-  set_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_ = new ::std::string;
-  }
-  disk_path_->assign(value);
-}
-inline void InvokeIterationArgs::set_disk_path(const char* value, size_t size) {
-  set_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_ = new ::std::string;
-  }
-  disk_path_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* InvokeIterationArgs::mutable_disk_path() {
-  set_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_ = new ::std::string;
-  }
-  return disk_path_;
-}
-inline ::std::string* InvokeIterationArgs::release_disk_path() {
-  clear_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = disk_path_;
-    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void InvokeIterationArgs::set_allocated_disk_path(::std::string* disk_path) {
-  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete disk_path_;
-  }
-  if (disk_path) {
-    set_has_disk_path();
-    disk_path_ = disk_path;
-  } else {
-    clear_has_disk_path();
-    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// -------------------------------------------------------------------
-
-// WaitIdleArgs
-
-// optional int32 timeout_milliseconds = 1 [default = -1];
-inline bool WaitIdleArgs::has_timeout_milliseconds() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void WaitIdleArgs::set_has_timeout_milliseconds() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void WaitIdleArgs::clear_has_timeout_milliseconds() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void WaitIdleArgs::clear_timeout_milliseconds() {
-  timeout_milliseconds_ = -1;
-  clear_has_timeout_milliseconds();
-}
-inline ::google::protobuf::int32 WaitIdleArgs::timeout_milliseconds() const {
-  return timeout_milliseconds_;
-}
-inline void WaitIdleArgs::set_timeout_milliseconds(::google::protobuf::int32 value) {
-  set_has_timeout_milliseconds();
-  timeout_milliseconds_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -27052,37 +25439,15 @@ MasterComponentInfo::mutable_cache_entry() {
   return &cache_entry_;
 }
 
-// optional int32 merger_queue_size = 8;
-inline bool MasterComponentInfo::has_merger_queue_size() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void MasterComponentInfo::set_has_merger_queue_size() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void MasterComponentInfo::clear_has_merger_queue_size() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void MasterComponentInfo::clear_merger_queue_size() {
-  merger_queue_size_ = 0;
-  clear_has_merger_queue_size();
-}
-inline ::google::protobuf::int32 MasterComponentInfo::merger_queue_size() const {
-  return merger_queue_size_;
-}
-inline void MasterComponentInfo::set_merger_queue_size(::google::protobuf::int32 value) {
-  set_has_merger_queue_size();
-  merger_queue_size_ = value;
-}
-
 // optional int32 processor_queue_size = 9;
 inline bool MasterComponentInfo::has_processor_queue_size() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void MasterComponentInfo::set_has_processor_queue_size() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void MasterComponentInfo::clear_has_processor_queue_size() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void MasterComponentInfo::clear_processor_queue_size() {
   processor_queue_size_ = 0;
@@ -27707,37 +26072,15 @@ inline void MasterModelConfig::set_allocated_disk_cache_path(::std::string* disk
   }
 }
 
-// optional bool use_v06_api = 14 [default = false];
-inline bool MasterModelConfig::has_use_v06_api() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
-}
-inline void MasterModelConfig::set_has_use_v06_api() {
-  _has_bits_[0] |= 0x00002000u;
-}
-inline void MasterModelConfig::clear_has_use_v06_api() {
-  _has_bits_[0] &= ~0x00002000u;
-}
-inline void MasterModelConfig::clear_use_v06_api() {
-  use_v06_api_ = false;
-  clear_has_use_v06_api();
-}
-inline bool MasterModelConfig::use_v06_api() const {
-  return use_v06_api_;
-}
-inline void MasterModelConfig::set_use_v06_api(bool value) {
-  set_has_use_v06_api();
-  use_v06_api_ = value;
-}
-
 // optional bool cache_theta = 15 [default = false];
 inline bool MasterModelConfig::has_cache_theta() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void MasterModelConfig::set_has_cache_theta() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void MasterModelConfig::clear_has_cache_theta() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void MasterModelConfig::clear_cache_theta() {
   cache_theta_ = false;
@@ -28548,10 +26891,6 @@ inline const EnumDescriptor* GetEnumDescriptor< ::artm::SpecifiedSparsePhiConfig
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::SmoothPtdwConfig_Type>() {
   return ::artm::SmoothPtdwConfig_Type_descriptor();
-}
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerInternalState_Type>() {
-  return ::artm::RegularizerInternalState_Type_descriptor();
 }
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::TransformConfig_TransformType>() {

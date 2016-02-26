@@ -25,11 +25,11 @@
 #include "artm/core/call_on_destruction.h"
 #include "artm/core/helpers.h"
 #include "artm/core/instance_schema.h"
-#include "artm/core/merger.h"
 #include "artm/core/cache_manager.h"
+#include "artm/core/score_manager.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/phi_matrix_operations.h"
-#include "artm/core/topic_model.h"
+#include "artm/core/instance.h"
 
 #include "artm/utility/blas.h"
 
@@ -183,46 +183,13 @@ static void SaveCache(std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr,
 
 class NwtWriteAdapter {
  public:
-  virtual bool Skip(int batch_token_id) const = 0;
   virtual void Store(int batch_token_id, int pwt_token_id, const std::vector<float>& nwt_vector) = 0;
   virtual ~NwtWriteAdapter() {}
 };
 
-class ModelIncrementWriter : public NwtWriteAdapter {
- public:
-  explicit ModelIncrementWriter(ModelIncrement* model_increment) : model_increment_(model_increment) {}
-
-  virtual bool Skip(int batch_token_id) const {
-    return (model_increment_->topic_model().operation_type(batch_token_id) != TopicModel_OperationType_Increment);
-  }
-
-  virtual void Store(int batch_token_id, int pwt_token_id, const std::vector<float>& nwt_vector) {
-    const int topics_count = nwt_vector.size();
-    FloatArray* hat_n_wt_cur = model_increment_->mutable_topic_model()->mutable_token_weights(batch_token_id);
-
-    if (hat_n_wt_cur->value_size() == 0) {
-      hat_n_wt_cur->mutable_value()->Reserve(topics_count);
-      for (int topic_index = 0; topic_index < topics_count; ++topic_index)
-        hat_n_wt_cur->add_value(nwt_vector[topic_index]);
-    } else {
-      assert(hat_n_wt_cur->value_size() == nwt_vector.size());
-      for (int topic_index = 0; topic_index < topics_count; ++topic_index)
-        hat_n_wt_cur->set_value(topic_index, hat_n_wt_cur->value(topic_index) + nwt_vector[topic_index]);
-    }
-  }
-
- private:
-  ModelIncrement* model_increment_;
-};
-
 class PhiMatrixWriter : public NwtWriteAdapter {
  public:
-  PhiMatrixWriter(const ModelIncrement& model_increment, PhiMatrix* n_wt)
-      : model_increment_(model_increment), n_wt_(n_wt) {}
-
-  virtual bool Skip(int batch_token_id) const {
-    return (model_increment_.topic_model().operation_type(batch_token_id) != TopicModel_OperationType_Increment);
-  }
+  explicit PhiMatrixWriter(PhiMatrix* n_wt) : n_wt_(n_wt) {}
 
   virtual void Store(int batch_token_id, int pwt_token_id, const std::vector<float>& nwt_vector) {
     assert(nwt_vector.size() == n_wt_->topic_size());
@@ -230,20 +197,11 @@ class PhiMatrixWriter : public NwtWriteAdapter {
   }
 
  private:
-  const ModelIncrement& model_increment_;
   PhiMatrix* n_wt_;
 };
 
-Processor::Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
-                     ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
-                     const ThreadSafeCollectionHolder<std::string, Batch>& batches,
-                     const Merger& merger,
-                     const ThreadSafeHolder<InstanceSchema>& schema)
-    : processor_queue_(processor_queue),
-      merger_queue_(merger_queue),
-      batches_(batches),
-      merger_(merger),
-      schema_(schema),
+Processor::Processor(Instance* instance)
+    : instance_(instance),
       is_stopping(false),
       thread_() {
   // Keep this at the last action in constructor.
@@ -257,42 +215,6 @@ Processor::~Processor() {
   if (thread_.joinable()) {
     thread_.join();
   }
-}
-
-static std::shared_ptr<ModelIncrement>
-InitializeModelIncrement(const Batch& batch, const ModelConfig& model_config,
-                         const ::artm::core::PhiMatrix& p_wt) {
-  std::shared_ptr<ModelIncrement> model_increment = std::make_shared<ModelIncrement>();
-  int topic_size = model_config.topics_count();
-
-  ::artm::TopicModel* topic_model_inc = model_increment->mutable_topic_model();
-  topic_model_inc->set_name(model_config.name());
-  topic_model_inc->mutable_topic_name()->CopyFrom(p_wt.topic_name());
-  topic_model_inc->set_topics_count(p_wt.topic_size());
-  for (int token_index = 0; token_index < batch.token_size(); ++token_index) {
-    Token token = Token(batch.class_id(token_index), batch.token(token_index));
-    topic_model_inc->add_token(token.keyword);
-    topic_model_inc->add_class_id(token.class_id);
-    FloatArray* counters = topic_model_inc->add_token_weights();
-    IntArray* topic_indices = topic_model_inc->add_topic_index();
-
-    if ((model_config.class_id_size() > 0) &&
-        (!repeated_field_contains(model_config.class_id(), token.class_id))) {
-      topic_model_inc->add_operation_type(TopicModel_OperationType_Ignore);
-      continue;
-    }
-
-    if (p_wt.has_token(token)) {
-      topic_model_inc->add_operation_type(TopicModel_OperationType_Increment);
-    } else {
-      if (model_config.use_new_tokens())
-        topic_model_inc->add_operation_type(TopicModel_OperationType_Initialize);
-      else
-        topic_model_inc->add_operation_type(TopicModel_OperationType_Ignore);
-    }
-  }
-
-  return model_increment;
 }
 
 static void PopulateDataStreams(const MasterComponentConfig& config, const Batch& batch,
@@ -587,6 +509,8 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
   }
   }
 
+  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, model_config);
+
   if (nwt_writer == nullptr)
     return;
 
@@ -599,7 +523,6 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
   std::vector<float> n_wt_local(topics_count, 0.0f);
   for (int w = 0; w < tokens_count; ++w) {
     if (token_id[w] == -1) continue;
-    if (nwt_writer->Skip(w)) continue;
     for (int k = 0; k < topics_count; ++k)
       p_wt_local[k] = p_wt.get(token_id[w], k);
 
@@ -621,8 +544,6 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
     for (float& value : values) value *= batch_weight;
     nwt_writer->Store(w, token_id[w], values);
   }
-
-  CreateThetaCacheEntry(new_cache_entry_ptr, theta_matrix, batch, p_wt, model_config);
 }
 
 static void
@@ -818,7 +739,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
   }
 
   for (int token_index = 0; token_index < n_wt->no_rows(); ++token_index) {
-    if (!nwt_writer->Skip(token_index)) {
+    if (p_wt.has_token(Token(batch.class_id(token_index), batch.token(token_index)))) {
       std::vector<float> values(topics_count, 0.0f);
       for (int topic_index = 0; topic_index < topics_count; ++topic_index)
         values[topic_index] = (*n_wt)(token_index, topic_index);
@@ -866,97 +787,6 @@ CalcScores(ScoreCalculatorInterface* score_calc, const Batch& batch,
   score_calc->AppendScore(batch, score.get());
 
   return score;
-}
-
-void Processor::FindThetaMatrix(const Batch& batch,
-                                const GetThetaMatrixArgs& args, ThetaMatrix* result,
-                                const GetScoreValueArgs& score_args, ScoreData* score_result) {
-  util::Blas* blas = util::Blas::builtin();
-
-  std::string model_name = args.has_model_name() ? args.model_name() : score_args.model_name();
-  std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
-  std::shared_ptr<const PhiMatrix> phi_matrix = merger_.GetPhiMatrix(model_name);
-
-  if (topic_model == nullptr && phi_matrix == nullptr)
-    BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find topic model", model_name));
-
-  const PhiMatrix& p_wt = topic_model != nullptr ? topic_model->GetPwt() : *phi_matrix;
-
-  std::shared_ptr<InstanceSchema> schema = schema_.get();
-  if (!schema->has_model_config(model_name)) {
-    BOOST_THROW_EXCEPTION(InvalidOperation(
-      "FindThetaMatrix failed for '" + model_name +
-      "' model because it has no corresponding ModelConfig."));
-  }
-
-  const ModelConfig& model_config = schema->model_config(model_name);
-
-  if (model_config.class_id_size() != model_config.class_weight_size())
-    BOOST_THROW_EXCEPTION(InternalError(
-    "model.class_id_size() != model.class_weight_size()"));
-
-  int topic_size = p_wt.topic_size();
-  if (topic_size != model_config.topics_count())
-    BOOST_THROW_EXCEPTION(InternalError(
-    "Topics count mismatch between model config and physical model representation"));
-
-
-  bool use_sparse_bow = model_config.use_sparse_bow();
-  std::shared_ptr<CsrMatrix<float>> sparse_ndw = use_sparse_bow ? InitializeSparseNdw(batch, model_config) : nullptr;
-  std::shared_ptr<DenseMatrix<float>> dense_ndw = !use_sparse_bow ? InitializeDenseNdw(batch) : nullptr;
-
-  std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, nullptr);
-
-  if (p_wt.token_size() == 0) {
-    LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
-      "would not be processed on this iteration";
-    return;  // return from lambda; goes to next step of std::for_each
-  }
-
-  if (model_config.use_sparse_bow()) {
-    RegularizeThetaAgentCollection theta_agents;
-    RegularizePtdwAgentCollection ptdw_agents;
-    CreateRegularizerAgents(batch, model_config, *schema, &theta_agents, &ptdw_agents);
-
-    if (ptdw_agents.empty()) {
-      InferThetaAndUpdateNwtSparse(model_config, batch, 1.0f, nullptr, *sparse_ndw, p_wt,
-                                   theta_agents, theta_matrix.get(), nullptr, blas);
-    } else {
-      InferPtdwAndUpdateNwtSparse(model_config, batch, 1.0f, nullptr, *sparse_ndw, p_wt,
-                                  theta_agents, ptdw_agents, theta_matrix.get(), nullptr, blas);
-    }
-  } else {
-    // We don't need 'UpdateNwt' part, but for Dense mode it is hard to split this function.
-    InferThetaAndUpdateNwtDense(model_config, batch, 1.0f, nullptr, *schema, *dense_ndw, p_wt,
-                                theta_matrix.get(), nullptr, blas);
-  }
-
-  if (result != nullptr) {
-    DataLoaderCacheEntry cache_entry;
-    cache_entry.set_model_name(model_name);
-    cache_entry.mutable_topic_name()->CopyFrom(p_wt.topic_name());
-    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-      const Item& item = batch.item(item_index);
-      cache_entry.add_item_id(item.id());
-      cache_entry.add_item_title(item.has_title() ? item.title() : std::string());
-      FloatArray* item_weights = cache_entry.add_theta();
-      for (int topic_index = 0; topic_index < topic_size; ++topic_index)
-        item_weights->add_value((*theta_matrix)(topic_index, item_index));
-    }
-
-    BatchHelpers::PopulateThetaMatrixFromCacheEntry(cache_entry, args, result);
-  }
-
-  if (score_result != nullptr) {
-    auto score_calc = schema->score_calculator(score_args.score_name());
-    if (score_calc == nullptr)
-      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("Unable to find score calculator ", score_args.score_name()));
-
-    auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config, *theta_matrix, nullptr);
-    score_result->set_data(score_value->SerializeAsString());
-    score_result->set_type(score_calc->score_type());
-    score_result->set_name(score_args.score_name());
-  }
 }
 
 bool fillTokensInBatch(const PhiMatrix& phi_matrix, Batch* batch) {
@@ -1010,7 +840,7 @@ void Processor::ThreadFunction() {
       }
 
       std::shared_ptr<ProcessorInput> part;
-      if (!processor_queue_->try_pop(&part)) {
+      if (!instance_->processor_queue()->try_pop(&part)) {
         pop_retries++;
         LOG_IF(INFO, pop_retries == pop_retries_max) << "No data in processing queue, waiting...";
 
@@ -1037,7 +867,7 @@ void Processor::ThreadFunction() {
       {
         CuckooWatch cuckoo2("LoadMessage", &cuckoo, kTimeLoggingThreshold);
         if (part->has_batch_filename()) {
-          auto mem_batch = batches_.get(part->batch_filename());
+          auto mem_batch = instance_->batches()->get(part->batch_filename());
           if (mem_batch != nullptr) {
             batch.CopyFrom(*mem_batch);
           } else {
@@ -1053,7 +883,7 @@ void Processor::ThreadFunction() {
         }
       }
 
-      std::shared_ptr<InstanceSchema> schema = schema_.get();
+      std::shared_ptr<InstanceSchema> schema = instance_->schema();
       const MasterComponentConfig& master_config = schema->config();
 
       StreamMasks stream_masks;
@@ -1071,13 +901,12 @@ void Processor::ThreadFunction() {
           BOOST_THROW_EXCEPTION(InternalError(
               "model.class_id_size() != model.class_weight_size()"));
 
-        std::shared_ptr<const TopicModel> topic_model = merger_.GetLatestTopicModel(model_name);
-        std::shared_ptr<const PhiMatrix> phi_matrix = merger_.GetPhiMatrix(model_name);
-        if (topic_model == nullptr && phi_matrix == nullptr) {
+        std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrix(model_name);
+        if (phi_matrix == nullptr) {
           LOG(ERROR) << "Model " << model_name << " does not exist.";
           continue;
         }
-        const PhiMatrix& p_wt = (topic_model != nullptr) ? topic_model->GetPwt() : *phi_matrix;
+        const PhiMatrix& p_wt = *phi_matrix;
 
         if (batch.token_size() == 0) {
           if (!fillTokensInBatch(p_wt, &batch)) {
@@ -1092,7 +921,7 @@ void Processor::ThreadFunction() {
 
         std::shared_ptr<const PhiMatrix> nwt_target;
         if (part->has_nwt_target_name()) {
-          nwt_target = merger_.GetPhiMatrix(part->nwt_target_name());
+          nwt_target = instance_->GetPhiMatrix(part->nwt_target_name());
           if (nwt_target == nullptr) {
             LOG(ERROR) << "Model " << part->nwt_target_name() << " does not exist.";
             continue;
@@ -1128,24 +957,15 @@ void Processor::ThreadFunction() {
           cache = part->reuse_theta_cache_manager()->FindCacheEntry(batch_uuid, model_config.name());
         std::shared_ptr<DenseMatrix<float>> theta_matrix = InitializeTheta(batch, model_config, cache.get());
 
-        std::shared_ptr<ModelIncrement> model_increment;
-        {
-          CuckooWatch cuckoo2("InitializeModelIncrement", &cuckoo, kTimeLoggingThreshold);
-          model_increment = InitializeModelIncrement(batch, model_config, p_wt);
-        }
-
         if (p_wt.token_size() == 0) {
           LOG(INFO) << "Phi is empty, calculations for the model " + model_name +
             "would not be processed on this iteration";
-          if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
           continue;
         }
 
         std::shared_ptr<NwtWriteAdapter> nwt_writer;
         if (nwt_target != nullptr)
-          nwt_writer = std::make_shared<PhiMatrixWriter>(*model_increment, const_cast<PhiMatrix*>(nwt_target.get()));
-        else
-          nwt_writer = std::make_shared<ModelIncrementWriter>(model_increment.get());
+          nwt_writer = std::make_shared<PhiMatrixWriter>(const_cast<PhiMatrix*>(nwt_target.get()));
 
         // Find and save to the variable the index of model stream in the part->stream_name() list.
         int model_stream_index = repeated_field_index_of(stream_masks.stream_name(), model_config.stream_name());
@@ -1162,13 +982,13 @@ void Processor::ThreadFunction() {
         if (new_cache_entry_ptr != nullptr) {
           new_cache_entry_ptr->set_batch_uuid(batch.id());
           new_cache_entry_ptr->set_model_name(model_name_cache);
-          new_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
+          new_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_config.topic_name());
         }
 
         if (new_ptdw_cache_entry_ptr != nullptr) {
           new_ptdw_cache_entry_ptr->set_batch_uuid(batch.id());
           new_ptdw_cache_entry_ptr->set_model_name(model_name_cache);
-          new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_increment->topic_model().topic_name());
+          new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_config.topic_name());
         }
 
         if (model_config.use_sparse_bow()) {
@@ -1223,22 +1043,9 @@ void Processor::ThreadFunction() {
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config,
                                         *theta_matrix, &stream_masks);
           if (score_value != nullptr)
-            part->scores_merger()->Append(schema, model_name_cache, score_name, score_value->SerializeAsString());
+            part->score_manager()->Append(schema, model_name_cache, score_name, score_value->SerializeAsString());
         }
 
-        if (part->caller() != ProcessorInput::Caller::ProcessBatches) {
-          CuckooWatch cuckoo2("await merger queue", &cuckoo, kTimeLoggingThreshold);
-          // Wait until merger queue has space for a new element
-          int merger_queue_max_size = master_config.merger_queue_max_size();
-          for (;;) {
-            if (merger_queue_->size() < merger_queue_max_size)
-              break;
-
-            boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-          }
-        }
-
-        if (part->caller() != ProcessorInput::Caller::ProcessBatches) merger_queue_->push(model_increment);
         VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << model_description.str();
       }
     }

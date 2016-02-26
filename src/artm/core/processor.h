@@ -18,38 +18,21 @@
 
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
-#include "artm/core/processor_input.h"
-#include "artm/core/thread_safe_holder.h"
 
 #include "artm/utility/blas.h"
 
 namespace artm {
 namespace core {
 
-class InstanceSchema;
-class Merger;
-class TopicModel;
+class Instance;
 
 class Processor : boost::noncopyable {
  public:
-  Processor(ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue,
-            ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue,
-            const ThreadSafeCollectionHolder<std::string, Batch>& batches,
-            const Merger& merger,
-            const ThreadSafeHolder<InstanceSchema>& schema);
-
+  explicit Processor(Instance* instance);
   ~Processor();
 
-  void FindThetaMatrix(const Batch& batch,
-                       const GetThetaMatrixArgs& args, ThetaMatrix* theta_matrix,
-                       const GetScoreValueArgs& score_args, ScoreData* score_result);
-
  private:
-  ThreadSafeQueue<std::shared_ptr<ProcessorInput> >* processor_queue_;
-  ThreadSafeQueue<std::shared_ptr<ModelIncrement> >* merger_queue_;
-  const Merger& merger_;
-  const ThreadSafeCollectionHolder<std::string, Batch>& batches_;
-  const ThreadSafeHolder<InstanceSchema>& schema_;
+  Instance* instance_;
 
   mutable std::atomic<bool> is_stopping;
   boost::thread thread_;

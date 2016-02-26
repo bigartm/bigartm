@@ -11,7 +11,6 @@ set(SRC_LIST
 	cache_manager_test.cc
 	collection_parser_test.cc
 	cpp_interface_test.cc
-	instance_test.cc
 	master_model_test.cc
 	multiple_classes_test.cc
 	regularizers_test.cc

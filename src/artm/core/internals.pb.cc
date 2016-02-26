@@ -30,9 +30,6 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* StreamMasks_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   StreamMasks_reflection_ = NULL;
-const ::google::protobuf::Descriptor* ModelIncrement_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  ModelIncrement_reflection_ = NULL;
 
 }  // namespace
 
@@ -96,21 +93,6 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(StreamMasks));
-  ModelIncrement_descriptor_ = file->message_type(3);
-  static const int ModelIncrement_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, topic_model_),
-  };
-  ModelIncrement_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      ModelIncrement_descriptor_,
-      ModelIncrement::default_instance_,
-      ModelIncrement_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ModelIncrement, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(ModelIncrement));
 }
 
 namespace {
@@ -129,8 +111,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
     DataLoaderCacheEntry_descriptor_, &DataLoaderCacheEntry::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     StreamMasks_descriptor_, &StreamMasks::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    ModelIncrement_descriptor_, &ModelIncrement::default_instance());
 }
 
 }  // namespace
@@ -142,8 +122,6 @@ void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto() {
   delete DataLoaderCacheEntry_reflection_;
   delete StreamMasks::default_instance_;
   delete StreamMasks_reflection_;
-  delete ModelIncrement::default_instance_;
-  delete ModelIncrement_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
@@ -163,18 +141,15 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
     "\022\n\nitem_title\030\007 \003(\t\022#\n\013topic_index\030\010 \003(\013"
     "2\016.artm.IntArray\"H\n\013StreamMasks\022$\n\013strea"
     "m_mask\030\004 \003(\0132\017.artm.core.Mask\022\023\n\013stream_"
-    "name\030\005 \003(\t\"7\n\016ModelIncrement\022%\n\013topic_mo"
-    "del\030\001 \001(\0132\020.artm.TopicModel", 427);
+    "name\030\005 \003(\t", 370);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
   Mask::default_instance_ = new Mask();
   DataLoaderCacheEntry::default_instance_ = new DataLoaderCacheEntry();
   StreamMasks::default_instance_ = new StreamMasks();
-  ModelIncrement::default_instance_ = new ModelIncrement();
   Mask::default_instance_->InitAsDefaultInstance();
   DataLoaderCacheEntry::default_instance_->InitAsDefaultInstance();
   StreamMasks::default_instance_->InitAsDefaultInstance();
-  ModelIncrement::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto);
 }
 
@@ -1220,219 +1195,6 @@ void StreamMasks::Swap(StreamMasks* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = StreamMasks_descriptor_;
   metadata.reflection = StreamMasks_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int ModelIncrement::kTopicModelFieldNumber;
-#endif  // !_MSC_VER
-
-ModelIncrement::ModelIncrement()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void ModelIncrement::InitAsDefaultInstance() {
-  topic_model_ = const_cast< ::artm::TopicModel*>(&::artm::TopicModel::default_instance());
-}
-
-ModelIncrement::ModelIncrement(const ModelIncrement& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void ModelIncrement::SharedCtor() {
-  _cached_size_ = 0;
-  topic_model_ = NULL;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-ModelIncrement::~ModelIncrement() {
-  SharedDtor();
-}
-
-void ModelIncrement::SharedDtor() {
-  if (this != default_instance_) {
-    delete topic_model_;
-  }
-}
-
-void ModelIncrement::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* ModelIncrement::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return ModelIncrement_descriptor_;
-}
-
-const ModelIncrement& ModelIncrement::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
-  return *default_instance_;
-}
-
-ModelIncrement* ModelIncrement::default_instance_ = NULL;
-
-ModelIncrement* ModelIncrement::New() const {
-  return new ModelIncrement;
-}
-
-void ModelIncrement::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_topic_model()) {
-      if (topic_model_ != NULL) topic_model_->::artm::TopicModel::Clear();
-    }
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool ModelIncrement::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional .artm.TopicModel topic_model = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_topic_model()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void ModelIncrement::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional .artm.TopicModel topic_model = 1;
-  if (has_topic_model()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->topic_model(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* ModelIncrement::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional .artm.TopicModel topic_model = 1;
-  if (has_topic_model()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        1, this->topic_model(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int ModelIncrement::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional .artm.TopicModel topic_model = 1;
-    if (has_topic_model()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->topic_model());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void ModelIncrement::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const ModelIncrement* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const ModelIncrement*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void ModelIncrement::MergeFrom(const ModelIncrement& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_topic_model()) {
-      mutable_topic_model()->::artm::TopicModel::MergeFrom(from.topic_model());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void ModelIncrement::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void ModelIncrement::CopyFrom(const ModelIncrement& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool ModelIncrement::IsInitialized() const {
-
-  return true;
-}
-
-void ModelIncrement::Swap(ModelIncrement* other) {
-  if (other != this) {
-    std::swap(topic_model_, other->topic_model_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata ModelIncrement::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = ModelIncrement_descriptor_;
-  metadata.reflection = ModelIncrement_reflection_;
   return metadata;
 }
 

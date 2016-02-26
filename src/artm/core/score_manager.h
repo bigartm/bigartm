@@ -1,7 +1,7 @@
 // Copyright 2015, Additive Regularization of Topic Models.
 
-#ifndef SRC_ARTM_CORE_SCORES_MERGER_H_
-#define SRC_ARTM_CORE_SCORES_MERGER_H_
+#ifndef SRC_ARTM_CORE_SCORE_MANAGER_H_
+#define SRC_ARTM_CORE_SCORE_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -21,15 +21,16 @@
 namespace artm {
 namespace core {
 
-class ScoresMerger : boost::noncopyable {
+class ScoreManager : boost::noncopyable {
  public:
-  ScoresMerger() : lock_(), score_map_() {}
+  ScoreManager() : lock_(), score_map_() {}
 
   void Append(std::shared_ptr<InstanceSchema> schema,
               const ModelName& model_name, const ScoreName& score_name, const std::string& score_blob);
   void ResetScores(const ModelName& model_name);
   bool RequestScore(std::shared_ptr<InstanceSchema> schema,
                     const ModelName& model_name, const ScoreName& score_name, ScoreData *score_data) const;
+  void DisposeModel(const ModelName& model_name);
 
  private:
   mutable boost::mutex lock_;
@@ -43,4 +44,4 @@ class ScoresMerger : boost::noncopyable {
 }  // namespace artm
 
 
-#endif  // SRC_ARTM_CORE_SCORES_MERGER_H_
+#endif  // SRC_ARTM_CORE_SCORE_MANAGER_H_

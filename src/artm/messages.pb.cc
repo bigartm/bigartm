@@ -90,16 +90,6 @@ const ::google::protobuf::EnumDescriptor* SmoothPtdwConfig_Type_descriptor_ = NU
 const ::google::protobuf::Descriptor* TopicSelectionThetaConfig_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   TopicSelectionThetaConfig_reflection_ = NULL;
-const ::google::protobuf::Descriptor* GetRegularizerStateArgs_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  GetRegularizerStateArgs_reflection_ = NULL;
-const ::google::protobuf::Descriptor* RegularizerInternalState_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  RegularizerInternalState_reflection_ = NULL;
-const ::google::protobuf::EnumDescriptor* RegularizerInternalState_Type_descriptor_ = NULL;
-const ::google::protobuf::Descriptor* MultiLanguagePhiInternalState_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  MultiLanguagePhiInternalState_reflection_ = NULL;
 const ::google::protobuf::Descriptor* TransformConfig_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   TransformConfig_reflection_ = NULL;
@@ -188,9 +178,6 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
   CollectionParserConfig_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* CollectionParserConfig_Format_descriptor_ = NULL;
 const ::google::protobuf::EnumDescriptor* CollectionParserConfig_NameType_descriptor_ = NULL;
-const ::google::protobuf::Descriptor* SynchronizeModelArgs_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  SynchronizeModelArgs_reflection_ = NULL;
 const ::google::protobuf::Descriptor* InitializeModelArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   InitializeModelArgs_reflection_ = NULL;
@@ -222,15 +209,6 @@ const ::google::protobuf::EnumDescriptor* GetThetaMatrixArgs_MatrixLayout_descri
 const ::google::protobuf::Descriptor* GetScoreValueArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   GetScoreValueArgs_reflection_ = NULL;
-const ::google::protobuf::Descriptor* AddBatchArgs_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  AddBatchArgs_reflection_ = NULL;
-const ::google::protobuf::Descriptor* InvokeIterationArgs_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  InvokeIterationArgs_reflection_ = NULL;
-const ::google::protobuf::Descriptor* WaitIdleArgs_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  WaitIdleArgs_reflection_ = NULL;
 const ::google::protobuf::Descriptor* ExportModelArgs_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ExportModelArgs_reflection_ = NULL;
@@ -483,14 +461,13 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(Stream));
   Stream_Type_descriptor_ = Stream_descriptor_->enum_type(0);
   MasterComponentConfig_descriptor_ = file->message_type(9);
-  static const int MasterComponentConfig_offsets_[10] = {
+  static const int MasterComponentConfig_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, disk_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, stream_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, compact_batches_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, cache_theta_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, processors_count_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, processor_queue_max_size_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, merger_queue_max_size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, score_config_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, online_batch_processing_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentConfig, disk_cache_path_),
@@ -731,55 +708,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopicSelectionThetaConfig));
-  GetRegularizerStateArgs_descriptor_ = file->message_type(22);
-  static const int GetRegularizerStateArgs_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetRegularizerStateArgs, name_),
-  };
-  GetRegularizerStateArgs_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      GetRegularizerStateArgs_descriptor_,
-      GetRegularizerStateArgs::default_instance_,
-      GetRegularizerStateArgs_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetRegularizerStateArgs, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetRegularizerStateArgs, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(GetRegularizerStateArgs));
-  RegularizerInternalState_descriptor_ = file->message_type(23);
-  static const int RegularizerInternalState_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizerInternalState, name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizerInternalState, type_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizerInternalState, data_),
-  };
-  RegularizerInternalState_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      RegularizerInternalState_descriptor_,
-      RegularizerInternalState::default_instance_,
-      RegularizerInternalState_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizerInternalState, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizerInternalState, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(RegularizerInternalState));
-  RegularizerInternalState_Type_descriptor_ = RegularizerInternalState_descriptor_->enum_type(0);
-  MultiLanguagePhiInternalState_descriptor_ = file->message_type(24);
-  static const int MultiLanguagePhiInternalState_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MultiLanguagePhiInternalState, no_regularization_calls_),
-  };
-  MultiLanguagePhiInternalState_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      MultiLanguagePhiInternalState_descriptor_,
-      MultiLanguagePhiInternalState::default_instance_,
-      MultiLanguagePhiInternalState_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MultiLanguagePhiInternalState, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MultiLanguagePhiInternalState, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(MultiLanguagePhiInternalState));
-  TransformConfig_descriptor_ = file->message_type(25);
+  TransformConfig_descriptor_ = file->message_type(22);
   static const int TransformConfig_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransformConfig, transform_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransformConfig, n_),
@@ -797,7 +726,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TransformConfig));
   TransformConfig_TransformType_descriptor_ = TransformConfig_descriptor_->enum_type(0);
-  ScoreConfig_descriptor_ = file->message_type(26);
+  ScoreConfig_descriptor_ = file->message_type(23);
   static const int ScoreConfig_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScoreConfig, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScoreConfig, type_),
@@ -815,7 +744,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ScoreConfig));
   ScoreConfig_Type_descriptor_ = ScoreConfig_descriptor_->enum_type(0);
-  ScoreData_descriptor_ = file->message_type(27);
+  ScoreData_descriptor_ = file->message_type(24);
   static const int ScoreData_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScoreData, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScoreData, type_),
@@ -833,7 +762,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ScoreData));
   ScoreData_Type_descriptor_ = ScoreData_descriptor_->enum_type(0);
-  PerplexityScoreConfig_descriptor_ = file->message_type(28);
+  PerplexityScoreConfig_descriptor_ = file->message_type(25);
   static const int PerplexityScoreConfig_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, field_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScoreConfig, stream_name_),
@@ -855,7 +784,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(PerplexityScoreConfig));
   PerplexityScoreConfig_Type_descriptor_ = PerplexityScoreConfig_descriptor_->enum_type(0);
-  PerplexityScore_descriptor_ = file->message_type(29);
+  PerplexityScore_descriptor_ = file->message_type(26);
   static const int PerplexityScore_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PerplexityScore, raw_),
@@ -876,7 +805,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(PerplexityScore));
-  SparsityThetaScoreConfig_descriptor_ = file->message_type(30);
+  SparsityThetaScoreConfig_descriptor_ = file->message_type(27);
   static const int SparsityThetaScoreConfig_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SparsityThetaScoreConfig, field_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SparsityThetaScoreConfig, stream_name_),
@@ -894,7 +823,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SparsityThetaScoreConfig));
-  SparsityThetaScore_descriptor_ = file->message_type(31);
+  SparsityThetaScore_descriptor_ = file->message_type(28);
   static const int SparsityThetaScore_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SparsityThetaScore, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SparsityThetaScore, zero_topics_),
@@ -911,7 +840,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SparsityThetaScore));
-  SparsityPhiScoreConfig_descriptor_ = file->message_type(32);
+  SparsityPhiScoreConfig_descriptor_ = file->message_type(29);
   static const int SparsityPhiScoreConfig_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SparsityPhiScoreConfig, eps_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SparsityPhiScoreConfig, class_id_),
@@ -928,7 +857,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SparsityPhiScoreConfig));
-  SparsityPhiScore_descriptor_ = file->message_type(33);
+  SparsityPhiScore_descriptor_ = file->message_type(30);
   static const int SparsityPhiScore_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SparsityPhiScore, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SparsityPhiScore, zero_tokens_),
@@ -945,7 +874,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SparsityPhiScore));
-  ItemsProcessedScoreConfig_descriptor_ = file->message_type(34);
+  ItemsProcessedScoreConfig_descriptor_ = file->message_type(31);
   static const int ItemsProcessedScoreConfig_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ItemsProcessedScoreConfig, field_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ItemsProcessedScoreConfig, stream_name_),
@@ -961,7 +890,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ItemsProcessedScoreConfig));
-  ItemsProcessedScore_descriptor_ = file->message_type(35);
+  ItemsProcessedScore_descriptor_ = file->message_type(32);
   static const int ItemsProcessedScore_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ItemsProcessedScore, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ItemsProcessedScore, num_batches_),
@@ -977,7 +906,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ItemsProcessedScore));
-  TopTokensScoreConfig_descriptor_ = file->message_type(36);
+  TopTokensScoreConfig_descriptor_ = file->message_type(33);
   static const int TopTokensScoreConfig_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScoreConfig, num_tokens_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScoreConfig, class_id_),
@@ -995,7 +924,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopTokensScoreConfig));
-  TopTokensScore_descriptor_ = file->message_type(37);
+  TopTokensScore_descriptor_ = file->message_type(34);
   static const int TopTokensScore_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, num_entries_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopTokensScore, topic_name_),
@@ -1016,7 +945,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopTokensScore));
-  ThetaSnippetScoreConfig_descriptor_ = file->message_type(38);
+  ThetaSnippetScoreConfig_descriptor_ = file->message_type(35);
   static const int ThetaSnippetScoreConfig_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaSnippetScoreConfig, field_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaSnippetScoreConfig, stream_name_),
@@ -1034,7 +963,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ThetaSnippetScoreConfig));
-  ThetaSnippetScore_descriptor_ = file->message_type(39);
+  ThetaSnippetScore_descriptor_ = file->message_type(36);
   static const int ThetaSnippetScore_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaSnippetScore, item_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaSnippetScore, values_),
@@ -1050,7 +979,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ThetaSnippetScore));
-  TopicKernelScoreConfig_descriptor_ = file->message_type(40);
+  TopicKernelScoreConfig_descriptor_ = file->message_type(37);
   static const int TopicKernelScoreConfig_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScoreConfig, eps_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScoreConfig, class_id_),
@@ -1069,7 +998,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopicKernelScoreConfig));
-  TopicKernelScore_descriptor_ = file->message_type(41);
+  TopicKernelScore_descriptor_ = file->message_type(38);
   static const int TopicKernelScore_offsets_[10] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, kernel_size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicKernelScore, kernel_purity_),
@@ -1093,7 +1022,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopicKernelScore));
-  TopicMassPhiScoreConfig_descriptor_ = file->message_type(42);
+  TopicMassPhiScoreConfig_descriptor_ = file->message_type(39);
   static const int TopicMassPhiScoreConfig_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicMassPhiScoreConfig, eps_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicMassPhiScoreConfig, class_id_),
@@ -1110,7 +1039,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopicMassPhiScoreConfig));
-  TopicMassPhiScore_descriptor_ = file->message_type(43);
+  TopicMassPhiScore_descriptor_ = file->message_type(40);
   static const int TopicMassPhiScore_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicMassPhiScore, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicMassPhiScore, topic_name_),
@@ -1128,7 +1057,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopicMassPhiScore));
-  ClassPrecisionScoreConfig_descriptor_ = file->message_type(44);
+  ClassPrecisionScoreConfig_descriptor_ = file->message_type(41);
   static const int ClassPrecisionScoreConfig_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ClassPrecisionScoreConfig, stream_name_),
   };
@@ -1143,7 +1072,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ClassPrecisionScoreConfig));
-  ClassPrecisionScore_descriptor_ = file->message_type(45);
+  ClassPrecisionScore_descriptor_ = file->message_type(42);
   static const int ClassPrecisionScore_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ClassPrecisionScore, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ClassPrecisionScore, error_),
@@ -1160,7 +1089,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ClassPrecisionScore));
-  PeakMemoryScoreConfig_descriptor_ = file->message_type(46);
+  PeakMemoryScoreConfig_descriptor_ = file->message_type(43);
   static const int PeakMemoryScoreConfig_offsets_[1] = {
   };
   PeakMemoryScoreConfig_reflection_ =
@@ -1174,7 +1103,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(PeakMemoryScoreConfig));
-  PeakMemoryScore_descriptor_ = file->message_type(47);
+  PeakMemoryScore_descriptor_ = file->message_type(44);
   static const int PeakMemoryScore_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PeakMemoryScore, value_),
   };
@@ -1189,7 +1118,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(PeakMemoryScore));
-  TopicModel_descriptor_ = file->message_type(48);
+  TopicModel_descriptor_ = file->message_type(45);
   static const int TopicModel_offsets_[10] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicModel, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TopicModel, topics_count_),
@@ -1229,7 +1158,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TopicModel_TopicModelInternals));
   TopicModel_OperationType_descriptor_ = TopicModel_descriptor_->enum_type(0);
-  ThetaMatrix_descriptor_ = file->message_type(49);
+  ThetaMatrix_descriptor_ = file->message_type(46);
   static const int ThetaMatrix_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaMatrix, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThetaMatrix, item_id_),
@@ -1250,7 +1179,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ThetaMatrix));
-  CollectionParserConfig_descriptor_ = file->message_type(50);
+  CollectionParserConfig_descriptor_ = file->message_type(47);
   static const int CollectionParserConfig_offsets_[11] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, format_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollectionParserConfig, docword_file_path_),
@@ -1277,25 +1206,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(CollectionParserConfig));
   CollectionParserConfig_Format_descriptor_ = CollectionParserConfig_descriptor_->enum_type(0);
   CollectionParserConfig_NameType_descriptor_ = CollectionParserConfig_descriptor_->enum_type(1);
-  SynchronizeModelArgs_descriptor_ = file->message_type(51);
-  static const int SynchronizeModelArgs_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, model_name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, decay_weight_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, invoke_regularizers_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, apply_weight_),
-  };
-  SynchronizeModelArgs_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      SynchronizeModelArgs_descriptor_,
-      SynchronizeModelArgs::default_instance_,
-      SynchronizeModelArgs_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SynchronizeModelArgs, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(SynchronizeModelArgs));
-  InitializeModelArgs_descriptor_ = file->message_type(52);
+  InitializeModelArgs_descriptor_ = file->message_type(48);
   static const int InitializeModelArgs_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InitializeModelArgs, dictionary_name_),
@@ -1340,7 +1251,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(InitializeModelArgs_Filter));
   InitializeModelArgs_SourceType_descriptor_ = InitializeModelArgs_descriptor_->enum_type(0);
-  DictionaryData_descriptor_ = file->message_type(53);
+  DictionaryData_descriptor_ = file->message_type(49);
   static const int DictionaryData_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryData, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DictionaryData, token_),
@@ -1363,7 +1274,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DictionaryData));
-  FilterDictionaryArgs_descriptor_ = file->message_type(54);
+  FilterDictionaryArgs_descriptor_ = file->message_type(50);
   static const int FilterDictionaryArgs_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, dictionary_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FilterDictionaryArgs, dictionary_target_name_),
@@ -1386,7 +1297,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FilterDictionaryArgs));
-  GatherDictionaryArgs_descriptor_ = file->message_type(55);
+  GatherDictionaryArgs_descriptor_ = file->message_type(51);
   static const int GatherDictionaryArgs_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, dictionary_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GatherDictionaryArgs, data_path_),
@@ -1406,7 +1317,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GatherDictionaryArgs));
-  GetDictionaryArgs_descriptor_ = file->message_type(56);
+  GetDictionaryArgs_descriptor_ = file->message_type(52);
   static const int GetDictionaryArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetDictionaryArgs, dictionary_name_),
   };
@@ -1421,7 +1332,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetDictionaryArgs));
-  GetTopicModelArgs_descriptor_ = file->message_type(57);
+  GetTopicModelArgs_descriptor_ = file->message_type(53);
   static const int GetTopicModelArgs_offsets_[8] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetTopicModelArgs, topic_name_),
@@ -1445,10 +1356,9 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       sizeof(GetTopicModelArgs));
   GetTopicModelArgs_RequestType_descriptor_ = GetTopicModelArgs_descriptor_->enum_type(0);
   GetTopicModelArgs_MatrixLayout_descriptor_ = GetTopicModelArgs_descriptor_->enum_type(1);
-  GetThetaMatrixArgs_descriptor_ = file->message_type(58);
-  static const int GetThetaMatrixArgs_offsets_[8] = {
+  GetThetaMatrixArgs_descriptor_ = file->message_type(54);
+  static const int GetThetaMatrixArgs_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, model_name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, batch_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, topic_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, topic_index_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetThetaMatrixArgs, clean_cache_),
@@ -1468,11 +1378,10 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetThetaMatrixArgs));
   GetThetaMatrixArgs_MatrixLayout_descriptor_ = GetThetaMatrixArgs_descriptor_->enum_type(0);
-  GetScoreValueArgs_descriptor_ = file->message_type(59);
-  static const int GetScoreValueArgs_offsets_[3] = {
+  GetScoreValueArgs_descriptor_ = file->message_type(55);
+  static const int GetScoreValueArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetScoreValueArgs, model_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetScoreValueArgs, score_name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GetScoreValueArgs, batch_),
   };
   GetScoreValueArgs_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -1485,57 +1394,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetScoreValueArgs));
-  AddBatchArgs_descriptor_ = file->message_type(60);
-  static const int AddBatchArgs_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, batch_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, timeout_milliseconds_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, reset_scores_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, batch_file_name_),
-  };
-  AddBatchArgs_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      AddBatchArgs_descriptor_,
-      AddBatchArgs::default_instance_,
-      AddBatchArgs_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AddBatchArgs, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(AddBatchArgs));
-  InvokeIterationArgs_descriptor_ = file->message_type(61);
-  static const int InvokeIterationArgs_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InvokeIterationArgs, iterations_count_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InvokeIterationArgs, reset_scores_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InvokeIterationArgs, disk_path_),
-  };
-  InvokeIterationArgs_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      InvokeIterationArgs_descriptor_,
-      InvokeIterationArgs::default_instance_,
-      InvokeIterationArgs_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InvokeIterationArgs, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(InvokeIterationArgs, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(InvokeIterationArgs));
-  WaitIdleArgs_descriptor_ = file->message_type(62);
-  static const int WaitIdleArgs_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WaitIdleArgs, timeout_milliseconds_),
-  };
-  WaitIdleArgs_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      WaitIdleArgs_descriptor_,
-      WaitIdleArgs::default_instance_,
-      WaitIdleArgs_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WaitIdleArgs, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WaitIdleArgs, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(WaitIdleArgs));
-  ExportModelArgs_descriptor_ = file->message_type(63);
+  ExportModelArgs_descriptor_ = file->message_type(56);
   static const int ExportModelArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ExportModelArgs, file_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ExportModelArgs, model_name_),
@@ -1551,7 +1410,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ExportModelArgs));
-  ImportModelArgs_descriptor_ = file->message_type(64);
+  ImportModelArgs_descriptor_ = file->message_type(57);
   static const int ImportModelArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportModelArgs, file_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportModelArgs, model_name_),
@@ -1567,7 +1426,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ImportModelArgs));
-  AttachModelArgs_descriptor_ = file->message_type(65);
+  AttachModelArgs_descriptor_ = file->message_type(58);
   static const int AttachModelArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AttachModelArgs, model_name_),
   };
@@ -1582,7 +1441,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AttachModelArgs));
-  ProcessBatchesArgs_descriptor_ = file->message_type(66);
+  ProcessBatchesArgs_descriptor_ = file->message_type(59);
   static const int ProcessBatchesArgs_offsets_[18] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, nwt_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesArgs, batch_filename_),
@@ -1615,7 +1474,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ProcessBatchesArgs));
   ProcessBatchesArgs_ThetaMatrixType_descriptor_ = ProcessBatchesArgs_descriptor_->enum_type(0);
-  ProcessBatchesResult_descriptor_ = file->message_type(67);
+  ProcessBatchesResult_descriptor_ = file->message_type(60);
   static const int ProcessBatchesResult_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesResult, score_data_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ProcessBatchesResult, theta_matrix_),
@@ -1631,7 +1490,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ProcessBatchesResult));
-  MergeModelArgs_descriptor_ = file->message_type(68);
+  MergeModelArgs_descriptor_ = file->message_type(61);
   static const int MergeModelArgs_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MergeModelArgs, nwt_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MergeModelArgs, nwt_source_name_),
@@ -1649,7 +1508,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MergeModelArgs));
-  RegularizeModelArgs_descriptor_ = file->message_type(69);
+  RegularizeModelArgs_descriptor_ = file->message_type(62);
   static const int RegularizeModelArgs_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizeModelArgs, rwt_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RegularizeModelArgs, pwt_source_name_),
@@ -1667,7 +1526,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(RegularizeModelArgs));
-  NormalizeModelArgs_descriptor_ = file->message_type(70);
+  NormalizeModelArgs_descriptor_ = file->message_type(63);
   static const int NormalizeModelArgs_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NormalizeModelArgs, pwt_target_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(NormalizeModelArgs, nwt_source_name_),
@@ -1684,7 +1543,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(NormalizeModelArgs));
-  ImportDictionaryArgs_descriptor_ = file->message_type(71);
+  ImportDictionaryArgs_descriptor_ = file->message_type(64);
   static const int ImportDictionaryArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportDictionaryArgs, file_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportDictionaryArgs, dictionary_name_),
@@ -1700,7 +1559,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ImportDictionaryArgs));
-  ExportDictionaryArgs_descriptor_ = file->message_type(72);
+  ExportDictionaryArgs_descriptor_ = file->message_type(65);
   static const int ExportDictionaryArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ExportDictionaryArgs, file_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ExportDictionaryArgs, dictionary_name_),
@@ -1716,7 +1575,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ExportDictionaryArgs));
-  CopyRequestResultArgs_descriptor_ = file->message_type(73);
+  CopyRequestResultArgs_descriptor_ = file->message_type(66);
   static const int CopyRequestResultArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CopyRequestResultArgs, request_type_),
   };
@@ -1732,7 +1591,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(CopyRequestResultArgs));
   CopyRequestResultArgs_RequestType_descriptor_ = CopyRequestResultArgs_descriptor_->enum_type(0);
-  DuplicateMasterComponentArgs_descriptor_ = file->message_type(74);
+  DuplicateMasterComponentArgs_descriptor_ = file->message_type(67);
   static const int DuplicateMasterComponentArgs_offsets_[1] = {
   };
   DuplicateMasterComponentArgs_reflection_ =
@@ -1746,7 +1605,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DuplicateMasterComponentArgs));
-  GetMasterComponentInfoArgs_descriptor_ = file->message_type(75);
+  GetMasterComponentInfoArgs_descriptor_ = file->message_type(68);
   static const int GetMasterComponentInfoArgs_offsets_[1] = {
   };
   GetMasterComponentInfoArgs_reflection_ =
@@ -1760,8 +1619,8 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(GetMasterComponentInfoArgs));
-  MasterComponentInfo_descriptor_ = file->message_type(76);
-  static const int MasterComponentInfo_offsets_[10] = {
+  MasterComponentInfo_descriptor_ = file->message_type(69);
+  static const int MasterComponentInfo_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, master_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, config_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, regularizer_),
@@ -1769,7 +1628,6 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, dictionary_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, model_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, cache_entry_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, merger_queue_size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, processor_queue_size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterComponentInfo, batch_),
   };
@@ -1883,7 +1741,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MasterComponentInfo_CacheEntryInfo));
-  ImportBatchesArgs_descriptor_ = file->message_type(77);
+  ImportBatchesArgs_descriptor_ = file->message_type(70);
   static const int ImportBatchesArgs_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportBatchesArgs, batch_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ImportBatchesArgs, batch_),
@@ -1899,7 +1757,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ImportBatchesArgs));
-  AwaitOperationArgs_descriptor_ = file->message_type(78);
+  AwaitOperationArgs_descriptor_ = file->message_type(71);
   static const int AwaitOperationArgs_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(AwaitOperationArgs, timeout_milliseconds_),
   };
@@ -1914,8 +1772,8 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(AwaitOperationArgs));
-  MasterModelConfig_descriptor_ = file->message_type(79);
-  static const int MasterModelConfig_offsets_[15] = {
+  MasterModelConfig_descriptor_ = file->message_type(72);
+  static const int MasterModelConfig_offsets_[14] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, topic_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, class_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, class_weight_),
@@ -1929,7 +1787,6 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, opt_for_avx_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, use_sparse_bow_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, disk_cache_path_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, use_v06_api_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MasterModelConfig, cache_theta_),
   };
   MasterModelConfig_reflection_ =
@@ -1943,7 +1800,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MasterModelConfig));
-  FitOfflineMasterModelArgs_descriptor_ = file->message_type(80);
+  FitOfflineMasterModelArgs_descriptor_ = file->message_type(73);
   static const int FitOfflineMasterModelArgs_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOfflineMasterModelArgs, batch_filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOfflineMasterModelArgs, batch_weight_),
@@ -1961,7 +1818,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FitOfflineMasterModelArgs));
-  FitOnlineMasterModelArgs_descriptor_ = file->message_type(81);
+  FitOnlineMasterModelArgs_descriptor_ = file->message_type(74);
   static const int FitOnlineMasterModelArgs_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, batch_filename_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FitOnlineMasterModelArgs, batch_weight_),
@@ -1981,7 +1838,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(FitOnlineMasterModelArgs));
-  TransformMasterModelArgs_descriptor_ = file->message_type(82);
+  TransformMasterModelArgs_descriptor_ = file->message_type(75);
   static const int TransformMasterModelArgs_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransformMasterModelArgs, batch_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TransformMasterModelArgs, batch_filename_),
@@ -2000,7 +1857,7 @@ void protobuf_AssignDesc_artm_2fmessages_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(TransformMasterModelArgs));
   TransformMasterModelArgs_ThetaMatrixType_descriptor_ = TransformMasterModelArgs_descriptor_->enum_type(0);
-  ConfigureLoggingArgs_descriptor_ = file->message_type(83);
+  ConfigureLoggingArgs_descriptor_ = file->message_type(76);
   static const int ConfigureLoggingArgs_offsets_[10] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, log_dir_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigureLoggingArgs, minloglevel_),
@@ -2081,12 +1938,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     TopicSelectionThetaConfig_descriptor_, &TopicSelectionThetaConfig::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    GetRegularizerStateArgs_descriptor_, &GetRegularizerStateArgs::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    RegularizerInternalState_descriptor_, &RegularizerInternalState::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    MultiLanguagePhiInternalState_descriptor_, &MultiLanguagePhiInternalState::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     TransformConfig_descriptor_, &TransformConfig::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ScoreConfig_descriptor_, &ScoreConfig::default_instance());
@@ -2141,8 +1992,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     CollectionParserConfig_descriptor_, &CollectionParserConfig::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    SynchronizeModelArgs_descriptor_, &SynchronizeModelArgs::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     InitializeModelArgs_descriptor_, &InitializeModelArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     InitializeModelArgs_Filter_descriptor_, &InitializeModelArgs_Filter::default_instance());
@@ -2160,12 +2009,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
     GetThetaMatrixArgs_descriptor_, &GetThetaMatrixArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     GetScoreValueArgs_descriptor_, &GetScoreValueArgs::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    AddBatchArgs_descriptor_, &AddBatchArgs::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    InvokeIterationArgs_descriptor_, &InvokeIterationArgs::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    WaitIdleArgs_descriptor_, &WaitIdleArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ExportModelArgs_descriptor_, &ExportModelArgs::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -2275,12 +2118,6 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete SmoothPtdwConfig_reflection_;
   delete TopicSelectionThetaConfig::default_instance_;
   delete TopicSelectionThetaConfig_reflection_;
-  delete GetRegularizerStateArgs::default_instance_;
-  delete GetRegularizerStateArgs_reflection_;
-  delete RegularizerInternalState::default_instance_;
-  delete RegularizerInternalState_reflection_;
-  delete MultiLanguagePhiInternalState::default_instance_;
-  delete MultiLanguagePhiInternalState_reflection_;
   delete TransformConfig::default_instance_;
   delete TransformConfig_reflection_;
   delete ScoreConfig::default_instance_;
@@ -2350,8 +2187,6 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete ThetaMatrix::_default_model_name_;
   delete CollectionParserConfig::default_instance_;
   delete CollectionParserConfig_reflection_;
-  delete SynchronizeModelArgs::default_instance_;
-  delete SynchronizeModelArgs_reflection_;
   delete InitializeModelArgs::default_instance_;
   delete InitializeModelArgs_reflection_;
   delete InitializeModelArgs_Filter::default_instance_;
@@ -2370,12 +2205,6 @@ void protobuf_ShutdownFile_artm_2fmessages_2eproto() {
   delete GetThetaMatrixArgs_reflection_;
   delete GetScoreValueArgs::default_instance_;
   delete GetScoreValueArgs_reflection_;
-  delete AddBatchArgs::default_instance_;
-  delete AddBatchArgs_reflection_;
-  delete InvokeIterationArgs::default_instance_;
-  delete InvokeIterationArgs_reflection_;
-  delete WaitIdleArgs::default_instance_;
-  delete WaitIdleArgs_reflection_;
   delete ExportModelArgs::default_instance_;
   delete ExportModelArgs_reflection_;
   delete ImportModelArgs::default_instance_;
@@ -2461,337 +2290,317 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
     "am\022\'\n\004type\030\001 \001(\0162\021.artm.Stream.Type:\006Glo"
     "bal\022\025\n\004name\030\002 \001(\t:\007@global\022\017\n\007modulus\030\003 "
     "\001(\005\022\021\n\tresiduals\030\004 \003(\005\"%\n\004Type\022\n\n\006Global"
-    "\020\000\022\021\n\rItemIdModulus\020\001\"\320\002\n\025MasterComponen"
+    "\020\000\022\021\n\rItemIdModulus\020\001\"\255\002\n\025MasterComponen"
     "tConfig\022\021\n\tdisk_path\030\002 \001(\t\022\034\n\006stream\030\003 \003"
     "(\0132\014.artm.Stream\022\035\n\017compact_batches\030\004 \001("
     "\010:\004true\022\032\n\013cache_theta\030\005 \001(\010:\005false\022\030\n\020p"
     "rocessors_count\030\006 \001(\005\022$\n\030processor_queue"
-    "_max_size\030\007 \001(\005:\00210\022!\n\025merger_queue_max_"
-    "size\030\010 \001(\005:\00210\022\'\n\014score_config\030\t \003(\0132\021.a"
-    "rtm.ScoreConfig\022&\n\027online_batch_processi"
-    "ng\030\r \001(\010:\005false\022\027\n\017disk_cache_path\030\017 \001(\t"
-    "\"d\n\023RegularizerSettings\022\014\n\004name\030\001 \001(\t\022\013\n"
-    "\003tau\030\002 \001(\001\022#\n\033use_relative_regularizatio"
-    "n\030\003 \001(\010\022\r\n\005gamma\030\004 \001(\001\"\265\004\n\013ModelConfig\022\024"
-    "\n\004name\030\001 \001(\t:\006@model\022\030\n\014topics_count\030\002 \001"
-    "(\005:\00232\022\022\n\ntopic_name\030\003 \003(\t\022\025\n\007enabled\030\004 "
-    "\001(\010:\004true\022\"\n\026inner_iterations_count\030\005 \001("
-    "\005:\00210\022\031\n\nfield_name\030\006 \001(\t:\005@body\022\034\n\013stre"
-    "am_name\030\007 \001(\t:\007@global\022\022\n\nscore_name\030\010 \003"
-    "(\t\022\032\n\013reuse_theta\030\t \001(\010:\005false\022\030\n\020regula"
-    "rizer_name\030\n \003(\t\022\027\n\017regularizer_tau\030\013 \003("
-    "\001\022\020\n\010class_id\030\014 \003(\t\022\024\n\014class_weight\030\r \003("
-    "\002\022\034\n\016use_sparse_bow\030\016 \001(\010:\004true\022\037\n\020use_r"
-    "andom_theta\030\017 \001(\010:\005false\022\034\n\016use_new_toke"
-    "ns\030\020 \001(\010:\004true\022\031\n\013opt_for_avx\030\021 \001(\010:\004tru"
-    "e\0227\n\024regularizer_settings\030\022 \003(\0132\031.artm.R"
-    "egularizerSettings\022\030\n\020model_name_cache\030\023"
-    " \001(\t\022\030\n\020predict_class_id\030\024 \001(\t\"\300\002\n\021Regul"
-    "arizerConfig\022\014\n\004name\030\001 \001(\t\022*\n\004type\030\002 \001(\016"
-    "2\034.artm.RegularizerConfig.Type\022\016\n\006config"
-    "\030\003 \001(\014\022\013\n\003tau\030\004 \001(\002\"\323\001\n\004Type\022\025\n\021SmoothSp"
-    "arseTheta\020\000\022\023\n\017SmoothSparsePhi\020\001\022\023\n\017Deco"
-    "rrelatorPhi\020\002\022\024\n\020MultiLanguagePhi\020\003\022\032\n\026L"
-    "abelRegularizationPhi\020\004\022\026\n\022SpecifiedSpar"
-    "sePhi\020\005\022\027\n\023ImproveCoherencePhi\020\006\022\016\n\nSmoo"
-    "thPtdw\020\007\022\027\n\023TopicSelectionTheta\020\010\"r\n\027Smo"
-    "othSparseThetaConfig\022\022\n\ntopic_name\030\001 \003(\t"
-    "\022\022\n\nalpha_iter\030\002 \003(\002\022/\n\020transform_config"
-    "\030\003 \001(\0132\025.artm.TransformConfig\"\207\001\n\025Smooth"
-    "SparsePhiConfig\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010c"
-    "lass_id\030\002 \003(\t\022\027\n\017dictionary_name\030\003 \001(\t\022/"
-    "\n\020transform_config\030\004 \001(\0132\025.artm.Transfor"
-    "mConfig\"=\n\025DecorrelatorPhiConfig\022\022\n\ntopi"
-    "c_name\030\001 \003(\t\022\020\n\010class_id\030\002 \003(\t\"\030\n\026MultiL"
-    "anguagePhiConfig\"]\n\034LabelRegularizationP"
-    "hiConfig\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010class_id"
-    "\030\002 \003(\t\022\027\n\017dictionary_name\030\003 \001(\t\"\202\002\n\030Spec"
-    "ifiedSparsePhiConfig\022\022\n\ntopic_name\030\001 \003(\t"
-    "\022 \n\010class_id\030\002 \001(\t:\016@default_class\022\036\n\022ma"
-    "x_elements_count\030\003 \001(\005:\00220\022#\n\025probabilit"
-    "y_threshold\030\004 \001(\002:\0040.99\022\?\n\004mode\030\005 \001(\0162#."
-    "artm.SpecifiedSparsePhiConfig.Mode:\014Spar"
-    "seTopics\"*\n\004Mode\022\020\n\014SparseTopics\020\000\022\020\n\014Sp"
-    "arseTokens\020\001\"Z\n\031ImproveCoherencePhiConfi"
-    "g\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010class_id\030\002 \003(\t\022"
-    "\027\n\017dictionary_name\030\003 \001(\t\"\244\001\n\020SmoothPtdwC"
-    "onfig\0228\n\004type\030\001 \001(\0162\033.artm.SmoothPtdwCon"
-    "fig.Type:\rMovingAverage\022\022\n\006window\030\003 \001(\005:"
-    "\00210\022\024\n\tthreshold\030\004 \001(\001:\0011\",\n\004Type\022\021\n\rMov"
-    "ingAverage\020\001\022\021\n\rMovingProduct\020\002\"X\n\031Topic"
-    "SelectionThetaConfig\022\022\n\ntopic_name\030\001 \003(\t"
-    "\022\023\n\013topic_value\030\002 \003(\002\022\022\n\nalpha_iter\030\003 \003("
-    "\002\"\'\n\027GetRegularizerStateArgs\022\014\n\004name\030\001 \001"
-    "(\t\"\207\001\n\030RegularizerInternalState\022\014\n\004name\030"
-    "\001 \001(\t\0221\n\004type\030\002 \001(\0162#.artm.RegularizerIn"
-    "ternalState.Type\022\014\n\004data\030\003 \001(\014\"\034\n\004Type\022\024"
-    "\n\020MultiLanguagePhi\020\003\"C\n\035MultiLanguagePhi"
-    "InternalState\022\"\n\027no_regularization_calls"
-    "\030\001 \001(\005:\0010\"\262\001\n\017TransformConfig\022E\n\016transfo"
-    "rm_type\030\001 \001(\0162#.artm.TransformConfig.Tra"
-    "nsformType:\010Constant\022\014\n\001n\030\002 \001(\001:\0011\022\014\n\001a\030"
-    "\003 \001(\001:\0011\"<\n\rTransformType\022\r\n\tLogarithm\020\000"
-    "\022\016\n\nPolynomial\020\001\022\014\n\010Constant\020\002\"\212\002\n\013Score"
-    "Config\022\014\n\004name\030\001 \001(\t\022$\n\004type\030\002 \001(\0162\026.art"
-    "m.ScoreConfig.Type\022\016\n\006config\030\003 \001(\014\"\266\001\n\004T"
-    "ype\022\016\n\nPerplexity\020\000\022\021\n\rSparsityTheta\020\001\022\017"
-    "\n\013SparsityPhi\020\002\022\022\n\016ItemsProcessed\020\003\022\r\n\tT"
-    "opTokens\020\004\022\020\n\014ThetaSnippet\020\005\022\017\n\013TopicKer"
-    "nel\020\006\022\020\n\014TopicMassPhi\020\007\022\022\n\016ClassPrecisio"
-    "n\020\010\022\016\n\nPeakMemory\020\t\"\204\002\n\tScoreData\022\014\n\004nam"
-    "e\030\001 \001(\t\022\"\n\004type\030\002 \001(\0162\024.artm.ScoreData.T"
-    "ype\022\014\n\004data\030\003 \001(\014\"\266\001\n\004Type\022\016\n\nPerplexity"
-    "\020\000\022\021\n\rSparsityTheta\020\001\022\017\n\013SparsityPhi\020\002\022\022"
-    "\n\016ItemsProcessed\020\003\022\r\n\tTopTokens\020\004\022\020\n\014The"
-    "taSnippet\020\005\022\017\n\013TopicKernel\020\006\022\020\n\014TopicMas"
-    "sPhi\020\007\022\022\n\016ClassPrecision\020\010\022\016\n\nPeakMemory"
-    "\020\t\"\314\002\n\025PerplexityScoreConfig\022\031\n\nfield_na"
-    "me\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@g"
-    "lobal\022J\n\nmodel_type\030\003 \001(\0162 .artm.Perplex"
-    "ityScoreConfig.Type:\024UnigramDocumentMode"
-    "l\022\027\n\017dictionary_name\030\004 \001(\t\022\"\n\022theta_spar"
-    "sity_eps\030\005 \001(\002:\0061e-037\022!\n\031theta_sparsity"
-    "_topic_name\030\006 \003(\t\022\020\n\010class_id\030\007 \003(\t\"<\n\004T"
-    "ype\022\030\n\024UnigramDocumentModel\020\000\022\032\n\026Unigram"
-    "CollectionModel\020\001\"\274\001\n\017PerplexityScore\022\r\n"
-    "\005value\030\001 \001(\001\022\013\n\003raw\030\002 \001(\001\022\022\n\nnormalizer\030"
-    "\003 \001(\001\022\022\n\nzero_words\030\004 \001(\003\022\034\n\024theta_spars"
-    "ity_value\030\005 \001(\001\022\"\n\032theta_sparsity_zero_t"
-    "opics\030\006 \001(\005\022#\n\033theta_sparsity_total_topi"
-    "cs\030\007 \001(\005\"|\n\030SparsityThetaScoreConfig\022\031\n\n"
-    "field_name\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002"
-    " \001(\t:\007@global\022\023\n\003eps\030\003 \001(\002:\0061e-037\022\022\n\nto"
-    "pic_name\030\004 \003(\t\"N\n\022SparsityThetaScore\022\r\n\005"
-    "value\030\001 \001(\001\022\023\n\013zero_topics\030\002 \001(\003\022\024\n\014tota"
-    "l_topics\030\003 \001(\003\"c\n\026SparsityPhiScoreConfig"
-    "\022\023\n\003eps\030\001 \001(\002:\0061e-037\022 \n\010class_id\030\002 \001(\t:"
-    "\016@default_class\022\022\n\ntopic_name\030\003 \003(\t\"L\n\020S"
-    "parsityPhiScore\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_t"
-    "okens\030\002 \001(\003\022\024\n\014total_tokens\030\003 \001(\003\"T\n\031Ite"
-    "msProcessedScoreConfig\022\031\n\nfield_name\030\001 \001"
-    "(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@global\""
-    "\?\n\023ItemsProcessedScore\022\020\n\005value\030\001 \001(\005:\0010"
-    "\022\026\n\013num_batches\030\002 \001(\005:\0010\"\212\001\n\024TopTokensSc"
-    "oreConfig\022\026\n\nnum_tokens\030\001 \001(\005:\00210\022 \n\010cla"
-    "ss_id\030\002 \001(\t:\016@default_class\022\022\n\ntopic_nam"
-    "e\030\003 \003(\t\022$\n\034cooccurrence_dictionary_name\030"
-    "\004 \001(\t\"\255\001\n\016TopTokensScore\022\023\n\013num_entries\030"
-    "\001 \001(\005\022\022\n\ntopic_name\030\002 \003(\t\022\023\n\013topic_index"
-    "\030\003 \003(\005\022\r\n\005token\030\004 \003(\t\022\016\n\006weight\030\005 \003(\002\022#\n"
-    "\tcoherence\030\006 \001(\0132\020.artm.FloatArray\022\031\n\021av"
-    "erage_coherence\030\007 \001(\002\"\177\n\027ThetaSnippetSco"
-    "reConfig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013s"
-    "tream_name\030\002 \001(\t:\007@global\022\023\n\007item_id\030\003 \003"
-    "(\005B\002\020\001\022\026\n\nitem_count\030\004 \001(\005:\00210\"F\n\021ThetaS"
-    "nippetScore\022\017\n\007item_id\030\001 \003(\005\022 \n\006values\030\002"
-    " \003(\0132\020.artm.FloatArray\"\262\001\n\026TopicKernelSc"
-    "oreConfig\022\023\n\003eps\030\001 \001(\002:\0061e-037\022 \n\010class_"
+    "_max_size\030\007 \001(\005:\00210\022\'\n\014score_config\030\t \003("
+    "\0132\021.artm.ScoreConfig\022&\n\027online_batch_pro"
+    "cessing\030\r \001(\010:\005false\022\027\n\017disk_cache_path\030"
+    "\017 \001(\t\"d\n\023RegularizerSettings\022\014\n\004name\030\001 \001"
+    "(\t\022\013\n\003tau\030\002 \001(\001\022#\n\033use_relative_regulari"
+    "zation\030\003 \001(\010\022\r\n\005gamma\030\004 \001(\001\"\265\004\n\013ModelCon"
+    "fig\022\024\n\004name\030\001 \001(\t:\006@model\022\030\n\014topics_coun"
+    "t\030\002 \001(\005:\00232\022\022\n\ntopic_name\030\003 \003(\t\022\025\n\007enabl"
+    "ed\030\004 \001(\010:\004true\022\"\n\026inner_iterations_count"
+    "\030\005 \001(\005:\00210\022\031\n\nfield_name\030\006 \001(\t:\005@body\022\034\n"
+    "\013stream_name\030\007 \001(\t:\007@global\022\022\n\nscore_nam"
+    "e\030\010 \003(\t\022\032\n\013reuse_theta\030\t \001(\010:\005false\022\030\n\020r"
+    "egularizer_name\030\n \003(\t\022\027\n\017regularizer_tau"
+    "\030\013 \003(\001\022\020\n\010class_id\030\014 \003(\t\022\024\n\014class_weight"
+    "\030\r \003(\002\022\034\n\016use_sparse_bow\030\016 \001(\010:\004true\022\037\n\020"
+    "use_random_theta\030\017 \001(\010:\005false\022\034\n\016use_new"
+    "_tokens\030\020 \001(\010:\004true\022\031\n\013opt_for_avx\030\021 \001(\010"
+    ":\004true\0227\n\024regularizer_settings\030\022 \003(\0132\031.a"
+    "rtm.RegularizerSettings\022\030\n\020model_name_ca"
+    "che\030\023 \001(\t\022\030\n\020predict_class_id\030\024 \001(\t\"\300\002\n\021"
+    "RegularizerConfig\022\014\n\004name\030\001 \001(\t\022*\n\004type\030"
+    "\002 \001(\0162\034.artm.RegularizerConfig.Type\022\016\n\006c"
+    "onfig\030\003 \001(\014\022\013\n\003tau\030\004 \001(\002\"\323\001\n\004Type\022\025\n\021Smo"
+    "othSparseTheta\020\000\022\023\n\017SmoothSparsePhi\020\001\022\023\n"
+    "\017DecorrelatorPhi\020\002\022\024\n\020MultiLanguagePhi\020\003"
+    "\022\032\n\026LabelRegularizationPhi\020\004\022\026\n\022Specifie"
+    "dSparsePhi\020\005\022\027\n\023ImproveCoherencePhi\020\006\022\016\n"
+    "\nSmoothPtdw\020\007\022\027\n\023TopicSelectionTheta\020\010\"r"
+    "\n\027SmoothSparseThetaConfig\022\022\n\ntopic_name\030"
+    "\001 \003(\t\022\022\n\nalpha_iter\030\002 \003(\002\022/\n\020transform_c"
+    "onfig\030\003 \001(\0132\025.artm.TransformConfig\"\207\001\n\025S"
+    "moothSparsePhiConfig\022\022\n\ntopic_name\030\001 \003(\t"
+    "\022\020\n\010class_id\030\002 \003(\t\022\027\n\017dictionary_name\030\003 "
+    "\001(\t\022/\n\020transform_config\030\004 \001(\0132\025.artm.Tra"
+    "nsformConfig\"=\n\025DecorrelatorPhiConfig\022\022\n"
+    "\ntopic_name\030\001 \003(\t\022\020\n\010class_id\030\002 \003(\t\"\030\n\026M"
+    "ultiLanguagePhiConfig\"]\n\034LabelRegulariza"
+    "tionPhiConfig\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010cla"
+    "ss_id\030\002 \003(\t\022\027\n\017dictionary_name\030\003 \001(\t\"\202\002\n"
+    "\030SpecifiedSparsePhiConfig\022\022\n\ntopic_name\030"
+    "\001 \003(\t\022 \n\010class_id\030\002 \001(\t:\016@default_class\022"
+    "\036\n\022max_elements_count\030\003 \001(\005:\00220\022#\n\025proba"
+    "bility_threshold\030\004 \001(\002:\0040.99\022\?\n\004mode\030\005 \001"
+    "(\0162#.artm.SpecifiedSparsePhiConfig.Mode:"
+    "\014SparseTopics\"*\n\004Mode\022\020\n\014SparseTopics\020\000\022"
+    "\020\n\014SparseTokens\020\001\"Z\n\031ImproveCoherencePhi"
+    "Config\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010class_id\030\002"
+    " \003(\t\022\027\n\017dictionary_name\030\003 \001(\t\"\244\001\n\020Smooth"
+    "PtdwConfig\0228\n\004type\030\001 \001(\0162\033.artm.SmoothPt"
+    "dwConfig.Type:\rMovingAverage\022\022\n\006window\030\003"
+    " \001(\005:\00210\022\024\n\tthreshold\030\004 \001(\001:\0011\",\n\004Type\022\021"
+    "\n\rMovingAverage\020\001\022\021\n\rMovingProduct\020\002\"X\n\031"
+    "TopicSelectionThetaConfig\022\022\n\ntopic_name\030"
+    "\001 \003(\t\022\023\n\013topic_value\030\002 \003(\002\022\022\n\nalpha_iter"
+    "\030\003 \003(\002\"\262\001\n\017TransformConfig\022E\n\016transform_"
+    "type\030\001 \001(\0162#.artm.TransformConfig.Transf"
+    "ormType:\010Constant\022\014\n\001n\030\002 \001(\001:\0011\022\014\n\001a\030\003 \001"
+    "(\001:\0011\"<\n\rTransformType\022\r\n\tLogarithm\020\000\022\016\n"
+    "\nPolynomial\020\001\022\014\n\010Constant\020\002\"\212\002\n\013ScoreCon"
+    "fig\022\014\n\004name\030\001 \001(\t\022$\n\004type\030\002 \001(\0162\026.artm.S"
+    "coreConfig.Type\022\016\n\006config\030\003 \001(\014\"\266\001\n\004Type"
+    "\022\016\n\nPerplexity\020\000\022\021\n\rSparsityTheta\020\001\022\017\n\013S"
+    "parsityPhi\020\002\022\022\n\016ItemsProcessed\020\003\022\r\n\tTopT"
+    "okens\020\004\022\020\n\014ThetaSnippet\020\005\022\017\n\013TopicKernel"
+    "\020\006\022\020\n\014TopicMassPhi\020\007\022\022\n\016ClassPrecision\020\010"
+    "\022\016\n\nPeakMemory\020\t\"\204\002\n\tScoreData\022\014\n\004name\030\001"
+    " \001(\t\022\"\n\004type\030\002 \001(\0162\024.artm.ScoreData.Type"
+    "\022\014\n\004data\030\003 \001(\014\"\266\001\n\004Type\022\016\n\nPerplexity\020\000\022"
+    "\021\n\rSparsityTheta\020\001\022\017\n\013SparsityPhi\020\002\022\022\n\016I"
+    "temsProcessed\020\003\022\r\n\tTopTokens\020\004\022\020\n\014ThetaS"
+    "nippet\020\005\022\017\n\013TopicKernel\020\006\022\020\n\014TopicMassPh"
+    "i\020\007\022\022\n\016ClassPrecision\020\010\022\016\n\nPeakMemory\020\t\""
+    "\314\002\n\025PerplexityScoreConfig\022\031\n\nfield_name\030"
+    "\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@glob"
+    "al\022J\n\nmodel_type\030\003 \001(\0162 .artm.Perplexity"
+    "ScoreConfig.Type:\024UnigramDocumentModel\022\027"
+    "\n\017dictionary_name\030\004 \001(\t\022\"\n\022theta_sparsit"
+    "y_eps\030\005 \001(\002:\0061e-037\022!\n\031theta_sparsity_to"
+    "pic_name\030\006 \003(\t\022\020\n\010class_id\030\007 \003(\t\"<\n\004Type"
+    "\022\030\n\024UnigramDocumentModel\020\000\022\032\n\026UnigramCol"
+    "lectionModel\020\001\"\274\001\n\017PerplexityScore\022\r\n\005va"
+    "lue\030\001 \001(\001\022\013\n\003raw\030\002 \001(\001\022\022\n\nnormalizer\030\003 \001"
+    "(\001\022\022\n\nzero_words\030\004 \001(\003\022\034\n\024theta_sparsity"
+    "_value\030\005 \001(\001\022\"\n\032theta_sparsity_zero_topi"
+    "cs\030\006 \001(\005\022#\n\033theta_sparsity_total_topics\030"
+    "\007 \001(\005\"|\n\030SparsityThetaScoreConfig\022\031\n\nfie"
+    "ld_name\030\001 \001(\t:\005@body\022\034\n\013stream_name\030\002 \001("
+    "\t:\007@global\022\023\n\003eps\030\003 \001(\002:\0061e-037\022\022\n\ntopic"
+    "_name\030\004 \003(\t\"N\n\022SparsityThetaScore\022\r\n\005val"
+    "ue\030\001 \001(\001\022\023\n\013zero_topics\030\002 \001(\003\022\024\n\014total_t"
+    "opics\030\003 \001(\003\"c\n\026SparsityPhiScoreConfig\022\023\n"
+    "\003eps\030\001 \001(\002:\0061e-037\022 \n\010class_id\030\002 \001(\t:\016@d"
+    "efault_class\022\022\n\ntopic_name\030\003 \003(\t\"L\n\020Spar"
+    "sityPhiScore\022\r\n\005value\030\001 \001(\001\022\023\n\013zero_toke"
+    "ns\030\002 \001(\003\022\024\n\014total_tokens\030\003 \001(\003\"T\n\031ItemsP"
+    "rocessedScoreConfig\022\031\n\nfield_name\030\001 \001(\t:"
+    "\005@body\022\034\n\013stream_name\030\002 \001(\t:\007@global\"\?\n\023"
+    "ItemsProcessedScore\022\020\n\005value\030\001 \001(\005:\0010\022\026\n"
+    "\013num_batches\030\002 \001(\005:\0010\"\212\001\n\024TopTokensScore"
+    "Config\022\026\n\nnum_tokens\030\001 \001(\005:\00210\022 \n\010class_"
     "id\030\002 \001(\t:\016@default_class\022\022\n\ntopic_name\030\003"
-    " \003(\t\022\'\n\032probability_mass_threshold\030\004 \001(\001"
-    ":\0030.1\022$\n\034cooccurrence_dictionary_name\030\005 "
-    "\001(\t\"\377\002\n\020TopicKernelScore\022&\n\013kernel_size\030"
-    "\001 \001(\0132\021.artm.DoubleArray\022(\n\rkernel_purit"
-    "y\030\002 \001(\0132\021.artm.DoubleArray\022*\n\017kernel_con"
-    "trast\030\003 \001(\0132\021.artm.DoubleArray\022\033\n\023averag"
-    "e_kernel_size\030\004 \001(\001\022\035\n\025average_kernel_pu"
-    "rity\030\005 \001(\001\022\037\n\027average_kernel_contrast\030\006 "
-    "\001(\001\022$\n\tcoherence\030\007 \001(\0132\021.artm.DoubleArra"
-    "y\022\031\n\021average_coherence\030\010 \001(\002\022(\n\rkernel_t"
-    "okens\030\t \003(\0132\021.artm.StringArray\022%\n\ntopic_"
-    "name\030\n \001(\0132\021.artm.StringArray\"d\n\027TopicMa"
-    "ssPhiScoreConfig\022\023\n\003eps\030\001 \001(\002:\0061e-037\022 \n"
-    "\010class_id\030\002 \001(\t:\016@default_class\022\022\n\ntopic"
-    "_name\030\003 \003(\t\"_\n\021TopicMassPhiScore\022\r\n\005valu"
-    "e\030\001 \001(\001\022\022\n\ntopic_name\030\002 \003(\t\022\023\n\013topic_rat"
-    "io\030\003 \003(\001\022\022\n\ntopic_mass\030\004 \003(\001\"9\n\031ClassPre"
-    "cisionScoreConfig\022\034\n\013stream_name\030\001 \001(\t:\007"
-    "@global\"B\n\023ClassPrecisionScore\022\r\n\005value\030"
-    "\001 \001(\001\022\r\n\005error\030\002 \001(\001\022\r\n\005total\030\003 \001(\001\"\027\n\025P"
-    "eakMemoryScoreConfig\" \n\017PeakMemoryScore\022"
-    "\r\n\005value\030\001 \001(\003\"\242\003\n\nTopicModel\022\024\n\004name\030\001 "
-    "\001(\t:\006@model\022\024\n\014topics_count\030\002 \001(\005\022\022\n\ntop"
-    "ic_name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rtoken_we"
-    "ights\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010class_i"
-    "d\030\006 \003(\t\022\021\n\tinternals\030\007 \001(\014\022#\n\013topic_inde"
-    "x\030\010 \003(\0132\016.artm.IntArray\0226\n\016operation_typ"
-    "e\030\t \003(\0162\036.artm.TopicModel.OperationType\022"
-    "\014\n\004seed\030\n \001(\005\0325\n\023TopicModelInternals\022\036\n\004"
-    "n_wt\030\001 \003(\0132\020.artm.FloatArray\"U\n\rOperatio"
-    "nType\022\016\n\nInitialize\020\000\022\r\n\tIncrement\020\001\022\r\n\t"
-    "Overwrite\020\002\022\n\n\006Remove\020\003\022\n\n\006Ignore\020\004\"\305\001\n\013"
-    "ThetaMatrix\022\032\n\nmodel_name\030\001 \001(\t:\006@model\022"
-    "\017\n\007item_id\030\002 \003(\005\022&\n\014item_weights\030\003 \003(\0132\020"
-    ".artm.FloatArray\022\022\n\ntopic_name\030\004 \003(\t\022\024\n\014"
-    "topics_count\030\005 \001(\005\022\022\n\nitem_title\030\006 \003(\t\022#"
-    "\n\013topic_index\030\007 \003(\0132\016.artm.IntArray\"\214\004\n\026"
-    "CollectionParserConfig\022B\n\006format\030\001 \001(\0162#"
-    ".artm.CollectionParserConfig.Format:\rBag"
-    "OfWordsUci\022\031\n\021docword_file_path\030\002 \001(\t\022\027\n"
-    "\017vocab_file_path\030\003 \001(\t\022\025\n\rtarget_folder\030"
-    "\004 \001(\t\022!\n\023num_items_per_batch\030\005 \001(\005:\0041000"
-    "\022%\n\027use_unity_based_indices\030\006 \001(\010:\004true\022"
-    ">\n\tname_type\030\007 \001(\0162%.artm.CollectionPars"
-    "erConfig.NameType:\004Guid\022\032\n\022cooccurrence_"
-    "token\030\010 \003(\t\022\023\n\013gather_cooc\030\t \001(\010\022\035\n\025cooc"
-    "currence_class_id\030\n \003(\t\022(\n\031use_symmetric"
-    "_cooc_values\030\013 \001(\010:\005false\"\?\n\006Format\022\021\n\rB"
-    "agOfWordsUci\020\000\022\020\n\014MatrixMarket\020\001\022\020\n\014Vowp"
-    "alWabbit\020\002\"\036\n\010NameType\022\010\n\004Guid\020\000\022\010\n\004Code"
-    "\020\001\"\177\n\024SynchronizeModelArgs\022\022\n\nmodel_name"
-    "\030\001 \001(\t\022\027\n\014decay_weight\030\002 \001(\002:\0010\022!\n\023invok"
-    "e_regularizers\030\003 \001(\010:\004true\022\027\n\014apply_weig"
-    "ht\030\004 \001(\002:\0011\"\351\003\n\023InitializeModelArgs\022\022\n\nm"
-    "odel_name\030\001 \001(\t\022\027\n\017dictionary_name\030\002 \001(\t"
-    "\022\024\n\014topics_count\030\003 \001(\005\022\022\n\ntopic_name\030\004 \003"
-    "(\t\022\020\n\004seed\030\005 \001(\005:\002-1\0229\n\013source_type\030\006 \001("
-    "\0162$.artm.InitializeModelArgs.SourceType\022"
-    "\021\n\tdisk_path\030\007 \001(\t\0220\n\006filter\030\010 \003(\0132 .art"
-    "m.InitializeModelArgs.Filter\022\026\n\016batch_fi"
-    "lename\030\t \003(\t\032\245\001\n\006Filter\022\020\n\010class_id\030\001 \001("
-    "\t\022\026\n\016min_percentage\030\002 \001(\002\022\026\n\016max_percent"
-    "age\030\003 \001(\002\022\021\n\tmin_items\030\004 \001(\005\022\021\n\tmax_item"
-    "s\030\005 \001(\005\022\027\n\017min_total_count\030\006 \001(\005\022\032\n\022min_"
-    "one_item_count\030\007 \001(\005\")\n\nSourceType\022\016\n\nDi"
-    "ctionary\020\000\022\013\n\007Batches\020\001\"\301\001\n\016DictionaryDa"
-    "ta\022\014\n\004name\030\001 \001(\t\022\r\n\005token\030\002 \003(\t\022\020\n\010class"
-    "_id\030\003 \003(\t\022\023\n\013token_value\030\004 \003(\002\022\020\n\010token_"
-    "tf\030\005 \003(\002\022\020\n\010token_df\030\006 \003(\002\022\030\n\020cooc_first"
-    "_index\030\007 \003(\005\022\031\n\021cooc_second_index\030\010 \003(\005\022"
-    "\022\n\ncooc_value\030\t \003(\002\"\313\001\n\024FilterDictionary"
-    "Args\022\027\n\017dictionary_name\030\001 \001(\t\022\036\n\026diction"
-    "ary_target_name\030\002 \001(\t\022\020\n\010class_id\030\003 \001(\t\022"
-    "\016\n\006min_df\030\004 \001(\002\022\016\n\006max_df\030\005 \001(\002\022\023\n\013min_d"
-    "f_rate\030\006 \001(\002\022\023\n\013max_df_rate\030\007 \001(\002\022\016\n\006min"
-    "_tf\030\010 \001(\002\022\016\n\006max_tf\030\t \001(\002\"\264\001\n\024GatherDict"
-    "ionaryArgs\022\036\n\026dictionary_target_name\030\001 \001"
-    "(\t\022\021\n\tdata_path\030\002 \001(\t\022\026\n\016cooc_file_path\030"
-    "\003 \001(\t\022\027\n\017vocab_file_path\030\004 \001(\t\022$\n\025symmet"
-    "ric_cooc_values\030\005 \001(\010:\005false\022\022\n\nbatch_pa"
-    "th\030\006 \003(\t\",\n\021GetDictionaryArgs\022\027\n\017diction"
-    "ary_name\030\001 \001(\t\"\364\002\n\021GetTopicModelArgs\022\022\n\n"
-    "model_name\030\001 \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005"
-    "token\030\003 \003(\t\022\020\n\010class_id\030\004 \003(\t\022\031\n\021use_spa"
-    "rse_format\030\005 \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n"
-    "\014request_type\030\007 \001(\0162#.artm.GetTopicModel"
-    "Args.RequestType:\003Pwt\022B\n\rmatrix_layout\030\010"
-    " \001(\0162$.artm.GetTopicModelArgs.MatrixLayo"
-    "ut:\005Dense\";\n\013RequestType\022\007\n\003Pwt\020\000\022\007\n\003Nwt"
-    "\020\001\022\016\n\nTopicNames\020\002\022\n\n\006Tokens\020\003\"%\n\014Matrix"
-    "Layout\022\t\n\005Dense\020\000\022\n\n\006Sparse\020\001\"\245\002\n\022GetThe"
-    "taMatrixArgs\022\022\n\nmodel_name\030\001 \001(\t\022\032\n\005batc"
-    "h\030\002 \001(\0132\013.artm.Batch\022\022\n\ntopic_name\030\003 \003(\t"
+    " \003(\t\022$\n\034cooccurrence_dictionary_name\030\004 \001"
+    "(\t\"\255\001\n\016TopTokensScore\022\023\n\013num_entries\030\001 \001"
+    "(\005\022\022\n\ntopic_name\030\002 \003(\t\022\023\n\013topic_index\030\003 "
+    "\003(\005\022\r\n\005token\030\004 \003(\t\022\016\n\006weight\030\005 \003(\002\022#\n\tco"
+    "herence\030\006 \001(\0132\020.artm.FloatArray\022\031\n\021avera"
+    "ge_coherence\030\007 \001(\002\"\177\n\027ThetaSnippetScoreC"
+    "onfig\022\031\n\nfield_name\030\001 \001(\t:\005@body\022\034\n\013stre"
+    "am_name\030\002 \001(\t:\007@global\022\023\n\007item_id\030\003 \003(\005B"
+    "\002\020\001\022\026\n\nitem_count\030\004 \001(\005:\00210\"F\n\021ThetaSnip"
+    "petScore\022\017\n\007item_id\030\001 \003(\005\022 \n\006values\030\002 \003("
+    "\0132\020.artm.FloatArray\"\262\001\n\026TopicKernelScore"
+    "Config\022\023\n\003eps\030\001 \001(\002:\0061e-037\022 \n\010class_id\030"
+    "\002 \001(\t:\016@default_class\022\022\n\ntopic_name\030\003 \003("
+    "\t\022\'\n\032probability_mass_threshold\030\004 \001(\001:\0030"
+    ".1\022$\n\034cooccurrence_dictionary_name\030\005 \001(\t"
+    "\"\377\002\n\020TopicKernelScore\022&\n\013kernel_size\030\001 \001"
+    "(\0132\021.artm.DoubleArray\022(\n\rkernel_purity\030\002"
+    " \001(\0132\021.artm.DoubleArray\022*\n\017kernel_contra"
+    "st\030\003 \001(\0132\021.artm.DoubleArray\022\033\n\023average_k"
+    "ernel_size\030\004 \001(\001\022\035\n\025average_kernel_purit"
+    "y\030\005 \001(\001\022\037\n\027average_kernel_contrast\030\006 \001(\001"
+    "\022$\n\tcoherence\030\007 \001(\0132\021.artm.DoubleArray\022\031"
+    "\n\021average_coherence\030\010 \001(\002\022(\n\rkernel_toke"
+    "ns\030\t \003(\0132\021.artm.StringArray\022%\n\ntopic_nam"
+    "e\030\n \001(\0132\021.artm.StringArray\"d\n\027TopicMassP"
+    "hiScoreConfig\022\023\n\003eps\030\001 \001(\002:\0061e-037\022 \n\010cl"
+    "ass_id\030\002 \001(\t:\016@default_class\022\022\n\ntopic_na"
+    "me\030\003 \003(\t\"_\n\021TopicMassPhiScore\022\r\n\005value\030\001"
+    " \001(\001\022\022\n\ntopic_name\030\002 \003(\t\022\023\n\013topic_ratio\030"
+    "\003 \003(\001\022\022\n\ntopic_mass\030\004 \003(\001\"9\n\031ClassPrecis"
+    "ionScoreConfig\022\034\n\013stream_name\030\001 \001(\t:\007@gl"
+    "obal\"B\n\023ClassPrecisionScore\022\r\n\005value\030\001 \001"
+    "(\001\022\r\n\005error\030\002 \001(\001\022\r\n\005total\030\003 \001(\001\"\027\n\025Peak"
+    "MemoryScoreConfig\" \n\017PeakMemoryScore\022\r\n\005"
+    "value\030\001 \001(\003\"\242\003\n\nTopicModel\022\024\n\004name\030\001 \001(\t"
+    ":\006@model\022\024\n\014topics_count\030\002 \001(\005\022\022\n\ntopic_"
+    "name\030\003 \003(\t\022\r\n\005token\030\004 \003(\t\022\'\n\rtoken_weigh"
+    "ts\030\005 \003(\0132\020.artm.FloatArray\022\020\n\010class_id\030\006"
+    " \003(\t\022\021\n\tinternals\030\007 \001(\014\022#\n\013topic_index\030\010"
+    " \003(\0132\016.artm.IntArray\0226\n\016operation_type\030\t"
+    " \003(\0162\036.artm.TopicModel.OperationType\022\014\n\004"
+    "seed\030\n \001(\005\0325\n\023TopicModelInternals\022\036\n\004n_w"
+    "t\030\001 \003(\0132\020.artm.FloatArray\"U\n\rOperationTy"
+    "pe\022\016\n\nInitialize\020\000\022\r\n\tIncrement\020\001\022\r\n\tOve"
+    "rwrite\020\002\022\n\n\006Remove\020\003\022\n\n\006Ignore\020\004\"\305\001\n\013The"
+    "taMatrix\022\032\n\nmodel_name\030\001 \001(\t:\006@model\022\017\n\007"
+    "item_id\030\002 \003(\005\022&\n\014item_weights\030\003 \003(\0132\020.ar"
+    "tm.FloatArray\022\022\n\ntopic_name\030\004 \003(\t\022\024\n\014top"
+    "ics_count\030\005 \001(\005\022\022\n\nitem_title\030\006 \003(\t\022#\n\013t"
+    "opic_index\030\007 \003(\0132\016.artm.IntArray\"\214\004\n\026Col"
+    "lectionParserConfig\022B\n\006format\030\001 \001(\0162#.ar"
+    "tm.CollectionParserConfig.Format:\rBagOfW"
+    "ordsUci\022\031\n\021docword_file_path\030\002 \001(\t\022\027\n\017vo"
+    "cab_file_path\030\003 \001(\t\022\025\n\rtarget_folder\030\004 \001"
+    "(\t\022!\n\023num_items_per_batch\030\005 \001(\005:\0041000\022%\n"
+    "\027use_unity_based_indices\030\006 \001(\010:\004true\022>\n\t"
+    "name_type\030\007 \001(\0162%.artm.CollectionParserC"
+    "onfig.NameType:\004Guid\022\032\n\022cooccurrence_tok"
+    "en\030\010 \003(\t\022\023\n\013gather_cooc\030\t \001(\010\022\035\n\025cooccur"
+    "rence_class_id\030\n \003(\t\022(\n\031use_symmetric_co"
+    "oc_values\030\013 \001(\010:\005false\"\?\n\006Format\022\021\n\rBagO"
+    "fWordsUci\020\000\022\020\n\014MatrixMarket\020\001\022\020\n\014VowpalW"
+    "abbit\020\002\"\036\n\010NameType\022\010\n\004Guid\020\000\022\010\n\004Code\020\001\""
+    "\351\003\n\023InitializeModelArgs\022\022\n\nmodel_name\030\001 "
+    "\001(\t\022\027\n\017dictionary_name\030\002 \001(\t\022\024\n\014topics_c"
+    "ount\030\003 \001(\005\022\022\n\ntopic_name\030\004 \003(\t\022\020\n\004seed\030\005"
+    " \001(\005:\002-1\0229\n\013source_type\030\006 \001(\0162$.artm.Ini"
+    "tializeModelArgs.SourceType\022\021\n\tdisk_path"
+    "\030\007 \001(\t\0220\n\006filter\030\010 \003(\0132 .artm.Initialize"
+    "ModelArgs.Filter\022\026\n\016batch_filename\030\t \003(\t"
+    "\032\245\001\n\006Filter\022\020\n\010class_id\030\001 \001(\t\022\026\n\016min_per"
+    "centage\030\002 \001(\002\022\026\n\016max_percentage\030\003 \001(\002\022\021\n"
+    "\tmin_items\030\004 \001(\005\022\021\n\tmax_items\030\005 \001(\005\022\027\n\017m"
+    "in_total_count\030\006 \001(\005\022\032\n\022min_one_item_cou"
+    "nt\030\007 \001(\005\")\n\nSourceType\022\016\n\nDictionary\020\000\022\013"
+    "\n\007Batches\020\001\"\301\001\n\016DictionaryData\022\014\n\004name\030\001"
+    " \001(\t\022\r\n\005token\030\002 \003(\t\022\020\n\010class_id\030\003 \003(\t\022\023\n"
+    "\013token_value\030\004 \003(\002\022\020\n\010token_tf\030\005 \003(\002\022\020\n\010"
+    "token_df\030\006 \003(\002\022\030\n\020cooc_first_index\030\007 \003(\005"
+    "\022\031\n\021cooc_second_index\030\010 \003(\005\022\022\n\ncooc_valu"
+    "e\030\t \003(\002\"\313\001\n\024FilterDictionaryArgs\022\027\n\017dict"
+    "ionary_name\030\001 \001(\t\022\036\n\026dictionary_target_n"
+    "ame\030\002 \001(\t\022\020\n\010class_id\030\003 \001(\t\022\016\n\006min_df\030\004 "
+    "\001(\002\022\016\n\006max_df\030\005 \001(\002\022\023\n\013min_df_rate\030\006 \001(\002"
+    "\022\023\n\013max_df_rate\030\007 \001(\002\022\016\n\006min_tf\030\010 \001(\002\022\016\n"
+    "\006max_tf\030\t \001(\002\"\264\001\n\024GatherDictionaryArgs\022\036"
+    "\n\026dictionary_target_name\030\001 \001(\t\022\021\n\tdata_p"
+    "ath\030\002 \001(\t\022\026\n\016cooc_file_path\030\003 \001(\t\022\027\n\017voc"
+    "ab_file_path\030\004 \001(\t\022$\n\025symmetric_cooc_val"
+    "ues\030\005 \001(\010:\005false\022\022\n\nbatch_path\030\006 \003(\t\",\n\021"
+    "GetDictionaryArgs\022\027\n\017dictionary_name\030\001 \001"
+    "(\t\"\364\002\n\021GetTopicModelArgs\022\022\n\nmodel_name\030\001"
+    " \001(\t\022\022\n\ntopic_name\030\002 \003(\t\022\r\n\005token\030\003 \003(\t\022"
+    "\020\n\010class_id\030\004 \003(\t\022\031\n\021use_sparse_format\030\005"
+    " \001(\010\022\023\n\003eps\030\006 \001(\002:\0061e-037\022>\n\014request_typ"
+    "e\030\007 \001(\0162#.artm.GetTopicModelArgs.Request"
+    "Type:\003Pwt\022B\n\rmatrix_layout\030\010 \001(\0162$.artm."
+    "GetTopicModelArgs.MatrixLayout:\005Dense\";\n"
+    "\013RequestType\022\007\n\003Pwt\020\000\022\007\n\003Nwt\020\001\022\016\n\nTopicN"
+    "ames\020\002\022\n\n\006Tokens\020\003\"%\n\014MatrixLayout\022\t\n\005De"
+    "nse\020\000\022\n\n\006Sparse\020\001\"\211\002\n\022GetThetaMatrixArgs"
+    "\022\022\n\nmodel_name\030\001 \001(\t\022\022\n\ntopic_name\030\003 \003(\t"
     "\022\023\n\013topic_index\030\004 \003(\005\022\032\n\013clean_cache\030\005 \001"
     "(\010:\005false\022\031\n\021use_sparse_format\030\006 \001(\010\022\023\n\003"
     "eps\030\007 \001(\002:\0061e-037\022C\n\rmatrix_layout\030\010 \001(\016"
     "2%.artm.GetThetaMatrixArgs.MatrixLayout:"
     "\005Dense\"%\n\014MatrixLayout\022\t\n\005Dense\020\000\022\n\n\006Spa"
-    "rse\020\001\"W\n\021GetScoreValueArgs\022\022\n\nmodel_name"
-    "\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t\022\032\n\005batch\030\003 \001("
-    "\0132\013.artm.Batch\"\202\001\n\014AddBatchArgs\022\032\n\005batch"
-    "\030\001 \001(\0132\013.artm.Batch\022 \n\024timeout_milliseco"
-    "nds\030\002 \001(\005:\002-1\022\033\n\014reset_scores\030\003 \001(\010:\005fal"
-    "se\022\027\n\017batch_file_name\030\004 \001(\t\"a\n\023InvokeIte"
-    "rationArgs\022\033\n\020iterations_count\030\001 \001(\005:\0011\022"
-    "\032\n\014reset_scores\030\002 \001(\010:\004true\022\021\n\tdisk_path"
-    "\030\003 \001(\t\"0\n\014WaitIdleArgs\022 \n\024timeout_millis"
-    "econds\030\001 \001(\005:\002-1\"8\n\017ExportModelArgs\022\021\n\tf"
-    "ile_name\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\"8\n\017Im"
-    "portModelArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmode"
-    "l_name\030\002 \001(\t\"%\n\017AttachModelArgs\022\022\n\nmodel"
-    "_name\030\001 \001(\t\"\374\004\n\022ProcessBatchesArgs\022\027\n\017nw"
-    "t_target_name\030\001 \001(\t\022\026\n\016batch_filename\030\002 "
-    "\003(\t\022\027\n\017pwt_source_name\030\003 \001(\t\022\"\n\026inner_it"
-    "erations_count\030\004 \001(\005:\00210\022\034\n\013stream_name\030"
-    "\005 \001(\t:\007@global\022\030\n\020regularizer_name\030\006 \003(\t"
-    "\022\027\n\017regularizer_tau\030\007 \003(\001\022\020\n\010class_id\030\010 "
-    "\003(\t\022\024\n\014class_weight\030\t \003(\002\022\032\n\013reuse_theta"
-    "\030\n \001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true"
-    "\022\034\n\016use_sparse_bow\030\014 \001(\010:\004true\022\032\n\014reset_"
-    "scores\030\r \001(\010:\004true\022J\n\021theta_matrix_type\030"
-    "\016 \001(\0162(.artm.ProcessBatchesArgs.ThetaMat"
-    "rixType:\005Cache\022\024\n\014batch_weight\030\017 \003(\002\022\030\n\020"
-    "model_name_cache\030\020 \001(\t\022\030\n\020predict_class_"
-    "id\030\021 \001(\t\022\032\n\005batch\030\022 \003(\0132\013.artm.Batch\"\\\n\017"
-    "ThetaMatrixType\022\010\n\004None\020\000\022\t\n\005Dense\020\001\022\n\n\006"
-    "Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePtdw\020\004\022\016\n\nSp"
-    "arsePtdw\020\005\"d\n\024ProcessBatchesResult\022#\n\nsc"
-    "ore_data\030\001 \003(\0132\017.artm.ScoreData\022\'\n\014theta"
-    "_matrix\030\002 \001(\0132\021.artm.ThetaMatrix\"m\n\016Merg"
-    "eModelArgs\022\027\n\017nwt_target_name\030\001 \001(\t\022\027\n\017n"
-    "wt_source_name\030\002 \003(\t\022\025\n\rsource_weight\030\003 "
-    "\003(\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023RegularizeMo"
-    "delArgs\022\027\n\017rwt_target_name\030\001 \001(\t\022\027\n\017pwt_"
-    "source_name\030\002 \001(\t\022\027\n\017nwt_source_name\030\003 \001"
-    "(\t\0227\n\024regularizer_settings\030\004 \003(\0132\031.artm."
-    "RegularizerSettings\"_\n\022NormalizeModelArg"
-    "s\022\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017nwt_source"
-    "_name\030\002 \001(\t\022\027\n\017rwt_source_name\030\003 \001(\t\"B\n\024"
-    "ImportDictionaryArgs\022\021\n\tfile_name\030\001 \001(\t\022"
-    "\027\n\017dictionary_name\030\002 \001(\t\"B\n\024ExportDictio"
-    "naryArgs\022\021\n\tfile_name\030\001 \001(\t\022\027\n\017dictionar"
-    "y_name\030\002 \001(\t\"\301\001\n\025CopyRequestResultArgs\022Q"
-    "\n\014request_type\030\001 \001(\0162\'.artm.CopyRequestR"
-    "esultArgs.RequestType:\022DefaultRequestTyp"
-    "e\"U\n\013RequestType\022\026\n\022DefaultRequestType\020\000"
-    "\022\026\n\022GetThetaSecondPass\020\001\022\026\n\022GetModelSeco"
-    "ndPass\020\002\"\036\n\034DuplicateMasterComponentArgs"
-    "\"\034\n\032GetMasterComponentInfoArgs\"\301\006\n\023Maste"
-    "rComponentInfo\022\021\n\tmaster_id\030\001 \001(\005\022+\n\006con"
-    "fig\030\002 \001(\0132\033.artm.MasterComponentConfig\022>"
-    "\n\013regularizer\030\003 \003(\0132).artm.MasterCompone"
-    "ntInfo.RegularizerInfo\0222\n\005score\030\004 \003(\0132#."
-    "artm.MasterComponentInfo.ScoreInfo\022<\n\ndi"
-    "ctionary\030\005 \003(\0132(.artm.MasterComponentInf"
-    "o.DictionaryInfo\0222\n\005model\030\006 \003(\0132#.artm.M"
-    "asterComponentInfo.ModelInfo\022=\n\013cache_en"
-    "try\030\007 \003(\0132(.artm.MasterComponentInfo.Cac"
-    "heEntryInfo\022\031\n\021merger_queue_size\030\010 \001(\005\022\034"
-    "\n\024processor_queue_size\030\t \001(\005\0222\n\005batch\030\n "
-    "\003(\0132#.artm.MasterComponentInfo.BatchInfo"
-    "\032-\n\017RegularizerInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004typ"
-    "e\030\002 \001(\t\032\'\n\tScoreInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004ty"
-    "pe\030\002 \001(\t\0325\n\016DictionaryInfo\022\014\n\004name\030\001 \001(\t"
-    "\022\025\n\rentries_count\030\002 \001(\003\032C\n\tBatchInfo\022\014\n\004"
-    "name\030\001 \001(\t\022\023\n\013items_count\030\002 \001(\005\022\023\n\013token"
-    "_count\030\003 \001(\005\032R\n\tModelInfo\022\014\n\004name\030\001 \001(\t\022"
-    "\014\n\004type\030\002 \001(\t\022\024\n\014topics_count\030\003 \001(\005\022\023\n\013t"
-    "oken_count\030\004 \001(\005\0320\n\016CacheEntryInfo\022\013\n\003ke"
-    "y\030\001 \001(\t\022\021\n\tbyte_size\030\002 \001(\005\"C\n\021ImportBatc"
-    "hesArgs\022\022\n\nbatch_name\030\001 \003(\t\022\032\n\005batch\030\003 \003"
-    "(\0132\013.artm.Batch\"6\n\022AwaitOperationArgs\022 \n"
-    "\024timeout_milliseconds\030\001 \001(\005:\002-1\"\262\003\n\021Mast"
-    "erModelConfig\022\022\n\ntopic_name\030\001 \003(\t\022\020\n\010cla"
-    "ss_id\030\002 \003(\t\022\024\n\014class_weight\030\003 \003(\002\022\'\n\014sco"
-    "re_config\030\004 \003(\0132\021.artm.ScoreConfig\0223\n\022re"
-    "gularizer_config\030\005 \003(\0132\027.artm.Regularize"
-    "rConfig\022\017\n\007threads\030\006 \001(\005\022\025\n\010pwt_name\030\007 \001"
-    "(\t:\003pwt\022\025\n\010nwt_name\030\010 \001(\t:\003nwt\022\036\n\026inner_"
-    "iterations_count\030\t \001(\005\022\032\n\013reuse_theta\030\n "
-    "\001(\010:\005false\022\031\n\013opt_for_avx\030\013 \001(\010:\004true\022\034\n"
-    "\016use_sparse_bow\030\014 \001(\010:\004true\022\027\n\017disk_cach"
-    "e_path\030\r \001(\t\022\032\n\013use_v06_api\030\016 \001(\010:\005false"
-    "\022\032\n\013cache_theta\030\017 \001(\010:\005false\"r\n\031FitOffli"
-    "neMasterModelArgs\022\026\n\016batch_filename\030\001 \003("
-    "\t\022\024\n\014batch_weight\030\002 \003(\002\022\021\n\006passes\030\003 \001(\005:"
-    "\0011\022\024\n\014batch_folder\030\004 \001(\t\"\240\001\n\030FitOnlineMa"
-    "sterModelArgs\022\026\n\016batch_filename\030\001 \003(\t\022\024\n"
-    "\014batch_weight\030\002 \003(\002\022\024\n\014update_after\030\003 \003("
-    "\005\022\024\n\014apply_weight\030\004 \003(\002\022\024\n\014decay_weight\030"
-    "\005 \003(\002\022\024\n\005async\030\006 \001(\010:\005false\"\230\002\n\030Transfor"
-    "mMasterModelArgs\022\032\n\005batch\030\001 \003(\0132\013.artm.B"
-    "atch\022\026\n\016batch_filename\030\002 \003(\t\022P\n\021theta_ma"
-    "trix_type\030\003 \001(\0162..artm.TransformMasterMo"
-    "delArgs.ThetaMatrixType:\005Dense\022\030\n\020predic"
-    "t_class_id\030\004 \001(\t\"\\\n\017ThetaMatrixType\022\010\n\004N"
-    "one\020\000\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022"
-    "\r\n\tDensePtdw\020\004\022\016\n\nSparsePtdw\020\005\"\377\001\n\024Confi"
-    "gureLoggingArgs\022\017\n\007log_dir\030\001 \001(\t\022\023\n\013minl"
-    "oglevel\030\002 \001(\005\022\027\n\017stderrthreshold\030\003 \001(\005\022\023"
-    "\n\013logtostderr\030\004 \001(\010\022\030\n\020colorlogtostderr\030"
-    "\005 \001(\010\022\027\n\017alsologtostderr\030\006 \001(\010\022\022\n\nlogbuf"
-    "secs\030\007 \001(\005\022\023\n\013logbuflevel\030\010 \001(\005\022\024\n\014max_l"
-    "og_size\030\t \001(\005\022!\n\031stop_logging_if_full_di"
-    "sk\030\n \001(\010", 13968);
+    "rse\020\001\";\n\021GetScoreValueArgs\022\022\n\nmodel_name"
+    "\030\001 \001(\t\022\022\n\nscore_name\030\002 \001(\t\"8\n\017ExportMode"
+    "lArgs\022\021\n\tfile_name\030\001 \001(\t\022\022\n\nmodel_name\030\002"
+    " \001(\t\"8\n\017ImportModelArgs\022\021\n\tfile_name\030\001 \001"
+    "(\t\022\022\n\nmodel_name\030\002 \001(\t\"%\n\017AttachModelArg"
+    "s\022\022\n\nmodel_name\030\001 \001(\t\"\374\004\n\022ProcessBatches"
+    "Args\022\027\n\017nwt_target_name\030\001 \001(\t\022\026\n\016batch_f"
+    "ilename\030\002 \003(\t\022\027\n\017pwt_source_name\030\003 \001(\t\022\""
+    "\n\026inner_iterations_count\030\004 \001(\005:\00210\022\034\n\013st"
+    "ream_name\030\005 \001(\t:\007@global\022\030\n\020regularizer_"
+    "name\030\006 \003(\t\022\027\n\017regularizer_tau\030\007 \003(\001\022\020\n\010c"
+    "lass_id\030\010 \003(\t\022\024\n\014class_weight\030\t \003(\002\022\032\n\013r"
+    "euse_theta\030\n \001(\010:\005false\022\031\n\013opt_for_avx\030\013"
+    " \001(\010:\004true\022\034\n\016use_sparse_bow\030\014 \001(\010:\004true"
+    "\022\032\n\014reset_scores\030\r \001(\010:\004true\022J\n\021theta_ma"
+    "trix_type\030\016 \001(\0162(.artm.ProcessBatchesArg"
+    "s.ThetaMatrixType:\005Cache\022\024\n\014batch_weight"
+    "\030\017 \003(\002\022\030\n\020model_name_cache\030\020 \001(\t\022\030\n\020pred"
+    "ict_class_id\030\021 \001(\t\022\032\n\005batch\030\022 \003(\0132\013.artm"
+    ".Batch\"\\\n\017ThetaMatrixType\022\010\n\004None\020\000\022\t\n\005D"
+    "ense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDensePt"
+    "dw\020\004\022\016\n\nSparsePtdw\020\005\"d\n\024ProcessBatchesRe"
+    "sult\022#\n\nscore_data\030\001 \003(\0132\017.artm.ScoreDat"
+    "a\022\'\n\014theta_matrix\030\002 \001(\0132\021.artm.ThetaMatr"
+    "ix\"m\n\016MergeModelArgs\022\027\n\017nwt_target_name\030"
+    "\001 \001(\t\022\027\n\017nwt_source_name\030\002 \003(\t\022\025\n\rsource"
+    "_weight\030\003 \003(\002\022\022\n\ntopic_name\030\004 \003(\t\"\231\001\n\023Re"
+    "gularizeModelArgs\022\027\n\017rwt_target_name\030\001 \001"
+    "(\t\022\027\n\017pwt_source_name\030\002 \001(\t\022\027\n\017nwt_sourc"
+    "e_name\030\003 \001(\t\0227\n\024regularizer_settings\030\004 \003"
+    "(\0132\031.artm.RegularizerSettings\"_\n\022Normali"
+    "zeModelArgs\022\027\n\017pwt_target_name\030\001 \001(\t\022\027\n\017"
+    "nwt_source_name\030\002 \001(\t\022\027\n\017rwt_source_name"
+    "\030\003 \001(\t\"B\n\024ImportDictionaryArgs\022\021\n\tfile_n"
+    "ame\030\001 \001(\t\022\027\n\017dictionary_name\030\002 \001(\t\"B\n\024Ex"
+    "portDictionaryArgs\022\021\n\tfile_name\030\001 \001(\t\022\027\n"
+    "\017dictionary_name\030\002 \001(\t\"\301\001\n\025CopyRequestRe"
+    "sultArgs\022Q\n\014request_type\030\001 \001(\0162\'.artm.Co"
+    "pyRequestResultArgs.RequestType:\022Default"
+    "RequestType\"U\n\013RequestType\022\026\n\022DefaultReq"
+    "uestType\020\000\022\026\n\022GetThetaSecondPass\020\001\022\026\n\022Ge"
+    "tModelSecondPass\020\002\"\036\n\034DuplicateMasterCom"
+    "ponentArgs\"\034\n\032GetMasterComponentInfoArgs"
+    "\"\246\006\n\023MasterComponentInfo\022\021\n\tmaster_id\030\001 "
+    "\001(\005\022+\n\006config\030\002 \001(\0132\033.artm.MasterCompone"
+    "ntConfig\022>\n\013regularizer\030\003 \003(\0132).artm.Mas"
+    "terComponentInfo.RegularizerInfo\0222\n\005scor"
+    "e\030\004 \003(\0132#.artm.MasterComponentInfo.Score"
+    "Info\022<\n\ndictionary\030\005 \003(\0132(.artm.MasterCo"
+    "mponentInfo.DictionaryInfo\0222\n\005model\030\006 \003("
+    "\0132#.artm.MasterComponentInfo.ModelInfo\022="
+    "\n\013cache_entry\030\007 \003(\0132(.artm.MasterCompone"
+    "ntInfo.CacheEntryInfo\022\034\n\024processor_queue"
+    "_size\030\t \001(\005\0222\n\005batch\030\n \003(\0132#.artm.Master"
+    "ComponentInfo.BatchInfo\032-\n\017RegularizerIn"
+    "fo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\032\'\n\tScoreI"
+    "nfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\0325\n\016Dicti"
+    "onaryInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rentries_count"
+    "\030\002 \001(\003\032C\n\tBatchInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013ite"
+    "ms_count\030\002 \001(\005\022\023\n\013token_count\030\003 \001(\005\032R\n\tM"
+    "odelInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\022\024\n\014"
+    "topics_count\030\003 \001(\005\022\023\n\013token_count\030\004 \001(\005\032"
+    "0\n\016CacheEntryInfo\022\013\n\003key\030\001 \001(\t\022\021\n\tbyte_s"
+    "ize\030\002 \001(\005\"C\n\021ImportBatchesArgs\022\022\n\nbatch_"
+    "name\030\001 \003(\t\022\032\n\005batch\030\003 \003(\0132\013.artm.Batch\"6"
+    "\n\022AwaitOperationArgs\022 \n\024timeout_millisec"
+    "onds\030\001 \001(\005:\002-1\"\226\003\n\021MasterModelConfig\022\022\n\n"
+    "topic_name\030\001 \003(\t\022\020\n\010class_id\030\002 \003(\t\022\024\n\014cl"
+    "ass_weight\030\003 \003(\002\022\'\n\014score_config\030\004 \003(\0132\021"
+    ".artm.ScoreConfig\0223\n\022regularizer_config\030"
+    "\005 \003(\0132\027.artm.RegularizerConfig\022\017\n\007thread"
+    "s\030\006 \001(\005\022\025\n\010pwt_name\030\007 \001(\t:\003pwt\022\025\n\010nwt_na"
+    "me\030\010 \001(\t:\003nwt\022\036\n\026inner_iterations_count\030"
+    "\t \001(\005\022\032\n\013reuse_theta\030\n \001(\010:\005false\022\031\n\013opt"
+    "_for_avx\030\013 \001(\010:\004true\022\034\n\016use_sparse_bow\030\014"
+    " \001(\010:\004true\022\027\n\017disk_cache_path\030\r \001(\t\022\032\n\013c"
+    "ache_theta\030\017 \001(\010:\005false\"r\n\031FitOfflineMas"
+    "terModelArgs\022\026\n\016batch_filename\030\001 \003(\t\022\024\n\014"
+    "batch_weight\030\002 \003(\002\022\021\n\006passes\030\003 \001(\005:\0011\022\024\n"
+    "\014batch_folder\030\004 \001(\t\"\240\001\n\030FitOnlineMasterM"
+    "odelArgs\022\026\n\016batch_filename\030\001 \003(\t\022\024\n\014batc"
+    "h_weight\030\002 \003(\002\022\024\n\014update_after\030\003 \003(\005\022\024\n\014"
+    "apply_weight\030\004 \003(\002\022\024\n\014decay_weight\030\005 \003(\002"
+    "\022\024\n\005async\030\006 \001(\010:\005false\"\230\002\n\030TransformMast"
+    "erModelArgs\022\032\n\005batch\030\001 \003(\0132\013.artm.Batch\022"
+    "\026\n\016batch_filename\030\002 \003(\t\022P\n\021theta_matrix_"
+    "type\030\003 \001(\0162..artm.TransformMasterModelAr"
+    "gs.ThetaMatrixType:\005Dense\022\030\n\020predict_cla"
+    "ss_id\030\004 \001(\t\"\\\n\017ThetaMatrixType\022\010\n\004None\020\000"
+    "\022\t\n\005Dense\020\001\022\n\n\006Sparse\020\002\022\t\n\005Cache\020\003\022\r\n\tDe"
+    "nsePtdw\020\004\022\016\n\nSparsePtdw\020\005\"\377\001\n\024ConfigureL"
+    "oggingArgs\022\017\n\007log_dir\030\001 \001(\t\022\023\n\013minloglev"
+    "el\030\002 \001(\005\022\027\n\017stderrthreshold\030\003 \001(\005\022\023\n\013log"
+    "tostderr\030\004 \001(\010\022\030\n\020colorlogtostderr\030\005 \001(\010"
+    "\022\027\n\017alsologtostderr\030\006 \001(\010\022\022\n\nlogbufsecs\030"
+    "\007 \001(\005\022\023\n\013logbuflevel\030\010 \001(\005\022\024\n\014max_log_si"
+    "ze\030\t \001(\005\022!\n\031stop_logging_if_full_disk\030\n "
+    "\001(\010", 13163);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/messages.proto", &protobuf_RegisterTypes);
   DoubleArray::default_instance_ = new DoubleArray();
@@ -2828,9 +2637,6 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   ImproveCoherencePhiConfig::default_instance_ = new ImproveCoherencePhiConfig();
   SmoothPtdwConfig::default_instance_ = new SmoothPtdwConfig();
   TopicSelectionThetaConfig::default_instance_ = new TopicSelectionThetaConfig();
-  GetRegularizerStateArgs::default_instance_ = new GetRegularizerStateArgs();
-  RegularizerInternalState::default_instance_ = new RegularizerInternalState();
-  MultiLanguagePhiInternalState::default_instance_ = new MultiLanguagePhiInternalState();
   TransformConfig::default_instance_ = new TransformConfig();
   ScoreConfig::default_instance_ = new ScoreConfig();
   ScoreData::default_instance_ = new ScoreData();
@@ -2888,7 +2694,6 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
       new ::std::string("@model", 6);
   ThetaMatrix::default_instance_ = new ThetaMatrix();
   CollectionParserConfig::default_instance_ = new CollectionParserConfig();
-  SynchronizeModelArgs::default_instance_ = new SynchronizeModelArgs();
   InitializeModelArgs::default_instance_ = new InitializeModelArgs();
   InitializeModelArgs_Filter::default_instance_ = new InitializeModelArgs_Filter();
   DictionaryData::default_instance_ = new DictionaryData();
@@ -2898,9 +2703,6 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   GetTopicModelArgs::default_instance_ = new GetTopicModelArgs();
   GetThetaMatrixArgs::default_instance_ = new GetThetaMatrixArgs();
   GetScoreValueArgs::default_instance_ = new GetScoreValueArgs();
-  AddBatchArgs::default_instance_ = new AddBatchArgs();
-  InvokeIterationArgs::default_instance_ = new InvokeIterationArgs();
-  WaitIdleArgs::default_instance_ = new WaitIdleArgs();
   ExportModelArgs::default_instance_ = new ExportModelArgs();
   ImportModelArgs::default_instance_ = new ImportModelArgs();
   AttachModelArgs::default_instance_ = new AttachModelArgs();
@@ -2956,9 +2758,6 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   ImproveCoherencePhiConfig::default_instance_->InitAsDefaultInstance();
   SmoothPtdwConfig::default_instance_->InitAsDefaultInstance();
   TopicSelectionThetaConfig::default_instance_->InitAsDefaultInstance();
-  GetRegularizerStateArgs::default_instance_->InitAsDefaultInstance();
-  RegularizerInternalState::default_instance_->InitAsDefaultInstance();
-  MultiLanguagePhiInternalState::default_instance_->InitAsDefaultInstance();
   TransformConfig::default_instance_->InitAsDefaultInstance();
   ScoreConfig::default_instance_->InitAsDefaultInstance();
   ScoreData::default_instance_->InitAsDefaultInstance();
@@ -2986,7 +2785,6 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   TopicModel_TopicModelInternals::default_instance_->InitAsDefaultInstance();
   ThetaMatrix::default_instance_->InitAsDefaultInstance();
   CollectionParserConfig::default_instance_->InitAsDefaultInstance();
-  SynchronizeModelArgs::default_instance_->InitAsDefaultInstance();
   InitializeModelArgs::default_instance_->InitAsDefaultInstance();
   InitializeModelArgs_Filter::default_instance_->InitAsDefaultInstance();
   DictionaryData::default_instance_->InitAsDefaultInstance();
@@ -2996,9 +2794,6 @@ void protobuf_AddDesc_artm_2fmessages_2eproto() {
   GetTopicModelArgs::default_instance_->InitAsDefaultInstance();
   GetThetaMatrixArgs::default_instance_->InitAsDefaultInstance();
   GetScoreValueArgs::default_instance_->InitAsDefaultInstance();
-  AddBatchArgs::default_instance_->InitAsDefaultInstance();
-  InvokeIterationArgs::default_instance_->InitAsDefaultInstance();
-  WaitIdleArgs::default_instance_->InitAsDefaultInstance();
   ExportModelArgs::default_instance_->InitAsDefaultInstance();
   ImportModelArgs::default_instance_->InitAsDefaultInstance();
   AttachModelArgs::default_instance_->InitAsDefaultInstance();
@@ -6060,7 +5855,6 @@ const int MasterComponentConfig::kCompactBatchesFieldNumber;
 const int MasterComponentConfig::kCacheThetaFieldNumber;
 const int MasterComponentConfig::kProcessorsCountFieldNumber;
 const int MasterComponentConfig::kProcessorQueueMaxSizeFieldNumber;
-const int MasterComponentConfig::kMergerQueueMaxSizeFieldNumber;
 const int MasterComponentConfig::kScoreConfigFieldNumber;
 const int MasterComponentConfig::kOnlineBatchProcessingFieldNumber;
 const int MasterComponentConfig::kDiskCachePathFieldNumber;
@@ -6087,7 +5881,6 @@ void MasterComponentConfig::SharedCtor() {
   cache_theta_ = false;
   processors_count_ = 0;
   processor_queue_max_size_ = 10;
-  merger_queue_max_size_ = 10;
   online_batch_processing_ = false;
   disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -6140,10 +5933,9 @@ void MasterComponentConfig::Clear() {
     cache_theta_ = false;
     processors_count_ = 0;
     processor_queue_max_size_ = 10;
-    merger_queue_max_size_ = 10;
+    online_batch_processing_ = false;
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    online_batch_processing_ = false;
     if (has_disk_cache_path()) {
       if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
         disk_cache_path_->clear();
@@ -6253,22 +6045,6 @@ bool MasterComponentConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(64)) goto parse_merger_queue_max_size;
-        break;
-      }
-
-      // optional int32 merger_queue_max_size = 8 [default = 10];
-      case 8: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_merger_queue_max_size:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &merger_queue_max_size_)));
-          set_has_merger_queue_max_size();
-        } else {
-          goto handle_uninterpreted;
-        }
         if (input->ExpectTag(74)) goto parse_score_config;
         break;
       }
@@ -6374,11 +6150,6 @@ void MasterComponentConfig::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->processor_queue_max_size(), output);
   }
 
-  // optional int32 merger_queue_max_size = 8 [default = 10];
-  if (has_merger_queue_max_size()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->merger_queue_max_size(), output);
-  }
-
   // repeated .artm.ScoreConfig score_config = 9;
   for (int i = 0; i < this->score_config_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -6442,11 +6213,6 @@ void MasterComponentConfig::SerializeWithCachedSizes(
   // optional int32 processor_queue_max_size = 7 [default = 10];
   if (has_processor_queue_max_size()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->processor_queue_max_size(), target);
-  }
-
-  // optional int32 merger_queue_max_size = 8 [default = 10];
-  if (has_merger_queue_max_size()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->merger_queue_max_size(), target);
   }
 
   // repeated .artm.ScoreConfig score_config = 9;
@@ -6513,20 +6279,13 @@ int MasterComponentConfig::ByteSize() const {
           this->processor_queue_max_size());
     }
 
-    // optional int32 merger_queue_max_size = 8 [default = 10];
-    if (has_merger_queue_max_size()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->merger_queue_max_size());
-    }
-
-  }
-  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     // optional bool online_batch_processing = 13 [default = false];
     if (has_online_batch_processing()) {
       total_size += 1 + 1;
     }
 
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     // optional string disk_cache_path = 15;
     if (has_disk_cache_path()) {
       total_size += 1 +
@@ -6594,14 +6353,11 @@ void MasterComponentConfig::MergeFrom(const MasterComponentConfig& from) {
     if (from.has_processor_queue_max_size()) {
       set_processor_queue_max_size(from.processor_queue_max_size());
     }
-    if (from.has_merger_queue_max_size()) {
-      set_merger_queue_max_size(from.merger_queue_max_size());
-    }
-  }
-  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_online_batch_processing()) {
       set_online_batch_processing(from.online_batch_processing());
     }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_disk_cache_path()) {
       set_disk_cache_path(from.disk_cache_path());
     }
@@ -6634,7 +6390,6 @@ void MasterComponentConfig::Swap(MasterComponentConfig* other) {
     std::swap(cache_theta_, other->cache_theta_);
     std::swap(processors_count_, other->processors_count_);
     std::swap(processor_queue_max_size_, other->processor_queue_max_size_);
-    std::swap(merger_queue_max_size_, other->merger_queue_max_size_);
     score_config_.Swap(&other->score_config_);
     std::swap(online_batch_processing_, other->online_batch_processing_);
     std::swap(disk_cache_path_, other->disk_cache_path_);
@@ -11245,777 +11000,6 @@ void TopicSelectionThetaConfig::Swap(TopicSelectionThetaConfig* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = TopicSelectionThetaConfig_descriptor_;
   metadata.reflection = TopicSelectionThetaConfig_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int GetRegularizerStateArgs::kNameFieldNumber;
-#endif  // !_MSC_VER
-
-GetRegularizerStateArgs::GetRegularizerStateArgs()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void GetRegularizerStateArgs::InitAsDefaultInstance() {
-}
-
-GetRegularizerStateArgs::GetRegularizerStateArgs(const GetRegularizerStateArgs& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void GetRegularizerStateArgs::SharedCtor() {
-  _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-GetRegularizerStateArgs::~GetRegularizerStateArgs() {
-  SharedDtor();
-}
-
-void GetRegularizerStateArgs::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete name_;
-  }
-  if (this != default_instance_) {
-  }
-}
-
-void GetRegularizerStateArgs::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* GetRegularizerStateArgs::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return GetRegularizerStateArgs_descriptor_;
-}
-
-const GetRegularizerStateArgs& GetRegularizerStateArgs::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
-  return *default_instance_;
-}
-
-GetRegularizerStateArgs* GetRegularizerStateArgs::default_instance_ = NULL;
-
-GetRegularizerStateArgs* GetRegularizerStateArgs::New() const {
-  return new GetRegularizerStateArgs;
-}
-
-void GetRegularizerStateArgs::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_name()) {
-      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-        name_->clear();
-      }
-    }
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool GetRegularizerStateArgs::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string name = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->name().data(), this->name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void GetRegularizerStateArgs::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional string name = 1;
-  if (has_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      1, this->name(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* GetRegularizerStateArgs::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional string name = 1;
-  if (has_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->name(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int GetRegularizerStateArgs::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string name = 1;
-    if (has_name()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->name());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void GetRegularizerStateArgs::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const GetRegularizerStateArgs* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const GetRegularizerStateArgs*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void GetRegularizerStateArgs::MergeFrom(const GetRegularizerStateArgs& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_name()) {
-      set_name(from.name());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void GetRegularizerStateArgs::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void GetRegularizerStateArgs::CopyFrom(const GetRegularizerStateArgs& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool GetRegularizerStateArgs::IsInitialized() const {
-
-  return true;
-}
-
-void GetRegularizerStateArgs::Swap(GetRegularizerStateArgs* other) {
-  if (other != this) {
-    std::swap(name_, other->name_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata GetRegularizerStateArgs::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = GetRegularizerStateArgs_descriptor_;
-  metadata.reflection = GetRegularizerStateArgs_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-const ::google::protobuf::EnumDescriptor* RegularizerInternalState_Type_descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return RegularizerInternalState_Type_descriptor_;
-}
-bool RegularizerInternalState_Type_IsValid(int value) {
-  switch(value) {
-    case 3:
-      return true;
-    default:
-      return false;
-  }
-}
-
-#ifndef _MSC_VER
-const RegularizerInternalState_Type RegularizerInternalState::MultiLanguagePhi;
-const RegularizerInternalState_Type RegularizerInternalState::Type_MIN;
-const RegularizerInternalState_Type RegularizerInternalState::Type_MAX;
-const int RegularizerInternalState::Type_ARRAYSIZE;
-#endif  // _MSC_VER
-#ifndef _MSC_VER
-const int RegularizerInternalState::kNameFieldNumber;
-const int RegularizerInternalState::kTypeFieldNumber;
-const int RegularizerInternalState::kDataFieldNumber;
-#endif  // !_MSC_VER
-
-RegularizerInternalState::RegularizerInternalState()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void RegularizerInternalState::InitAsDefaultInstance() {
-}
-
-RegularizerInternalState::RegularizerInternalState(const RegularizerInternalState& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void RegularizerInternalState::SharedCtor() {
-  _cached_size_ = 0;
-  name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  type_ = 3;
-  data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-RegularizerInternalState::~RegularizerInternalState() {
-  SharedDtor();
-}
-
-void RegularizerInternalState::SharedDtor() {
-  if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete name_;
-  }
-  if (data_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete data_;
-  }
-  if (this != default_instance_) {
-  }
-}
-
-void RegularizerInternalState::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* RegularizerInternalState::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return RegularizerInternalState_descriptor_;
-}
-
-const RegularizerInternalState& RegularizerInternalState::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
-  return *default_instance_;
-}
-
-RegularizerInternalState* RegularizerInternalState::default_instance_ = NULL;
-
-RegularizerInternalState* RegularizerInternalState::New() const {
-  return new RegularizerInternalState;
-}
-
-void RegularizerInternalState::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_name()) {
-      if (name_ != &::google::protobuf::internal::GetEmptyString()) {
-        name_->clear();
-      }
-    }
-    type_ = 3;
-    if (has_data()) {
-      if (data_ != &::google::protobuf::internal::GetEmptyString()) {
-        data_->clear();
-      }
-    }
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool RegularizerInternalState::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string name = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->name().data(), this->name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(16)) goto parse_type;
-        break;
-      }
-
-      // optional .artm.RegularizerInternalState.Type type = 2;
-      case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_type:
-          int value;
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          if (::artm::RegularizerInternalState_Type_IsValid(value)) {
-            set_type(static_cast< ::artm::RegularizerInternalState_Type >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
-          }
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(26)) goto parse_data;
-        break;
-      }
-
-      // optional bytes data = 3;
-      case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_data:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_data()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void RegularizerInternalState::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional string name = 1;
-  if (has_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      1, this->name(), output);
-  }
-
-  // optional .artm.RegularizerInternalState.Type type = 2;
-  if (has_type()) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      2, this->type(), output);
-  }
-
-  // optional bytes data = 3;
-  if (has_data()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      3, this->data(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* RegularizerInternalState::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional string name = 1;
-  if (has_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->name(), target);
-  }
-
-  // optional .artm.RegularizerInternalState.Type type = 2;
-  if (has_type()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->type(), target);
-  }
-
-  // optional bytes data = 3;
-  if (has_data()) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        3, this->data(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int RegularizerInternalState::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string name = 1;
-    if (has_name()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->name());
-    }
-
-    // optional .artm.RegularizerInternalState.Type type = 2;
-    if (has_type()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
-    }
-
-    // optional bytes data = 3;
-    if (has_data()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->data());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void RegularizerInternalState::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const RegularizerInternalState* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const RegularizerInternalState*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void RegularizerInternalState::MergeFrom(const RegularizerInternalState& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_name()) {
-      set_name(from.name());
-    }
-    if (from.has_type()) {
-      set_type(from.type());
-    }
-    if (from.has_data()) {
-      set_data(from.data());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void RegularizerInternalState::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void RegularizerInternalState::CopyFrom(const RegularizerInternalState& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool RegularizerInternalState::IsInitialized() const {
-
-  return true;
-}
-
-void RegularizerInternalState::Swap(RegularizerInternalState* other) {
-  if (other != this) {
-    std::swap(name_, other->name_);
-    std::swap(type_, other->type_);
-    std::swap(data_, other->data_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata RegularizerInternalState::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = RegularizerInternalState_descriptor_;
-  metadata.reflection = RegularizerInternalState_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int MultiLanguagePhiInternalState::kNoRegularizationCallsFieldNumber;
-#endif  // !_MSC_VER
-
-MultiLanguagePhiInternalState::MultiLanguagePhiInternalState()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void MultiLanguagePhiInternalState::InitAsDefaultInstance() {
-}
-
-MultiLanguagePhiInternalState::MultiLanguagePhiInternalState(const MultiLanguagePhiInternalState& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void MultiLanguagePhiInternalState::SharedCtor() {
-  _cached_size_ = 0;
-  no_regularization_calls_ = 0;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-MultiLanguagePhiInternalState::~MultiLanguagePhiInternalState() {
-  SharedDtor();
-}
-
-void MultiLanguagePhiInternalState::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void MultiLanguagePhiInternalState::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* MultiLanguagePhiInternalState::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return MultiLanguagePhiInternalState_descriptor_;
-}
-
-const MultiLanguagePhiInternalState& MultiLanguagePhiInternalState::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
-  return *default_instance_;
-}
-
-MultiLanguagePhiInternalState* MultiLanguagePhiInternalState::default_instance_ = NULL;
-
-MultiLanguagePhiInternalState* MultiLanguagePhiInternalState::New() const {
-  return new MultiLanguagePhiInternalState;
-}
-
-void MultiLanguagePhiInternalState::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    no_regularization_calls_ = 0;
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool MultiLanguagePhiInternalState::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional int32 no_regularization_calls = 1 [default = 0];
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &no_regularization_calls_)));
-          set_has_no_regularization_calls();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void MultiLanguagePhiInternalState::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional int32 no_regularization_calls = 1 [default = 0];
-  if (has_no_regularization_calls()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->no_regularization_calls(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* MultiLanguagePhiInternalState::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional int32 no_regularization_calls = 1 [default = 0];
-  if (has_no_regularization_calls()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->no_regularization_calls(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int MultiLanguagePhiInternalState::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional int32 no_regularization_calls = 1 [default = 0];
-    if (has_no_regularization_calls()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->no_regularization_calls());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void MultiLanguagePhiInternalState::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const MultiLanguagePhiInternalState* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const MultiLanguagePhiInternalState*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void MultiLanguagePhiInternalState::MergeFrom(const MultiLanguagePhiInternalState& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_no_regularization_calls()) {
-      set_no_regularization_calls(from.no_regularization_calls());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void MultiLanguagePhiInternalState::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void MultiLanguagePhiInternalState::CopyFrom(const MultiLanguagePhiInternalState& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool MultiLanguagePhiInternalState::IsInitialized() const {
-
-  return true;
-}
-
-void MultiLanguagePhiInternalState::Swap(MultiLanguagePhiInternalState* other) {
-  if (other != this) {
-    std::swap(no_regularization_calls_, other->no_regularization_calls_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata MultiLanguagePhiInternalState::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = MultiLanguagePhiInternalState_descriptor_;
-  metadata.reflection = MultiLanguagePhiInternalState_reflection_;
   return metadata;
 }
 
@@ -21923,345 +20907,6 @@ void CollectionParserConfig::Swap(CollectionParserConfig* other) {
 
 // ===================================================================
 
-#ifndef _MSC_VER
-const int SynchronizeModelArgs::kModelNameFieldNumber;
-const int SynchronizeModelArgs::kDecayWeightFieldNumber;
-const int SynchronizeModelArgs::kInvokeRegularizersFieldNumber;
-const int SynchronizeModelArgs::kApplyWeightFieldNumber;
-#endif  // !_MSC_VER
-
-SynchronizeModelArgs::SynchronizeModelArgs()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void SynchronizeModelArgs::InitAsDefaultInstance() {
-}
-
-SynchronizeModelArgs::SynchronizeModelArgs(const SynchronizeModelArgs& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void SynchronizeModelArgs::SharedCtor() {
-  _cached_size_ = 0;
-  model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  decay_weight_ = 0;
-  invoke_regularizers_ = true;
-  apply_weight_ = 1;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-SynchronizeModelArgs::~SynchronizeModelArgs() {
-  SharedDtor();
-}
-
-void SynchronizeModelArgs::SharedDtor() {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_;
-  }
-  if (this != default_instance_) {
-  }
-}
-
-void SynchronizeModelArgs::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* SynchronizeModelArgs::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return SynchronizeModelArgs_descriptor_;
-}
-
-const SynchronizeModelArgs& SynchronizeModelArgs::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
-  return *default_instance_;
-}
-
-SynchronizeModelArgs* SynchronizeModelArgs::default_instance_ = NULL;
-
-SynchronizeModelArgs* SynchronizeModelArgs::New() const {
-  return new SynchronizeModelArgs;
-}
-
-void SynchronizeModelArgs::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_model_name()) {
-      if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-        model_name_->clear();
-      }
-    }
-    decay_weight_ = 0;
-    invoke_regularizers_ = true;
-    apply_weight_ = 1;
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool SynchronizeModelArgs::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional string model_name = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_model_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->model_name().data(), this->model_name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(21)) goto parse_decay_weight;
-        break;
-      }
-
-      // optional float decay_weight = 2 [default = 0];
-      case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
-         parse_decay_weight:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
-                 input, &decay_weight_)));
-          set_has_decay_weight();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(24)) goto parse_invoke_regularizers;
-        break;
-      }
-
-      // optional bool invoke_regularizers = 3 [default = true];
-      case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_invoke_regularizers:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &invoke_regularizers_)));
-          set_has_invoke_regularizers();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(37)) goto parse_apply_weight;
-        break;
-      }
-
-      // optional float apply_weight = 4 [default = 1];
-      case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
-         parse_apply_weight:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
-                 input, &apply_weight_)));
-          set_has_apply_weight();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void SynchronizeModelArgs::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional string model_name = 1;
-  if (has_model_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->model_name().data(), this->model_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      1, this->model_name(), output);
-  }
-
-  // optional float decay_weight = 2 [default = 0];
-  if (has_decay_weight()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(2, this->decay_weight(), output);
-  }
-
-  // optional bool invoke_regularizers = 3 [default = true];
-  if (has_invoke_regularizers()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->invoke_regularizers(), output);
-  }
-
-  // optional float apply_weight = 4 [default = 1];
-  if (has_apply_weight()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(4, this->apply_weight(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* SynchronizeModelArgs::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional string model_name = 1;
-  if (has_model_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->model_name().data(), this->model_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->model_name(), target);
-  }
-
-  // optional float decay_weight = 2 [default = 0];
-  if (has_decay_weight()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(2, this->decay_weight(), target);
-  }
-
-  // optional bool invoke_regularizers = 3 [default = true];
-  if (has_invoke_regularizers()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->invoke_regularizers(), target);
-  }
-
-  // optional float apply_weight = 4 [default = 1];
-  if (has_apply_weight()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(4, this->apply_weight(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int SynchronizeModelArgs::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional string model_name = 1;
-    if (has_model_name()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->model_name());
-    }
-
-    // optional float decay_weight = 2 [default = 0];
-    if (has_decay_weight()) {
-      total_size += 1 + 4;
-    }
-
-    // optional bool invoke_regularizers = 3 [default = true];
-    if (has_invoke_regularizers()) {
-      total_size += 1 + 1;
-    }
-
-    // optional float apply_weight = 4 [default = 1];
-    if (has_apply_weight()) {
-      total_size += 1 + 4;
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void SynchronizeModelArgs::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const SynchronizeModelArgs* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const SynchronizeModelArgs*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void SynchronizeModelArgs::MergeFrom(const SynchronizeModelArgs& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_model_name()) {
-      set_model_name(from.model_name());
-    }
-    if (from.has_decay_weight()) {
-      set_decay_weight(from.decay_weight());
-    }
-    if (from.has_invoke_regularizers()) {
-      set_invoke_regularizers(from.invoke_regularizers());
-    }
-    if (from.has_apply_weight()) {
-      set_apply_weight(from.apply_weight());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void SynchronizeModelArgs::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void SynchronizeModelArgs::CopyFrom(const SynchronizeModelArgs& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool SynchronizeModelArgs::IsInitialized() const {
-
-  return true;
-}
-
-void SynchronizeModelArgs::Swap(SynchronizeModelArgs* other) {
-  if (other != this) {
-    std::swap(model_name_, other->model_name_);
-    std::swap(decay_weight_, other->decay_weight_);
-    std::swap(invoke_regularizers_, other->invoke_regularizers_);
-    std::swap(apply_weight_, other->apply_weight_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata SynchronizeModelArgs::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = SynchronizeModelArgs_descriptor_;
-  metadata.reflection = SynchronizeModelArgs_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
 const ::google::protobuf::EnumDescriptor* InitializeModelArgs_SourceType_descriptor() {
   protobuf_AssignDescriptorsOnce();
   return InitializeModelArgs_SourceType_descriptor_;
@@ -25828,7 +24473,6 @@ const int GetThetaMatrixArgs::MatrixLayout_ARRAYSIZE;
 #endif  // _MSC_VER
 #ifndef _MSC_VER
 const int GetThetaMatrixArgs::kModelNameFieldNumber;
-const int GetThetaMatrixArgs::kBatchFieldNumber;
 const int GetThetaMatrixArgs::kTopicNameFieldNumber;
 const int GetThetaMatrixArgs::kTopicIndexFieldNumber;
 const int GetThetaMatrixArgs::kCleanCacheFieldNumber;
@@ -25843,7 +24487,6 @@ GetThetaMatrixArgs::GetThetaMatrixArgs()
 }
 
 void GetThetaMatrixArgs::InitAsDefaultInstance() {
-  batch_ = const_cast< ::artm::Batch*>(&::artm::Batch::default_instance());
 }
 
 GetThetaMatrixArgs::GetThetaMatrixArgs(const GetThetaMatrixArgs& from)
@@ -25855,7 +24498,6 @@ GetThetaMatrixArgs::GetThetaMatrixArgs(const GetThetaMatrixArgs& from)
 void GetThetaMatrixArgs::SharedCtor() {
   _cached_size_ = 0;
   model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  batch_ = NULL;
   clean_cache_ = false;
   use_sparse_format_ = false;
   eps_ = 1e-037f;
@@ -25872,7 +24514,6 @@ void GetThetaMatrixArgs::SharedDtor() {
     delete model_name_;
   }
   if (this != default_instance_) {
-    delete batch_;
   }
 }
 
@@ -25904,9 +24545,6 @@ void GetThetaMatrixArgs::Clear() {
         model_name_->clear();
       }
     }
-    if (has_batch()) {
-      if (batch_ != NULL) batch_->::artm::Batch::Clear();
-    }
     clean_cache_ = false;
     use_sparse_format_ = false;
     eps_ = 1e-037f;
@@ -25933,20 +24571,6 @@ bool GetThetaMatrixArgs::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
             this->model_name().data(), this->model_name().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(18)) goto parse_batch;
-        break;
-      }
-
-      // optional .artm.Batch batch = 2;
-      case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_batch()));
         } else {
           goto handle_uninterpreted;
         }
@@ -26091,12 +24715,6 @@ void GetThetaMatrixArgs::SerializeWithCachedSizes(
       1, this->model_name(), output);
   }
 
-  // optional .artm.Batch batch = 2;
-  if (has_batch()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->batch(), output);
-  }
-
   // repeated string topic_name = 3;
   for (int i = 0; i < this->topic_name_size(); i++) {
   ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -26151,13 +24769,6 @@ void GetThetaMatrixArgs::SerializeWithCachedSizes(
         1, this->model_name(), target);
   }
 
-  // optional .artm.Batch batch = 2;
-  if (has_batch()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, this->batch(), target);
-  }
-
   // repeated string topic_name = 3;
   for (int i = 0; i < this->topic_name_size(); i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
@@ -26210,13 +24821,6 @@ int GetThetaMatrixArgs::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->model_name());
-    }
-
-    // optional .artm.Batch batch = 2;
-    if (has_batch()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->batch());
     }
 
     // optional bool clean_cache = 5 [default = false];
@@ -26289,9 +24893,6 @@ void GetThetaMatrixArgs::MergeFrom(const GetThetaMatrixArgs& from) {
     if (from.has_model_name()) {
       set_model_name(from.model_name());
     }
-    if (from.has_batch()) {
-      mutable_batch()->::artm::Batch::MergeFrom(from.batch());
-    }
     if (from.has_clean_cache()) {
       set_clean_cache(from.clean_cache());
     }
@@ -26328,7 +24929,6 @@ bool GetThetaMatrixArgs::IsInitialized() const {
 void GetThetaMatrixArgs::Swap(GetThetaMatrixArgs* other) {
   if (other != this) {
     std::swap(model_name_, other->model_name_);
-    std::swap(batch_, other->batch_);
     topic_name_.Swap(&other->topic_name_);
     topic_index_.Swap(&other->topic_index_);
     std::swap(clean_cache_, other->clean_cache_);
@@ -26355,7 +24955,6 @@ void GetThetaMatrixArgs::Swap(GetThetaMatrixArgs* other) {
 #ifndef _MSC_VER
 const int GetScoreValueArgs::kModelNameFieldNumber;
 const int GetScoreValueArgs::kScoreNameFieldNumber;
-const int GetScoreValueArgs::kBatchFieldNumber;
 #endif  // !_MSC_VER
 
 GetScoreValueArgs::GetScoreValueArgs()
@@ -26364,7 +24963,6 @@ GetScoreValueArgs::GetScoreValueArgs()
 }
 
 void GetScoreValueArgs::InitAsDefaultInstance() {
-  batch_ = const_cast< ::artm::Batch*>(&::artm::Batch::default_instance());
 }
 
 GetScoreValueArgs::GetScoreValueArgs(const GetScoreValueArgs& from)
@@ -26377,7 +24975,6 @@ void GetScoreValueArgs::SharedCtor() {
   _cached_size_ = 0;
   model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   score_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  batch_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -26393,7 +24990,6 @@ void GetScoreValueArgs::SharedDtor() {
     delete score_name_;
   }
   if (this != default_instance_) {
-    delete batch_;
   }
 }
 
@@ -26429,9 +25025,6 @@ void GetScoreValueArgs::Clear() {
       if (score_name_ != &::google::protobuf::internal::GetEmptyString()) {
         score_name_->clear();
       }
-    }
-    if (has_batch()) {
-      if (batch_ != NULL) batch_->::artm::Batch::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -26470,20 +25063,6 @@ bool GetScoreValueArgs::MergePartialFromCodedStream(
           ::google::protobuf::internal::WireFormat::VerifyUTF8String(
             this->score_name().data(), this->score_name().length(),
             ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(26)) goto parse_batch;
-        break;
-      }
-
-      // optional .artm.Batch batch = 3;
-      case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_batch()));
         } else {
           goto handle_uninterpreted;
         }
@@ -26527,12 +25106,6 @@ void GetScoreValueArgs::SerializeWithCachedSizes(
       2, this->score_name(), output);
   }
 
-  // optional .artm.Batch batch = 3;
-  if (has_batch()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->batch(), output);
-  }
-
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -26561,13 +25134,6 @@ void GetScoreValueArgs::SerializeWithCachedSizes(
         2, this->score_name(), target);
   }
 
-  // optional .artm.Batch batch = 3;
-  if (has_batch()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        3, this->batch(), target);
-  }
-
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -26591,13 +25157,6 @@ int GetScoreValueArgs::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->score_name());
-    }
-
-    // optional .artm.Batch batch = 3;
-    if (has_batch()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->batch());
     }
 
   }
@@ -26633,9 +25192,6 @@ void GetScoreValueArgs::MergeFrom(const GetScoreValueArgs& from) {
     if (from.has_score_name()) {
       set_score_name(from.score_name());
     }
-    if (from.has_batch()) {
-      mutable_batch()->::artm::Batch::MergeFrom(from.batch());
-    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -26661,7 +25217,6 @@ void GetScoreValueArgs::Swap(GetScoreValueArgs* other) {
   if (other != this) {
     std::swap(model_name_, other->model_name_);
     std::swap(score_name_, other->score_name_);
-    std::swap(batch_, other->batch_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -26673,865 +25228,6 @@ void GetScoreValueArgs::Swap(GetScoreValueArgs* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = GetScoreValueArgs_descriptor_;
   metadata.reflection = GetScoreValueArgs_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int AddBatchArgs::kBatchFieldNumber;
-const int AddBatchArgs::kTimeoutMillisecondsFieldNumber;
-const int AddBatchArgs::kResetScoresFieldNumber;
-const int AddBatchArgs::kBatchFileNameFieldNumber;
-#endif  // !_MSC_VER
-
-AddBatchArgs::AddBatchArgs()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void AddBatchArgs::InitAsDefaultInstance() {
-  batch_ = const_cast< ::artm::Batch*>(&::artm::Batch::default_instance());
-}
-
-AddBatchArgs::AddBatchArgs(const AddBatchArgs& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void AddBatchArgs::SharedCtor() {
-  _cached_size_ = 0;
-  batch_ = NULL;
-  timeout_milliseconds_ = -1;
-  reset_scores_ = false;
-  batch_file_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-AddBatchArgs::~AddBatchArgs() {
-  SharedDtor();
-}
-
-void AddBatchArgs::SharedDtor() {
-  if (batch_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete batch_file_name_;
-  }
-  if (this != default_instance_) {
-    delete batch_;
-  }
-}
-
-void AddBatchArgs::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* AddBatchArgs::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return AddBatchArgs_descriptor_;
-}
-
-const AddBatchArgs& AddBatchArgs::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
-  return *default_instance_;
-}
-
-AddBatchArgs* AddBatchArgs::default_instance_ = NULL;
-
-AddBatchArgs* AddBatchArgs::New() const {
-  return new AddBatchArgs;
-}
-
-void AddBatchArgs::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (has_batch()) {
-      if (batch_ != NULL) batch_->::artm::Batch::Clear();
-    }
-    timeout_milliseconds_ = -1;
-    reset_scores_ = false;
-    if (has_batch_file_name()) {
-      if (batch_file_name_ != &::google::protobuf::internal::GetEmptyString()) {
-        batch_file_name_->clear();
-      }
-    }
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool AddBatchArgs::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional .artm.Batch batch = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_batch()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(16)) goto parse_timeout_milliseconds;
-        break;
-      }
-
-      // optional int32 timeout_milliseconds = 2 [default = -1];
-      case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_timeout_milliseconds:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &timeout_milliseconds_)));
-          set_has_timeout_milliseconds();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(24)) goto parse_reset_scores;
-        break;
-      }
-
-      // optional bool reset_scores = 3 [default = false];
-      case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_reset_scores:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &reset_scores_)));
-          set_has_reset_scores();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(34)) goto parse_batch_file_name;
-        break;
-      }
-
-      // optional string batch_file_name = 4;
-      case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_batch_file_name:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_batch_file_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->batch_file_name().data(), this->batch_file_name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void AddBatchArgs::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional .artm.Batch batch = 1;
-  if (has_batch()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->batch(), output);
-  }
-
-  // optional int32 timeout_milliseconds = 2 [default = -1];
-  if (has_timeout_milliseconds()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->timeout_milliseconds(), output);
-  }
-
-  // optional bool reset_scores = 3 [default = false];
-  if (has_reset_scores()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->reset_scores(), output);
-  }
-
-  // optional string batch_file_name = 4;
-  if (has_batch_file_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->batch_file_name().data(), this->batch_file_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      4, this->batch_file_name(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* AddBatchArgs::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional .artm.Batch batch = 1;
-  if (has_batch()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        1, this->batch(), target);
-  }
-
-  // optional int32 timeout_milliseconds = 2 [default = -1];
-  if (has_timeout_milliseconds()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->timeout_milliseconds(), target);
-  }
-
-  // optional bool reset_scores = 3 [default = false];
-  if (has_reset_scores()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->reset_scores(), target);
-  }
-
-  // optional string batch_file_name = 4;
-  if (has_batch_file_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->batch_file_name().data(), this->batch_file_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        4, this->batch_file_name(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int AddBatchArgs::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional .artm.Batch batch = 1;
-    if (has_batch()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->batch());
-    }
-
-    // optional int32 timeout_milliseconds = 2 [default = -1];
-    if (has_timeout_milliseconds()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->timeout_milliseconds());
-    }
-
-    // optional bool reset_scores = 3 [default = false];
-    if (has_reset_scores()) {
-      total_size += 1 + 1;
-    }
-
-    // optional string batch_file_name = 4;
-    if (has_batch_file_name()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->batch_file_name());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void AddBatchArgs::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const AddBatchArgs* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const AddBatchArgs*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void AddBatchArgs::MergeFrom(const AddBatchArgs& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_batch()) {
-      mutable_batch()->::artm::Batch::MergeFrom(from.batch());
-    }
-    if (from.has_timeout_milliseconds()) {
-      set_timeout_milliseconds(from.timeout_milliseconds());
-    }
-    if (from.has_reset_scores()) {
-      set_reset_scores(from.reset_scores());
-    }
-    if (from.has_batch_file_name()) {
-      set_batch_file_name(from.batch_file_name());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void AddBatchArgs::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void AddBatchArgs::CopyFrom(const AddBatchArgs& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool AddBatchArgs::IsInitialized() const {
-
-  return true;
-}
-
-void AddBatchArgs::Swap(AddBatchArgs* other) {
-  if (other != this) {
-    std::swap(batch_, other->batch_);
-    std::swap(timeout_milliseconds_, other->timeout_milliseconds_);
-    std::swap(reset_scores_, other->reset_scores_);
-    std::swap(batch_file_name_, other->batch_file_name_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata AddBatchArgs::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = AddBatchArgs_descriptor_;
-  metadata.reflection = AddBatchArgs_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int InvokeIterationArgs::kIterationsCountFieldNumber;
-const int InvokeIterationArgs::kResetScoresFieldNumber;
-const int InvokeIterationArgs::kDiskPathFieldNumber;
-#endif  // !_MSC_VER
-
-InvokeIterationArgs::InvokeIterationArgs()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void InvokeIterationArgs::InitAsDefaultInstance() {
-}
-
-InvokeIterationArgs::InvokeIterationArgs(const InvokeIterationArgs& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void InvokeIterationArgs::SharedCtor() {
-  _cached_size_ = 0;
-  iterations_count_ = 1;
-  reset_scores_ = true;
-  disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-InvokeIterationArgs::~InvokeIterationArgs() {
-  SharedDtor();
-}
-
-void InvokeIterationArgs::SharedDtor() {
-  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete disk_path_;
-  }
-  if (this != default_instance_) {
-  }
-}
-
-void InvokeIterationArgs::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* InvokeIterationArgs::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return InvokeIterationArgs_descriptor_;
-}
-
-const InvokeIterationArgs& InvokeIterationArgs::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
-  return *default_instance_;
-}
-
-InvokeIterationArgs* InvokeIterationArgs::default_instance_ = NULL;
-
-InvokeIterationArgs* InvokeIterationArgs::New() const {
-  return new InvokeIterationArgs;
-}
-
-void InvokeIterationArgs::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    iterations_count_ = 1;
-    reset_scores_ = true;
-    if (has_disk_path()) {
-      if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
-        disk_path_->clear();
-      }
-    }
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool InvokeIterationArgs::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional int32 iterations_count = 1 [default = 1];
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &iterations_count_)));
-          set_has_iterations_count();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(16)) goto parse_reset_scores;
-        break;
-      }
-
-      // optional bool reset_scores = 2 [default = true];
-      case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_reset_scores:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &reset_scores_)));
-          set_has_reset_scores();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(26)) goto parse_disk_path;
-        break;
-      }
-
-      // optional string disk_path = 3;
-      case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_disk_path:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_disk_path()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->disk_path().data(), this->disk_path().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void InvokeIterationArgs::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional int32 iterations_count = 1 [default = 1];
-  if (has_iterations_count()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->iterations_count(), output);
-  }
-
-  // optional bool reset_scores = 2 [default = true];
-  if (has_reset_scores()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->reset_scores(), output);
-  }
-
-  // optional string disk_path = 3;
-  if (has_disk_path()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->disk_path().data(), this->disk_path().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      3, this->disk_path(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* InvokeIterationArgs::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional int32 iterations_count = 1 [default = 1];
-  if (has_iterations_count()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->iterations_count(), target);
-  }
-
-  // optional bool reset_scores = 2 [default = true];
-  if (has_reset_scores()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->reset_scores(), target);
-  }
-
-  // optional string disk_path = 3;
-  if (has_disk_path()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->disk_path().data(), this->disk_path().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->disk_path(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int InvokeIterationArgs::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional int32 iterations_count = 1 [default = 1];
-    if (has_iterations_count()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->iterations_count());
-    }
-
-    // optional bool reset_scores = 2 [default = true];
-    if (has_reset_scores()) {
-      total_size += 1 + 1;
-    }
-
-    // optional string disk_path = 3;
-    if (has_disk_path()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
-          this->disk_path());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void InvokeIterationArgs::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const InvokeIterationArgs* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const InvokeIterationArgs*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void InvokeIterationArgs::MergeFrom(const InvokeIterationArgs& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_iterations_count()) {
-      set_iterations_count(from.iterations_count());
-    }
-    if (from.has_reset_scores()) {
-      set_reset_scores(from.reset_scores());
-    }
-    if (from.has_disk_path()) {
-      set_disk_path(from.disk_path());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void InvokeIterationArgs::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void InvokeIterationArgs::CopyFrom(const InvokeIterationArgs& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool InvokeIterationArgs::IsInitialized() const {
-
-  return true;
-}
-
-void InvokeIterationArgs::Swap(InvokeIterationArgs* other) {
-  if (other != this) {
-    std::swap(iterations_count_, other->iterations_count_);
-    std::swap(reset_scores_, other->reset_scores_);
-    std::swap(disk_path_, other->disk_path_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata InvokeIterationArgs::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = InvokeIterationArgs_descriptor_;
-  metadata.reflection = InvokeIterationArgs_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int WaitIdleArgs::kTimeoutMillisecondsFieldNumber;
-#endif  // !_MSC_VER
-
-WaitIdleArgs::WaitIdleArgs()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void WaitIdleArgs::InitAsDefaultInstance() {
-}
-
-WaitIdleArgs::WaitIdleArgs(const WaitIdleArgs& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void WaitIdleArgs::SharedCtor() {
-  _cached_size_ = 0;
-  timeout_milliseconds_ = -1;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-WaitIdleArgs::~WaitIdleArgs() {
-  SharedDtor();
-}
-
-void WaitIdleArgs::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void WaitIdleArgs::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* WaitIdleArgs::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return WaitIdleArgs_descriptor_;
-}
-
-const WaitIdleArgs& WaitIdleArgs::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fmessages_2eproto();
-  return *default_instance_;
-}
-
-WaitIdleArgs* WaitIdleArgs::default_instance_ = NULL;
-
-WaitIdleArgs* WaitIdleArgs::New() const {
-  return new WaitIdleArgs;
-}
-
-void WaitIdleArgs::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    timeout_milliseconds_ = -1;
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool WaitIdleArgs::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional int32 timeout_milliseconds = 1 [default = -1];
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &timeout_milliseconds_)));
-          set_has_timeout_milliseconds();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void WaitIdleArgs::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional int32 timeout_milliseconds = 1 [default = -1];
-  if (has_timeout_milliseconds()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->timeout_milliseconds(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* WaitIdleArgs::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional int32 timeout_milliseconds = 1 [default = -1];
-  if (has_timeout_milliseconds()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->timeout_milliseconds(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int WaitIdleArgs::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional int32 timeout_milliseconds = 1 [default = -1];
-    if (has_timeout_milliseconds()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->timeout_milliseconds());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void WaitIdleArgs::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const WaitIdleArgs* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const WaitIdleArgs*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void WaitIdleArgs::MergeFrom(const WaitIdleArgs& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_timeout_milliseconds()) {
-      set_timeout_milliseconds(from.timeout_milliseconds());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void WaitIdleArgs::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void WaitIdleArgs::CopyFrom(const WaitIdleArgs& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool WaitIdleArgs::IsInitialized() const {
-
-  return true;
-}
-
-void WaitIdleArgs::Swap(WaitIdleArgs* other) {
-  if (other != this) {
-    std::swap(timeout_milliseconds_, other->timeout_milliseconds_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata WaitIdleArgs::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = WaitIdleArgs_descriptor_;
-  metadata.reflection = WaitIdleArgs_reflection_;
   return metadata;
 }
 
@@ -33599,7 +31295,6 @@ const int MasterComponentInfo::kScoreFieldNumber;
 const int MasterComponentInfo::kDictionaryFieldNumber;
 const int MasterComponentInfo::kModelFieldNumber;
 const int MasterComponentInfo::kCacheEntryFieldNumber;
-const int MasterComponentInfo::kMergerQueueSizeFieldNumber;
 const int MasterComponentInfo::kProcessorQueueSizeFieldNumber;
 const int MasterComponentInfo::kBatchFieldNumber;
 #endif  // !_MSC_VER
@@ -33623,7 +31318,6 @@ void MasterComponentInfo::SharedCtor() {
   _cached_size_ = 0;
   master_id_ = 0;
   config_ = NULL;
-  merger_queue_size_ = 0;
   processor_queue_size_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -33665,9 +31359,6 @@ void MasterComponentInfo::Clear() {
     if (has_config()) {
       if (config_ != NULL) config_->::artm::MasterComponentConfig::Clear();
     }
-    merger_queue_size_ = 0;
-  }
-  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     processor_queue_size_ = 0;
   }
   regularizer_.Clear();
@@ -33786,22 +31477,6 @@ bool MasterComponentInfo::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(58)) goto parse_cache_entry;
-        if (input->ExpectTag(64)) goto parse_merger_queue_size;
-        break;
-      }
-
-      // optional int32 merger_queue_size = 8;
-      case 8: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_merger_queue_size:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &merger_queue_size_)));
-          set_has_merger_queue_size();
-        } else {
-          goto handle_uninterpreted;
-        }
         if (input->ExpectTag(72)) goto parse_processor_queue_size;
         break;
       }
@@ -33896,11 +31571,6 @@ void MasterComponentInfo::SerializeWithCachedSizes(
       7, this->cache_entry(i), output);
   }
 
-  // optional int32 merger_queue_size = 8;
-  if (has_merger_queue_size()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->merger_queue_size(), output);
-  }
-
   // optional int32 processor_queue_size = 9;
   if (has_processor_queue_size()) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->processor_queue_size(), output);
@@ -33967,11 +31637,6 @@ void MasterComponentInfo::SerializeWithCachedSizes(
         7, this->cache_entry(i), target);
   }
 
-  // optional int32 merger_queue_size = 8;
-  if (has_merger_queue_size()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->merger_queue_size(), target);
-  }
-
   // optional int32 processor_queue_size = 9;
   if (has_processor_queue_size()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->processor_queue_size(), target);
@@ -34009,15 +31674,6 @@ int MasterComponentInfo::ByteSize() const {
           this->config());
     }
 
-    // optional int32 merger_queue_size = 8;
-    if (has_merger_queue_size()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->merger_queue_size());
-    }
-
-  }
-  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     // optional int32 processor_queue_size = 9;
     if (has_processor_queue_size()) {
       total_size += 1 +
@@ -34112,11 +31768,6 @@ void MasterComponentInfo::MergeFrom(const MasterComponentInfo& from) {
     if (from.has_config()) {
       mutable_config()->::artm::MasterComponentConfig::MergeFrom(from.config());
     }
-    if (from.has_merger_queue_size()) {
-      set_merger_queue_size(from.merger_queue_size());
-    }
-  }
-  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_processor_queue_size()) {
       set_processor_queue_size(from.processor_queue_size());
     }
@@ -34150,7 +31801,6 @@ void MasterComponentInfo::Swap(MasterComponentInfo* other) {
     dictionary_.Swap(&other->dictionary_);
     model_.Swap(&other->model_);
     cache_entry_.Swap(&other->cache_entry_);
-    std::swap(merger_queue_size_, other->merger_queue_size_);
     std::swap(processor_queue_size_, other->processor_queue_size_);
     batch_.Swap(&other->batch_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -34645,7 +32295,6 @@ const int MasterModelConfig::kReuseThetaFieldNumber;
 const int MasterModelConfig::kOptForAvxFieldNumber;
 const int MasterModelConfig::kUseSparseBowFieldNumber;
 const int MasterModelConfig::kDiskCachePathFieldNumber;
-const int MasterModelConfig::kUseV06ApiFieldNumber;
 const int MasterModelConfig::kCacheThetaFieldNumber;
 #endif  // !_MSC_VER
 
@@ -34673,7 +32322,6 @@ void MasterModelConfig::SharedCtor() {
   opt_for_avx_ = true;
   use_sparse_bow_ = true;
   disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  use_v06_api_ = false;
   cache_theta_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -34741,7 +32389,6 @@ void MasterModelConfig::Clear() {
         disk_cache_path_->clear();
       }
     }
-    use_v06_api_ = false;
     cache_theta_ = false;
   }
   topic_name_.Clear();
@@ -34976,22 +32623,6 @@ bool MasterModelConfig::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(112)) goto parse_use_v06_api;
-        break;
-      }
-
-      // optional bool use_v06_api = 14 [default = false];
-      case 14: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_use_v06_api:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &use_v06_api_)));
-          set_has_use_v06_api();
-        } else {
-          goto handle_uninterpreted;
-        }
         if (input->ExpectTag(120)) goto parse_cache_theta;
         break;
       }
@@ -35118,11 +32749,6 @@ void MasterModelConfig::SerializeWithCachedSizes(
       13, this->disk_cache_path(), output);
   }
 
-  // optional bool use_v06_api = 14 [default = false];
-  if (has_use_v06_api()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(14, this->use_v06_api(), output);
-  }
-
   // optional bool cache_theta = 15 [default = false];
   if (has_cache_theta()) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(15, this->cache_theta(), output);
@@ -35229,11 +32855,6 @@ void MasterModelConfig::SerializeWithCachedSizes(
         13, this->disk_cache_path(), target);
   }
 
-  // optional bool use_v06_api = 14 [default = false];
-  if (has_use_v06_api()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(14, this->use_v06_api(), target);
-  }
-
   // optional bool cache_theta = 15 [default = false];
   if (has_cache_theta()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(15, this->cache_theta(), target);
@@ -35300,11 +32921,6 @@ int MasterModelConfig::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->disk_cache_path());
-    }
-
-    // optional bool use_v06_api = 14 [default = false];
-    if (has_use_v06_api()) {
-      total_size += 1 + 1;
     }
 
     // optional bool cache_theta = 15 [default = false];
@@ -35407,9 +33023,6 @@ void MasterModelConfig::MergeFrom(const MasterModelConfig& from) {
     if (from.has_disk_cache_path()) {
       set_disk_cache_path(from.disk_cache_path());
     }
-    if (from.has_use_v06_api()) {
-      set_use_v06_api(from.use_v06_api());
-    }
     if (from.has_cache_theta()) {
       set_cache_theta(from.cache_theta());
     }
@@ -35449,7 +33062,6 @@ void MasterModelConfig::Swap(MasterModelConfig* other) {
     std::swap(opt_for_avx_, other->opt_for_avx_);
     std::swap(use_sparse_bow_, other->use_sparse_bow_);
     std::swap(disk_cache_path_, other->disk_cache_path_);
-    std::swap(use_v06_api_, other->use_v06_api_);
     std::swap(cache_theta_, other->cache_theta_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
