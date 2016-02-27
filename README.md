@@ -10,6 +10,7 @@ The state-of-the-art platform for topic modeling.
   - [Full Documentation](http://docs.bigartm.org/)
   - [User Mailing List](https://groups.google.com/forum/#!forum/bigartm-users)
   - [Download Releases](https://github.com/bigartm/bigartm/releases)
+  - [User survey](http://goo.gl/forms/tr5EsPMcL2)
 
 
 # What is BigARTM?
