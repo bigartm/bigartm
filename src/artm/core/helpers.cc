@@ -324,7 +324,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     theta_matrix->set_model_name(args_model_name);
     theta_matrix->set_topics_count(result_topic_name.size());
     assert(theta_matrix->topic_name_size() == 0);
-    for (TopicName topic_name : result_topic_name)
+    for (const TopicName& topic_name : result_topic_name)
       theta_matrix->add_topic_name(topic_name);
   } else {
     // Verify

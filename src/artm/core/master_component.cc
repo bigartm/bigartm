@@ -79,7 +79,7 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
 
   if (reconfigure) {  // remove all regularizers
     auto regularizers_list = instance_->schema()->regularizers_list();
-    for (auto name : *regularizers_list)
+    for (const auto& name : *regularizers_list)
       instance_->DisposeRegularizer(name);
   }
 
