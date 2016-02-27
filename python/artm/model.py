@@ -725,15 +725,13 @@ class ARTM(object):
 
         return phi_data_frame
 
-    def get_theta(self, topic_names=None, remove_theta=False):
+    def get_theta(self, topic_names=None):
         """ARTM.get_theta() --- get Theta matrix for training set
         of documents
 
         Args:
           topic_names (list of str): list with topics to extract,
           default=None (means all topics)
-          remove_theta (bool): flag indicates save or remove Theta from model
-          after extraction, default=False
 
         Returns:
           pandas.DataFrame: (data, columns, rows), where:
@@ -748,7 +746,7 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        theta_info = self.master.get_theta_info(model=self.model_pwt)
+        theta_info = self.master.get_theta_info()
 
         column_names = []
         if self._theta_columns_naming == 'title':
@@ -758,20 +756,18 @@ class ARTM(object):
 
         all_topic_names = [topic_name for topic_name in theta_info.topic_name]
         use_topic_names = topic_names if topic_names is not None else all_topic_names
-        _, nd_array = self.master.get_theta_matrix(model=self.model_pwt,
-                                                   topic_names=use_topic_names,
-                                                   clean_cache=remove_theta)
+        _, nd_array = self.master.get_theta_matrix(topic_names=use_topic_names)
 
         theta_data_frame = DataFrame(data=nd_array.transpose(),
                                      columns=column_names,
                                      index=use_topic_names)
         return theta_data_frame
 
-    def fit_transform(self, topic_names=None, remove_theta=False):
+    def fit_transform(self, topic_names=None):
         """ARTM.fit_transform() --- obsolete way of theta retrieval.
         Use get_theta instead.
         """
-        return self.get_theta(topic_names, remove_theta)
+        return self.get_theta(topic_names)
 
     def transform(self, batch_vectorizer=None, theta_matrix_type='dense_theta',
                   predict_class_id=None):

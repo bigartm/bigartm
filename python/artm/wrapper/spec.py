@@ -99,6 +99,14 @@ ARTM_API = [
         [('master_id', int), ('args', messages.ImportBatchesArgs)],
     ),
     CallSpec(
+        'ArtmClearThetaCache',
+        [('master_id', int), ('args', messages.ClearThetaCacheArgs)],
+    ),
+    CallSpec(
+        'ArtmClearScoreCache',
+        [('master_id', int), ('args', messages.ClearScoreCacheArgs)],
+    ),
+    CallSpec(
         'ArtmDisposeBatch',
         [('master_id', int), ('name', str)],
     ),

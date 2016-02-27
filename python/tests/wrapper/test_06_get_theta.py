@@ -55,7 +55,8 @@ def test_func():
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi
-            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder, reset_scores=True)
+            master.clear_score_cache()
+            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
             master.normalize_model(pwt, nwt)
 
         # Option 1.
@@ -78,8 +79,9 @@ def test_func():
         # Option 2.
         # Getting a full theta matrix cached during last iteration
         # This does requires "master_component.cache_theta = True" and stores the entire Theta matrix in memory.
-        theta_matrix_info = master.get_theta_info(model=pwt)
-        _, theta_numpy_matrix = master.get_theta_matrix(model=pwt, clean_cache=True)
+        theta_matrix_info = master.get_theta_info()
+        _, theta_numpy_matrix = master.get_theta_matrix()
+        master.clear_theta_cache()
         print_string = 'Option 2. Full ThetaMatrix cached during last iteration,'
         print_string += '#items = {0}'.format(len(theta_matrix_info.item_id))
         print print_string
@@ -98,13 +100,15 @@ def test_func():
             if extension == '.batch':
                 batches.append(os.path.join(batches_folder, name))
         for batch_index, batch_filename in enumerate(batches):
-            master.process_batches(pwt, nwt, num_inner_iterations, batches=[batch_filename], reset_scores=True)
+            master.clear_score_cache()
+            master.process_batches(pwt, nwt, num_inner_iterations, batches=[batch_filename])
             master.normalize_model(pwt, nwt)
 
             # The following rule defines when to retrieve Theta matrix. You decide :)
             if ((batch_index + 1) % 2 == 0) or ((batch_index + 1) == len(batches)):
-                theta_matrix_info = master.get_theta_info(model=pwt)
-                _, theta_numpy_matrix = master.get_theta_matrix(model=pwt, clean_cache=True)
+                theta_matrix_info = master.get_theta_info()
+                _, theta_numpy_matrix = master.get_theta_matrix()
+                master.clear_theta_cache()
                 print 'Option 3. ThetaMatrix from cache, online, #items = {0}'.format(len(theta_matrix_info.item_id))
                 print theta_numpy_matrix
                 assert numpy.count_nonzero(theta_numpy_matrix) == theta_numpy_matrix.size
@@ -112,12 +116,12 @@ def test_func():
 
         # Option 4.
         # Testing batches by explicitly loading them from disk. This is the right way of testing held-out batches.
+        master.clear_score_cache()
         info, matrix = master.process_batches(pwt=pwt,
                                               nwt=nwt,
                                               num_inner_iterations=1,
                                               batches=[batches[0]],
-                                              find_theta=True,
-                                              reset_scores=True)
+                                              find_theta=True)
         print 'Option 4. ThetaMatrix for test batch, #item {0}'.format(len(info.item_id))
         assert numpy.count_nonzero(matrix) == matrix.size
         assert len(info.item_id) in num_items

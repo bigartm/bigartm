@@ -53,7 +53,8 @@ def test_func():
 
         # Perform iterations
         for iter in xrange(num_outer_iterations):
-            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder, reset_scores=True)
+            master.clear_score_cache()
+            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
             master.normalize_model(pwt, nwt) 
 
         theta_snippet_score = master.get_score(pwt, 'ThetaSnippet')

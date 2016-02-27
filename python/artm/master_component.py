@@ -307,10 +307,22 @@ class MasterComponent(object):
         init_args.dictionary_name = dictionary_name
         self._lib.ArtmInitializeModel(self.master_id, init_args)
 
+    def clear_theta_cache(self):
+        """ MasterComponent.clear_theta_cache() --- clears all entries from theta matrix cache
+        """
+        args = messages.ClearThetaCacheArgs()
+        self._lib.ArtmClearThetaCache(self.master_id, args)
+
+    def clear_score_cache(self):
+        """ MasterComponent.clear_score_cache() --- clears all entries from score cache
+        """
+        args = messages.ClearScoreCacheArgs()
+        self._lib.ArtmClearScoreCache(self.master_id, args)
+
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None, find_theta=False,
-                        reset_scores=False, reuse_theta=False, find_ptdw=False,
+                        reuse_theta=False, find_ptdw=False,
                         predict_class_id=None):
         """Args:
            - pwt(str): name of pwt matrix in BigARTM
@@ -323,7 +335,6 @@ class MasterComponent(object):
            - class_ids(list of str): list of class ids to use during processing
            - class_weights(list of double): list of corresponding weights of class ids
            - find_theta(bool): find theta matrix for 'batches' (if alternative 2)
-           - reset_scores(bool): reset scores after iterations or not
            - reuse_theta(bool): initialize by theta from previous collection pass
            - find_ptdw(bool): count and return Ptdw matrix or not (works if find_theta == False)
            - predict_class_id(str): class_id of a target modality to predict (default = None)
@@ -332,7 +343,6 @@ class MasterComponent(object):
            - messages.ThetaMatrix --- the info about Theta (find_theta==False)
         """
         args = messages.ProcessBatchesArgs(pwt_source_name=pwt,
-                                           reset_scores=reset_scores,
                                            reuse_theta=reuse_theta)
         if nwt is not None:
             args.nwt_target_name = nwt
@@ -536,30 +546,24 @@ class MasterComponent(object):
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
-    def get_theta_info(self, model):
-        """Args:
-           - model(str): name of matrix in BigARTM
-           Returns:
+    def get_theta_info(self):
+        """Returns:
            - messages.ThetaMatrix object
         """
-        args = messages.GetThetaMatrixArgs(model_name=model)
+        args = messages.GetThetaMatrixArgs()
         args.eps = 1.001  # hack to not get any data back
         args.matrix_layout = 1  # GetThetaMatrixArgs_MatrixLayout_Sparse
         theta_matrix_info = self._lib.ArtmRequestThetaMatrix(self.master_id, args)
 
         return theta_matrix_info
 
-    def get_theta_matrix(self, model, clean_cache=None, topic_names=None):
+    def get_theta_matrix(self, topic_names=None):
         """Args:
-           - model(str): name of matrix in BigARTM
-           - cleab_cache(bool): remove or not the info about Theta after retrieval
            - topic_names(list of str): list of topics to retrieve (None == all topics)
            Returns:
            - numpy.ndarray with Theta data (e.g. p(t|d) values)
         """
-        args = messages.GetThetaMatrixArgs(model_name=model)
-        if clean_cache is not None:
-            args.clean_cache = clean_cache
+        args = messages.GetThetaMatrixArgs()
         if topic_names is not None:
             args.ClearField('topic_name')
             for topic_name in topic_names:

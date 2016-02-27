@@ -94,13 +94,13 @@ def test_func():
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
+            master.clear_score_cache()
             master.process_batches(pwt=pwt,
                                    nwt=nwt,
                                    num_inner_iterations=num_inner_iterations,
                                    batches_folder=batches_folder,
                                    regularizer_name=['SmoothSparseTheta'],
-                                   regularizer_tau=[smsp_theta_tau],
-                                   reset_scores=True)
+                                   regularizer_tau=[smsp_theta_tau])
             master.regularize_model(pwt, nwt, rwt, ['SmoothSparsePhi'], [smsp_phi_tau])
             master.normalize_model(pwt, nwt, rwt)  
 
