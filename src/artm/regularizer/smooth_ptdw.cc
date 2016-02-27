@@ -69,7 +69,6 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Den
 
   // Multiplying neighbours (mode = 2)
   if (config_.type() == SmoothPtdwConfig_Type_MovingProduct) {
-    double tau = tau_;  // not used?!
     ::artm::utility::DenseMatrix<float> copy_ptdw(*ptdw);
     for (int i = 0; i < local_token_size; ++i) {
       const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
