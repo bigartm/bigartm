@@ -281,7 +281,7 @@ void MasterModel::DisposeBatch(const std::string& batch_name) {
 Matrix::Matrix() : no_rows_(0), no_columns_(0), data_() {
 }
 
-Matrix::Matrix(int no_rows = 0, int no_columns = 0) : no_rows_(no_rows), no_columns_(no_columns), data_() {
+Matrix::Matrix(int no_rows, int no_columns) : no_rows_(no_rows), no_columns_(no_columns), data_() {
   if (no_rows <= 0 || no_columns <= 0)
     throw ArgumentOutOfRangeException("no_rows and no_columns must be positive");
 
