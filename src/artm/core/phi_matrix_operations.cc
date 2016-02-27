@@ -294,7 +294,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         std::vector<core::ClassId> class_ids;
         if (regularizer->class_ids_to_regularize().size() > 0) {
           auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
-          for (auto class_id : class_ids_to_regularize) class_ids.push_back(class_id);
+          for (const auto& class_id : class_ids_to_regularize) class_ids.push_back(class_id);
         } else {
           boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
         }
@@ -304,7 +304,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         else
           topics_to_regularize.assign(topic_size, true);
 
-        for (auto class_id : class_ids) {
+        for (const auto& class_id : class_ids) {
           auto iter = n_t_all.find(class_id);
           if (iter != n_t_all.end()) {
             double n = 0.0;

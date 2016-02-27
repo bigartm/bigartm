@@ -94,7 +94,7 @@ const Token& PhiMatrixFrame::token(int index) const {
 
 google::protobuf::RepeatedPtrField<std::string> PhiMatrixFrame::topic_name() const {
   google::protobuf::RepeatedPtrField<std::string> topic_name;
-  for (auto elem : topic_name_) {
+  for (const auto& elem : topic_name_) {
     std::string* name = topic_name.Add();
     *name = elem;
   }
