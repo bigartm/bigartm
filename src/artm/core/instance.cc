@@ -176,6 +176,10 @@ ScoreManager* Instance::score_manager() {
   return score_manager_.get();
 }
 
+ScoreTracker* Instance::score_tracker() {
+  return score_tracker_.get();
+}
+
 void Instance::DisposeModel(ModelName model_name) {
   auto new_schema = schema_.get_copy();
   new_schema->clear_model_config(model_name);
@@ -391,6 +395,7 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
     cache_manager_.reset(new CacheManager());
     batch_manager_.reset(new BatchManager());
     score_manager_.reset(new ScoreManager());
+    score_tracker_.reset(new ScoreTracker());
 
     is_configured_  = true;
   }

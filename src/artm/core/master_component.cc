@@ -110,6 +110,10 @@ std::shared_ptr<MasterComponent> MasterComponent::Duplicate() const {
   return std::shared_ptr<MasterComponent>(new MasterComponent(*this));
 }
 
+std::shared_ptr<MasterModelConfig> MasterComponent::config() const {
+  return master_model_config_.get();
+}
+
 void MasterComponent::DisposeModel(const std::string& name) {
   instance_->DisposeModel(name);
 }
@@ -120,6 +124,10 @@ void MasterComponent::ClearThetaCache(const ClearThetaCacheArgs& args) {
 
 void MasterComponent::ClearScoreCache(const ClearScoreCacheArgs& args) {
   instance_->score_manager()->Clear();
+}
+
+void MasterComponent::ClearScoreArrayCache(const ClearScoreArrayCacheArgs& args) {
+  instance_->score_tracker()->Clear();
 }
 
 void MasterComponent::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
@@ -436,6 +444,10 @@ void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) 
   result->set_name(args.score_name());
 }
 
+void MasterComponent::Request(const GetScoreArrayArgs& args, ScoreDataArray* result) {
+  instance_->score_tracker()->RequestScoreArray(args, result);
+}
+
 void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, MasterComponentInfo* result) {
   std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
   this->instance_->RequestMasterComponentInfo(result);
@@ -443,8 +455,8 @@ void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, Master
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result) {
   BatchManager batch_manager;
-  RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false,
-                            result->mutable_score_data(), result->mutable_theta_matrix());
+  RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false, nullptr, result->mutable_theta_matrix());
+  instance_->score_manager()->RequestAllScores(instance_->schema(), result->mutable_score_data());
 }
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external) {
@@ -459,12 +471,13 @@ void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResu
 
 void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
                                                  BatchManager *batch_manager) {
-  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* async =*/ true, nullptr, nullptr);
+  RequestProcessBatchesImpl(process_batches_args, batch_manager, /* async =*/ true,
+                            /*score_manager=*/ nullptr, /* theta_matrix=*/ nullptr);
 }
 
 void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
                                                 BatchManager* batch_manager, bool async,
-                                                ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data,
+                                                ScoreManager* score_manager,
                                                 ::artm::ThetaMatrix* theta_matrix) {
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
   const MasterComponentConfig& config = schema->config();
@@ -509,7 +522,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   // Since cache_manager lives on stack it will be destroyed once we return from this function.
   // Therefore, no pointers to cache_manager should exist upon return from RequestProcessBatchesImpl.
   CacheManager cache_manager;
-  ScoreManager* score_manager = instance_->score_manager();
 
   bool return_theta = false;
   bool return_ptdw = false;
@@ -544,7 +556,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(batch_manager);
-    pi->set_score_manager(score_manager);
+    pi->set_score_manager(score_manager != nullptr ? score_manager : instance_->score_manager());
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
@@ -581,13 +593,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   while (!batch_manager->IsEverythingProcessed()) {
     boost::this_thread::sleep(boost::posix_time::milliseconds(kIdleLoopFrequency));
-  }
-
-  for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
-    ScoreName score_name = config.score_config(score_index).name();
-    ScoreData requested_score_data;
-    if ((score_data != nullptr) && score_manager->RequestScore(schema, score_name, &requested_score_data))
-      score_data->Add()->Swap(&requested_score_data);
   }
 
   GetThetaMatrixArgs get_theta_matrix_args;
@@ -759,7 +764,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 
   BatchManager batch_manager;
   RequestProcessBatchesImpl(process_batches_args, &batch_manager,
-                            /* async =*/ false, /*score_data =*/ nullptr, result);
+                            /* async =*/ false, /*score_manager =*/ nullptr, result);
 }
 
 void MasterComponent::Request(const TransformMasterModelArgs& args,
@@ -927,6 +932,7 @@ class ArtmExecutor {
       Dispose(nwt_hat_index);
       Regularize(pwt_name_, nwt_name_, rwt_name);
       Normalize(pwt_name_, nwt_name_, rwt_name);
+      StoreScores();
 
       nwt_hat_index++;
     }  // while (iter->more())
@@ -1001,7 +1007,7 @@ class ArtmExecutor {
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
                                                  &batch_manager,
                                                  /* async =*/ false,
-                                                 /* score_data =*/ nullptr,
+                                                 /* score_manager =*/ nullptr,
                                                  /* theta_matrix*/ nullptr);
     process_batches_args_.clear_batch_filename();
   }
@@ -1018,7 +1024,7 @@ class ArtmExecutor {
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
                                                  async_.back().get(),
                                                  /* async =*/ true,
-                                                 /* score_data =*/ nullptr,
+                                                 /* score_manager =*/ nullptr,
                                                  /* theta_matrix*/ nullptr);
     process_batches_args_.clear_batch_filename();
     return operation_id;
@@ -1048,6 +1054,20 @@ class ArtmExecutor {
     normalize_model_args.set_pwt_target_name(pwt);
     LOG(INFO) << DescribeMessage(normalize_model_args);
     master_component_->NormalizeModel(normalize_model_args);
+  }
+
+  void StoreScores() {
+    auto config = master_component_->config();
+    for (auto& score_config : config->score_config()) {
+      GetScoreValueArgs args;
+      args.set_score_name(score_config.name());
+      ScoreData* score_data = master_component_->instance_->score_tracker()->Add();
+      master_component_->Request(args, score_data);
+    }
+
+    // ToDo(sashafrey): ensure that score cache is reset after each synchronization,
+    //                  yet after OnlineAlgorithm score cache has all accumulated data
+    // master_component_->ClearScoreCache(ClearScoreCacheArgs());
   }
 
   void Merge(std::string nwt, double decay_weight, std::string nwt_hat, double apply_weight) {

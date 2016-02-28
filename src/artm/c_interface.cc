@@ -462,6 +462,11 @@ int ArtmClearScoreCache(int master_id, int length, const char* args) {
   return ArtmExecute< ::artm::ClearScoreCacheArgs>(master_id, length, args, &MasterComponent::ClearScoreCache);
 }
 
+int ArtmClearScoreArrayCache(int master_id, int length, const char* args) {
+  return ArtmExecute< ::artm::ClearScoreArrayCacheArgs>(master_id, length, args,
+                                                        &MasterComponent::ClearScoreArrayCache);
+}
+
 int ArtmDisposeRegularizer(int master_id, const char* name) {
   return ArtmExecute(master_id, name, &MasterComponent::DisposeRegularizer);
 }
@@ -528,6 +533,11 @@ int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
 int ArtmRequestScore(int master_id, int length, const char* args) {
   return ArtmRequest< ::artm::GetScoreValueArgs,
                       ::artm::ScoreData>(master_id, length, args);
+}
+
+int ArtmRequestScoreArray(int master_id, int length, const char* args) {
+  return ArtmRequest< ::artm::GetScoreArrayArgs,
+                      ::artm::ScoreDataArray>(master_id, length, args);
 }
 
 int ArtmRequestDictionary(int master_id, int length, const char* args) {

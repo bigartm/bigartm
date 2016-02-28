@@ -28,6 +28,7 @@ extern "C" {
 
   DLL_PUBLIC int ArtmClearThetaCache(int master_id, int length, const char* clear_theta_cache_args);
   DLL_PUBLIC int ArtmClearScoreCache(int master_id, int length, const char* clear_score_cache_args);
+  DLL_PUBLIC int ArtmClearScoreArrayCache(int master_id, int length, const char* clear_score_array_cache_args);
 
   DLL_PUBLIC int ArtmCreateRegularizer(int master_id, int length, const char* regularizer_config);
   DLL_PUBLIC int ArtmReconfigureRegularizer(int master_id, int length, const char* regularizer_config);
@@ -75,6 +76,7 @@ extern "C" {
   DLL_PUBLIC int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
   DLL_PUBLIC int ArtmRequestTopicModelExternal(int master_id, int length, const char* get_model_args);
   DLL_PUBLIC int ArtmRequestScore(int master_id, int length, const char* get_score_args);
+  DLL_PUBLIC int ArtmRequestScoreArray(int master_id, int length, const char* get_score_args);
   DLL_PUBLIC int ArtmRequestMasterComponentInfo(int master_id, int length, const char* get_master_info_args);
   DLL_PUBLIC int ArtmRequestLoadBatch(const char* filename);
   DLL_PUBLIC int ArtmCopyRequestResult(int length, char* address);

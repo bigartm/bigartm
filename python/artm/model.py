@@ -763,6 +763,11 @@ class ARTM(object):
                                      index=use_topic_names)
         return theta_data_frame
 
+    def remove_theta(self):
+        """ARTM.remove_theta() --- removes cached theta matrix
+        """
+        self.master.clear_theta_cache()
+
     def fit_transform(self, topic_names=None):
         """ARTM.fit_transform() --- obsolete way of theta retrieval.
         Use get_theta instead.

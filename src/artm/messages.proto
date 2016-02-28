@@ -261,6 +261,10 @@ message ScoreData {
   optional bytes data = 3;
 }
 
+message ScoreDataArray {
+  repeated ScoreData score = 1;
+}
+
 // Represents a configuration of a perplexity score
 message PerplexityScoreConfig {
   enum Type {
@@ -594,6 +598,10 @@ message GetScoreValueArgs {
   optional string score_name = 2;
 }
 
+message GetScoreArrayArgs {
+  optional string score_name = 2;
+}
+
 message ExportModelArgs {
   optional string file_name = 1;
   optional string model_name = 2;
@@ -811,3 +819,4 @@ message ConfigureLoggingArgs {
 
 message ClearThetaCacheArgs {}
 message ClearScoreCacheArgs {}
+message ClearScoreArrayCacheArgs {}

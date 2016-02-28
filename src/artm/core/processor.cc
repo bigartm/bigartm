@@ -1031,7 +1031,7 @@ void Processor::ThreadFunction() {
             continue;
           }
 
-          if (!score_calc->is_cumulative())
+          if (!score_calc->is_cumulative() || (part->score_manager() == nullptr))
             continue;
 
           CuckooWatch cuckoo2("CalculateScore(" + score_name + ")", &cuckoo, kTimeLoggingThreshold);

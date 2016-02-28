@@ -59,6 +59,7 @@ class TopicSelectionThetaConfig;
 class TransformConfig;
 class ScoreConfig;
 class ScoreData;
+class ScoreDataArray;
 class PerplexityScoreConfig;
 class PerplexityScore;
 class SparsityThetaScoreConfig;
@@ -92,6 +93,7 @@ class GetDictionaryArgs;
 class GetTopicModelArgs;
 class GetThetaMatrixArgs;
 class GetScoreValueArgs;
+class GetScoreArrayArgs;
 class ExportModelArgs;
 class ImportModelArgs;
 class AttachModelArgs;
@@ -121,6 +123,7 @@ class TransformMasterModelArgs;
 class ConfigureLoggingArgs;
 class ClearThetaCacheArgs;
 class ClearScoreCacheArgs;
+class ClearScoreArrayCacheArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -3841,6 +3844,91 @@ class ScoreData : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static ScoreData* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ScoreDataArray : public ::google::protobuf::Message {
+ public:
+  ScoreDataArray();
+  virtual ~ScoreDataArray();
+
+  ScoreDataArray(const ScoreDataArray& from);
+
+  inline ScoreDataArray& operator=(const ScoreDataArray& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ScoreDataArray& default_instance();
+
+  void Swap(ScoreDataArray* other);
+
+  // implements Message ----------------------------------------------
+
+  ScoreDataArray* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ScoreDataArray& from);
+  void MergeFrom(const ScoreDataArray& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .artm.ScoreData score = 1;
+  inline int score_size() const;
+  inline void clear_score();
+  static const int kScoreFieldNumber = 1;
+  inline const ::artm::ScoreData& score(int index) const;
+  inline ::artm::ScoreData* mutable_score(int index);
+  inline ::artm::ScoreData* add_score();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >&
+      score() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
+      mutable_score();
+
+  // @@protoc_insertion_point(class_scope:artm.ScoreDataArray)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::artm::ScoreData > score_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ScoreDataArray* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -8321,13 +8409,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_topic_index();
 
-  // optional bool clean_cache = 5 [default = false];
-  inline bool has_clean_cache() const;
-  inline void clear_clean_cache();
-  static const int kCleanCacheFieldNumber = 5;
-  inline bool clean_cache() const;
-  inline void set_clean_cache(bool value);
-
   // optional bool use_sparse_format = 6;
   inline bool has_use_sparse_format() const;
   inline void clear_use_sparse_format();
@@ -8351,8 +8432,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.GetThetaMatrixArgs)
  private:
-  inline void set_has_clean_cache();
-  inline void clear_has_clean_cache();
   inline void set_has_use_sparse_format();
   inline void clear_has_use_sparse_format();
   inline void set_has_eps();
@@ -8364,13 +8443,12 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
 
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
-  bool clean_cache_;
   bool use_sparse_format_;
   float eps_;
   int matrix_layout_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8480,6 +8558,93 @@ class GetScoreValueArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static GetScoreValueArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class GetScoreArrayArgs : public ::google::protobuf::Message {
+ public:
+  GetScoreArrayArgs();
+  virtual ~GetScoreArrayArgs();
+
+  GetScoreArrayArgs(const GetScoreArrayArgs& from);
+
+  inline GetScoreArrayArgs& operator=(const GetScoreArrayArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GetScoreArrayArgs& default_instance();
+
+  void Swap(GetScoreArrayArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  GetScoreArrayArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const GetScoreArrayArgs& from);
+  void MergeFrom(const GetScoreArrayArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string score_name = 2;
+  inline bool has_score_name() const;
+  inline void clear_score_name();
+  static const int kScoreNameFieldNumber = 2;
+  inline const ::std::string& score_name() const;
+  inline void set_score_name(const ::std::string& value);
+  inline void set_score_name(const char* value);
+  inline void set_score_name(const char* value, size_t size);
+  inline ::std::string* mutable_score_name();
+  inline ::std::string* release_score_name();
+  inline void set_allocated_score_name(::std::string* score_name);
+
+  // @@protoc_insertion_point(class_scope:artm.GetScoreArrayArgs)
+ private:
+  inline void set_has_score_name();
+  inline void clear_has_score_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* score_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static GetScoreArrayArgs* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -12024,6 +12189,78 @@ class ClearScoreCacheArgs : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static ClearScoreCacheArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ClearScoreArrayCacheArgs : public ::google::protobuf::Message {
+ public:
+  ClearScoreArrayCacheArgs();
+  virtual ~ClearScoreArrayCacheArgs();
+
+  ClearScoreArrayCacheArgs(const ClearScoreArrayCacheArgs& from);
+
+  inline ClearScoreArrayCacheArgs& operator=(const ClearScoreArrayCacheArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ClearScoreArrayCacheArgs& default_instance();
+
+  void Swap(ClearScoreArrayCacheArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ClearScoreArrayCacheArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ClearScoreArrayCacheArgs& from);
+  void MergeFrom(const ClearScoreArrayCacheArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:artm.ClearScoreArrayCacheArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[1];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ClearScoreArrayCacheArgs* default_instance_;
 };
 // ===================================================================
 
@@ -16042,6 +16279,35 @@ inline void ScoreData::set_allocated_data(::std::string* data) {
     clear_has_data();
     data_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
+}
+
+// -------------------------------------------------------------------
+
+// ScoreDataArray
+
+// repeated .artm.ScoreData score = 1;
+inline int ScoreDataArray::score_size() const {
+  return score_.size();
+}
+inline void ScoreDataArray::clear_score() {
+  score_.Clear();
+}
+inline const ::artm::ScoreData& ScoreDataArray::score(int index) const {
+  return score_.Get(index);
+}
+inline ::artm::ScoreData* ScoreDataArray::mutable_score(int index) {
+  return score_.Mutable(index);
+}
+inline ::artm::ScoreData* ScoreDataArray::add_score() {
+  return score_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >&
+ScoreDataArray::score() const {
+  return score_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
+ScoreDataArray::mutable_score() {
+  return &score_;
 }
 
 // -------------------------------------------------------------------
@@ -21985,37 +22251,15 @@ GetThetaMatrixArgs::mutable_topic_index() {
   return &topic_index_;
 }
 
-// optional bool clean_cache = 5 [default = false];
-inline bool GetThetaMatrixArgs::has_clean_cache() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void GetThetaMatrixArgs::set_has_clean_cache() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void GetThetaMatrixArgs::clear_has_clean_cache() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void GetThetaMatrixArgs::clear_clean_cache() {
-  clean_cache_ = false;
-  clear_has_clean_cache();
-}
-inline bool GetThetaMatrixArgs::clean_cache() const {
-  return clean_cache_;
-}
-inline void GetThetaMatrixArgs::set_clean_cache(bool value) {
-  set_has_clean_cache();
-  clean_cache_ = value;
-}
-
 // optional bool use_sparse_format = 6;
 inline bool GetThetaMatrixArgs::has_use_sparse_format() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_use_sparse_format() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void GetThetaMatrixArgs::clear_has_use_sparse_format() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void GetThetaMatrixArgs::clear_use_sparse_format() {
   use_sparse_format_ = false;
@@ -22031,13 +22275,13 @@ inline void GetThetaMatrixArgs::set_use_sparse_format(bool value) {
 
 // optional float eps = 7 [default = 1e-037];
 inline bool GetThetaMatrixArgs::has_eps() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_eps() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void GetThetaMatrixArgs::clear_has_eps() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void GetThetaMatrixArgs::clear_eps() {
   eps_ = 1e-037f;
@@ -22053,13 +22297,13 @@ inline void GetThetaMatrixArgs::set_eps(float value) {
 
 // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Dense];
 inline bool GetThetaMatrixArgs::has_matrix_layout() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_matrix_layout() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void GetThetaMatrixArgs::clear_has_matrix_layout() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void GetThetaMatrixArgs::clear_matrix_layout() {
   matrix_layout_ = 0;
@@ -22206,6 +22450,80 @@ inline ::std::string* GetScoreValueArgs::release_score_name() {
   }
 }
 inline void GetScoreValueArgs::set_allocated_score_name(::std::string* score_name) {
+  if (score_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete score_name_;
+  }
+  if (score_name) {
+    set_has_score_name();
+    score_name_ = score_name;
+  } else {
+    clear_has_score_name();
+    score_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// -------------------------------------------------------------------
+
+// GetScoreArrayArgs
+
+// optional string score_name = 2;
+inline bool GetScoreArrayArgs::has_score_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void GetScoreArrayArgs::set_has_score_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void GetScoreArrayArgs::clear_has_score_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void GetScoreArrayArgs::clear_score_name() {
+  if (score_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    score_name_->clear();
+  }
+  clear_has_score_name();
+}
+inline const ::std::string& GetScoreArrayArgs::score_name() const {
+  return *score_name_;
+}
+inline void GetScoreArrayArgs::set_score_name(const ::std::string& value) {
+  set_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    score_name_ = new ::std::string;
+  }
+  score_name_->assign(value);
+}
+inline void GetScoreArrayArgs::set_score_name(const char* value) {
+  set_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    score_name_ = new ::std::string;
+  }
+  score_name_->assign(value);
+}
+inline void GetScoreArrayArgs::set_score_name(const char* value, size_t size) {
+  set_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    score_name_ = new ::std::string;
+  }
+  score_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* GetScoreArrayArgs::mutable_score_name() {
+  set_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    score_name_ = new ::std::string;
+  }
+  return score_name_;
+}
+inline ::std::string* GetScoreArrayArgs::release_score_name() {
+  clear_has_score_name();
+  if (score_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = score_name_;
+    score_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void GetScoreArrayArgs::set_allocated_score_name(::std::string* score_name) {
   if (score_name_ != &::google::protobuf::internal::GetEmptyString()) {
     delete score_name_;
   }
@@ -26647,6 +26965,10 @@ inline void ConfigureLoggingArgs::set_stop_logging_if_full_disk(bool value) {
 // -------------------------------------------------------------------
 
 // ClearScoreCacheArgs
+
+// -------------------------------------------------------------------
+
+// ClearScoreArrayCacheArgs
 
 
 // @@protoc_insertion_point(namespace_scope)
