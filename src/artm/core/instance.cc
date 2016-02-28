@@ -183,16 +183,8 @@ void Instance::DisposeModel(ModelName model_name) {
 
   models_.erase(model_name);
 
-  if (score_manager_ != nullptr) {
-    score_manager_->DisposeModel(model_name);
-  }
-
   if (batch_manager_ != nullptr) {
     batch_manager_->DisposeModel(model_name);
-  }
-
-  if (cache_manager_ != nullptr) {
-    cache_manager_->DisposeModel(model_name);
   }
 }
 

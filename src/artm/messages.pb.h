@@ -119,6 +119,8 @@ class FitOfflineMasterModelArgs;
 class FitOnlineMasterModelArgs;
 class TransformMasterModelArgs;
 class ConfigureLoggingArgs;
+class ClearThetaCacheArgs;
+class ClearScoreCacheArgs;
 
 enum Stream_Type {
   Stream_Type_Global = 0,
@@ -2131,18 +2133,6 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
       mutable_regularizer_settings();
 
-  // optional string model_name_cache = 19;
-  inline bool has_model_name_cache() const;
-  inline void clear_model_name_cache();
-  static const int kModelNameCacheFieldNumber = 19;
-  inline const ::std::string& model_name_cache() const;
-  inline void set_model_name_cache(const ::std::string& value);
-  inline void set_model_name_cache(const char* value);
-  inline void set_model_name_cache(const char* value, size_t size);
-  inline ::std::string* mutable_model_name_cache();
-  inline ::std::string* release_model_name_cache();
-  inline void set_allocated_model_name_cache(::std::string* model_name_cache);
-
   // optional string predict_class_id = 20;
   inline bool has_predict_class_id() const;
   inline void clear_predict_class_id();
@@ -2179,8 +2169,6 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_use_new_tokens();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
-  inline void set_has_model_name_cache();
-  inline void clear_has_model_name_cache();
   inline void set_has_predict_class_id();
   inline void clear_has_predict_class_id();
 
@@ -2207,11 +2195,10 @@ class ModelConfig : public ::google::protobuf::Message {
   bool opt_for_avx_;
   ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
-  ::std::string* model_name_cache_;
   ::std::string* predict_class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6650,18 +6637,6 @@ class ThetaMatrix : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional string model_name = 1 [default = "@model"];
-  inline bool has_model_name() const;
-  inline void clear_model_name();
-  static const int kModelNameFieldNumber = 1;
-  inline const ::std::string& model_name() const;
-  inline void set_model_name(const ::std::string& value);
-  inline void set_model_name(const char* value);
-  inline void set_model_name(const char* value, size_t size);
-  inline ::std::string* mutable_model_name();
-  inline ::std::string* release_model_name();
-  inline void set_allocated_model_name(::std::string* model_name);
-
   // repeated int32 item_id = 2;
   inline int item_id_size() const;
   inline void clear_item_id();
@@ -6739,15 +6714,11 @@ class ThetaMatrix : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.ThetaMatrix)
  private:
-  inline void set_has_model_name();
-  inline void clear_has_model_name();
   inline void set_has_topics_count();
   inline void clear_has_topics_count();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* model_name_;
-  static ::std::string* _default_model_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > item_weights_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
@@ -6756,7 +6727,7 @@ class ThetaMatrix : public ::google::protobuf::Message {
   ::google::protobuf::int32 topics_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8322,18 +8293,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional string model_name = 1;
-  inline bool has_model_name() const;
-  inline void clear_model_name();
-  static const int kModelNameFieldNumber = 1;
-  inline const ::std::string& model_name() const;
-  inline void set_model_name(const ::std::string& value);
-  inline void set_model_name(const char* value);
-  inline void set_model_name(const char* value, size_t size);
-  inline ::std::string* mutable_model_name();
-  inline ::std::string* release_model_name();
-  inline void set_allocated_model_name(::std::string* model_name);
-
   // repeated string topic_name = 3;
   inline int topic_name_size() const;
   inline void clear_topic_name();
@@ -8392,8 +8351,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.GetThetaMatrixArgs)
  private:
-  inline void set_has_model_name();
-  inline void clear_has_model_name();
   inline void set_has_clean_cache();
   inline void clear_has_clean_cache();
   inline void set_has_use_sparse_format();
@@ -8405,7 +8362,6 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* model_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > topic_index_;
   bool clean_cache_;
@@ -8414,7 +8370,7 @@ class GetThetaMatrixArgs : public ::google::protobuf::Message {
   int matrix_layout_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9036,13 +8992,6 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline bool use_sparse_bow() const;
   inline void set_use_sparse_bow(bool value);
 
-  // optional bool reset_scores = 13 [default = true];
-  inline bool has_reset_scores() const;
-  inline void clear_reset_scores();
-  static const int kResetScoresFieldNumber = 13;
-  inline bool reset_scores() const;
-  inline void set_reset_scores(bool value);
-
   // optional .artm.ProcessBatchesArgs.ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   inline bool has_theta_matrix_type() const;
   inline void clear_theta_matrix_type();
@@ -9061,18 +9010,6 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
       batch_weight() const;
   inline ::google::protobuf::RepeatedField< float >*
       mutable_batch_weight();
-
-  // optional string model_name_cache = 16;
-  inline bool has_model_name_cache() const;
-  inline void clear_model_name_cache();
-  static const int kModelNameCacheFieldNumber = 16;
-  inline const ::std::string& model_name_cache() const;
-  inline void set_model_name_cache(const ::std::string& value);
-  inline void set_model_name_cache(const char* value);
-  inline void set_model_name_cache(const char* value, size_t size);
-  inline ::std::string* mutable_model_name_cache();
-  inline ::std::string* release_model_name_cache();
-  inline void set_allocated_model_name_cache(::std::string* model_name_cache);
 
   // optional string predict_class_id = 17;
   inline bool has_predict_class_id() const;
@@ -9114,12 +9051,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_opt_for_avx();
   inline void set_has_use_sparse_bow();
   inline void clear_has_use_sparse_bow();
-  inline void set_has_reset_scores();
-  inline void clear_has_reset_scores();
   inline void set_has_theta_matrix_type();
   inline void clear_has_theta_matrix_type();
-  inline void set_has_model_name_cache();
-  inline void clear_has_model_name_cache();
   inline void set_has_predict_class_id();
   inline void clear_has_predict_class_id();
 
@@ -9138,15 +9071,13 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   bool reuse_theta_;
   bool opt_for_avx_;
   bool use_sparse_bow_;
-  bool reset_scores_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
-  ::std::string* model_name_cache_;
   ::std::string* predict_class_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::Batch > batch_;
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -11950,6 +11881,150 @@ class ConfigureLoggingArgs : public ::google::protobuf::Message {
   void InitAsDefaultInstance();
   static ConfigureLoggingArgs* default_instance_;
 };
+// -------------------------------------------------------------------
+
+class ClearThetaCacheArgs : public ::google::protobuf::Message {
+ public:
+  ClearThetaCacheArgs();
+  virtual ~ClearThetaCacheArgs();
+
+  ClearThetaCacheArgs(const ClearThetaCacheArgs& from);
+
+  inline ClearThetaCacheArgs& operator=(const ClearThetaCacheArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ClearThetaCacheArgs& default_instance();
+
+  void Swap(ClearThetaCacheArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ClearThetaCacheArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ClearThetaCacheArgs& from);
+  void MergeFrom(const ClearThetaCacheArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:artm.ClearThetaCacheArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[1];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ClearThetaCacheArgs* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ClearScoreCacheArgs : public ::google::protobuf::Message {
+ public:
+  ClearScoreCacheArgs();
+  virtual ~ClearScoreCacheArgs();
+
+  ClearScoreCacheArgs(const ClearScoreCacheArgs& from);
+
+  inline ClearScoreCacheArgs& operator=(const ClearScoreCacheArgs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ClearScoreCacheArgs& default_instance();
+
+  void Swap(ClearScoreCacheArgs* other);
+
+  // implements Message ----------------------------------------------
+
+  ClearScoreCacheArgs* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ClearScoreCacheArgs& from);
+  void MergeFrom(const ClearScoreCacheArgs& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:artm.ClearScoreCacheArgs)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[1];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static ClearScoreCacheArgs* default_instance_;
+};
 // ===================================================================
 
 
@@ -14220,85 +14295,15 @@ ModelConfig::mutable_regularizer_settings() {
   return &regularizer_settings_;
 }
 
-// optional string model_name_cache = 19;
-inline bool ModelConfig::has_model_name_cache() const {
-  return (_has_bits_[0] & 0x00040000u) != 0;
-}
-inline void ModelConfig::set_has_model_name_cache() {
-  _has_bits_[0] |= 0x00040000u;
-}
-inline void ModelConfig::clear_has_model_name_cache() {
-  _has_bits_[0] &= ~0x00040000u;
-}
-inline void ModelConfig::clear_model_name_cache() {
-  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_->clear();
-  }
-  clear_has_model_name_cache();
-}
-inline const ::std::string& ModelConfig::model_name_cache() const {
-  return *model_name_cache_;
-}
-inline void ModelConfig::set_model_name_cache(const ::std::string& value) {
-  set_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_ = new ::std::string;
-  }
-  model_name_cache_->assign(value);
-}
-inline void ModelConfig::set_model_name_cache(const char* value) {
-  set_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_ = new ::std::string;
-  }
-  model_name_cache_->assign(value);
-}
-inline void ModelConfig::set_model_name_cache(const char* value, size_t size) {
-  set_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_ = new ::std::string;
-  }
-  model_name_cache_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::mutable_model_name_cache() {
-  set_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_ = new ::std::string;
-  }
-  return model_name_cache_;
-}
-inline ::std::string* ModelConfig::release_model_name_cache() {
-  clear_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = model_name_cache_;
-    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void ModelConfig::set_allocated_model_name_cache(::std::string* model_name_cache) {
-  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_cache_;
-  }
-  if (model_name_cache) {
-    set_has_model_name_cache();
-    model_name_cache_ = model_name_cache;
-  } else {
-    clear_has_model_name_cache();
-    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
 // optional string predict_class_id = 20;
 inline bool ModelConfig::has_predict_class_id() const {
-  return (_has_bits_[0] & 0x00080000u) != 0;
+  return (_has_bits_[0] & 0x00040000u) != 0;
 }
 inline void ModelConfig::set_has_predict_class_id() {
-  _has_bits_[0] |= 0x00080000u;
+  _has_bits_[0] |= 0x00040000u;
 }
 inline void ModelConfig::clear_has_predict_class_id() {
-  _has_bits_[0] &= ~0x00080000u;
+  _has_bits_[0] &= ~0x00040000u;
 }
 inline void ModelConfig::clear_predict_class_id() {
   if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -19308,76 +19313,6 @@ inline void TopicModel::set_seed(::google::protobuf::int32 value) {
 
 // ThetaMatrix
 
-// optional string model_name = 1 [default = "@model"];
-inline bool ThetaMatrix::has_model_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ThetaMatrix::set_has_model_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ThetaMatrix::clear_has_model_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ThetaMatrix::clear_model_name() {
-  if (model_name_ != _default_model_name_) {
-    model_name_->assign(*_default_model_name_);
-  }
-  clear_has_model_name();
-}
-inline const ::std::string& ThetaMatrix::model_name() const {
-  return *model_name_;
-}
-inline void ThetaMatrix::set_model_name(const ::std::string& value) {
-  set_has_model_name();
-  if (model_name_ == _default_model_name_) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void ThetaMatrix::set_model_name(const char* value) {
-  set_has_model_name();
-  if (model_name_ == _default_model_name_) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void ThetaMatrix::set_model_name(const char* value, size_t size) {
-  set_has_model_name();
-  if (model_name_ == _default_model_name_) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ThetaMatrix::mutable_model_name() {
-  set_has_model_name();
-  if (model_name_ == _default_model_name_) {
-    model_name_ = new ::std::string(*_default_model_name_);
-  }
-  return model_name_;
-}
-inline ::std::string* ThetaMatrix::release_model_name() {
-  clear_has_model_name();
-  if (model_name_ == _default_model_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = model_name_;
-    model_name_ = const_cast< ::std::string*>(_default_model_name_);
-    return temp;
-  }
-}
-inline void ThetaMatrix::set_allocated_model_name(::std::string* model_name) {
-  if (model_name_ != _default_model_name_) {
-    delete model_name_;
-  }
-  if (model_name) {
-    set_has_model_name();
-    model_name_ = model_name;
-  } else {
-    clear_has_model_name();
-    model_name_ = const_cast< ::std::string*>(_default_model_name_);
-  }
-}
-
 // repeated int32 item_id = 2;
 inline int ThetaMatrix::item_id_size() const {
   return item_id_.size();
@@ -19474,13 +19409,13 @@ ThetaMatrix::mutable_topic_name() {
 
 // optional int32 topics_count = 5;
 inline bool ThetaMatrix::has_topics_count() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ThetaMatrix::set_has_topics_count() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ThetaMatrix::clear_has_topics_count() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ThetaMatrix::clear_topics_count() {
   topics_count_ = 0;
@@ -21981,76 +21916,6 @@ inline void GetTopicModelArgs::set_matrix_layout(::artm::GetTopicModelArgs_Matri
 
 // GetThetaMatrixArgs
 
-// optional string model_name = 1;
-inline bool GetThetaMatrixArgs::has_model_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void GetThetaMatrixArgs::set_has_model_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void GetThetaMatrixArgs::clear_has_model_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void GetThetaMatrixArgs::clear_model_name() {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    model_name_->clear();
-  }
-  clear_has_model_name();
-}
-inline const ::std::string& GetThetaMatrixArgs::model_name() const {
-  return *model_name_;
-}
-inline void GetThetaMatrixArgs::set_model_name(const ::std::string& value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void GetThetaMatrixArgs::set_model_name(const char* value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void GetThetaMatrixArgs::set_model_name(const char* value, size_t size) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* GetThetaMatrixArgs::mutable_model_name() {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  return model_name_;
-}
-inline ::std::string* GetThetaMatrixArgs::release_model_name() {
-  clear_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = model_name_;
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void GetThetaMatrixArgs::set_allocated_model_name(::std::string* model_name) {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_;
-  }
-  if (model_name) {
-    set_has_model_name();
-    model_name_ = model_name;
-  } else {
-    clear_has_model_name();
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
 // repeated string topic_name = 3;
 inline int GetThetaMatrixArgs::topic_name_size() const {
   return topic_name_.size();
@@ -22122,13 +21987,13 @@ GetThetaMatrixArgs::mutable_topic_index() {
 
 // optional bool clean_cache = 5 [default = false];
 inline bool GetThetaMatrixArgs::has_clean_cache() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_clean_cache() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void GetThetaMatrixArgs::clear_has_clean_cache() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void GetThetaMatrixArgs::clear_clean_cache() {
   clean_cache_ = false;
@@ -22144,13 +22009,13 @@ inline void GetThetaMatrixArgs::set_clean_cache(bool value) {
 
 // optional bool use_sparse_format = 6;
 inline bool GetThetaMatrixArgs::has_use_sparse_format() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_use_sparse_format() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void GetThetaMatrixArgs::clear_has_use_sparse_format() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void GetThetaMatrixArgs::clear_use_sparse_format() {
   use_sparse_format_ = false;
@@ -22166,13 +22031,13 @@ inline void GetThetaMatrixArgs::set_use_sparse_format(bool value) {
 
 // optional float eps = 7 [default = 1e-037];
 inline bool GetThetaMatrixArgs::has_eps() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_eps() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void GetThetaMatrixArgs::clear_has_eps() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void GetThetaMatrixArgs::clear_eps() {
   eps_ = 1e-037f;
@@ -22188,13 +22053,13 @@ inline void GetThetaMatrixArgs::set_eps(float value) {
 
 // optional .artm.GetThetaMatrixArgs.MatrixLayout matrix_layout = 8 [default = Dense];
 inline bool GetThetaMatrixArgs::has_matrix_layout() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void GetThetaMatrixArgs::set_has_matrix_layout() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void GetThetaMatrixArgs::clear_has_matrix_layout() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void GetThetaMatrixArgs::clear_matrix_layout() {
   matrix_layout_ = 0;
@@ -23199,37 +23064,15 @@ inline void ProcessBatchesArgs::set_use_sparse_bow(bool value) {
   use_sparse_bow_ = value;
 }
 
-// optional bool reset_scores = 13 [default = true];
-inline bool ProcessBatchesArgs::has_reset_scores() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
-}
-inline void ProcessBatchesArgs::set_has_reset_scores() {
-  _has_bits_[0] |= 0x00001000u;
-}
-inline void ProcessBatchesArgs::clear_has_reset_scores() {
-  _has_bits_[0] &= ~0x00001000u;
-}
-inline void ProcessBatchesArgs::clear_reset_scores() {
-  reset_scores_ = true;
-  clear_has_reset_scores();
-}
-inline bool ProcessBatchesArgs::reset_scores() const {
-  return reset_scores_;
-}
-inline void ProcessBatchesArgs::set_reset_scores(bool value) {
-  set_has_reset_scores();
-  reset_scores_ = value;
-}
-
 // optional .artm.ProcessBatchesArgs.ThetaMatrixType theta_matrix_type = 14 [default = Cache];
 inline bool ProcessBatchesArgs::has_theta_matrix_type() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_theta_matrix_type() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void ProcessBatchesArgs::clear_has_theta_matrix_type() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void ProcessBatchesArgs::clear_theta_matrix_type() {
   theta_matrix_type_ = 3;
@@ -23269,85 +23112,15 @@ ProcessBatchesArgs::mutable_batch_weight() {
   return &batch_weight_;
 }
 
-// optional string model_name_cache = 16;
-inline bool ProcessBatchesArgs::has_model_name_cache() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
-}
-inline void ProcessBatchesArgs::set_has_model_name_cache() {
-  _has_bits_[0] |= 0x00008000u;
-}
-inline void ProcessBatchesArgs::clear_has_model_name_cache() {
-  _has_bits_[0] &= ~0x00008000u;
-}
-inline void ProcessBatchesArgs::clear_model_name_cache() {
-  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_->clear();
-  }
-  clear_has_model_name_cache();
-}
-inline const ::std::string& ProcessBatchesArgs::model_name_cache() const {
-  return *model_name_cache_;
-}
-inline void ProcessBatchesArgs::set_model_name_cache(const ::std::string& value) {
-  set_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_ = new ::std::string;
-  }
-  model_name_cache_->assign(value);
-}
-inline void ProcessBatchesArgs::set_model_name_cache(const char* value) {
-  set_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_ = new ::std::string;
-  }
-  model_name_cache_->assign(value);
-}
-inline void ProcessBatchesArgs::set_model_name_cache(const char* value, size_t size) {
-  set_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_ = new ::std::string;
-  }
-  model_name_cache_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ProcessBatchesArgs::mutable_model_name_cache() {
-  set_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_cache_ = new ::std::string;
-  }
-  return model_name_cache_;
-}
-inline ::std::string* ProcessBatchesArgs::release_model_name_cache() {
-  clear_has_model_name_cache();
-  if (model_name_cache_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = model_name_cache_;
-    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void ProcessBatchesArgs::set_allocated_model_name_cache(::std::string* model_name_cache) {
-  if (model_name_cache_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_cache_;
-  }
-  if (model_name_cache) {
-    set_has_model_name_cache();
-    model_name_cache_ = model_name_cache;
-  } else {
-    clear_has_model_name_cache();
-    model_name_cache_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
 // optional string predict_class_id = 17;
 inline bool ProcessBatchesArgs::has_predict_class_id() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_predict_class_id() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void ProcessBatchesArgs::clear_has_predict_class_id() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void ProcessBatchesArgs::clear_predict_class_id() {
   if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -26866,6 +26639,14 @@ inline void ConfigureLoggingArgs::set_stop_logging_if_full_disk(bool value) {
   set_has_stop_logging_if_full_disk();
   stop_logging_if_full_disk_ = value;
 }
+
+// -------------------------------------------------------------------
+
+// ClearThetaCacheArgs
+
+// -------------------------------------------------------------------
+
+// ClearScoreCacheArgs
 
 
 // @@protoc_insertion_point(namespace_scope)

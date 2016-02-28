@@ -481,6 +481,8 @@ inline std::string DescribeErrors(const ::artm::MasterComponentInfo& message) { 
 inline std::string DescribeErrors(const ::artm::GetDictionaryArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetMasterComponentInfoArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ProcessBatchesResult& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ClearThetaCacheArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ClearScoreCacheArgs& message) { return std::string(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // FixMessage routines (optional)
@@ -793,7 +795,6 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
-  ss << ", reset_scores=" << (message.reset_scores() ? "yes" : "no");
   ss << ", predict_class_id=" << (message.predict_class_id());
   return ss.str();
 }

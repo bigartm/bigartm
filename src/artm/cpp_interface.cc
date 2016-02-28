@@ -168,7 +168,6 @@ TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args, Matrix* mat
 
 ThetaMatrix MasterModel::GetThetaMatrix() {
   GetThetaMatrixArgs args;
-  args.set_model_name(config().pwt_name());
   return GetThetaMatrix(args);
 }
 
@@ -178,7 +177,6 @@ ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args) {
 
 ThetaMatrix MasterModel::GetThetaMatrix(Matrix* matrix) {
   GetThetaMatrixArgs args;
-  args.set_model_name(config().pwt_name());
   return GetThetaMatrix(args, matrix);
 }
 

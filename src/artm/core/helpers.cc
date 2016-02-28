@@ -276,7 +276,6 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "GetThetaMatrixArgs.topic_name and GetThetaMatrixArgs.topic_index must not be used together"));
 
-  auto& args_model_name = get_theta_args.model_name();
   auto& args_topic_name = get_theta_args.topic_name();
   auto& args_topic_index = get_theta_args.topic_index();
   const bool has_sparse_format = get_theta_args.matrix_layout() == GetThetaMatrixArgs_MatrixLayout_Sparse;
@@ -319,17 +318,14 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
   for (int topic_index : topics_to_use)
     result_topic_name.Add()->assign(cache.topic_name(topic_index));
 
-  if (!theta_matrix->has_model_name()) {
+  if (theta_matrix->topic_name_size() == 0) {
     // Assign
-    theta_matrix->set_model_name(args_model_name);
     theta_matrix->set_topics_count(result_topic_name.size());
     assert(theta_matrix->topic_name_size() == 0);
     for (const TopicName& topic_name : result_topic_name)
       theta_matrix->add_topic_name(topic_name);
   } else {
     // Verify
-    if (theta_matrix->model_name() != args_model_name)
-      BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->model_name() != args_model_name"));
     if (theta_matrix->topics_count() != result_topic_name.size())
       BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->topics_count() != result_topic_name.size()"));
     for (int i = 0; i < theta_matrix->topic_name_size(); ++i) {

@@ -25,16 +25,14 @@ class CacheManager : boost::noncopyable {
   virtual ~CacheManager();
 
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
-  void DisposeModel(ModelName model_name);
+  void Clear();
   void RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
                           ::artm::ThetaMatrix* theta_matrix) const;
-  std::shared_ptr<DataLoaderCacheEntry> FindCacheEntry(const boost::uuids::uuid& batch_uuid,
-                                                       const ModelName& model_name) const;
+  std::shared_ptr<DataLoaderCacheEntry> FindCacheEntry(const boost::uuids::uuid& batch_uuid) const;
   void UpdateCacheEntry(std::shared_ptr<DataLoaderCacheEntry> cache_entry) const;
 
  private:
-  typedef std::pair<boost::uuids::uuid, ModelName> CacheKey;
-  mutable ThreadSafeCollectionHolder<CacheKey, DataLoaderCacheEntry> cache_;
+  mutable ThreadSafeCollectionHolder<boost::uuids::uuid, DataLoaderCacheEntry> cache_;
 };
 
 }  // namespace core

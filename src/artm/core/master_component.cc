@@ -114,6 +114,14 @@ void MasterComponent::DisposeModel(const std::string& name) {
   instance_->DisposeModel(name);
 }
 
+void MasterComponent::ClearThetaCache(const ClearThetaCacheArgs& args) {
+  instance_->cache_manager()->Clear();
+}
+
+void MasterComponent::ClearScoreCache(const ClearScoreCacheArgs& args) {
+  instance_->score_manager()->Clear();
+}
+
 void MasterComponent::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
   instance_->CreateOrReconfigureRegularizer(config);
 }
@@ -409,7 +417,7 @@ void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) 
 
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
 
-  if (instance_->score_manager()->RequestScore(schema, args.model_name(), args.score_name(), result))
+  if (instance_->score_manager()->RequestScore(schema, args.score_name(), result))
     return;  // success
 
   auto score_calculator = schema->score_calculator(args.score_name());
@@ -474,7 +482,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   if (args.has_reuse_theta()) model_config.set_reuse_theta(args.reuse_theta());
   if (args.has_opt_for_avx()) model_config.set_opt_for_avx(args.opt_for_avx());
   if (args.has_use_sparse_bow()) model_config.set_use_sparse_bow(args.use_sparse_bow());
-  if (args.has_model_name_cache()) model_config.set_model_name_cache(args.model_name_cache());
   if (args.has_predict_class_id()) model_config.set_predict_class_id(args.predict_class_id());
 
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
@@ -523,9 +530,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
       ptdw_cache_manager_ptr = &cache_manager;
       return_ptdw = true;
   }
-
-  if (args.reset_scores())
-    score_manager->ResetScores(model_name);
 
   if (args.batch_filename_size() < instance_->processor_size()) {
     LOG_FIRST_N(INFO, 1) << "Batches count (=" << args.batch_filename_size()
@@ -582,12 +586,11 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   for (int score_index = 0; score_index < config.score_config_size(); ++score_index) {
     ScoreName score_name = config.score_config(score_index).name();
     ScoreData requested_score_data;
-    if ((score_data != nullptr) && score_manager->RequestScore(schema, model_name, score_name, &requested_score_data))
+    if ((score_data != nullptr) && score_manager->RequestScore(schema, score_name, &requested_score_data))
       score_data->Add()->Swap(&requested_score_data);
   }
 
   GetThetaMatrixArgs get_theta_matrix_args;
-  get_theta_matrix_args.set_model_name(model_name);
   switch (args.theta_matrix_type()) {
     case ProcessBatchesArgs_ThetaMatrixType_Dense:
     case ProcessBatchesArgs_ThetaMatrixType_DensePtdw:
@@ -711,10 +714,6 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
 }
 
 void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatrix* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
-  if (config != nullptr)
-    if (!args.has_model_name()) const_cast<GetThetaMatrixArgs*>(&args)->set_model_name(config->pwt_name());
-
   instance_->cache_manager()->RequestThetaMatrix(args, result);
 }
 
@@ -751,7 +750,6 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   if (config->has_use_sparse_bow()) process_batches_args.set_use_sparse_bow(config->use_sparse_bow());
   if (config->has_reuse_theta()) process_batches_args.set_reuse_theta(config->reuse_theta());
 
-  process_batches_args.set_reset_scores(true);
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
   process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
   process_batches_args.set_theta_matrix_type((::artm::ProcessBatchesArgs_ThetaMatrixType)args.theta_matrix_type());
@@ -905,7 +903,7 @@ class ArtmExecutor {
 
   void ExecuteOfflineAlgorithm(int passes, OfflineBatchesIterator* iter) {
     const std::string rwt_name = "rwt";
-    process_batches_args_.set_reset_scores(true);
+    master_component_->ClearScoreCache(ClearScoreCacheArgs());
     for (int pass = 0; pass < passes; ++pass) {
       ProcessBatches(pwt_name_, nwt_name_, iter);
       Regularize(pwt_name_, nwt_name_, rwt_name);
@@ -919,7 +917,7 @@ class ArtmExecutor {
     const std::string rwt_name = "rwt";
     StringIndex nwt_hat_index("nwt_hat");
 
-    process_batches_args_.set_reset_scores(true);  // reset scores at the beginning of each iteration
+    master_component_->ClearScoreCache(ClearScoreCacheArgs());
     while (iter->more()) {
       float apply_weight = iter->apply_weight();
       float decay_weight = iter->decay_weight();
@@ -930,7 +928,6 @@ class ArtmExecutor {
       Regularize(pwt_name_, nwt_name_, rwt_name);
       Normalize(pwt_name_, nwt_name_, rwt_name);
 
-      process_batches_args_.set_reset_scores(false);
       nwt_hat_index++;
     }  // while (iter->more())
 
@@ -956,10 +953,8 @@ class ArtmExecutor {
     StringIndex pwt_index("pwt");
     StringIndex nwt_hat_index("nwt_hat");
 
-    process_batches_args_.set_model_name_cache(pwt_name_);
-    process_batches_args_.set_reset_scores(true);  // reset scores at the beginning of each iteration
+    master_component_->ClearScoreCache(ClearScoreCacheArgs());
     int op_id = AsyncProcessBatches(pwt_active, nwt_hat_index, iter);
-    process_batches_args_.set_reset_scores(false);
 
     while (true) {
       bool is_last = !iter->more();

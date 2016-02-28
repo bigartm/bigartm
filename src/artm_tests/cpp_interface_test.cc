@@ -125,7 +125,6 @@ TEST(CppInterface, BasicTest) {
 
     ::artm::GetScoreValueArgs get_score_args;
     get_score_args.set_score_name("PerplexityScore");
-    get_score_args.set_model_name(master_component.config().pwt_name());
     auto perplexity = master_component.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
 
     if (iter > 0)
@@ -134,6 +133,7 @@ TEST(CppInterface, BasicTest) {
     ::artm::TransformMasterModelArgs transform_args;
     transform_args.add_batch_filename(batch.id());
     transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    api.ClearScoreCache(::artm::ClearScoreCacheArgs());
     master_component.Transform(transform_args);
     auto perplexity2 = master_component.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
     previous_perplexity = perplexity2.value();
@@ -175,7 +175,6 @@ TEST(CppInterface, BasicTest) {
     }
 
     ::artm::GetThetaMatrixArgs get_theta_args;
-    get_theta_args.set_model_name(master_component.config().pwt_name());
     get_theta_args.add_topic_name("third topic");
     get_theta_args.add_topic_name("4th topic");
     ::artm::ThetaMatrix theta_matrix23 = master_component.GetThetaMatrix(get_theta_args);
@@ -353,6 +352,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   for (int i = 0; i < 10; ++i) {  // 10 iterations
     process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
     process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Dense);
+    api.ClearScoreCache(::artm::ClearScoreCacheArgs());
     artm::ThetaMatrix result = api.ProcessBatches(process_batches_args);
     perplexity_score = master.GetScoreAs< ::artm::PerplexityScore>(score_args);
     EXPECT_EQ(result.topics_count(), nTopics);

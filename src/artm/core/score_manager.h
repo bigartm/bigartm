@@ -26,18 +26,14 @@ class ScoreManager : boost::noncopyable {
   ScoreManager() : lock_(), score_map_() {}
 
   void Append(std::shared_ptr<InstanceSchema> schema,
-              const ModelName& model_name, const ScoreName& score_name, const std::string& score_blob);
-  void ResetScores(const ModelName& model_name);
+              const ScoreName& score_name, const std::string& score_blob);
+  void Clear();
   bool RequestScore(std::shared_ptr<InstanceSchema> schema,
-                    const ModelName& model_name, const ScoreName& score_name, ScoreData *score_data) const;
-  void DisposeModel(const ModelName& model_name);
+                    const ScoreName& score_name, ScoreData *score_data) const;
 
  private:
   mutable boost::mutex lock_;
-
-  // Map from model name and score name to the score
-  typedef std::pair<ModelName, ScoreName> ScoreKey;
-  std::map<ScoreKey, std::shared_ptr<Score>> score_map_;
+  std::map<ScoreName, std::shared_ptr<Score>> score_map_;
 };
 
 }  // namespace core

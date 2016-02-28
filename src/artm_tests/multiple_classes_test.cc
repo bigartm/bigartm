@@ -453,9 +453,7 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
   args_sparse.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_Sparse);
   auto tm_sparse = master->GetThetaMatrix(args_sparse);
 
-  ::artm::GetThetaMatrixArgs args_all;
-  args_all.set_model_name(args.model_name());
-  auto tm_all = master->GetThetaMatrix(args_all);
+  auto tm_all = master->GetThetaMatrix();
 
   bool by_names = args.topic_name_size() > 0;
   bool by_index = args.topic_index_size() > 0;
@@ -549,6 +547,5 @@ TEST(MultipleClasses, GetTopicModel) {
 
   ::artm::GetThetaMatrixArgs args_theta;
   args_theta.set_eps(0.05f);
-  args_theta.set_model_name(master_config.pwt_name());
   VerifySparseVersusDenseThetaMatrix(args_theta, &master);
 }

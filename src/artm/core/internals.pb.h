@@ -181,18 +181,6 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional string model_name = 1;
-  inline bool has_model_name() const;
-  inline void clear_model_name();
-  static const int kModelNameFieldNumber = 1;
-  inline const ::std::string& model_name() const;
-  inline void set_model_name(const ::std::string& value);
-  inline void set_model_name(const char* value);
-  inline void set_model_name(const char* value, size_t size);
-  inline ::std::string* mutable_model_name();
-  inline ::std::string* release_model_name();
-  inline void set_allocated_model_name(::std::string* model_name);
-
   // optional string batch_uuid = 2;
   inline bool has_batch_uuid() const;
   inline void clear_batch_uuid();
@@ -287,8 +275,6 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.core.DataLoaderCacheEntry)
  private:
-  inline void set_has_model_name();
-  inline void clear_has_model_name();
   inline void set_has_batch_uuid();
   inline void clear_has_batch_uuid();
   inline void set_has_filename();
@@ -296,7 +282,6 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* model_name_;
   ::std::string* batch_uuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > theta_;
@@ -306,7 +291,7 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -453,85 +438,15 @@ Mask::mutable_value() {
 
 // DataLoaderCacheEntry
 
-// optional string model_name = 1;
-inline bool DataLoaderCacheEntry::has_model_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void DataLoaderCacheEntry::set_has_model_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void DataLoaderCacheEntry::clear_has_model_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void DataLoaderCacheEntry::clear_model_name() {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    model_name_->clear();
-  }
-  clear_has_model_name();
-}
-inline const ::std::string& DataLoaderCacheEntry::model_name() const {
-  return *model_name_;
-}
-inline void DataLoaderCacheEntry::set_model_name(const ::std::string& value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void DataLoaderCacheEntry::set_model_name(const char* value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void DataLoaderCacheEntry::set_model_name(const char* value, size_t size) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* DataLoaderCacheEntry::mutable_model_name() {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  return model_name_;
-}
-inline ::std::string* DataLoaderCacheEntry::release_model_name() {
-  clear_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = model_name_;
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void DataLoaderCacheEntry::set_allocated_model_name(::std::string* model_name) {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_;
-  }
-  if (model_name) {
-    set_has_model_name();
-    model_name_ = model_name;
-  } else {
-    clear_has_model_name();
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
 // optional string batch_uuid = 2;
 inline bool DataLoaderCacheEntry::has_batch_uuid() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void DataLoaderCacheEntry::set_has_batch_uuid() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void DataLoaderCacheEntry::clear_has_batch_uuid() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void DataLoaderCacheEntry::clear_batch_uuid() {
   if (batch_uuid_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -689,13 +604,13 @@ DataLoaderCacheEntry::mutable_topic_name() {
 
 // optional string filename = 6;
 inline bool DataLoaderCacheEntry::has_filename() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void DataLoaderCacheEntry::set_has_filename() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void DataLoaderCacheEntry::clear_has_filename() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void DataLoaderCacheEntry::clear_filename() {
   if (filename_ != &::google::protobuf::internal::GetEmptyString()) {

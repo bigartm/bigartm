@@ -61,6 +61,14 @@ TopicModel Api::AttachTopicModel(const AttachModelArgs& args, Matrix* matrix) {
   return retval;
 }
 
+int Api::ClearThetaCache(const ClearThetaCacheArgs& args) {
+  return ArtmExecute(master_model_.id(), args, ArtmClearThetaCache);
+}
+
+int Api::ClearScoreCache(const ClearScoreCacheArgs& args) {
+  return ArtmExecute(master_model_.id(), args, ArtmClearScoreCache);
+}
+
 ThetaMatrix Api::ProcessBatches(const ProcessBatchesArgs& args) {
   auto process_batches_result = ArtmRequest<ProcessBatchesResult>(master_model_.id(), args, ArtmRequestProcessBatches);
   return process_batches_result.theta_matrix();
