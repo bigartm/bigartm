@@ -220,12 +220,7 @@ static std::shared_ptr<DenseMatrix<float>>
 InitializeTheta(const Batch& batch, const ModelConfig& model_config, const DataLoaderCacheEntry* cache) {
   int topic_size = model_config.topics_count();
 
-  std::shared_ptr<DenseMatrix<float>> Theta;
-  if (model_config.use_sparse_bow()) {
-    Theta = std::make_shared<DenseMatrix<float>>(topic_size, batch.item_size(), false);
-  } else {
-    Theta = std::make_shared<DenseMatrix<float>>(topic_size, batch.item_size());
-  }
+  auto Theta = std::make_shared<DenseMatrix<float>>(topic_size, batch.item_size(), /* store_by_rows = */ false);
 
   Theta->InitializeZeros();
 
@@ -356,25 +351,6 @@ InitializeSparseNdw(const Batch& batch, const ModelConfig& model_config) {
 
   n_dw_row_ptr.push_back(n_dw_val.size());
   return std::make_shared<CsrMatrix<float>>(batch.token_size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
-}
-
-static std::shared_ptr<DenseMatrix<float>>
-InitializeDenseNdw(const Batch& batch) {
-  auto n_dw = std::make_shared<DenseMatrix<float>>(batch.token_size(), batch.item_size());
-  n_dw->InitializeZeros();
-
-  for (int item_index = 0; item_index < n_dw->no_columns(); ++item_index) {
-    auto current_item = batch.item(item_index);
-    for (auto& field : current_item.field()) {
-      for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
-        int token_id = field.token_id(token_index);
-        float token_weight = field.token_weight(token_index);
-        (*n_dw)(token_id, item_index) += token_weight;
-      }
-    }
-  }
-
-  return n_dw;
 }
 
 static void
@@ -864,13 +840,9 @@ void Processor::ThreadFunction() {
         VLOG(0) << "Processor: start processing batch " << batch.id() << " into model " << model_description.str();
 
         std::shared_ptr<CsrMatrix<float>> sparse_ndw;
-        std::shared_ptr<DenseMatrix<float>> dense_ndw;
-        if (model_config.use_sparse_bow()) {
+        {
           CuckooWatch cuckoo2("InitializeSparseNdw", &cuckoo, kTimeLoggingThreshold);
           sparse_ndw = InitializeSparseNdw(batch, model_config);
-        } else {
-          CuckooWatch cuckoo2("InitializeDenseNdw", &cuckoo, kTimeLoggingThreshold);
-          dense_ndw = InitializeDenseNdw(batch);
         }
 
         std::shared_ptr<DataLoaderCacheEntry> cache;
@@ -907,7 +879,7 @@ void Processor::ThreadFunction() {
           new_ptdw_cache_entry_ptr->mutable_topic_name()->CopyFrom(model_config.topic_name());
         }
 
-        if (model_config.use_sparse_bow()) {
+        {
           RegularizeThetaAgentCollection theta_agents;
           RegularizePtdwAgentCollection ptdw_agents;
           CreateRegularizerAgents(batch, model_config, *schema, &theta_agents, &ptdw_agents);
@@ -924,10 +896,6 @@ void Processor::ThreadFunction() {
                                         blas, new_cache_entry_ptr.get(),
                                         new_ptdw_cache_entry_ptr.get());
           }
-        } else {
-          CuckooWatch cuckoo2("InferThetaAndUpdateNwtDense", &cuckoo, kTimeLoggingThreshold);
-          InferThetaAndUpdateNwtDense(model_config, batch, part->batch_weight(), *schema, *dense_ndw,
-                                      p_wt, theta_matrix.get(), nwt_writer.get(), blas, new_cache_entry_ptr.get());
         }
 
         if (master_config.has_disk_cache_path()) {

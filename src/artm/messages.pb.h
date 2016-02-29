@@ -1906,13 +1906,6 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< float >*
       mutable_class_weight();
 
-  // optional bool use_sparse_bow = 14 [default = true];
-  inline bool has_use_sparse_bow() const;
-  inline void clear_use_sparse_bow();
-  static const int kUseSparseBowFieldNumber = 14;
-  inline bool use_sparse_bow() const;
-  inline void set_use_sparse_bow(bool value);
-
   // optional bool use_random_theta = 15 [default = false];
   inline bool has_use_random_theta() const;
   inline void clear_use_random_theta();
@@ -1972,8 +1965,6 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_field_name();
   inline void set_has_reuse_theta();
   inline void clear_has_reuse_theta();
-  inline void set_has_use_sparse_bow();
-  inline void clear_has_use_sparse_bow();
   inline void set_has_use_random_theta();
   inline void clear_has_use_random_theta();
   inline void set_has_use_new_tokens();
@@ -1995,19 +1986,18 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   bool enabled_;
   bool reuse_theta_;
-  bool use_sparse_bow_;
   bool use_random_theta_;
   bool use_new_tokens_;
   bool opt_for_avx_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
   ::std::string* predict_class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8864,13 +8854,6 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline bool opt_for_avx() const;
   inline void set_opt_for_avx(bool value);
 
-  // optional bool use_sparse_bow = 12 [default = true];
-  inline bool has_use_sparse_bow() const;
-  inline void clear_use_sparse_bow();
-  static const int kUseSparseBowFieldNumber = 12;
-  inline bool use_sparse_bow() const;
-  inline void set_use_sparse_bow(bool value);
-
   // optional .artm.ProcessBatchesArgs.ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   inline bool has_theta_matrix_type() const;
   inline void clear_theta_matrix_type();
@@ -8926,8 +8909,6 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_reuse_theta();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
-  inline void set_has_use_sparse_bow();
-  inline void clear_has_use_sparse_bow();
   inline void set_has_theta_matrix_type();
   inline void clear_has_theta_matrix_type();
   inline void set_has_predict_class_id();
@@ -8941,18 +8922,17 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::int32 inner_iterations_count_;
   bool reuse_theta_;
   bool opt_for_avx_;
-  bool use_sparse_bow_;
+  ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
   ::std::string* predict_class_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::Batch > batch_;
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -11070,13 +11050,6 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline bool opt_for_avx() const;
   inline void set_opt_for_avx(bool value);
 
-  // optional bool use_sparse_bow = 12 [default = true];
-  inline bool has_use_sparse_bow() const;
-  inline void clear_use_sparse_bow();
-  static const int kUseSparseBowFieldNumber = 12;
-  inline bool use_sparse_bow() const;
-  inline void set_use_sparse_bow(bool value);
-
   // optional string disk_cache_path = 13;
   inline bool has_disk_cache_path() const;
   inline void clear_disk_cache_path();
@@ -11110,8 +11083,6 @@ class MasterModelConfig : public ::google::protobuf::Message {
   inline void clear_has_reuse_theta();
   inline void set_has_opt_for_avx();
   inline void clear_has_opt_for_avx();
-  inline void set_has_use_sparse_bow();
-  inline void clear_has_use_sparse_bow();
   inline void set_has_disk_cache_path();
   inline void clear_has_disk_cache_path();
   inline void set_has_cache_theta();
@@ -11133,11 +11104,10 @@ class MasterModelConfig : public ::google::protobuf::Message {
   ::std::string* disk_cache_path_;
   bool reuse_theta_;
   bool opt_for_avx_;
-  bool use_sparse_bow_;
   bool cache_theta_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -13890,37 +13860,15 @@ ModelConfig::mutable_class_weight() {
   return &class_weight_;
 }
 
-// optional bool use_sparse_bow = 14 [default = true];
-inline bool ModelConfig::has_use_sparse_bow() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
-}
-inline void ModelConfig::set_has_use_sparse_bow() {
-  _has_bits_[0] |= 0x00001000u;
-}
-inline void ModelConfig::clear_has_use_sparse_bow() {
-  _has_bits_[0] &= ~0x00001000u;
-}
-inline void ModelConfig::clear_use_sparse_bow() {
-  use_sparse_bow_ = true;
-  clear_has_use_sparse_bow();
-}
-inline bool ModelConfig::use_sparse_bow() const {
-  return use_sparse_bow_;
-}
-inline void ModelConfig::set_use_sparse_bow(bool value) {
-  set_has_use_sparse_bow();
-  use_sparse_bow_ = value;
-}
-
 // optional bool use_random_theta = 15 [default = false];
 inline bool ModelConfig::has_use_random_theta() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void ModelConfig::set_has_use_random_theta() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void ModelConfig::clear_has_use_random_theta() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void ModelConfig::clear_use_random_theta() {
   use_random_theta_ = false;
@@ -13936,13 +13884,13 @@ inline void ModelConfig::set_use_random_theta(bool value) {
 
 // optional bool use_new_tokens = 16 [default = true];
 inline bool ModelConfig::has_use_new_tokens() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void ModelConfig::set_has_use_new_tokens() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void ModelConfig::clear_has_use_new_tokens() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void ModelConfig::clear_use_new_tokens() {
   use_new_tokens_ = true;
@@ -13958,13 +13906,13 @@ inline void ModelConfig::set_use_new_tokens(bool value) {
 
 // optional bool opt_for_avx = 17 [default = true];
 inline bool ModelConfig::has_opt_for_avx() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void ModelConfig::set_has_opt_for_avx() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void ModelConfig::clear_has_opt_for_avx() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void ModelConfig::clear_opt_for_avx() {
   opt_for_avx_ = true;
@@ -14005,13 +13953,13 @@ ModelConfig::mutable_regularizer_settings() {
 
 // optional string predict_class_id = 20;
 inline bool ModelConfig::has_predict_class_id() const {
-  return (_has_bits_[0] & 0x00020000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void ModelConfig::set_has_predict_class_id() {
-  _has_bits_[0] |= 0x00020000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void ModelConfig::clear_has_predict_class_id() {
-  _has_bits_[0] &= ~0x00020000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void ModelConfig::clear_predict_class_id() {
   if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -22411,37 +22359,15 @@ inline void ProcessBatchesArgs::set_opt_for_avx(bool value) {
   opt_for_avx_ = value;
 }
 
-// optional bool use_sparse_bow = 12 [default = true];
-inline bool ProcessBatchesArgs::has_use_sparse_bow() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
-}
-inline void ProcessBatchesArgs::set_has_use_sparse_bow() {
-  _has_bits_[0] |= 0x00000400u;
-}
-inline void ProcessBatchesArgs::clear_has_use_sparse_bow() {
-  _has_bits_[0] &= ~0x00000400u;
-}
-inline void ProcessBatchesArgs::clear_use_sparse_bow() {
-  use_sparse_bow_ = true;
-  clear_has_use_sparse_bow();
-}
-inline bool ProcessBatchesArgs::use_sparse_bow() const {
-  return use_sparse_bow_;
-}
-inline void ProcessBatchesArgs::set_use_sparse_bow(bool value) {
-  set_has_use_sparse_bow();
-  use_sparse_bow_ = value;
-}
-
 // optional .artm.ProcessBatchesArgs.ThetaMatrixType theta_matrix_type = 14 [default = Cache];
 inline bool ProcessBatchesArgs::has_theta_matrix_type() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_theta_matrix_type() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void ProcessBatchesArgs::clear_has_theta_matrix_type() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void ProcessBatchesArgs::clear_theta_matrix_type() {
   theta_matrix_type_ = 3;
@@ -22483,13 +22409,13 @@ ProcessBatchesArgs::mutable_batch_weight() {
 
 // optional string predict_class_id = 17;
 inline bool ProcessBatchesArgs::has_predict_class_id() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_predict_class_id() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void ProcessBatchesArgs::clear_has_predict_class_id() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void ProcessBatchesArgs::clear_predict_class_id() {
   if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -25122,37 +25048,15 @@ inline void MasterModelConfig::set_opt_for_avx(bool value) {
   opt_for_avx_ = value;
 }
 
-// optional bool use_sparse_bow = 12 [default = true];
-inline bool MasterModelConfig::has_use_sparse_bow() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
-}
-inline void MasterModelConfig::set_has_use_sparse_bow() {
-  _has_bits_[0] |= 0x00000800u;
-}
-inline void MasterModelConfig::clear_has_use_sparse_bow() {
-  _has_bits_[0] &= ~0x00000800u;
-}
-inline void MasterModelConfig::clear_use_sparse_bow() {
-  use_sparse_bow_ = true;
-  clear_has_use_sparse_bow();
-}
-inline bool MasterModelConfig::use_sparse_bow() const {
-  return use_sparse_bow_;
-}
-inline void MasterModelConfig::set_use_sparse_bow(bool value) {
-  set_has_use_sparse_bow();
-  use_sparse_bow_ = value;
-}
-
 // optional string disk_cache_path = 13;
 inline bool MasterModelConfig::has_disk_cache_path() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void MasterModelConfig::set_has_disk_cache_path() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void MasterModelConfig::clear_has_disk_cache_path() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void MasterModelConfig::clear_disk_cache_path() {
   if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -25216,13 +25120,13 @@ inline void MasterModelConfig::set_allocated_disk_cache_path(::std::string* disk
 
 // optional bool cache_theta = 15 [default = false];
 inline bool MasterModelConfig::has_cache_theta() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void MasterModelConfig::set_has_cache_theta() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void MasterModelConfig::clear_has_cache_theta() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void MasterModelConfig::clear_cache_theta() {
   cache_theta_ = false;

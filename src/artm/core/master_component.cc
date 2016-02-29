@@ -493,7 +493,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   model_config.mutable_class_weight()->CopyFrom(args.class_weight());
   if (args.has_reuse_theta()) model_config.set_reuse_theta(args.reuse_theta());
   if (args.has_opt_for_avx()) model_config.set_opt_for_avx(args.opt_for_avx());
-  if (args.has_use_sparse_bow()) model_config.set_use_sparse_bow(args.use_sparse_bow());
   if (args.has_predict_class_id()) model_config.set_predict_class_id(args.predict_class_id());
 
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
@@ -751,7 +750,6 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   }
 
   if (config->has_opt_for_avx()) process_batches_args.set_opt_for_avx(config->opt_for_avx());
-  if (config->has_use_sparse_bow()) process_batches_args.set_use_sparse_bow(config->use_sparse_bow());
   if (config->has_reuse_theta()) process_batches_args.set_reuse_theta(config->reuse_theta());
 
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
@@ -899,8 +897,6 @@ class ArtmExecutor {
 
     if (master_model_config.has_opt_for_avx())
       process_batches_args_.set_opt_for_avx(master_model_config.opt_for_avx());
-    if (master_model_config.has_use_sparse_bow())
-      process_batches_args_.set_use_sparse_bow(master_model_config.use_sparse_bow());
     if (master_model_config.has_reuse_theta())
       process_batches_args_.set_reuse_theta(master_model_config.reuse_theta());
   }

@@ -702,7 +702,6 @@ inline std::string DescribeMessage(const ::artm::ModelConfig& message) {
     DescribeMessage(message.regularizer_settings(i));
   for (int i = 0; i < message.class_id_size(); ++i)
     ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
-  ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", use_random_theta=" << (message.use_random_theta() ? "yes" : "no");
   ss << ", use_new_tokens=" << (message.use_new_tokens() ? "yes" : "no");
   return ss.str();
@@ -794,7 +793,6 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
     ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
-  ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
   ss << ", predict_class_id=" << (message.predict_class_id());
   return ss.str();
 }
@@ -850,7 +848,6 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
        << message.regularizer_config(i).tau() << ")";
   ss << ", reuse_theta=" << message.reuse_theta() ? "yes" : "no";
   ss << ", opt_for_avx=" << message.opt_for_avx() ? "yes" : "no";
-  ss << ", use_sparse_bow=" << message.use_sparse_bow() ? "yes" : "no";
   ss << ", disk_cache_path" << message.disk_cache_path();
 
   return ss.str();
