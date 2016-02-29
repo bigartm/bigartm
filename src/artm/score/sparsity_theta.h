@@ -29,8 +29,6 @@ class SparsityTheta : public ScoreCalculatorInterface {
 
   virtual bool is_cumulative() const { return true; }
 
-  virtual std::string stream_name() const;
-
   virtual std::shared_ptr<Score> CreateScore();
 
   virtual void AppendScore(const Score& score, Score* target);
@@ -39,7 +37,7 @@ class SparsityTheta : public ScoreCalculatorInterface {
       const Item& item,
       const std::vector<artm::core::Token>& token_dict,
       const artm::core::PhiMatrix& p_wt,
-      const artm::ModelConfig& model_config,
+      const artm::ProcessBatchesArgs& args,
       const std::vector<float>& theta,
       Score* score);
 

@@ -22,34 +22,14 @@ class CallSpec(object):
 ARTM_API = [
 
     CallSpec(
-        'ArtmCreateMasterComponent',
-        [('config', messages.MasterComponentConfig)],
-        result=ctypes.c_int,
-    ),
-    CallSpec(
         'ArtmDuplicateMasterComponent',
         [('master_id', int), ('config', messages.DuplicateMasterComponentArgs)],
         result=ctypes.c_int,
     ),
     CallSpec(
-        'ArtmReconfigureMasterComponent',
-        [('master_id', int), ('config', messages.MasterComponentConfig)],
-    ),
-    CallSpec(
         'ArtmDisposeMasterComponent',
         [('master_id', int)],
     ),
-
-    ## deprecated
-    #CallSpec(
-    #    'ArtmCreateModel',
-    #    [('master_id', int), ('config', messages.ModelConfig)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmReconfigureModel',
-    #    [('master_id', int), ('config', messages.ModelConfig)],
-    #),
     CallSpec(
         'ArtmDisposeModel',
         [('master_id', int), ('name', str)],
@@ -195,21 +175,10 @@ ARTM_API = [
         [('master_id', int), ('args', messages.GetTopicModelArgs)],
         request=messages.TopicModel,
     ),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmRequestRegularizerState',
-    #    [('master_id', int), ('args', message.GetRegularizerStateArgs)],
-    #    request=messages.RegularizerInternalState,
-    #),
     CallSpec(
         'ArtmRequestScore',
         [('master_id', int), ('args', messages.GetScoreValueArgs)],
         request=messages.ScoreData,
-    ),
-    CallSpec(
-        'ArtmRequestMasterComponentInfo',
-        [('master_id', int), ('args', messages.GetMasterComponentInfoArgs)],
-        request=messages.MasterComponentInfo,
     ),
     CallSpec(
         'ArtmRequestLoadBatch',

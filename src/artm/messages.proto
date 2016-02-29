@@ -62,60 +62,11 @@ message Batch {
   optional string id = 5;
 }
 
-// Represents a configuration of a stream.
-message Stream {
-  enum Type {
-    Global = 0;
-    ItemIdModulus = 1;
-  }
-
-  optional Type type = 1 [default = Global];
-  optional string name = 2 [default = "@global"];
-  optional int32 modulus = 3;
-  repeated int32 residuals = 4;
-}
-
-// Represents a configuration of a master component
-message MasterComponentConfig {
-  optional string disk_path = 2;
-  repeated Stream stream = 3;
-  optional bool compact_batches = 4 [default = true];
-  optional bool cache_theta = 5 [default = false];
-  optional int32 processors_count = 6;
-  optional int32 processor_queue_max_size = 7 [default = 10];
-  repeated ScoreConfig score_config = 9;
-  optional bool online_batch_processing = 13 [default = false];  // obsolete in BigARTM v0.5.8
-  optional string disk_cache_path = 15;
-}
-
 message RegularizerSettings {
   optional string name = 1;
   optional double tau = 2;
   optional bool use_relative_regularization = 3;
   optional double gamma = 4;
-}
-
-// Represents a configuration of a topic model.
-message ModelConfig {
-  optional string name = 1 [default = "@model"];
-  optional int32 topics_count = 2 [default = 32];
-  repeated string topic_name = 3;
-  optional bool enabled = 4 [default = true];
-  optional int32 inner_iterations_count = 5 [default = 10];
-  optional string field_name = 6 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 7 [default = "@global"];
-  repeated string score_name = 8;  // obsolete in BigARTM v0.6.3
-  optional bool reuse_theta = 9 [default = false];
-  repeated string regularizer_name = 10;
-  repeated double regularizer_tau = 11;
-  repeated string class_id = 12;
-  repeated float class_weight = 13;
-  optional bool use_sparse_bow = 14 [default = true];
-  optional bool use_random_theta = 15 [default = false];
-  optional bool use_new_tokens = 16 [default = true];
-  optional bool opt_for_avx = 17 [default = true];
-  repeated RegularizerSettings regularizer_settings = 18;
-  optional string predict_class_id = 20;
 }
 
 // Represents a configuration of a general regularizer
@@ -272,7 +223,6 @@ message PerplexityScoreConfig {
     UnigramCollectionModel = 1;
   }
   optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
   optional Type model_type = 3 [default = UnigramDocumentModel];
   optional string dictionary_name = 4;
   optional float theta_sparsity_eps = 5 [default = 1e-37];
@@ -294,7 +244,6 @@ message PerplexityScore {
 // Represents a configuration of a theta sparsity score
 message SparsityThetaScoreConfig {
   optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
   optional float eps = 3 [default = 1e-37];
   repeated string topic_name = 4;
 }
@@ -323,7 +272,6 @@ message SparsityPhiScore {
 // Represents a configuration of an items processed score
 message ItemsProcessedScoreConfig {
   optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
 }
 
 // Represents a result of calculation of an items processed score
@@ -354,7 +302,6 @@ message TopTokensScore {
 // Represents a configuration of a theta snippet score
 message ThetaSnippetScoreConfig {
   optional string field_name = 1 [default = "@body"];
-  optional string stream_name = 2 [default = "@global"];
   repeated int32 item_id = 3 [packed = true];  // obsolete in BigARTM v0.5.8
   optional int32 item_count = 4 [default = 10];
 }
@@ -406,7 +353,6 @@ message TopicMassPhiScore {
 
 // Represents a configuration of a class precision score
 message ClassPrecisionScoreConfig {
-  optional string stream_name = 1 [default = "@global"];
 }
 
 // Represents a result of calculation of a class precision score
@@ -631,18 +577,18 @@ message ProcessBatchesArgs {
   repeated string batch_filename = 2;
   optional string pwt_source_name = 3;
   optional int32 inner_iterations_count = 4 [default = 10];
-  optional string stream_name = 5 [default = "@global"];
   repeated string regularizer_name = 6;
   repeated double regularizer_tau = 7;
   repeated string class_id = 8;
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
-  optional bool use_sparse_bow = 12 [default = true];
   optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
   repeated float batch_weight = 15;
   optional string predict_class_id = 17;
   repeated Batch batch = 18;
+  optional bool use_random_theta = 19 [default = false];
+  repeated string topic_name = 20;
 }
 
 message ProcessBatchesResult {
@@ -732,7 +678,7 @@ message MasterComponentInfo {
   }
 
   optional int32 master_id = 1;  // obsolete in BigARTM v0.7.4
-  optional MasterComponentConfig config = 2;
+  optional MasterModelConfig config = 2;
   repeated RegularizerInfo regularizer = 3;
   repeated ScoreInfo score = 4;
   repeated DictionaryInfo dictionary = 5;
@@ -763,7 +709,6 @@ message MasterModelConfig {
   optional int32 inner_iterations_count = 9;
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
-  optional bool use_sparse_bow = 12 [default = true];
   optional string disk_cache_path = 13;
   optional bool cache_theta = 15 [default = false];
 }

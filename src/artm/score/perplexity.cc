@@ -18,8 +18,7 @@ namespace score {
 Perplexity::Perplexity(const PerplexityScoreConfig& config)
     : config_(config) {
   std::stringstream ss;
-  ss << ": stream_name=" << config.stream_name();
-  ss << ", model_type=" << config.model_type();
+  ss << ": model_type=" << config.model_type();
   if (config.has_dictionary_name())
     ss << ", dictionary_name=" << config.dictionary_name();
   LOG(INFO) << "Perplexity score calculator created" << ss.str();
@@ -29,7 +28,7 @@ void Perplexity::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
     const artm::core::PhiMatrix& p_wt,
-    const artm::ModelConfig& model_config,
+    const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
   int topic_size = p_wt.topic_size();
@@ -58,13 +57,13 @@ void Perplexity::AppendScore(
 
   std::map< ::artm::core::ClassId, float> class_weights;
   if (use_classes_from_model) {
-    for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
-      class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
+    for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i)
+      class_weights.insert(std::make_pair(args.class_id(i), args.class_weight(i)));
   } else {
     for (auto& class_id : config_.class_id()) {
-      for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
-        if (class_id == model_config.class_id(i)) {
-          class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
+      for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i)
+        if (class_id == args.class_id(i)) {
+          class_weights.insert(std::make_pair(args.class_id(i), args.class_weight(i)));
           break;
         }
     }
@@ -168,10 +167,6 @@ void Perplexity::AppendScore(
   perplexity_score.set_theta_sparsity_zero_topics(zero_topics_count);
   perplexity_score.set_theta_sparsity_total_topics(topics_to_score_size);
   AppendScore(perplexity_score, score);
-}
-
-std::string Perplexity::stream_name() const {
-  return config_.stream_name();
 }
 
 std::shared_ptr<Score> Perplexity::CreateScore() {

@@ -8,6 +8,7 @@
 #include "artm/core/instance.h"
 
 #include "boost/bind.hpp"
+#include "boost/filesystem.hpp"
 
 #include "artm/core/common.h"
 #include "artm/core/helpers.h"
@@ -17,7 +18,6 @@
 #include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/processor.h"
-#include "artm/core/instance_schema.h"
 
 #include "artm/regularizer_interface.h"
 #include "artm/regularizer/decorrelator_phi.h"
@@ -68,9 +68,11 @@
 namespace artm {
 namespace core {
 
-Instance::Instance(const MasterComponentConfig& config)
+Instance::Instance(const MasterModelConfig& config)
     : is_configured_(false),
-      schema_(std::make_shared<InstanceSchema>(config)),
+      master_model_config_(nullptr),  // copied in Reconfigure (see below)
+      regularizers_(),
+      score_calculators_(),
       dictionaries_(),
       batches_(),
       models_(),
@@ -84,7 +86,9 @@ Instance::Instance(const MasterComponentConfig& config)
 
 Instance::Instance(const Instance& rhs)
     : is_configured_(false),
-      schema_(rhs.schema()->Duplicate()),
+      master_model_config_(nullptr),  // copied in Reconfigure (see below)
+      regularizers_(),
+      score_calculators_(),
       dictionaries_(),
       batches_(),
       models_(),
@@ -93,7 +97,7 @@ Instance::Instance(const Instance& rhs)
       batch_manager_(),
       score_manager_(),
       processors_() {
-  Reconfigure(schema_.get()->config());
+  Reconfigure(*rhs.config());
 
   std::vector<std::string> dict_name_impl = rhs.dictionaries_.keys();
   for (auto& key : dict_name_impl) {
@@ -126,7 +130,30 @@ std::shared_ptr<Instance> Instance::Duplicate() const {
 }
 
 void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
-  schema_.get()->RequestMasterComponentInfo(master_info);
+  auto config = master_model_config_.get();
+  if (config != nullptr)
+    master_info->mutable_config()->CopyFrom(*config);
+
+  for (auto key : regularizers_.keys()) {
+    auto regularizer = regularizers_.get(key);
+    if (regularizer == nullptr)
+      continue;
+
+    MasterComponentInfo::RegularizerInfo* info = master_info->add_regularizer();
+    info->set_name(key);
+    info->set_type(typeid(*regularizer).name());
+  }
+
+  for (auto key : score_calculators_.keys()) {
+    auto score_calculator = score_calculators_.get(key);
+    if (score_calculator == nullptr)
+      continue;
+
+    MasterComponentInfo::ScoreInfo* info = master_info->add_score();
+    info->set_name(key);
+    info->set_type(typeid(*score_calculator).name());
+  }
+
   cache_manager_->RequestMasterComponentInfo(master_info);
 
   for (auto& name : dictionaries_.keys()) {
@@ -181,10 +208,6 @@ ScoreTracker* Instance::score_tracker() {
 }
 
 void Instance::DisposeModel(ModelName model_name) {
-  auto new_schema = schema_.get_copy();
-  new_schema->clear_model_config(model_name);
-  schema_.set(new_schema);
-
   models_.erase(model_name);
 
   if (batch_manager_ != nullptr) {
@@ -196,13 +219,8 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
   std::string regularizer_name = config.name();
   artm::RegularizerConfig_Type regularizer_type = config.type();
 
-  std::shared_ptr<artm::RegularizerInterface> regularizer;
-  bool need_hot_reconfigure = schema_.get()->has_regularizer(regularizer_name);
-  if (need_hot_reconfigure) {
-    regularizer = schema_.get()->regularizer(regularizer_name);
-  } else {
-    LOG(INFO) << "Regularizer '" + regularizer_name + "' will be created";
-  }
+  auto regularizer = regularizers_.get(regularizer_name);
+  bool need_hot_reconfigure = (regularizer != nullptr);
 
   std::string config_blob;  // Used by CREATE_OR_RECONFIGURE_REGULARIZER marco
   if (config.has_config()) {
@@ -271,9 +289,7 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
   }
 
   regularizer->set_dictionaries(&dictionaries_);
-  auto new_schema = schema_.get_copy();
-  new_schema->set_regularizer(regularizer_name, regularizer);
-  schema_.set(new_schema);
+  this->regularizers()->set(regularizer_name, regularizer);
 }
 
 std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const ScoreConfig& config) {
@@ -358,43 +374,38 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
 }
 
 void Instance::DisposeRegularizer(const std::string& name) {
-  auto new_schema = schema_.get_copy();
-  new_schema->clear_regularizer(name);
-  schema_.set(new_schema);
+  regularizers_.erase(name);
 }
 
-void Instance::Reconfigure(const MasterComponentConfig& master_config) {
-  auto new_schema = schema_.get_copy();
-  new_schema->set_config(master_config);
+void Instance::Reconfigure(const MasterModelConfig& master_config) {
+  master_model_config_.set(std::make_shared<MasterModelConfig>(master_config));
 
-  int target_processors_count = master_config.processors_count();
-  if (!master_config.has_processors_count() || master_config.processors_count() <= 0) {
+  int target_processors_count = master_config.threads();
+  if (!master_config.has_threads() || master_config.threads() <= 0) {
     unsigned int n = std::thread::hardware_concurrency();
     if (n == 0) {
-      LOG(INFO) << "MasterComponentConfig.processors_count is set to 1 (default)";
+      LOG(INFO) << "MasterModelConfig.processors_count is set to 1 (default)";
       target_processors_count = 1;
     } else {
-      LOG(INFO) << "MasterComponentConfig.processors_count is automatically set to " << n;
+      LOG(INFO) << "MasterModelConfig.processors_count is automatically set to " << n;
       target_processors_count = n;
     }
   }
 
-  new_schema->clear_score_calculators();  // Clear all score calculators
+  score_calculators_.clear();
   for (int score_index = 0;
        score_index < master_config.score_config_size();
        ++score_index) {
     const ScoreConfig& score_config = master_config.score_config(score_index);
     auto score_calculator = CreateScoreCalculator(score_config);
-    new_schema->set_score_calculator(score_config.name(), score_calculator);
+    this->scores_calculators()->set(score_config.name(), score_calculator);
   }
-
-  schema_.set(new_schema);
 
   if (!is_configured_) {
     // First reconfiguration.
     cache_manager_.reset(new CacheManager());
     batch_manager_.reset(new BatchManager());
-    score_manager_.reset(new ScoreManager());
+    score_manager_.reset(new ScoreManager(this));
     score_tracker_.reset(new ScoreTracker());
 
     is_configured_  = true;
@@ -408,6 +419,14 @@ void Instance::Reconfigure(const MasterComponentConfig& master_config) {
 
     while (static_cast<int>(processors_.size()) < target_processors_count) {
       processors_.push_back(std::shared_ptr<Processor>(new Processor(this)));
+    }
+  }
+
+  if (master_config.has_disk_cache_path()) {
+    boost::filesystem::path dir(master_config.disk_cache_path());
+    if (!boost::filesystem::is_directory(dir)) {
+      if (!boost::filesystem::create_directory(dir))
+        BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create folder '" + master_config.disk_cache_path() + "'"));
     }
   }
 }

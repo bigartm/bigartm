@@ -2,11 +2,6 @@ package artm.core;
 
 import "artm/messages.proto";
 
-// Mask message is similar to std::vector<bool>
-message Mask {
-  repeated bool value = 1 [packed = true];
-}
-
 message DataLoaderCacheEntry {
   optional string batch_uuid = 2;
   repeated int32 item_id = 3;
@@ -19,12 +14,4 @@ message DataLoaderCacheEntry {
 
   repeated string item_title = 7;
   repeated IntArray topic_index = 8;
-}
-
-message StreamMasks {
-  // Information about streams (for example, training and testing items).
-  // Withing each stream the length of flags vector
-  // is the same as number of items in the batch.
-  repeated Mask stream_mask = 4;
-  repeated string stream_name = 5;
 }

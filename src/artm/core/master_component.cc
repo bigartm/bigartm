@@ -65,22 +65,13 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
 }
 
 void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure) {
-  MasterComponentConfig master_component_config;
-  master_component_config.set_processors_count(config.threads());
-  master_component_config.mutable_score_config()->CopyFrom(config.score_config());
-  if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
-  if (config.reuse_theta() || config.cache_theta()) master_component_config.set_cache_theta(true);
-
   if (!reconfigure)
-    instance_ = std::make_shared<Instance>(master_component_config);
+    instance_ = std::make_shared<Instance>(config);
   else
-    instance_->Reconfigure(master_component_config);
-  master_model_config_.set(std::make_shared<MasterModelConfig>(config));
+    instance_->Reconfigure(config);
 
   if (reconfigure) {  // remove all regularizers
-    auto regularizers_list = instance_->schema()->regularizers_list();
-    for (const auto& name : *regularizers_list)
-      instance_->DisposeRegularizer(name);
+    instance_->regularizers()->clear();
   }
 
   // create (or re-create the regularizers)
@@ -88,20 +79,13 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
     CreateOrReconfigureRegularizer(config.regularizer_config(i));
 }
 
-MasterComponent::MasterComponent(const MasterComponentConfig& config)
-    : master_model_config_(),
-      instance_(std::make_shared<Instance>(config)) {
-}
-
 MasterComponent::MasterComponent(const MasterModelConfig& config)
-    : master_model_config_(nullptr),
-      instance_(nullptr) {
+    : instance_(nullptr) {
   CreateOrReconfigureMasterComponent(config, /*reconfigure =*/ false);
 }
 
 MasterComponent::MasterComponent(const MasterComponent& rhs)
-    : master_model_config_(rhs.master_model_config_.get_copy()),
-      instance_(rhs.instance_->Duplicate()) {
+    : instance_(rhs.instance_->Duplicate()) {
 }
 
 MasterComponent::~MasterComponent() {}
@@ -111,7 +95,7 @@ std::shared_ptr<MasterComponent> MasterComponent::Duplicate() const {
 }
 
 std::shared_ptr<MasterModelConfig> MasterComponent::config() const {
-  return master_model_config_.get();
+  return instance_->config();
 }
 
 void MasterComponent::DisposeModel(const std::string& name) {
@@ -179,7 +163,7 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
 }
 
 void MasterComponent::Request(::artm::MasterModelConfig* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
@@ -212,7 +196,7 @@ void MasterComponent::DisposeBatch(const std::string& name) {
 }
 
 void MasterComponent::ExportModel(const ExportModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<ExportModelArgs*>(&args)->set_model_name(config->pwt_name());
 
@@ -265,7 +249,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 }
 
 void MasterComponent::ImportModel(const ImportModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<ImportModelArgs*>(&args)->set_model_name(config->pwt_name());
 
@@ -332,7 +316,7 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr) {
     InitializeModelArgs* mutable_args = const_cast<InitializeModelArgs*>(&args);
     if (!args.has_model_name()) mutable_args->set_model_name(config->pwt_name());
@@ -390,19 +374,12 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
     AppendDictionary(*(data.second));
 }
 
-void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
-  if (instance_->schema()->config().disk_path() != config.disk_path())
-    BOOST_THROW_EXCEPTION(InvalidOperation("Changing disk_path is not supported."));
-
-  instance_->Reconfigure(config);
-}
-
 void MasterComponent::ReconfigureMasterModel(const MasterModelConfig& config) {
   CreateOrReconfigureMasterComponent(config, /*reconfigure = */ true);
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetTopicModelArgs*>(&args)->set_model_name(config->pwt_name());
 
@@ -419,16 +396,14 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
 }
 
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetScoreValueArgs*>(&args)->set_model_name(config->pwt_name());
 
-  std::shared_ptr<InstanceSchema> schema = instance_->schema();
-
-  if (instance_->score_manager()->RequestScore(schema, args.score_name(), result))
+  if (instance_->score_manager()->RequestScore(args.score_name(), result))
     return;  // success
 
-  auto score_calculator = schema->score_calculator(args.score_name());
+  auto score_calculator = instance_->scores_calculators()->get(args.score_name());
   if (score_calculator == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     std::string("Attempt to request non-existing score: " + args.score_name())));
@@ -449,14 +424,13 @@ void MasterComponent::Request(const GetScoreArrayArgs& args, ScoreDataArray* res
 }
 
 void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, MasterComponentInfo* result) {
-  std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
   this->instance_->RequestMasterComponentInfo(result);
 }
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result) {
   BatchManager batch_manager;
   RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false, nullptr, result->mutable_theta_matrix());
-  instance_->score_manager()->RequestAllScores(instance_->schema(), result->mutable_score_data());
+  instance_->score_manager()->RequestAllScores(result->mutable_score_data());
 }
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external) {
@@ -479,27 +453,12 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
                                                 BatchManager* batch_manager, bool async,
                                                 ScoreManager* score_manager,
                                                 ::artm::ThetaMatrix* theta_matrix) {
-  std::shared_ptr<InstanceSchema> schema = instance_->schema();
-  const MasterComponentConfig& config = schema->config();
-
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
-  ModelConfig model_config;
-  model_config.set_name(model_name);
-  if (args.has_inner_iterations_count()) model_config.set_inner_iterations_count(args.inner_iterations_count());
-  if (args.has_stream_name()) model_config.set_stream_name(args.stream_name());
-  model_config.mutable_regularizer_name()->CopyFrom(args.regularizer_name());
-  model_config.mutable_regularizer_tau()->CopyFrom(args.regularizer_tau());
-  model_config.mutable_class_id()->CopyFrom(args.class_id());
-  model_config.mutable_class_weight()->CopyFrom(args.class_weight());
-  if (args.has_reuse_theta()) model_config.set_reuse_theta(args.reuse_theta());
-  if (args.has_opt_for_avx()) model_config.set_opt_for_avx(args.opt_for_avx());
-  if (args.has_use_sparse_bow()) model_config.set_use_sparse_bow(args.use_sparse_bow());
-  if (args.has_predict_class_id()) model_config.set_predict_class_id(args.predict_class_id());
 
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
   const PhiMatrix& p_wt = *phi_matrix;
-
+  const_cast<ProcessBatchesArgs*>(&args)->mutable_topic_name()->CopyFrom(p_wt.topic_name());
   if (args.has_nwt_target_name()) {
     if (args.nwt_target_name() == args.pwt_source_name())
       BOOST_THROW_EXCEPTION(InvalidOperation(
@@ -509,10 +468,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     nwt_target->Reshape(p_wt);
     instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
   }
-
-  model_config.set_topics_count(p_wt.topic_size());
-  model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
-  FixAndValidateMessage(&model_config, /* throw_error =*/ true);
 
   if (async && args.theta_matrix_type() != ProcessBatchesArgs_ThetaMatrixType_None)
     BOOST_THROW_EXCEPTION(InvalidOperation(
@@ -529,7 +484,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   CacheManager* theta_cache_manager_ptr = nullptr;
   switch (args.theta_matrix_type()) {
     case ProcessBatchesArgs_ThetaMatrixType_Cache:
-      if (instance_->schema()->config().cache_theta())
+      if (instance_->config()->cache_theta())
         theta_cache_manager_ptr = instance_->cache_manager();
       break;
     case ProcessBatchesArgs_ThetaMatrixType_Dense:
@@ -560,7 +515,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
-    pi->mutable_model_config()->CopyFrom(model_config);
+    pi->mutable_args()->CopyFrom(args);
     pi->set_task_id(task_id);
 
     if (args.reuse_theta())
@@ -676,7 +631,7 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
 
   auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name, nwt_phi_matrix->topic_name()));
   rwt_target->Reshape(*nwt_phi_matrix);
-  PhiMatrixOperations::InvokePhiRegularizers(instance_->schema(), regularize_model_args.regularizer_settings(),
+  PhiMatrixOperations::InvokePhiRegularizers(instance_.get(), regularize_model_args.regularizer_settings(),
                                              p_wt, n_wt, rwt_target.get());
   instance_->SetPhiMatrix(rwt_target_name, rwt_target);
   VLOG(0) << "MasterComponent: complete regularizing model " << regularize_model_args.pwt_source_name();
@@ -709,7 +664,7 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
 }
 
 void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_name()) const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
 
@@ -735,7 +690,7 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args,
 // ToDo(sashafrey): what should be the default cache policy for TransformMasterModel?
 //                  Currently it saves the result in the cache. The result is then empty...
 void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::ThetaMatrix* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
@@ -752,7 +707,6 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   }
 
   if (config->has_opt_for_avx()) process_batches_args.set_opt_for_avx(config->opt_for_avx());
-  if (config->has_use_sparse_bow()) process_batches_args.set_use_sparse_bow(config->use_sparse_bow());
   if (config->has_reuse_theta()) process_batches_args.set_reuse_theta(config->reuse_theta());
 
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
@@ -900,8 +854,6 @@ class ArtmExecutor {
 
     if (master_model_config.has_opt_for_avx())
       process_batches_args_.set_opt_for_avx(master_model_config.opt_for_avx());
-    if (master_model_config.has_use_sparse_bow())
-      process_batches_args_.set_use_sparse_bow(master_model_config.use_sparse_bow());
     if (master_model_config.has_reuse_theta())
       process_batches_args_.set_reuse_theta(master_model_config.reuse_theta());
   }
@@ -1088,7 +1040,7 @@ class ArtmExecutor {
 };
 
 void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
@@ -1104,7 +1056,7 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
 }
 
 void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));

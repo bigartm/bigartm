@@ -24,7 +24,7 @@ class CacheManager;
 
 class ProcessorInput {
  public:
-  ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
+  ProcessorInput() : batch_(), args_(), model_name_(), nwt_target_name_(),
                      batch_filename_(), batch_weight_(1.0f), task_id_(), notifiable_(nullptr),
                      score_manager_(nullptr), cache_manager_(nullptr),
                      ptdw_cache_manager_(nullptr),
@@ -33,8 +33,8 @@ class ProcessorInput {
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
 
-  ModelConfig* mutable_model_config() { return &model_config_; }
-  const ModelConfig& model_config() const { return model_config_; }
+  ProcessBatchesArgs* mutable_args() { return &args_; }
+  const ProcessBatchesArgs& args() const { return args_; }
 
   Notifiable* notifiable() const { return notifiable_; }
   void set_notifiable(Notifiable* notifiable) { notifiable_ = notifiable; }
@@ -73,7 +73,7 @@ class ProcessorInput {
 
  private:
   Batch batch_;
-  ModelConfig model_config_;
+  ProcessBatchesArgs args_;
   ModelName model_name_;
   ModelName nwt_target_name_;
   std::string batch_filename_;  // if this is set batch_ is ignored;

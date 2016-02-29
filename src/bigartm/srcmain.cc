@@ -275,7 +275,6 @@ struct artm_options {
   int log_level;
   bool b_paused;
   bool b_disable_avx_opt;
-  bool b_use_dense_bow;
 
   artm_options() {
     pwt_model_name = "pwt";
@@ -940,7 +939,6 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   }
 
   master_config.set_opt_for_avx(!options.b_disable_avx_opt);
-  master_config.set_use_sparse_bow(!options.b_use_dense_bow);
   if (options.b_reuse_theta) master_config.set_reuse_theta(true);
   if (!options.disk_cache_folder.empty()) master_config.set_disk_cache_path(options.disk_cache_folder);
 
@@ -1260,7 +1258,6 @@ int main(int argc, char * argv[]) {
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
-      ("use-dense-bow", po::bool_switch(&options.b_use_dense_bow)->default_value(false), "use dense representation of bag-of-words data in processors")
       ("time-limit", po::value(&options.time_limit)->default_value(0), "limit execution time in milliseconds")
       ("log-dir", po::value(&options.log_dir), "target directory for logging (GLOG_log_dir)")
       ("log-level", po::value(&options.log_level), "min logging level (GLOG_minloglevel; INFO=0, WARNING=1, ERROR=2, and FATAL=3)")

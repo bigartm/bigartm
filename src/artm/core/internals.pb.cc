@@ -21,15 +21,9 @@ namespace core {
 
 namespace {
 
-const ::google::protobuf::Descriptor* Mask_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  Mask_reflection_ = NULL;
 const ::google::protobuf::Descriptor* DataLoaderCacheEntry_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   DataLoaderCacheEntry_reflection_ = NULL;
-const ::google::protobuf::Descriptor* StreamMasks_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  StreamMasks_reflection_ = NULL;
 
 }  // namespace
 
@@ -40,22 +34,7 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
     ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
       "artm/core/internals.proto");
   GOOGLE_CHECK(file != NULL);
-  Mask_descriptor_ = file->message_type(0);
-  static const int Mask_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Mask, value_),
-  };
-  Mask_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      Mask_descriptor_,
-      Mask::default_instance_,
-      Mask_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Mask, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Mask, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(Mask));
-  DataLoaderCacheEntry_descriptor_ = file->message_type(1);
+  DataLoaderCacheEntry_descriptor_ = file->message_type(0);
   static const int DataLoaderCacheEntry_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, batch_uuid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DataLoaderCacheEntry, item_id_),
@@ -76,22 +55,6 @@ void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(DataLoaderCacheEntry));
-  StreamMasks_descriptor_ = file->message_type(2);
-  static const int StreamMasks_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StreamMasks, stream_mask_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StreamMasks, stream_name_),
-  };
-  StreamMasks_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      StreamMasks_descriptor_,
-      StreamMasks::default_instance_,
-      StreamMasks_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StreamMasks, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StreamMasks, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(StreamMasks));
 }
 
 namespace {
@@ -105,22 +68,14 @@ inline void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    Mask_descriptor_, &Mask::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     DataLoaderCacheEntry_descriptor_, &DataLoaderCacheEntry::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    StreamMasks_descriptor_, &StreamMasks::default_instance());
 }
 
 }  // namespace
 
 void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto() {
-  delete Mask::default_instance_;
-  delete Mask_reflection_;
   delete DataLoaderCacheEntry::default_instance_;
   delete DataLoaderCacheEntry_reflection_;
-  delete StreamMasks::default_instance_;
-  delete StreamMasks_reflection_;
 }
 
 void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
@@ -132,22 +87,16 @@ void protobuf_AddDesc_artm_2fcore_2finternals_2eproto() {
   ::artm::protobuf_AddDesc_artm_2fmessages_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\031artm/core/internals.proto\022\tartm.core\032\023"
-    "artm/messages.proto\"\031\n\004Mask\022\021\n\005value\030\001 \003"
-    "(\010B\002\020\001\"\273\001\n\024DataLoaderCacheEntry\022\022\n\nbatch"
-    "_uuid\030\002 \001(\t\022\017\n\007item_id\030\003 \003(\005\022\037\n\005theta\030\004 "
-    "\003(\0132\020.artm.FloatArray\022\022\n\ntopic_name\030\005 \003("
-    "\t\022\020\n\010filename\030\006 \001(\t\022\022\n\nitem_title\030\007 \003(\t\022"
-    "#\n\013topic_index\030\010 \003(\0132\016.artm.IntArray\"H\n\013"
-    "StreamMasks\022$\n\013stream_mask\030\004 \003(\0132\017.artm."
-    "core.Mask\022\023\n\013stream_name\030\005 \003(\t", 350);
+    "artm/messages.proto\"\273\001\n\024DataLoaderCacheE"
+    "ntry\022\022\n\nbatch_uuid\030\002 \001(\t\022\017\n\007item_id\030\003 \003("
+    "\005\022\037\n\005theta\030\004 \003(\0132\020.artm.FloatArray\022\022\n\nto"
+    "pic_name\030\005 \003(\t\022\020\n\010filename\030\006 \001(\t\022\022\n\nitem"
+    "_title\030\007 \003(\t\022#\n\013topic_index\030\010 \003(\0132\016.artm"
+    ".IntArray", 249);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "artm/core/internals.proto", &protobuf_RegisterTypes);
-  Mask::default_instance_ = new Mask();
   DataLoaderCacheEntry::default_instance_ = new DataLoaderCacheEntry();
-  StreamMasks::default_instance_ = new StreamMasks();
-  Mask::default_instance_->InitAsDefaultInstance();
   DataLoaderCacheEntry::default_instance_->InitAsDefaultInstance();
-  StreamMasks::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto);
 }
 
@@ -157,231 +106,6 @@ struct StaticDescriptorInitializer_artm_2fcore_2finternals_2eproto {
     protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   }
 } static_descriptor_initializer_artm_2fcore_2finternals_2eproto_;
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int Mask::kValueFieldNumber;
-#endif  // !_MSC_VER
-
-Mask::Mask()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void Mask::InitAsDefaultInstance() {
-}
-
-Mask::Mask(const Mask& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void Mask::SharedCtor() {
-  _cached_size_ = 0;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-Mask::~Mask() {
-  SharedDtor();
-}
-
-void Mask::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void Mask::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* Mask::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return Mask_descriptor_;
-}
-
-const Mask& Mask::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
-  return *default_instance_;
-}
-
-Mask* Mask::default_instance_ = NULL;
-
-Mask* Mask::New() const {
-  return new Mask;
-}
-
-void Mask::Clear() {
-  value_.Clear();
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool Mask::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated bool value = 1 [packed = true];
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, this->mutable_value())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_VARINT) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 1, 10, input, this->mutable_value())));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void Mask::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated bool value = 1 [packed = true];
-  if (this->value_size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteTag(1, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output->WriteVarint32(_value_cached_byte_size_);
-  }
-  for (int i = 0; i < this->value_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteBoolNoTag(
-      this->value(i), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* Mask::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // repeated bool value = 1 [packed = true];
-  if (this->value_size() > 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
-      1,
-      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-      target);
-    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
-      _value_cached_byte_size_, target);
-  }
-  for (int i = 0; i < this->value_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteBoolNoTagToArray(this->value(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int Mask::ByteSize() const {
-  int total_size = 0;
-
-  // repeated bool value = 1 [packed = true];
-  {
-    int data_size = 0;
-    data_size = 1 * this->value_size();
-    if (data_size > 0) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
-    }
-    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-    _value_cached_byte_size_ = data_size;
-    GOOGLE_SAFE_CONCURRENT_WRITES_END();
-    total_size += data_size;
-  }
-
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void Mask::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const Mask* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Mask*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void Mask::MergeFrom(const Mask& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  value_.MergeFrom(from.value_);
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void Mask::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void Mask::CopyFrom(const Mask& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool Mask::IsInitialized() const {
-
-  return true;
-}
-
-void Mask::Swap(Mask* other) {
-  if (other != this) {
-    value_.Swap(&other->value_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata Mask::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = Mask_descriptor_;
-  metadata.reflection = Mask_reflection_;
-  return metadata;
-}
-
 
 // ===================================================================
 
@@ -885,257 +609,6 @@ void DataLoaderCacheEntry::Swap(DataLoaderCacheEntry* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = DataLoaderCacheEntry_descriptor_;
   metadata.reflection = DataLoaderCacheEntry_reflection_;
-  return metadata;
-}
-
-
-// ===================================================================
-
-#ifndef _MSC_VER
-const int StreamMasks::kStreamMaskFieldNumber;
-const int StreamMasks::kStreamNameFieldNumber;
-#endif  // !_MSC_VER
-
-StreamMasks::StreamMasks()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void StreamMasks::InitAsDefaultInstance() {
-}
-
-StreamMasks::StreamMasks(const StreamMasks& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void StreamMasks::SharedCtor() {
-  _cached_size_ = 0;
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-StreamMasks::~StreamMasks() {
-  SharedDtor();
-}
-
-void StreamMasks::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void StreamMasks::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* StreamMasks::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return StreamMasks_descriptor_;
-}
-
-const StreamMasks& StreamMasks::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
-  return *default_instance_;
-}
-
-StreamMasks* StreamMasks::default_instance_ = NULL;
-
-StreamMasks* StreamMasks::New() const {
-  return new StreamMasks;
-}
-
-void StreamMasks::Clear() {
-  stream_mask_.Clear();
-  stream_name_.Clear();
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool StreamMasks::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .artm.core.Mask stream_mask = 4;
-      case 4: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_stream_mask:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_stream_mask()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(34)) goto parse_stream_mask;
-        if (input->ExpectTag(42)) goto parse_stream_name;
-        break;
-      }
-
-      // repeated string stream_name = 5;
-      case 5: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_stream_name:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->add_stream_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->stream_name(this->stream_name_size() - 1).data(),
-            this->stream_name(this->stream_name_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(42)) goto parse_stream_name;
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void StreamMasks::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // repeated .artm.core.Mask stream_mask = 4;
-  for (int i = 0; i < this->stream_mask_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4, this->stream_mask(i), output);
-  }
-
-  // repeated string stream_name = 5;
-  for (int i = 0; i < this->stream_name_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-    this->stream_name(i).data(), this->stream_name(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE);
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      5, this->stream_name(i), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* StreamMasks::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // repeated .artm.core.Mask stream_mask = 4;
-  for (int i = 0; i < this->stream_mask_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        4, this->stream_mask(i), target);
-  }
-
-  // repeated string stream_name = 5;
-  for (int i = 0; i < this->stream_name_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->stream_name(i).data(), this->stream_name(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(5, this->stream_name(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int StreamMasks::ByteSize() const {
-  int total_size = 0;
-
-  // repeated .artm.core.Mask stream_mask = 4;
-  total_size += 1 * this->stream_mask_size();
-  for (int i = 0; i < this->stream_mask_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->stream_mask(i));
-  }
-
-  // repeated string stream_name = 5;
-  total_size += 1 * this->stream_name_size();
-  for (int i = 0; i < this->stream_name_size(); i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-      this->stream_name(i));
-  }
-
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void StreamMasks::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const StreamMasks* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const StreamMasks*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void StreamMasks::MergeFrom(const StreamMasks& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  stream_mask_.MergeFrom(from.stream_mask_);
-  stream_name_.MergeFrom(from.stream_name_);
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void StreamMasks::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void StreamMasks::CopyFrom(const StreamMasks& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool StreamMasks::IsInitialized() const {
-
-  return true;
-}
-
-void StreamMasks::Swap(StreamMasks* other) {
-  if (other != this) {
-    stream_mask_.Swap(&other->stream_mask_);
-    stream_name_.Swap(&other->stream_name_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata StreamMasks::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = StreamMasks_descriptor_;
-  metadata.reflection = StreamMasks_reflection_;
   return metadata;
 }
 

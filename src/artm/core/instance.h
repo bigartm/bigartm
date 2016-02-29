@@ -18,6 +18,7 @@
 #include "artm/core/processor_input.h"
 #include "artm/core/thread_safe_holder.h"
 
+#include "artm/regularizer_interface.h"
 #include "artm/score_calculator_interface.h"
 
 namespace artm {
@@ -29,24 +30,26 @@ class ScoreManager;
 class ScoreTracker;
 class Processor;
 class Merger;
-class InstanceSchema;
 class Dictionary;
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 typedef ThreadSafeCollectionHolder<std::string, Batch> ThreadSafeBatchCollection;
 typedef ThreadSafeCollectionHolder<std::string, PhiMatrix> ThreadSafeModelCollection;
+typedef ThreadSafeCollectionHolder<std::string, RegularizerInterface> ThreadSafeRegularizerCollection;
+typedef ThreadSafeCollectionHolder<std::string, ScoreCalculatorInterface> ThreadSafeScoreCollection;
 typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
 
-// Class Instance is respondible for joint hosting of many other components
-// (processors, merger, data loader) and data structures (schema, queues, etc).
+// Class Instance is respondible for joint hosting of many other components and data structures.
 class Instance {
  public:
-  explicit Instance(const MasterComponentConfig& config);
+  explicit Instance(const MasterModelConfig& config);
   ~Instance();
 
   std::shared_ptr<Instance> Duplicate() const;
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
-  std::shared_ptr<InstanceSchema> schema() const { return schema_.get(); }
+  std::shared_ptr<MasterModelConfig> config() const { return master_model_config_.get(); }
+  ThreadSafeRegularizerCollection* regularizers() { return &regularizers_; }
+  ThreadSafeScoreCollection* scores_calculators() { return &score_calculators_; }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
   ThreadSafeDictionaryCollection* dictionaries() { return &dictionaries_; }
   ThreadSafeBatchCollection* batches() { return &batches_; }
@@ -60,7 +63,7 @@ class Instance {
   int processor_size() { return processors_.size(); }
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
 
-  void Reconfigure(const MasterComponentConfig& master_config);
+  void Reconfigure(const MasterModelConfig& master_config);
   void DisposeModel(ModelName model_name);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
@@ -80,7 +83,10 @@ class Instance {
   // because it has an associated thread.
   // Such threads must be terminated prior to all the objects that the thread might potentially access.
 
-  ThreadSafeHolder<InstanceSchema> schema_;
+  ThreadSafeHolder<MasterModelConfig> master_model_config_;
+
+  ThreadSafeRegularizerCollection regularizers_;
+  ThreadSafeScoreCollection score_calculators_;
   ThreadSafeDictionaryCollection dictionaries_;
   ThreadSafeBatchCollection batches_;
   ThreadSafeModelCollection models_;

@@ -13,7 +13,7 @@ void ItemsProcessed::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
     const artm::core::PhiMatrix& p_wt,
-    const artm::ModelConfig& model_config,
+    const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
   ItemsProcessedScore items_processed_score;
@@ -25,10 +25,6 @@ void ItemsProcessed::AppendScore(const Batch& batch, Score* score) {
   ItemsProcessedScore items_processed_score;
   items_processed_score.set_num_batches(1);
   AppendScore(items_processed_score, score);
-}
-
-std::string ItemsProcessed::stream_name() const {
-  return config_.stream_name();
 }
 
 std::shared_ptr<Score> ItemsProcessed::CreateScore() {

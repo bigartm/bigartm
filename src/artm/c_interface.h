@@ -17,9 +17,7 @@
 #endif
 
 extern "C" {
-  DLL_PUBLIC int ArtmCreateMasterComponent(int length, const char* master_component_config);
   DLL_PUBLIC int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicate_master_args);
-  DLL_PUBLIC int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config);
   DLL_PUBLIC int ArtmCreateMasterModel(int length, const char* master_model_config);
   DLL_PUBLIC int ArtmReconfigureMasterModel(int master_id, int length, const char* master_model_config);
   DLL_PUBLIC int ArtmDisposeMasterComponent(int master_id);

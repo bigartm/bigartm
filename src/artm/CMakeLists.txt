@@ -29,8 +29,6 @@ set(SRC_LIST
 	core/helpers.h
 	core/instance.cc
 	core/instance.h
-	core/instance_schema.cc
-	core/instance_schema.h
 	core/internals.pb.cc
 	core/internals.pb.h
 	core/master_component.cc

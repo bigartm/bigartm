@@ -8,15 +8,14 @@
 
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
-#include "artm/core/instance_schema.h"
+#include "artm/core/instance.h"
 
 namespace artm {
 namespace core {
 
-void ScoreManager::Append(std::shared_ptr<InstanceSchema> schema,
-                          const ScoreName& score_name,
+void ScoreManager::Append(const ScoreName& score_name,
                           const std::string& score_blob) {
-  auto score_calculator = schema->score_calculator(score_name);
+  auto score_calculator = instance_->scores_calculators()->get(score_name);
   if (score_calculator == nullptr) {
     LOG(ERROR) << "Unable to find score calculator: " << score_name;
     return;
@@ -46,10 +45,9 @@ void ScoreManager::Clear() {
   score_map_.clear();
 }
 
-bool ScoreManager::RequestScore(std::shared_ptr<InstanceSchema> schema,
-                                const ScoreName& score_name,
+bool ScoreManager::RequestScore(const ScoreName& score_name,
                                 ScoreData *score_data) const {
-  auto score_calculator = schema->score_calculator(score_name);
+  auto score_calculator = instance_->scores_calculators()->get(score_name);
   if (score_calculator == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
       std::string("Attempt to request non-existing score: " + score_name)));
@@ -72,8 +70,7 @@ bool ScoreManager::RequestScore(std::shared_ptr<InstanceSchema> schema,
   return true;
 }
 
-void ScoreManager::RequestAllScores(std::shared_ptr<InstanceSchema> schema,
-                                    ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data) const {
+void ScoreManager::RequestAllScores(::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data) const {
   if (score_data == nullptr)
     return;
 
@@ -86,7 +83,7 @@ void ScoreManager::RequestAllScores(std::shared_ptr<InstanceSchema> schema,
 
   for (auto& score_name : score_names) {
     ScoreData requested_score_data;
-    if (RequestScore(schema, score_name, &requested_score_data))
+    if (RequestScore(score_name, &requested_score_data))
       score_data->Add()->Swap(&requested_score_data);
   }
 }

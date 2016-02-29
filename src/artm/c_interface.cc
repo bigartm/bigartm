@@ -196,20 +196,6 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCreateMasterComponent(int length, const char* master_component_config) {
-  try {
-    EnableLogging();
-
-    artm::MasterComponentConfig config;
-    ParseFromArray(master_component_config, length, &config);
-    ::artm::core::FixAndValidateMessage(&config, /* throw_error =*/ true);
-    auto& mcm = MasterComponentManager::singleton();
-    int retval = mcm.Store(std::make_shared< ::artm::core::MasterComponent>(config));
-    LOG(INFO) << "Creating MasterComponent (id=" << retval << ")...";
-    return retval;
-  } CATCH_EXCEPTIONS;
-}
-
 int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicate_master_args) {
   try {
     EnableLogging();
@@ -436,10 +422,6 @@ int ArtmImportDictionary(int master_id, int length, const char* args) {
 
 int ArtmExportDictionary(int master_id, int length, const char* args) {
   return ArtmExecute< ::artm::ExportDictionaryArgs>(master_id, length, args, &MasterComponent::ExportDictionary);
-}
-
-int ArtmReconfigureMasterComponent(int master_id, int length, const char* config) {
-  return ArtmExecute< ::artm::MasterComponentConfig>(master_id, length, config, &MasterComponent::Reconfigure);
 }
 
 int ArtmReconfigureMasterModel(int master_id, int length, const char* config) {

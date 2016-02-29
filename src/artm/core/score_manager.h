@@ -15,26 +15,25 @@
 
 #include "artm/messages.pb.h"
 #include "artm/core/common.h"
-#include "artm/core/instance_schema.h"
 #include "artm/core/thread_safe_holder.h"
 #include "artm/score_calculator_interface.h"
 
 namespace artm {
 namespace core {
 
+class Instance;
+
 class ScoreManager : boost::noncopyable {
  public:
-  ScoreManager() : lock_(), score_map_() {}
+  explicit ScoreManager(Instance* instance) : instance_(instance), lock_(), score_map_() {}
 
-  void Append(std::shared_ptr<InstanceSchema> schema,
-              const ScoreName& score_name, const std::string& score_blob);
+  void Append(const ScoreName& score_name, const std::string& score_blob);
   void Clear();
-  bool RequestScore(std::shared_ptr<InstanceSchema> schema,
-                    const ScoreName& score_name, ScoreData *score_data) const;
-  void RequestAllScores(std::shared_ptr<InstanceSchema> schema,
-                        ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data) const;
+  bool RequestScore(const ScoreName& score_name, ScoreData *score_data) const;
+  void RequestAllScores(::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data) const;
 
  private:
+  Instance* instance_;
   mutable boost::mutex lock_;
   std::map<ScoreName, std::shared_ptr<Score>> score_map_;
 };

@@ -21,12 +21,12 @@ class SmoothPtdwAgent : public RegularizePtdwAgent {
  private:
   friend class SmoothPtdw;
   SmoothPtdwConfig config_;
-  ModelConfig model_config_;
+  ProcessBatchesArgs args_;
   double tau_;
 
  public:
-  SmoothPtdwAgent(const SmoothPtdwConfig& config, const ModelConfig& model_config, double tau)
-      : config_(config), model_config_(model_config), tau_(tau) {}
+  SmoothPtdwAgent(const SmoothPtdwConfig& config, const ProcessBatchesArgs& args, double tau)
+      : config_(config), args_(args), tau_(tau) {}
 
   virtual void Apply(int item_index, int inner_iter, ::artm::utility::DenseMatrix<float>* ptdw) const;
 };
@@ -37,7 +37,7 @@ class SmoothPtdw : public RegularizerInterface {
     : config_(config) {}
 
   virtual std::shared_ptr<RegularizePtdwAgent>
-  CreateRegularizePtdwAgent(const Batch& batch, const ModelConfig& model_config, double tau);
+  CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau);
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 

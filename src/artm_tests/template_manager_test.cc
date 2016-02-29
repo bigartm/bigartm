@@ -15,7 +15,7 @@ typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterCompone
 // To run this particular test:
 // artm_tests.exe --gtest_filter=TemplateManager.*
 TEST(TemplateManager, Basic) {
-  ::artm::MasterComponentConfig config;
+  ::artm::MasterModelConfig config;
   ::artm::core::FixAndValidateMessage(&config, /* throw_error=*/ true);
 
   auto& mcm = MasterComponentManager::singleton();
