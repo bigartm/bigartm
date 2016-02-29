@@ -27,10 +27,6 @@ ARTM_API = [
         result=ctypes.c_int,
     ),
     CallSpec(
-        'ArtmReconfigureMasterComponent',
-        [('master_id', int), ('config', messages.MasterComponentConfig)],
-    ),
-    CallSpec(
         'ArtmDisposeMasterComponent',
         [('master_id', int)],
     ),
