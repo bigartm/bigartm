@@ -68,7 +68,7 @@
 namespace artm {
 namespace core {
 
-Instance::Instance(const MasterComponentConfig& config)
+Instance::Instance(const MasterModelConfig& config)
     : is_configured_(false),
       schema_(std::make_shared<InstanceSchema>(config)),
       dictionaries_(),
@@ -363,18 +363,18 @@ void Instance::DisposeRegularizer(const std::string& name) {
   schema_.set(new_schema);
 }
 
-void Instance::Reconfigure(const MasterComponentConfig& master_config) {
+void Instance::Reconfigure(const MasterModelConfig& master_config) {
   auto new_schema = schema_.get_copy();
   new_schema->set_config(master_config);
 
-  int target_processors_count = master_config.processors_count();
-  if (!master_config.has_processors_count() || master_config.processors_count() <= 0) {
+  int target_processors_count = master_config.threads();
+  if (!master_config.has_threads() || master_config.threads() <= 0) {
     unsigned int n = std::thread::hardware_concurrency();
     if (n == 0) {
-      LOG(INFO) << "MasterComponentConfig.processors_count is set to 1 (default)";
+      LOG(INFO) << "MasterModelConfig.processors_count is set to 1 (default)";
       target_processors_count = 1;
     } else {
-      LOG(INFO) << "MasterComponentConfig.processors_count is automatically set to " << n;
+      LOG(INFO) << "MasterModelConfig.processors_count is automatically set to " << n;
       target_processors_count = n;
     }
   }

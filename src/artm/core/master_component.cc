@@ -65,16 +65,10 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
 }
 
 void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure) {
-  MasterComponentConfig master_component_config;
-  master_component_config.set_processors_count(config.threads());
-  master_component_config.mutable_score_config()->CopyFrom(config.score_config());
-  if (config.has_disk_cache_path()) master_component_config.set_disk_cache_path(config.disk_cache_path());
-  if (config.reuse_theta() || config.cache_theta()) master_component_config.set_cache_theta(true);
-
   if (!reconfigure)
-    instance_ = std::make_shared<Instance>(master_component_config);
+    instance_ = std::make_shared<Instance>(config);
   else
-    instance_->Reconfigure(master_component_config);
+    instance_->Reconfigure(config);
   master_model_config_.set(std::make_shared<MasterModelConfig>(config));
 
   if (reconfigure) {  // remove all regularizers
@@ -86,11 +80,6 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
   // create (or re-create the regularizers)
   for (int i = 0; i < config.regularizer_config_size(); ++i)
     CreateOrReconfigureRegularizer(config.regularizer_config(i));
-}
-
-MasterComponent::MasterComponent(const MasterComponentConfig& config)
-    : master_model_config_(),
-      instance_(std::make_shared<Instance>(config)) {
 }
 
 MasterComponent::MasterComponent(const MasterModelConfig& config)
@@ -390,13 +379,6 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
     AppendDictionary(*(data.second));
 }
 
-void MasterComponent::Reconfigure(const MasterComponentConfig& config) {
-  if (instance_->schema()->config().disk_path() != config.disk_path())
-    BOOST_THROW_EXCEPTION(InvalidOperation("Changing disk_path is not supported."));
-
-  instance_->Reconfigure(config);
-}
-
 void MasterComponent::ReconfigureMasterModel(const MasterModelConfig& config) {
   CreateOrReconfigureMasterComponent(config, /*reconfigure = */ true);
 }
@@ -480,7 +462,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
                                                 ScoreManager* score_manager,
                                                 ::artm::ThetaMatrix* theta_matrix) {
   std::shared_ptr<InstanceSchema> schema = instance_->schema();
-  const MasterComponentConfig& config = schema->config();
 
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
@@ -527,7 +508,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   CacheManager* theta_cache_manager_ptr = nullptr;
   switch (args.theta_matrix_type()) {
     case ProcessBatchesArgs_ThetaMatrixType_Cache:
-      if (instance_->schema()->config().cache_theta())
+      if (master_model_config_.get()->cache_theta())
         theta_cache_manager_ptr = instance_->cache_manager();
       break;
     case ProcessBatchesArgs_ThetaMatrixType_Dense:

@@ -42,7 +42,6 @@ class StringArray;
 class Item;
 class Field;
 class Batch;
-class MasterComponentConfig;
 class RegularizerSettings;
 class ModelConfig;
 class RegularizerConfig;
@@ -1427,171 +1426,6 @@ class Batch : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static Batch* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class MasterComponentConfig : public ::google::protobuf::Message {
- public:
-  MasterComponentConfig();
-  virtual ~MasterComponentConfig();
-
-  MasterComponentConfig(const MasterComponentConfig& from);
-
-  inline MasterComponentConfig& operator=(const MasterComponentConfig& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const MasterComponentConfig& default_instance();
-
-  void Swap(MasterComponentConfig* other);
-
-  // implements Message ----------------------------------------------
-
-  MasterComponentConfig* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const MasterComponentConfig& from);
-  void MergeFrom(const MasterComponentConfig& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string disk_path = 2;
-  inline bool has_disk_path() const;
-  inline void clear_disk_path();
-  static const int kDiskPathFieldNumber = 2;
-  inline const ::std::string& disk_path() const;
-  inline void set_disk_path(const ::std::string& value);
-  inline void set_disk_path(const char* value);
-  inline void set_disk_path(const char* value, size_t size);
-  inline ::std::string* mutable_disk_path();
-  inline ::std::string* release_disk_path();
-  inline void set_allocated_disk_path(::std::string* disk_path);
-
-  // optional bool compact_batches = 4 [default = true];
-  inline bool has_compact_batches() const;
-  inline void clear_compact_batches();
-  static const int kCompactBatchesFieldNumber = 4;
-  inline bool compact_batches() const;
-  inline void set_compact_batches(bool value);
-
-  // optional bool cache_theta = 5 [default = false];
-  inline bool has_cache_theta() const;
-  inline void clear_cache_theta();
-  static const int kCacheThetaFieldNumber = 5;
-  inline bool cache_theta() const;
-  inline void set_cache_theta(bool value);
-
-  // optional int32 processors_count = 6;
-  inline bool has_processors_count() const;
-  inline void clear_processors_count();
-  static const int kProcessorsCountFieldNumber = 6;
-  inline ::google::protobuf::int32 processors_count() const;
-  inline void set_processors_count(::google::protobuf::int32 value);
-
-  // optional int32 processor_queue_max_size = 7 [default = 10];
-  inline bool has_processor_queue_max_size() const;
-  inline void clear_processor_queue_max_size();
-  static const int kProcessorQueueMaxSizeFieldNumber = 7;
-  inline ::google::protobuf::int32 processor_queue_max_size() const;
-  inline void set_processor_queue_max_size(::google::protobuf::int32 value);
-
-  // repeated .artm.ScoreConfig score_config = 9;
-  inline int score_config_size() const;
-  inline void clear_score_config();
-  static const int kScoreConfigFieldNumber = 9;
-  inline const ::artm::ScoreConfig& score_config(int index) const;
-  inline ::artm::ScoreConfig* mutable_score_config(int index);
-  inline ::artm::ScoreConfig* add_score_config();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >&
-      score_config() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >*
-      mutable_score_config();
-
-  // optional bool online_batch_processing = 13 [default = false];
-  inline bool has_online_batch_processing() const;
-  inline void clear_online_batch_processing();
-  static const int kOnlineBatchProcessingFieldNumber = 13;
-  inline bool online_batch_processing() const;
-  inline void set_online_batch_processing(bool value);
-
-  // optional string disk_cache_path = 15;
-  inline bool has_disk_cache_path() const;
-  inline void clear_disk_cache_path();
-  static const int kDiskCachePathFieldNumber = 15;
-  inline const ::std::string& disk_cache_path() const;
-  inline void set_disk_cache_path(const ::std::string& value);
-  inline void set_disk_cache_path(const char* value);
-  inline void set_disk_cache_path(const char* value, size_t size);
-  inline ::std::string* mutable_disk_cache_path();
-  inline ::std::string* release_disk_cache_path();
-  inline void set_allocated_disk_cache_path(::std::string* disk_cache_path);
-
-  // @@protoc_insertion_point(class_scope:artm.MasterComponentConfig)
- private:
-  inline void set_has_disk_path();
-  inline void clear_has_disk_path();
-  inline void set_has_compact_batches();
-  inline void clear_has_compact_batches();
-  inline void set_has_cache_theta();
-  inline void clear_has_cache_theta();
-  inline void set_has_processors_count();
-  inline void clear_has_processors_count();
-  inline void set_has_processor_queue_max_size();
-  inline void clear_has_processor_queue_max_size();
-  inline void set_has_online_batch_processing();
-  inline void clear_has_online_batch_processing();
-  inline void set_has_disk_cache_path();
-  inline void clear_has_disk_cache_path();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* disk_path_;
-  ::google::protobuf::int32 processors_count_;
-  bool compact_batches_;
-  bool cache_theta_;
-  bool online_batch_processing_;
-  ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig > score_config_;
-  ::std::string* disk_cache_path_;
-  ::google::protobuf::int32 processor_queue_max_size_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static MasterComponentConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -10571,14 +10405,14 @@ class MasterComponentInfo : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 master_id() const;
   inline void set_master_id(::google::protobuf::int32 value);
 
-  // optional .artm.MasterComponentConfig config = 2;
+  // optional .artm.MasterModelConfig config = 2;
   inline bool has_config() const;
   inline void clear_config();
   static const int kConfigFieldNumber = 2;
-  inline const ::artm::MasterComponentConfig& config() const;
-  inline ::artm::MasterComponentConfig* mutable_config();
-  inline ::artm::MasterComponentConfig* release_config();
-  inline void set_allocated_config(::artm::MasterComponentConfig* config);
+  inline const ::artm::MasterModelConfig& config() const;
+  inline ::artm::MasterModelConfig* mutable_config();
+  inline ::artm::MasterModelConfig* release_config();
+  inline void set_allocated_config(::artm::MasterModelConfig* config);
 
   // repeated .artm.MasterComponentInfo.RegularizerInfo regularizer = 3;
   inline int regularizer_size() const;
@@ -10670,7 +10504,7 @@ class MasterComponentInfo : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::artm::MasterComponentConfig* config_;
+  ::artm::MasterModelConfig* config_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_RegularizerInfo > regularizer_;
   ::google::protobuf::RepeatedPtrField< ::artm::MasterComponentInfo_ScoreInfo > score_;
   ::google::protobuf::int32 master_id_;
@@ -12980,285 +12814,6 @@ inline void Batch::set_allocated_id(::std::string* id) {
   } else {
     clear_has_id();
     id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// -------------------------------------------------------------------
-
-// MasterComponentConfig
-
-// optional string disk_path = 2;
-inline bool MasterComponentConfig::has_disk_path() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void MasterComponentConfig::set_has_disk_path() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void MasterComponentConfig::clear_has_disk_path() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void MasterComponentConfig::clear_disk_path() {
-  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_->clear();
-  }
-  clear_has_disk_path();
-}
-inline const ::std::string& MasterComponentConfig::disk_path() const {
-  return *disk_path_;
-}
-inline void MasterComponentConfig::set_disk_path(const ::std::string& value) {
-  set_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_ = new ::std::string;
-  }
-  disk_path_->assign(value);
-}
-inline void MasterComponentConfig::set_disk_path(const char* value) {
-  set_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_ = new ::std::string;
-  }
-  disk_path_->assign(value);
-}
-inline void MasterComponentConfig::set_disk_path(const char* value, size_t size) {
-  set_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_ = new ::std::string;
-  }
-  disk_path_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* MasterComponentConfig::mutable_disk_path() {
-  set_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_path_ = new ::std::string;
-  }
-  return disk_path_;
-}
-inline ::std::string* MasterComponentConfig::release_disk_path() {
-  clear_has_disk_path();
-  if (disk_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = disk_path_;
-    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void MasterComponentConfig::set_allocated_disk_path(::std::string* disk_path) {
-  if (disk_path_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete disk_path_;
-  }
-  if (disk_path) {
-    set_has_disk_path();
-    disk_path_ = disk_path;
-  } else {
-    clear_has_disk_path();
-    disk_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
-// optional bool compact_batches = 4 [default = true];
-inline bool MasterComponentConfig::has_compact_batches() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void MasterComponentConfig::set_has_compact_batches() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void MasterComponentConfig::clear_has_compact_batches() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void MasterComponentConfig::clear_compact_batches() {
-  compact_batches_ = true;
-  clear_has_compact_batches();
-}
-inline bool MasterComponentConfig::compact_batches() const {
-  return compact_batches_;
-}
-inline void MasterComponentConfig::set_compact_batches(bool value) {
-  set_has_compact_batches();
-  compact_batches_ = value;
-}
-
-// optional bool cache_theta = 5 [default = false];
-inline bool MasterComponentConfig::has_cache_theta() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void MasterComponentConfig::set_has_cache_theta() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void MasterComponentConfig::clear_has_cache_theta() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void MasterComponentConfig::clear_cache_theta() {
-  cache_theta_ = false;
-  clear_has_cache_theta();
-}
-inline bool MasterComponentConfig::cache_theta() const {
-  return cache_theta_;
-}
-inline void MasterComponentConfig::set_cache_theta(bool value) {
-  set_has_cache_theta();
-  cache_theta_ = value;
-}
-
-// optional int32 processors_count = 6;
-inline bool MasterComponentConfig::has_processors_count() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void MasterComponentConfig::set_has_processors_count() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void MasterComponentConfig::clear_has_processors_count() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void MasterComponentConfig::clear_processors_count() {
-  processors_count_ = 0;
-  clear_has_processors_count();
-}
-inline ::google::protobuf::int32 MasterComponentConfig::processors_count() const {
-  return processors_count_;
-}
-inline void MasterComponentConfig::set_processors_count(::google::protobuf::int32 value) {
-  set_has_processors_count();
-  processors_count_ = value;
-}
-
-// optional int32 processor_queue_max_size = 7 [default = 10];
-inline bool MasterComponentConfig::has_processor_queue_max_size() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void MasterComponentConfig::set_has_processor_queue_max_size() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void MasterComponentConfig::clear_has_processor_queue_max_size() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void MasterComponentConfig::clear_processor_queue_max_size() {
-  processor_queue_max_size_ = 10;
-  clear_has_processor_queue_max_size();
-}
-inline ::google::protobuf::int32 MasterComponentConfig::processor_queue_max_size() const {
-  return processor_queue_max_size_;
-}
-inline void MasterComponentConfig::set_processor_queue_max_size(::google::protobuf::int32 value) {
-  set_has_processor_queue_max_size();
-  processor_queue_max_size_ = value;
-}
-
-// repeated .artm.ScoreConfig score_config = 9;
-inline int MasterComponentConfig::score_config_size() const {
-  return score_config_.size();
-}
-inline void MasterComponentConfig::clear_score_config() {
-  score_config_.Clear();
-}
-inline const ::artm::ScoreConfig& MasterComponentConfig::score_config(int index) const {
-  return score_config_.Get(index);
-}
-inline ::artm::ScoreConfig* MasterComponentConfig::mutable_score_config(int index) {
-  return score_config_.Mutable(index);
-}
-inline ::artm::ScoreConfig* MasterComponentConfig::add_score_config() {
-  return score_config_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >&
-MasterComponentConfig::score_config() const {
-  return score_config_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreConfig >*
-MasterComponentConfig::mutable_score_config() {
-  return &score_config_;
-}
-
-// optional bool online_batch_processing = 13 [default = false];
-inline bool MasterComponentConfig::has_online_batch_processing() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void MasterComponentConfig::set_has_online_batch_processing() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void MasterComponentConfig::clear_has_online_batch_processing() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void MasterComponentConfig::clear_online_batch_processing() {
-  online_batch_processing_ = false;
-  clear_has_online_batch_processing();
-}
-inline bool MasterComponentConfig::online_batch_processing() const {
-  return online_batch_processing_;
-}
-inline void MasterComponentConfig::set_online_batch_processing(bool value) {
-  set_has_online_batch_processing();
-  online_batch_processing_ = value;
-}
-
-// optional string disk_cache_path = 15;
-inline bool MasterComponentConfig::has_disk_cache_path() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void MasterComponentConfig::set_has_disk_cache_path() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void MasterComponentConfig::clear_has_disk_cache_path() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void MasterComponentConfig::clear_disk_cache_path() {
-  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
-    disk_cache_path_->clear();
-  }
-  clear_has_disk_cache_path();
-}
-inline const ::std::string& MasterComponentConfig::disk_cache_path() const {
-  return *disk_cache_path_;
-}
-inline void MasterComponentConfig::set_disk_cache_path(const ::std::string& value) {
-  set_has_disk_cache_path();
-  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_cache_path_ = new ::std::string;
-  }
-  disk_cache_path_->assign(value);
-}
-inline void MasterComponentConfig::set_disk_cache_path(const char* value) {
-  set_has_disk_cache_path();
-  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_cache_path_ = new ::std::string;
-  }
-  disk_cache_path_->assign(value);
-}
-inline void MasterComponentConfig::set_disk_cache_path(const char* value, size_t size) {
-  set_has_disk_cache_path();
-  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_cache_path_ = new ::std::string;
-  }
-  disk_cache_path_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* MasterComponentConfig::mutable_disk_cache_path() {
-  set_has_disk_cache_path();
-  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    disk_cache_path_ = new ::std::string;
-  }
-  return disk_cache_path_;
-}
-inline ::std::string* MasterComponentConfig::release_disk_cache_path() {
-  clear_has_disk_cache_path();
-  if (disk_cache_path_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = disk_cache_path_;
-    disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void MasterComponentConfig::set_allocated_disk_cache_path(::std::string* disk_cache_path) {
-  if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete disk_cache_path_;
-  }
-  if (disk_cache_path) {
-    set_has_disk_cache_path();
-    disk_cache_path_ = disk_cache_path;
-  } else {
-    clear_has_disk_cache_path();
-    disk_cache_path_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 
@@ -24344,7 +23899,7 @@ inline void MasterComponentInfo::set_master_id(::google::protobuf::int32 value) 
   master_id_ = value;
 }
 
-// optional .artm.MasterComponentConfig config = 2;
+// optional .artm.MasterModelConfig config = 2;
 inline bool MasterComponentInfo::has_config() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -24355,24 +23910,24 @@ inline void MasterComponentInfo::clear_has_config() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void MasterComponentInfo::clear_config() {
-  if (config_ != NULL) config_->::artm::MasterComponentConfig::Clear();
+  if (config_ != NULL) config_->::artm::MasterModelConfig::Clear();
   clear_has_config();
 }
-inline const ::artm::MasterComponentConfig& MasterComponentInfo::config() const {
+inline const ::artm::MasterModelConfig& MasterComponentInfo::config() const {
   return config_ != NULL ? *config_ : *default_instance_->config_;
 }
-inline ::artm::MasterComponentConfig* MasterComponentInfo::mutable_config() {
+inline ::artm::MasterModelConfig* MasterComponentInfo::mutable_config() {
   set_has_config();
-  if (config_ == NULL) config_ = new ::artm::MasterComponentConfig;
+  if (config_ == NULL) config_ = new ::artm::MasterModelConfig;
   return config_;
 }
-inline ::artm::MasterComponentConfig* MasterComponentInfo::release_config() {
+inline ::artm::MasterModelConfig* MasterComponentInfo::release_config() {
   clear_has_config();
-  ::artm::MasterComponentConfig* temp = config_;
+  ::artm::MasterModelConfig* temp = config_;
   config_ = NULL;
   return temp;
 }
-inline void MasterComponentInfo::set_allocated_config(::artm::MasterComponentConfig* config) {
+inline void MasterComponentInfo::set_allocated_config(::artm::MasterModelConfig* config) {
   delete config_;
   config_ = config;
   if (config) {

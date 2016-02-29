@@ -23,12 +23,12 @@ class InstanceSchema {
  public:
   InstanceSchema();
   explicit InstanceSchema(const InstanceSchema& schema);
-  explicit InstanceSchema(const MasterComponentConfig& config);
+  explicit InstanceSchema(const MasterModelConfig& config);
   std::shared_ptr<InstanceSchema> Duplicate() const;
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
-  const MasterComponentConfig& config() const;
-  void set_config(const MasterComponentConfig& config);
+  const MasterModelConfig& config() const;
+  void set_config(const MasterModelConfig& config);
 
   const ModelConfig& model_config(ModelName id) const;
   void set_model_config(ModelName id, const std::shared_ptr<const ModelConfig>& model_config);
@@ -52,7 +52,7 @@ class InstanceSchema {
   std::vector<ModelName> GetModelNames() const;
 
  private:
-  MasterComponentConfig config_;
+  MasterModelConfig config_;
   std::map<std::string, std::shared_ptr<RegularizerInterface> > regularizers_;
   std::map<ModelName, std::shared_ptr<const ModelConfig> > models_config_;
   std::map<ScoreName, std::shared_ptr<ScoreCalculatorInterface>> score_calculators_;

@@ -62,18 +62,6 @@ message Batch {
   optional string id = 5;
 }
 
-// Represents a configuration of a master component
-message MasterComponentConfig {
-  optional string disk_path = 2;
-  optional bool compact_batches = 4 [default = true];
-  optional bool cache_theta = 5 [default = false];
-  optional int32 processors_count = 6;
-  optional int32 processor_queue_max_size = 7 [default = 10];
-  repeated ScoreConfig score_config = 9;
-  optional bool online_batch_processing = 13 [default = false];  // obsolete in BigARTM v0.5.8
-  optional string disk_cache_path = 15;
-}
-
 message RegularizerSettings {
   optional string name = 1;
   optional double tau = 2;
@@ -709,7 +697,7 @@ message MasterComponentInfo {
   }
 
   optional int32 master_id = 1;  // obsolete in BigARTM v0.7.4
-  optional MasterComponentConfig config = 2;
+  optional MasterModelConfig config = 2;
   repeated RegularizerInfo regularizer = 3;
   repeated ScoreInfo score = 4;
   repeated DictionaryInfo dictionary = 5;

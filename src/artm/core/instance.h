@@ -40,7 +40,7 @@ typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
 // (processors, merger, data loader) and data structures (schema, queues, etc).
 class Instance {
  public:
-  explicit Instance(const MasterComponentConfig& config);
+  explicit Instance(const MasterModelConfig& config);
   ~Instance();
 
   std::shared_ptr<Instance> Duplicate() const;
@@ -60,7 +60,7 @@ class Instance {
   int processor_size() { return processors_.size(); }
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
 
-  void Reconfigure(const MasterComponentConfig& master_config);
+  void Reconfigure(const MasterModelConfig& master_config);
   void DisposeModel(ModelName model_name);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);

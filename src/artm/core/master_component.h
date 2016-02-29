@@ -36,7 +36,6 @@ class MasterComponent : boost::noncopyable {
 
   std::shared_ptr<MasterModelConfig> config() const;
 
-  explicit MasterComponent(const MasterComponentConfig& config);
   explicit MasterComponent(const MasterModelConfig& config);
   std::shared_ptr<MasterComponent> Duplicate() const;
 
@@ -86,7 +85,6 @@ class MasterComponent : boost::noncopyable {
   // Reconfigures topic model if already exists, otherwise creates a new model.
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
 
-  void Reconfigure(const MasterComponentConfig& config);
   void ReconfigureMasterModel(const MasterModelConfig& config);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);

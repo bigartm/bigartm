@@ -164,7 +164,7 @@ static void CreatePtdwCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
 }
 
 static void SaveCache(std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr,
-                      const MasterComponentConfig& master_config) {
+                      const MasterModelConfig& master_config) {
   if (new_cache_entry_ptr == nullptr) return;
 
   std::string disk_cache_path = master_config.disk_cache_path();
@@ -787,7 +787,7 @@ void Processor::ThreadFunction() {
       }
 
       std::shared_ptr<InstanceSchema> schema = instance_->schema();
-      const MasterComponentConfig& master_config = schema->config();
+      const MasterModelConfig& master_config = schema->config();
 
       const ModelName& model_name = part->model_name();
       const ModelConfig& model_config = part->model_config();

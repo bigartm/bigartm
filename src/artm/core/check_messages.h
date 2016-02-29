@@ -208,21 +208,11 @@ inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
   std::stringstream ss;
 
   if (!message.has_model_name() || message.model_name().empty()) {
-    // Allow this to default to MasterComponentConfig.pwt_name
+    // Allow this to default to MasterModelConfig.pwt_name
     // ss << "GetScoreValueArgs.model_name is missing; ";
   }
   if (!message.has_score_name() || message.score_name().empty())
     ss << "GetScoreValueArgs.score_name is missing; ";
-
-  return ss.str();
-}
-
-inline std::string DescribeErrors(const ::artm::MasterComponentConfig& message) {
-  std::stringstream ss;
-
-  if (message.processor_queue_max_size() <= 0)
-    ss << "MasterComponentConfig.processor_queue_max_size == "
-       << message.processor_queue_max_size() << " is invalid; ";
 
   return ss.str();
 }
@@ -333,7 +323,7 @@ inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
   }
 
   if (!message.has_model_name()) {
-    // Allow this to default to MasterComponentConfig.pwt_name
+    // Allow this to default to MasterModelConfig.pwt_name
     // ss << "InitializeModelArgs.model_name is not defined; ";
   }
 
@@ -416,7 +406,7 @@ inline std::string DescribeErrors(const ::artm::ExportModelArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ExportModelArgs.file_name is not defined; ";
 
-  // Allow this to default to MasterComponentConfig.pwt_name
+  // Allow this to default to MasterModelConfig.pwt_name
   // if (!message.has_model_name()) ss << "ExportModelArgs.model_name is not defined; ";
 
   return ss.str();
@@ -426,7 +416,7 @@ inline std::string DescribeErrors(const ::artm::ImportModelArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ImportModelArgs.file_name is not defined; ";
 
-  // Allow this to default to MasterComponentConfig.pwt_name
+  // Allow this to default to MasterModelConfig.pwt_name
   // if (!message.has_model_name()) ss << "ImportModelArgs.model_name is not defined; ";
 
   return ss.str();
@@ -622,6 +612,9 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
     for (int i = 0; i < message->class_id_size(); ++i)
       message->add_class_weight(1.0f);
   }
+
+  if (message->reuse_theta())
+    message->set_cache_theta(true);
 }
 
 template<>
@@ -704,20 +697,6 @@ inline std::string DescribeMessage(const ::artm::ModelConfig& message) {
     ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
   ss << ", use_random_theta=" << (message.use_random_theta() ? "yes" : "no");
   ss << ", use_new_tokens=" << (message.use_new_tokens() ? "yes" : "no");
-  return ss.str();
-}
-
-template<>
-inline std::string DescribeMessage(const ::artm::MasterComponentConfig& message) {
-  std::stringstream ss;
-  ss << "MasterComponentConfig";
-  ss << ": disk_path=" << message.disk_path();
-  ss << ", compact_batches=" << (message.compact_batches() ? "yes" : "no");
-  ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
-  ss << ", processors_count=" << message.processors_count();
-  ss << ", processor_queue_max_size=" << message.processor_queue_max_size();
-  ss << ", score_config_size=" << message.score_config_size();
-  ss << ", disk_cache_path" << message.disk_cache_path();
   return ss.str();
 }
 
