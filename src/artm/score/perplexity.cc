@@ -28,7 +28,7 @@ void Perplexity::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
     const artm::core::PhiMatrix& p_wt,
-    const artm::ModelConfig& model_config,
+    const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
   int topic_size = p_wt.topic_size();
@@ -57,13 +57,13 @@ void Perplexity::AppendScore(
 
   std::map< ::artm::core::ClassId, float> class_weights;
   if (use_classes_from_model) {
-    for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
-      class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
+    for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i)
+      class_weights.insert(std::make_pair(args.class_id(i), args.class_weight(i)));
   } else {
     for (auto& class_id : config_.class_id()) {
-      for (int i = 0; (i < model_config.class_id_size()) && (i < model_config.class_weight_size()); ++i)
-        if (class_id == model_config.class_id(i)) {
-          class_weights.insert(std::make_pair(model_config.class_id(i), model_config.class_weight(i)));
+      for (int i = 0; (i < args.class_id_size()) && (i < args.class_weight_size()); ++i)
+        if (class_id == args.class_id(i)) {
+          class_weights.insert(std::make_pair(args.class_id(i), args.class_weight(i)));
           break;
         }
     }

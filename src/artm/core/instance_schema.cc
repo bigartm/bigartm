@@ -12,11 +12,10 @@ namespace artm {
 namespace core {
 
 InstanceSchema::InstanceSchema()
-    : regularizers_(), models_config_(), score_calculators_() {}
+    : regularizers_(), score_calculators_() {}
 
 InstanceSchema::InstanceSchema(const InstanceSchema& schema)
     : regularizers_(schema.regularizers_),
-      models_config_(schema.models_config_),
       score_calculators_(schema.score_calculators_) {}
 
 std::shared_ptr<InstanceSchema> InstanceSchema::Duplicate() const {
@@ -34,39 +33,6 @@ void InstanceSchema::RequestMasterComponentInfo(MasterComponentInfo* master_info
     MasterComponentInfo::ScoreInfo* info = master_info->add_score();
     info->set_name(score.first);
     info->set_type(typeid(*score.second).name());
-  }
-}
-
-void InstanceSchema::set_model_config(
-    ModelName id, const std::shared_ptr<const ModelConfig>& model_config) {
-  auto iter = models_config_.find(id);
-  if (iter != models_config_.end()) {
-    iter->second = model_config;
-  } else {
-    models_config_.insert(std::make_pair(id, model_config));
-  }
-}
-
-const ModelConfig& InstanceSchema::model_config(ModelName id) const {
-  auto iter = models_config_.find(id);
-  if (iter == models_config_.end()) {
-    std::stringstream ss;
-    ss << "Model " << id << " does not exist";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  }
-
-  return *(iter->second);
-}
-
-bool InstanceSchema::has_model_config(ModelName id) const {
-  auto iter = models_config_.find(id);
-  return iter != models_config_.end();
-}
-
-void InstanceSchema::clear_model_config(ModelName id) {
-  auto iter = models_config_.find(id);
-  if (iter != models_config_.end()) {
-    models_config_.erase(iter);
   }
 }
 
@@ -144,15 +110,6 @@ std::shared_ptr<ScoreCalculatorInterface> InstanceSchema::score_calculator(
 
 void InstanceSchema::clear_score_calculators() {
   score_calculators_.clear();
-}
-
-std::vector<ModelName> InstanceSchema::GetModelNames() const {
-  std::vector<ModelName> retval;
-  for (auto iter = models_config_.begin(); iter != models_config_.end(); ++iter) {
-    retval.push_back(iter->first);
-  }
-
-  return retval;
 }
 
 }  // namespace core

@@ -187,10 +187,6 @@ ScoreTracker* Instance::score_tracker() {
 }
 
 void Instance::DisposeModel(ModelName model_name) {
-  auto new_schema = schema_.get_copy();
-  new_schema->clear_model_config(model_name);
-  schema_.set(new_schema);
-
   models_.erase(model_name);
 
   if (batch_manager_ != nullptr) {

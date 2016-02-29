@@ -14,7 +14,6 @@
 namespace artm {
 
 class RegularizerInterface;
-class ModelConfig;
 class ScoreCalculatorInterface;
 
 namespace core {
@@ -25,11 +24,6 @@ class InstanceSchema {
   explicit InstanceSchema(const InstanceSchema& schema);
   std::shared_ptr<InstanceSchema> Duplicate() const;
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
-
-  const ModelConfig& model_config(ModelName id) const;
-  void set_model_config(ModelName id, const std::shared_ptr<const ModelConfig>& model_config);
-  bool has_model_config(ModelName id) const;
-  void clear_model_config(ModelName id);
 
   std::shared_ptr<RegularizerInterface> regularizer(const std::string& name) const;
   void set_regularizer(const std::string& name,
@@ -45,11 +39,8 @@ class InstanceSchema {
   void clear_score_calculator(const ScoreName& name);
   void clear_score_calculators();
 
-  std::vector<ModelName> GetModelNames() const;
-
  private:
   std::map<std::string, std::shared_ptr<RegularizerInterface> > regularizers_;
-  std::map<ModelName, std::shared_ptr<const ModelConfig> > models_config_;
   std::map<ScoreName, std::shared_ptr<ScoreCalculatorInterface>> score_calculators_;
 };
 

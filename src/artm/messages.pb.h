@@ -43,7 +43,6 @@ class Item;
 class Field;
 class Batch;
 class RegularizerSettings;
-class ModelConfig;
 class RegularizerConfig;
 class SmoothSparseThetaConfig;
 class SmoothSparsePhiConfig;
@@ -1543,302 +1542,6 @@ class RegularizerSettings : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static RegularizerSettings* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class ModelConfig : public ::google::protobuf::Message {
- public:
-  ModelConfig();
-  virtual ~ModelConfig();
-
-  ModelConfig(const ModelConfig& from);
-
-  inline ModelConfig& operator=(const ModelConfig& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const ModelConfig& default_instance();
-
-  void Swap(ModelConfig* other);
-
-  // implements Message ----------------------------------------------
-
-  ModelConfig* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const ModelConfig& from);
-  void MergeFrom(const ModelConfig& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "@model"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // optional int32 topics_count = 2 [default = 32];
-  inline bool has_topics_count() const;
-  inline void clear_topics_count();
-  static const int kTopicsCountFieldNumber = 2;
-  inline ::google::protobuf::int32 topics_count() const;
-  inline void set_topics_count(::google::protobuf::int32 value);
-
-  // repeated string topic_name = 3;
-  inline int topic_name_size() const;
-  inline void clear_topic_name();
-  static const int kTopicNameFieldNumber = 3;
-  inline const ::std::string& topic_name(int index) const;
-  inline ::std::string* mutable_topic_name(int index);
-  inline void set_topic_name(int index, const ::std::string& value);
-  inline void set_topic_name(int index, const char* value);
-  inline void set_topic_name(int index, const char* value, size_t size);
-  inline ::std::string* add_topic_name();
-  inline void add_topic_name(const ::std::string& value);
-  inline void add_topic_name(const char* value);
-  inline void add_topic_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
-
-  // optional bool enabled = 4 [default = true];
-  inline bool has_enabled() const;
-  inline void clear_enabled();
-  static const int kEnabledFieldNumber = 4;
-  inline bool enabled() const;
-  inline void set_enabled(bool value);
-
-  // optional int32 inner_iterations_count = 5 [default = 10];
-  inline bool has_inner_iterations_count() const;
-  inline void clear_inner_iterations_count();
-  static const int kInnerIterationsCountFieldNumber = 5;
-  inline ::google::protobuf::int32 inner_iterations_count() const;
-  inline void set_inner_iterations_count(::google::protobuf::int32 value);
-
-  // optional string field_name = 6 [default = "@body"];
-  inline bool has_field_name() const;
-  inline void clear_field_name();
-  static const int kFieldNameFieldNumber = 6;
-  inline const ::std::string& field_name() const;
-  inline void set_field_name(const ::std::string& value);
-  inline void set_field_name(const char* value);
-  inline void set_field_name(const char* value, size_t size);
-  inline ::std::string* mutable_field_name();
-  inline ::std::string* release_field_name();
-  inline void set_allocated_field_name(::std::string* field_name);
-
-  // repeated string score_name = 8;
-  inline int score_name_size() const;
-  inline void clear_score_name();
-  static const int kScoreNameFieldNumber = 8;
-  inline const ::std::string& score_name(int index) const;
-  inline ::std::string* mutable_score_name(int index);
-  inline void set_score_name(int index, const ::std::string& value);
-  inline void set_score_name(int index, const char* value);
-  inline void set_score_name(int index, const char* value, size_t size);
-  inline ::std::string* add_score_name();
-  inline void add_score_name(const ::std::string& value);
-  inline void add_score_name(const char* value);
-  inline void add_score_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& score_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_score_name();
-
-  // optional bool reuse_theta = 9 [default = false];
-  inline bool has_reuse_theta() const;
-  inline void clear_reuse_theta();
-  static const int kReuseThetaFieldNumber = 9;
-  inline bool reuse_theta() const;
-  inline void set_reuse_theta(bool value);
-
-  // repeated string regularizer_name = 10;
-  inline int regularizer_name_size() const;
-  inline void clear_regularizer_name();
-  static const int kRegularizerNameFieldNumber = 10;
-  inline const ::std::string& regularizer_name(int index) const;
-  inline ::std::string* mutable_regularizer_name(int index);
-  inline void set_regularizer_name(int index, const ::std::string& value);
-  inline void set_regularizer_name(int index, const char* value);
-  inline void set_regularizer_name(int index, const char* value, size_t size);
-  inline ::std::string* add_regularizer_name();
-  inline void add_regularizer_name(const ::std::string& value);
-  inline void add_regularizer_name(const char* value);
-  inline void add_regularizer_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& regularizer_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_regularizer_name();
-
-  // repeated double regularizer_tau = 11;
-  inline int regularizer_tau_size() const;
-  inline void clear_regularizer_tau();
-  static const int kRegularizerTauFieldNumber = 11;
-  inline double regularizer_tau(int index) const;
-  inline void set_regularizer_tau(int index, double value);
-  inline void add_regularizer_tau(double value);
-  inline const ::google::protobuf::RepeatedField< double >&
-      regularizer_tau() const;
-  inline ::google::protobuf::RepeatedField< double >*
-      mutable_regularizer_tau();
-
-  // repeated string class_id = 12;
-  inline int class_id_size() const;
-  inline void clear_class_id();
-  static const int kClassIdFieldNumber = 12;
-  inline const ::std::string& class_id(int index) const;
-  inline ::std::string* mutable_class_id(int index);
-  inline void set_class_id(int index, const ::std::string& value);
-  inline void set_class_id(int index, const char* value);
-  inline void set_class_id(int index, const char* value, size_t size);
-  inline ::std::string* add_class_id();
-  inline void add_class_id(const ::std::string& value);
-  inline void add_class_id(const char* value);
-  inline void add_class_id(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
-
-  // repeated float class_weight = 13;
-  inline int class_weight_size() const;
-  inline void clear_class_weight();
-  static const int kClassWeightFieldNumber = 13;
-  inline float class_weight(int index) const;
-  inline void set_class_weight(int index, float value);
-  inline void add_class_weight(float value);
-  inline const ::google::protobuf::RepeatedField< float >&
-      class_weight() const;
-  inline ::google::protobuf::RepeatedField< float >*
-      mutable_class_weight();
-
-  // optional bool use_random_theta = 15 [default = false];
-  inline bool has_use_random_theta() const;
-  inline void clear_use_random_theta();
-  static const int kUseRandomThetaFieldNumber = 15;
-  inline bool use_random_theta() const;
-  inline void set_use_random_theta(bool value);
-
-  // optional bool use_new_tokens = 16 [default = true];
-  inline bool has_use_new_tokens() const;
-  inline void clear_use_new_tokens();
-  static const int kUseNewTokensFieldNumber = 16;
-  inline bool use_new_tokens() const;
-  inline void set_use_new_tokens(bool value);
-
-  // optional bool opt_for_avx = 17 [default = true];
-  inline bool has_opt_for_avx() const;
-  inline void clear_opt_for_avx();
-  static const int kOptForAvxFieldNumber = 17;
-  inline bool opt_for_avx() const;
-  inline void set_opt_for_avx(bool value);
-
-  // repeated .artm.RegularizerSettings regularizer_settings = 18;
-  inline int regularizer_settings_size() const;
-  inline void clear_regularizer_settings();
-  static const int kRegularizerSettingsFieldNumber = 18;
-  inline const ::artm::RegularizerSettings& regularizer_settings(int index) const;
-  inline ::artm::RegularizerSettings* mutable_regularizer_settings(int index);
-  inline ::artm::RegularizerSettings* add_regularizer_settings();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >&
-      regularizer_settings() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
-      mutable_regularizer_settings();
-
-  // optional string predict_class_id = 20;
-  inline bool has_predict_class_id() const;
-  inline void clear_predict_class_id();
-  static const int kPredictClassIdFieldNumber = 20;
-  inline const ::std::string& predict_class_id() const;
-  inline void set_predict_class_id(const ::std::string& value);
-  inline void set_predict_class_id(const char* value);
-  inline void set_predict_class_id(const char* value, size_t size);
-  inline ::std::string* mutable_predict_class_id();
-  inline ::std::string* release_predict_class_id();
-  inline void set_allocated_predict_class_id(::std::string* predict_class_id);
-
-  // @@protoc_insertion_point(class_scope:artm.ModelConfig)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_topics_count();
-  inline void clear_has_topics_count();
-  inline void set_has_enabled();
-  inline void clear_has_enabled();
-  inline void set_has_inner_iterations_count();
-  inline void clear_has_inner_iterations_count();
-  inline void set_has_field_name();
-  inline void clear_has_field_name();
-  inline void set_has_reuse_theta();
-  inline void clear_has_reuse_theta();
-  inline void set_has_use_random_theta();
-  inline void clear_has_use_random_theta();
-  inline void set_has_use_new_tokens();
-  inline void clear_has_use_new_tokens();
-  inline void set_has_opt_for_avx();
-  inline void clear_has_opt_for_avx();
-  inline void set_has_predict_class_id();
-  inline void clear_has_predict_class_id();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
-  ::google::protobuf::int32 topics_count_;
-  ::google::protobuf::int32 inner_iterations_count_;
-  ::std::string* field_name_;
-  static ::std::string* _default_field_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
-  ::google::protobuf::RepeatedField< double > regularizer_tau_;
-  bool enabled_;
-  bool reuse_theta_;
-  bool use_random_theta_;
-  bool use_new_tokens_;
-  bool opt_for_avx_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
-  ::google::protobuf::RepeatedField< float > class_weight_;
-  ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings > regularizer_settings_;
-  ::std::string* predict_class_id_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static ModelConfig* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -8731,6 +8434,29 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
       mutable_batch();
 
+  // optional bool use_random_theta = 19 [default = false];
+  inline bool has_use_random_theta() const;
+  inline void clear_use_random_theta();
+  static const int kUseRandomThetaFieldNumber = 19;
+  inline bool use_random_theta() const;
+  inline void set_use_random_theta(bool value);
+
+  // repeated string topic_name = 20;
+  inline int topic_name_size() const;
+  inline void clear_topic_name();
+  static const int kTopicNameFieldNumber = 20;
+  inline const ::std::string& topic_name(int index) const;
+  inline ::std::string* mutable_topic_name(int index);
+  inline void set_topic_name(int index, const ::std::string& value);
+  inline void set_topic_name(int index, const char* value);
+  inline void set_topic_name(int index, const char* value, size_t size);
+  inline ::std::string* add_topic_name();
+  inline void add_topic_name(const ::std::string& value);
+  inline void add_topic_name(const char* value);
+  inline void add_topic_name(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& topic_name() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topic_name();
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8747,6 +8473,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_theta_matrix_type();
   inline void set_has_predict_class_id();
   inline void clear_has_predict_class_id();
+  inline void set_has_use_random_theta();
+  inline void clear_has_use_random_theta();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8757,16 +8485,18 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
   ::google::protobuf::int32 inner_iterations_count_;
-  bool reuse_theta_;
-  bool opt_for_avx_;
+  int theta_matrix_type_;
   ::google::protobuf::RepeatedField< float > class_weight_;
   ::google::protobuf::RepeatedField< float > batch_weight_;
   ::std::string* predict_class_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::Batch > batch_;
-  int theta_matrix_type_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
+  bool reuse_theta_;
+  bool opt_for_avx_;
+  bool use_random_theta_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(14 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12955,625 +12685,6 @@ inline double RegularizerSettings::gamma() const {
 inline void RegularizerSettings::set_gamma(double value) {
   set_has_gamma();
   gamma_ = value;
-}
-
-// -------------------------------------------------------------------
-
-// ModelConfig
-
-// optional string name = 1 [default = "@model"];
-inline bool ModelConfig::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ModelConfig::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ModelConfig::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ModelConfig::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& ModelConfig::name() const {
-  return *name_;
-}
-inline void ModelConfig::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void ModelConfig::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void ModelConfig::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* ModelConfig::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void ModelConfig::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
-
-// optional int32 topics_count = 2 [default = 32];
-inline bool ModelConfig::has_topics_count() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ModelConfig::set_has_topics_count() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ModelConfig::clear_has_topics_count() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ModelConfig::clear_topics_count() {
-  topics_count_ = 32;
-  clear_has_topics_count();
-}
-inline ::google::protobuf::int32 ModelConfig::topics_count() const {
-  return topics_count_;
-}
-inline void ModelConfig::set_topics_count(::google::protobuf::int32 value) {
-  set_has_topics_count();
-  topics_count_ = value;
-}
-
-// repeated string topic_name = 3;
-inline int ModelConfig::topic_name_size() const {
-  return topic_name_.size();
-}
-inline void ModelConfig::clear_topic_name() {
-  topic_name_.Clear();
-}
-inline const ::std::string& ModelConfig::topic_name(int index) const {
-  return topic_name_.Get(index);
-}
-inline ::std::string* ModelConfig::mutable_topic_name(int index) {
-  return topic_name_.Mutable(index);
-}
-inline void ModelConfig::set_topic_name(int index, const ::std::string& value) {
-  topic_name_.Mutable(index)->assign(value);
-}
-inline void ModelConfig::set_topic_name(int index, const char* value) {
-  topic_name_.Mutable(index)->assign(value);
-}
-inline void ModelConfig::set_topic_name(int index, const char* value, size_t size) {
-  topic_name_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::add_topic_name() {
-  return topic_name_.Add();
-}
-inline void ModelConfig::add_topic_name(const ::std::string& value) {
-  topic_name_.Add()->assign(value);
-}
-inline void ModelConfig::add_topic_name(const char* value) {
-  topic_name_.Add()->assign(value);
-}
-inline void ModelConfig::add_topic_name(const char* value, size_t size) {
-  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelConfig::topic_name() const {
-  return topic_name_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelConfig::mutable_topic_name() {
-  return &topic_name_;
-}
-
-// optional bool enabled = 4 [default = true];
-inline bool ModelConfig::has_enabled() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void ModelConfig::set_has_enabled() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void ModelConfig::clear_has_enabled() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void ModelConfig::clear_enabled() {
-  enabled_ = true;
-  clear_has_enabled();
-}
-inline bool ModelConfig::enabled() const {
-  return enabled_;
-}
-inline void ModelConfig::set_enabled(bool value) {
-  set_has_enabled();
-  enabled_ = value;
-}
-
-// optional int32 inner_iterations_count = 5 [default = 10];
-inline bool ModelConfig::has_inner_iterations_count() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void ModelConfig::set_has_inner_iterations_count() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void ModelConfig::clear_has_inner_iterations_count() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void ModelConfig::clear_inner_iterations_count() {
-  inner_iterations_count_ = 10;
-  clear_has_inner_iterations_count();
-}
-inline ::google::protobuf::int32 ModelConfig::inner_iterations_count() const {
-  return inner_iterations_count_;
-}
-inline void ModelConfig::set_inner_iterations_count(::google::protobuf::int32 value) {
-  set_has_inner_iterations_count();
-  inner_iterations_count_ = value;
-}
-
-// optional string field_name = 6 [default = "@body"];
-inline bool ModelConfig::has_field_name() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void ModelConfig::set_has_field_name() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void ModelConfig::clear_has_field_name() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void ModelConfig::clear_field_name() {
-  if (field_name_ != _default_field_name_) {
-    field_name_->assign(*_default_field_name_);
-  }
-  clear_has_field_name();
-}
-inline const ::std::string& ModelConfig::field_name() const {
-  return *field_name_;
-}
-inline void ModelConfig::set_field_name(const ::std::string& value) {
-  set_has_field_name();
-  if (field_name_ == _default_field_name_) {
-    field_name_ = new ::std::string;
-  }
-  field_name_->assign(value);
-}
-inline void ModelConfig::set_field_name(const char* value) {
-  set_has_field_name();
-  if (field_name_ == _default_field_name_) {
-    field_name_ = new ::std::string;
-  }
-  field_name_->assign(value);
-}
-inline void ModelConfig::set_field_name(const char* value, size_t size) {
-  set_has_field_name();
-  if (field_name_ == _default_field_name_) {
-    field_name_ = new ::std::string;
-  }
-  field_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::mutable_field_name() {
-  set_has_field_name();
-  if (field_name_ == _default_field_name_) {
-    field_name_ = new ::std::string(*_default_field_name_);
-  }
-  return field_name_;
-}
-inline ::std::string* ModelConfig::release_field_name() {
-  clear_has_field_name();
-  if (field_name_ == _default_field_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = field_name_;
-    field_name_ = const_cast< ::std::string*>(_default_field_name_);
-    return temp;
-  }
-}
-inline void ModelConfig::set_allocated_field_name(::std::string* field_name) {
-  if (field_name_ != _default_field_name_) {
-    delete field_name_;
-  }
-  if (field_name) {
-    set_has_field_name();
-    field_name_ = field_name;
-  } else {
-    clear_has_field_name();
-    field_name_ = const_cast< ::std::string*>(_default_field_name_);
-  }
-}
-
-// repeated string score_name = 8;
-inline int ModelConfig::score_name_size() const {
-  return score_name_.size();
-}
-inline void ModelConfig::clear_score_name() {
-  score_name_.Clear();
-}
-inline const ::std::string& ModelConfig::score_name(int index) const {
-  return score_name_.Get(index);
-}
-inline ::std::string* ModelConfig::mutable_score_name(int index) {
-  return score_name_.Mutable(index);
-}
-inline void ModelConfig::set_score_name(int index, const ::std::string& value) {
-  score_name_.Mutable(index)->assign(value);
-}
-inline void ModelConfig::set_score_name(int index, const char* value) {
-  score_name_.Mutable(index)->assign(value);
-}
-inline void ModelConfig::set_score_name(int index, const char* value, size_t size) {
-  score_name_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::add_score_name() {
-  return score_name_.Add();
-}
-inline void ModelConfig::add_score_name(const ::std::string& value) {
-  score_name_.Add()->assign(value);
-}
-inline void ModelConfig::add_score_name(const char* value) {
-  score_name_.Add()->assign(value);
-}
-inline void ModelConfig::add_score_name(const char* value, size_t size) {
-  score_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelConfig::score_name() const {
-  return score_name_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelConfig::mutable_score_name() {
-  return &score_name_;
-}
-
-// optional bool reuse_theta = 9 [default = false];
-inline bool ModelConfig::has_reuse_theta() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void ModelConfig::set_has_reuse_theta() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void ModelConfig::clear_has_reuse_theta() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void ModelConfig::clear_reuse_theta() {
-  reuse_theta_ = false;
-  clear_has_reuse_theta();
-}
-inline bool ModelConfig::reuse_theta() const {
-  return reuse_theta_;
-}
-inline void ModelConfig::set_reuse_theta(bool value) {
-  set_has_reuse_theta();
-  reuse_theta_ = value;
-}
-
-// repeated string regularizer_name = 10;
-inline int ModelConfig::regularizer_name_size() const {
-  return regularizer_name_.size();
-}
-inline void ModelConfig::clear_regularizer_name() {
-  regularizer_name_.Clear();
-}
-inline const ::std::string& ModelConfig::regularizer_name(int index) const {
-  return regularizer_name_.Get(index);
-}
-inline ::std::string* ModelConfig::mutable_regularizer_name(int index) {
-  return regularizer_name_.Mutable(index);
-}
-inline void ModelConfig::set_regularizer_name(int index, const ::std::string& value) {
-  regularizer_name_.Mutable(index)->assign(value);
-}
-inline void ModelConfig::set_regularizer_name(int index, const char* value) {
-  regularizer_name_.Mutable(index)->assign(value);
-}
-inline void ModelConfig::set_regularizer_name(int index, const char* value, size_t size) {
-  regularizer_name_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::add_regularizer_name() {
-  return regularizer_name_.Add();
-}
-inline void ModelConfig::add_regularizer_name(const ::std::string& value) {
-  regularizer_name_.Add()->assign(value);
-}
-inline void ModelConfig::add_regularizer_name(const char* value) {
-  regularizer_name_.Add()->assign(value);
-}
-inline void ModelConfig::add_regularizer_name(const char* value, size_t size) {
-  regularizer_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelConfig::regularizer_name() const {
-  return regularizer_name_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelConfig::mutable_regularizer_name() {
-  return &regularizer_name_;
-}
-
-// repeated double regularizer_tau = 11;
-inline int ModelConfig::regularizer_tau_size() const {
-  return regularizer_tau_.size();
-}
-inline void ModelConfig::clear_regularizer_tau() {
-  regularizer_tau_.Clear();
-}
-inline double ModelConfig::regularizer_tau(int index) const {
-  return regularizer_tau_.Get(index);
-}
-inline void ModelConfig::set_regularizer_tau(int index, double value) {
-  regularizer_tau_.Set(index, value);
-}
-inline void ModelConfig::add_regularizer_tau(double value) {
-  regularizer_tau_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< double >&
-ModelConfig::regularizer_tau() const {
-  return regularizer_tau_;
-}
-inline ::google::protobuf::RepeatedField< double >*
-ModelConfig::mutable_regularizer_tau() {
-  return &regularizer_tau_;
-}
-
-// repeated string class_id = 12;
-inline int ModelConfig::class_id_size() const {
-  return class_id_.size();
-}
-inline void ModelConfig::clear_class_id() {
-  class_id_.Clear();
-}
-inline const ::std::string& ModelConfig::class_id(int index) const {
-  return class_id_.Get(index);
-}
-inline ::std::string* ModelConfig::mutable_class_id(int index) {
-  return class_id_.Mutable(index);
-}
-inline void ModelConfig::set_class_id(int index, const ::std::string& value) {
-  class_id_.Mutable(index)->assign(value);
-}
-inline void ModelConfig::set_class_id(int index, const char* value) {
-  class_id_.Mutable(index)->assign(value);
-}
-inline void ModelConfig::set_class_id(int index, const char* value, size_t size) {
-  class_id_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::add_class_id() {
-  return class_id_.Add();
-}
-inline void ModelConfig::add_class_id(const ::std::string& value) {
-  class_id_.Add()->assign(value);
-}
-inline void ModelConfig::add_class_id(const char* value) {
-  class_id_.Add()->assign(value);
-}
-inline void ModelConfig::add_class_id(const char* value, size_t size) {
-  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-ModelConfig::class_id() const {
-  return class_id_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-ModelConfig::mutable_class_id() {
-  return &class_id_;
-}
-
-// repeated float class_weight = 13;
-inline int ModelConfig::class_weight_size() const {
-  return class_weight_.size();
-}
-inline void ModelConfig::clear_class_weight() {
-  class_weight_.Clear();
-}
-inline float ModelConfig::class_weight(int index) const {
-  return class_weight_.Get(index);
-}
-inline void ModelConfig::set_class_weight(int index, float value) {
-  class_weight_.Set(index, value);
-}
-inline void ModelConfig::add_class_weight(float value) {
-  class_weight_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< float >&
-ModelConfig::class_weight() const {
-  return class_weight_;
-}
-inline ::google::protobuf::RepeatedField< float >*
-ModelConfig::mutable_class_weight() {
-  return &class_weight_;
-}
-
-// optional bool use_random_theta = 15 [default = false];
-inline bool ModelConfig::has_use_random_theta() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
-}
-inline void ModelConfig::set_has_use_random_theta() {
-  _has_bits_[0] |= 0x00001000u;
-}
-inline void ModelConfig::clear_has_use_random_theta() {
-  _has_bits_[0] &= ~0x00001000u;
-}
-inline void ModelConfig::clear_use_random_theta() {
-  use_random_theta_ = false;
-  clear_has_use_random_theta();
-}
-inline bool ModelConfig::use_random_theta() const {
-  return use_random_theta_;
-}
-inline void ModelConfig::set_use_random_theta(bool value) {
-  set_has_use_random_theta();
-  use_random_theta_ = value;
-}
-
-// optional bool use_new_tokens = 16 [default = true];
-inline bool ModelConfig::has_use_new_tokens() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
-}
-inline void ModelConfig::set_has_use_new_tokens() {
-  _has_bits_[0] |= 0x00002000u;
-}
-inline void ModelConfig::clear_has_use_new_tokens() {
-  _has_bits_[0] &= ~0x00002000u;
-}
-inline void ModelConfig::clear_use_new_tokens() {
-  use_new_tokens_ = true;
-  clear_has_use_new_tokens();
-}
-inline bool ModelConfig::use_new_tokens() const {
-  return use_new_tokens_;
-}
-inline void ModelConfig::set_use_new_tokens(bool value) {
-  set_has_use_new_tokens();
-  use_new_tokens_ = value;
-}
-
-// optional bool opt_for_avx = 17 [default = true];
-inline bool ModelConfig::has_opt_for_avx() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
-}
-inline void ModelConfig::set_has_opt_for_avx() {
-  _has_bits_[0] |= 0x00004000u;
-}
-inline void ModelConfig::clear_has_opt_for_avx() {
-  _has_bits_[0] &= ~0x00004000u;
-}
-inline void ModelConfig::clear_opt_for_avx() {
-  opt_for_avx_ = true;
-  clear_has_opt_for_avx();
-}
-inline bool ModelConfig::opt_for_avx() const {
-  return opt_for_avx_;
-}
-inline void ModelConfig::set_opt_for_avx(bool value) {
-  set_has_opt_for_avx();
-  opt_for_avx_ = value;
-}
-
-// repeated .artm.RegularizerSettings regularizer_settings = 18;
-inline int ModelConfig::regularizer_settings_size() const {
-  return regularizer_settings_.size();
-}
-inline void ModelConfig::clear_regularizer_settings() {
-  regularizer_settings_.Clear();
-}
-inline const ::artm::RegularizerSettings& ModelConfig::regularizer_settings(int index) const {
-  return regularizer_settings_.Get(index);
-}
-inline ::artm::RegularizerSettings* ModelConfig::mutable_regularizer_settings(int index) {
-  return regularizer_settings_.Mutable(index);
-}
-inline ::artm::RegularizerSettings* ModelConfig::add_regularizer_settings() {
-  return regularizer_settings_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >&
-ModelConfig::regularizer_settings() const {
-  return regularizer_settings_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::RegularizerSettings >*
-ModelConfig::mutable_regularizer_settings() {
-  return &regularizer_settings_;
-}
-
-// optional string predict_class_id = 20;
-inline bool ModelConfig::has_predict_class_id() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
-}
-inline void ModelConfig::set_has_predict_class_id() {
-  _has_bits_[0] |= 0x00010000u;
-}
-inline void ModelConfig::clear_has_predict_class_id() {
-  _has_bits_[0] &= ~0x00010000u;
-}
-inline void ModelConfig::clear_predict_class_id() {
-  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
-    predict_class_id_->clear();
-  }
-  clear_has_predict_class_id();
-}
-inline const ::std::string& ModelConfig::predict_class_id() const {
-  return *predict_class_id_;
-}
-inline void ModelConfig::set_predict_class_id(const ::std::string& value) {
-  set_has_predict_class_id();
-  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
-    predict_class_id_ = new ::std::string;
-  }
-  predict_class_id_->assign(value);
-}
-inline void ModelConfig::set_predict_class_id(const char* value) {
-  set_has_predict_class_id();
-  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
-    predict_class_id_ = new ::std::string;
-  }
-  predict_class_id_->assign(value);
-}
-inline void ModelConfig::set_predict_class_id(const char* value, size_t size) {
-  set_has_predict_class_id();
-  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
-    predict_class_id_ = new ::std::string;
-  }
-  predict_class_id_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::mutable_predict_class_id() {
-  set_has_predict_class_id();
-  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
-    predict_class_id_ = new ::std::string;
-  }
-  return predict_class_id_;
-}
-inline ::std::string* ModelConfig::release_predict_class_id() {
-  clear_has_predict_class_id();
-  if (predict_class_id_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = predict_class_id_;
-    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void ModelConfig::set_allocated_predict_class_id(::std::string* predict_class_id) {
-  if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete predict_class_id_;
-  }
-  if (predict_class_id) {
-    set_has_predict_class_id();
-    predict_class_id_ = predict_class_id;
-  } else {
-    clear_has_predict_class_id();
-    predict_class_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
 }
 
 // -------------------------------------------------------------------
@@ -22055,6 +21166,72 @@ ProcessBatchesArgs::batch() const {
 inline ::google::protobuf::RepeatedPtrField< ::artm::Batch >*
 ProcessBatchesArgs::mutable_batch() {
   return &batch_;
+}
+
+// optional bool use_random_theta = 19 [default = false];
+inline bool ProcessBatchesArgs::has_use_random_theta() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_use_random_theta() {
+  _has_bits_[0] |= 0x00004000u;
+}
+inline void ProcessBatchesArgs::clear_has_use_random_theta() {
+  _has_bits_[0] &= ~0x00004000u;
+}
+inline void ProcessBatchesArgs::clear_use_random_theta() {
+  use_random_theta_ = false;
+  clear_has_use_random_theta();
+}
+inline bool ProcessBatchesArgs::use_random_theta() const {
+  return use_random_theta_;
+}
+inline void ProcessBatchesArgs::set_use_random_theta(bool value) {
+  set_has_use_random_theta();
+  use_random_theta_ = value;
+}
+
+// repeated string topic_name = 20;
+inline int ProcessBatchesArgs::topic_name_size() const {
+  return topic_name_.size();
+}
+inline void ProcessBatchesArgs::clear_topic_name() {
+  topic_name_.Clear();
+}
+inline const ::std::string& ProcessBatchesArgs::topic_name(int index) const {
+  return topic_name_.Get(index);
+}
+inline ::std::string* ProcessBatchesArgs::mutable_topic_name(int index) {
+  return topic_name_.Mutable(index);
+}
+inline void ProcessBatchesArgs::set_topic_name(int index, const ::std::string& value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void ProcessBatchesArgs::set_topic_name(int index, const char* value) {
+  topic_name_.Mutable(index)->assign(value);
+}
+inline void ProcessBatchesArgs::set_topic_name(int index, const char* value, size_t size) {
+  topic_name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ProcessBatchesArgs::add_topic_name() {
+  return topic_name_.Add();
+}
+inline void ProcessBatchesArgs::add_topic_name(const ::std::string& value) {
+  topic_name_.Add()->assign(value);
+}
+inline void ProcessBatchesArgs::add_topic_name(const char* value) {
+  topic_name_.Add()->assign(value);
+}
+inline void ProcessBatchesArgs::add_topic_name(const char* value, size_t size) {
+  topic_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+ProcessBatchesArgs::topic_name() const {
+  return topic_name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+ProcessBatchesArgs::mutable_topic_name() {
+  return &topic_name_;
 }
 
 // -------------------------------------------------------------------

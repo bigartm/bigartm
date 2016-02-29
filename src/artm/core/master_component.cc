@@ -462,20 +462,10 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
-  ModelConfig model_config;
-  model_config.set_name(model_name);
-  if (args.has_inner_iterations_count()) model_config.set_inner_iterations_count(args.inner_iterations_count());
-  model_config.mutable_regularizer_name()->CopyFrom(args.regularizer_name());
-  model_config.mutable_regularizer_tau()->CopyFrom(args.regularizer_tau());
-  model_config.mutable_class_id()->CopyFrom(args.class_id());
-  model_config.mutable_class_weight()->CopyFrom(args.class_weight());
-  if (args.has_reuse_theta()) model_config.set_reuse_theta(args.reuse_theta());
-  if (args.has_opt_for_avx()) model_config.set_opt_for_avx(args.opt_for_avx());
-  if (args.has_predict_class_id()) model_config.set_predict_class_id(args.predict_class_id());
 
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
   const PhiMatrix& p_wt = *phi_matrix;
-
+  const_cast<ProcessBatchesArgs*>(&args)->mutable_topic_name()->CopyFrom(p_wt.topic_name());
   if (args.has_nwt_target_name()) {
     if (args.nwt_target_name() == args.pwt_source_name())
       BOOST_THROW_EXCEPTION(InvalidOperation(
@@ -485,10 +475,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     nwt_target->Reshape(p_wt);
     instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
   }
-
-  model_config.set_topics_count(p_wt.topic_size());
-  model_config.mutable_topic_name()->CopyFrom(p_wt.topic_name());
-  FixAndValidateMessage(&model_config, /* throw_error =*/ true);
 
   if (async && args.theta_matrix_type() != ProcessBatchesArgs_ThetaMatrixType_None)
     BOOST_THROW_EXCEPTION(InvalidOperation(
@@ -536,7 +522,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
-    pi->mutable_model_config()->CopyFrom(model_config);
+    pi->mutable_args()->CopyFrom(args);
     pi->set_task_id(task_id);
 
     if (args.reuse_theta())

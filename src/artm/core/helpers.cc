@@ -299,7 +299,7 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
       if (topic_index == -1) {
         std::stringstream ss;
         ss << "GetThetaMatrixArgs.topic_name[" << i << "] == " << args_topic_name.Get(i)
-           << " does not exist in ModelConfig.topic_name";
+           << " does not exist in MasterModelConfig.topic_name";
         BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(ss.str()));
       }
 

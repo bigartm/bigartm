@@ -50,7 +50,7 @@ class TopicSelectionTheta : public RegularizerInterface {
   explicit TopicSelectionTheta(const TopicSelectionThetaConfig& config);
 
   virtual std::shared_ptr<RegularizeThetaAgent>
-  CreateRegularizeThetaAgent(const Batch& batch, const ModelConfig& model_config, double tau);
+  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau);
 
   virtual google::protobuf::RepeatedPtrField<std::string> topics_to_regularize();
 

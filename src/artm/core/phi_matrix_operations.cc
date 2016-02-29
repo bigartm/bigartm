@@ -82,7 +82,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
       if (topic_index == -1) {
         std::stringstream ss;
         ss << "GetTopicModelArgs.topic_name[" << i << "] == " << get_model_args.topic_name(i)
-           << " does not exist in ModelConfig.topic_name";
+           << " does not exist in matrix" << phi_matrix.model_name();
         BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(ss.str()));
       }
 

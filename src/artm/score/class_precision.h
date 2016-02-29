@@ -42,7 +42,7 @@ class ClassPrecision : public ScoreCalculatorInterface {
       const Item& item,
       const std::vector<artm::core::Token>& token_dict,
       const artm::core::PhiMatrix& p_wt,
-      const artm::ModelConfig& model_config,
+      const artm::ProcessBatchesArgs& args,
       const std::vector<float>& theta,
       Score* score);
 

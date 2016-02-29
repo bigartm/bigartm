@@ -17,10 +17,10 @@ void ClassPrecision::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
     const artm::core::PhiMatrix& p_wt,
-    const artm::ModelConfig& model_config,
+    const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
-  if (!model_config.has_predict_class_id())
+  if (!args.has_predict_class_id())
     return;
 
   int topic_size = p_wt.topic_size();
@@ -29,7 +29,7 @@ void ClassPrecision::AppendScore(
   std::string keyword;
   for (int token_index = 0; token_index < p_wt.token_size(); token_index++) {
     const ::artm::core::Token& token = p_wt.token(token_index);
-    if (token.class_id != model_config.predict_class_id())
+    if (token.class_id != args.predict_class_id())
       continue;
 
     float weight = 0.0;
@@ -46,7 +46,7 @@ void ClassPrecision::AppendScore(
   for (auto& field : item.field()) {
     for (auto& token_id : field.token_id()) {
       const artm::core::Token& token = token_dict[token_id];
-      if (token.class_id == model_config.predict_class_id() && token.keyword == keyword) {
+      if (token.class_id == args.predict_class_id() && token.keyword == keyword) {
         error = false;
         break;
       }
