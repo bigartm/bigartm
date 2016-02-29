@@ -69,7 +69,6 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
     instance_ = std::make_shared<Instance>(config);
   else
     instance_->Reconfigure(config);
-  master_model_config_.set(std::make_shared<MasterModelConfig>(config));
 
   if (reconfigure) {  // remove all regularizers
     auto regularizers_list = instance_->schema()->regularizers_list();
@@ -83,14 +82,12 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
 }
 
 MasterComponent::MasterComponent(const MasterModelConfig& config)
-    : master_model_config_(nullptr),
-      instance_(nullptr) {
+    : instance_(nullptr) {
   CreateOrReconfigureMasterComponent(config, /*reconfigure =*/ false);
 }
 
 MasterComponent::MasterComponent(const MasterComponent& rhs)
-    : master_model_config_(rhs.master_model_config_.get_copy()),
-      instance_(rhs.instance_->Duplicate()) {
+    : instance_(rhs.instance_->Duplicate()) {
 }
 
 MasterComponent::~MasterComponent() {}
@@ -100,7 +97,7 @@ std::shared_ptr<MasterComponent> MasterComponent::Duplicate() const {
 }
 
 std::shared_ptr<MasterModelConfig> MasterComponent::config() const {
-  return master_model_config_.get();
+  return instance_->config();
 }
 
 void MasterComponent::DisposeModel(const std::string& name) {
@@ -168,7 +165,7 @@ void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
 }
 
 void MasterComponent::Request(::artm::MasterModelConfig* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
@@ -201,7 +198,7 @@ void MasterComponent::DisposeBatch(const std::string& name) {
 }
 
 void MasterComponent::ExportModel(const ExportModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<ExportModelArgs*>(&args)->set_model_name(config->pwt_name());
 
@@ -254,7 +251,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 }
 
 void MasterComponent::ImportModel(const ImportModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<ImportModelArgs*>(&args)->set_model_name(config->pwt_name());
 
@@ -321,7 +318,7 @@ void MasterComponent::AttachModel(const AttachModelArgs& args, int address_lengt
 }
 
 void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr) {
     InitializeModelArgs* mutable_args = const_cast<InitializeModelArgs*>(&args);
     if (!args.has_model_name()) mutable_args->set_model_name(config->pwt_name());
@@ -384,7 +381,7 @@ void MasterComponent::ReconfigureMasterModel(const MasterModelConfig& config) {
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetTopicModelArgs*>(&args)->set_model_name(config->pwt_name());
 
@@ -401,7 +398,7 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
 }
 
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetScoreValueArgs*>(&args)->set_model_name(config->pwt_name());
 
@@ -508,7 +505,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   CacheManager* theta_cache_manager_ptr = nullptr;
   switch (args.theta_matrix_type()) {
     case ProcessBatchesArgs_ThetaMatrixType_Cache:
-      if (master_model_config_.get()->cache_theta())
+      if (instance_->config()->cache_theta())
         theta_cache_manager_ptr = instance_->cache_manager();
       break;
     case ProcessBatchesArgs_ThetaMatrixType_Dense:
@@ -688,7 +685,7 @@ void MasterComponent::NormalizeModel(const NormalizeModelArgs& normalize_model_a
 }
 
 void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config != nullptr)
     if (!args.has_name()) const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
 
@@ -714,7 +711,7 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args,
 // ToDo(sashafrey): what should be the default cache policy for TransformMasterModel?
 //                  Currently it saves the result in the cache. The result is then empty...
 void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::ThetaMatrix* result) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
@@ -1064,7 +1061,7 @@ class ArtmExecutor {
 };
 
 void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
@@ -1080,7 +1077,7 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
 }
 
 void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
-  std::shared_ptr<MasterModelConfig> config = master_model_config_.get();
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
   if (config == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));

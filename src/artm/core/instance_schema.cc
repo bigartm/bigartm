@@ -12,24 +12,18 @@ namespace artm {
 namespace core {
 
 InstanceSchema::InstanceSchema()
-    : config_(),  regularizers_(), models_config_(), score_calculators_() {}
+    : regularizers_(), models_config_(), score_calculators_() {}
 
 InstanceSchema::InstanceSchema(const InstanceSchema& schema)
-    : config_(schema.config_),
-      regularizers_(schema.regularizers_),
+    : regularizers_(schema.regularizers_),
       models_config_(schema.models_config_),
       score_calculators_(schema.score_calculators_) {}
-
-
-InstanceSchema::InstanceSchema(const MasterModelConfig& config)
-    : config_(config), regularizers_(), models_config_(), score_calculators_() {}
 
 std::shared_ptr<InstanceSchema> InstanceSchema::Duplicate() const {
   return std::shared_ptr<InstanceSchema>(new InstanceSchema(*this));
 }
 
 void InstanceSchema::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
-  master_info->mutable_config()->CopyFrom(config_);
   for (auto& regularizer : regularizers_) {
     MasterComponentInfo::RegularizerInfo* info = master_info->add_regularizer();
     info->set_name(regularizer.first);
@@ -41,14 +35,6 @@ void InstanceSchema::RequestMasterComponentInfo(MasterComponentInfo* master_info
     info->set_name(score.first);
     info->set_type(typeid(*score.second).name());
   }
-}
-
-void InstanceSchema::set_config(const MasterModelConfig& config) {
-  config_.CopyFrom(config);
-}
-
-const MasterModelConfig& InstanceSchema::config() const {
-  return config_;
 }
 
 void InstanceSchema::set_model_config(

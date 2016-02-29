@@ -8,6 +8,7 @@
 #include "artm/core/instance.h"
 
 #include "boost/bind.hpp"
+#include "boost/filesystem.hpp"
 
 #include "artm/core/common.h"
 #include "artm/core/helpers.h"
@@ -70,7 +71,8 @@ namespace core {
 
 Instance::Instance(const MasterModelConfig& config)
     : is_configured_(false),
-      schema_(std::make_shared<InstanceSchema>(config)),
+      master_model_config_(nullptr),  // copied in Reconfigure (see below)
+      schema_(std::make_shared<InstanceSchema>()),
       dictionaries_(),
       batches_(),
       models_(),
@@ -84,6 +86,7 @@ Instance::Instance(const MasterModelConfig& config)
 
 Instance::Instance(const Instance& rhs)
     : is_configured_(false),
+      master_model_config_(nullptr),  // copied in Reconfigure (see below)
       schema_(rhs.schema()->Duplicate()),
       dictionaries_(),
       batches_(),
@@ -93,7 +96,7 @@ Instance::Instance(const Instance& rhs)
       batch_manager_(),
       score_manager_(),
       processors_() {
-  Reconfigure(schema_.get()->config());
+  Reconfigure(*rhs.config());
 
   std::vector<std::string> dict_name_impl = rhs.dictionaries_.keys();
   for (auto& key : dict_name_impl) {
@@ -126,6 +129,9 @@ std::shared_ptr<Instance> Instance::Duplicate() const {
 }
 
 void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) const {
+  auto config = master_model_config_.get();
+  if (config != nullptr)
+    master_info->mutable_config()->CopyFrom(*config);
   schema_.get()->RequestMasterComponentInfo(master_info);
   cache_manager_->RequestMasterComponentInfo(master_info);
 
@@ -364,8 +370,8 @@ void Instance::DisposeRegularizer(const std::string& name) {
 }
 
 void Instance::Reconfigure(const MasterModelConfig& master_config) {
+  master_model_config_.set(std::make_shared<MasterModelConfig>(master_config));
   auto new_schema = schema_.get_copy();
-  new_schema->set_config(master_config);
 
   int target_processors_count = master_config.threads();
   if (!master_config.has_threads() || master_config.threads() <= 0) {
@@ -408,6 +414,14 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
 
     while (static_cast<int>(processors_.size()) < target_processors_count) {
       processors_.push_back(std::shared_ptr<Processor>(new Processor(this)));
+    }
+  }
+
+  if (master_config.has_disk_cache_path()) {
+    boost::filesystem::path dir(master_config.disk_cache_path());
+    if (!boost::filesystem::is_directory(dir)) {
+      if (!boost::filesystem::create_directory(dir))
+        BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create folder '" + master_config.disk_cache_path() + "'"));
     }
   }
 }

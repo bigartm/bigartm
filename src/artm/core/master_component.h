@@ -107,7 +107,6 @@ class MasterComponent : boost::noncopyable {
 
   void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure);
 
-  ThreadSafeHolder<MasterModelConfig> master_model_config_;
   std::shared_ptr<Instance> instance_;
 };
 

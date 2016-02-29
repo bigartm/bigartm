@@ -46,6 +46,7 @@ class Instance {
   std::shared_ptr<Instance> Duplicate() const;
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
+  std::shared_ptr<MasterModelConfig> config() const { return master_model_config_.get(); }
   std::shared_ptr<InstanceSchema> schema() const { return schema_.get(); }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
   ThreadSafeDictionaryCollection* dictionaries() { return &dictionaries_; }
@@ -79,6 +80,8 @@ class Instance {
   // Pay special attantion to the location of processor_,
   // because it has an associated thread.
   // Such threads must be terminated prior to all the objects that the thread might potentially access.
+
+  ThreadSafeHolder<MasterModelConfig> master_model_config_;
 
   ThreadSafeHolder<InstanceSchema> schema_;
   ThreadSafeDictionaryCollection dictionaries_;

@@ -787,7 +787,7 @@ void Processor::ThreadFunction() {
       }
 
       std::shared_ptr<InstanceSchema> schema = instance_->schema();
-      const MasterModelConfig& master_config = schema->config();
+      std::shared_ptr<MasterModelConfig> master_config = instance_->config();
 
       const ModelName& model_name = part->model_name();
       const ModelConfig& model_config = part->model_config();
@@ -898,9 +898,9 @@ void Processor::ThreadFunction() {
           }
         }
 
-        if (master_config.has_disk_cache_path()) {
-          SaveCache(new_ptdw_cache_entry_ptr, master_config);
-          SaveCache(new_cache_entry_ptr, master_config);
+        if (master_config->has_disk_cache_path()) {
+          SaveCache(new_ptdw_cache_entry_ptr, *master_config);
+          SaveCache(new_cache_entry_ptr, *master_config);
         }
 
         if (new_cache_entry_ptr != nullptr)
@@ -909,8 +909,8 @@ void Processor::ThreadFunction() {
         if (new_ptdw_cache_entry_ptr != nullptr)
           part->ptdw_cache_manager()->UpdateCacheEntry(new_ptdw_cache_entry_ptr);
 
-        for (int score_index = 0; score_index < master_config.score_config_size(); ++score_index) {
-          const ScoreName& score_name = master_config.score_config(score_index).name();
+        for (int score_index = 0; score_index < master_config->score_config_size(); ++score_index) {
+          const ScoreName& score_name = master_config->score_config(score_index).name();
 
           auto score_calc = schema->score_calculator(score_name);
           if (score_calc == nullptr) {
