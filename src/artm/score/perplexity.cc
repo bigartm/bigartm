@@ -18,8 +18,7 @@ namespace score {
 Perplexity::Perplexity(const PerplexityScoreConfig& config)
     : config_(config) {
   std::stringstream ss;
-  ss << ": stream_name=" << config.stream_name();
-  ss << ", model_type=" << config.model_type();
+  ss << ": model_type=" << config.model_type();
   if (config.has_dictionary_name())
     ss << ", dictionary_name=" << config.dictionary_name();
   LOG(INFO) << "Perplexity score calculator created" << ss.str();
@@ -168,10 +167,6 @@ void Perplexity::AppendScore(
   perplexity_score.set_theta_sparsity_zero_topics(zero_topics_count);
   perplexity_score.set_theta_sparsity_total_topics(topics_to_score_size);
   AppendScore(perplexity_score, score);
-}
-
-std::string Perplexity::stream_name() const {
-  return config_.stream_name();
 }
 
 std::shared_ptr<Score> Perplexity::CreateScore() {

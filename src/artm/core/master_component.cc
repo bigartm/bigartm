@@ -487,7 +487,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   ModelConfig model_config;
   model_config.set_name(model_name);
   if (args.has_inner_iterations_count()) model_config.set_inner_iterations_count(args.inner_iterations_count());
-  if (args.has_stream_name()) model_config.set_stream_name(args.stream_name());
   model_config.mutable_regularizer_name()->CopyFrom(args.regularizer_name());
   model_config.mutable_regularizer_tau()->CopyFrom(args.regularizer_tau());
   model_config.mutable_class_id()->CopyFrom(args.class_id());

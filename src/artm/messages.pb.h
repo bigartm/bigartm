@@ -42,7 +42,6 @@ class StringArray;
 class Item;
 class Field;
 class Batch;
-class Stream;
 class MasterComponentConfig;
 class RegularizerSettings;
 class ModelConfig;
@@ -125,25 +124,6 @@ class ClearThetaCacheArgs;
 class ClearScoreCacheArgs;
 class ClearScoreArrayCacheArgs;
 
-enum Stream_Type {
-  Stream_Type_Global = 0,
-  Stream_Type_ItemIdModulus = 1
-};
-bool Stream_Type_IsValid(int value);
-const Stream_Type Stream_Type_Type_MIN = Stream_Type_Global;
-const Stream_Type Stream_Type_Type_MAX = Stream_Type_ItemIdModulus;
-const int Stream_Type_Type_ARRAYSIZE = Stream_Type_Type_MAX + 1;
-
-const ::google::protobuf::EnumDescriptor* Stream_Type_descriptor();
-inline const ::std::string& Stream_Type_Name(Stream_Type value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    Stream_Type_descriptor(), value);
-}
-inline bool Stream_Type_Parse(
-    const ::std::string& name, Stream_Type* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<Stream_Type>(
-    Stream_Type_descriptor(), name, value);
-}
 enum RegularizerConfig_Type {
   RegularizerConfig_Type_SmoothSparseTheta = 0,
   RegularizerConfig_Type_SmoothSparsePhi = 1,
@@ -1450,151 +1430,6 @@ class Batch : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class Stream : public ::google::protobuf::Message {
- public:
-  Stream();
-  virtual ~Stream();
-
-  Stream(const Stream& from);
-
-  inline Stream& operator=(const Stream& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const Stream& default_instance();
-
-  void Swap(Stream* other);
-
-  // implements Message ----------------------------------------------
-
-  Stream* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const Stream& from);
-  void MergeFrom(const Stream& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  typedef Stream_Type Type;
-  static const Type Global = Stream_Type_Global;
-  static const Type ItemIdModulus = Stream_Type_ItemIdModulus;
-  static inline bool Type_IsValid(int value) {
-    return Stream_Type_IsValid(value);
-  }
-  static const Type Type_MIN =
-    Stream_Type_Type_MIN;
-  static const Type Type_MAX =
-    Stream_Type_Type_MAX;
-  static const int Type_ARRAYSIZE =
-    Stream_Type_Type_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  Type_descriptor() {
-    return Stream_Type_descriptor();
-  }
-  static inline const ::std::string& Type_Name(Type value) {
-    return Stream_Type_Name(value);
-  }
-  static inline bool Type_Parse(const ::std::string& name,
-      Type* value) {
-    return Stream_Type_Parse(name, value);
-  }
-
-  // accessors -------------------------------------------------------
-
-  // optional .artm.Stream.Type type = 1 [default = Global];
-  inline bool has_type() const;
-  inline void clear_type();
-  static const int kTypeFieldNumber = 1;
-  inline ::artm::Stream_Type type() const;
-  inline void set_type(::artm::Stream_Type value);
-
-  // optional string name = 2 [default = "@global"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 2;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // optional int32 modulus = 3;
-  inline bool has_modulus() const;
-  inline void clear_modulus();
-  static const int kModulusFieldNumber = 3;
-  inline ::google::protobuf::int32 modulus() const;
-  inline void set_modulus(::google::protobuf::int32 value);
-
-  // repeated int32 residuals = 4;
-  inline int residuals_size() const;
-  inline void clear_residuals();
-  static const int kResidualsFieldNumber = 4;
-  inline ::google::protobuf::int32 residuals(int index) const;
-  inline void set_residuals(int index, ::google::protobuf::int32 value);
-  inline void add_residuals(::google::protobuf::int32 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      residuals() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_residuals();
-
-  // @@protoc_insertion_point(class_scope:artm.Stream)
- private:
-  inline void set_has_type();
-  inline void clear_has_type();
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_modulus();
-  inline void clear_has_modulus();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  int type_;
-  ::google::protobuf::int32 modulus_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > residuals_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
-  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
-
-  void InitAsDefaultInstance();
-  static Stream* default_instance_;
-};
-// -------------------------------------------------------------------
-
 class MasterComponentConfig : public ::google::protobuf::Message {
  public:
   MasterComponentConfig();
@@ -1660,18 +1495,6 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   inline ::std::string* mutable_disk_path();
   inline ::std::string* release_disk_path();
   inline void set_allocated_disk_path(::std::string* disk_path);
-
-  // repeated .artm.Stream stream = 3;
-  inline int stream_size() const;
-  inline void clear_stream();
-  static const int kStreamFieldNumber = 3;
-  inline const ::artm::Stream& stream(int index) const;
-  inline ::artm::Stream* mutable_stream(int index);
-  inline ::artm::Stream* add_stream();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::Stream >&
-      stream() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::Stream >*
-      mutable_stream();
 
   // optional bool compact_batches = 4 [default = true];
   inline bool has_compact_batches() const;
@@ -1752,7 +1575,6 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* disk_path_;
-  ::google::protobuf::RepeatedPtrField< ::artm::Stream > stream_;
   ::google::protobuf::int32 processors_count_;
   bool compact_batches_;
   bool cache_theta_;
@@ -1762,7 +1584,7 @@ class MasterComponentConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 processor_queue_max_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -2005,18 +1827,6 @@ class ModelConfig : public ::google::protobuf::Message {
   inline ::std::string* release_field_name();
   inline void set_allocated_field_name(::std::string* field_name);
 
-  // optional string stream_name = 7 [default = "@global"];
-  inline bool has_stream_name() const;
-  inline void clear_stream_name();
-  static const int kStreamNameFieldNumber = 7;
-  inline const ::std::string& stream_name() const;
-  inline void set_stream_name(const ::std::string& value);
-  inline void set_stream_name(const char* value);
-  inline void set_stream_name(const char* value, size_t size);
-  inline ::std::string* mutable_stream_name();
-  inline ::std::string* release_stream_name();
-  inline void set_allocated_stream_name(::std::string* stream_name);
-
   // repeated string score_name = 8;
   inline int score_name_size() const;
   inline void clear_score_name();
@@ -2160,8 +1970,6 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_inner_iterations_count();
   inline void set_has_field_name();
   inline void clear_has_field_name();
-  inline void set_has_stream_name();
-  inline void clear_has_stream_name();
   inline void set_has_reuse_theta();
   inline void clear_has_reuse_theta();
   inline void set_has_use_sparse_bow();
@@ -2184,8 +1992,6 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 inner_iterations_count_;
   ::std::string* field_name_;
   static ::std::string* _default_field_name_;
-  ::std::string* stream_name_;
-  static ::std::string* _default_stream_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> score_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
@@ -2201,7 +2007,7 @@ class ModelConfig : public ::google::protobuf::Message {
   ::std::string* predict_class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(18 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -4022,18 +3828,6 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_field_name();
   inline void set_allocated_field_name(::std::string* field_name);
 
-  // optional string stream_name = 2 [default = "@global"];
-  inline bool has_stream_name() const;
-  inline void clear_stream_name();
-  static const int kStreamNameFieldNumber = 2;
-  inline const ::std::string& stream_name() const;
-  inline void set_stream_name(const ::std::string& value);
-  inline void set_stream_name(const char* value);
-  inline void set_stream_name(const char* value, size_t size);
-  inline ::std::string* mutable_stream_name();
-  inline ::std::string* release_stream_name();
-  inline void set_allocated_stream_name(::std::string* stream_name);
-
   // optional .artm.PerplexityScoreConfig.Type model_type = 3 [default = UnigramDocumentModel];
   inline bool has_model_type() const;
   inline void clear_model_type();
@@ -4096,8 +3890,6 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
  private:
   inline void set_has_field_name();
   inline void clear_has_field_name();
-  inline void set_has_stream_name();
-  inline void clear_has_stream_name();
   inline void set_has_model_type();
   inline void clear_has_model_type();
   inline void set_has_dictionary_name();
@@ -4109,8 +3901,6 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
 
   ::std::string* field_name_;
   static ::std::string* _default_field_name_;
-  ::std::string* stream_name_;
-  static ::std::string* _default_stream_name_;
   ::std::string* dictionary_name_;
   int model_type_;
   float theta_sparsity_eps_;
@@ -4118,7 +3908,7 @@ class PerplexityScoreConfig : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -4337,18 +4127,6 @@ class SparsityThetaScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_field_name();
   inline void set_allocated_field_name(::std::string* field_name);
 
-  // optional string stream_name = 2 [default = "@global"];
-  inline bool has_stream_name() const;
-  inline void clear_stream_name();
-  static const int kStreamNameFieldNumber = 2;
-  inline const ::std::string& stream_name() const;
-  inline void set_stream_name(const ::std::string& value);
-  inline void set_stream_name(const char* value);
-  inline void set_stream_name(const char* value, size_t size);
-  inline ::std::string* mutable_stream_name();
-  inline ::std::string* release_stream_name();
-  inline void set_allocated_stream_name(::std::string* stream_name);
-
   // optional float eps = 3 [default = 1e-037];
   inline bool has_eps() const;
   inline void clear_eps();
@@ -4376,8 +4154,6 @@ class SparsityThetaScoreConfig : public ::google::protobuf::Message {
  private:
   inline void set_has_field_name();
   inline void clear_has_field_name();
-  inline void set_has_stream_name();
-  inline void clear_has_stream_name();
   inline void set_has_eps();
   inline void clear_has_eps();
 
@@ -4385,13 +4161,11 @@ class SparsityThetaScoreConfig : public ::google::protobuf::Message {
 
   ::std::string* field_name_;
   static ::std::string* _default_field_name_;
-  ::std::string* stream_name_;
-  static ::std::string* _default_stream_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> topic_name_;
   float eps_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -4787,34 +4561,18 @@ class ItemsProcessedScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_field_name();
   inline void set_allocated_field_name(::std::string* field_name);
 
-  // optional string stream_name = 2 [default = "@global"];
-  inline bool has_stream_name() const;
-  inline void clear_stream_name();
-  static const int kStreamNameFieldNumber = 2;
-  inline const ::std::string& stream_name() const;
-  inline void set_stream_name(const ::std::string& value);
-  inline void set_stream_name(const char* value);
-  inline void set_stream_name(const char* value, size_t size);
-  inline ::std::string* mutable_stream_name();
-  inline ::std::string* release_stream_name();
-  inline void set_allocated_stream_name(::std::string* stream_name);
-
   // @@protoc_insertion_point(class_scope:artm.ItemsProcessedScoreConfig)
  private:
   inline void set_has_field_name();
   inline void clear_has_field_name();
-  inline void set_has_stream_name();
-  inline void clear_has_stream_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* field_name_;
   static ::std::string* _default_field_name_;
-  ::std::string* stream_name_;
-  static ::std::string* _default_stream_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -5277,18 +5035,6 @@ class ThetaSnippetScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_field_name();
   inline void set_allocated_field_name(::std::string* field_name);
 
-  // optional string stream_name = 2 [default = "@global"];
-  inline bool has_stream_name() const;
-  inline void clear_stream_name();
-  static const int kStreamNameFieldNumber = 2;
-  inline const ::std::string& stream_name() const;
-  inline void set_stream_name(const ::std::string& value);
-  inline void set_stream_name(const char* value);
-  inline void set_stream_name(const char* value, size_t size);
-  inline ::std::string* mutable_stream_name();
-  inline ::std::string* release_stream_name();
-  inline void set_allocated_stream_name(::std::string* stream_name);
-
   // repeated int32 item_id = 3 [packed = true];
   inline int item_id_size() const;
   inline void clear_item_id();
@@ -5312,8 +5058,6 @@ class ThetaSnippetScoreConfig : public ::google::protobuf::Message {
  private:
   inline void set_has_field_name();
   inline void clear_has_field_name();
-  inline void set_has_stream_name();
-  inline void clear_has_stream_name();
   inline void set_has_item_count();
   inline void clear_has_item_count();
 
@@ -5321,14 +5065,12 @@ class ThetaSnippetScoreConfig : public ::google::protobuf::Message {
 
   ::std::string* field_name_;
   static ::std::string* _default_field_name_;
-  ::std::string* stream_name_;
-  static ::std::string* _default_stream_name_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   mutable int _item_id_cached_byte_size_;
   ::google::protobuf::int32 item_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -6056,30 +5798,14 @@ class ClassPrecisionScoreConfig : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional string stream_name = 1 [default = "@global"];
-  inline bool has_stream_name() const;
-  inline void clear_stream_name();
-  static const int kStreamNameFieldNumber = 1;
-  inline const ::std::string& stream_name() const;
-  inline void set_stream_name(const ::std::string& value);
-  inline void set_stream_name(const char* value);
-  inline void set_stream_name(const char* value, size_t size);
-  inline ::std::string* mutable_stream_name();
-  inline ::std::string* release_stream_name();
-  inline void set_allocated_stream_name(::std::string* stream_name);
-
   // @@protoc_insertion_point(class_scope:artm.ClassPrecisionScoreConfig)
  private:
-  inline void set_has_stream_name();
-  inline void clear_has_stream_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* stream_name_;
-  static ::std::string* _default_stream_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[1];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -9068,18 +8794,6 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 inner_iterations_count() const;
   inline void set_inner_iterations_count(::google::protobuf::int32 value);
 
-  // optional string stream_name = 5 [default = "@global"];
-  inline bool has_stream_name() const;
-  inline void clear_stream_name();
-  static const int kStreamNameFieldNumber = 5;
-  inline const ::std::string& stream_name() const;
-  inline void set_stream_name(const ::std::string& value);
-  inline void set_stream_name(const char* value);
-  inline void set_stream_name(const char* value, size_t size);
-  inline ::std::string* mutable_stream_name();
-  inline ::std::string* release_stream_name();
-  inline void set_allocated_stream_name(::std::string* stream_name);
-
   // repeated string regularizer_name = 6;
   inline int regularizer_name_size() const;
   inline void clear_regularizer_name();
@@ -9208,8 +8922,6 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_pwt_source_name();
   inline void set_has_inner_iterations_count();
   inline void clear_has_inner_iterations_count();
-  inline void set_has_stream_name();
-  inline void clear_has_stream_name();
   inline void set_has_reuse_theta();
   inline void clear_has_reuse_theta();
   inline void set_has_opt_for_avx();
@@ -9226,8 +8938,6 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   ::std::string* nwt_target_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> batch_filename_;
   ::std::string* pwt_source_name_;
-  ::std::string* stream_name_;
-  static ::std::string* _default_stream_name_;
   ::google::protobuf::RepeatedPtrField< ::std::string> regularizer_name_;
   ::google::protobuf::RepeatedField< double > regularizer_tau_;
   ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
@@ -9242,7 +8952,7 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   int theta_matrix_type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(16 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -13305,150 +13015,6 @@ inline void Batch::set_allocated_id(::std::string* id) {
 
 // -------------------------------------------------------------------
 
-// Stream
-
-// optional .artm.Stream.Type type = 1 [default = Global];
-inline bool Stream::has_type() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void Stream::set_has_type() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Stream::clear_has_type() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void Stream::clear_type() {
-  type_ = 0;
-  clear_has_type();
-}
-inline ::artm::Stream_Type Stream::type() const {
-  return static_cast< ::artm::Stream_Type >(type_);
-}
-inline void Stream::set_type(::artm::Stream_Type value) {
-  assert(::artm::Stream_Type_IsValid(value));
-  set_has_type();
-  type_ = value;
-}
-
-// optional string name = 2 [default = "@global"];
-inline bool Stream::has_name() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void Stream::set_has_name() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Stream::clear_has_name() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void Stream::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& Stream::name() const {
-  return *name_;
-}
-inline void Stream::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void Stream::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void Stream::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* Stream::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* Stream::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void Stream::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
-
-// optional int32 modulus = 3;
-inline bool Stream::has_modulus() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void Stream::set_has_modulus() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void Stream::clear_has_modulus() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void Stream::clear_modulus() {
-  modulus_ = 0;
-  clear_has_modulus();
-}
-inline ::google::protobuf::int32 Stream::modulus() const {
-  return modulus_;
-}
-inline void Stream::set_modulus(::google::protobuf::int32 value) {
-  set_has_modulus();
-  modulus_ = value;
-}
-
-// repeated int32 residuals = 4;
-inline int Stream::residuals_size() const {
-  return residuals_.size();
-}
-inline void Stream::clear_residuals() {
-  residuals_.Clear();
-}
-inline ::google::protobuf::int32 Stream::residuals(int index) const {
-  return residuals_.Get(index);
-}
-inline void Stream::set_residuals(int index, ::google::protobuf::int32 value) {
-  residuals_.Set(index, value);
-}
-inline void Stream::add_residuals(::google::protobuf::int32 value) {
-  residuals_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-Stream::residuals() const {
-  return residuals_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-Stream::mutable_residuals() {
-  return &residuals_;
-}
-
-// -------------------------------------------------------------------
-
 // MasterComponentConfig
 
 // optional string disk_path = 2;
@@ -13521,40 +13087,15 @@ inline void MasterComponentConfig::set_allocated_disk_path(::std::string* disk_p
   }
 }
 
-// repeated .artm.Stream stream = 3;
-inline int MasterComponentConfig::stream_size() const {
-  return stream_.size();
-}
-inline void MasterComponentConfig::clear_stream() {
-  stream_.Clear();
-}
-inline const ::artm::Stream& MasterComponentConfig::stream(int index) const {
-  return stream_.Get(index);
-}
-inline ::artm::Stream* MasterComponentConfig::mutable_stream(int index) {
-  return stream_.Mutable(index);
-}
-inline ::artm::Stream* MasterComponentConfig::add_stream() {
-  return stream_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::artm::Stream >&
-MasterComponentConfig::stream() const {
-  return stream_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::Stream >*
-MasterComponentConfig::mutable_stream() {
-  return &stream_;
-}
-
 // optional bool compact_batches = 4 [default = true];
 inline bool MasterComponentConfig::has_compact_batches() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void MasterComponentConfig::set_has_compact_batches() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void MasterComponentConfig::clear_has_compact_batches() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void MasterComponentConfig::clear_compact_batches() {
   compact_batches_ = true;
@@ -13570,13 +13111,13 @@ inline void MasterComponentConfig::set_compact_batches(bool value) {
 
 // optional bool cache_theta = 5 [default = false];
 inline bool MasterComponentConfig::has_cache_theta() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void MasterComponentConfig::set_has_cache_theta() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void MasterComponentConfig::clear_has_cache_theta() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void MasterComponentConfig::clear_cache_theta() {
   cache_theta_ = false;
@@ -13592,13 +13133,13 @@ inline void MasterComponentConfig::set_cache_theta(bool value) {
 
 // optional int32 processors_count = 6;
 inline bool MasterComponentConfig::has_processors_count() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void MasterComponentConfig::set_has_processors_count() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void MasterComponentConfig::clear_has_processors_count() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void MasterComponentConfig::clear_processors_count() {
   processors_count_ = 0;
@@ -13614,13 +13155,13 @@ inline void MasterComponentConfig::set_processors_count(::google::protobuf::int3
 
 // optional int32 processor_queue_max_size = 7 [default = 10];
 inline bool MasterComponentConfig::has_processor_queue_max_size() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void MasterComponentConfig::set_has_processor_queue_max_size() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void MasterComponentConfig::clear_has_processor_queue_max_size() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void MasterComponentConfig::clear_processor_queue_max_size() {
   processor_queue_max_size_ = 10;
@@ -13661,13 +13202,13 @@ MasterComponentConfig::mutable_score_config() {
 
 // optional bool online_batch_processing = 13 [default = false];
 inline bool MasterComponentConfig::has_online_batch_processing() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void MasterComponentConfig::set_has_online_batch_processing() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void MasterComponentConfig::clear_has_online_batch_processing() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void MasterComponentConfig::clear_online_batch_processing() {
   online_batch_processing_ = false;
@@ -13683,13 +13224,13 @@ inline void MasterComponentConfig::set_online_batch_processing(bool value) {
 
 // optional string disk_cache_path = 15;
 inline bool MasterComponentConfig::has_disk_cache_path() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void MasterComponentConfig::set_has_disk_cache_path() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void MasterComponentConfig::clear_has_disk_cache_path() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void MasterComponentConfig::clear_disk_cache_path() {
   if (disk_cache_path_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -14145,76 +13686,6 @@ inline void ModelConfig::set_allocated_field_name(::std::string* field_name) {
   }
 }
 
-// optional string stream_name = 7 [default = "@global"];
-inline bool ModelConfig::has_stream_name() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void ModelConfig::set_has_stream_name() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void ModelConfig::clear_has_stream_name() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void ModelConfig::clear_stream_name() {
-  if (stream_name_ != _default_stream_name_) {
-    stream_name_->assign(*_default_stream_name_);
-  }
-  clear_has_stream_name();
-}
-inline const ::std::string& ModelConfig::stream_name() const {
-  return *stream_name_;
-}
-inline void ModelConfig::set_stream_name(const ::std::string& value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ModelConfig::set_stream_name(const char* value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ModelConfig::set_stream_name(const char* value, size_t size) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ModelConfig::mutable_stream_name() {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string(*_default_stream_name_);
-  }
-  return stream_name_;
-}
-inline ::std::string* ModelConfig::release_stream_name() {
-  clear_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = stream_name_;
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-    return temp;
-  }
-}
-inline void ModelConfig::set_allocated_stream_name(::std::string* stream_name) {
-  if (stream_name_ != _default_stream_name_) {
-    delete stream_name_;
-  }
-  if (stream_name) {
-    set_has_stream_name();
-    stream_name_ = stream_name;
-  } else {
-    clear_has_stream_name();
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-  }
-}
-
 // repeated string score_name = 8;
 inline int ModelConfig::score_name_size() const {
   return score_name_.size();
@@ -14261,13 +13732,13 @@ ModelConfig::mutable_score_name() {
 
 // optional bool reuse_theta = 9 [default = false];
 inline bool ModelConfig::has_reuse_theta() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void ModelConfig::set_has_reuse_theta() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void ModelConfig::clear_has_reuse_theta() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void ModelConfig::clear_reuse_theta() {
   reuse_theta_ = false;
@@ -14421,13 +13892,13 @@ ModelConfig::mutable_class_weight() {
 
 // optional bool use_sparse_bow = 14 [default = true];
 inline bool ModelConfig::has_use_sparse_bow() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void ModelConfig::set_has_use_sparse_bow() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void ModelConfig::clear_has_use_sparse_bow() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void ModelConfig::clear_use_sparse_bow() {
   use_sparse_bow_ = true;
@@ -14443,13 +13914,13 @@ inline void ModelConfig::set_use_sparse_bow(bool value) {
 
 // optional bool use_random_theta = 15 [default = false];
 inline bool ModelConfig::has_use_random_theta() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void ModelConfig::set_has_use_random_theta() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void ModelConfig::clear_has_use_random_theta() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void ModelConfig::clear_use_random_theta() {
   use_random_theta_ = false;
@@ -14465,13 +13936,13 @@ inline void ModelConfig::set_use_random_theta(bool value) {
 
 // optional bool use_new_tokens = 16 [default = true];
 inline bool ModelConfig::has_use_new_tokens() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void ModelConfig::set_has_use_new_tokens() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void ModelConfig::clear_has_use_new_tokens() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void ModelConfig::clear_use_new_tokens() {
   use_new_tokens_ = true;
@@ -14487,13 +13958,13 @@ inline void ModelConfig::set_use_new_tokens(bool value) {
 
 // optional bool opt_for_avx = 17 [default = true];
 inline bool ModelConfig::has_opt_for_avx() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void ModelConfig::set_has_opt_for_avx() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void ModelConfig::clear_has_opt_for_avx() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void ModelConfig::clear_opt_for_avx() {
   opt_for_avx_ = true;
@@ -14534,13 +14005,13 @@ ModelConfig::mutable_regularizer_settings() {
 
 // optional string predict_class_id = 20;
 inline bool ModelConfig::has_predict_class_id() const {
-  return (_has_bits_[0] & 0x00040000u) != 0;
+  return (_has_bits_[0] & 0x00020000u) != 0;
 }
 inline void ModelConfig::set_has_predict_class_id() {
-  _has_bits_[0] |= 0x00040000u;
+  _has_bits_[0] |= 0x00020000u;
 }
 inline void ModelConfig::clear_has_predict_class_id() {
-  _has_bits_[0] &= ~0x00040000u;
+  _has_bits_[0] &= ~0x00020000u;
 }
 inline void ModelConfig::clear_predict_class_id() {
   if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -16384,85 +15855,15 @@ inline void PerplexityScoreConfig::set_allocated_field_name(::std::string* field
   }
 }
 
-// optional string stream_name = 2 [default = "@global"];
-inline bool PerplexityScoreConfig::has_stream_name() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void PerplexityScoreConfig::set_has_stream_name() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void PerplexityScoreConfig::clear_has_stream_name() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void PerplexityScoreConfig::clear_stream_name() {
-  if (stream_name_ != _default_stream_name_) {
-    stream_name_->assign(*_default_stream_name_);
-  }
-  clear_has_stream_name();
-}
-inline const ::std::string& PerplexityScoreConfig::stream_name() const {
-  return *stream_name_;
-}
-inline void PerplexityScoreConfig::set_stream_name(const ::std::string& value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void PerplexityScoreConfig::set_stream_name(const char* value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void PerplexityScoreConfig::set_stream_name(const char* value, size_t size) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* PerplexityScoreConfig::mutable_stream_name() {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string(*_default_stream_name_);
-  }
-  return stream_name_;
-}
-inline ::std::string* PerplexityScoreConfig::release_stream_name() {
-  clear_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = stream_name_;
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-    return temp;
-  }
-}
-inline void PerplexityScoreConfig::set_allocated_stream_name(::std::string* stream_name) {
-  if (stream_name_ != _default_stream_name_) {
-    delete stream_name_;
-  }
-  if (stream_name) {
-    set_has_stream_name();
-    stream_name_ = stream_name;
-  } else {
-    clear_has_stream_name();
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-  }
-}
-
 // optional .artm.PerplexityScoreConfig.Type model_type = 3 [default = UnigramDocumentModel];
 inline bool PerplexityScoreConfig::has_model_type() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void PerplexityScoreConfig::set_has_model_type() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void PerplexityScoreConfig::clear_has_model_type() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void PerplexityScoreConfig::clear_model_type() {
   model_type_ = 0;
@@ -16479,13 +15880,13 @@ inline void PerplexityScoreConfig::set_model_type(::artm::PerplexityScoreConfig_
 
 // optional string dictionary_name = 4;
 inline bool PerplexityScoreConfig::has_dictionary_name() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void PerplexityScoreConfig::set_has_dictionary_name() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void PerplexityScoreConfig::clear_has_dictionary_name() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void PerplexityScoreConfig::clear_dictionary_name() {
   if (dictionary_name_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -16549,13 +15950,13 @@ inline void PerplexityScoreConfig::set_allocated_dictionary_name(::std::string* 
 
 // optional float theta_sparsity_eps = 5 [default = 1e-037];
 inline bool PerplexityScoreConfig::has_theta_sparsity_eps() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void PerplexityScoreConfig::set_has_theta_sparsity_eps() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void PerplexityScoreConfig::clear_has_theta_sparsity_eps() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void PerplexityScoreConfig::clear_theta_sparsity_eps() {
   theta_sparsity_eps_ = 1e-037f;
@@ -16889,85 +16290,15 @@ inline void SparsityThetaScoreConfig::set_allocated_field_name(::std::string* fi
   }
 }
 
-// optional string stream_name = 2 [default = "@global"];
-inline bool SparsityThetaScoreConfig::has_stream_name() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void SparsityThetaScoreConfig::set_has_stream_name() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void SparsityThetaScoreConfig::clear_has_stream_name() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void SparsityThetaScoreConfig::clear_stream_name() {
-  if (stream_name_ != _default_stream_name_) {
-    stream_name_->assign(*_default_stream_name_);
-  }
-  clear_has_stream_name();
-}
-inline const ::std::string& SparsityThetaScoreConfig::stream_name() const {
-  return *stream_name_;
-}
-inline void SparsityThetaScoreConfig::set_stream_name(const ::std::string& value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void SparsityThetaScoreConfig::set_stream_name(const char* value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void SparsityThetaScoreConfig::set_stream_name(const char* value, size_t size) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* SparsityThetaScoreConfig::mutable_stream_name() {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string(*_default_stream_name_);
-  }
-  return stream_name_;
-}
-inline ::std::string* SparsityThetaScoreConfig::release_stream_name() {
-  clear_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = stream_name_;
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-    return temp;
-  }
-}
-inline void SparsityThetaScoreConfig::set_allocated_stream_name(::std::string* stream_name) {
-  if (stream_name_ != _default_stream_name_) {
-    delete stream_name_;
-  }
-  if (stream_name) {
-    set_has_stream_name();
-    stream_name_ = stream_name;
-  } else {
-    clear_has_stream_name();
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-  }
-}
-
 // optional float eps = 3 [default = 1e-037];
 inline bool SparsityThetaScoreConfig::has_eps() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void SparsityThetaScoreConfig::set_has_eps() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void SparsityThetaScoreConfig::clear_has_eps() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void SparsityThetaScoreConfig::clear_eps() {
   eps_ = 1e-037f;
@@ -17376,76 +16707,6 @@ inline void ItemsProcessedScoreConfig::set_allocated_field_name(::std::string* f
   } else {
     clear_has_field_name();
     field_name_ = const_cast< ::std::string*>(_default_field_name_);
-  }
-}
-
-// optional string stream_name = 2 [default = "@global"];
-inline bool ItemsProcessedScoreConfig::has_stream_name() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ItemsProcessedScoreConfig::set_has_stream_name() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ItemsProcessedScoreConfig::clear_has_stream_name() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ItemsProcessedScoreConfig::clear_stream_name() {
-  if (stream_name_ != _default_stream_name_) {
-    stream_name_->assign(*_default_stream_name_);
-  }
-  clear_has_stream_name();
-}
-inline const ::std::string& ItemsProcessedScoreConfig::stream_name() const {
-  return *stream_name_;
-}
-inline void ItemsProcessedScoreConfig::set_stream_name(const ::std::string& value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ItemsProcessedScoreConfig::set_stream_name(const char* value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ItemsProcessedScoreConfig::set_stream_name(const char* value, size_t size) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ItemsProcessedScoreConfig::mutable_stream_name() {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string(*_default_stream_name_);
-  }
-  return stream_name_;
-}
-inline ::std::string* ItemsProcessedScoreConfig::release_stream_name() {
-  clear_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = stream_name_;
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-    return temp;
-  }
-}
-inline void ItemsProcessedScoreConfig::set_allocated_stream_name(::std::string* stream_name) {
-  if (stream_name_ != _default_stream_name_) {
-    delete stream_name_;
-  }
-  if (stream_name) {
-    set_has_stream_name();
-    stream_name_ = stream_name;
-  } else {
-    clear_has_stream_name();
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
   }
 }
 
@@ -18005,76 +17266,6 @@ inline void ThetaSnippetScoreConfig::set_allocated_field_name(::std::string* fie
   }
 }
 
-// optional string stream_name = 2 [default = "@global"];
-inline bool ThetaSnippetScoreConfig::has_stream_name() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ThetaSnippetScoreConfig::set_has_stream_name() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ThetaSnippetScoreConfig::clear_has_stream_name() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ThetaSnippetScoreConfig::clear_stream_name() {
-  if (stream_name_ != _default_stream_name_) {
-    stream_name_->assign(*_default_stream_name_);
-  }
-  clear_has_stream_name();
-}
-inline const ::std::string& ThetaSnippetScoreConfig::stream_name() const {
-  return *stream_name_;
-}
-inline void ThetaSnippetScoreConfig::set_stream_name(const ::std::string& value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ThetaSnippetScoreConfig::set_stream_name(const char* value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ThetaSnippetScoreConfig::set_stream_name(const char* value, size_t size) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ThetaSnippetScoreConfig::mutable_stream_name() {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string(*_default_stream_name_);
-  }
-  return stream_name_;
-}
-inline ::std::string* ThetaSnippetScoreConfig::release_stream_name() {
-  clear_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = stream_name_;
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-    return temp;
-  }
-}
-inline void ThetaSnippetScoreConfig::set_allocated_stream_name(::std::string* stream_name) {
-  if (stream_name_ != _default_stream_name_) {
-    delete stream_name_;
-  }
-  if (stream_name) {
-    set_has_stream_name();
-    stream_name_ = stream_name;
-  } else {
-    clear_has_stream_name();
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-  }
-}
-
 // repeated int32 item_id = 3 [packed = true];
 inline int ThetaSnippetScoreConfig::item_id_size() const {
   return item_id_.size();
@@ -18102,13 +17293,13 @@ ThetaSnippetScoreConfig::mutable_item_id() {
 
 // optional int32 item_count = 4 [default = 10];
 inline bool ThetaSnippetScoreConfig::has_item_count() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ThetaSnippetScoreConfig::set_has_item_count() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ThetaSnippetScoreConfig::clear_has_item_count() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ThetaSnippetScoreConfig::clear_item_count() {
   item_count_ = 10;
@@ -18978,76 +18169,6 @@ TopicMassPhiScore::mutable_topic_mass() {
 // -------------------------------------------------------------------
 
 // ClassPrecisionScoreConfig
-
-// optional string stream_name = 1 [default = "@global"];
-inline bool ClassPrecisionScoreConfig::has_stream_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ClassPrecisionScoreConfig::set_has_stream_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ClassPrecisionScoreConfig::clear_has_stream_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ClassPrecisionScoreConfig::clear_stream_name() {
-  if (stream_name_ != _default_stream_name_) {
-    stream_name_->assign(*_default_stream_name_);
-  }
-  clear_has_stream_name();
-}
-inline const ::std::string& ClassPrecisionScoreConfig::stream_name() const {
-  return *stream_name_;
-}
-inline void ClassPrecisionScoreConfig::set_stream_name(const ::std::string& value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ClassPrecisionScoreConfig::set_stream_name(const char* value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ClassPrecisionScoreConfig::set_stream_name(const char* value, size_t size) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ClassPrecisionScoreConfig::mutable_stream_name() {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string(*_default_stream_name_);
-  }
-  return stream_name_;
-}
-inline ::std::string* ClassPrecisionScoreConfig::release_stream_name() {
-  clear_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = stream_name_;
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-    return temp;
-  }
-}
-inline void ClassPrecisionScoreConfig::set_allocated_stream_name(::std::string* stream_name) {
-  if (stream_name_ != _default_stream_name_) {
-    delete stream_name_;
-  }
-  if (stream_name) {
-    set_has_stream_name();
-    stream_name_ = stream_name;
-  } else {
-    clear_has_stream_name();
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-  }
-}
 
 // -------------------------------------------------------------------
 
@@ -23108,76 +22229,6 @@ inline void ProcessBatchesArgs::set_inner_iterations_count(::google::protobuf::i
   inner_iterations_count_ = value;
 }
 
-// optional string stream_name = 5 [default = "@global"];
-inline bool ProcessBatchesArgs::has_stream_name() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void ProcessBatchesArgs::set_has_stream_name() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void ProcessBatchesArgs::clear_has_stream_name() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void ProcessBatchesArgs::clear_stream_name() {
-  if (stream_name_ != _default_stream_name_) {
-    stream_name_->assign(*_default_stream_name_);
-  }
-  clear_has_stream_name();
-}
-inline const ::std::string& ProcessBatchesArgs::stream_name() const {
-  return *stream_name_;
-}
-inline void ProcessBatchesArgs::set_stream_name(const ::std::string& value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ProcessBatchesArgs::set_stream_name(const char* value) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(value);
-}
-inline void ProcessBatchesArgs::set_stream_name(const char* value, size_t size) {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string;
-  }
-  stream_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ProcessBatchesArgs::mutable_stream_name() {
-  set_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    stream_name_ = new ::std::string(*_default_stream_name_);
-  }
-  return stream_name_;
-}
-inline ::std::string* ProcessBatchesArgs::release_stream_name() {
-  clear_has_stream_name();
-  if (stream_name_ == _default_stream_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = stream_name_;
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-    return temp;
-  }
-}
-inline void ProcessBatchesArgs::set_allocated_stream_name(::std::string* stream_name) {
-  if (stream_name_ != _default_stream_name_) {
-    delete stream_name_;
-  }
-  if (stream_name) {
-    set_has_stream_name();
-    stream_name_ = stream_name;
-  } else {
-    clear_has_stream_name();
-    stream_name_ = const_cast< ::std::string*>(_default_stream_name_);
-  }
-}
-
 // repeated string regularizer_name = 6;
 inline int ProcessBatchesArgs::regularizer_name_size() const {
   return regularizer_name_.size();
@@ -23318,13 +22369,13 @@ ProcessBatchesArgs::mutable_class_weight() {
 
 // optional bool reuse_theta = 10 [default = false];
 inline bool ProcessBatchesArgs::has_reuse_theta() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_reuse_theta() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void ProcessBatchesArgs::clear_has_reuse_theta() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void ProcessBatchesArgs::clear_reuse_theta() {
   reuse_theta_ = false;
@@ -23340,13 +22391,13 @@ inline void ProcessBatchesArgs::set_reuse_theta(bool value) {
 
 // optional bool opt_for_avx = 11 [default = true];
 inline bool ProcessBatchesArgs::has_opt_for_avx() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_opt_for_avx() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void ProcessBatchesArgs::clear_has_opt_for_avx() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void ProcessBatchesArgs::clear_opt_for_avx() {
   opt_for_avx_ = true;
@@ -23362,13 +22413,13 @@ inline void ProcessBatchesArgs::set_opt_for_avx(bool value) {
 
 // optional bool use_sparse_bow = 12 [default = true];
 inline bool ProcessBatchesArgs::has_use_sparse_bow() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_use_sparse_bow() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void ProcessBatchesArgs::clear_has_use_sparse_bow() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void ProcessBatchesArgs::clear_use_sparse_bow() {
   use_sparse_bow_ = true;
@@ -23384,13 +22435,13 @@ inline void ProcessBatchesArgs::set_use_sparse_bow(bool value) {
 
 // optional .artm.ProcessBatchesArgs.ThetaMatrixType theta_matrix_type = 14 [default = Cache];
 inline bool ProcessBatchesArgs::has_theta_matrix_type() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_theta_matrix_type() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void ProcessBatchesArgs::clear_has_theta_matrix_type() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void ProcessBatchesArgs::clear_theta_matrix_type() {
   theta_matrix_type_ = 3;
@@ -23432,13 +22483,13 @@ ProcessBatchesArgs::mutable_batch_weight() {
 
 // optional string predict_class_id = 17;
 inline bool ProcessBatchesArgs::has_predict_class_id() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void ProcessBatchesArgs::set_has_predict_class_id() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void ProcessBatchesArgs::clear_has_predict_class_id() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void ProcessBatchesArgs::clear_predict_class_id() {
   if (predict_class_id_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -26979,10 +26030,6 @@ inline void ConfigureLoggingArgs::set_stop_logging_if_full_disk(bool value) {
 namespace google {
 namespace protobuf {
 
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::artm::Stream_Type>() {
-  return ::artm::Stream_Type_descriptor();
-}
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::artm::RegularizerConfig_Type>() {
   return ::artm::RegularizerConfig_Type_descriptor();

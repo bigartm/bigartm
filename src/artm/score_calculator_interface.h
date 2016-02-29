@@ -29,7 +29,6 @@ class ScoreCalculatorInterface {
 
   // Cumulative calculation (such as perplexity, or sparsity of Theta matrix)
   virtual bool is_cumulative() const { return false; }
-  virtual std::string stream_name() const { return std::string(); }
 
   virtual std::shared_ptr<Score> CreateScore() { return nullptr; }
 

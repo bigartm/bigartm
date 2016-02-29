@@ -27,10 +27,6 @@ void ItemsProcessed::AppendScore(const Batch& batch, Score* score) {
   AppendScore(items_processed_score, score);
 }
 
-std::string ItemsProcessed::stream_name() const {
-  return config_.stream_name();
-}
-
 std::shared_ptr<Score> ItemsProcessed::CreateScore() {
   return std::make_shared<ItemsProcessedScore>();
 }

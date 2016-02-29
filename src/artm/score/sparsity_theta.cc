@@ -44,10 +44,6 @@ void SparsityTheta::AppendScore(
   AppendScore(sparsity_theta_score, score);
 }
 
-std::string SparsityTheta::stream_name() const {
-  return config_.stream_name();
-}
-
 std::shared_ptr<Score> SparsityTheta::CreateScore() {
   return std::make_shared<SparsityThetaScore>();
 }

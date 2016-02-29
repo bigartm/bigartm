@@ -98,7 +98,6 @@ class NormalizeThetaAgent : public RegularizeThetaAgent {
   }
 };
 
-
 static void CreateThetaCacheEntry(DataLoaderCacheEntry* new_cache_entry_ptr,
                                   DenseMatrix<float>* theta_matrix,
                                   const Batch& batch,
@@ -214,38 +213,6 @@ Processor::~Processor() {
   is_stopping = true;
   if (thread_.joinable()) {
     thread_.join();
-  }
-}
-
-static void PopulateDataStreams(const MasterComponentConfig& config, const Batch& batch,
-                                ::artm::core::StreamMasks* pi) {
-  // loop through all streams
-  for (int stream_index = 0; stream_index < config.stream_size(); ++stream_index) {
-    const Stream& stream = config.stream(stream_index);
-    pi->add_stream_name(stream.name());
-
-    Mask* mask = pi->add_stream_mask();
-    for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-      // verify if item is part of the stream
-      bool value = false;
-      switch (stream.type()) {
-        case Stream_Type_Global: {
-          value = true;
-          break;  // Stream_Type_Global
-        }
-
-        case Stream_Type_ItemIdModulus: {
-          int id_mod = batch.item(item_index).id() % stream.modulus();
-          value = repeated_field_contains(stream.residuals(), id_mod);
-          break;  // Stream_Type_ItemIdModulus
-        }
-
-        default:
-          BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("stream.type", stream.type()));
-      }
-
-      mask->add_value(value);
-    }
   }
 }
 
@@ -411,7 +378,7 @@ InitializeDenseNdw(const Batch& batch) {
 }
 
 static void
-InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
+InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight,
                              const CsrMatrix<float>& sparse_ndw,
                              const ::artm::core::PhiMatrix& p_wt,
                              const RegularizeThetaAgentCollection& theta_agents,
@@ -517,8 +484,6 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
   CsrMatrix<float> sparse_nwd(sparse_ndw);
   sparse_nwd.Transpose(blas);
 
-  // n_wt should be count for items, that have corresponding true-value in stream mask
-  // from batch. Or for all items, if such mask doesn't exist
   std::vector<float> p_wt_local(topics_count, 0.0f);
   std::vector<float> n_wt_local(topics_count, 0.0f);
   for (int w = 0; w < tokens_count; ++w) {
@@ -528,7 +493,6 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
 
     for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
       int d = sparse_nwd.col_ind()[i];
-      if ((mask != nullptr) && (mask->value(d) == false)) continue;
       float p_wd_val = blas->sdot(topics_count, &p_wt_local[0], 1, &(*theta_matrix)(0, d), 1);  // NOLINT
       if (p_wd_val == 0) continue;
       blas->saxpy(topics_count, sparse_nwd.val()[i] / p_wd_val,
@@ -547,7 +511,7 @@ InferThetaAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch
 }
 
 static void
-InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
+InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch, float batch_weight,
                             const CsrMatrix<float>& sparse_ndw,
                             const ::artm::core::PhiMatrix& p_wt,
                             const RegularizeThetaAgentCollection& theta_agents,
@@ -622,8 +586,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 
         theta_agents.Apply(d, inner_iter, topics_count, theta_ptr);
       } else {  // update n_wt matrix (on the last iteration)
-        const bool in_mask = (mask == nullptr || mask->value(d));
-        if (nwt_writer != nullptr && in_mask) {
+        if (nwt_writer != nullptr) {
           std::vector<float> values(topics_count, 0.0f);
           for (int i = begin_index; i < end_index; ++i) {
             const float n_dw = batch_weight * sparse_ndw.val()[i];
@@ -644,7 +607,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 }
 
 static void
-InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch, float batch_weight, const Mask* mask,
+InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch, float batch_weight,
                             const InstanceSchema& schema, const DenseMatrix<float>& dense_ndw,
                             const ::artm::core::PhiMatrix& p_wt, DenseMatrix<float>* theta_matrix,
                             NwtWriteAdapter* nwt_writer, util::Blas* blas,
@@ -699,36 +662,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
 
   auto n_wt = std::make_shared<DenseMatrix<float>>(phi_matrix.no_rows(), phi_matrix.no_columns());
   n_wt->InitializeZeros();
-  if (mask != nullptr) {
-    // delete columns according to bool mask
-    int true_value_count = 0;
-    for (int i = 0; i < mask->value_size(); ++i) {
-      if (mask->value(i) == true) true_value_count++;
-    }
-
-    DenseMatrix<float> masked_Z(Z.no_rows(), true_value_count);
-    DenseMatrix<float> masked_Theta(theta_matrix->no_rows(), true_value_count);
-    int real_index = 0;
-    for (int i = 0; i < mask->value_size(); ++i) {
-      if (mask->value(i) == true) {
-        for (int j = 0; j < Z.no_rows(); ++j) {
-          masked_Z(j, real_index) = Z(j, i);
-        }
-        for (int j = 0; j < theta_matrix->no_rows(); ++j) {
-          masked_Theta(j, real_index) = (*theta_matrix)(j, i);
-        }
-        real_index++;
-      }
-    }
-
-    DenseMatrix<float> prod_Z_Theta(masked_Z.no_rows(), masked_Theta.no_rows());
-    blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
-      masked_Z.no_rows(), masked_Theta.no_rows(), masked_Z.no_columns(), 1,
-      masked_Z.get_data(), masked_Z.no_columns(), masked_Theta.get_data(),
-      masked_Theta.no_columns(), 0, prod_Z_Theta.get_data(), masked_Theta.no_rows());
-
-    AssignDenseMatrixByProduct(prod_Z_Theta, phi_matrix, n_wt.get());
-  } else {
+  {
     DenseMatrix<float> prod_Z_Theta(Z.no_rows(), theta_matrix->no_rows());
     blas->sgemm(util::Blas::RowMajor, util::Blas::NoTrans, util::Blas::Trans,
       Z.no_rows(), theta_matrix->no_rows(), Z.no_columns(), 1, Z.get_data(),
@@ -755,8 +689,7 @@ InferThetaAndUpdateNwtDense(const ModelConfig& model_config, const Batch& batch,
 
 static std::shared_ptr<Score>
 CalcScores(ScoreCalculatorInterface* score_calc, const Batch& batch,
-           const PhiMatrix& p_wt, const ModelConfig& model_config, const DenseMatrix<float>& theta_matrix,
-           const StreamMasks* stream_masks) {
+           const PhiMatrix& p_wt, const ModelConfig& model_config, const DenseMatrix<float>& theta_matrix) {
   if (!score_calc->is_cumulative())
     return nullptr;
 
@@ -768,12 +701,6 @@ CalcScores(ScoreCalculatorInterface* score_calc, const Batch& batch,
   std::shared_ptr<Score> score = score_calc->CreateScore();
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     const Item& item = batch.item(item_index);
-
-    if (stream_masks != nullptr) {
-      int index_of_stream = repeated_field_index_of(stream_masks->stream_name(), score_calc->stream_name());
-      if ((index_of_stream != -1) && !stream_masks->stream_mask(index_of_stream).value(item_index))
-        continue;
-    }
 
     std::vector<float> theta_vec;
     assert(theta_matrix.no_rows() == p_wt.topic_size());
@@ -886,9 +813,6 @@ void Processor::ThreadFunction() {
       std::shared_ptr<InstanceSchema> schema = instance_->schema();
       const MasterComponentConfig& master_config = schema->config();
 
-      StreamMasks stream_masks;
-      PopulateDataStreams(master_config, batch, &stream_masks);
-
       const ModelName& model_name = part->model_name();
       const ModelConfig& model_config = part->model_config();
       {
@@ -965,10 +889,6 @@ void Processor::ThreadFunction() {
         if (nwt_target != nullptr)
           nwt_writer = std::make_shared<PhiMatrixWriter>(const_cast<PhiMatrix*>(nwt_target.get()));
 
-        // Find and save to the variable the index of model stream in the part->stream_name() list.
-        int model_stream_index = repeated_field_index_of(stream_masks.stream_name(), model_config.stream_name());
-        const Mask* stream_mask = (model_stream_index != -1) ? &stream_masks.stream_mask(model_stream_index) : nullptr;
-
         std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr(nullptr);
         if (part->has_cache_manager())
           new_cache_entry_ptr.reset(new DataLoaderCacheEntry());
@@ -994,19 +914,19 @@ void Processor::ThreadFunction() {
 
           if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
             CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
-            InferThetaAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw,
+            InferThetaAndUpdateNwtSparse(model_config, batch, part->batch_weight(), *sparse_ndw,
                                          p_wt, theta_agents, theta_matrix.get(), nwt_writer.get(),
                                          blas, new_cache_entry_ptr.get());
           } else {
             CuckooWatch cuckoo2("InferPtdwAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
-            InferPtdwAndUpdateNwtSparse(model_config, batch, part->batch_weight(), stream_mask, *sparse_ndw,
+            InferPtdwAndUpdateNwtSparse(model_config, batch, part->batch_weight(), *sparse_ndw,
                                         p_wt, theta_agents, ptdw_agents, theta_matrix.get(), nwt_writer.get(),
                                         blas, new_cache_entry_ptr.get(),
                                         new_ptdw_cache_entry_ptr.get());
           }
         } else {
           CuckooWatch cuckoo2("InferThetaAndUpdateNwtDense", &cuckoo, kTimeLoggingThreshold);
-          InferThetaAndUpdateNwtDense(model_config, batch, part->batch_weight(), stream_mask, *schema, *dense_ndw,
+          InferThetaAndUpdateNwtDense(model_config, batch, part->batch_weight(), *schema, *dense_ndw,
                                       p_wt, theta_matrix.get(), nwt_writer.get(), blas, new_cache_entry_ptr.get());
         }
 
@@ -1037,7 +957,7 @@ void Processor::ThreadFunction() {
           CuckooWatch cuckoo2("CalculateScore(" + score_name + ")", &cuckoo, kTimeLoggingThreshold);
 
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, model_config,
-                                        *theta_matrix, &stream_masks);
+                                        *theta_matrix);
           if (score_value != nullptr)
             part->score_manager()->Append(schema, score_name, score_value->SerializeAsString());
         }

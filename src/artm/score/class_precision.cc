@@ -59,10 +59,6 @@ void ClassPrecision::AppendScore(
   AppendScore(class_prediction_score, score);
 }
 
-std::string ClassPrecision::stream_name() const {
-  return config_.stream_name();
-}
-
 std::shared_ptr<Score> ClassPrecision::CreateScore() {
   return std::make_shared<ClassPrecisionScore>();
 }

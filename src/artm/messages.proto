@@ -62,23 +62,9 @@ message Batch {
   optional string id = 5;
 }
 
-// Represents a configuration of a stream.
-message Stream {
-  enum Type {
-    Global = 0;
-    ItemIdModulus = 1;
-  }
-
-  optional Type type = 1 [default = Global];
-  optional string name = 2 [default = "@global"];
-  optional int32 modulus = 3;
-  repeated int32 residuals = 4;
-}
-
 // Represents a configuration of a master component
 message MasterComponentConfig {
   optional string disk_path = 2;
-  repeated Stream stream = 3;
   optional bool compact_batches = 4 [default = true];
   optional bool cache_theta = 5 [default = false];
   optional int32 processors_count = 6;
@@ -103,7 +89,6 @@ message ModelConfig {
   optional bool enabled = 4 [default = true];
   optional int32 inner_iterations_count = 5 [default = 10];
   optional string field_name = 6 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 7 [default = "@global"];
   repeated string score_name = 8;  // obsolete in BigARTM v0.6.3
   optional bool reuse_theta = 9 [default = false];
   repeated string regularizer_name = 10;
@@ -272,7 +257,6 @@ message PerplexityScoreConfig {
     UnigramCollectionModel = 1;
   }
   optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
   optional Type model_type = 3 [default = UnigramDocumentModel];
   optional string dictionary_name = 4;
   optional float theta_sparsity_eps = 5 [default = 1e-37];
@@ -294,7 +278,6 @@ message PerplexityScore {
 // Represents a configuration of a theta sparsity score
 message SparsityThetaScoreConfig {
   optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
   optional float eps = 3 [default = 1e-37];
   repeated string topic_name = 4;
 }
@@ -323,7 +306,6 @@ message SparsityPhiScore {
 // Represents a configuration of an items processed score
 message ItemsProcessedScoreConfig {
   optional string field_name = 1 [default = "@body"];  // obsolete in BigARTM v0.5.8
-  optional string stream_name = 2 [default = "@global"];
 }
 
 // Represents a result of calculation of an items processed score
@@ -354,7 +336,6 @@ message TopTokensScore {
 // Represents a configuration of a theta snippet score
 message ThetaSnippetScoreConfig {
   optional string field_name = 1 [default = "@body"];
-  optional string stream_name = 2 [default = "@global"];
   repeated int32 item_id = 3 [packed = true];  // obsolete in BigARTM v0.5.8
   optional int32 item_count = 4 [default = 10];
 }
@@ -406,7 +387,6 @@ message TopicMassPhiScore {
 
 // Represents a configuration of a class precision score
 message ClassPrecisionScoreConfig {
-  optional string stream_name = 1 [default = "@global"];
 }
 
 // Represents a result of calculation of a class precision score
@@ -631,7 +611,6 @@ message ProcessBatchesArgs {
   repeated string batch_filename = 2;
   optional string pwt_source_name = 3;
   optional int32 inner_iterations_count = 4 [default = 10];
-  optional string stream_name = 5 [default = "@global"];
   repeated string regularizer_name = 6;
   repeated double regularizer_tau = 7;
   repeated string class_id = 8;

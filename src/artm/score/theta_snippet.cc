@@ -29,10 +29,6 @@ void ThetaSnippet::AppendScore(
   AppendScore(theta_snippet_score, score);
 }
 
-std::string ThetaSnippet::stream_name() const {
-  return config_.stream_name();
-}
-
 std::shared_ptr<Score> ThetaSnippet::CreateScore() {
   return std::make_shared<ThetaSnippetScore>();
 }

@@ -697,7 +697,6 @@ inline std::string DescribeMessage(const ::artm::ModelConfig& message) {
   ss << ", enabled=" << (message.enabled() ? "yes" : "no");
   ss << ", inner_iterations_count=" << message.inner_iterations_count();
   ss << ", field_name=" << message.field_name();
-  ss << ", stream_name=" << message.stream_name();
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   for (int i = 0; i < message.regularizer_settings_size(); ++i)
     DescribeMessage(message.regularizer_settings(i));
@@ -714,7 +713,6 @@ inline std::string DescribeMessage(const ::artm::MasterComponentConfig& message)
   std::stringstream ss;
   ss << "MasterComponentConfig";
   ss << ": disk_path=" << message.disk_path();
-  ss << ", stream_size=" << message.stream_size();
   ss << ", compact_batches=" << (message.compact_batches() ? "yes" : "no");
   ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
   ss << ", processors_count=" << message.processors_count();
@@ -790,7 +788,6 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", pwt_source_name=" << message.pwt_source_name();
   ss << ", inner_iterations_count=" << message.inner_iterations_count();
-  ss << ", stream_name=" << message.stream_name();
   for (int i = 0; i < message.regularizer_name_size(); ++i)
     ss << ", regularizer=(name:" << message.regularizer_name(i) << ", tau:" << message.regularizer_tau(i) << ")";
   for (int i = 0; i < message.class_id_size(); ++i)
