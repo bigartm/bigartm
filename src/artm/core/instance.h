@@ -25,6 +25,8 @@ namespace core {
 
 class BatchManager;
 class CacheManager;
+class ScoreManager;
+class ScoreTracker;
 class Processor;
 class Merger;
 class InstanceSchema;
@@ -53,6 +55,7 @@ class Instance {
   BatchManager* batch_manager();
   CacheManager* cache_manager();
   ScoreManager* score_manager();
+  ScoreTracker* score_tracker();
 
   int processor_size() { return processors_.size(); }
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
@@ -92,6 +95,7 @@ class Instance {
 
   // Depends on [none]
   std::shared_ptr<ScoreManager> score_manager_;
+  std::shared_ptr<ScoreTracker> score_tracker_;
 
   // Depends on schema_, processor_queue_, and merger_
   std::vector<std::shared_ptr<Processor> > processors_;

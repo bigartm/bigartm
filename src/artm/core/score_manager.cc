@@ -72,5 +72,47 @@ bool ScoreManager::RequestScore(std::shared_ptr<InstanceSchema> schema,
   return true;
 }
 
+void ScoreManager::RequestAllScores(std::shared_ptr<InstanceSchema> schema,
+                                    ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data) const {
+  if (score_data == nullptr)
+    return;
+
+  std::vector<ScoreName> score_names;
+  {
+    boost::lock_guard<boost::mutex> guard(lock_);
+    for (auto& elem : score_map_)
+      score_names.push_back(elem.first);
+  }
+
+  for (auto& score_name : score_names) {
+    ScoreData requested_score_data;
+    if (RequestScore(schema, score_name, &requested_score_data))
+      score_data->Add()->Swap(&requested_score_data);
+  }
+}
+
+void ScoreTracker::Clear() {
+  boost::lock_guard<boost::mutex> guard(lock_);
+  array_.clear();
+}
+
+ScoreData* ScoreTracker::Add() {
+  auto retval = std::make_shared<ScoreData>();
+
+  boost::lock_guard<boost::mutex> guard(lock_);
+  array_.push_back(retval);
+
+  return retval.get();
+}
+
+void ScoreTracker::RequestScoreArray(const GetScoreArrayArgs& args, ScoreDataArray* score_data_array) {
+  boost::lock_guard<boost::mutex> guard(lock_);
+  for (auto& elem : array_) {
+    if (elem->name() == args.score_name()) {
+      score_data_array->add_score()->CopyFrom(*elem);
+    }
+  }
+}
+
 }  // namespace core
 }  // namespace artm

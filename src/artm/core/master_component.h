@@ -28,12 +28,13 @@ class ArtmExecutor;
 class Instance;
 class TopicModel;
 class BatchManager;
+class ScoreManager;
 
 class MasterComponent : boost::noncopyable {
  public:
   ~MasterComponent();
 
-  std::shared_ptr<MasterComponentConfig> config() const;
+  std::shared_ptr<MasterModelConfig> config() const;
 
   explicit MasterComponent(const MasterComponentConfig& config);
   explicit MasterComponent(const MasterModelConfig& config);
@@ -48,6 +49,7 @@ class MasterComponent : boost::noncopyable {
   void Request(const TransformMasterModelArgs& args, ThetaMatrix* result);
   void Request(const TransformMasterModelArgs& args, ThetaMatrix* result, std::string* external);
   void Request(const GetScoreValueArgs& args, ScoreData* result);
+  void Request(const GetScoreArrayArgs& args, ScoreDataArray* result);
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result);
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external);
   void Request(const GetDictionaryArgs& args, DictionaryData* result);
@@ -69,6 +71,7 @@ class MasterComponent : boost::noncopyable {
   void GatherDictionary(const GatherDictionaryArgs& args);
   void ClearThetaCache(const ClearThetaCacheArgs& args);
   void ClearScoreCache(const ClearScoreCacheArgs& args);
+  void ClearScoreArrayCache(const ClearScoreArrayCacheArgs& args);
 
   // DISPOSE functionality
   void DisposeModel(const std::string& name);
@@ -101,7 +104,7 @@ class MasterComponent : boost::noncopyable {
 
   void RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
                                  BatchManager* batch_manager, bool async,
-                                 ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data,
+                                 ScoreManager* score_manager,
                                  ::artm::ThetaMatrix* theta_matrix);
 
   void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure);
