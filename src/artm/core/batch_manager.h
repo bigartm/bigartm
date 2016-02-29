@@ -21,7 +21,6 @@ namespace artm {
 namespace core {
 
 template<typename T> class ThreadSafeHolder;
-class InstanceSchema;
 
 class BatchManager : boost::noncopyable, public Notifiable {
  public:

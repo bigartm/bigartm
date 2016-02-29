@@ -71,9 +71,7 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
     instance_->Reconfigure(config);
 
   if (reconfigure) {  // remove all regularizers
-    auto regularizers_list = instance_->schema()->regularizers_list();
-    for (const auto& name : *regularizers_list)
-      instance_->DisposeRegularizer(name);
+    instance_->regularizers()->clear();
   }
 
   // create (or re-create the regularizers)
@@ -402,12 +400,10 @@ void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) 
   if (config != nullptr)
     if (!args.has_model_name()) const_cast<GetScoreValueArgs*>(&args)->set_model_name(config->pwt_name());
 
-  std::shared_ptr<InstanceSchema> schema = instance_->schema();
-
-  if (instance_->score_manager()->RequestScore(schema, args.score_name(), result))
+  if (instance_->score_manager()->RequestScore(args.score_name(), result))
     return;  // success
 
-  auto score_calculator = schema->score_calculator(args.score_name());
+  auto score_calculator = instance_->scores_calculators()->get(args.score_name());
   if (score_calculator == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     std::string("Attempt to request non-existing score: " + args.score_name())));
@@ -428,14 +424,13 @@ void MasterComponent::Request(const GetScoreArrayArgs& args, ScoreDataArray* res
 }
 
 void MasterComponent::Request(const GetMasterComponentInfoArgs& /*args*/, MasterComponentInfo* result) {
-  std::shared_ptr<InstanceSchema> instance_schema = instance_->schema();
   this->instance_->RequestMasterComponentInfo(result);
 }
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result) {
   BatchManager batch_manager;
   RequestProcessBatchesImpl(args, &batch_manager, /* async =*/ false, nullptr, result->mutable_theta_matrix());
-  instance_->score_manager()->RequestAllScores(instance_->schema(), result->mutable_score_data());
+  instance_->score_manager()->RequestAllScores(result->mutable_score_data());
 }
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external) {
@@ -458,8 +453,6 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
                                                 BatchManager* batch_manager, bool async,
                                                 ScoreManager* score_manager,
                                                 ::artm::ThetaMatrix* theta_matrix) {
-  std::shared_ptr<InstanceSchema> schema = instance_->schema();
-
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
 
@@ -638,7 +631,7 @@ void MasterComponent::RegularizeModel(const RegularizeModelArgs& regularize_mode
 
   auto rwt_target(std::make_shared<DensePhiMatrix>(rwt_target_name, nwt_phi_matrix->topic_name()));
   rwt_target->Reshape(*nwt_phi_matrix);
-  PhiMatrixOperations::InvokePhiRegularizers(instance_->schema(), regularize_model_args.regularizer_settings(),
+  PhiMatrixOperations::InvokePhiRegularizers(instance_.get(), regularize_model_args.regularizer_settings(),
                                              p_wt, n_wt, rwt_target.get());
   instance_->SetPhiMatrix(rwt_target_name, rwt_target);
   VLOG(0) << "MasterComponent: complete regularizing model " << regularize_model_args.pwt_source_name();

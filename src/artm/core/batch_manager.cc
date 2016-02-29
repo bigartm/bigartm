@@ -2,7 +2,6 @@
 
 #include "artm/core/batch_manager.h"
 
-#include "artm/core/instance_schema.h"
 #include "artm/core/thread_safe_holder.h"
 
 namespace artm {

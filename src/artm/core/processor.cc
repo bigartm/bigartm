@@ -24,7 +24,6 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/call_on_destruction.h"
 #include "artm/core/helpers.h"
-#include "artm/core/instance_schema.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/score_manager.h"
 #include "artm/core/phi_matrix.h"
@@ -288,12 +287,12 @@ InitializePhi(const Batch& batch,
 }
 
 static void
-CreateRegularizerAgents(const Batch& batch, const ProcessBatchesArgs& args, const InstanceSchema& schema,
+CreateRegularizerAgents(const Batch& batch, const ProcessBatchesArgs& args, Instance* instance,
                         RegularizeThetaAgentCollection* theta_agents, RegularizePtdwAgentCollection* ptdw_agents) {
   for (int reg_index = 0; reg_index < args.regularizer_name_size(); ++reg_index) {
     auto& reg_name = args.regularizer_name(reg_index);
     double tau = args.regularizer_tau(reg_index);
-    auto regularizer = schema.regularizer(reg_name);
+    auto regularizer = instance->regularizers()->get(reg_name);
     if (regularizer == nullptr) {
       LOG(ERROR) << "Theta Regularizer with name <" << reg_name << "> does not exist.";
       continue;
@@ -703,7 +702,6 @@ void Processor::ThreadFunction() {
         }
       }
 
-      std::shared_ptr<InstanceSchema> schema = instance_->schema();
       std::shared_ptr<MasterModelConfig> master_config = instance_->config();
 
       const ModelName& model_name = part->model_name();
@@ -793,7 +791,7 @@ void Processor::ThreadFunction() {
         {
           RegularizeThetaAgentCollection theta_agents;
           RegularizePtdwAgentCollection ptdw_agents;
-          CreateRegularizerAgents(batch, args, *schema, &theta_agents, &ptdw_agents);
+          CreateRegularizerAgents(batch, args, instance_, &theta_agents, &ptdw_agents);
 
           if (ptdw_agents.empty() && !part->has_ptdw_cache_manager()) {
             CuckooWatch cuckoo2("InferThetaAndUpdateNwtSparse", &cuckoo, kTimeLoggingThreshold);
@@ -823,7 +821,7 @@ void Processor::ThreadFunction() {
         for (int score_index = 0; score_index < master_config->score_config_size(); ++score_index) {
           const ScoreName& score_name = master_config->score_config(score_index).name();
 
-          auto score_calc = schema->score_calculator(score_name);
+          auto score_calc = instance_->scores_calculators()->get(score_name);
           if (score_calc == nullptr) {
             LOG(ERROR) << "Unable to find score calculator '" << score_name << "', referenced by "
               << "model " << p_wt.model_name() << ".";
@@ -837,7 +835,7 @@ void Processor::ThreadFunction() {
 
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, args, *theta_matrix);
           if (score_value != nullptr)
-            part->score_manager()->Append(schema, score_name, score_value->SerializeAsString());
+            part->score_manager()->Append(score_name, score_value->SerializeAsString());
         }
 
         VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << model_description.str();

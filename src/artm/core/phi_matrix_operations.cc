@@ -15,6 +15,7 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/helpers.h"
 #include "artm/core/dense_phi_matrix.h"
+#include "artm/core/instance.h"
 #include "artm/regularizer_interface.h"
 
 namespace artm {
@@ -244,7 +245,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
 }
 
 void PhiMatrixOperations::InvokePhiRegularizers(
-    std::shared_ptr<InstanceSchema> schema,
+    Instance* instance,
     const ::google::protobuf::RepeatedPtrField<RegularizerSettings>& regularizer_settings,
     const PhiMatrix& p_wt, const PhiMatrix& n_wt, PhiMatrix* r_wt) {
 
@@ -259,7 +260,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
   for (auto reg_iterator = regularizer_settings.begin();
        reg_iterator != regularizer_settings.end();
        reg_iterator++) {
-    auto regularizer = schema->regularizer(reg_iterator->name().c_str());
+    auto regularizer = instance->regularizers()->get(reg_iterator->name().c_str());
 
     if (regularizer == nullptr) {
       LOG(ERROR) << "Phi Regularizer with name <" << reg_iterator->name().c_str() << "> does not exist.\n";

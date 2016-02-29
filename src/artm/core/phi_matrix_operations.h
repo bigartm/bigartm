@@ -10,7 +10,7 @@
 #include "artm/core/common.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/messages.pb.h"
-#include "artm/core/instance_schema.h"
+#include "artm/core/instance.h"
 
 namespace artm {
 namespace core {
@@ -25,7 +25,7 @@ class PhiMatrixOperations {
     const ::artm::TopicModel& topic_model, float apply_weight, PhiMatrix* phi_matrix);
 
   static void InvokePhiRegularizers(
-    std::shared_ptr<InstanceSchema> schema,
+    Instance* instance,
     const ::google::protobuf::RepeatedPtrField<RegularizerSettings>& regularizer_settings,
     const PhiMatrix& p_wt, const PhiMatrix& n_wt, PhiMatrix* r_wt);
 
