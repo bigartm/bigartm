@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='artm/messages.proto',
   package='artm',
-  serialized_pb='\n\x13\x61rtm/messages.proto\x12\x04\x61rtm\" \n\x0b\x44oubleArray\x12\x11\n\x05value\x18\x01 \x03(\x01\x42\x02\x10\x01\"\x1f\n\nFloatArray\x12\x11\n\x05value\x18\x01 \x03(\x02\x42\x02\x10\x01\"\x1e\n\tBoolArray\x12\x11\n\x05value\x18\x01 \x03(\x08\x42\x02\x10\x01\"\x1d\n\x08IntArray\x12\x11\n\x05value\x18\x01 \x03(\x05\x42\x02\x10\x01\"\x1c\n\x0bStringArray\x12\r\n\x05value\x18\x01 \x03(\t\"=\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x1a\n\x05\x66ield\x18\x02 \x03(\x0b\x32\x0b.artm.Field\x12\r\n\x05title\x18\x03 \x01(\t\"\x95\x02\n\x05\x46ield\x12\x13\n\x04name\x18\x01 \x01(\t:\x05@body\x12\x10\n\x08token_id\x18\x02 \x03(\x05\x12\x13\n\x0btoken_count\x18\x03 \x03(\x05\x12\x14\n\x0ctoken_offset\x18\x04 \x03(\x05\x12\x14\n\x0cstring_value\x18\x05 \x01(\t\x12\x11\n\tint_value\x18\x06 \x01(\x03\x12\x14\n\x0c\x64ouble_value\x18\x07 \x01(\x01\x12\x12\n\ndate_value\x18\x08 \x01(\t\x12\x14\n\x0cstring_array\x18\x10 \x03(\t\x12\x11\n\tint_array\x18\x11 \x03(\x03\x12\x14\n\x0c\x64ouble_array\x18\x12 \x03(\x01\x12\x12\n\ndate_array\x18\x13 \x03(\t\x12\x14\n\x0ctoken_weight\x18\x14 \x03(\x02\"c\n\x05\x42\x61tch\x12\r\n\x05token\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x18\n\x04item\x18\x03 \x03(\x0b\x32\n.artm.Item\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\n\n\x02id\x18\x05 \x01(\t\"d\n\x13RegularizerSettings\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03tau\x18\x02 \x01(\x01\x12#\n\x1buse_relative_regularization\x18\x03 \x01(\x08\x12\r\n\x05gamma\x18\x04 \x01(\x01\"\xc0\x02\n\x11RegularizerConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12*\n\x04type\x18\x02 \x01(\x0e\x32\x1c.artm.RegularizerConfig.Type\x12\x0e\n\x06\x63onfig\x18\x03 \x01(\x0c\x12\x0b\n\x03tau\x18\x04 \x01(\x02\"\xd3\x01\n\x04Type\x12\x15\n\x11SmoothSparseTheta\x10\x00\x12\x13\n\x0fSmoothSparsePhi\x10\x01\x12\x13\n\x0f\x44\x65\x63orrelatorPhi\x10\x02\x12\x14\n\x10MultiLanguagePhi\x10\x03\x12\x1a\n\x16LabelRegularizationPhi\x10\x04\x12\x16\n\x12SpecifiedSparsePhi\x10\x05\x12\x17\n\x13ImproveCoherencePhi\x10\x06\x12\x0e\n\nSmoothPtdw\x10\x07\x12\x17\n\x13TopicSelectionTheta\x10\x08\"r\n\x17SmoothSparseThetaConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x12\n\nalpha_iter\x18\x02 \x03(\x02\x12/\n\x10transform_config\x18\x03 \x01(\x0b\x32\x15.artm.TransformConfig\"\x87\x01\n\x15SmoothSparsePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\x12/\n\x10transform_config\x18\x04 \x01(\x0b\x32\x15.artm.TransformConfig\"=\n\x15\x44\x65\x63orrelatorPhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\"\x18\n\x16MultiLanguagePhiConfig\"]\n\x1cLabelRegularizationPhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"\x82\x02\n\x18SpecifiedSparsePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x1e\n\x12max_elements_count\x18\x03 \x01(\x05:\x02\x32\x30\x12#\n\x15probability_threshold\x18\x04 \x01(\x02:\x04\x30.99\x12?\n\x04mode\x18\x05 \x01(\x0e\x32#.artm.SpecifiedSparsePhiConfig.Mode:\x0cSparseTopics\"*\n\x04Mode\x12\x10\n\x0cSparseTopics\x10\x00\x12\x10\n\x0cSparseTokens\x10\x01\"Z\n\x19ImproveCoherencePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"\xa4\x01\n\x10SmoothPtdwConfig\x12\x38\n\x04type\x18\x01 \x01(\x0e\x32\x1b.artm.SmoothPtdwConfig.Type:\rMovingAverage\x12\x12\n\x06window\x18\x03 \x01(\x05:\x02\x31\x30\x12\x14\n\tthreshold\x18\x04 \x01(\x01:\x01\x31\",\n\x04Type\x12\x11\n\rMovingAverage\x10\x01\x12\x11\n\rMovingProduct\x10\x02\"X\n\x19TopicSelectionThetaConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x13\n\x0btopic_value\x18\x02 \x03(\x02\x12\x12\n\nalpha_iter\x18\x03 \x03(\x02\"\xb2\x01\n\x0fTransformConfig\x12\x45\n\x0etransform_type\x18\x01 \x01(\x0e\x32#.artm.TransformConfig.TransformType:\x08\x43onstant\x12\x0c\n\x01n\x18\x02 \x01(\x01:\x01\x31\x12\x0c\n\x01\x61\x18\x03 \x01(\x01:\x01\x31\"<\n\rTransformType\x12\r\n\tLogarithm\x10\x00\x12\x0e\n\nPolynomial\x10\x01\x12\x0c\n\x08\x43onstant\x10\x02\"\x8a\x02\n\x0bScoreConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x04type\x18\x02 \x01(\x0e\x32\x16.artm.ScoreConfig.Type\x12\x0e\n\x06\x63onfig\x18\x03 \x01(\x0c\"\xb6\x01\n\x04Type\x12\x0e\n\nPerplexity\x10\x00\x12\x11\n\rSparsityTheta\x10\x01\x12\x0f\n\x0bSparsityPhi\x10\x02\x12\x12\n\x0eItemsProcessed\x10\x03\x12\r\n\tTopTokens\x10\x04\x12\x10\n\x0cThetaSnippet\x10\x05\x12\x0f\n\x0bTopicKernel\x10\x06\x12\x10\n\x0cTopicMassPhi\x10\x07\x12\x12\n\x0e\x43lassPrecision\x10\x08\x12\x0e\n\nPeakMemory\x10\t\"\x84\x02\n\tScoreData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\"\n\x04type\x18\x02 \x01(\x0e\x32\x14.artm.ScoreData.Type\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\"\xb6\x01\n\x04Type\x12\x0e\n\nPerplexity\x10\x00\x12\x11\n\rSparsityTheta\x10\x01\x12\x0f\n\x0bSparsityPhi\x10\x02\x12\x12\n\x0eItemsProcessed\x10\x03\x12\r\n\tTopTokens\x10\x04\x12\x10\n\x0cThetaSnippet\x10\x05\x12\x0f\n\x0bTopicKernel\x10\x06\x12\x10\n\x0cTopicMassPhi\x10\x07\x12\x12\n\x0e\x43lassPrecision\x10\x08\x12\x0e\n\nPeakMemory\x10\t\"0\n\x0eScoreDataArray\x12\x1e\n\x05score\x18\x01 \x03(\x0b\x32\x0f.artm.ScoreData\"\xae\x02\n\x15PerplexityScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12J\n\nmodel_type\x18\x03 \x01(\x0e\x32 .artm.PerplexityScoreConfig.Type:\x14UnigramDocumentModel\x12\x17\n\x0f\x64ictionary_name\x18\x04 \x01(\t\x12\"\n\x12theta_sparsity_eps\x18\x05 \x01(\x02:\x06\x31\x65-037\x12!\n\x19theta_sparsity_topic_name\x18\x06 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x07 \x03(\t\"<\n\x04Type\x12\x18\n\x14UnigramDocumentModel\x10\x00\x12\x1a\n\x16UnigramCollectionModel\x10\x01\"\xbc\x01\n\x0fPerplexityScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x0b\n\x03raw\x18\x02 \x01(\x01\x12\x12\n\nnormalizer\x18\x03 \x01(\x01\x12\x12\n\nzero_words\x18\x04 \x01(\x03\x12\x1c\n\x14theta_sparsity_value\x18\x05 \x01(\x01\x12\"\n\x1atheta_sparsity_zero_topics\x18\x06 \x01(\x05\x12#\n\x1btheta_sparsity_total_topics\x18\x07 \x01(\x05\"^\n\x18SparsityThetaScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x13\n\x03\x65ps\x18\x03 \x01(\x02:\x06\x31\x65-037\x12\x12\n\ntopic_name\x18\x04 \x03(\t\"N\n\x12SparsityThetaScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x13\n\x0bzero_topics\x18\x02 \x01(\x03\x12\x14\n\x0ctotal_topics\x18\x03 \x01(\x03\"c\n\x16SparsityPhiScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\"L\n\x10SparsityPhiScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x13\n\x0bzero_tokens\x18\x02 \x01(\x03\x12\x14\n\x0ctotal_tokens\x18\x03 \x01(\x03\"6\n\x19ItemsProcessedScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\"?\n\x13ItemsProcessedScore\x12\x10\n\x05value\x18\x01 \x01(\x05:\x01\x30\x12\x16\n\x0bnum_batches\x18\x02 \x01(\x05:\x01\x30\"\x8a\x01\n\x14TopTokensScoreConfig\x12\x16\n\nnum_tokens\x18\x01 \x01(\x05:\x02\x31\x30\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12$\n\x1c\x63ooccurrence_dictionary_name\x18\x04 \x01(\t\"\xad\x01\n\x0eTopTokensScore\x12\x13\n\x0bnum_entries\x18\x01 \x01(\x05\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\x13\n\x0btopic_index\x18\x03 \x03(\x05\x12\r\n\x05token\x18\x04 \x03(\t\x12\x0e\n\x06weight\x18\x05 \x03(\x02\x12#\n\tcoherence\x18\x06 \x01(\x0b\x32\x10.artm.FloatArray\x12\x19\n\x11\x61verage_coherence\x18\x07 \x01(\x02\"a\n\x17ThetaSnippetScoreConfig\x12\x19\n\nfield_name\x18\x01 \x01(\t:\x05@body\x12\x13\n\x07item_id\x18\x03 \x03(\x05\x42\x02\x10\x01\x12\x16\n\nitem_count\x18\x04 \x01(\x05:\x02\x31\x30\"F\n\x11ThetaSnippetScore\x12\x0f\n\x07item_id\x18\x01 \x03(\x05\x12 \n\x06values\x18\x02 \x03(\x0b\x32\x10.artm.FloatArray\"\xb2\x01\n\x16TopicKernelScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\'\n\x1aprobability_mass_threshold\x18\x04 \x01(\x01:\x03\x30.1\x12$\n\x1c\x63ooccurrence_dictionary_name\x18\x05 \x01(\t\"\xff\x02\n\x10TopicKernelScore\x12&\n\x0bkernel_size\x18\x01 \x01(\x0b\x32\x11.artm.DoubleArray\x12(\n\rkernel_purity\x18\x02 \x01(\x0b\x32\x11.artm.DoubleArray\x12*\n\x0fkernel_contrast\x18\x03 \x01(\x0b\x32\x11.artm.DoubleArray\x12\x1b\n\x13\x61verage_kernel_size\x18\x04 \x01(\x01\x12\x1d\n\x15\x61verage_kernel_purity\x18\x05 \x01(\x01\x12\x1f\n\x17\x61verage_kernel_contrast\x18\x06 \x01(\x01\x12$\n\tcoherence\x18\x07 \x01(\x0b\x32\x11.artm.DoubleArray\x12\x19\n\x11\x61verage_coherence\x18\x08 \x01(\x02\x12(\n\rkernel_tokens\x18\t \x03(\x0b\x32\x11.artm.StringArray\x12%\n\ntopic_name\x18\n \x01(\x0b\x32\x11.artm.StringArray\"d\n\x17TopicMassPhiScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\"_\n\x11TopicMassPhiScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\x13\n\x0btopic_ratio\x18\x03 \x03(\x01\x12\x12\n\ntopic_mass\x18\x04 \x03(\x01\"\x1b\n\x19\x43lassPrecisionScoreConfig\"B\n\x13\x43lassPrecisionScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\r\n\x05\x65rror\x18\x02 \x01(\x01\x12\r\n\x05total\x18\x03 \x01(\x01\"\x17\n\x15PeakMemoryScoreConfig\" \n\x0fPeakMemoryScore\x12\r\n\x05value\x18\x01 \x01(\x03\"\xa2\x03\n\nTopicModel\x12\x14\n\x04name\x18\x01 \x01(\t:\x06@model\x12\x14\n\x0ctopics_count\x18\x02 \x01(\x05\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\r\n\x05token\x18\x04 \x03(\t\x12\'\n\rtoken_weights\x18\x05 \x03(\x0b\x32\x10.artm.FloatArray\x12\x10\n\x08\x63lass_id\x18\x06 \x03(\t\x12\x11\n\tinternals\x18\x07 \x01(\x0c\x12#\n\x0btopic_index\x18\x08 \x03(\x0b\x32\x0e.artm.IntArray\x12\x36\n\x0eoperation_type\x18\t \x03(\x0e\x32\x1e.artm.TopicModel.OperationType\x12\x0c\n\x04seed\x18\n \x01(\x05\x1a\x35\n\x13TopicModelInternals\x12\x1e\n\x04n_wt\x18\x01 \x03(\x0b\x32\x10.artm.FloatArray\"U\n\rOperationType\x12\x0e\n\nInitialize\x10\x00\x12\r\n\tIncrement\x10\x01\x12\r\n\tOverwrite\x10\x02\x12\n\n\x06Remove\x10\x03\x12\n\n\x06Ignore\x10\x04\"\xa9\x01\n\x0bThetaMatrix\x12\x0f\n\x07item_id\x18\x02 \x03(\x05\x12&\n\x0citem_weights\x18\x03 \x03(\x0b\x32\x10.artm.FloatArray\x12\x12\n\ntopic_name\x18\x04 \x03(\t\x12\x14\n\x0ctopics_count\x18\x05 \x01(\x05\x12\x12\n\nitem_title\x18\x06 \x03(\t\x12#\n\x0btopic_index\x18\x07 \x03(\x0b\x32\x0e.artm.IntArray\"\x8c\x04\n\x16\x43ollectionParserConfig\x12\x42\n\x06\x66ormat\x18\x01 \x01(\x0e\x32#.artm.CollectionParserConfig.Format:\rBagOfWordsUci\x12\x19\n\x11\x64ocword_file_path\x18\x02 \x01(\t\x12\x17\n\x0fvocab_file_path\x18\x03 \x01(\t\x12\x15\n\rtarget_folder\x18\x04 \x01(\t\x12!\n\x13num_items_per_batch\x18\x05 \x01(\x05:\x04\x31\x30\x30\x30\x12%\n\x17use_unity_based_indices\x18\x06 \x01(\x08:\x04true\x12>\n\tname_type\x18\x07 \x01(\x0e\x32%.artm.CollectionParserConfig.NameType:\x04Guid\x12\x1a\n\x12\x63ooccurrence_token\x18\x08 \x03(\t\x12\x13\n\x0bgather_cooc\x18\t \x01(\x08\x12\x1d\n\x15\x63ooccurrence_class_id\x18\n \x03(\t\x12(\n\x19use_symmetric_cooc_values\x18\x0b \x01(\x08:\x05\x66\x61lse\"?\n\x06\x46ormat\x12\x11\n\rBagOfWordsUci\x10\x00\x12\x10\n\x0cMatrixMarket\x10\x01\x12\x10\n\x0cVowpalWabbit\x10\x02\"\x1e\n\x08NameType\x12\x08\n\x04Guid\x10\x00\x12\x08\n\x04\x43ode\x10\x01\"\xe9\x03\n\x13InitializeModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\x12\x14\n\x0ctopics_count\x18\x03 \x01(\x05\x12\x12\n\ntopic_name\x18\x04 \x03(\t\x12\x10\n\x04seed\x18\x05 \x01(\x05:\x02-1\x12\x39\n\x0bsource_type\x18\x06 \x01(\x0e\x32$.artm.InitializeModelArgs.SourceType\x12\x11\n\tdisk_path\x18\x07 \x01(\t\x12\x30\n\x06\x66ilter\x18\x08 \x03(\x0b\x32 .artm.InitializeModelArgs.Filter\x12\x16\n\x0e\x62\x61tch_filename\x18\t \x03(\t\x1a\xa5\x01\n\x06\x46ilter\x12\x10\n\x08\x63lass_id\x18\x01 \x01(\t\x12\x16\n\x0emin_percentage\x18\x02 \x01(\x02\x12\x16\n\x0emax_percentage\x18\x03 \x01(\x02\x12\x11\n\tmin_items\x18\x04 \x01(\x05\x12\x11\n\tmax_items\x18\x05 \x01(\x05\x12\x17\n\x0fmin_total_count\x18\x06 \x01(\x05\x12\x1a\n\x12min_one_item_count\x18\x07 \x01(\x05\")\n\nSourceType\x12\x0e\n\nDictionary\x10\x00\x12\x0b\n\x07\x42\x61tches\x10\x01\"\xc1\x01\n\x0e\x44ictionaryData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x03 \x03(\t\x12\x13\n\x0btoken_value\x18\x04 \x03(\x02\x12\x10\n\x08token_tf\x18\x05 \x03(\x02\x12\x10\n\x08token_df\x18\x06 \x03(\x02\x12\x18\n\x10\x63ooc_first_index\x18\x07 \x03(\x05\x12\x19\n\x11\x63ooc_second_index\x18\x08 \x03(\x05\x12\x12\n\ncooc_value\x18\t \x03(\x02\"\xcb\x01\n\x14\x46ilterDictionaryArgs\x12\x17\n\x0f\x64ictionary_name\x18\x01 \x01(\t\x12\x1e\n\x16\x64ictionary_target_name\x18\x02 \x01(\t\x12\x10\n\x08\x63lass_id\x18\x03 \x01(\t\x12\x0e\n\x06min_df\x18\x04 \x01(\x02\x12\x0e\n\x06max_df\x18\x05 \x01(\x02\x12\x13\n\x0bmin_df_rate\x18\x06 \x01(\x02\x12\x13\n\x0bmax_df_rate\x18\x07 \x01(\x02\x12\x0e\n\x06min_tf\x18\x08 \x01(\x02\x12\x0e\n\x06max_tf\x18\t \x01(\x02\"\xb4\x01\n\x14GatherDictionaryArgs\x12\x1e\n\x16\x64ictionary_target_name\x18\x01 \x01(\t\x12\x11\n\tdata_path\x18\x02 \x01(\t\x12\x16\n\x0e\x63ooc_file_path\x18\x03 \x01(\t\x12\x17\n\x0fvocab_file_path\x18\x04 \x01(\t\x12$\n\x15symmetric_cooc_values\x18\x05 \x01(\x08:\x05\x66\x61lse\x12\x12\n\nbatch_path\x18\x06 \x03(\t\",\n\x11GetDictionaryArgs\x12\x17\n\x0f\x64ictionary_name\x18\x01 \x01(\t\"\xf4\x02\n\x11GetTopicModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\r\n\x05token\x18\x03 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x04 \x03(\t\x12\x19\n\x11use_sparse_format\x18\x05 \x01(\x08\x12\x13\n\x03\x65ps\x18\x06 \x01(\x02:\x06\x31\x65-037\x12>\n\x0crequest_type\x18\x07 \x01(\x0e\x32#.artm.GetTopicModelArgs.RequestType:\x03Pwt\x12\x42\n\rmatrix_layout\x18\x08 \x01(\x0e\x32$.artm.GetTopicModelArgs.MatrixLayout:\x05\x44\x65nse\";\n\x0bRequestType\x12\x07\n\x03Pwt\x10\x00\x12\x07\n\x03Nwt\x10\x01\x12\x0e\n\nTopicNames\x10\x02\x12\n\n\x06Tokens\x10\x03\"%\n\x0cMatrixLayout\x12\t\n\x05\x44\x65nse\x10\x00\x12\n\n\x06Sparse\x10\x01\"\xd9\x01\n\x12GetThetaMatrixArgs\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\x13\n\x0btopic_index\x18\x04 \x03(\x05\x12\x19\n\x11use_sparse_format\x18\x06 \x01(\x08\x12\x13\n\x03\x65ps\x18\x07 \x01(\x02:\x06\x31\x65-037\x12\x43\n\rmatrix_layout\x18\x08 \x01(\x0e\x32%.artm.GetThetaMatrixArgs.MatrixLayout:\x05\x44\x65nse\"%\n\x0cMatrixLayout\x12\t\n\x05\x44\x65nse\x10\x00\x12\n\n\x06Sparse\x10\x01\";\n\x11GetScoreValueArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x12\n\nscore_name\x18\x02 \x01(\t\"\'\n\x11GetScoreArrayArgs\x12\x12\n\nscore_name\x18\x02 \x01(\t\"8\n\x0f\x45xportModelArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x12\n\nmodel_name\x18\x02 \x01(\t\"8\n\x0fImportModelArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x12\n\nmodel_name\x18\x02 \x01(\t\"%\n\x0f\x41ttachModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\"\xbf\x04\n\x12ProcessBatchesArgs\x12\x17\n\x0fnwt_target_name\x18\x01 \x01(\t\x12\x16\n\x0e\x62\x61tch_filename\x18\x02 \x03(\t\x12\x17\n\x0fpwt_source_name\x18\x03 \x01(\t\x12\"\n\x16inner_iterations_count\x18\x04 \x01(\x05:\x02\x31\x30\x12\x18\n\x10regularizer_name\x18\x06 \x03(\t\x12\x17\n\x0fregularizer_tau\x18\x07 \x03(\x01\x12\x10\n\x08\x63lass_id\x18\x08 \x03(\t\x12\x14\n\x0c\x63lass_weight\x18\t \x03(\x02\x12\x1a\n\x0breuse_theta\x18\n \x01(\x08:\x05\x66\x61lse\x12\x19\n\x0bopt_for_avx\x18\x0b \x01(\x08:\x04true\x12J\n\x11theta_matrix_type\x18\x0e \x01(\x0e\x32(.artm.ProcessBatchesArgs.ThetaMatrixType:\x05\x43\x61\x63he\x12\x14\n\x0c\x62\x61tch_weight\x18\x0f \x03(\x02\x12\x18\n\x10predict_class_id\x18\x11 \x01(\t\x12\x1a\n\x05\x62\x61tch\x18\x12 \x03(\x0b\x32\x0b.artm.Batch\x12\x1f\n\x10use_random_theta\x18\x13 \x01(\x08:\x05\x66\x61lse\x12\x12\n\ntopic_name\x18\x14 \x03(\t\"\\\n\x0fThetaMatrixType\x12\x08\n\x04None\x10\x00\x12\t\n\x05\x44\x65nse\x10\x01\x12\n\n\x06Sparse\x10\x02\x12\t\n\x05\x43\x61\x63he\x10\x03\x12\r\n\tDensePtdw\x10\x04\x12\x0e\n\nSparsePtdw\x10\x05\"d\n\x14ProcessBatchesResult\x12#\n\nscore_data\x18\x01 \x03(\x0b\x32\x0f.artm.ScoreData\x12\'\n\x0ctheta_matrix\x18\x02 \x01(\x0b\x32\x11.artm.ThetaMatrix\"m\n\x0eMergeModelArgs\x12\x17\n\x0fnwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x02 \x03(\t\x12\x15\n\rsource_weight\x18\x03 \x03(\x02\x12\x12\n\ntopic_name\x18\x04 \x03(\t\"\x99\x01\n\x13RegularizeModelArgs\x12\x17\n\x0frwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fpwt_source_name\x18\x02 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x03 \x01(\t\x12\x37\n\x14regularizer_settings\x18\x04 \x03(\x0b\x32\x19.artm.RegularizerSettings\"_\n\x12NormalizeModelArgs\x12\x17\n\x0fpwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x02 \x01(\t\x12\x17\n\x0frwt_source_name\x18\x03 \x01(\t\"B\n\x14ImportDictionaryArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\"B\n\x14\x45xportDictionaryArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\"\xc1\x01\n\x15\x43opyRequestResultArgs\x12Q\n\x0crequest_type\x18\x01 \x01(\x0e\x32\'.artm.CopyRequestResultArgs.RequestType:\x12\x44\x65\x66\x61ultRequestType\"U\n\x0bRequestType\x12\x16\n\x12\x44\x65\x66\x61ultRequestType\x10\x00\x12\x16\n\x12GetThetaSecondPass\x10\x01\x12\x16\n\x12GetModelSecondPass\x10\x02\"\x1e\n\x1c\x44uplicateMasterComponentArgs\"\x1c\n\x1aGetMasterComponentInfoArgs\"\xa2\x06\n\x13MasterComponentInfo\x12\x11\n\tmaster_id\x18\x01 \x01(\x05\x12\'\n\x06\x63onfig\x18\x02 \x01(\x0b\x32\x17.artm.MasterModelConfig\x12>\n\x0bregularizer\x18\x03 \x03(\x0b\x32).artm.MasterComponentInfo.RegularizerInfo\x12\x32\n\x05score\x18\x04 \x03(\x0b\x32#.artm.MasterComponentInfo.ScoreInfo\x12<\n\ndictionary\x18\x05 \x03(\x0b\x32(.artm.MasterComponentInfo.DictionaryInfo\x12\x32\n\x05model\x18\x06 \x03(\x0b\x32#.artm.MasterComponentInfo.ModelInfo\x12=\n\x0b\x63\x61\x63he_entry\x18\x07 \x03(\x0b\x32(.artm.MasterComponentInfo.CacheEntryInfo\x12\x1c\n\x14processor_queue_size\x18\t \x01(\x05\x12\x32\n\x05\x62\x61tch\x18\n \x03(\x0b\x32#.artm.MasterComponentInfo.BatchInfo\x1a-\n\x0fRegularizerInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x1a\'\n\tScoreInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x1a\x35\n\x0e\x44ictionaryInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rentries_count\x18\x02 \x01(\x03\x1a\x43\n\tBatchInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0bitems_count\x18\x02 \x01(\x05\x12\x13\n\x0btoken_count\x18\x03 \x01(\x05\x1aR\n\tModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x14\n\x0ctopics_count\x18\x03 \x01(\x05\x12\x13\n\x0btoken_count\x18\x04 \x01(\x05\x1a\x30\n\x0e\x43\x61\x63heEntryInfo\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tbyte_size\x18\x02 \x01(\x05\"C\n\x11ImportBatchesArgs\x12\x12\n\nbatch_name\x18\x01 \x03(\t\x12\x1a\n\x05\x62\x61tch\x18\x03 \x03(\x0b\x32\x0b.artm.Batch\"6\n\x12\x41waitOperationArgs\x12 \n\x14timeout_milliseconds\x18\x01 \x01(\x05:\x02-1\"\xf8\x02\n\x11MasterModelConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x14\n\x0c\x63lass_weight\x18\x03 \x03(\x02\x12\'\n\x0cscore_config\x18\x04 \x03(\x0b\x32\x11.artm.ScoreConfig\x12\x33\n\x12regularizer_config\x18\x05 \x03(\x0b\x32\x17.artm.RegularizerConfig\x12\x0f\n\x07threads\x18\x06 \x01(\x05\x12\x15\n\x08pwt_name\x18\x07 \x01(\t:\x03pwt\x12\x15\n\x08nwt_name\x18\x08 \x01(\t:\x03nwt\x12\x1e\n\x16inner_iterations_count\x18\t \x01(\x05\x12\x1a\n\x0breuse_theta\x18\n \x01(\x08:\x05\x66\x61lse\x12\x19\n\x0bopt_for_avx\x18\x0b \x01(\x08:\x04true\x12\x17\n\x0f\x64isk_cache_path\x18\r \x01(\t\x12\x1a\n\x0b\x63\x61\x63he_theta\x18\x0f \x01(\x08:\x05\x66\x61lse\"r\n\x19\x46itOfflineMasterModelArgs\x12\x16\n\x0e\x62\x61tch_filename\x18\x01 \x03(\t\x12\x14\n\x0c\x62\x61tch_weight\x18\x02 \x03(\x02\x12\x11\n\x06passes\x18\x03 \x01(\x05:\x01\x31\x12\x14\n\x0c\x62\x61tch_folder\x18\x04 \x01(\t\"\xa0\x01\n\x18\x46itOnlineMasterModelArgs\x12\x16\n\x0e\x62\x61tch_filename\x18\x01 \x03(\t\x12\x14\n\x0c\x62\x61tch_weight\x18\x02 \x03(\x02\x12\x14\n\x0cupdate_after\x18\x03 \x03(\x05\x12\x14\n\x0c\x61pply_weight\x18\x04 \x03(\x02\x12\x14\n\x0c\x64\x65\x63\x61y_weight\x18\x05 \x03(\x02\x12\x14\n\x05\x61sync\x18\x06 \x01(\x08:\x05\x66\x61lse\"\x98\x02\n\x18TransformMasterModelArgs\x12\x1a\n\x05\x62\x61tch\x18\x01 \x03(\x0b\x32\x0b.artm.Batch\x12\x16\n\x0e\x62\x61tch_filename\x18\x02 \x03(\t\x12P\n\x11theta_matrix_type\x18\x03 \x01(\x0e\x32..artm.TransformMasterModelArgs.ThetaMatrixType:\x05\x44\x65nse\x12\x18\n\x10predict_class_id\x18\x04 \x01(\t\"\\\n\x0fThetaMatrixType\x12\x08\n\x04None\x10\x00\x12\t\n\x05\x44\x65nse\x10\x01\x12\n\n\x06Sparse\x10\x02\x12\t\n\x05\x43\x61\x63he\x10\x03\x12\r\n\tDensePtdw\x10\x04\x12\x0e\n\nSparsePtdw\x10\x05\"\xff\x01\n\x14\x43onfigureLoggingArgs\x12\x0f\n\x07log_dir\x18\x01 \x01(\t\x12\x13\n\x0bminloglevel\x18\x02 \x01(\x05\x12\x17\n\x0fstderrthreshold\x18\x03 \x01(\x05\x12\x13\n\x0blogtostderr\x18\x04 \x01(\x08\x12\x18\n\x10\x63olorlogtostderr\x18\x05 \x01(\x08\x12\x17\n\x0f\x61lsologtostderr\x18\x06 \x01(\x08\x12\x12\n\nlogbufsecs\x18\x07 \x01(\x05\x12\x13\n\x0blogbuflevel\x18\x08 \x01(\x05\x12\x14\n\x0cmax_log_size\x18\t \x01(\x05\x12!\n\x19stop_logging_if_full_disk\x18\n \x01(\x08\"\x15\n\x13\x43learThetaCacheArgs\"\x15\n\x13\x43learScoreCacheArgs\"\x1a\n\x18\x43learScoreArrayCacheArgs')
+  serialized_pb='\n\x13\x61rtm/messages.proto\x12\x04\x61rtm\" \n\x0b\x44oubleArray\x12\x11\n\x05value\x18\x01 \x03(\x01\x42\x02\x10\x01\"\x1f\n\nFloatArray\x12\x11\n\x05value\x18\x01 \x03(\x02\x42\x02\x10\x01\"\x1e\n\tBoolArray\x12\x11\n\x05value\x18\x01 \x03(\x08\x42\x02\x10\x01\"\x1d\n\x08IntArray\x12\x11\n\x05value\x18\x01 \x03(\x05\x42\x02\x10\x01\"\x1c\n\x0bStringArray\x12\r\n\x05value\x18\x01 \x03(\t\"I\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x05\x12\r\n\x05title\x18\x02 \x01(\t\x12\x10\n\x08token_id\x18\x03 \x03(\x05\x12\x14\n\x0ctoken_weight\x18\x04 \x03(\x02\"c\n\x05\x42\x61tch\x12\r\n\x05token\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x18\n\x04item\x18\x03 \x03(\x0b\x32\n.artm.Item\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\n\n\x02id\x18\x05 \x01(\t\"d\n\x13RegularizerSettings\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03tau\x18\x02 \x01(\x01\x12#\n\x1buse_relative_regularization\x18\x03 \x01(\x08\x12\r\n\x05gamma\x18\x04 \x01(\x01\"\xc0\x02\n\x11RegularizerConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12*\n\x04type\x18\x02 \x01(\x0e\x32\x1c.artm.RegularizerConfig.Type\x12\x0e\n\x06\x63onfig\x18\x03 \x01(\x0c\x12\x0b\n\x03tau\x18\x04 \x01(\x02\"\xd3\x01\n\x04Type\x12\x15\n\x11SmoothSparseTheta\x10\x00\x12\x13\n\x0fSmoothSparsePhi\x10\x01\x12\x13\n\x0f\x44\x65\x63orrelatorPhi\x10\x02\x12\x14\n\x10MultiLanguagePhi\x10\x03\x12\x1a\n\x16LabelRegularizationPhi\x10\x04\x12\x16\n\x12SpecifiedSparsePhi\x10\x05\x12\x17\n\x13ImproveCoherencePhi\x10\x06\x12\x0e\n\nSmoothPtdw\x10\x07\x12\x17\n\x13TopicSelectionTheta\x10\x08\"r\n\x17SmoothSparseThetaConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x12\n\nalpha_iter\x18\x02 \x03(\x02\x12/\n\x10transform_config\x18\x03 \x01(\x0b\x32\x15.artm.TransformConfig\"\x87\x01\n\x15SmoothSparsePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\x12/\n\x10transform_config\x18\x04 \x01(\x0b\x32\x15.artm.TransformConfig\"=\n\x15\x44\x65\x63orrelatorPhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\"\x18\n\x16MultiLanguagePhiConfig\"]\n\x1cLabelRegularizationPhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"\x82\x02\n\x18SpecifiedSparsePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x1e\n\x12max_elements_count\x18\x03 \x01(\x05:\x02\x32\x30\x12#\n\x15probability_threshold\x18\x04 \x01(\x02:\x04\x30.99\x12?\n\x04mode\x18\x05 \x01(\x0e\x32#.artm.SpecifiedSparsePhiConfig.Mode:\x0cSparseTopics\"*\n\x04Mode\x12\x10\n\x0cSparseTopics\x10\x00\x12\x10\n\x0cSparseTokens\x10\x01\"Z\n\x19ImproveCoherencePhiConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x17\n\x0f\x64ictionary_name\x18\x03 \x01(\t\"\xa4\x01\n\x10SmoothPtdwConfig\x12\x38\n\x04type\x18\x01 \x01(\x0e\x32\x1b.artm.SmoothPtdwConfig.Type:\rMovingAverage\x12\x12\n\x06window\x18\x03 \x01(\x05:\x02\x31\x30\x12\x14\n\tthreshold\x18\x04 \x01(\x01:\x01\x31\",\n\x04Type\x12\x11\n\rMovingAverage\x10\x01\x12\x11\n\rMovingProduct\x10\x02\"X\n\x19TopicSelectionThetaConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x13\n\x0btopic_value\x18\x02 \x03(\x02\x12\x12\n\nalpha_iter\x18\x03 \x03(\x02\"\xb2\x01\n\x0fTransformConfig\x12\x45\n\x0etransform_type\x18\x01 \x01(\x0e\x32#.artm.TransformConfig.TransformType:\x08\x43onstant\x12\x0c\n\x01n\x18\x02 \x01(\x01:\x01\x31\x12\x0c\n\x01\x61\x18\x03 \x01(\x01:\x01\x31\"<\n\rTransformType\x12\r\n\tLogarithm\x10\x00\x12\x0e\n\nPolynomial\x10\x01\x12\x0c\n\x08\x43onstant\x10\x02\"\x8a\x02\n\x0bScoreConfig\x12\x0c\n\x04name\x18\x01 \x01(\t\x12$\n\x04type\x18\x02 \x01(\x0e\x32\x16.artm.ScoreConfig.Type\x12\x0e\n\x06\x63onfig\x18\x03 \x01(\x0c\"\xb6\x01\n\x04Type\x12\x0e\n\nPerplexity\x10\x00\x12\x11\n\rSparsityTheta\x10\x01\x12\x0f\n\x0bSparsityPhi\x10\x02\x12\x12\n\x0eItemsProcessed\x10\x03\x12\r\n\tTopTokens\x10\x04\x12\x10\n\x0cThetaSnippet\x10\x05\x12\x0f\n\x0bTopicKernel\x10\x06\x12\x10\n\x0cTopicMassPhi\x10\x07\x12\x12\n\x0e\x43lassPrecision\x10\x08\x12\x0e\n\nPeakMemory\x10\t\"\x84\x02\n\tScoreData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\"\n\x04type\x18\x02 \x01(\x0e\x32\x14.artm.ScoreData.Type\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\"\xb6\x01\n\x04Type\x12\x0e\n\nPerplexity\x10\x00\x12\x11\n\rSparsityTheta\x10\x01\x12\x0f\n\x0bSparsityPhi\x10\x02\x12\x12\n\x0eItemsProcessed\x10\x03\x12\r\n\tTopTokens\x10\x04\x12\x10\n\x0cThetaSnippet\x10\x05\x12\x0f\n\x0bTopicKernel\x10\x06\x12\x10\n\x0cTopicMassPhi\x10\x07\x12\x12\n\x0e\x43lassPrecision\x10\x08\x12\x0e\n\nPeakMemory\x10\t\"0\n\x0eScoreDataArray\x12\x1e\n\x05score\x18\x01 \x03(\x0b\x32\x0f.artm.ScoreData\"\x93\x02\n\x15PerplexityScoreConfig\x12J\n\nmodel_type\x18\x03 \x01(\x0e\x32 .artm.PerplexityScoreConfig.Type:\x14UnigramDocumentModel\x12\x17\n\x0f\x64ictionary_name\x18\x04 \x01(\t\x12\"\n\x12theta_sparsity_eps\x18\x05 \x01(\x02:\x06\x31\x65-037\x12!\n\x19theta_sparsity_topic_name\x18\x06 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x07 \x03(\t\"<\n\x04Type\x12\x18\n\x14UnigramDocumentModel\x10\x00\x12\x1a\n\x16UnigramCollectionModel\x10\x01\"\xbc\x01\n\x0fPerplexityScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x0b\n\x03raw\x18\x02 \x01(\x01\x12\x12\n\nnormalizer\x18\x03 \x01(\x01\x12\x12\n\nzero_words\x18\x04 \x01(\x03\x12\x1c\n\x14theta_sparsity_value\x18\x05 \x01(\x01\x12\"\n\x1atheta_sparsity_zero_topics\x18\x06 \x01(\x05\x12#\n\x1btheta_sparsity_total_topics\x18\x07 \x01(\x05\"C\n\x18SparsityThetaScoreConfig\x12\x13\n\x03\x65ps\x18\x03 \x01(\x02:\x06\x31\x65-037\x12\x12\n\ntopic_name\x18\x04 \x03(\t\"N\n\x12SparsityThetaScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x13\n\x0bzero_topics\x18\x02 \x01(\x03\x12\x14\n\x0ctotal_topics\x18\x03 \x01(\x03\"c\n\x16SparsityPhiScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\"L\n\x10SparsityPhiScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x13\n\x0bzero_tokens\x18\x02 \x01(\x03\x12\x14\n\x0ctotal_tokens\x18\x03 \x01(\x03\"\x1b\n\x19ItemsProcessedScoreConfig\"?\n\x13ItemsProcessedScore\x12\x10\n\x05value\x18\x01 \x01(\x05:\x01\x30\x12\x16\n\x0bnum_batches\x18\x02 \x01(\x05:\x01\x30\"\x8a\x01\n\x14TopTokensScoreConfig\x12\x16\n\nnum_tokens\x18\x01 \x01(\x05:\x02\x31\x30\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12$\n\x1c\x63ooccurrence_dictionary_name\x18\x04 \x01(\t\"\xad\x01\n\x0eTopTokensScore\x12\x13\n\x0bnum_entries\x18\x01 \x01(\x05\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\x13\n\x0btopic_index\x18\x03 \x03(\x05\x12\r\n\x05token\x18\x04 \x03(\t\x12\x0e\n\x06weight\x18\x05 \x03(\x02\x12#\n\tcoherence\x18\x06 \x01(\x0b\x32\x10.artm.FloatArray\x12\x19\n\x11\x61verage_coherence\x18\x07 \x01(\x02\"F\n\x17ThetaSnippetScoreConfig\x12\x13\n\x07item_id\x18\x03 \x03(\x05\x42\x02\x10\x01\x12\x16\n\nitem_count\x18\x04 \x01(\x05:\x02\x31\x30\"F\n\x11ThetaSnippetScore\x12\x0f\n\x07item_id\x18\x01 \x03(\x05\x12 \n\x06values\x18\x02 \x03(\x0b\x32\x10.artm.FloatArray\"\xb2\x01\n\x16TopicKernelScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\'\n\x1aprobability_mass_threshold\x18\x04 \x01(\x01:\x03\x30.1\x12$\n\x1c\x63ooccurrence_dictionary_name\x18\x05 \x01(\t\"\xff\x02\n\x10TopicKernelScore\x12&\n\x0bkernel_size\x18\x01 \x01(\x0b\x32\x11.artm.DoubleArray\x12(\n\rkernel_purity\x18\x02 \x01(\x0b\x32\x11.artm.DoubleArray\x12*\n\x0fkernel_contrast\x18\x03 \x01(\x0b\x32\x11.artm.DoubleArray\x12\x1b\n\x13\x61verage_kernel_size\x18\x04 \x01(\x01\x12\x1d\n\x15\x61verage_kernel_purity\x18\x05 \x01(\x01\x12\x1f\n\x17\x61verage_kernel_contrast\x18\x06 \x01(\x01\x12$\n\tcoherence\x18\x07 \x01(\x0b\x32\x11.artm.DoubleArray\x12\x19\n\x11\x61verage_coherence\x18\x08 \x01(\x02\x12(\n\rkernel_tokens\x18\t \x03(\x0b\x32\x11.artm.StringArray\x12%\n\ntopic_name\x18\n \x01(\x0b\x32\x11.artm.StringArray\"d\n\x17TopicMassPhiScoreConfig\x12\x13\n\x03\x65ps\x18\x01 \x01(\x02:\x06\x31\x65-037\x12 \n\x08\x63lass_id\x18\x02 \x01(\t:\x0e@default_class\x12\x12\n\ntopic_name\x18\x03 \x03(\t\"_\n\x11TopicMassPhiScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\x13\n\x0btopic_ratio\x18\x03 \x03(\x01\x12\x12\n\ntopic_mass\x18\x04 \x03(\x01\"\x1b\n\x19\x43lassPrecisionScoreConfig\"B\n\x13\x43lassPrecisionScore\x12\r\n\x05value\x18\x01 \x01(\x01\x12\r\n\x05\x65rror\x18\x02 \x01(\x01\x12\r\n\x05total\x18\x03 \x01(\x01\"\x17\n\x15PeakMemoryScoreConfig\" \n\x0fPeakMemoryScore\x12\r\n\x05value\x18\x01 \x01(\x03\"\xa2\x03\n\nTopicModel\x12\x14\n\x04name\x18\x01 \x01(\t:\x06@model\x12\x14\n\x0ctopics_count\x18\x02 \x01(\x05\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\r\n\x05token\x18\x04 \x03(\t\x12\'\n\rtoken_weights\x18\x05 \x03(\x0b\x32\x10.artm.FloatArray\x12\x10\n\x08\x63lass_id\x18\x06 \x03(\t\x12\x11\n\tinternals\x18\x07 \x01(\x0c\x12#\n\x0btopic_index\x18\x08 \x03(\x0b\x32\x0e.artm.IntArray\x12\x36\n\x0eoperation_type\x18\t \x03(\x0e\x32\x1e.artm.TopicModel.OperationType\x12\x0c\n\x04seed\x18\n \x01(\x05\x1a\x35\n\x13TopicModelInternals\x12\x1e\n\x04n_wt\x18\x01 \x03(\x0b\x32\x10.artm.FloatArray\"U\n\rOperationType\x12\x0e\n\nInitialize\x10\x00\x12\r\n\tIncrement\x10\x01\x12\r\n\tOverwrite\x10\x02\x12\n\n\x06Remove\x10\x03\x12\n\n\x06Ignore\x10\x04\"\xa9\x01\n\x0bThetaMatrix\x12\x0f\n\x07item_id\x18\x02 \x03(\x05\x12&\n\x0citem_weights\x18\x03 \x03(\x0b\x32\x10.artm.FloatArray\x12\x12\n\ntopic_name\x18\x04 \x03(\t\x12\x14\n\x0ctopics_count\x18\x05 \x01(\x05\x12\x12\n\nitem_title\x18\x06 \x03(\t\x12#\n\x0btopic_index\x18\x07 \x03(\x0b\x32\x0e.artm.IntArray\"\x8c\x04\n\x16\x43ollectionParserConfig\x12\x42\n\x06\x66ormat\x18\x01 \x01(\x0e\x32#.artm.CollectionParserConfig.Format:\rBagOfWordsUci\x12\x19\n\x11\x64ocword_file_path\x18\x02 \x01(\t\x12\x17\n\x0fvocab_file_path\x18\x03 \x01(\t\x12\x15\n\rtarget_folder\x18\x04 \x01(\t\x12!\n\x13num_items_per_batch\x18\x05 \x01(\x05:\x04\x31\x30\x30\x30\x12%\n\x17use_unity_based_indices\x18\x06 \x01(\x08:\x04true\x12>\n\tname_type\x18\x07 \x01(\x0e\x32%.artm.CollectionParserConfig.NameType:\x04Guid\x12\x1a\n\x12\x63ooccurrence_token\x18\x08 \x03(\t\x12\x13\n\x0bgather_cooc\x18\t \x01(\x08\x12\x1d\n\x15\x63ooccurrence_class_id\x18\n \x03(\t\x12(\n\x19use_symmetric_cooc_values\x18\x0b \x01(\x08:\x05\x66\x61lse\"?\n\x06\x46ormat\x12\x11\n\rBagOfWordsUci\x10\x00\x12\x10\n\x0cMatrixMarket\x10\x01\x12\x10\n\x0cVowpalWabbit\x10\x02\"\x1e\n\x08NameType\x12\x08\n\x04Guid\x10\x00\x12\x08\n\x04\x43ode\x10\x01\"\xe9\x03\n\x13InitializeModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\x12\x14\n\x0ctopics_count\x18\x03 \x01(\x05\x12\x12\n\ntopic_name\x18\x04 \x03(\t\x12\x10\n\x04seed\x18\x05 \x01(\x05:\x02-1\x12\x39\n\x0bsource_type\x18\x06 \x01(\x0e\x32$.artm.InitializeModelArgs.SourceType\x12\x11\n\tdisk_path\x18\x07 \x01(\t\x12\x30\n\x06\x66ilter\x18\x08 \x03(\x0b\x32 .artm.InitializeModelArgs.Filter\x12\x16\n\x0e\x62\x61tch_filename\x18\t \x03(\t\x1a\xa5\x01\n\x06\x46ilter\x12\x10\n\x08\x63lass_id\x18\x01 \x01(\t\x12\x16\n\x0emin_percentage\x18\x02 \x01(\x02\x12\x16\n\x0emax_percentage\x18\x03 \x01(\x02\x12\x11\n\tmin_items\x18\x04 \x01(\x05\x12\x11\n\tmax_items\x18\x05 \x01(\x05\x12\x17\n\x0fmin_total_count\x18\x06 \x01(\x05\x12\x1a\n\x12min_one_item_count\x18\x07 \x01(\x05\")\n\nSourceType\x12\x0e\n\nDictionary\x10\x00\x12\x0b\n\x07\x42\x61tches\x10\x01\"\xc1\x01\n\x0e\x44ictionaryData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x03 \x03(\t\x12\x13\n\x0btoken_value\x18\x04 \x03(\x02\x12\x10\n\x08token_tf\x18\x05 \x03(\x02\x12\x10\n\x08token_df\x18\x06 \x03(\x02\x12\x18\n\x10\x63ooc_first_index\x18\x07 \x03(\x05\x12\x19\n\x11\x63ooc_second_index\x18\x08 \x03(\x05\x12\x12\n\ncooc_value\x18\t \x03(\x02\"\xcb\x01\n\x14\x46ilterDictionaryArgs\x12\x17\n\x0f\x64ictionary_name\x18\x01 \x01(\t\x12\x1e\n\x16\x64ictionary_target_name\x18\x02 \x01(\t\x12\x10\n\x08\x63lass_id\x18\x03 \x01(\t\x12\x0e\n\x06min_df\x18\x04 \x01(\x02\x12\x0e\n\x06max_df\x18\x05 \x01(\x02\x12\x13\n\x0bmin_df_rate\x18\x06 \x01(\x02\x12\x13\n\x0bmax_df_rate\x18\x07 \x01(\x02\x12\x0e\n\x06min_tf\x18\x08 \x01(\x02\x12\x0e\n\x06max_tf\x18\t \x01(\x02\"\xb4\x01\n\x14GatherDictionaryArgs\x12\x1e\n\x16\x64ictionary_target_name\x18\x01 \x01(\t\x12\x11\n\tdata_path\x18\x02 \x01(\t\x12\x16\n\x0e\x63ooc_file_path\x18\x03 \x01(\t\x12\x17\n\x0fvocab_file_path\x18\x04 \x01(\t\x12$\n\x15symmetric_cooc_values\x18\x05 \x01(\x08:\x05\x66\x61lse\x12\x12\n\nbatch_path\x18\x06 \x03(\t\",\n\x11GetDictionaryArgs\x12\x17\n\x0f\x64ictionary_name\x18\x01 \x01(\t\"\xf4\x02\n\x11GetTopicModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x12\n\ntopic_name\x18\x02 \x03(\t\x12\r\n\x05token\x18\x03 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x04 \x03(\t\x12\x19\n\x11use_sparse_format\x18\x05 \x01(\x08\x12\x13\n\x03\x65ps\x18\x06 \x01(\x02:\x06\x31\x65-037\x12>\n\x0crequest_type\x18\x07 \x01(\x0e\x32#.artm.GetTopicModelArgs.RequestType:\x03Pwt\x12\x42\n\rmatrix_layout\x18\x08 \x01(\x0e\x32$.artm.GetTopicModelArgs.MatrixLayout:\x05\x44\x65nse\";\n\x0bRequestType\x12\x07\n\x03Pwt\x10\x00\x12\x07\n\x03Nwt\x10\x01\x12\x0e\n\nTopicNames\x10\x02\x12\n\n\x06Tokens\x10\x03\"%\n\x0cMatrixLayout\x12\t\n\x05\x44\x65nse\x10\x00\x12\n\n\x06Sparse\x10\x01\"\xd9\x01\n\x12GetThetaMatrixArgs\x12\x12\n\ntopic_name\x18\x03 \x03(\t\x12\x13\n\x0btopic_index\x18\x04 \x03(\x05\x12\x19\n\x11use_sparse_format\x18\x06 \x01(\x08\x12\x13\n\x03\x65ps\x18\x07 \x01(\x02:\x06\x31\x65-037\x12\x43\n\rmatrix_layout\x18\x08 \x01(\x0e\x32%.artm.GetThetaMatrixArgs.MatrixLayout:\x05\x44\x65nse\"%\n\x0cMatrixLayout\x12\t\n\x05\x44\x65nse\x10\x00\x12\n\n\x06Sparse\x10\x01\";\n\x11GetScoreValueArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x12\n\nscore_name\x18\x02 \x01(\t\"\'\n\x11GetScoreArrayArgs\x12\x12\n\nscore_name\x18\x02 \x01(\t\"8\n\x0f\x45xportModelArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x12\n\nmodel_name\x18\x02 \x01(\t\"8\n\x0fImportModelArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x12\n\nmodel_name\x18\x02 \x01(\t\"%\n\x0f\x41ttachModelArgs\x12\x12\n\nmodel_name\x18\x01 \x01(\t\"\xbf\x04\n\x12ProcessBatchesArgs\x12\x17\n\x0fnwt_target_name\x18\x01 \x01(\t\x12\x16\n\x0e\x62\x61tch_filename\x18\x02 \x03(\t\x12\x17\n\x0fpwt_source_name\x18\x03 \x01(\t\x12\"\n\x16inner_iterations_count\x18\x04 \x01(\x05:\x02\x31\x30\x12\x18\n\x10regularizer_name\x18\x06 \x03(\t\x12\x17\n\x0fregularizer_tau\x18\x07 \x03(\x01\x12\x10\n\x08\x63lass_id\x18\x08 \x03(\t\x12\x14\n\x0c\x63lass_weight\x18\t \x03(\x02\x12\x1a\n\x0breuse_theta\x18\n \x01(\x08:\x05\x66\x61lse\x12\x19\n\x0bopt_for_avx\x18\x0b \x01(\x08:\x04true\x12J\n\x11theta_matrix_type\x18\x0e \x01(\x0e\x32(.artm.ProcessBatchesArgs.ThetaMatrixType:\x05\x43\x61\x63he\x12\x14\n\x0c\x62\x61tch_weight\x18\x0f \x03(\x02\x12\x18\n\x10predict_class_id\x18\x11 \x01(\t\x12\x1a\n\x05\x62\x61tch\x18\x12 \x03(\x0b\x32\x0b.artm.Batch\x12\x1f\n\x10use_random_theta\x18\x13 \x01(\x08:\x05\x66\x61lse\x12\x12\n\ntopic_name\x18\x14 \x03(\t\"\\\n\x0fThetaMatrixType\x12\x08\n\x04None\x10\x00\x12\t\n\x05\x44\x65nse\x10\x01\x12\n\n\x06Sparse\x10\x02\x12\t\n\x05\x43\x61\x63he\x10\x03\x12\r\n\tDensePtdw\x10\x04\x12\x0e\n\nSparsePtdw\x10\x05\"d\n\x14ProcessBatchesResult\x12#\n\nscore_data\x18\x01 \x03(\x0b\x32\x0f.artm.ScoreData\x12\'\n\x0ctheta_matrix\x18\x02 \x01(\x0b\x32\x11.artm.ThetaMatrix\"m\n\x0eMergeModelArgs\x12\x17\n\x0fnwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x02 \x03(\t\x12\x15\n\rsource_weight\x18\x03 \x03(\x02\x12\x12\n\ntopic_name\x18\x04 \x03(\t\"\x99\x01\n\x13RegularizeModelArgs\x12\x17\n\x0frwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fpwt_source_name\x18\x02 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x03 \x01(\t\x12\x37\n\x14regularizer_settings\x18\x04 \x03(\x0b\x32\x19.artm.RegularizerSettings\"_\n\x12NormalizeModelArgs\x12\x17\n\x0fpwt_target_name\x18\x01 \x01(\t\x12\x17\n\x0fnwt_source_name\x18\x02 \x01(\t\x12\x17\n\x0frwt_source_name\x18\x03 \x01(\t\"B\n\x14ImportDictionaryArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\"B\n\x14\x45xportDictionaryArgs\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x17\n\x0f\x64ictionary_name\x18\x02 \x01(\t\"\xc1\x01\n\x15\x43opyRequestResultArgs\x12Q\n\x0crequest_type\x18\x01 \x01(\x0e\x32\'.artm.CopyRequestResultArgs.RequestType:\x12\x44\x65\x66\x61ultRequestType\"U\n\x0bRequestType\x12\x16\n\x12\x44\x65\x66\x61ultRequestType\x10\x00\x12\x16\n\x12GetThetaSecondPass\x10\x01\x12\x16\n\x12GetModelSecondPass\x10\x02\"\x1e\n\x1c\x44uplicateMasterComponentArgs\"\x1c\n\x1aGetMasterComponentInfoArgs\"\xa2\x06\n\x13MasterComponentInfo\x12\x11\n\tmaster_id\x18\x01 \x01(\x05\x12\'\n\x06\x63onfig\x18\x02 \x01(\x0b\x32\x17.artm.MasterModelConfig\x12>\n\x0bregularizer\x18\x03 \x03(\x0b\x32).artm.MasterComponentInfo.RegularizerInfo\x12\x32\n\x05score\x18\x04 \x03(\x0b\x32#.artm.MasterComponentInfo.ScoreInfo\x12<\n\ndictionary\x18\x05 \x03(\x0b\x32(.artm.MasterComponentInfo.DictionaryInfo\x12\x32\n\x05model\x18\x06 \x03(\x0b\x32#.artm.MasterComponentInfo.ModelInfo\x12=\n\x0b\x63\x61\x63he_entry\x18\x07 \x03(\x0b\x32(.artm.MasterComponentInfo.CacheEntryInfo\x12\x1c\n\x14processor_queue_size\x18\t \x01(\x05\x12\x32\n\x05\x62\x61tch\x18\n \x03(\x0b\x32#.artm.MasterComponentInfo.BatchInfo\x1a-\n\x0fRegularizerInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x1a\'\n\tScoreInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x1a\x35\n\x0e\x44ictionaryInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rentries_count\x18\x02 \x01(\x03\x1a\x43\n\tBatchInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0bitems_count\x18\x02 \x01(\x05\x12\x13\n\x0btoken_count\x18\x03 \x01(\x05\x1aR\n\tModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x14\n\x0ctopics_count\x18\x03 \x01(\x05\x12\x13\n\x0btoken_count\x18\x04 \x01(\x05\x1a\x30\n\x0e\x43\x61\x63heEntryInfo\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tbyte_size\x18\x02 \x01(\x05\"C\n\x11ImportBatchesArgs\x12\x12\n\nbatch_name\x18\x01 \x03(\t\x12\x1a\n\x05\x62\x61tch\x18\x03 \x03(\x0b\x32\x0b.artm.Batch\"6\n\x12\x41waitOperationArgs\x12 \n\x14timeout_milliseconds\x18\x01 \x01(\x05:\x02-1\"\xf8\x02\n\x11MasterModelConfig\x12\x12\n\ntopic_name\x18\x01 \x03(\t\x12\x10\n\x08\x63lass_id\x18\x02 \x03(\t\x12\x14\n\x0c\x63lass_weight\x18\x03 \x03(\x02\x12\'\n\x0cscore_config\x18\x04 \x03(\x0b\x32\x11.artm.ScoreConfig\x12\x33\n\x12regularizer_config\x18\x05 \x03(\x0b\x32\x17.artm.RegularizerConfig\x12\x0f\n\x07threads\x18\x06 \x01(\x05\x12\x15\n\x08pwt_name\x18\x07 \x01(\t:\x03pwt\x12\x15\n\x08nwt_name\x18\x08 \x01(\t:\x03nwt\x12\x1e\n\x16inner_iterations_count\x18\t \x01(\x05\x12\x1a\n\x0breuse_theta\x18\n \x01(\x08:\x05\x66\x61lse\x12\x19\n\x0bopt_for_avx\x18\x0b \x01(\x08:\x04true\x12\x17\n\x0f\x64isk_cache_path\x18\r \x01(\t\x12\x1a\n\x0b\x63\x61\x63he_theta\x18\x0f \x01(\x08:\x05\x66\x61lse\"r\n\x19\x46itOfflineMasterModelArgs\x12\x16\n\x0e\x62\x61tch_filename\x18\x01 \x03(\t\x12\x14\n\x0c\x62\x61tch_weight\x18\x02 \x03(\x02\x12\x11\n\x06passes\x18\x03 \x01(\x05:\x01\x31\x12\x14\n\x0c\x62\x61tch_folder\x18\x04 \x01(\t\"\xa0\x01\n\x18\x46itOnlineMasterModelArgs\x12\x16\n\x0e\x62\x61tch_filename\x18\x01 \x03(\t\x12\x14\n\x0c\x62\x61tch_weight\x18\x02 \x03(\x02\x12\x14\n\x0cupdate_after\x18\x03 \x03(\x05\x12\x14\n\x0c\x61pply_weight\x18\x04 \x03(\x02\x12\x14\n\x0c\x64\x65\x63\x61y_weight\x18\x05 \x03(\x02\x12\x14\n\x05\x61sync\x18\x06 \x01(\x08:\x05\x66\x61lse\"\x98\x02\n\x18TransformMasterModelArgs\x12\x1a\n\x05\x62\x61tch\x18\x01 \x03(\x0b\x32\x0b.artm.Batch\x12\x16\n\x0e\x62\x61tch_filename\x18\x02 \x03(\t\x12P\n\x11theta_matrix_type\x18\x03 \x01(\x0e\x32..artm.TransformMasterModelArgs.ThetaMatrixType:\x05\x44\x65nse\x12\x18\n\x10predict_class_id\x18\x04 \x01(\t\"\\\n\x0fThetaMatrixType\x12\x08\n\x04None\x10\x00\x12\t\n\x05\x44\x65nse\x10\x01\x12\n\n\x06Sparse\x10\x02\x12\t\n\x05\x43\x61\x63he\x10\x03\x12\r\n\tDensePtdw\x10\x04\x12\x0e\n\nSparsePtdw\x10\x05\"\xff\x01\n\x14\x43onfigureLoggingArgs\x12\x0f\n\x07log_dir\x18\x01 \x01(\t\x12\x13\n\x0bminloglevel\x18\x02 \x01(\x05\x12\x17\n\x0fstderrthreshold\x18\x03 \x01(\x05\x12\x13\n\x0blogtostderr\x18\x04 \x01(\x08\x12\x18\n\x10\x63olorlogtostderr\x18\x05 \x01(\x08\x12\x17\n\x0f\x61lsologtostderr\x18\x06 \x01(\x08\x12\x12\n\nlogbufsecs\x18\x07 \x01(\x05\x12\x13\n\x0blogbuflevel\x18\x08 \x01(\x05\x12\x14\n\x0cmax_log_size\x18\t \x01(\x05\x12!\n\x19stop_logging_if_full_disk\x18\n \x01(\x08\"\x15\n\x13\x43learThetaCacheArgs\"\x15\n\x13\x43learScoreCacheArgs\"\x1a\n\x18\x43learScoreArrayCacheArgs')
 
 
 
@@ -62,8 +62,8 @@ _REGULARIZERCONFIG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=845,
-  serialized_end=1056,
+  serialized_start=577,
+  serialized_end=788,
 )
 
 _SPECIFIEDSPARSEPHICONFIG_MODE = _descriptor.EnumDescriptor(
@@ -83,8 +83,8 @@ _SPECIFIEDSPARSEPHICONFIG_MODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1713,
-  serialized_end=1755,
+  serialized_start=1445,
+  serialized_end=1487,
 )
 
 _SMOOTHPTDWCONFIG_TYPE = _descriptor.EnumDescriptor(
@@ -104,8 +104,8 @@ _SMOOTHPTDWCONFIG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1970,
-  serialized_end=2014,
+  serialized_start=1702,
+  serialized_end=1746,
 )
 
 _TRANSFORMCONFIG_TRANSFORMTYPE = _descriptor.EnumDescriptor(
@@ -129,8 +129,8 @@ _TRANSFORMCONFIG_TRANSFORMTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2225,
-  serialized_end=2285,
+  serialized_start=1957,
+  serialized_end=2017,
 )
 
 _SCORECONFIG_TYPE = _descriptor.EnumDescriptor(
@@ -182,8 +182,8 @@ _SCORECONFIG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2372,
-  serialized_end=2554,
+  serialized_start=2104,
+  serialized_end=2286,
 )
 
 _SCOREDATA_TYPE = _descriptor.EnumDescriptor(
@@ -235,8 +235,8 @@ _SCOREDATA_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2372,
-  serialized_end=2554,
+  serialized_start=2104,
+  serialized_end=2286,
 )
 
 _PERPLEXITYSCORECONFIG_TYPE = _descriptor.EnumDescriptor(
@@ -256,8 +256,8 @@ _PERPLEXITYSCORECONFIG_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=3112,
-  serialized_end=3172,
+  serialized_start=2817,
+  serialized_end=2877,
 )
 
 _TOPICMODEL_OPERATIONTYPE = _descriptor.EnumDescriptor(
@@ -289,8 +289,8 @@ _TOPICMODEL_OPERATIONTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=5585,
-  serialized_end=5670,
+  serialized_start=5209,
+  serialized_end=5294,
 )
 
 _COLLECTIONPARSERCONFIG_FORMAT = _descriptor.EnumDescriptor(
@@ -314,8 +314,8 @@ _COLLECTIONPARSERCONFIG_FORMAT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=6274,
-  serialized_end=6337,
+  serialized_start=5898,
+  serialized_end=5961,
 )
 
 _COLLECTIONPARSERCONFIG_NAMETYPE = _descriptor.EnumDescriptor(
@@ -335,8 +335,8 @@ _COLLECTIONPARSERCONFIG_NAMETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=6339,
-  serialized_end=6369,
+  serialized_start=5963,
+  serialized_end=5993,
 )
 
 _INITIALIZEMODELARGS_SOURCETYPE = _descriptor.EnumDescriptor(
@@ -356,8 +356,8 @@ _INITIALIZEMODELARGS_SOURCETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=6820,
-  serialized_end=6861,
+  serialized_start=6444,
+  serialized_end=6485,
 )
 
 _GETTOPICMODELARGS_REQUESTTYPE = _descriptor.EnumDescriptor(
@@ -385,8 +385,8 @@ _GETTOPICMODELARGS_REQUESTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=7769,
-  serialized_end=7828,
+  serialized_start=7393,
+  serialized_end=7452,
 )
 
 _GETTOPICMODELARGS_MATRIXLAYOUT = _descriptor.EnumDescriptor(
@@ -406,8 +406,8 @@ _GETTOPICMODELARGS_MATRIXLAYOUT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=7830,
-  serialized_end=7867,
+  serialized_start=7454,
+  serialized_end=7491,
 )
 
 _GETTHETAMATRIXARGS_MATRIXLAYOUT = _descriptor.EnumDescriptor(
@@ -427,8 +427,8 @@ _GETTHETAMATRIXARGS_MATRIXLAYOUT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=7830,
-  serialized_end=7867,
+  serialized_start=7454,
+  serialized_end=7491,
 )
 
 _PROCESSBATCHESARGS_THETAMATRIXTYPE = _descriptor.EnumDescriptor(
@@ -464,8 +464,8 @@ _PROCESSBATCHESARGS_THETAMATRIXTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=8830,
-  serialized_end=8922,
+  serialized_start=8454,
+  serialized_end=8546,
 )
 
 _COPYREQUESTRESULTARGS_REQUESTTYPE = _descriptor.EnumDescriptor(
@@ -489,8 +489,8 @@ _COPYREQUESTRESULTARGS_REQUESTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=9635,
-  serialized_end=9720,
+  serialized_start=9259,
+  serialized_end=9344,
 )
 
 _TRANSFORMMASTERMODELARGS_THETAMATRIXTYPE = _descriptor.EnumDescriptor(
@@ -526,8 +526,8 @@ _TRANSFORMMASTERMODELARGS_THETAMATRIXTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=8830,
-  serialized_end=8922,
+  serialized_start=8454,
+  serialized_end=8546,
 )
 
 
@@ -686,16 +686,23 @@ _ITEM = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='field', full_name='artm.Item.field', index=1,
-      number=2, type=11, cpp_type=10, label=3,
+      name='title', full_name='artm.Item.title', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='token_id', full_name='artm.Item.token_id', index=2,
+      number=3, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='title', full_name='artm.Item.title', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
+      name='token_weight', full_name='artm.Item.token_weight', index=3,
+      number=4, type=2, cpp_type=6, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -709,119 +716,7 @@ _ITEM = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=189,
-  serialized_end=250,
-)
-
-
-_FIELD = _descriptor.Descriptor(
-  name='Field',
-  full_name='artm.Field',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='artm.Field.name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=True, default_value=unicode("@body", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='token_id', full_name='artm.Field.token_id', index=1,
-      number=2, type=5, cpp_type=1, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='token_count', full_name='artm.Field.token_count', index=2,
-      number=3, type=5, cpp_type=1, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='token_offset', full_name='artm.Field.token_offset', index=3,
-      number=4, type=5, cpp_type=1, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='string_value', full_name='artm.Field.string_value', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='int_value', full_name='artm.Field.int_value', index=5,
-      number=6, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='double_value', full_name='artm.Field.double_value', index=6,
-      number=7, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='date_value', full_name='artm.Field.date_value', index=7,
-      number=8, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='string_array', full_name='artm.Field.string_array', index=8,
-      number=16, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='int_array', full_name='artm.Field.int_array', index=9,
-      number=17, type=3, cpp_type=2, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='double_array', full_name='artm.Field.double_array', index=10,
-      number=18, type=1, cpp_type=5, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='date_array', full_name='artm.Field.date_array', index=11,
-      number=19, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='token_weight', full_name='artm.Field.token_weight', index=12,
-      number=20, type=2, cpp_type=6, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=253,
-  serialized_end=530,
+  serialized_end=262,
 )
 
 
@@ -876,8 +771,8 @@ _BATCH = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=532,
-  serialized_end=631,
+  serialized_start=264,
+  serialized_end=363,
 )
 
 
@@ -925,8 +820,8 @@ _REGULARIZERSETTINGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=633,
-  serialized_end=733,
+  serialized_start=365,
+  serialized_end=465,
 )
 
 
@@ -975,8 +870,8 @@ _REGULARIZERCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=736,
-  serialized_end=1056,
+  serialized_start=468,
+  serialized_end=788,
 )
 
 
@@ -1017,8 +912,8 @@ _SMOOTHSPARSETHETACONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1058,
-  serialized_end=1172,
+  serialized_start=790,
+  serialized_end=904,
 )
 
 
@@ -1066,8 +961,8 @@ _SMOOTHSPARSEPHICONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1175,
-  serialized_end=1310,
+  serialized_start=907,
+  serialized_end=1042,
 )
 
 
@@ -1101,8 +996,8 @@ _DECORRELATORPHICONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1312,
-  serialized_end=1373,
+  serialized_start=1044,
+  serialized_end=1105,
 )
 
 
@@ -1122,8 +1017,8 @@ _MULTILANGUAGEPHICONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1375,
-  serialized_end=1399,
+  serialized_start=1107,
+  serialized_end=1131,
 )
 
 
@@ -1164,8 +1059,8 @@ _LABELREGULARIZATIONPHICONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1401,
-  serialized_end=1494,
+  serialized_start=1133,
+  serialized_end=1226,
 )
 
 
@@ -1221,8 +1116,8 @@ _SPECIFIEDSPARSEPHICONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1497,
-  serialized_end=1755,
+  serialized_start=1229,
+  serialized_end=1487,
 )
 
 
@@ -1263,8 +1158,8 @@ _IMPROVECOHERENCEPHICONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1757,
-  serialized_end=1847,
+  serialized_start=1489,
+  serialized_end=1579,
 )
 
 
@@ -1306,8 +1201,8 @@ _SMOOTHPTDWCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1850,
-  serialized_end=2014,
+  serialized_start=1582,
+  serialized_end=1746,
 )
 
 
@@ -1348,8 +1243,8 @@ _TOPICSELECTIONTHETACONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2016,
-  serialized_end=2104,
+  serialized_start=1748,
+  serialized_end=1836,
 )
 
 
@@ -1391,8 +1286,8 @@ _TRANSFORMCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2107,
-  serialized_end=2285,
+  serialized_start=1839,
+  serialized_end=2017,
 )
 
 
@@ -1434,8 +1329,8 @@ _SCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2288,
-  serialized_end=2554,
+  serialized_start=2020,
+  serialized_end=2286,
 )
 
 
@@ -1477,8 +1372,8 @@ _SCOREDATA = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2557,
-  serialized_end=2817,
+  serialized_start=2289,
+  serialized_end=2549,
 )
 
 
@@ -1505,8 +1400,8 @@ _SCOREDATAARRAY = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2819,
-  serialized_end=2867,
+  serialized_start=2551,
+  serialized_end=2599,
 )
 
 
@@ -1518,42 +1413,35 @@ _PERPLEXITYSCORECONFIG = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='field_name', full_name='artm.PerplexityScoreConfig.field_name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=True, default_value=unicode("@body", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='model_type', full_name='artm.PerplexityScoreConfig.model_type', index=1,
+      name='model_type', full_name='artm.PerplexityScoreConfig.model_type', index=0,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=True, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='dictionary_name', full_name='artm.PerplexityScoreConfig.dictionary_name', index=2,
+      name='dictionary_name', full_name='artm.PerplexityScoreConfig.dictionary_name', index=1,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='theta_sparsity_eps', full_name='artm.PerplexityScoreConfig.theta_sparsity_eps', index=3,
+      name='theta_sparsity_eps', full_name='artm.PerplexityScoreConfig.theta_sparsity_eps', index=2,
       number=5, type=2, cpp_type=6, label=1,
       has_default_value=True, default_value=1e-037,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='theta_sparsity_topic_name', full_name='artm.PerplexityScoreConfig.theta_sparsity_topic_name', index=4,
+      name='theta_sparsity_topic_name', full_name='artm.PerplexityScoreConfig.theta_sparsity_topic_name', index=3,
       number=6, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='class_id', full_name='artm.PerplexityScoreConfig.class_id', index=5,
+      name='class_id', full_name='artm.PerplexityScoreConfig.class_id', index=4,
       number=7, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1569,8 +1457,8 @@ _PERPLEXITYSCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2870,
-  serialized_end=3172,
+  serialized_start=2602,
+  serialized_end=2877,
 )
 
 
@@ -1639,8 +1527,8 @@ _PERPLEXITYSCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3175,
-  serialized_end=3363,
+  serialized_start=2880,
+  serialized_end=3068,
 )
 
 
@@ -1652,21 +1540,14 @@ _SPARSITYTHETASCORECONFIG = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='field_name', full_name='artm.SparsityThetaScoreConfig.field_name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=True, default_value=unicode("@body", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='eps', full_name='artm.SparsityThetaScoreConfig.eps', index=1,
+      name='eps', full_name='artm.SparsityThetaScoreConfig.eps', index=0,
       number=3, type=2, cpp_type=6, label=1,
       has_default_value=True, default_value=1e-037,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='topic_name', full_name='artm.SparsityThetaScoreConfig.topic_name', index=2,
+      name='topic_name', full_name='artm.SparsityThetaScoreConfig.topic_name', index=1,
       number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1681,8 +1562,8 @@ _SPARSITYTHETASCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3365,
-  serialized_end=3459,
+  serialized_start=3070,
+  serialized_end=3137,
 )
 
 
@@ -1723,8 +1604,8 @@ _SPARSITYTHETASCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3461,
-  serialized_end=3539,
+  serialized_start=3139,
+  serialized_end=3217,
 )
 
 
@@ -1765,8 +1646,8 @@ _SPARSITYPHISCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3541,
-  serialized_end=3640,
+  serialized_start=3219,
+  serialized_end=3318,
 )
 
 
@@ -1807,8 +1688,8 @@ _SPARSITYPHISCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3642,
-  serialized_end=3718,
+  serialized_start=3320,
+  serialized_end=3396,
 )
 
 
@@ -1819,13 +1700,6 @@ _ITEMSPROCESSEDSCORECONFIG = _descriptor.Descriptor(
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
-    _descriptor.FieldDescriptor(
-      name='field_name', full_name='artm.ItemsProcessedScoreConfig.field_name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=True, default_value=unicode("@body", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
   ],
   extensions=[
   ],
@@ -1835,8 +1709,8 @@ _ITEMSPROCESSEDSCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3720,
-  serialized_end=3774,
+  serialized_start=3398,
+  serialized_end=3425,
 )
 
 
@@ -1870,8 +1744,8 @@ _ITEMSPROCESSEDSCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3776,
-  serialized_end=3839,
+  serialized_start=3427,
+  serialized_end=3490,
 )
 
 
@@ -1919,8 +1793,8 @@ _TOPTOKENSSCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3842,
-  serialized_end=3980,
+  serialized_start=3493,
+  serialized_end=3631,
 )
 
 
@@ -1989,8 +1863,8 @@ _TOPTOKENSSCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3983,
-  serialized_end=4156,
+  serialized_start=3634,
+  serialized_end=3807,
 )
 
 
@@ -2002,21 +1876,14 @@ _THETASNIPPETSCORECONFIG = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='field_name', full_name='artm.ThetaSnippetScoreConfig.field_name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=True, default_value=unicode("@body", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='item_id', full_name='artm.ThetaSnippetScoreConfig.item_id', index=1,
+      name='item_id', full_name='artm.ThetaSnippetScoreConfig.item_id', index=0,
       number=3, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=_descriptor._ParseOptions(descriptor_pb2.FieldOptions(), '\020\001')),
     _descriptor.FieldDescriptor(
-      name='item_count', full_name='artm.ThetaSnippetScoreConfig.item_count', index=2,
+      name='item_count', full_name='artm.ThetaSnippetScoreConfig.item_count', index=1,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=True, default_value=10,
       message_type=None, enum_type=None, containing_type=None,
@@ -2031,8 +1898,8 @@ _THETASNIPPETSCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4158,
-  serialized_end=4255,
+  serialized_start=3809,
+  serialized_end=3879,
 )
 
 
@@ -2066,8 +1933,8 @@ _THETASNIPPETSCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4257,
-  serialized_end=4327,
+  serialized_start=3881,
+  serialized_end=3951,
 )
 
 
@@ -2122,8 +1989,8 @@ _TOPICKERNELSCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4330,
-  serialized_end=4508,
+  serialized_start=3954,
+  serialized_end=4132,
 )
 
 
@@ -2213,8 +2080,8 @@ _TOPICKERNELSCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4511,
-  serialized_end=4894,
+  serialized_start=4135,
+  serialized_end=4518,
 )
 
 
@@ -2255,8 +2122,8 @@ _TOPICMASSPHISCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4896,
-  serialized_end=4996,
+  serialized_start=4520,
+  serialized_end=4620,
 )
 
 
@@ -2304,8 +2171,8 @@ _TOPICMASSPHISCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=4998,
-  serialized_end=5093,
+  serialized_start=4622,
+  serialized_end=4717,
 )
 
 
@@ -2325,8 +2192,8 @@ _CLASSPRECISIONSCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5095,
-  serialized_end=5122,
+  serialized_start=4719,
+  serialized_end=4746,
 )
 
 
@@ -2367,8 +2234,8 @@ _CLASSPRECISIONSCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5124,
-  serialized_end=5190,
+  serialized_start=4748,
+  serialized_end=4814,
 )
 
 
@@ -2388,8 +2255,8 @@ _PEAKMEMORYSCORECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5192,
-  serialized_end=5215,
+  serialized_start=4816,
+  serialized_end=4839,
 )
 
 
@@ -2416,8 +2283,8 @@ _PEAKMEMORYSCORE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5217,
-  serialized_end=5249,
+  serialized_start=4841,
+  serialized_end=4873,
 )
 
 
@@ -2444,8 +2311,8 @@ _TOPICMODEL_TOPICMODELINTERNALS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5530,
-  serialized_end=5583,
+  serialized_start=5154,
+  serialized_end=5207,
 )
 
 _TOPICMODEL = _descriptor.Descriptor(
@@ -2535,8 +2402,8 @@ _TOPICMODEL = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5252,
-  serialized_end=5670,
+  serialized_start=4876,
+  serialized_end=5294,
 )
 
 
@@ -2598,8 +2465,8 @@ _THETAMATRIX = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5673,
-  serialized_end=5842,
+  serialized_start=5297,
+  serialized_end=5466,
 )
 
 
@@ -2698,8 +2565,8 @@ _COLLECTIONPARSERCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=5845,
-  serialized_end=6369,
+  serialized_start=5469,
+  serialized_end=5993,
 )
 
 
@@ -2768,8 +2635,8 @@ _INITIALIZEMODELARGS_FILTER = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=6653,
-  serialized_end=6818,
+  serialized_start=6277,
+  serialized_end=6442,
 )
 
 _INITIALIZEMODELARGS = _descriptor.Descriptor(
@@ -2852,8 +2719,8 @@ _INITIALIZEMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=6372,
-  serialized_end=6861,
+  serialized_start=5996,
+  serialized_end=6485,
 )
 
 
@@ -2936,8 +2803,8 @@ _DICTIONARYDATA = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=6864,
-  serialized_end=7057,
+  serialized_start=6488,
+  serialized_end=6681,
 )
 
 
@@ -3020,8 +2887,8 @@ _FILTERDICTIONARYARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=7060,
-  serialized_end=7263,
+  serialized_start=6684,
+  serialized_end=6887,
 )
 
 
@@ -3083,8 +2950,8 @@ _GATHERDICTIONARYARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=7266,
-  serialized_end=7446,
+  serialized_start=6890,
+  serialized_end=7070,
 )
 
 
@@ -3111,8 +2978,8 @@ _GETDICTIONARYARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=7448,
-  serialized_end=7492,
+  serialized_start=7072,
+  serialized_end=7116,
 )
 
 
@@ -3190,8 +3057,8 @@ _GETTOPICMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=7495,
-  serialized_end=7867,
+  serialized_start=7119,
+  serialized_end=7491,
 )
 
 
@@ -3247,8 +3114,8 @@ _GETTHETAMATRIXARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=7870,
-  serialized_end=8087,
+  serialized_start=7494,
+  serialized_end=7711,
 )
 
 
@@ -3282,8 +3149,8 @@ _GETSCOREVALUEARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=8089,
-  serialized_end=8148,
+  serialized_start=7713,
+  serialized_end=7772,
 )
 
 
@@ -3310,8 +3177,8 @@ _GETSCOREARRAYARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=8150,
-  serialized_end=8189,
+  serialized_start=7774,
+  serialized_end=7813,
 )
 
 
@@ -3345,8 +3212,8 @@ _EXPORTMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=8191,
-  serialized_end=8247,
+  serialized_start=7815,
+  serialized_end=7871,
 )
 
 
@@ -3380,8 +3247,8 @@ _IMPORTMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=8249,
-  serialized_end=8305,
+  serialized_start=7873,
+  serialized_end=7929,
 )
 
 
@@ -3408,8 +3275,8 @@ _ATTACHMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=8307,
-  serialized_end=8344,
+  serialized_start=7931,
+  serialized_end=7968,
 )
 
 
@@ -3542,8 +3409,8 @@ _PROCESSBATCHESARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=8347,
-  serialized_end=8922,
+  serialized_start=7971,
+  serialized_end=8546,
 )
 
 
@@ -3577,8 +3444,8 @@ _PROCESSBATCHESRESULT = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=8924,
-  serialized_end=9024,
+  serialized_start=8548,
+  serialized_end=8648,
 )
 
 
@@ -3626,8 +3493,8 @@ _MERGEMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9026,
-  serialized_end=9135,
+  serialized_start=8650,
+  serialized_end=8759,
 )
 
 
@@ -3675,8 +3542,8 @@ _REGULARIZEMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9138,
-  serialized_end=9291,
+  serialized_start=8762,
+  serialized_end=8915,
 )
 
 
@@ -3717,8 +3584,8 @@ _NORMALIZEMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9293,
-  serialized_end=9388,
+  serialized_start=8917,
+  serialized_end=9012,
 )
 
 
@@ -3752,8 +3619,8 @@ _IMPORTDICTIONARYARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9390,
-  serialized_end=9456,
+  serialized_start=9014,
+  serialized_end=9080,
 )
 
 
@@ -3787,8 +3654,8 @@ _EXPORTDICTIONARYARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9458,
-  serialized_end=9524,
+  serialized_start=9082,
+  serialized_end=9148,
 )
 
 
@@ -3816,8 +3683,8 @@ _COPYREQUESTRESULTARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9527,
-  serialized_end=9720,
+  serialized_start=9151,
+  serialized_end=9344,
 )
 
 
@@ -3837,8 +3704,8 @@ _DUPLICATEMASTERCOMPONENTARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9722,
-  serialized_end=9752,
+  serialized_start=9346,
+  serialized_end=9376,
 )
 
 
@@ -3858,8 +3725,8 @@ _GETMASTERCOMPONENTINFOARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9754,
-  serialized_end=9782,
+  serialized_start=9378,
+  serialized_end=9406,
 )
 
 
@@ -3893,8 +3760,8 @@ _MASTERCOMPONENTINFO_REGULARIZERINFO = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10243,
-  serialized_end=10288,
+  serialized_start=9867,
+  serialized_end=9912,
 )
 
 _MASTERCOMPONENTINFO_SCOREINFO = _descriptor.Descriptor(
@@ -3927,8 +3794,8 @@ _MASTERCOMPONENTINFO_SCOREINFO = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10290,
-  serialized_end=10329,
+  serialized_start=9914,
+  serialized_end=9953,
 )
 
 _MASTERCOMPONENTINFO_DICTIONARYINFO = _descriptor.Descriptor(
@@ -3961,8 +3828,8 @@ _MASTERCOMPONENTINFO_DICTIONARYINFO = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10331,
-  serialized_end=10384,
+  serialized_start=9955,
+  serialized_end=10008,
 )
 
 _MASTERCOMPONENTINFO_BATCHINFO = _descriptor.Descriptor(
@@ -4002,8 +3869,8 @@ _MASTERCOMPONENTINFO_BATCHINFO = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10386,
-  serialized_end=10453,
+  serialized_start=10010,
+  serialized_end=10077,
 )
 
 _MASTERCOMPONENTINFO_MODELINFO = _descriptor.Descriptor(
@@ -4050,8 +3917,8 @@ _MASTERCOMPONENTINFO_MODELINFO = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10455,
-  serialized_end=10537,
+  serialized_start=10079,
+  serialized_end=10161,
 )
 
 _MASTERCOMPONENTINFO_CACHEENTRYINFO = _descriptor.Descriptor(
@@ -4084,8 +3951,8 @@ _MASTERCOMPONENTINFO_CACHEENTRYINFO = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10539,
-  serialized_end=10587,
+  serialized_start=10163,
+  serialized_end=10211,
 )
 
 _MASTERCOMPONENTINFO = _descriptor.Descriptor(
@@ -4167,8 +4034,8 @@ _MASTERCOMPONENTINFO = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=9785,
-  serialized_end=10587,
+  serialized_start=9409,
+  serialized_end=10211,
 )
 
 
@@ -4202,8 +4069,8 @@ _IMPORTBATCHESARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10589,
-  serialized_end=10656,
+  serialized_start=10213,
+  serialized_end=10280,
 )
 
 
@@ -4230,8 +4097,8 @@ _AWAITOPERATIONARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10658,
-  serialized_end=10712,
+  serialized_start=10282,
+  serialized_end=10336,
 )
 
 
@@ -4342,8 +4209,8 @@ _MASTERMODELCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=10715,
-  serialized_end=11091,
+  serialized_start=10339,
+  serialized_end=10715,
 )
 
 
@@ -4391,8 +4258,8 @@ _FITOFFLINEMASTERMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=11093,
-  serialized_end=11207,
+  serialized_start=10717,
+  serialized_end=10831,
 )
 
 
@@ -4454,8 +4321,8 @@ _FITONLINEMASTERMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=11210,
-  serialized_end=11370,
+  serialized_start=10834,
+  serialized_end=10994,
 )
 
 
@@ -4504,8 +4371,8 @@ _TRANSFORMMASTERMODELARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=11373,
-  serialized_end=11653,
+  serialized_start=10997,
+  serialized_end=11277,
 )
 
 
@@ -4595,8 +4462,8 @@ _CONFIGURELOGGINGARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=11656,
-  serialized_end=11911,
+  serialized_start=11280,
+  serialized_end=11535,
 )
 
 
@@ -4616,8 +4483,8 @@ _CLEARTHETACACHEARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=11913,
-  serialized_end=11934,
+  serialized_start=11537,
+  serialized_end=11558,
 )
 
 
@@ -4637,8 +4504,8 @@ _CLEARSCORECACHEARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=11936,
-  serialized_end=11957,
+  serialized_start=11560,
+  serialized_end=11581,
 )
 
 
@@ -4658,11 +4525,10 @@ _CLEARSCOREARRAYCACHEARGS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=11959,
-  serialized_end=11985,
+  serialized_start=11583,
+  serialized_end=11609,
 )
 
-_ITEM.fields_by_name['field'].message_type = _FIELD
 _BATCH.fields_by_name['item'].message_type = _ITEM
 _REGULARIZERCONFIG.fields_by_name['type'].enum_type = _REGULARIZERCONFIG_TYPE
 _REGULARIZERCONFIG_TYPE.containing_type = _REGULARIZERCONFIG;
@@ -4744,7 +4610,6 @@ DESCRIPTOR.message_types_by_name['BoolArray'] = _BOOLARRAY
 DESCRIPTOR.message_types_by_name['IntArray'] = _INTARRAY
 DESCRIPTOR.message_types_by_name['StringArray'] = _STRINGARRAY
 DESCRIPTOR.message_types_by_name['Item'] = _ITEM
-DESCRIPTOR.message_types_by_name['Field'] = _FIELD
 DESCRIPTOR.message_types_by_name['Batch'] = _BATCH
 DESCRIPTOR.message_types_by_name['RegularizerSettings'] = _REGULARIZERSETTINGS
 DESCRIPTOR.message_types_by_name['RegularizerConfig'] = _REGULARIZERCONFIG
@@ -4853,12 +4718,6 @@ class Item(_message.Message):
   DESCRIPTOR = _ITEM
 
   # @@protoc_insertion_point(class_scope:artm.Item)
-
-class Field(_message.Message):
-  __metaclass__ = _reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _FIELD
-
-  # @@protoc_insertion_point(class_scope:artm.Field)
 
 class Batch(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType

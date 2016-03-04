@@ -54,12 +54,11 @@ TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryDat
 
     artm::Item* item = batch.add_item();
     item->set_id(iBatch);  // one item per batch
-    artm::Field* field = item->add_field();
     for (int iToken = 0; iToken < nTokens; ++iToken) {
       const int somewhat_random = iToken + iBatch + (iToken + 1)*(iBatch + 1);
       if (iToken == 0 || somewhat_random % 3 == 0) {  // NOLINT
-        field->add_token_id(iToken);
-        field->add_token_weight(1.0);
+        item->add_token_id(iToken);
+        item->add_token_weight(1.0);
       }
     }
 

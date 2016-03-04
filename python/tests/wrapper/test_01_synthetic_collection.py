@@ -49,12 +49,11 @@ def test_func():
         for item_id in xrange(num_items):
             item = batch.item.add()
             item.id = item_id
-            field = item.field.add()
             for token_id in xrange(num_tokens):
-                field.token_id.append(token_id)
+                item.token_id.append(token_id)
                 background_count = ((item_id + token_id) % 5 + 1) if (token_id >= 40) else 0
                 target_topics = num_topics if (token_id < 40) and ((token_id % 10) == (item_id % 10)) else 0
-                field.token_count.append(background_count + target_topics)
+                item.token_weight.append(background_count + target_topics)
 
         # Create the instance of low-level API
         lib = artm.wrapper.LibArtm()

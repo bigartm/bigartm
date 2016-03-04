@@ -43,13 +43,11 @@ void ClassPrecision::AppendScore(
   }
 
   bool error = true;
-  for (auto& field : item.field()) {
-    for (auto& token_id : field.token_id()) {
-      const artm::core::Token& token = token_dict[token_id];
-      if (token.class_id == args.predict_class_id() && token.keyword == keyword) {
-        error = false;
-        break;
-      }
+  for (auto& token_id : item.token_id()) {
+    const artm::core::Token& token = token_dict[token_id];
+    if (token.class_id == args.predict_class_id() && token.keyword == keyword) {
+      error = false;
+      break;
     }
   }
 

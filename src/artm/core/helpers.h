@@ -32,8 +32,7 @@ class Helpers {
 
 class BatchHelpers {
  public:
-  static void CompactBatch(const Batch& batch, Batch* compacted_batch);
-  static std::vector<std::string> ListAllBatches(const boost::filesystem::path& root);
+  static std::vector<boost::filesystem::path> ListAllBatches(const boost::filesystem::path& root);
   static boost::uuids::uuid SaveBatch(const Batch& batch,
                                       const std::string& disk_path,
                                       const std::string& name);
@@ -49,6 +48,7 @@ class BatchHelpers {
   static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
                                                 const GetThetaMatrixArgs& get_theta_args,
                                                 ::artm::ThetaMatrix* theta_matrix);
+  static void UpgradeBatch_v07(const char* source_folder, const char* target_folder);
 };
 
 }  // namespace core

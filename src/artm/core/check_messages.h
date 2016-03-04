@@ -13,6 +13,7 @@
 #include "artm/messages.pb.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
+#include "artm/core/internals.pb.h"
 
 namespace artm {
 namespace core {
@@ -141,7 +142,7 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
   return ss.str();
 }
 
-inline std::string DescribeErrors(const ::artm::Batch& message) {
+inline std::string DescribeErrors(const ::artm::core::Batch_v07& message) {
   std::stringstream ss;
   if (message.has_id()) {
     try {
@@ -168,7 +169,7 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   }
 
   for (int item_id = 0; item_id < message.item_size(); ++item_id) {
-    for (const Field& field : message.item(item_id).field()) {
+    for (const auto& field : message.item(item_id).field()) {
       if (field.token_count_size() != 0) {
         ss << "Field.token_count field is deprecated. Use Field.token_weight instead; ";
         break;
@@ -189,6 +190,57 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
       }
     }
   }
+
+  return ss.str();
+}
+
+inline std::string DescribeErrors(const ::artm::Batch& message) {
+  std::stringstream ss;
+  if (message.has_id()) {
+    try {
+      boost::lexical_cast<boost::uuids::uuid>(message.id());
+    }
+    catch (...) {
+      ss << "Batch.id must be GUID, got: " << message.id();
+      return ss.str();
+    }
+  } else {
+    ss << "Batch.id is not specified";
+    return ss.str();
+  }
+
+  const bool has_tokens = (message.token_size() > 0);
+  if (!has_tokens && (message.class_id_size() > 0)) {
+    ss << "Empty Batch.token require that Batch.class_id must also be empty, batch.id = " << message.id();
+    return ss.str();
+  }
+
+  if (has_tokens && (message.class_id_size() != message.token_size())) {
+    ss << "Length mismatch in fields Batch.class_id and Batch.token, batch.id = " << message.id();
+    return ss.str();
+  }
+
+  int total_length = 0;
+  for (int item_id = 0; item_id < message.item_size(); ++item_id) {
+    const Item& item = message.item(item_id);
+    if (item.token_weight_size() != item.token_id_size()) {
+      ss << "Length mismatch in field Batch.item(" << item_id << ").token_weight and token_id; ";
+      break;
+    }
+
+    total_length += item.token_id_size();
+    for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
+      int token_id = item.token_id(token_index);
+      if ((token_id < 0) || (has_tokens && (token_id >= message.token_size()))) {
+        ss << "Value " << token_id << " in Batch.Item(" << item_id
+            << ").token_id is negative or exceeds Batch.token_size";
+        return ss.str();
+      }
+    }
+  }
+
+  if (total_length == 0)
+    ss << "Batch " << message.id() << " is empty or was saved with an old format (prior to BigARTM v0.8)";
 
   return ss.str();
 }
@@ -487,7 +539,7 @@ inline void FixMessage(::artm::TopicModel* message) {
 }
 
 template<>
-inline void FixMessage(::artm::Batch* message) {
+inline void FixMessage(::artm::core::Batch_v07* message) {
   if (message->class_id_size() == 0) {
     for (int i = 0; i < message->token_size(); ++i) {
       message->add_class_id(DefaultClass);
@@ -495,14 +547,23 @@ inline void FixMessage(::artm::Batch* message) {
   }
 
   // Upgrade token_count to token_weight
-  for (::artm::Item& item : *message->mutable_item()) {
-    for (::artm::Field& field : *item.mutable_field()) {
+  for (auto& item : *message->mutable_item()) {
+    for (auto& field : *item.mutable_field()) {
       if (field.token_count_size() != 0 && field.token_weight_size() == 0) {
         field.mutable_token_weight()->Reserve(field.token_count_size());
         for (int i = 0; i < field.token_count_size(); ++i)
           field.add_token_weight(static_cast<float>(field.token_count(i)));
         field.clear_token_count();
       }
+    }
+  }
+}
+
+template<>
+inline void FixMessage(::artm::Batch* message) {
+  if (message->class_id_size() == 0) {
+    for (int i = 0; i < message->token_size(); ++i) {
+      message->add_class_id(DefaultClass);
     }
   }
 }

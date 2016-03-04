@@ -35,7 +35,7 @@ TEST(CollectionParser, UciBagOfWords) {
       ::artm::Batch batch;
       ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
       ASSERT_TRUE(batch.item_size() == 1 || batch.item_size() == 3);
-      int tokens_size = batch.item(0).field(0).token_weight_size();
+      int tokens_size = batch.item(0).token_weight_size();
       ASSERT_TRUE(tokens_size == 2 || tokens_size == 3);
     }
     ++it;

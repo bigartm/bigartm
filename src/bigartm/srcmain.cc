@@ -42,14 +42,14 @@ class CuckooWatch {
   std::chrono::time_point<std::chrono::system_clock> start_;
 };
 
-std::vector<std::string> findFilesInDirectory(std::string root, std::string ext) {
-  std::vector<std::string> retval;
+std::vector<boost::filesystem::path> findFilesInDirectory(std::string root, std::string ext) {
+  std::vector<boost::filesystem::path> retval;
   if (!root.empty() && boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
     boost::filesystem::recursive_directory_iterator it(root);
     boost::filesystem::recursive_directory_iterator endit;
     while (it != endit) {
       if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ext) {
-        retval.push_back(it->path().string());
+        retval.push_back(it->path());
       }
       ++it;
     }
@@ -132,6 +132,10 @@ bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
 template<typename T>
 std::vector<std::pair<std::string, T>> parseKeyValuePairs(const std::string& input) {
   std::vector<std::pair<std::string, T>> retval;
+
+  if (input.empty())
+    return retval;
+
   try {
     // Handle the case when "input" simply has an instance of typename T
     T single_value = boost::lexical_cast<T>(input);
@@ -225,6 +229,7 @@ struct artm_options {
   std::string read_vw_corpus;
   std::string read_cooc;
   std::string use_batches;
+  std::string use_batches_v07;
   int batch_size;
 
   // Dictionary
@@ -287,7 +292,8 @@ struct artm_options {
     const bool has_no_input =
       read_vw_corpus.empty() &&
       read_uci_docword.empty() &&
-      use_batches.empty();
+      use_batches.empty() &&
+      use_batches_v07.empty();
 
     return !has_no_input;
   }
@@ -346,6 +352,11 @@ bool verifyWritableFile(const std::string& file, bool force) {
 }
 
 bool verifyOptions(const artm_options& options) {
+  if (!options.use_batches_v07.empty() && options.save_batches.empty()) {
+    std::cerr << "--save-batches is required together with --use-batches-v07";
+    return false;
+  }
+
   if (!options.hasInput()) {
     std::string required_parameters = "--read-vw-corpus, --read-uci-docword, --use-batches";
     if (!options.write_class_predictions.empty() || !options.write_predictions.empty()) {
@@ -915,6 +926,46 @@ void WriteClassPredictions(const artm_options& options,
   }
 }
 
+// Returns true if batches were converted, otherwise false
+void upgrade_batch_07(artm_options* options) {
+  if (options->use_batches_v07.empty() || options->save_batches.empty())
+    return;
+
+  auto batch_file_names = findFilesInDirectory(options->use_batches_v07, ".batch");
+  if (batch_file_names.size() == 0)
+    throw std::runtime_error(std::string("No batches found in batch folder: ") + options->use_batches_v07);
+
+  std::cerr << "Upgrading batches from the old to the new format." << std::endl;
+
+  boost::filesystem::path target_dir(options->save_batches);
+  if (!boost::filesystem::is_directory(target_dir))
+    boost::filesystem::create_directory(target_dir);
+
+  std::vector<std::string> failed_batches;
+  for (unsigned i = 0; i < batch_file_names.size(); ++i) {
+    auto& source_file = batch_file_names[i];
+    try {
+      auto target_file = target_dir / source_file.filename();;
+      std::cerr << "Upgrading batch " << (i + 1) << " / " << batch_file_names.size();
+      ArtmUpgradeBatch_v07(source_file.string().c_str(), target_file.string().c_str());
+      std::cerr << std::endl;
+    } catch (std::exception& ex) {
+      std::cerr << ex.what() << ", batch " << source_file << " will be skipped." << std::endl;
+      failed_batches.push_back(source_file.string());
+      continue;
+    }
+  }
+
+  if (failed_batches.size() > 0) {
+    std::cerr << "WARNING: " << failed_batches.size() << " batches were not upgraded." << std::endl;
+  } else {
+    std::cerr << "All batches upgraded successfully." << std::endl;
+  }
+
+  options->use_batches = options->save_batches;
+  options->save_batches.clear();
+}
+
 int execute(const artm_options& options, int argc, char* argv[]) {
   const std::string pwt_model_name = options.pwt_model_name;
 
@@ -1059,7 +1110,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     std::cerr << "Number of tokens in the model: " << topic_model.token_size() << std::endl;
   }
 
-  std::vector<std::string> batch_file_names = findFilesInDirectory(batch_vectorizer.batch_folder(), ".batch");
+  auto batch_file_names = findFilesInDirectory(batch_vectorizer.batch_folder(), ".batch");
   int update_count = 0;
   CuckooWatch total_timer;
   for (int iter = 0;; ++iter) {
@@ -1086,13 +1137,13 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       } while (update_after < batch_file_names.size());
 
       for (auto& batch_file_name : batch_file_names)
-        fit_online_args.add_batch_filename(batch_file_name);
+        fit_online_args.add_batch_filename(batch_file_name.string());
 
       master_component->FitOnlineModel(fit_online_args);
     } else {
       FitOfflineMasterModelArgs fit_offline_args;
       for (auto& batch_file_name : batch_file_names)
-        fit_offline_args.add_batch_filename(batch_file_name);
+        fit_offline_args.add_batch_filename(batch_file_name.string());
 
       master_component->FitOfflineModel(fit_offline_args);
     }
@@ -1174,7 +1225,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     if (!options.predict_class.empty())
       transform_args.set_predict_class_id(options.predict_class);
     for (auto& batch_filename : batch_file_names)
-      transform_args.add_batch_filename(batch_filename);
+      transform_args.add_batch_filename(batch_filename.string());
 
     ::artm::Matrix theta_matrix;
     ThetaMatrix theta_metadata = master_component->Transform(transform_args, &theta_matrix);
@@ -1204,6 +1255,7 @@ int main(int argc, char * argv[]) {
       ("read-cooc", po::value(&options.read_cooc), "read co-occurrences format")
       ("batch-size", po::value(&options.batch_size)->default_value(500), "number of items per batch")
       ("use-batches", po::value(&options.use_batches), "folder with batches to use")
+      ("use-batches-v07", po::value(&options.use_batches_v07), "folder with batches in the old format (prior to BigaRTM v0.8) to convert.")
     ;
 
     po::options_description dictionary_options("Dictionary");
@@ -1318,6 +1370,7 @@ int main(int argc, char * argv[]) {
     if (options.read_vw_corpus.empty() &&
         options.read_uci_docword.empty() &&
         options.use_batches.empty() &&
+        options.use_batches_v07.empty() &&
         options.load_model.empty() &&
         options.use_dictionary.empty())
       show_help = true;
@@ -1375,6 +1428,9 @@ int main(int argc, char * argv[]) {
       std::cerr << "          --regularizer \"0.25 SmoothPhi #background\"\n";
       std::cerr << "          --regularizer \"0.25 SmoothTheta #background\"\n";
       std::cerr << std::endl;
+      std::cerr << "* Upgrade batches in the old format (from folder 'old_folder' into 'new_folder'):\n";
+      std::cerr << "  bigartm --use-batches old_folder --save-batches new_folder\n";
+      std::cerr << std::endl;
       std::cerr << "* Configure logger to output into stderr:\n";
       std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10\n";
       return 1;
@@ -1392,6 +1448,7 @@ int main(int argc, char * argv[]) {
       ::artm::ConfigureLogging(args);
     }
 
+    upgrade_batch_07(&options);
     return execute(options, argc, argv);
   } catch (std::exception& e) {
     std::cerr << "Exception  : " << e.what() << "\n";

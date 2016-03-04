@@ -36,12 +36,11 @@ void GenerateBatches(std::vector< ::artm::Batch>* batches, ::artm::DictionaryDat
     for (int iItem = 0; iItem < nItemsPerBatch; ++iItem) {
       artm::Item* item = batch.add_item();
       item->set_id(itemId++);
-      artm::Field* field = item->add_field();
       for (int iToken = 0; iToken < nTokens; ++iToken) {
         // Add each third token (randomly)
         if (rand() % 3 == 0) {  // NOLINT
-          field->add_token_id(iToken);
-          field->add_token_weight(1.0);
+          item->add_token_id(iToken);
+          item->add_token_weight(1.0);
         }
       }
     }

@@ -327,22 +327,20 @@ InitializeSparseNdw(const Batch& batch, const ProcessBatchesArgs& args) {
   // For sparse case
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
     n_dw_row_ptr.push_back(n_dw_val.size());
-    auto current_item = batch.item(item_index);
-    for (auto& field : current_item.field()) {
-      for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
-        int token_id = field.token_id(token_index);
+    const Item& item = batch.item(item_index);
+    for (int token_index = 0; token_index < item.token_id_size(); ++token_index) {
+      int token_id = item.token_id(token_index);
 
-        float class_weight = 1.0f;
-        if (use_classes) {
-          ClassId class_id = batch.class_id(token_id);
-          auto iter = class_id_to_weight.find(class_id);
-          class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
-        }
-
-        const float token_weight = field.token_weight(token_index);
-        n_dw_val.push_back(class_weight * token_weight);
-        n_dw_col_ind.push_back(token_id);
+      float class_weight = 1.0f;
+      if (use_classes) {
+        ClassId class_id = batch.class_id(token_id);
+        auto iter = class_id_to_weight.find(class_id);
+        class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
       }
+
+      const float token_weight = item.token_weight(token_index);
+      n_dw_val.push_back(class_weight * token_weight);
+      n_dw_col_ind.push_back(token_id);
     }
   }
 
@@ -615,13 +613,11 @@ bool fillTokensInBatch(const PhiMatrix& phi_matrix, Batch* batch) {
   // Verify that max token_id is compatible with topic model.
   const int token_size = phi_matrix.token_size();
   for (auto& item : batch->item()) {
-    for (auto& field : item.field()) {
-      for (int token_id : field.token_id()) {
-        if (token_id < 0 || token_id >= token_size) {
-          LOG(ERROR) << "Batch " << batch->id() << " is incompatible with model " << phi_matrix.model_name()
-                     << " (batch.token_size() = 0 && item.token_id >= phi_matrix.token_size())";
-          return false;
-        }
+    for (int token_id : item.token_id()) {
+      if (token_id < 0 || token_id >= token_size) {
+        LOG(ERROR) << "Batch " << batch->id() << " is incompatible with model " << phi_matrix.model_name()
+                    << " (batch.token_size() = 0 && item.token_id >= phi_matrix.token_size())";
+        return false;
       }
     }
   }
