@@ -135,15 +135,14 @@ def test_func():
                 dict_data.class_id.append(class_id)
 
             # Add token to the item.
-            item.field[0].token_id.append(dic[token])
+            item.token_id.append(dic[token])
             # replace '1' with the actual number of token occupancies in the item
-            item.field[0].token_count.append(1)
+            item.token_weight.append(1)
 
     # Iterate through all items and populate the batch
     for (en, ru) in zip(ens, rus):
         next_item = batch.item.add()
         next_item.id = len(batch.item) - 1
-        next_item.field.add()
         append(string.split(ru.lower()), ru_dic, next_item, russian_class)
         append(string.split(en.lower()), en_dic, next_item, english_class)
 

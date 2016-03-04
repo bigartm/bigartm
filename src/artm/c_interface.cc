@@ -145,6 +145,13 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
   } CATCH_EXCEPTIONS;
 }
 
+int ArtmUpgradeBatch_v07(const char* source_path, const char* target_path) {
+  try {
+    ::artm::core::BatchHelpers::UpgradeBatch_v07(source_path, target_path);
+    return ARTM_SUCCESS;
+  } CATCH_EXCEPTIONS;
+}
+
 int ArtmCopyRequestResult(int length, char* address) {
   ::artm::CopyRequestResultArgs args;
   std::string blob = args.SerializeAsString();
@@ -189,9 +196,7 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
     artm::Batch batch_object;
     ParseFromArray(batch, length, &batch_object);
     artm::core::FixAndValidateMessage(&batch_object);
-    artm::Batch compacted_batch;
-    artm::core::BatchHelpers::CompactBatch(batch_object, &compacted_batch);
-    artm::core::BatchHelpers::SaveBatch(compacted_batch, std::string(disk_path), compacted_batch.id());
+    artm::core::BatchHelpers::SaveBatch(batch_object, std::string(disk_path), batch_object.id());
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }

@@ -90,17 +90,15 @@ TEST(CppInterface, BasicTest) {
     item_title.push_back(str.str());
     item->set_title(str.str());
     item->set_id(666 + iDoc);
-    artm::Field* field = item->add_field();
     for (int iToken = 0; iToken < nTokens; ++iToken) {
-      field->add_token_id(iToken);
-      field->add_token_weight(static_cast<float>(iDoc + iToken + 1));
+      item->add_token_id(iToken);
+      item->add_token_weight(static_cast<float>(iDoc + iToken + 1));
     }
   }
 
   EXPECT_EQ(batch.item().size(), nDocs);
   for (int i = 0; i < batch.item().size(); i++) {
-    EXPECT_EQ(batch.item().Get(i).field().Get(0).token_id().size(),
-        nTokens);
+    EXPECT_EQ(batch.item(i).token_id_size(), nTokens);
   }
 
   // Index doc-token matrix

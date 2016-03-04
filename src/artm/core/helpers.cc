@@ -117,15 +117,15 @@ std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token, i
 
 // Return the filenames of all files that have the specified extension
 // in the specified directory.
-std::vector<std::string> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
-  std::vector<std::string> batches;
+std::vector<boost::filesystem::path> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
+  std::vector<boost::filesystem::path> batches;
 
   if (boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
     boost::filesystem::recursive_directory_iterator it(root);
     boost::filesystem::recursive_directory_iterator endit;
     while (it != endit) {
       if (boost::filesystem::is_regular_file(*it) && it->path().extension() == kBatchExtension) {
-        batches.push_back(it->path().string());
+        batches.push_back(it->path());
       }
       ++it;
     }
@@ -148,49 +148,6 @@ boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,
   boost::filesystem::path file(name + kBatchExtension);
   SaveMessage(file.string(), disk_path, batch);
   return uuid;
-}
-
-void BatchHelpers::CompactBatch(const Batch& batch, Batch* compacted_batch) {
-  if (batch.token_size() == 0) {
-    compacted_batch->CopyFrom(batch);
-    return;
-  }
-
-  if (batch.has_description()) compacted_batch->set_description(batch.description());
-  if (batch.has_id()) compacted_batch->set_id(batch.id());
-
-  std::vector<int> orig_to_compacted_id_map(batch.token_size(), -1);
-  int compacted_dictionary_size = 0;
-
-  bool has_class_id = (batch.class_id_size() > 0);
-  for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    auto item = batch.item(item_index);
-    auto compacted_item = compacted_batch->add_item();
-    compacted_item->CopyFrom(item);
-
-    for (int field_index = 0; field_index < item.field_size(); ++field_index) {
-      auto field = item.field(field_index);
-      auto compacted_field = compacted_item->mutable_field(field_index);
-
-      for (int token_index = 0; token_index < field.token_id_size(); ++token_index) {
-        int token_id = field.token_id(token_index);
-        if (token_id < 0 || token_id >= batch.token_size())
-          BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("field.token_id", token_id));
-        if (has_class_id && (token_id >= batch.class_id_size()))
-          BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
-            "field.token_id", token_id, "Too few entries in batch.class_id field"));
-
-        if (orig_to_compacted_id_map[token_id] == -1) {
-          orig_to_compacted_id_map[token_id] = compacted_dictionary_size++;
-          compacted_batch->add_token(batch.token(token_id));
-          if (has_class_id)
-            compacted_batch->add_class_id(batch.class_id(token_id));
-        }
-
-        compacted_field->set_token_id(token_index, orig_to_compacted_id_map[token_id]);
-      }
-    }
-  }
 }
 
 void BatchHelpers::LoadMessage(const std::string& filename, const std::string& disk_path,
@@ -389,6 +346,43 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
   return true;
 }
 
+void BatchHelpers::UpgradeBatch_v07(const char* source_path, const char* target_path) {
+  std::vector<boost::filesystem::path> batch_names;
+
+  const bool is_single_file =
+    (boost::filesystem::exists(source_path) &&
+     boost::filesystem::is_regular_file(source_path));
+
+  if (is_single_file)
+    batch_names.push_back(boost::filesystem::path(source_path));
+  else
+    batch_names = ListAllBatches(source_path);
+
+  for (auto& batch_name : batch_names) {
+    ::artm::core::Batch_v07 batch_v07;
+    ::artm::core::BatchHelpers::LoadMessage(batch_name.string(), &batch_v07);
+
+    ::artm::Batch batch;
+    batch.mutable_token()->Swap(batch_v07.mutable_token());
+    batch.mutable_class_id()->Swap(batch_v07.mutable_class_id());
+    if (batch_v07.has_description()) batch.set_description(batch_v07.description());
+    if (batch_v07.has_id()) batch.set_id(batch_v07.id());
+    for (auto& item_v07 : batch_v07.item()) {
+      ::artm::Item* item = batch.add_item();
+      if (item_v07.has_id()) item->set_id(item_v07.id());
+      if (item_v07.has_title()) item->set_title(item_v07.title());
+      for (auto& field_v07 : item_v07.field()) {
+        item->mutable_token_id()->MergeFrom(field_v07.token_id());
+        item->mutable_token_weight()->MergeFrom(field_v07.token_weight());
+      }
+    }
+
+    if (is_single_file)
+      ::artm::core::BatchHelpers::SaveMessage(target_path, batch);
+    else
+      ::artm::core::BatchHelpers::SaveMessage(batch_name.filename().string(), target_path, batch);
+  }
+}
 
 }  // namespace core
 }  // namespace artm

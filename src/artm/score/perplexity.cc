@@ -71,19 +71,17 @@ void Perplexity::AppendScore(
   bool use_class_id = !class_weights.empty();
 
   float n_d = 0;
-  for (auto& field : item.field()) {
-    for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
-      float class_weight = 1.0f;
-      if (use_class_id) {
-        ::artm::core::ClassId class_id = token_dict[field.token_id(token_index)].class_id;
-        auto iter = class_weights.find(class_id);
-        if (iter == class_weights.end())
-          continue;
-        class_weight = iter->second;
-      }
-
-      n_d += class_weight * field.token_weight(token_index);
+  for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
+    float class_weight = 1.0f;
+    if (use_class_id) {
+      ::artm::core::ClassId class_id = token_dict[item.token_id(token_index)].class_id;
+      auto iter = class_weights.find(class_id);
+      if (iter == class_weights.end())
+        continue;
+      class_weight = iter->second;
     }
+
+    n_d += class_weight * item.token_weight(token_index);
   }
 
   ::google::protobuf::int64 zero_words = 0;
@@ -109,54 +107,52 @@ void Perplexity::AppendScore(
   }
 
   bool do_log_unigram_collection_failure = true;
-  for (auto& field : item.field()) {
-    for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
-      double sum = 0.0;
-      const artm::core::Token& token = token_dict[field.token_id(token_index)];
+  for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
+    double sum = 0.0;
+    const artm::core::Token& token = token_dict[item.token_id(token_index)];
 
-      float class_weight = 1.0f;
-      if (use_class_id) {
-        auto iter = class_weights.find(token.class_id);
-        if (iter == class_weights.end())
-          continue;
-        class_weight = iter->second;
-      }
-
-      float token_weight = class_weight * field.token_weight(token_index);
-      if (token_weight == 0.0f) continue;
-
-      int p_wt_token_index = p_wt.token_index(token);
-      if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
-        for (int topic_index = 0; topic_index < topic_size; topic_index++) {
-          sum += theta[topic_index] * p_wt.get(p_wt_token_index, topic_index);
-        }
-      }
-      if (sum == 0.0) {
-        if (use_document_unigram_model) {
-          sum = token_weight / n_d;
-        } else {
-          auto entry_ptr = dictionary_ptr->entry(token);
-          bool failed = true;
-          if (entry_ptr != nullptr && entry_ptr->token_value()) {
-            float n_w = entry_ptr->token_value();
-            sum = n_w / dictionary_ptr->size();
-            failed = false;
-          }
-          if (failed) {
-            LOG_IF(INFO, do_log_unigram_collection_failure)
-                      << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
-                      << ". Verify that the token exists in the dictionary and it's value > 0. "
-                      << "Document unigram model will be used for this token.";
-            sum = token_weight / n_d;
-            do_log_unigram_collection_failure = false;
-          }
-        }
-        zero_words++;
-      }
-
-      normalizer += token_weight;
-      raw        += token_weight * log(sum);
+    float class_weight = 1.0f;
+    if (use_class_id) {
+      auto iter = class_weights.find(token.class_id);
+      if (iter == class_weights.end())
+        continue;
+      class_weight = iter->second;
     }
+
+    float token_weight = class_weight * item.token_weight(token_index);
+    if (token_weight == 0.0f) continue;
+
+    int p_wt_token_index = p_wt.token_index(token);
+    if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
+      for (int topic_index = 0; topic_index < topic_size; topic_index++) {
+        sum += theta[topic_index] * p_wt.get(p_wt_token_index, topic_index);
+      }
+    }
+    if (sum == 0.0) {
+      if (use_document_unigram_model) {
+        sum = token_weight / n_d;
+      } else {
+        auto entry_ptr = dictionary_ptr->entry(token);
+        bool failed = true;
+        if (entry_ptr != nullptr && entry_ptr->token_value()) {
+          float n_w = entry_ptr->token_value();
+          sum = n_w / dictionary_ptr->size();
+          failed = false;
+        }
+        if (failed) {
+          LOG_IF(INFO, do_log_unigram_collection_failure)
+                    << "Error in perplexity dictionary for token " << token.keyword << ", class " << token.class_id
+                    << ". Verify that the token exists in the dictionary and it's value > 0. "
+                    << "Document unigram model will be used for this token.";
+          sum = token_weight / n_d;
+          do_log_unigram_collection_failure = false;
+        }
+      }
+      zero_words++;
+    }
+
+    normalizer += token_weight;
+    raw        += token_weight * log(sum);
   }
 
   // prepare results
