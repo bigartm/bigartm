@@ -1,6 +1,11 @@
 Publications
 ============
 
+*   Vorontsov, Konstantin and Frei, Oleksandr and Apishev, Murat and Romov, Peter and Suvorova, Marina and Yanina, Anastasia;
+    *Non-Bayesian Additive Regularization for Multimodal Topic Modeling of Large Collections*
+    // Proceedings of the 2015 Workshop on Topic Models: Post-Processing and Applications,
+    `PDF in English <https://s3-eu-west-1.amazonaws.com/artm/Voron15cikm-tm.pdf>`__
+
 *   Vorontsov K., Potapenko A., Plavin A.
     Additive Regularization of Topic Models for Topic Selection and Sparse Factorization. //
     Statistical Learning and Data Sciences. 2015 --- pp. 193-202.
@@ -9,7 +14,8 @@ Publications
 *   Vorontsov K., Frei O., Apishev M., Romov P., Dudarenko M.
     BigARTM: Open Source Library for Regularized Multimodal Topic Modeling of Large Collections
     Analysis of Images, Social Networks and Texts. 2015.
-    `Slides in English <https://s3-eu-west-1.amazonaws.com/artm/voron15aist-slides.pdf>`__.
+    `Slides in English <https://s3-eu-west-1.amazonaws.com/artm/voron15aist-slides.pdf>`__,
+    `Article in English <https://s3-eu-west-1.amazonaws.com/artm/Voron15aist.pdf>`__
 
 *   Vorontsov K. V. Additive Regularization for Topic Models of Text Collections //
     Doklady Mathematics. 2014, Pleiades Publishing, Ltd. --- Vol. 89, No. 3, pp. 301--304.
