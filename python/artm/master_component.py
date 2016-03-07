@@ -128,18 +128,20 @@ class MasterComponent(object):
     def __init__(self, library, topic_names=None, class_ids=None, scores=None, regularizers=None,
                  num_processors=None, pwt_name=None, nwt_name=None, num_document_passes=None,
                  reuse_theta=None, cache_theta=False):
-        """ Args:
-            - library: an instance of LibArtm
-            - topic_names (list of str): list of topic names to use in model
-            - class_ids (dict): key - class_id, value - class_weight
-            - scores (dict): key - score name, value - config
-            - regularizers (dict): key - regularizer name, value - pair (config, tau)
-            - num_processors (int): number of work threads to use
-            - pwt_name (str): name of pwt matrix
-            - nwt_name (str): name of nwt matrix
-            - num_document_passes (int): num passes through each document
-            - reuse_theta (bool): reuse Theta from previous iteration or not
-            - cache_theta (bool): save or not the Theta matrix
+        """
+
+        :param library: an instance of LibArtm
+        :param topic_names: list of topic names to use in model
+        :type topic_names: list of str
+        :param dict class_ids: key - class_id, value - class_weight
+        :param dict scores: key - score name, value - config
+        :param dict regularizers: key - regularizer name, value - pair (config, tau)
+        :param int num_processors: number of work threads to use
+        :param str pwt_name: name of pwt matrix
+        :param str nwt_name: name of nwt matrix
+        :param in num_document_passes: num passes through each document
+        :param bool reuse_theta: reuse Theta from previous iteration or not
+        :param bool cache_theta: save or not the Theta matrix
         """
         self._lib = library
 
@@ -176,26 +178,25 @@ class MasterComponent(object):
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
     def import_dictionary(self, filename, dictionary_name):
-        """Args:
-           - filename(str): full name of dictionary file
-           - dictionary_name(str): name of imported dictionary
+        """
+        :param str filename: full name of dictionary file
+        :param str dictionary_name: name of imported dictionary
         """
         args = messages.ImportDictionaryArgs(dictionary_name=dictionary_name, file_name=filename)
         self._lib.ArtmImportDictionary(self.master_id, args)
 
     def export_dictionary(self, filename, dictionary_name):
-        """Args:
-           - filename(str): full name for dictionary file
-           - dictionary_name(str): name of exported dictionary
+        """
+        :param str filename: full name of dictionary file
+        :param str dictionary_name: name of exported dictionary
         """
         args = messages.ExportDictionaryArgs(dictionary_name=dictionary_name, file_name=filename)
         self._lib.ArtmExportDictionary(self.master_id, args)
 
     def create_dictionary(self, dictionary_data, dictionary_name=None):
-        """Args:
-           - dictionary_data: an instance of DictionaryData with info
-             about dictionary
-           - dictionary_name(str): name of exported dictionary
+        """
+        :param dictionary_data: an instance of DictionaryData with info about dictionary
+        :param str dictionary_name: name of exported dictionary
         """
 
         if dictionary_name is not None:
@@ -204,8 +205,8 @@ class MasterComponent(object):
         self._lib.ArtmCreateDictionary(self.master_id, dictionary_data)
 
     def get_dictionary(self, dictionary_name):
-        """Args:
-           - dictionary_name(str): name of dictionary to get
+        """
+        :param str dictionary_name: name of dictionary to get
         """
         args = messages.GetDictionaryArgs(dictionary_name=dictionary_name)
         dictionary_data = self._lib.ArtmRequestDictionary(self.master_id, args)
@@ -213,14 +214,14 @@ class MasterComponent(object):
 
     def gather_dictionary(self, dictionary_target_name=None, data_path=None, cooc_file_path=None,
                           vocab_file_path=None, symmetric_cooc_values=None, args=None):
-        """Args:
-           - dictionary_target_name(str): name of the dictionary in the core
-           - data_path(str): full path to batches folder
-           - cooc_file_path(str): full path to the file with cooc info
-           - vocab_file_path(str): full path to the file with vocabulary
-           - symmetric_cooc_values(str): if the cooc matrix should
-             considered to be symmetric or not
-           - args: an instance of GatherDictionaryArgs
+        """
+        :param str dictionary_target_name: name of the dictionary in the core
+        :param str data_path: full path to batches folder
+        :param str cooc_file_path: full path to the file with cooc info
+        :param str vocab_file_path: full path to the file with vocabulary
+        :param bool symmetric_cooc_values: whether the cooc matrix should\
+                considered to be symmetric or not
+        :param args: an instance of GatherDictionaryArgs
         """
         gather_args = messages.GatherDictionaryArgs()
         if args is not None:
@@ -244,17 +245,17 @@ class MasterComponent(object):
                           min_tf=None, max_tf=None,
                           args=None):
 
-        """Args:
-           - dictionary_name(str): name of the dictionary in the core to filter
-           - dictionary_target_name(str): name for the new filtered dictionary in the core
-           - class_id(str): class_id to filter
-           - min_df(float): min df value to pass the filter
-           - max_df(float): max df value to pass the filter
-           - min_df_rate (float): min df rate to pass the filter
-           - max_df_rate (float): max df rate to pass the filter
-           - min_tf(float): min tf value to pass the filter
-           - max_tf(float): max tf value to pass the filter
-           - args: an instance of FilterDictionaryArgs
+        """
+        :param str dictionary_name: name of the dictionary in the core to filter
+        :param str dictionary_target_name: name for the new filtered dictionary in the core
+        :param str class_id: class_id to filter
+        :param float min_df: min df value to pass the filter
+        :param float max_df: max df value to pass the filter
+        :param float min_df_rate: min df rate to pass the filter
+        :param float max_df_rate: max df rate to pass the filter
+        :param float min_tf: min tf value to pass the filter
+        :param float max_tf: max tf value to pass the filter
+        :param args: an instance of FilterDictionaryArgs
         """
         filter_args = messages.FilterDictionaryArgs()
         if args is not None:
@@ -282,13 +283,15 @@ class MasterComponent(object):
 
     def initialize_model(self, model_name=None, num_topics=None, topic_names=None,
                          dictionary_name=None, seed=None, args=None):
-        """Args:
-           - model_name(str): name of pwt matrix in BigARTM
-           - num_topics(int): number of topics in model
-           - topic_names(list of str): the list of names of topics to be used in model
-           - dictionary_name(str): name of imported dictionary
-           - seed (unsigned int or -1): seed for random initialization, default=None (no seed)
-           - args: an instance of InitilaizeModelArgs
+        """
+        :param str model_name: name of pwt matrix in BigARTM
+        :param int num_topics: number of topics in model
+        :param topic_names: the list of names of topics to be used in model
+        :type topic_names: list of str
+        :param str dictionary_name: name of imported dictionary
+        :param seed: seed for random initialization, None means no seed
+        :type seed: unsigned int or -1, default None
+        :param args: an instance of InitilaizeModelArgs
         """
         init_args = messages.InitializeModelArgs()
         if args is not None:
@@ -308,13 +311,15 @@ class MasterComponent(object):
         self._lib.ArtmInitializeModel(self.master_id, init_args)
 
     def clear_theta_cache(self):
-        """ MasterComponent.clear_theta_cache() --- clears all entries from theta matrix cache
+        """
+        Clears all entries from theta matrix cache
         """
         args = messages.ClearThetaCacheArgs()
         self._lib.ArtmClearThetaCache(self.master_id, args)
 
     def clear_score_cache(self):
-        """ MasterComponent.clear_score_cache() --- clears all entries from score cache
+        """
+        Clears all entries from score cache
         """
         args = messages.ClearScoreCacheArgs()
         self._lib.ArtmClearScoreCache(self.master_id, args)
@@ -324,23 +329,31 @@ class MasterComponent(object):
                         class_ids=None, class_weights=None, find_theta=False,
                         reuse_theta=False, find_ptdw=False,
                         predict_class_id=None):
-        """Args:
-           - pwt(str): name of pwt matrix in BigARTM
-           - nwt(str): name of nwt matrix in BigARTM
-           - num_inner_iterations(int): number of inner iterations during processing
-           - batches_folder(str): full path to data folder (alternative 1)
-           - batches(list of str): full file names of batches to process (alternative 2)
-           - regularizer_name(list of str): list of names of Theta regularizers to use
-           - regularizer_tau(list of double): list of tau coefficients for Theta regularizers
-           - class_ids(list of str): list of class ids to use during processing
-           - class_weights(list of double): list of corresponding weights of class ids
-           - find_theta(bool): find theta matrix for 'batches' (if alternative 2)
-           - reuse_theta(bool): initialize by theta from previous collection pass
-           - find_ptdw(bool): count and return Ptdw matrix or not (works if find_theta == False)
-           - predict_class_id(str): class_id of a target modality to predict (default = None)
-           Returns:
-           - tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta (find_theta==True)
-           - messages.ThetaMatrix --- the info about Theta (find_theta==False)
+        """
+        :param str pwt: name of pwt matrix in BigARTM
+        :param str nwt: name of nwt matrix in BigARTM
+        :param int num_inner_iterations: number of inner iterations during processing
+        :param str batches_folder: full path to data folder (alternative 1)
+        :param batches: full file names of batches to process (alternative 2)
+        :type batches: list of str
+        :param regularizer_name: list of names of Theta regularizers to use
+        :type regularizer_name: list of str
+        :param regularizer_tau: list of tau coefficients for Theta regularizers
+        :type regularizer_tau: list of float
+        :param class_ids: list of class ids to use during processing
+        :type class_ids: list of str
+        :param class_weights: list of corresponding weights of class ids
+        :type class_weights: list of float
+        :param bool find_theta: find theta matrix for 'batches' (if alternative 2)
+        :param bool reuse_theta: initialize by theta from previous collection pass
+        :param bool find_ptdw: count and return Ptdw matrix or not\
+                (works if find_theta == False)
+        :param predict_class_id: class_id of a target modality to predict
+        :type predict_class_id: str, default None
+        :return:
+            * tuple (messages.ThetaMatrix, numpy.ndarray) --- the info about Theta\
+                    (if find_theta == True)
+            * messages.ThetaMatrix --- the info about Theta (if find_theta == False)
         """
         args = messages.ProcessBatchesArgs(pwt_source_name=pwt,
                                            reuse_theta=reuse_theta)
@@ -396,12 +409,14 @@ class MasterComponent(object):
         return result.theta_matrix, numpy_ndarray
 
     def regularize_model(self, pwt, nwt, rwt, regularizer_name, regularizer_tau):
-        """Args:
-           - pwt(str): name of pwt matrix in BigARTM
-           - nwt(str): name of nwt matrix in BigARTM
-           - rwt(str): name of rwt matrix in BigARTM
-           - regularizer_name(list of str): list of names of Phi regularizers to use
-           - regularizer_tau(list of double): list of tau coefficients for Phi regularizers
+        """
+        :param str pwt: name of pwt matrix in BigARTM
+        :param str nwt: name of nwt matrix in BigARTM
+        :param str rwt: name of rwt matrix in BigARTM
+        :param regularizer_name: list of names of Phi regularizers to use
+        :type regularizer_name: list of str
+        :param regularizer_tau: list of tau coefficients for Phi regularizers
+        :type regularizer_tau: list of double
         """
         args = messages.RegularizeModelArgs(pwt_source_name=pwt,
                                             nwt_source_name=nwt,
@@ -416,10 +431,10 @@ class MasterComponent(object):
         self._lib.ArtmRegularizeModel(self.master_id, args)
 
     def normalize_model(self, pwt, nwt, rwt=None):
-        """Args:
-           - pwt(str): name of pwt matrix in BigARTM
-           - nwt(str): name of nwt matrix in BigARTM
-           - rwt(str): name of rwt matrix in BigARTM
+        """
+        :param str pwt: name of pwt matrix in BigARTM
+        :param str nwt: name of nwt matrix in BigARTM
+        :param str rwt: name of rwt matrix in BigARTM
         """
         args = messages.NormalizeModelArgs(pwt_target_name=pwt, nwt_source_name=nwt)
         if rwt is not None:
@@ -428,14 +443,16 @@ class MasterComponent(object):
         self._lib.ArtmNormalizeModel(self.master_id, args)
 
     def merge_model(self, models, nwt, topic_names=None):
-        """ MasterComponent.MergeModel() --- merge multiple nwt-increments together.
-        Args:
-        - models(dict): list of models with nwt-increments and their weights,
-                        key - nwt_source_name, value - source_weight.
-        - nwt(str): the name of target matrix to store combined nwt.
-                    The matrix will be created by this operation.
-        - topic_names(list of str): names of topics in the resulting model. By default model
-                                    names are taken from the first model in the list.
+        """
+        Merge multiple nwt-increments together.
+
+        :param dict models: list of models with nwt-increments and their weights,\
+                key - nwt_source_name, value - source_weight.
+        :param str nwt: the name of target matrix to store combined nwt.\
+                The matrix will be created by this operation.
+        :param topic_names: names of topics in the resulting model. By default model\
+                names are taken from the first model in the list.
+        :type topic_names: list of str
         """
         args = messages.MergeModelArgs(nwt_target_name=nwt)
         if topic_names is not None:
@@ -449,11 +466,11 @@ class MasterComponent(object):
         self._lib.ArtmMergeModel(self.master_id, args)
 
     def attach_model(self, model):
-        """Args:
-           - model(str): name of matrix in BigARTM
-           Returns:
-           - messages.TopicModel() object with info about Phi matrix
-           - numpy.ndarray with Phi data (e.g. p(w|t) values)
+        """
+        :param str model: name of matrix in BigARTM
+        :return:
+            * messahes.TopicModel() object with info about Phi matrix
+            * numpy.ndarray with Phi data (i.e., p(w|t) values)
         """
         topics = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_TopicNames)
         tokens = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_Tokens)
@@ -474,10 +491,10 @@ class MasterComponent(object):
         return topic_model, numpy_ndarray
 
     def create_regularizer(self, name, config, tau):
-        """Args:
-           - name(str): the name of the future regularizer
-           - config: the config of the future regularizer
-           - tau(float): the coefficient of the regularization
+        """
+        :param str name: the name of the future regularizer
+        :param config: the config of the future regularizer
+        :param float tau: the coefficient of the regularization
         """
         master_config = messages.MasterModelConfig()
         master_config.CopyFrom(self._config)
@@ -506,9 +523,9 @@ class MasterComponent(object):
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
     def create_score(self, name, config):
-        """Args:
-           - name(str): the name of the future score
-           - config: an instance of ***ScoreConfig
+        """
+        :param str name: the name of the future score
+        :param config: an instance of \*\*\*ScoreConfig
         """
         master_config = messages.MasterModelConfig()
         master_config.CopyFrom(self._config)
@@ -522,10 +539,10 @@ class MasterComponent(object):
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
     def get_score(self, model_name, score_name):
-        """Args:
-           - model_name(str): name of pwt matrix in BigARTM
-           - score_name(str): the user defined name of score to retrieve
-           - score_config: reference to score data object
+        """
+        :param str model_name: name of pwt matrix in BigARTM
+        :param str score_name: the user defined name of score to retrieve
+        :param score_config: reference to score data object
         """
         args = messages.GetScoreValueArgs(model_name=model_name, score_name=score_name)
         score_data = self._lib.ArtmRequestScore(self.master_id, args)
@@ -547,8 +564,8 @@ class MasterComponent(object):
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
     def get_theta_info(self):
-        """Returns:
-           - messages.ThetaMatrix object
+        """
+        :return: messages.ThetaMatrix object
         """
         args = messages.GetThetaMatrixArgs()
         args.eps = 1.001  # hack to not get any data back
@@ -558,10 +575,10 @@ class MasterComponent(object):
         return theta_matrix_info
 
     def get_theta_matrix(self, topic_names=None):
-        """Args:
-           - topic_names(list of str): list of topics to retrieve (None == all topics)
-           Returns:
-           - numpy.ndarray with Theta data (e.g. p(t|d) values)
+        """
+        :param topic_names: list of topics to retrieve (None means all topics)
+        :type topic_names: list of str or None
+        :return: numpy.ndarray with Theta data (i.e., p(t|d) values)
         """
         args = messages.GetThetaMatrixArgs()
         if topic_names is not None:
@@ -582,11 +599,10 @@ class MasterComponent(object):
         return theta_matrix_info, numpy_ndarray
 
     def get_phi_info(self, model, request_type=None):
-        """Args:
-           - model(str): name of matrix in BigARTM
-           - request_type(int): Pwt = 0 | Nwt = 1; | TopicNames = 2 | Tokens = 3
-           Returns:
-           - messages.TopicModel object
+        """
+        :param str model: name of matrix in BigARTM
+        :param int request_type: Pwt = 0 | Nwt = 1 | TopicNames = 2 | Tokens = 3
+        :return: messages.TopicModel object
         """
         args = messages.GetTopicModelArgs(model_name=model)
         if request_type is not None:
@@ -597,13 +613,14 @@ class MasterComponent(object):
         return phi_matrix_info
 
     def get_phi_matrix(self, model, topic_names=None, class_ids=None, use_sparse_format=None):
-        """Args:
-           - model(str): name of matrix in BigARTM
-           - topic_names(list of str): list of topics to retrieve (None == all topics)
-           - class_ids(list of str): list of class ids to retrieve (None == all class ids)
-           - use_sparse_format(bool): use sparse\dense layout
-           Returns:
-           - numpy.ndarray with Phi data (e.g. p(w|t) values)
+        """
+        :param str model: name of matrix in BigARTM
+        :param topic_names: list of topics to retrieve (None means all topics)
+        :type topic_names: list of str or None
+        :param class_ids: list of class ids to retrieve (None means all class ids)
+        :type class_ids: list of str or None
+        :param bool use_sparse_format: use sparse\dense layout
+        :return: numpy.ndarray with Phi data (i.e., p(w|t) values)
         """
         args = messages.GetTopicModelArgs(model_name=model)
         if topic_names is not None:
@@ -634,9 +651,9 @@ class MasterComponent(object):
         result = self._lib.ArtmExportModel(self.master_id, args)
 
     def import_model(self, model, filename):
-        """Args:
-           - model(str): name of matrix in BigARTM
-           - filename(str): the name of file to load model from binary format
+        """
+        :param str model: name of matrix in BigARTM
+        :param str filename: the name of file to load model from binary format
         """
         args = messages.ImportModelArgs(model_name=model, file_name=filename)
         result = self._lib.ArtmImportModel(self.master_id, args)
@@ -648,11 +665,13 @@ class MasterComponent(object):
 
     def fit_offline(self, batch_filenames=None, batch_weights=None,
                     num_collection_passes=None, batches_folder=None):
-        """Args:
-           - batch_filenames(list of str): name of batches to process
-           - batch_weights(list of float): weights of batches to process
-           - num_collection_passes(int): number of outer iterations
-           - batches_folder(str): folder containing batches to process
+        """
+        :param batch_filenames: name of batches to process
+        :type batch_filenames: list of str
+        :param batch_weights: weights of batches to process
+        :type batch_weights: list of float
+        :param int num_collection_passes: number of outer iterations
+        :param str batches_folder: folder containing batches to process
         """
         args = messages.FitOfflineMasterModelArgs()
         if batch_filenames is not None:
@@ -675,15 +694,21 @@ class MasterComponent(object):
 
     def fit_online(self, batch_filenames=None, batch_weights=None, update_after=None,
                    apply_weight=None, decay_weight=None, async=None):
-        """Args:
-           - batch_filenames(list of str): name of batches to process
-           - batch_weights(list of float): weights of batches to process
-           - update_after(list of int): number of batches to be passed for Phi synchronizations
-           - apply_weight(list of float): weight of applying new counters
-             (len == len of update_after)
-           - decay_weight(list of float): weight of applying old counters
-             (len == len of update_after)
-           - async(bool): use or not the async implementation of the EM-algorithm
+        """
+        :param batch_filenames: name of batches to process
+        :type batch_filenames: list of str
+        :param batch_weights: weights of batches to process
+        :type batch_weights: list of float
+        :param update_after: number of batches to be passed for Phi synchronizations
+        :type update_after: list of int
+        :param apply_weight: weight of applying new counters\
+                (len == len of update_after)
+        :type apply_weight: list of float
+        :param decay_weight: weight of applying old counters\
+                (len == len of update_after)
+        :type decay_weight: list of float
+        :param bool async: whether to use the async implementation\
+                of the EM-algorithm or not
         """
         args = messages.FitOnlineMasterModelArgs()
         if batch_filenames is not None:
@@ -723,13 +748,13 @@ class MasterComponent(object):
 
     def transform(self, batches=None, batch_filenames=None,
                   theta_matrix_type=None, predict_class_id=None):
-        """Args:
-           - batches(list of batches): list of instances of Batch
-           - batch_weights(list of float): weights of batches to transform
-           - theta_matrix_type(int): type of matrix to be returned
-           - predict_class_id(int): type of matrix to be returned
-           Returns:
-           - messages.ThetaMatrix object
+        """
+        :param batches: list of Batch instances
+        :param batch_weights: weights of batches to transform
+        :type batch_weights: list of float
+        :param int theta_matrix_type: type of matrix to be returned
+        :param int predict_class_id: type of matrix to be returned
+        :return: messages.ThetaMatrix object
         """
         args = messages.TransformMasterModelArgs()
         if batches is not None:

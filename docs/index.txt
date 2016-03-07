@@ -46,6 +46,7 @@ Welcome to BigARTM's documentation!
    formats
    installation/index
    tutorials/index
+   python_interface
    faq
    devguide
    release_notes/index

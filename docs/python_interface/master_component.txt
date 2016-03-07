@@ -1,0 +1,11 @@
+Master Component
+================
+
+This page describes MasterComponent class.
+
+.. automodule:: artm 
+   
+.. autoclass:: MasterComponent
+   :members:
+   :undoc-members:
+   :special-members: __init__

@@ -44,7 +44,7 @@ def _topic_selection_regularizer_func(self, regularizers):
         else:
             for i, n in enumerate(self.topic_names):
                 n_t[i] = self.score_tracker[
-                           self._internal_topic_mass_score_name].last_topic_info[n].topic_mass
+                    self._internal_topic_mass_score_name].last_topic_info[n].topic_mass
 
         n = sum(n_t)
         for name in topic_selection_regularizer_name:
