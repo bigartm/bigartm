@@ -142,7 +142,6 @@ class MasterComponent(object):
         :param in num_document_passes: num passes through each document
         :param bool reuse_theta: reuse Theta from previous iteration or not
         :param bool cache_theta: save or not the Theta matrix
-        
         """
         self._lib = library
 
@@ -256,7 +255,7 @@ class MasterComponent(object):
         :param float max_df_rate: max df rate to pass the filter
         :param float min_tf: min tf value to pass the filter
         :param float max_tf: max tf value to pass the filter
-        :param args: an instance of FilterDictionaryArgs 
+        :param args: an instance of FilterDictionaryArgs
         """
         filter_args = messages.FilterDictionaryArgs()
         if args is not None:
@@ -289,7 +288,7 @@ class MasterComponent(object):
         :param int num_topics: number of topics in model
         :param topic_names: the list of names of topics to be used in model
         :type topic_names: list of str
-        :param str dictionary_name: name of imported dictionary 
+        :param str dictionary_name: name of imported dictionary
         :param seed: seed for random initialization, None means no seed
         :type seed: unsigned int or -1, default None
         :param args: an instance of InitilaizeModelArgs
