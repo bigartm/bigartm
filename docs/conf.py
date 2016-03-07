@@ -33,7 +33,7 @@ extensions = [
     'sphinx.ext.autodoc'
 ]
 
-autodoc_mock_imports = ['numpy', 'pandas']
+autodoc_mock_imports = ['numpy', 'pandas', 'google.protobuf']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
