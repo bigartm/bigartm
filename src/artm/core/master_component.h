@@ -27,16 +27,15 @@ namespace core {
 class ArtmExecutor;
 class Instance;
 class TopicModel;
-class Score;
 class BatchManager;
+class ScoreManager;
 
 class MasterComponent : boost::noncopyable {
  public:
   ~MasterComponent();
 
-  std::shared_ptr<MasterComponentConfig> config() const;
+  std::shared_ptr<MasterModelConfig> config() const;
 
-  explicit MasterComponent(const MasterComponentConfig& config);
   explicit MasterComponent(const MasterModelConfig& config);
   std::shared_ptr<MasterComponent> Duplicate() const;
 
@@ -49,11 +48,11 @@ class MasterComponent : boost::noncopyable {
   void Request(const TransformMasterModelArgs& args, ThetaMatrix* result);
   void Request(const TransformMasterModelArgs& args, ThetaMatrix* result, std::string* external);
   void Request(const GetScoreValueArgs& args, ScoreData* result);
+  void Request(const GetScoreArrayArgs& args, ScoreDataArray* result);
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result);
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external);
   void Request(const GetDictionaryArgs& args, DictionaryData* result);
   void Request(const GetMasterComponentInfoArgs& args, MasterComponentInfo* result);
-  void Request(const GetRegularizerStateArgs& args, RegularizerInternalState* regularizer_state);
 
   // EXECUTE functionality
   void MergeModel(const MergeModelArgs& args);
@@ -62,8 +61,6 @@ class MasterComponent : boost::noncopyable {
   void ImportDictionary(const ImportDictionaryArgs& args);
   void ExportDictionary(const ExportDictionaryArgs& args);
   void ImportBatches(const ImportBatchesArgs& args);
-  void InvokeIteration(const InvokeIterationArgs& args);
-  void SynchronizeModel(const SynchronizeModelArgs& args);
   void ExportModel(const ExportModelArgs& args);
   void ImportModel(const ImportModelArgs& args);
   void InitializeModel(const InitializeModelArgs& args);
@@ -71,7 +68,9 @@ class MasterComponent : boost::noncopyable {
   void FitOffline(const FitOfflineMasterModelArgs& args);
   void FilterDictionary(const FilterDictionaryArgs& args);
   void GatherDictionary(const GatherDictionaryArgs& args);
-  bool AddBatch(const AddBatchArgs& args);
+  void ClearThetaCache(const ClearThetaCacheArgs& args);
+  void ClearScoreCache(const ClearScoreCacheArgs& args);
+  void ClearScoreArrayCache(const ClearScoreArrayCacheArgs& args);
 
   // DISPOSE functionality
   void DisposeModel(const std::string& name);
@@ -84,19 +83,14 @@ class MasterComponent : boost::noncopyable {
                                   BatchManager *batch_manager);
 
   // Reconfigures topic model if already exists, otherwise creates a new model.
-  void CreateOrReconfigureModel(const ModelConfig& config);
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
 
-  void Reconfigure(const MasterComponentConfig& config);
   void ReconfigureMasterModel(const MasterModelConfig& config);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
 
   void CreateDictionary(const DictionaryData& data);
   void AppendDictionary(const DictionaryData& data);
-
-  // Returns false if BigARTM is still processing the collection, otherwise true.
-  bool WaitIdle(const WaitIdleArgs& args);
 
   void AttachModel(const AttachModelArgs& args, int address_length, float* address);
 
@@ -108,12 +102,11 @@ class MasterComponent : boost::noncopyable {
 
   void RequestProcessBatchesImpl(const ProcessBatchesArgs& process_batches_args,
                                  BatchManager* batch_manager, bool async,
-                                 ::google::protobuf::RepeatedPtrField< ::artm::ScoreData>* score_data,
+                                 ScoreManager* score_manager,
                                  ::artm::ThetaMatrix* theta_matrix);
 
   void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure);
 
-  ThreadSafeHolder<MasterModelConfig> master_model_config_;
   std::shared_ptr<Instance> instance_;
 };
 

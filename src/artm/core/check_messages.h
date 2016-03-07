@@ -13,6 +13,7 @@
 #include "artm/messages.pb.h"
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
+#include "artm/core/internals.pb.h"
 
 namespace artm {
 namespace core {
@@ -27,17 +28,6 @@ inline bool ValidateMessage(const T& message, bool throw_error = true);
 // DescribeErrors routines
 // This method is required for all messages that go through c_interface.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-inline std::string DescribeErrors(const ::artm::ModelConfig& message) {
-  std::stringstream ss;
-  if (message.topics_count() == 0 || message.topic_name_size() == 0)
-    ss << "ModelConfig.topic_name() is empty";
-  if (message.topics_count() != message.topic_name_size())
-    ss << "Length mismatch in fields ModelConfig.topics_count and ModelConfig.topic_name";
-  if (message.class_weight_size() != message.class_id_size())
-    ss << "Length mismatch in fields ModelConfig.class_id and ModelConfig.class_weight";
-  return ss.str();
-}
 
 inline std::string DescribeErrors(const ::artm::TopicModel& message) {
   std::stringstream ss;
@@ -152,7 +142,7 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
   return ss.str();
 }
 
-inline std::string DescribeErrors(const ::artm::Batch& message) {
+inline std::string DescribeErrors(const ::artm::core::Batch_v07& message) {
   std::stringstream ss;
   if (message.has_id()) {
     try {
@@ -179,7 +169,7 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   }
 
   for (int item_id = 0; item_id < message.item_size(); ++item_id) {
-    for (const Field& field : message.item(item_id).field()) {
+    for (const auto& field : message.item(item_id).field()) {
       if (field.token_count_size() != 0) {
         ss << "Field.token_count field is deprecated. Use Field.token_weight instead; ";
         break;
@@ -204,10 +194,53 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
   return ss.str();
 }
 
-inline std::string DescribeErrors(const ::artm::GetThetaMatrixArgs& message) {
+inline std::string DescribeErrors(const ::artm::Batch& message) {
   std::stringstream ss;
-  if (message.has_batch())
-    ss << DescribeErrors(message.batch());
+  if (message.has_id()) {
+    try {
+      boost::lexical_cast<boost::uuids::uuid>(message.id());
+    }
+    catch (...) {
+      ss << "Batch.id must be GUID, got: " << message.id();
+      return ss.str();
+    }
+  } else {
+    ss << "Batch.id is not specified";
+    return ss.str();
+  }
+
+  const bool has_tokens = (message.token_size() > 0);
+  if (!has_tokens && (message.class_id_size() > 0)) {
+    ss << "Empty Batch.token require that Batch.class_id must also be empty, batch.id = " << message.id();
+    return ss.str();
+  }
+
+  if (has_tokens && (message.class_id_size() != message.token_size())) {
+    ss << "Length mismatch in fields Batch.class_id and Batch.token, batch.id = " << message.id();
+    return ss.str();
+  }
+
+  int total_length = 0;
+  for (int item_id = 0; item_id < message.item_size(); ++item_id) {
+    const Item& item = message.item(item_id);
+    if (item.token_weight_size() != item.token_id_size()) {
+      ss << "Length mismatch in field Batch.item(" << item_id << ").token_weight and token_id; ";
+      break;
+    }
+
+    total_length += item.token_id_size();
+    for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
+      int token_id = item.token_id(token_index);
+      if ((token_id < 0) || (has_tokens && (token_id >= message.token_size()))) {
+        ss << "Value " << token_id << " in Batch.Item(" << item_id
+            << ").token_id is negative or exceeds Batch.token_size";
+        return ss.str();
+      }
+    }
+  }
+
+  if (total_length == 0)
+    ss << "Batch " << message.id() << " is empty or was saved with an old format (prior to BigARTM v0.8)";
 
   return ss.str();
 }
@@ -215,29 +248,12 @@ inline std::string DescribeErrors(const ::artm::GetThetaMatrixArgs& message) {
 inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
   std::stringstream ss;
 
-  if (message.has_batch())
-    ss << DescribeErrors(message.batch());
-
   if (!message.has_model_name() || message.model_name().empty()) {
-    // Allow this to default to MasterComponentConfig.pwt_name
+    // Allow this to default to MasterModelConfig.pwt_name
     // ss << "GetScoreValueArgs.model_name is missing; ";
   }
   if (!message.has_score_name() || message.score_name().empty())
     ss << "GetScoreValueArgs.score_name is missing; ";
-
-  return ss.str();
-}
-
-inline std::string DescribeErrors(const ::artm::MasterComponentConfig& message) {
-  std::stringstream ss;
-
-  if (message.processor_queue_max_size() <= 0)
-    ss << "MasterComponentConfig.processor_queue_max_size == "
-       << message.processor_queue_max_size() << " is invalid; ";
-
-  if (message.merger_queue_max_size() <= 0)
-    ss << "MasterComponentConfig.merger_queue_max_size == "
-       << message.merger_queue_max_size() << " is invalid; ";
 
   return ss.str();
 }
@@ -348,7 +364,7 @@ inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
   }
 
   if (!message.has_model_name()) {
-    // Allow this to default to MasterComponentConfig.pwt_name
+    // Allow this to default to MasterModelConfig.pwt_name
     // ss << "InitializeModelArgs.model_name is not defined; ";
   }
 
@@ -431,7 +447,7 @@ inline std::string DescribeErrors(const ::artm::ExportModelArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ExportModelArgs.file_name is not defined; ";
 
-  // Allow this to default to MasterComponentConfig.pwt_name
+  // Allow this to default to MasterModelConfig.pwt_name
   // if (!message.has_model_name()) ss << "ExportModelArgs.model_name is not defined; ";
 
   return ss.str();
@@ -441,7 +457,7 @@ inline std::string DescribeErrors(const ::artm::ImportModelArgs& message) {
   std::stringstream ss;
   if (!message.has_file_name()) ss << "ImportModelArgs.file_name is not defined; ";
 
-  // Allow this to default to MasterComponentConfig.pwt_name
+  // Allow this to default to MasterModelConfig.pwt_name
   // if (!message.has_model_name()) ss << "ImportModelArgs.model_name is not defined; ";
 
   return ss.str();
@@ -485,20 +501,22 @@ inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
 
 // Empty ValidateMessage routines
 inline std::string DescribeErrors(const ::artm::GetTopicModelArgs& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::RegularizerInternalState& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::InvokeIterationArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::GetThetaMatrixArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::NormalizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizerConfig& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::SynchronizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ExportDictionaryArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ScoreData& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::MasterComponentInfo& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetDictionaryArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetMasterComponentInfoArgs& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::GetRegularizerStateArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ProcessBatchesResult& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ClearThetaCacheArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ClearScoreCacheArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ClearScoreArrayCacheArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ScoreDataArray& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::GetScoreArrayArgs& message) { return std::string(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // FixMessage routines (optional)
@@ -521,51 +539,7 @@ inline void FixMessage(::artm::TopicModel* message) {
 }
 
 template<>
-inline void FixMessage(::artm::ModelConfig* message) {
-  if (message->topic_name_size() == 0) {
-    for (int i = 0; i < message->topics_count(); ++i) {
-      message->add_topic_name("@topic_" + std::to_string(i));
-    }
-  } else {
-    message->set_topics_count(message->topic_name_size());
-  }
-
-  if (message->class_weight_size() == 0) {
-    for (int i = 0; i < message->class_id_size(); ++i)
-      message->add_class_weight(1.0f);
-  }
-
-  if (message->regularizer_settings_size() == 0) {
-    // using old version of parameters, convert to new one
-    if (message->regularizer_tau_size() == 0) {
-      for (int i = 0; i < message->regularizer_name_size(); ++i)
-        message->add_regularizer_tau(1.0);
-    }
-
-    for (int i = 0; i < message->regularizer_name_size(); ++i) {
-      auto settings = message->add_regularizer_settings();
-      settings->set_name(message->regularizer_name(i));
-      settings->set_use_relative_regularization(false);
-      settings->set_tau(message->regularizer_tau(i));
-    }
-  } else {
-    // using new version of parameters, skip old one
-    for (int i = 0; i < message->regularizer_settings_size(); ++i) {
-      if (!message->regularizer_settings(i).has_tau())
-        message->mutable_regularizer_settings(i)->set_tau(1.0);
-
-      if (!message->regularizer_settings(i).has_use_relative_regularization())
-        message->mutable_regularizer_settings(i)->set_use_relative_regularization(false);
-
-      if (message->regularizer_settings(i).use_relative_regularization() &&
-        !message->regularizer_settings(i).has_gamma())
-        message->mutable_regularizer_settings(i)->set_gamma(1.0);
-    }
-  }
-}
-
-template<>
-inline void FixMessage(::artm::Batch* message) {
+inline void FixMessage(::artm::core::Batch_v07* message) {
   if (message->class_id_size() == 0) {
     for (int i = 0; i < message->token_size(); ++i) {
       message->add_class_id(DefaultClass);
@@ -573,8 +547,8 @@ inline void FixMessage(::artm::Batch* message) {
   }
 
   // Upgrade token_count to token_weight
-  for (::artm::Item& item : *message->mutable_item()) {
-    for (::artm::Field& field : *item.mutable_field()) {
+  for (auto& item : *message->mutable_item()) {
+    for (auto& field : *item.mutable_field()) {
       if (field.token_count_size() != 0 && field.token_weight_size() == 0) {
         field.mutable_token_weight()->Reserve(field.token_count_size());
         for (int i = 0; i < field.token_count_size(); ++i)
@@ -586,10 +560,16 @@ inline void FixMessage(::artm::Batch* message) {
 }
 
 template<>
-inline void FixMessage(::artm::GetThetaMatrixArgs* message) {
-  if (message->has_batch())
-    FixMessage(message->mutable_batch());
+inline void FixMessage(::artm::Batch* message) {
+  if (message->class_id_size() == 0) {
+    for (int i = 0; i < message->token_size(); ++i) {
+      message->add_class_id(DefaultClass);
+    }
+  }
+}
 
+template<>
+inline void FixMessage(::artm::GetThetaMatrixArgs* message) {
   if (message->has_use_sparse_format())
     message->set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
 }
@@ -598,11 +578,6 @@ template<>
 inline void FixMessage(::artm::GetTopicModelArgs* message) {
   if (message->has_use_sparse_format())
     message->set_matrix_layout(GetTopicModelArgs_MatrixLayout_Sparse);
-}
-
-template<>
-inline void FixMessage(::artm::GetScoreValueArgs* message) {
-  if (message->has_batch()) FixMessage(message->mutable_batch());
 }
 
 template<>
@@ -635,6 +610,11 @@ inline void FixMessage(::artm::ProcessBatchesArgs* message) {
 
   for (int i = 0; i < message->batch_size(); ++i)
     FixMessage(message->mutable_batch(i));
+
+  if (message->class_weight_size() == 0) {
+    for (int i = 0; i < message->class_id_size(); ++i)
+      message->add_class_weight(1.0f);
+  }
 }
 
 template<>
@@ -643,6 +623,9 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
     for (int i = 0; i < message->class_id_size(); ++i)
       message->add_class_weight(1.0f);
   }
+
+  if (message->reuse_theta())
+    message->set_cache_theta(true);
 }
 
 template<>
@@ -705,44 +688,6 @@ inline std::string DescribeMessage(const ::artm::RegularizerSettings& message) {
     ss << "relative_regularization:True, gamma:" << message.gamma() << ")";
   else
     ss << "relative_regularization:False" << ")";
-  return ss.str();
-}
-
-template<>
-inline std::string DescribeMessage(const ::artm::ModelConfig& message) {
-  std::stringstream ss;
-  ss << "ModelConfig";
-  ss << ": name=" << message.name();
-  ss << ", topics_count=" << message.topics_count();
-  ss << ", topic_name_size=" << message.topic_name_size();
-  ss << ", enabled=" << (message.enabled() ? "yes" : "no");
-  ss << ", inner_iterations_count=" << message.inner_iterations_count();
-  ss << ", field_name=" << message.field_name();
-  ss << ", stream_name=" << message.stream_name();
-  ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
-  for (int i = 0; i < message.regularizer_settings_size(); ++i)
-    DescribeMessage(message.regularizer_settings(i));
-  for (int i = 0; i < message.class_id_size(); ++i)
-    ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
-  ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
-  ss << ", use_random_theta=" << (message.use_random_theta() ? "yes" : "no");
-  ss << ", use_new_tokens=" << (message.use_new_tokens() ? "yes" : "no");
-  return ss.str();
-}
-
-template<>
-inline std::string DescribeMessage(const ::artm::MasterComponentConfig& message) {
-  std::stringstream ss;
-  ss << "MasterComponentConfig";
-  ss << ": disk_path=" << message.disk_path();
-  ss << ", stream_size=" << message.stream_size();
-  ss << ", compact_batches=" << (message.compact_batches() ? "yes" : "no");
-  ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
-  ss << ", processors_count=" << message.processors_count();
-  ss << ", processor_queue_max_size=" << message.processor_queue_max_size();
-  ss << ", merger_queue_max_size=" << message.merger_queue_max_size();
-  ss << ", score_config_size=" << message.score_config_size();
-  ss << ", disk_cache_path" << message.disk_cache_path();
   return ss.str();
 }
 
@@ -812,15 +757,12 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", pwt_source_name=" << message.pwt_source_name();
   ss << ", inner_iterations_count=" << message.inner_iterations_count();
-  ss << ", stream_name=" << message.stream_name();
   for (int i = 0; i < message.regularizer_name_size(); ++i)
     ss << ", regularizer=(name:" << message.regularizer_name(i) << ", tau:" << message.regularizer_tau(i) << ")";
   for (int i = 0; i < message.class_id_size(); ++i)
     ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
-  ss << ", use_sparse_bow=" << (message.use_sparse_bow() ? "yes" : "no");
-  ss << ", reset_scores=" << (message.reset_scores() ? "yes" : "no");
   ss << ", predict_class_id=" << (message.predict_class_id());
   return ss.str();
 }
@@ -876,7 +818,6 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
        << message.regularizer_config(i).tau() << ")";
   ss << ", reuse_theta=" << message.reuse_theta() ? "yes" : "no";
   ss << ", opt_for_avx=" << message.opt_for_avx() ? "yes" : "no";
-  ss << ", use_sparse_bow=" << message.use_sparse_bow() ? "yes" : "no";
   ss << ", disk_cache_path" << message.disk_cache_path();
 
   return ss.str();
@@ -918,6 +859,15 @@ inline std::string DescribeMessage(const ::artm::TransformMasterModelArgs& messa
   ss << ", batch_size=" << message.batch_size();
   ss << ", theta_matrix_type=" << message.theta_matrix_type();
   ss << ", predict_class_id=" << message.predict_class_id();
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::GetScoreValueArgs& message) {
+  std::stringstream ss;
+  ss << "GetScoreValueArgs";
+  ss << ", model_name=" << message.model_name();
+  ss << ", score_name=" << message.score_name();
   return ss.str();
 }
 

@@ -16,7 +16,7 @@ void SparsityTheta::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
     const artm::core::PhiMatrix& p_wt,
-    const artm::ModelConfig& model_config,
+    const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
   int topic_size = p_wt.topic_size();
@@ -42,10 +42,6 @@ void SparsityTheta::AppendScore(
   sparsity_theta_score.set_zero_topics(zero_topics_count);
   sparsity_theta_score.set_total_topics(topics_to_score_size);
   AppendScore(sparsity_theta_score, score);
-}
-
-std::string SparsityTheta::stream_name() const {
-  return config_.stream_name();
 }
 
 std::shared_ptr<Score> SparsityTheta::CreateScore() {

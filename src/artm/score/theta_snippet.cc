@@ -14,7 +14,7 @@ void ThetaSnippet::AppendScore(
     const Item& item,
     const std::vector<artm::core::Token>& token_dict,
     const artm::core::PhiMatrix& p_wt,
-    const artm::ModelConfig& model_config,
+    const artm::ProcessBatchesArgs& args,
     const std::vector<float>& theta,
     Score* score) {
   int topic_size = p_wt.topic_size();
@@ -27,10 +27,6 @@ void ThetaSnippet::AppendScore(
   }
 
   AppendScore(theta_snippet_score, score);
-}
-
-std::string ThetaSnippet::stream_name() const {
-  return config_.stream_name();
 }
 
 std::shared_ptr<Score> ThetaSnippet::CreateScore() {

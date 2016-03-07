@@ -32,13 +32,7 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     else:
         setattr(score_config, proto_field_name, field)
 
-    master_config = messages.MasterComponentConfig()
-    master_config.CopyFrom(obj._master.config())
-    for i in xrange(len(master_config.score_config)):
-        if master_config.score_config[i].name == obj._name:
-            master_config.score_config[i].config = score_config.SerializeToString()
-            break
-    obj._master.reconfigure(master_config)
+    obj._master.reconfigure_score(obj._name, score_config)
 
 
 class Scores(object):
@@ -48,12 +42,11 @@ class Scores(object):
       master (reference): reference to MasterComponent object, no default
     """
 
-    def __init__(self, master, model_pwt, model_nwt, model_rwt):
+    def __init__(self, master, model_pwt, model_nwt):
         self._data = {}
         self._master = master
         self._model_pwt = model_pwt
         self._model_nwt = model_nwt
-        self._model_rwt = model_rwt
 
     def add(self, score):
         """Scores.add() --- add score into ArtmModel.
@@ -64,10 +57,9 @@ class Scores(object):
         if score.name in self._data:
             raise ValueError('Score with name {0} is already exist'.format(score.name))
         else:
-            self._master.create_score(score.name, score.type, score.config)
+            self._master.create_score(score.name, score.config)
             score._model_pwt = self._model_pwt
             score._model_nwt = self._model_nwt
-            score._model_rwt = self._model_rwt
             score._master = self._master
             self._data[score.name] = score
 
@@ -115,7 +107,6 @@ class BaseScore(object):
         self._config = config
         self._model_pwt = None  # Reserve place for the model
         self._model_nwt = None  # Reserve place for the model
-        self._model_rwt = None  # Reserve place for the model
         self._master = None  # Reserve place for the master (to reconfigure Scores)
 
     @property
@@ -145,10 +136,6 @@ class BaseScore(object):
     @property
     def model_nwt(self):
         return self._model_nwt
-
-    @property
-    def model_rwt(self):
-        return self._model_rwt
 
     @property
     def score(self):

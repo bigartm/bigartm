@@ -18,49 +18,52 @@
 #include "artm/core/processor_input.h"
 #include "artm/core/thread_safe_holder.h"
 
+#include "artm/regularizer_interface.h"
 #include "artm/score_calculator_interface.h"
 
 namespace artm {
 namespace core {
 
-class DataLoader;
 class BatchManager;
 class CacheManager;
+class ScoreManager;
+class ScoreTracker;
 class Processor;
 class Merger;
-class InstanceSchema;
 class Dictionary;
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 typedef ThreadSafeCollectionHolder<std::string, Batch> ThreadSafeBatchCollection;
+typedef ThreadSafeCollectionHolder<std::string, PhiMatrix> ThreadSafeModelCollection;
+typedef ThreadSafeCollectionHolder<std::string, RegularizerInterface> ThreadSafeRegularizerCollection;
+typedef ThreadSafeCollectionHolder<std::string, ScoreCalculatorInterface> ThreadSafeScoreCollection;
 typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
-typedef ThreadSafeQueue<std::shared_ptr<ModelIncrement>> MergerQueue;
 
-// Class Instance is respondible for joint hosting of many other components
-// (processors, merger, data loader) and data structures (schema, queues, etc).
+// Class Instance is respondible for joint hosting of many other components and data structures.
 class Instance {
  public:
-  explicit Instance(const MasterComponentConfig& config);
+  explicit Instance(const MasterModelConfig& config);
   ~Instance();
 
   std::shared_ptr<Instance> Duplicate() const;
   void RequestMasterComponentInfo(MasterComponentInfo* master_info) const;
 
-  std::shared_ptr<InstanceSchema> schema() const { return schema_.get(); }
+  std::shared_ptr<MasterModelConfig> config() const { return master_model_config_.get(); }
+  ThreadSafeRegularizerCollection* regularizers() { return &regularizers_; }
+  ThreadSafeScoreCollection* scores_calculators() { return &score_calculators_; }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
-  MergerQueue* merger_queue() { return &merger_queue_; }
   ThreadSafeDictionaryCollection* dictionaries() { return &dictionaries_; }
   ThreadSafeBatchCollection* batches() { return &batches_; }
+  ThreadSafeModelCollection* models() { return &models_; }
 
-  DataLoader* data_loader();
   BatchManager* batch_manager();
   CacheManager* cache_manager();
-  Merger* merger();
+  ScoreManager* score_manager();
+  ScoreTracker* score_tracker();
 
   int processor_size() { return processors_.size(); }
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
 
-  void Reconfigure(const MasterComponentConfig& master_config);
-  void CreateOrReconfigureModel(const ModelConfig& config);
+  void Reconfigure(const MasterModelConfig& master_config);
   void DisposeModel(ModelName model_name);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
@@ -68,21 +71,27 @@ class Instance {
 
   std::shared_ptr<ScoreCalculatorInterface> CreateScoreCalculator(const ScoreConfig& config);
 
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(ModelName model_name) const;
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrixSafe(ModelName model_name) const;
+  void SetPhiMatrix(ModelName model_name, std::shared_ptr< ::artm::core::PhiMatrix> phi_matrix);
+
  private:
   bool is_configured_;
 
   // The order of the class members defines the order in which obects are created and destroyed.
-  // Pay special attantion to the order of data_loader_, merger_ and processor_,
-  // because all this objects has an associated thread.
+  // Pay special attantion to the location of processor_,
+  // because it has an associated thread.
   // Such threads must be terminated prior to all the objects that the thread might potentially access.
 
-  ThreadSafeHolder<InstanceSchema> schema_;
+  ThreadSafeHolder<MasterModelConfig> master_model_config_;
+
+  ThreadSafeRegularizerCollection regularizers_;
+  ThreadSafeScoreCollection score_calculators_;
   ThreadSafeDictionaryCollection dictionaries_;
   ThreadSafeBatchCollection batches_;
+  ThreadSafeModelCollection models_;
 
   ProcessorQueue processor_queue_;
-
-  MergerQueue merger_queue_;
 
   // Depends on schema_
   std::shared_ptr<CacheManager> cache_manager_;
@@ -90,13 +99,11 @@ class Instance {
   // Depends on schema_
   std::shared_ptr<BatchManager> batch_manager_;
 
-  // Depends on schema_, processor_queue_, batch_manager_
-  std::shared_ptr<DataLoader> data_loader_;
+  // Depends on [none]
+  std::shared_ptr<ScoreManager> score_manager_;
+  std::shared_ptr<ScoreTracker> score_tracker_;
 
-  // Depends on schema_, merger_queue_, data_loader_
-  std::shared_ptr<Merger> merger_;
-
-  // Depends on schema_, processor_queue_, merger_queue_, and merger_
+  // Depends on schema_, processor_queue_, and merger_
   std::vector<std::shared_ptr<Processor> > processors_;
 
   Instance(const Instance& rhs);

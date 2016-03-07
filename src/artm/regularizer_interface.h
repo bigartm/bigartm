@@ -46,12 +46,12 @@ class RegularizerInterface {
   virtual ~RegularizerInterface() { }
 
   virtual std::shared_ptr<RegularizeThetaAgent>
-  CreateRegularizeThetaAgent(const Batch& batch, const ModelConfig& model_config, double tau) {
+  CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau) {
     return nullptr;
   }
 
   virtual std::shared_ptr<RegularizePtdwAgent>
-  CreateRegularizePtdwAgent(const Batch& batch, const ModelConfig& model_config, double tau) {
+  CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau) {
     return nullptr;
   }
 
@@ -71,11 +71,6 @@ class RegularizerInterface {
   // Returns true if succeeded, and false if the caller must recreate the regularizer from scratch
   // via constructor.
   virtual bool Reconfigure(const RegularizerConfig& config) { return false; }
-
-  virtual void SerializeInternalState(RegularizerInternalState* regularizer_state) {
-    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(
-      "This regularizer has no internal state that can be retrieved."));
-  }
 
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
   void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);

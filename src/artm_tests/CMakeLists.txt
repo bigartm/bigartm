@@ -4,13 +4,13 @@ include_directories(${3RD_PARTY_DIR}/gtest/fused-src/)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 
 set(SRC_LIST
+	api.cc
 	batch_manager_test.cc
 	blas_test.cc
 	boost_thread_test.cc
 	cache_manager_test.cc
 	collection_parser_test.cc
 	cpp_interface_test.cc
-	instance_test.cc
 	master_model_test.cc
 	multiple_classes_test.cc
 	regularizers_test.cc

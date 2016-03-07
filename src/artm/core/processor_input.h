@@ -19,35 +19,28 @@ class Notifiable {
   virtual void Callback(const boost::uuids::uuid& id, const ModelName& model_name) = 0;
 };
 
-class ScoresMerger;
+class ScoreManager;
 class CacheManager;
 
 class ProcessorInput {
  public:
-  enum Caller {
-    Unknown,
-    InvokeIteration,
-    AddBatch,
-    ProcessBatches,
-  };
-
-  ProcessorInput() : batch_(), model_config_(), model_name_(), nwt_target_name_(),
+  ProcessorInput() : batch_(), args_(), model_name_(), nwt_target_name_(),
                      batch_filename_(), batch_weight_(1.0f), task_id_(), notifiable_(nullptr),
-                     scores_merger_(nullptr), cache_manager_(nullptr),
-                     caller_(Caller::Unknown), ptdw_cache_manager_(nullptr),
+                     score_manager_(nullptr), cache_manager_(nullptr),
+                     ptdw_cache_manager_(nullptr),
                      reuse_theta_cache_manager_(nullptr) {}
 
   Batch* mutable_batch() { return &batch_; }
   const Batch& batch() const { return batch_; }
 
-  ModelConfig* mutable_model_config() { return &model_config_; }
-  const ModelConfig& model_config() const { return model_config_; }
+  ProcessBatchesArgs* mutable_args() { return &args_; }
+  const ProcessBatchesArgs& args() const { return args_; }
 
   Notifiable* notifiable() const { return notifiable_; }
   void set_notifiable(Notifiable* notifiable) { notifiable_ = notifiable; }
 
-  ScoresMerger* scores_merger() const { return scores_merger_; }
-  void set_scores_merger(ScoresMerger* scores_merger) { scores_merger_ = scores_merger; }
+  ScoreManager* score_manager() const { return score_manager_; }
+  void set_score_manager(ScoreManager* score_manager) { score_manager_ = score_manager; }
 
   CacheManager* cache_manager() const { return cache_manager_; }
   void set_cache_manager(CacheManager* cache_manager) { cache_manager_ = cache_manager; }
@@ -78,21 +71,17 @@ class ProcessorInput {
   const boost::uuids::uuid& task_id() const { return task_id_; }
   void set_task_id(const boost::uuids::uuid& task_id) { task_id_ = task_id; }
 
-  Caller caller() const { return caller_; }
-  void set_caller(const Caller caller) { caller_ = caller; }
-
  private:
   Batch batch_;
-  ModelConfig model_config_;
+  ProcessBatchesArgs args_;
   ModelName model_name_;
   ModelName nwt_target_name_;
   std::string batch_filename_;  // if this is set batch_ is ignored;
   float batch_weight_;
   boost::uuids::uuid task_id_;
   Notifiable* notifiable_;
-  ScoresMerger* scores_merger_;
+  ScoreManager* score_manager_;
   CacheManager* cache_manager_;
-  Caller caller_;
   CacheManager* ptdw_cache_manager_;
   CacheManager* reuse_theta_cache_manager_;
 };

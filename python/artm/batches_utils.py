@@ -95,6 +95,10 @@ class BatchVectorizer(object):
         return self._batches_list
 
     @property
+    def num_batches(self):
+        return len(self._batches_list)
+
+    @property
     def data_path(self):
         return self._data_path
 

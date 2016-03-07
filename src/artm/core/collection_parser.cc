@@ -113,7 +113,6 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   std::map<int, int> batch_dictionary;
   ::artm::Batch batch;
   ::artm::Item* item = nullptr;
-  ::artm::Field* field = nullptr;
   int prev_item_id = -1;
 
   int64_t total_token_weight = 0;
@@ -179,7 +178,6 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
 
       item = batch.add_item();
       item->set_id(item_id);
-      field = item->add_field();
 
       // Increment statistics
       total_items_count++;
@@ -194,8 +192,8 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
       iter = batch_dictionary.find(token_id);
     }
 
-    field->add_token_id(iter->second);
-    field->add_token_weight(token_weight);
+    item->add_token_id(iter->second);
+    item->add_token_weight(token_weight);
 
     // Increment statistics
     total_token_weight += token_weight;
@@ -292,7 +290,6 @@ class CollectionParser::BatchCollector {
 
   void StartNewItem() {
     item_ = batch_.add_item();
-    item_->add_field();
     total_items_count_++;
   }
 
@@ -312,10 +309,8 @@ class CollectionParser::BatchCollector {
     int local_token_id = local_map_[token];
 
     if (item_ == nullptr) StartNewItem();
-
-    Field* field = item_->mutable_field(0);
-    field->add_token_id(local_token_id);
-    field->add_token_weight(token_weight);
+    item_->add_token_id(local_token_id);
+    item_->add_token_weight(token_weight);
 
     token_info.items_count++;
     token_info.token_weight += token_weight;

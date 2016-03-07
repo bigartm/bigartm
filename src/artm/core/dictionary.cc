@@ -180,7 +180,8 @@ Dictionary::Gather(const GatherDictionaryArgs& args,
   std::vector<std::string> batches;
 
   if (args.has_data_path()) {
-    batches = BatchHelpers::ListAllBatches(args.data_path());
+    for (auto& batch_path : BatchHelpers::ListAllBatches(args.data_path()))
+      batches.push_back(batch_path.string());
     LOG(INFO) << "Found " << batches.size() << " batches in '" << args.data_path() << "' folder";
   } else {
     for (auto& batch : args.batch_path())
@@ -214,13 +215,12 @@ Dictionary::Gather(const GatherDictionaryArgs& args,
       // Find cumulative weight for each token in item
       // (assume that token might have multiple occurence in each item)
       std::vector<bool> local_token_df(batch.token_size(), false);
-      for (const Field& field : batch.item(item_id).field()) {
-        for (int token_index = 0; token_index < field.token_weight_size(); ++token_index) {
-          const float token_weight = field.token_weight(token_index);
-          const int token_id = field.token_id(token_index);
-          token_n_w[token_id] += token_weight;
-          local_token_df[token_id] = true;
-        }
+      const Item& item = batch.item(item_id);
+      for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
+        const float token_weight = item.token_weight(token_index);
+        const int token_id = item.token_id(token_index);
+        token_n_w[token_id] += token_weight;
+        local_token_df[token_id] = true;
       }
       for (int i = 0; i < batch.token_size(); ++i)
         token_df[i] += local_token_df[i] ? 1.0 : 0.0;

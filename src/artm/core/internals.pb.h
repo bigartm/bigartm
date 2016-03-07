@@ -35,98 +35,12 @@ void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
 void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
 void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
 
-class Mask;
 class DataLoaderCacheEntry;
-class StreamMasks;
-class ModelIncrement;
+class Item_v07;
+class Field_v07;
+class Batch_v07;
 
 // ===================================================================
-
-class Mask : public ::google::protobuf::Message {
- public:
-  Mask();
-  virtual ~Mask();
-
-  Mask(const Mask& from);
-
-  inline Mask& operator=(const Mask& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const Mask& default_instance();
-
-  void Swap(Mask* other);
-
-  // implements Message ----------------------------------------------
-
-  Mask* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const Mask& from);
-  void MergeFrom(const Mask& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated bool value = 1 [packed = true];
-  inline int value_size() const;
-  inline void clear_value();
-  static const int kValueFieldNumber = 1;
-  inline bool value(int index) const;
-  inline void set_value(int index, bool value);
-  inline void add_value(bool value);
-  inline const ::google::protobuf::RepeatedField< bool >&
-      value() const;
-  inline ::google::protobuf::RepeatedField< bool >*
-      mutable_value();
-
-  // @@protoc_insertion_point(class_scope:artm.core.Mask)
- private:
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::RepeatedField< bool > value_;
-  mutable int _value_cached_byte_size_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
-  friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
-  friend void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
-
-  void InitAsDefaultInstance();
-  static Mask* default_instance_;
-};
-// -------------------------------------------------------------------
 
 class DataLoaderCacheEntry : public ::google::protobuf::Message {
  public:
@@ -181,18 +95,6 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
-  // optional string model_name = 1;
-  inline bool has_model_name() const;
-  inline void clear_model_name();
-  static const int kModelNameFieldNumber = 1;
-  inline const ::std::string& model_name() const;
-  inline void set_model_name(const ::std::string& value);
-  inline void set_model_name(const char* value);
-  inline void set_model_name(const char* value, size_t size);
-  inline ::std::string* mutable_model_name();
-  inline ::std::string* release_model_name();
-  inline void set_allocated_model_name(::std::string* model_name);
 
   // optional string batch_uuid = 2;
   inline bool has_batch_uuid() const;
@@ -288,8 +190,6 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.core.DataLoaderCacheEntry)
  private:
-  inline void set_has_model_name();
-  inline void clear_has_model_name();
   inline void set_has_batch_uuid();
   inline void clear_has_batch_uuid();
   inline void set_has_filename();
@@ -297,7 +197,6 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* model_name_;
   ::std::string* batch_uuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > item_id_;
   ::google::protobuf::RepeatedPtrField< ::artm::FloatArray > theta_;
@@ -307,7 +206,7 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::artm::IntArray > topic_index_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
@@ -318,14 +217,14 @@ class DataLoaderCacheEntry : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class StreamMasks : public ::google::protobuf::Message {
+class Item_v07 : public ::google::protobuf::Message {
  public:
-  StreamMasks();
-  virtual ~StreamMasks();
+  Item_v07();
+  virtual ~Item_v07();
 
-  StreamMasks(const StreamMasks& from);
+  Item_v07(const Item_v07& from);
 
-  inline StreamMasks& operator=(const StreamMasks& from) {
+  inline Item_v07& operator=(const Item_v07& from) {
     CopyFrom(from);
     return *this;
   }
@@ -339,17 +238,17 @@ class StreamMasks : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const StreamMasks& default_instance();
+  static const Item_v07& default_instance();
 
-  void Swap(StreamMasks* other);
+  void Swap(Item_v07* other);
 
   // implements Message ----------------------------------------------
 
-  StreamMasks* New() const;
+  Item_v07* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const StreamMasks& from);
-  void MergeFrom(const StreamMasks& from);
+  void CopyFrom(const Item_v07& from);
+  void MergeFrom(const Item_v07& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -372,62 +271,70 @@ class StreamMasks : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // repeated .artm.core.Mask stream_mask = 4;
-  inline int stream_mask_size() const;
-  inline void clear_stream_mask();
-  static const int kStreamMaskFieldNumber = 4;
-  inline const ::artm::core::Mask& stream_mask(int index) const;
-  inline ::artm::core::Mask* mutable_stream_mask(int index);
-  inline ::artm::core::Mask* add_stream_mask();
-  inline const ::google::protobuf::RepeatedPtrField< ::artm::core::Mask >&
-      stream_mask() const;
-  inline ::google::protobuf::RepeatedPtrField< ::artm::core::Mask >*
-      mutable_stream_mask();
+  // optional int32 id = 1;
+  inline bool has_id() const;
+  inline void clear_id();
+  static const int kIdFieldNumber = 1;
+  inline ::google::protobuf::int32 id() const;
+  inline void set_id(::google::protobuf::int32 value);
 
-  // repeated string stream_name = 5;
-  inline int stream_name_size() const;
-  inline void clear_stream_name();
-  static const int kStreamNameFieldNumber = 5;
-  inline const ::std::string& stream_name(int index) const;
-  inline ::std::string* mutable_stream_name(int index);
-  inline void set_stream_name(int index, const ::std::string& value);
-  inline void set_stream_name(int index, const char* value);
-  inline void set_stream_name(int index, const char* value, size_t size);
-  inline ::std::string* add_stream_name();
-  inline void add_stream_name(const ::std::string& value);
-  inline void add_stream_name(const char* value);
-  inline void add_stream_name(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& stream_name() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_stream_name();
+  // repeated .artm.core.Field_v07 field = 2;
+  inline int field_size() const;
+  inline void clear_field();
+  static const int kFieldFieldNumber = 2;
+  inline const ::artm::core::Field_v07& field(int index) const;
+  inline ::artm::core::Field_v07* mutable_field(int index);
+  inline ::artm::core::Field_v07* add_field();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::core::Field_v07 >&
+      field() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::core::Field_v07 >*
+      mutable_field();
 
-  // @@protoc_insertion_point(class_scope:artm.core.StreamMasks)
+  // optional string title = 3;
+  inline bool has_title() const;
+  inline void clear_title();
+  static const int kTitleFieldNumber = 3;
+  inline const ::std::string& title() const;
+  inline void set_title(const ::std::string& value);
+  inline void set_title(const char* value);
+  inline void set_title(const char* value, size_t size);
+  inline ::std::string* mutable_title();
+  inline ::std::string* release_title();
+  inline void set_allocated_title(::std::string* title);
+
+  // @@protoc_insertion_point(class_scope:artm.core.Item_v07)
  private:
+  inline void set_has_id();
+  inline void clear_has_id();
+  inline void set_has_title();
+  inline void clear_has_title();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::google::protobuf::RepeatedPtrField< ::artm::core::Mask > stream_mask_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> stream_name_;
+  ::google::protobuf::RepeatedPtrField< ::artm::core::Field_v07 > field_;
+  ::std::string* title_;
+  ::google::protobuf::int32 id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
 
   void InitAsDefaultInstance();
-  static StreamMasks* default_instance_;
+  static Item_v07* default_instance_;
 };
 // -------------------------------------------------------------------
 
-class ModelIncrement : public ::google::protobuf::Message {
+class Field_v07 : public ::google::protobuf::Message {
  public:
-  ModelIncrement();
-  virtual ~ModelIncrement();
+  Field_v07();
+  virtual ~Field_v07();
 
-  ModelIncrement(const ModelIncrement& from);
+  Field_v07(const Field_v07& from);
 
-  inline ModelIncrement& operator=(const ModelIncrement& from) {
+  inline Field_v07& operator=(const Field_v07& from) {
     CopyFrom(from);
     return *this;
   }
@@ -441,17 +348,17 @@ class ModelIncrement : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const ModelIncrement& default_instance();
+  static const Field_v07& default_instance();
 
-  void Swap(ModelIncrement* other);
+  void Swap(Field_v07* other);
 
   // implements Message ----------------------------------------------
 
-  ModelIncrement* New() const;
+  Field_v07* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const ModelIncrement& from);
-  void MergeFrom(const ModelIncrement& from);
+  void CopyFrom(const Field_v07& from);
+  void MergeFrom(const Field_v07& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -474,149 +381,365 @@ class ModelIncrement : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional .artm.TopicModel topic_model = 1;
-  inline bool has_topic_model() const;
-  inline void clear_topic_model();
-  static const int kTopicModelFieldNumber = 1;
-  inline const ::artm::TopicModel& topic_model() const;
-  inline ::artm::TopicModel* mutable_topic_model();
-  inline ::artm::TopicModel* release_topic_model();
-  inline void set_allocated_topic_model(::artm::TopicModel* topic_model);
+  // optional string name = 1 [default = "@body"];
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
 
-  // @@protoc_insertion_point(class_scope:artm.core.ModelIncrement)
+  // repeated int32 token_id = 2;
+  inline int token_id_size() const;
+  inline void clear_token_id();
+  static const int kTokenIdFieldNumber = 2;
+  inline ::google::protobuf::int32 token_id(int index) const;
+  inline void set_token_id(int index, ::google::protobuf::int32 value);
+  inline void add_token_id(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      token_id() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_token_id();
+
+  // repeated int32 token_count = 3;
+  inline int token_count_size() const;
+  inline void clear_token_count();
+  static const int kTokenCountFieldNumber = 3;
+  inline ::google::protobuf::int32 token_count(int index) const;
+  inline void set_token_count(int index, ::google::protobuf::int32 value);
+  inline void add_token_count(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      token_count() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_token_count();
+
+  // repeated int32 token_offset = 4;
+  inline int token_offset_size() const;
+  inline void clear_token_offset();
+  static const int kTokenOffsetFieldNumber = 4;
+  inline ::google::protobuf::int32 token_offset(int index) const;
+  inline void set_token_offset(int index, ::google::protobuf::int32 value);
+  inline void add_token_offset(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      token_offset() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_token_offset();
+
+  // optional string string_value = 5;
+  inline bool has_string_value() const;
+  inline void clear_string_value();
+  static const int kStringValueFieldNumber = 5;
+  inline const ::std::string& string_value() const;
+  inline void set_string_value(const ::std::string& value);
+  inline void set_string_value(const char* value);
+  inline void set_string_value(const char* value, size_t size);
+  inline ::std::string* mutable_string_value();
+  inline ::std::string* release_string_value();
+  inline void set_allocated_string_value(::std::string* string_value);
+
+  // optional int64 int_value = 6;
+  inline bool has_int_value() const;
+  inline void clear_int_value();
+  static const int kIntValueFieldNumber = 6;
+  inline ::google::protobuf::int64 int_value() const;
+  inline void set_int_value(::google::protobuf::int64 value);
+
+  // optional double double_value = 7;
+  inline bool has_double_value() const;
+  inline void clear_double_value();
+  static const int kDoubleValueFieldNumber = 7;
+  inline double double_value() const;
+  inline void set_double_value(double value);
+
+  // optional string date_value = 8;
+  inline bool has_date_value() const;
+  inline void clear_date_value();
+  static const int kDateValueFieldNumber = 8;
+  inline const ::std::string& date_value() const;
+  inline void set_date_value(const ::std::string& value);
+  inline void set_date_value(const char* value);
+  inline void set_date_value(const char* value, size_t size);
+  inline ::std::string* mutable_date_value();
+  inline ::std::string* release_date_value();
+  inline void set_allocated_date_value(::std::string* date_value);
+
+  // repeated string string_array = 16;
+  inline int string_array_size() const;
+  inline void clear_string_array();
+  static const int kStringArrayFieldNumber = 16;
+  inline const ::std::string& string_array(int index) const;
+  inline ::std::string* mutable_string_array(int index);
+  inline void set_string_array(int index, const ::std::string& value);
+  inline void set_string_array(int index, const char* value);
+  inline void set_string_array(int index, const char* value, size_t size);
+  inline ::std::string* add_string_array();
+  inline void add_string_array(const ::std::string& value);
+  inline void add_string_array(const char* value);
+  inline void add_string_array(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& string_array() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_string_array();
+
+  // repeated int64 int_array = 17;
+  inline int int_array_size() const;
+  inline void clear_int_array();
+  static const int kIntArrayFieldNumber = 17;
+  inline ::google::protobuf::int64 int_array(int index) const;
+  inline void set_int_array(int index, ::google::protobuf::int64 value);
+  inline void add_int_array(::google::protobuf::int64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+      int_array() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+      mutable_int_array();
+
+  // repeated double double_array = 18;
+  inline int double_array_size() const;
+  inline void clear_double_array();
+  static const int kDoubleArrayFieldNumber = 18;
+  inline double double_array(int index) const;
+  inline void set_double_array(int index, double value);
+  inline void add_double_array(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      double_array() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_double_array();
+
+  // repeated string date_array = 19;
+  inline int date_array_size() const;
+  inline void clear_date_array();
+  static const int kDateArrayFieldNumber = 19;
+  inline const ::std::string& date_array(int index) const;
+  inline ::std::string* mutable_date_array(int index);
+  inline void set_date_array(int index, const ::std::string& value);
+  inline void set_date_array(int index, const char* value);
+  inline void set_date_array(int index, const char* value, size_t size);
+  inline ::std::string* add_date_array();
+  inline void add_date_array(const ::std::string& value);
+  inline void add_date_array(const char* value);
+  inline void add_date_array(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& date_array() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_date_array();
+
+  // repeated float token_weight = 20;
+  inline int token_weight_size() const;
+  inline void clear_token_weight();
+  static const int kTokenWeightFieldNumber = 20;
+  inline float token_weight(int index) const;
+  inline void set_token_weight(int index, float value);
+  inline void add_token_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      token_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_token_weight();
+
+  // @@protoc_insertion_point(class_scope:artm.core.Field_v07)
  private:
-  inline void set_has_topic_model();
-  inline void clear_has_topic_model();
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_string_value();
+  inline void clear_has_string_value();
+  inline void set_has_int_value();
+  inline void clear_has_int_value();
+  inline void set_has_double_value();
+  inline void clear_has_double_value();
+  inline void set_has_date_value();
+  inline void clear_has_date_value();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::artm::TopicModel* topic_model_;
+  ::std::string* name_;
+  static ::std::string* _default_name_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > token_id_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > token_count_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > token_offset_;
+  ::std::string* string_value_;
+  ::google::protobuf::int64 int_value_;
+  double double_value_;
+  ::std::string* date_value_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> string_array_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int64 > int_array_;
+  ::google::protobuf::RepeatedField< double > double_array_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> date_array_;
+  ::google::protobuf::RepeatedField< float > token_weight_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
   friend void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
 
   void InitAsDefaultInstance();
-  static ModelIncrement* default_instance_;
+  static Field_v07* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class Batch_v07 : public ::google::protobuf::Message {
+ public:
+  Batch_v07();
+  virtual ~Batch_v07();
+
+  Batch_v07(const Batch_v07& from);
+
+  inline Batch_v07& operator=(const Batch_v07& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Batch_v07& default_instance();
+
+  void Swap(Batch_v07* other);
+
+  // implements Message ----------------------------------------------
+
+  Batch_v07* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Batch_v07& from);
+  void MergeFrom(const Batch_v07& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated string token = 1;
+  inline int token_size() const;
+  inline void clear_token();
+  static const int kTokenFieldNumber = 1;
+  inline const ::std::string& token(int index) const;
+  inline ::std::string* mutable_token(int index);
+  inline void set_token(int index, const ::std::string& value);
+  inline void set_token(int index, const char* value);
+  inline void set_token(int index, const char* value, size_t size);
+  inline ::std::string* add_token();
+  inline void add_token(const ::std::string& value);
+  inline void add_token(const char* value);
+  inline void add_token(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& token() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_token();
+
+  // repeated string class_id = 2;
+  inline int class_id_size() const;
+  inline void clear_class_id();
+  static const int kClassIdFieldNumber = 2;
+  inline const ::std::string& class_id(int index) const;
+  inline ::std::string* mutable_class_id(int index);
+  inline void set_class_id(int index, const ::std::string& value);
+  inline void set_class_id(int index, const char* value);
+  inline void set_class_id(int index, const char* value, size_t size);
+  inline ::std::string* add_class_id();
+  inline void add_class_id(const ::std::string& value);
+  inline void add_class_id(const char* value);
+  inline void add_class_id(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& class_id() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_class_id();
+
+  // repeated .artm.core.Item_v07 item = 3;
+  inline int item_size() const;
+  inline void clear_item();
+  static const int kItemFieldNumber = 3;
+  inline const ::artm::core::Item_v07& item(int index) const;
+  inline ::artm::core::Item_v07* mutable_item(int index);
+  inline ::artm::core::Item_v07* add_item();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::core::Item_v07 >&
+      item() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::core::Item_v07 >*
+      mutable_item();
+
+  // optional string description = 4;
+  inline bool has_description() const;
+  inline void clear_description();
+  static const int kDescriptionFieldNumber = 4;
+  inline const ::std::string& description() const;
+  inline void set_description(const ::std::string& value);
+  inline void set_description(const char* value);
+  inline void set_description(const char* value, size_t size);
+  inline ::std::string* mutable_description();
+  inline ::std::string* release_description();
+  inline void set_allocated_description(::std::string* description);
+
+  // optional string id = 5;
+  inline bool has_id() const;
+  inline void clear_id();
+  static const int kIdFieldNumber = 5;
+  inline const ::std::string& id() const;
+  inline void set_id(const ::std::string& value);
+  inline void set_id(const char* value);
+  inline void set_id(const char* value, size_t size);
+  inline ::std::string* mutable_id();
+  inline ::std::string* release_id();
+  inline void set_allocated_id(::std::string* id);
+
+  // @@protoc_insertion_point(class_scope:artm.core.Batch_v07)
+ private:
+  inline void set_has_description();
+  inline void clear_has_description();
+  inline void set_has_id();
+  inline void clear_has_id();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::RepeatedPtrField< ::std::string> token_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> class_id_;
+  ::google::protobuf::RepeatedPtrField< ::artm::core::Item_v07 > item_;
+  ::std::string* description_;
+  ::std::string* id_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fcore_2finternals_2eproto();
+  friend void protobuf_AssignDesc_artm_2fcore_2finternals_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fcore_2finternals_2eproto();
+
+  void InitAsDefaultInstance();
+  static Batch_v07* default_instance_;
 };
 // ===================================================================
 
 
 // ===================================================================
-
-// Mask
-
-// repeated bool value = 1 [packed = true];
-inline int Mask::value_size() const {
-  return value_.size();
-}
-inline void Mask::clear_value() {
-  value_.Clear();
-}
-inline bool Mask::value(int index) const {
-  return value_.Get(index);
-}
-inline void Mask::set_value(int index, bool value) {
-  value_.Set(index, value);
-}
-inline void Mask::add_value(bool value) {
-  value_.Add(value);
-}
-inline const ::google::protobuf::RepeatedField< bool >&
-Mask::value() const {
-  return value_;
-}
-inline ::google::protobuf::RepeatedField< bool >*
-Mask::mutable_value() {
-  return &value_;
-}
-
-// -------------------------------------------------------------------
 
 // DataLoaderCacheEntry
 
-// optional string model_name = 1;
-inline bool DataLoaderCacheEntry::has_model_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void DataLoaderCacheEntry::set_has_model_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void DataLoaderCacheEntry::clear_has_model_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void DataLoaderCacheEntry::clear_model_name() {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    model_name_->clear();
-  }
-  clear_has_model_name();
-}
-inline const ::std::string& DataLoaderCacheEntry::model_name() const {
-  return *model_name_;
-}
-inline void DataLoaderCacheEntry::set_model_name(const ::std::string& value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void DataLoaderCacheEntry::set_model_name(const char* value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void DataLoaderCacheEntry::set_model_name(const char* value, size_t size) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* DataLoaderCacheEntry::mutable_model_name() {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  return model_name_;
-}
-inline ::std::string* DataLoaderCacheEntry::release_model_name() {
-  clear_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = model_name_;
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void DataLoaderCacheEntry::set_allocated_model_name(::std::string* model_name) {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_;
-  }
-  if (model_name) {
-    set_has_model_name();
-    model_name_ = model_name;
-  } else {
-    clear_has_model_name();
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
 // optional string batch_uuid = 2;
 inline bool DataLoaderCacheEntry::has_batch_uuid() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void DataLoaderCacheEntry::set_has_batch_uuid() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void DataLoaderCacheEntry::clear_has_batch_uuid() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void DataLoaderCacheEntry::clear_batch_uuid() {
   if (batch_uuid_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -774,13 +897,13 @@ DataLoaderCacheEntry::mutable_topic_name() {
 
 // optional string filename = 6;
 inline bool DataLoaderCacheEntry::has_filename() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void DataLoaderCacheEntry::set_has_filename() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void DataLoaderCacheEntry::clear_has_filename() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void DataLoaderCacheEntry::clear_filename() {
   if (filename_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -913,116 +1036,875 @@ DataLoaderCacheEntry::mutable_topic_index() {
 
 // -------------------------------------------------------------------
 
-// StreamMasks
+// Item_v07
 
-// repeated .artm.core.Mask stream_mask = 4;
-inline int StreamMasks::stream_mask_size() const {
-  return stream_mask_.size();
+// optional int32 id = 1;
+inline bool Item_v07::has_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void StreamMasks::clear_stream_mask() {
-  stream_mask_.Clear();
+inline void Item_v07::set_has_id() {
+  _has_bits_[0] |= 0x00000001u;
 }
-inline const ::artm::core::Mask& StreamMasks::stream_mask(int index) const {
-  return stream_mask_.Get(index);
+inline void Item_v07::clear_has_id() {
+  _has_bits_[0] &= ~0x00000001u;
 }
-inline ::artm::core::Mask* StreamMasks::mutable_stream_mask(int index) {
-  return stream_mask_.Mutable(index);
+inline void Item_v07::clear_id() {
+  id_ = 0;
+  clear_has_id();
 }
-inline ::artm::core::Mask* StreamMasks::add_stream_mask() {
-  return stream_mask_.Add();
+inline ::google::protobuf::int32 Item_v07::id() const {
+  return id_;
 }
-inline const ::google::protobuf::RepeatedPtrField< ::artm::core::Mask >&
-StreamMasks::stream_mask() const {
-  return stream_mask_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::artm::core::Mask >*
-StreamMasks::mutable_stream_mask() {
-  return &stream_mask_;
+inline void Item_v07::set_id(::google::protobuf::int32 value) {
+  set_has_id();
+  id_ = value;
 }
 
-// repeated string stream_name = 5;
-inline int StreamMasks::stream_name_size() const {
-  return stream_name_.size();
+// repeated .artm.core.Field_v07 field = 2;
+inline int Item_v07::field_size() const {
+  return field_.size();
 }
-inline void StreamMasks::clear_stream_name() {
-  stream_name_.Clear();
+inline void Item_v07::clear_field() {
+  field_.Clear();
 }
-inline const ::std::string& StreamMasks::stream_name(int index) const {
-  return stream_name_.Get(index);
+inline const ::artm::core::Field_v07& Item_v07::field(int index) const {
+  return field_.Get(index);
 }
-inline ::std::string* StreamMasks::mutable_stream_name(int index) {
-  return stream_name_.Mutable(index);
+inline ::artm::core::Field_v07* Item_v07::mutable_field(int index) {
+  return field_.Mutable(index);
 }
-inline void StreamMasks::set_stream_name(int index, const ::std::string& value) {
-  stream_name_.Mutable(index)->assign(value);
+inline ::artm::core::Field_v07* Item_v07::add_field() {
+  return field_.Add();
 }
-inline void StreamMasks::set_stream_name(int index, const char* value) {
-  stream_name_.Mutable(index)->assign(value);
+inline const ::google::protobuf::RepeatedPtrField< ::artm::core::Field_v07 >&
+Item_v07::field() const {
+  return field_;
 }
-inline void StreamMasks::set_stream_name(int index, const char* value, size_t size) {
-  stream_name_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
+inline ::google::protobuf::RepeatedPtrField< ::artm::core::Field_v07 >*
+Item_v07::mutable_field() {
+  return &field_;
 }
-inline ::std::string* StreamMasks::add_stream_name() {
-  return stream_name_.Add();
+
+// optional string title = 3;
+inline bool Item_v07::has_title() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void StreamMasks::add_stream_name(const ::std::string& value) {
-  stream_name_.Add()->assign(value);
+inline void Item_v07::set_has_title() {
+  _has_bits_[0] |= 0x00000004u;
 }
-inline void StreamMasks::add_stream_name(const char* value) {
-  stream_name_.Add()->assign(value);
+inline void Item_v07::clear_has_title() {
+  _has_bits_[0] &= ~0x00000004u;
 }
-inline void StreamMasks::add_stream_name(const char* value, size_t size) {
-  stream_name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+inline void Item_v07::clear_title() {
+  if (title_ != &::google::protobuf::internal::GetEmptyString()) {
+    title_->clear();
+  }
+  clear_has_title();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-StreamMasks::stream_name() const {
-  return stream_name_;
+inline const ::std::string& Item_v07::title() const {
+  return *title_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-StreamMasks::mutable_stream_name() {
-  return &stream_name_;
+inline void Item_v07::set_title(const ::std::string& value) {
+  set_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    title_ = new ::std::string;
+  }
+  title_->assign(value);
+}
+inline void Item_v07::set_title(const char* value) {
+  set_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    title_ = new ::std::string;
+  }
+  title_->assign(value);
+}
+inline void Item_v07::set_title(const char* value, size_t size) {
+  set_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    title_ = new ::std::string;
+  }
+  title_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Item_v07::mutable_title() {
+  set_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    title_ = new ::std::string;
+  }
+  return title_;
+}
+inline ::std::string* Item_v07::release_title() {
+  clear_has_title();
+  if (title_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = title_;
+    title_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Item_v07::set_allocated_title(::std::string* title) {
+  if (title_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete title_;
+  }
+  if (title) {
+    set_has_title();
+    title_ = title;
+  } else {
+    clear_has_title();
+    title_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
 }
 
 // -------------------------------------------------------------------
 
-// ModelIncrement
+// Field_v07
 
-// optional .artm.TopicModel topic_model = 1;
-inline bool ModelIncrement::has_topic_model() const {
+// optional string name = 1 [default = "@body"];
+inline bool Field_v07::has_name() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void ModelIncrement::set_has_topic_model() {
+inline void Field_v07::set_has_name() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void ModelIncrement::clear_has_topic_model() {
+inline void Field_v07::clear_has_name() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void ModelIncrement::clear_topic_model() {
-  if (topic_model_ != NULL) topic_model_->::artm::TopicModel::Clear();
-  clear_has_topic_model();
+inline void Field_v07::clear_name() {
+  if (name_ != _default_name_) {
+    name_->assign(*_default_name_);
+  }
+  clear_has_name();
 }
-inline const ::artm::TopicModel& ModelIncrement::topic_model() const {
-  return topic_model_ != NULL ? *topic_model_ : *default_instance_->topic_model_;
+inline const ::std::string& Field_v07::name() const {
+  return *name_;
 }
-inline ::artm::TopicModel* ModelIncrement::mutable_topic_model() {
-  set_has_topic_model();
-  if (topic_model_ == NULL) topic_model_ = new ::artm::TopicModel;
-  return topic_model_;
+inline void Field_v07::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
 }
-inline ::artm::TopicModel* ModelIncrement::release_topic_model() {
-  clear_has_topic_model();
-  ::artm::TopicModel* temp = topic_model_;
-  topic_model_ = NULL;
-  return temp;
+inline void Field_v07::set_name(const char* value) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
 }
-inline void ModelIncrement::set_allocated_topic_model(::artm::TopicModel* topic_model) {
-  delete topic_model_;
-  topic_model_ = topic_model;
-  if (topic_model) {
-    set_has_topic_model();
+inline void Field_v07::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field_v07::mutable_name() {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string(*_default_name_);
+  }
+  return name_;
+}
+inline ::std::string* Field_v07::release_name() {
+  clear_has_name();
+  if (name_ == _default_name_) {
+    return NULL;
   } else {
-    clear_has_topic_model();
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(_default_name_);
+    return temp;
+  }
+}
+inline void Field_v07::set_allocated_name(::std::string* name) {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(_default_name_);
+  }
+}
+
+// repeated int32 token_id = 2;
+inline int Field_v07::token_id_size() const {
+  return token_id_.size();
+}
+inline void Field_v07::clear_token_id() {
+  token_id_.Clear();
+}
+inline ::google::protobuf::int32 Field_v07::token_id(int index) const {
+  return token_id_.Get(index);
+}
+inline void Field_v07::set_token_id(int index, ::google::protobuf::int32 value) {
+  token_id_.Set(index, value);
+}
+inline void Field_v07::add_token_id(::google::protobuf::int32 value) {
+  token_id_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+Field_v07::token_id() const {
+  return token_id_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+Field_v07::mutable_token_id() {
+  return &token_id_;
+}
+
+// repeated int32 token_count = 3;
+inline int Field_v07::token_count_size() const {
+  return token_count_.size();
+}
+inline void Field_v07::clear_token_count() {
+  token_count_.Clear();
+}
+inline ::google::protobuf::int32 Field_v07::token_count(int index) const {
+  return token_count_.Get(index);
+}
+inline void Field_v07::set_token_count(int index, ::google::protobuf::int32 value) {
+  token_count_.Set(index, value);
+}
+inline void Field_v07::add_token_count(::google::protobuf::int32 value) {
+  token_count_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+Field_v07::token_count() const {
+  return token_count_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+Field_v07::mutable_token_count() {
+  return &token_count_;
+}
+
+// repeated int32 token_offset = 4;
+inline int Field_v07::token_offset_size() const {
+  return token_offset_.size();
+}
+inline void Field_v07::clear_token_offset() {
+  token_offset_.Clear();
+}
+inline ::google::protobuf::int32 Field_v07::token_offset(int index) const {
+  return token_offset_.Get(index);
+}
+inline void Field_v07::set_token_offset(int index, ::google::protobuf::int32 value) {
+  token_offset_.Set(index, value);
+}
+inline void Field_v07::add_token_offset(::google::protobuf::int32 value) {
+  token_offset_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+Field_v07::token_offset() const {
+  return token_offset_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+Field_v07::mutable_token_offset() {
+  return &token_offset_;
+}
+
+// optional string string_value = 5;
+inline bool Field_v07::has_string_value() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void Field_v07::set_has_string_value() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void Field_v07::clear_has_string_value() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void Field_v07::clear_string_value() {
+  if (string_value_ != &::google::protobuf::internal::GetEmptyString()) {
+    string_value_->clear();
+  }
+  clear_has_string_value();
+}
+inline const ::std::string& Field_v07::string_value() const {
+  return *string_value_;
+}
+inline void Field_v07::set_string_value(const ::std::string& value) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(value);
+}
+inline void Field_v07::set_string_value(const char* value) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(value);
+}
+inline void Field_v07::set_string_value(const char* value, size_t size) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field_v07::mutable_string_value() {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    string_value_ = new ::std::string;
+  }
+  return string_value_;
+}
+inline ::std::string* Field_v07::release_string_value() {
+  clear_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = string_value_;
+    string_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Field_v07::set_allocated_string_value(::std::string* string_value) {
+  if (string_value_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete string_value_;
+  }
+  if (string_value) {
+    set_has_string_value();
+    string_value_ = string_value;
+  } else {
+    clear_has_string_value();
+    string_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional int64 int_value = 6;
+inline bool Field_v07::has_int_value() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void Field_v07::set_has_int_value() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void Field_v07::clear_has_int_value() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void Field_v07::clear_int_value() {
+  int_value_ = GOOGLE_LONGLONG(0);
+  clear_has_int_value();
+}
+inline ::google::protobuf::int64 Field_v07::int_value() const {
+  return int_value_;
+}
+inline void Field_v07::set_int_value(::google::protobuf::int64 value) {
+  set_has_int_value();
+  int_value_ = value;
+}
+
+// optional double double_value = 7;
+inline bool Field_v07::has_double_value() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void Field_v07::set_has_double_value() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void Field_v07::clear_has_double_value() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void Field_v07::clear_double_value() {
+  double_value_ = 0;
+  clear_has_double_value();
+}
+inline double Field_v07::double_value() const {
+  return double_value_;
+}
+inline void Field_v07::set_double_value(double value) {
+  set_has_double_value();
+  double_value_ = value;
+}
+
+// optional string date_value = 8;
+inline bool Field_v07::has_date_value() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void Field_v07::set_has_date_value() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void Field_v07::clear_has_date_value() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void Field_v07::clear_date_value() {
+  if (date_value_ != &::google::protobuf::internal::GetEmptyString()) {
+    date_value_->clear();
+  }
+  clear_has_date_value();
+}
+inline const ::std::string& Field_v07::date_value() const {
+  return *date_value_;
+}
+inline void Field_v07::set_date_value(const ::std::string& value) {
+  set_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    date_value_ = new ::std::string;
+  }
+  date_value_->assign(value);
+}
+inline void Field_v07::set_date_value(const char* value) {
+  set_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    date_value_ = new ::std::string;
+  }
+  date_value_->assign(value);
+}
+inline void Field_v07::set_date_value(const char* value, size_t size) {
+  set_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    date_value_ = new ::std::string;
+  }
+  date_value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field_v07::mutable_date_value() {
+  set_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    date_value_ = new ::std::string;
+  }
+  return date_value_;
+}
+inline ::std::string* Field_v07::release_date_value() {
+  clear_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = date_value_;
+    date_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Field_v07::set_allocated_date_value(::std::string* date_value) {
+  if (date_value_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete date_value_;
+  }
+  if (date_value) {
+    set_has_date_value();
+    date_value_ = date_value;
+  } else {
+    clear_has_date_value();
+    date_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// repeated string string_array = 16;
+inline int Field_v07::string_array_size() const {
+  return string_array_.size();
+}
+inline void Field_v07::clear_string_array() {
+  string_array_.Clear();
+}
+inline const ::std::string& Field_v07::string_array(int index) const {
+  return string_array_.Get(index);
+}
+inline ::std::string* Field_v07::mutable_string_array(int index) {
+  return string_array_.Mutable(index);
+}
+inline void Field_v07::set_string_array(int index, const ::std::string& value) {
+  string_array_.Mutable(index)->assign(value);
+}
+inline void Field_v07::set_string_array(int index, const char* value) {
+  string_array_.Mutable(index)->assign(value);
+}
+inline void Field_v07::set_string_array(int index, const char* value, size_t size) {
+  string_array_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field_v07::add_string_array() {
+  return string_array_.Add();
+}
+inline void Field_v07::add_string_array(const ::std::string& value) {
+  string_array_.Add()->assign(value);
+}
+inline void Field_v07::add_string_array(const char* value) {
+  string_array_.Add()->assign(value);
+}
+inline void Field_v07::add_string_array(const char* value, size_t size) {
+  string_array_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Field_v07::string_array() const {
+  return string_array_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Field_v07::mutable_string_array() {
+  return &string_array_;
+}
+
+// repeated int64 int_array = 17;
+inline int Field_v07::int_array_size() const {
+  return int_array_.size();
+}
+inline void Field_v07::clear_int_array() {
+  int_array_.Clear();
+}
+inline ::google::protobuf::int64 Field_v07::int_array(int index) const {
+  return int_array_.Get(index);
+}
+inline void Field_v07::set_int_array(int index, ::google::protobuf::int64 value) {
+  int_array_.Set(index, value);
+}
+inline void Field_v07::add_int_array(::google::protobuf::int64 value) {
+  int_array_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+Field_v07::int_array() const {
+  return int_array_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+Field_v07::mutable_int_array() {
+  return &int_array_;
+}
+
+// repeated double double_array = 18;
+inline int Field_v07::double_array_size() const {
+  return double_array_.size();
+}
+inline void Field_v07::clear_double_array() {
+  double_array_.Clear();
+}
+inline double Field_v07::double_array(int index) const {
+  return double_array_.Get(index);
+}
+inline void Field_v07::set_double_array(int index, double value) {
+  double_array_.Set(index, value);
+}
+inline void Field_v07::add_double_array(double value) {
+  double_array_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+Field_v07::double_array() const {
+  return double_array_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+Field_v07::mutable_double_array() {
+  return &double_array_;
+}
+
+// repeated string date_array = 19;
+inline int Field_v07::date_array_size() const {
+  return date_array_.size();
+}
+inline void Field_v07::clear_date_array() {
+  date_array_.Clear();
+}
+inline const ::std::string& Field_v07::date_array(int index) const {
+  return date_array_.Get(index);
+}
+inline ::std::string* Field_v07::mutable_date_array(int index) {
+  return date_array_.Mutable(index);
+}
+inline void Field_v07::set_date_array(int index, const ::std::string& value) {
+  date_array_.Mutable(index)->assign(value);
+}
+inline void Field_v07::set_date_array(int index, const char* value) {
+  date_array_.Mutable(index)->assign(value);
+}
+inline void Field_v07::set_date_array(int index, const char* value, size_t size) {
+  date_array_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field_v07::add_date_array() {
+  return date_array_.Add();
+}
+inline void Field_v07::add_date_array(const ::std::string& value) {
+  date_array_.Add()->assign(value);
+}
+inline void Field_v07::add_date_array(const char* value) {
+  date_array_.Add()->assign(value);
+}
+inline void Field_v07::add_date_array(const char* value, size_t size) {
+  date_array_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Field_v07::date_array() const {
+  return date_array_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Field_v07::mutable_date_array() {
+  return &date_array_;
+}
+
+// repeated float token_weight = 20;
+inline int Field_v07::token_weight_size() const {
+  return token_weight_.size();
+}
+inline void Field_v07::clear_token_weight() {
+  token_weight_.Clear();
+}
+inline float Field_v07::token_weight(int index) const {
+  return token_weight_.Get(index);
+}
+inline void Field_v07::set_token_weight(int index, float value) {
+  token_weight_.Set(index, value);
+}
+inline void Field_v07::add_token_weight(float value) {
+  token_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+Field_v07::token_weight() const {
+  return token_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+Field_v07::mutable_token_weight() {
+  return &token_weight_;
+}
+
+// -------------------------------------------------------------------
+
+// Batch_v07
+
+// repeated string token = 1;
+inline int Batch_v07::token_size() const {
+  return token_.size();
+}
+inline void Batch_v07::clear_token() {
+  token_.Clear();
+}
+inline const ::std::string& Batch_v07::token(int index) const {
+  return token_.Get(index);
+}
+inline ::std::string* Batch_v07::mutable_token(int index) {
+  return token_.Mutable(index);
+}
+inline void Batch_v07::set_token(int index, const ::std::string& value) {
+  token_.Mutable(index)->assign(value);
+}
+inline void Batch_v07::set_token(int index, const char* value) {
+  token_.Mutable(index)->assign(value);
+}
+inline void Batch_v07::set_token(int index, const char* value, size_t size) {
+  token_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Batch_v07::add_token() {
+  return token_.Add();
+}
+inline void Batch_v07::add_token(const ::std::string& value) {
+  token_.Add()->assign(value);
+}
+inline void Batch_v07::add_token(const char* value) {
+  token_.Add()->assign(value);
+}
+inline void Batch_v07::add_token(const char* value, size_t size) {
+  token_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Batch_v07::token() const {
+  return token_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Batch_v07::mutable_token() {
+  return &token_;
+}
+
+// repeated string class_id = 2;
+inline int Batch_v07::class_id_size() const {
+  return class_id_.size();
+}
+inline void Batch_v07::clear_class_id() {
+  class_id_.Clear();
+}
+inline const ::std::string& Batch_v07::class_id(int index) const {
+  return class_id_.Get(index);
+}
+inline ::std::string* Batch_v07::mutable_class_id(int index) {
+  return class_id_.Mutable(index);
+}
+inline void Batch_v07::set_class_id(int index, const ::std::string& value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void Batch_v07::set_class_id(int index, const char* value) {
+  class_id_.Mutable(index)->assign(value);
+}
+inline void Batch_v07::set_class_id(int index, const char* value, size_t size) {
+  class_id_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Batch_v07::add_class_id() {
+  return class_id_.Add();
+}
+inline void Batch_v07::add_class_id(const ::std::string& value) {
+  class_id_.Add()->assign(value);
+}
+inline void Batch_v07::add_class_id(const char* value) {
+  class_id_.Add()->assign(value);
+}
+inline void Batch_v07::add_class_id(const char* value, size_t size) {
+  class_id_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Batch_v07::class_id() const {
+  return class_id_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Batch_v07::mutable_class_id() {
+  return &class_id_;
+}
+
+// repeated .artm.core.Item_v07 item = 3;
+inline int Batch_v07::item_size() const {
+  return item_.size();
+}
+inline void Batch_v07::clear_item() {
+  item_.Clear();
+}
+inline const ::artm::core::Item_v07& Batch_v07::item(int index) const {
+  return item_.Get(index);
+}
+inline ::artm::core::Item_v07* Batch_v07::mutable_item(int index) {
+  return item_.Mutable(index);
+}
+inline ::artm::core::Item_v07* Batch_v07::add_item() {
+  return item_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::core::Item_v07 >&
+Batch_v07::item() const {
+  return item_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::core::Item_v07 >*
+Batch_v07::mutable_item() {
+  return &item_;
+}
+
+// optional string description = 4;
+inline bool Batch_v07::has_description() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void Batch_v07::set_has_description() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void Batch_v07::clear_has_description() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void Batch_v07::clear_description() {
+  if (description_ != &::google::protobuf::internal::GetEmptyString()) {
+    description_->clear();
+  }
+  clear_has_description();
+}
+inline const ::std::string& Batch_v07::description() const {
+  return *description_;
+}
+inline void Batch_v07::set_description(const ::std::string& value) {
+  set_has_description();
+  if (description_ == &::google::protobuf::internal::GetEmptyString()) {
+    description_ = new ::std::string;
+  }
+  description_->assign(value);
+}
+inline void Batch_v07::set_description(const char* value) {
+  set_has_description();
+  if (description_ == &::google::protobuf::internal::GetEmptyString()) {
+    description_ = new ::std::string;
+  }
+  description_->assign(value);
+}
+inline void Batch_v07::set_description(const char* value, size_t size) {
+  set_has_description();
+  if (description_ == &::google::protobuf::internal::GetEmptyString()) {
+    description_ = new ::std::string;
+  }
+  description_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Batch_v07::mutable_description() {
+  set_has_description();
+  if (description_ == &::google::protobuf::internal::GetEmptyString()) {
+    description_ = new ::std::string;
+  }
+  return description_;
+}
+inline ::std::string* Batch_v07::release_description() {
+  clear_has_description();
+  if (description_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = description_;
+    description_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Batch_v07::set_allocated_description(::std::string* description) {
+  if (description_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete description_;
+  }
+  if (description) {
+    set_has_description();
+    description_ = description;
+  } else {
+    clear_has_description();
+    description_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional string id = 5;
+inline bool Batch_v07::has_id() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void Batch_v07::set_has_id() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void Batch_v07::clear_has_id() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void Batch_v07::clear_id() {
+  if (id_ != &::google::protobuf::internal::GetEmptyString()) {
+    id_->clear();
+  }
+  clear_has_id();
+}
+inline const ::std::string& Batch_v07::id() const {
+  return *id_;
+}
+inline void Batch_v07::set_id(const ::std::string& value) {
+  set_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    id_ = new ::std::string;
+  }
+  id_->assign(value);
+}
+inline void Batch_v07::set_id(const char* value) {
+  set_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    id_ = new ::std::string;
+  }
+  id_->assign(value);
+}
+inline void Batch_v07::set_id(const char* value, size_t size) {
+  set_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    id_ = new ::std::string;
+  }
+  id_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Batch_v07::mutable_id() {
+  set_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    id_ = new ::std::string;
+  }
+  return id_;
+}
+inline ::std::string* Batch_v07::release_id() {
+  clear_has_id();
+  if (id_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = id_;
+    id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Batch_v07::set_allocated_id(::std::string* id) {
+  if (id_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete id_;
+  }
+  if (id) {
+    set_has_id();
+    id_ = id;
+  } else {
+    clear_has_id();
+    id_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
   }
 }
 

@@ -44,8 +44,8 @@ def test_func():
                                  'target_folder': batches_folder})
 
         # Create master component and scores
-        scores = [('Perplexity', messages.PerplexityScoreConfig()),
-                  ('TopTokens', messages.TopTokensScoreConfig())]
+        scores = {'Perplexity': messages.PerplexityScoreConfig(),
+                  'TopTokens': messages.TopTokensScoreConfig()}
         master = mc.MasterComponent(lib, num_processors=num_processors, scores=scores)
 
         # Create collection dictionary and import it
@@ -72,13 +72,13 @@ def test_func():
             for batch_index, batch_filename in enumerate(batches):
                 batches_to_process.append(batch_filename)
                 if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):
-                    master.process_batches(pwt, nwt_hat, num_inner_iterations,
-                        batches=batches_to_process, reset_scores=True)
+                    master.clear_score_cache()
+                    master.process_batches(pwt, nwt_hat, num_inner_iterations, batches=batches_to_process)
                     master.merge_model({nwt: decay_weight, nwt_hat: apply_weight}, nwt=nwt)
                     master.normalize_model(pwt, nwt)
 
                     # Retrieve and print perplexity score
-                    perplexity_score = master.retrieve_score(pwt, 'Perplexity')
+                    perplexity_score = master.get_score(pwt, 'Perplexity')
                     if iter == 0 and batch_index == 0:
                         assert(perplexity_score.value in perplexity_first_value)
                     assert len(batches_to_process) == num_batches
@@ -89,7 +89,7 @@ def test_func():
                     batches_to_process = []
 
         # Retrieve and print top tokens score
-        top_tokens_score = master.retrieve_score(pwt, 'TopTokens')
+        top_tokens_score = master.get_score(pwt, 'TopTokens')
 
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))

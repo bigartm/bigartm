@@ -22,39 +22,18 @@ class CallSpec(object):
 ARTM_API = [
 
     CallSpec(
-        'ArtmCreateMasterComponent',
-        [('config', messages.MasterComponentConfig)],
-        result=ctypes.c_int,
-    ),
-    CallSpec(
         'ArtmDuplicateMasterComponent',
         [('master_id', int), ('config', messages.DuplicateMasterComponentArgs)],
         result=ctypes.c_int,
     ),
     CallSpec(
-        'ArtmReconfigureMasterComponent',
-        [('master_id', int), ('config', messages.MasterComponentConfig)],
-    ),
-    CallSpec(
         'ArtmDisposeMasterComponent',
         [('master_id', int)],
     ),
-
-    ## deprecated
-    #CallSpec(
-    #    'ArtmCreateModel',
-    #    [('master_id', int), ('config', messages.ModelConfig)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmReconfigureModel',
-    #    [('master_id', int), ('config', messages.ModelConfig)],
-    #),
     CallSpec(
         'ArtmDisposeModel',
         [('master_id', int), ('name', str)],
     ),
-
     CallSpec(
         'ArtmCreateRegularizer',
         [('master_id', int), ('config', messages.RegularizerConfig)],
@@ -98,6 +77,14 @@ ARTM_API = [
     CallSpec(
         'ArtmImportBatches',
         [('master_id', int), ('args', messages.ImportBatchesArgs)],
+    ),
+    CallSpec(
+        'ArtmClearThetaCache',
+        [('master_id', int), ('args', messages.ClearThetaCacheArgs)],
+    ),
+    CallSpec(
+        'ArtmClearScoreCache',
+        [('master_id', int), ('args', messages.ClearScoreCacheArgs)],
     ),
     CallSpec(
         'ArtmDisposeBatch',
@@ -146,7 +133,6 @@ ARTM_API = [
         'ArtmAttachModel',
         [('master_id', int), ('args', messages.AttachModelArgs), ('matrix', numpy.ndarray)],
     ),
-
     CallSpec(
         'ArtmRequestProcessBatches',
         [('master_id', int), ('args', messages.ProcessBatchesArgs)],
@@ -169,7 +155,6 @@ ARTM_API = [
         'ArtmNormalizeModel',
         [('master_id', int), ('args', messages.NormalizeModelArgs)],
     ),
-
     CallSpec(
         'ArtmRequestThetaMatrix',
         [('master_id', int), ('args', messages.GetThetaMatrixArgs)],
@@ -190,21 +175,10 @@ ARTM_API = [
         [('master_id', int), ('args', messages.GetTopicModelArgs)],
         request=messages.TopicModel,
     ),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmRequestRegularizerState',
-    #    [('master_id', int), ('args', message.GetRegularizerStateArgs)],
-    #    request=messages.RegularizerInternalState,
-    #),
     CallSpec(
         'ArtmRequestScore',
         [('master_id', int), ('args', messages.GetScoreValueArgs)],
         request=messages.ScoreData,
-    ),
-    CallSpec(
-        'ArtmRequestMasterComponentInfo',
-        [('master_id', int), ('args', messages.GetMasterComponentInfoArgs)],
-        request=messages.MasterComponentInfo,
     ),
     CallSpec(
         'ArtmRequestLoadBatch',
@@ -216,15 +190,43 @@ ARTM_API = [
         [('master_id', int), ('args', messages.GetDictionaryArgs)],
         request=messages.DictionaryData,
     ),
-
     CallSpec(
         'ArtmSaveBatch',
         [('filename', str), ('batch', messages.Batch)],
     ),
-
+    CallSpec(
+        'ArtmUpgradeBatch_v07',
+        [('source_path', str), ('target_path', str)],
+    ),
     CallSpec(
         'ArtmCopyRequestResultEx',
         [('array', numpy.ndarray), ('args', messages.CopyRequestResultArgs)],
     ),
-
+    CallSpec(
+        'ArtmCreateMasterModel',
+        [('config', messages.MasterModelConfig)],
+        result=ctypes.c_int,
+    ),
+    CallSpec(
+        'ArtmReconfigureMasterModel',
+        [('master_id', int), ('config', messages.MasterModelConfig)],
+    ),
+    CallSpec(
+        'ArtmFitOfflineMasterModel',
+        [('master_id', int), ('config', messages.FitOfflineMasterModelArgs)],
+    ),
+    CallSpec(
+        'ArtmFitOnlineMasterModel',
+        [('master_id', int), ('config', messages.FitOnlineMasterModelArgs)],
+    ),
+    CallSpec(
+        'ArtmRequestTransformMasterModel',
+        [('master_id', int), ('config', messages.TransformMasterModelArgs)],
+        request=messages.ThetaMatrix,
+    ),
+    CallSpec(
+        'ArtmRequestTransformMasterModelExternal',
+        [('master_id', int), ('config', messages.TransformMasterModelArgs)],
+        request=messages.ThetaMatrix,
+    ),
 ]

@@ -135,15 +135,14 @@ def test_func():
                 dict_data.class_id.append(class_id)
 
             # Add token to the item.
-            item.field[0].token_id.append(dic[token])
+            item.token_id.append(dic[token])
             # replace '1' with the actual number of token occupancies in the item
-            item.field[0].token_count.append(1)
+            item.token_weight.append(1)
 
     # Iterate through all items and populate the batch
     for (en, ru) in zip(ens, rus):
         next_item = batch.item.add()
         next_item.id = len(batch.item) - 1
-        next_item.field.add()
         append(string.split(ru.lower()), ru_dic, next_item, russian_class)
         append(string.split(en.lower()), en_dic, next_item, english_class)
 
@@ -156,10 +155,10 @@ def test_func():
         lib.ArtmSaveBatch(batches_folder, batch)
 
         # Create master component and scores
-        scores = [('SparsityPhiRus', messages.SparsityPhiScoreConfig(class_id = russian_class)),
-                  ('SparsityPhiEng', messages.SparsityPhiScoreConfig(class_id = english_class)),
-                  ('TopTokensRus', messages.TopTokensScoreConfig(class_id=russian_class)),
-                  ('TopTokensEng', messages.TopTokensScoreConfig(class_id = english_class))]
+        scores = {'SparsityPhiRus': messages.SparsityPhiScoreConfig(class_id=russian_class),
+                  'SparsityPhiEng': messages.SparsityPhiScoreConfig(class_id=english_class),
+                  'TopTokensRus': messages.TopTokensScoreConfig(class_id=russian_class),
+                  'TopTokensEng': messages.TopTokensScoreConfig(class_id=english_class)}
         master = mc.MasterComponent(lib, scores=scores)
 
         # Create the collection dictionary
@@ -172,17 +171,17 @@ def test_func():
 
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
+            master.clear_score_cache()
             master.process_batches(pwt, nwt, num_inner_iterations, batches_folder,
                                    class_ids=[russian_class, english_class],
-                                   class_weights=[russian_class_weight, english_class_weight],
-                                   reset_scores=True)
+                                   class_weights=[russian_class_weight, english_class_weight])
             master.normalize_model(pwt, nwt)    
 
         # Retrieve and print scores
-        top_tokens_rus = master.retrieve_score(pwt, 'TopTokensRus')
-        top_tokens_eng = master.retrieve_score(pwt, 'TopTokensEng')
-        sp_phi_rus = master.retrieve_score(pwt, 'SparsityPhiRus')
-        sp_phi_eng = master.retrieve_score(pwt, 'SparsityPhiEng')
+        top_tokens_rus = master.get_score(pwt, 'TopTokensRus')
+        top_tokens_eng = master.get_score(pwt, 'TopTokensEng')
+        sp_phi_rus = master.get_score(pwt, 'SparsityPhiRus')
+        sp_phi_eng = master.get_score(pwt, 'SparsityPhiEng')
 
         print 'Top tokens per russian topic:'
         _print_top_tokens(top_tokens_rus, expected_values_rus_topic, tolerance)

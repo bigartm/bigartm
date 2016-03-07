@@ -3,6 +3,7 @@ import itertools
 import tempfile
 import shutil
 import pytest
+import glob
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -14,7 +15,6 @@ def test_func():
     dictionary_name = 'dictionary'
     pwt = 'pwt'
     nwt = 'nwt'
-    rwt = 'rwt'
     docword = 'docword.kos.txt'
     vocab = 'vocab.kos.txt'
 
@@ -59,6 +59,10 @@ def test_func():
         7: 0.319
     }
 
+    expected_perplexity_value_online = 1572.268
+    expected_phi_sparsity_value_online = 0.528
+    expected_theta_sparsity_value_online = 0.320
+
     batches_folder = tempfile.mkdtemp()
     try:
         # Create the instance of low-level API and master object
@@ -73,7 +77,7 @@ def test_func():
         # Create master component and scores
         scores = {'Perplexity': messages.PerplexityScoreConfig(),
                   'SparsityPhi': messages.SparsityPhiScoreConfig()}
-        master = mc.MasterComponent(lib, scores=scores)
+        master = mc.MasterComponent(lib, scores=scores, num_document_passes=num_inner_iterations)
 
         master.create_score('SparsityTheta', messages.SparsityThetaScoreConfig())
         master.create_score('TopTokens', messages.TopTokensScoreConfig())
@@ -92,7 +96,10 @@ def test_func():
                                   tau=0.0)
         master.create_regularizer(name='DecorrelatorPhi',
                                   config=messages.DecorrelatorPhiConfig(),
-                                  tau=0.0)
+                                  tau=decor_phi_tau)
+                                  
+        master.reconfigure_regularizer(name='SmoothSparsePhi', tau=smsp_phi_tau)
+        master.reconfigure_regularizer(name='SmoothSparseTheta', tau=smsp_theta_tau)
 
         # Initialize model
         master.initialize_model(model_name=pwt,
@@ -100,17 +107,7 @@ def test_func():
                                 dictionary_name=dictionary_name)
 
         for iter in xrange(num_outer_iterations):
-            # Invoke one scan of the collection, regularize and normalize Phi
-            master.clear_score_cache()
-            master.process_batches(pwt=pwt,
-                                   nwt=nwt,
-                                   num_inner_iterations=num_inner_iterations,
-                                   batches_folder=batches_folder,
-                                   regularizer_name=['SmoothSparseTheta'],
-                                   regularizer_tau=[smsp_theta_tau])
-            master.regularize_model(pwt, nwt, rwt,
-                                    ['SmoothSparsePhi', 'DecorrelatorPhi'], [smsp_phi_tau, decor_phi_tau])
-            master.normalize_model(pwt, nwt, rwt)   
+            master.fit_offline(batches_folder=batches_folder, num_collection_passes=1)
 
             # Retrieve scores
             perplexity_score = master.get_score(pwt, 'Perplexity')
@@ -127,6 +124,26 @@ def test_func():
             assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < perplexity_tol
             assert abs(sparsity_phi_score.value - expected_phi_sparsity_value_on_iteration[iter]) < sparsity_tol
             assert abs(sparsity_theta_score.value - expected_theta_sparsity_value_on_iteration[iter]) < sparsity_tol
+
+        # proceed one online iteration
+        batch_filenames = glob.glob(os.path.join(batches_folder, '*.batch'))
+        master.fit_online(batch_filenames=batch_filenames, update_after=[4], apply_weight=[0.5], decay_weight=[0.5])
+
+        # Retrieve scores
+        perplexity_score = master.get_score(pwt, 'Perplexity')
+        sparsity_phi_score = master.get_score(pwt, 'SparsityPhi')
+        sparsity_theta_score = master.get_score(pwt, 'SparsityTheta')
+
+        # Assert and print scores
+        print_string = 'Iter Online'
+        print_string += ': Perplexity = {0:.3f}'.format(perplexity_score.value)
+        print_string += ', Phi sparsity = {0:.3f}'.format(sparsity_phi_score.value)
+        print_string += ', Theta sparsity = {0:.3f}'.format(sparsity_theta_score.value)
+        print print_string
+
+        assert abs(perplexity_score.value - expected_perplexity_value_online) < perplexity_tol
+        assert abs(sparsity_phi_score.value - expected_phi_sparsity_value_online) < sparsity_tol
+        assert abs(sparsity_theta_score.value - expected_theta_sparsity_value_online) < sparsity_tol
 
         # Retrieve and print top tokens score
         top_tokens_score = master.get_score(pwt, 'TopTokens')

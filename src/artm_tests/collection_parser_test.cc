@@ -6,6 +6,7 @@
 
 #include "artm/messages.pb.h"
 #include "artm/cpp_interface.h"
+#include "artm/core/helpers.h"
 
 #include "artm_tests/test_mother.h"
 
@@ -31,9 +32,10 @@ TEST(CollectionParser, UciBagOfWords) {
   while (it != endit) {
     if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
-      std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
-      ASSERT_TRUE(batch->item_size() == 1 || batch->item_size() == 3);
-      int tokens_size = batch->item(0).field(0).token_weight_size();
+      ::artm::Batch batch;
+      ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
+      ASSERT_TRUE(batch.item_size() == 1 || batch.item_size() == 3);
+      int tokens_size = batch.item(0).token_weight_size();
       ASSERT_TRUE(tokens_size == 2 || tokens_size == 3);
     }
     ++it;
@@ -41,36 +43,38 @@ TEST(CollectionParser, UciBagOfWords) {
 
   ASSERT_EQ(batches_count, 2);
 
-  artm::MasterComponentConfig master_config;
-  ::artm::MasterComponent mc(master_config);
+  artm::MasterModelConfig master_config;
+  ::artm::MasterModel mc(master_config);
   artm::GatherDictionaryArgs gather_config;
   gather_config.set_data_path(target_folder);
   gather_config.set_vocab_file_path(config.vocab_file_path());
   gather_config.set_dictionary_target_name("mydictionary");
   mc.GatherDictionary(gather_config);
 
-  auto dictionary = mc.GetDictionary("mydictionary");
-  ASSERT_EQ(dictionary->token_size(), 3);
+  ::artm::GetDictionaryArgs get_dictionary_args;
+  get_dictionary_args.set_dictionary_name("mydictionary");
+  auto dictionary = mc.GetDictionary(get_dictionary_args);
+  ASSERT_EQ(dictionary.token_size(), 3);
 
-  EXPECT_EQ(dictionary->token(0), "token1");
-  EXPECT_EQ(dictionary->token(1), "token2");
-  EXPECT_EQ(dictionary->token(2), "token3");
+  EXPECT_EQ(dictionary.token(0), "token1");
+  EXPECT_EQ(dictionary.token(1), "token2");
+  EXPECT_EQ(dictionary.token(2), "token3");
 
-  EXPECT_EQ(dictionary->class_id(0), "@default_class");
-  EXPECT_EQ(dictionary->class_id(1), "@default_class");
-  EXPECT_EQ(dictionary->class_id(2), "@default_class");
+  EXPECT_EQ(dictionary.class_id(0), "@default_class");
+  EXPECT_EQ(dictionary.class_id(1), "@default_class");
+  EXPECT_EQ(dictionary.class_id(2), "@default_class");
 
-  EXPECT_EQ(dictionary->token_df(0), 1);
-  EXPECT_EQ(dictionary->token_df(1), 2);
-  EXPECT_EQ(dictionary->token_df(2), 2);
+  EXPECT_EQ(dictionary.token_df(0), 1);
+  EXPECT_EQ(dictionary.token_df(1), 2);
+  EXPECT_EQ(dictionary.token_df(2), 2);
 
-  EXPECT_EQ(dictionary->token_tf(0), 5);
-  EXPECT_EQ(dictionary->token_tf(1), 4);
-  EXPECT_EQ(dictionary->token_tf(2), 9);
+  EXPECT_EQ(dictionary.token_tf(0), 5);
+  EXPECT_EQ(dictionary.token_tf(1), 4);
+  EXPECT_EQ(dictionary.token_tf(2), 9);
 
-  ASSERT_APPROX_EQ(dictionary->token_value(0), 5.0 / 18.0);
-  ASSERT_APPROX_EQ(dictionary->token_value(1), 2.0 / 9.0);
-  ASSERT_APPROX_EQ(dictionary->token_value(2), 0.5);
+  ASSERT_APPROX_EQ(dictionary.token_value(0), 5.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary.token_value(1), 2.0 / 9.0);
+  ASSERT_APPROX_EQ(dictionary.token_value(2), 0.5);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
@@ -111,8 +115,10 @@ TEST(CollectionParser, MatrixMarket) {
   while (it != endit) {
     if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
-      std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
-      ASSERT_EQ(batch->item_size(), 9);
+
+      artm::Batch batch;
+      ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
+      ASSERT_EQ(batch.item_size(), 9);
     }
     ++it;
   }
@@ -140,12 +146,13 @@ TEST(CollectionParser, Multiclass) {
   while (it != endit) {
     if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
-      std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
-      ASSERT_EQ(batch->class_id_size(), 3);
-      ASSERT_EQ(batch->class_id(0), "class1");
-      ASSERT_EQ(batch->class_id(1), "class1");
-      ASSERT_EQ(batch->class_id(2), "@default_class");
-      ASSERT_EQ(batch->item_size(), 2);
+      artm::Batch batch;
+      ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
+      ASSERT_EQ(batch.class_id_size(), 3);
+      ASSERT_EQ(batch.class_id(0), "class1");
+      ASSERT_EQ(batch.class_id(1), "class1");
+      ASSERT_EQ(batch.class_id(2), "@default_class");
+      ASSERT_EQ(batch.item_size(), 2);
     }
     ++it;
   }
@@ -158,35 +165,38 @@ TEST(CollectionParser, Multiclass) {
   gather_args.set_dictionary_target_name(dictionary_name);
   gather_args.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
 
-  auto master = artm::MasterComponent(artm::MasterComponentConfig());
+  ::artm::MasterModelConfig master_config;
+  artm::MasterModel master(master_config);
   master.GatherDictionary(gather_args);
-  auto dictionary_ptr = master.GetDictionary(dictionary_name);
+  ::artm::GetDictionaryArgs get_dictionary_args;
+  get_dictionary_args.set_dictionary_name(dictionary_name);
+  auto dictionary_ptr = master.GetDictionary(get_dictionary_args);
 
-  ASSERT_EQ(dictionary_ptr->token_size(), 3);
-  ASSERT_EQ(dictionary_ptr->class_id_size(), 3);
-  ASSERT_EQ(dictionary_ptr->token_tf_size(), 3);
-  ASSERT_EQ(dictionary_ptr->token_df_size(), 3);
-  ASSERT_EQ(dictionary_ptr->token_value_size(), 3);
+  ASSERT_EQ(dictionary_ptr.token_size(), 3);
+  ASSERT_EQ(dictionary_ptr.class_id_size(), 3);
+  ASSERT_EQ(dictionary_ptr.token_tf_size(), 3);
+  ASSERT_EQ(dictionary_ptr.token_df_size(), 3);
+  ASSERT_EQ(dictionary_ptr.token_value_size(), 3);
 
-  ASSERT_EQ(dictionary_ptr->token(0), "token1");
-  ASSERT_EQ(dictionary_ptr->token(1), "token2");
-  ASSERT_EQ(dictionary_ptr->token(2), "token3");
+  ASSERT_EQ(dictionary_ptr.token(0), "token1");
+  ASSERT_EQ(dictionary_ptr.token(1), "token2");
+  ASSERT_EQ(dictionary_ptr.token(2), "token3");
 
-  ASSERT_EQ(dictionary_ptr->class_id(0), "class1");
-  ASSERT_EQ(dictionary_ptr->class_id(1), artm::core::DefaultClass);
-  ASSERT_EQ(dictionary_ptr->class_id(2), "class1");
+  ASSERT_EQ(dictionary_ptr.class_id(0), "class1");
+  ASSERT_EQ(dictionary_ptr.class_id(1), artm::core::DefaultClass);
+  ASSERT_EQ(dictionary_ptr.class_id(2), "class1");
 
-  ASSERT_APPROX_EQ(dictionary_ptr->token_df(0), 1);
-  ASSERT_APPROX_EQ(dictionary_ptr->token_df(1), 2);
-  ASSERT_APPROX_EQ(dictionary_ptr->token_df(2), 2);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_df(0), 1);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_df(1), 2);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_df(2), 2);
 
-  ASSERT_APPROX_EQ(dictionary_ptr->token_tf(0), 5.0);
-  ASSERT_APPROX_EQ(dictionary_ptr->token_tf(1), 4.0);
-  ASSERT_APPROX_EQ(dictionary_ptr->token_tf(2), 9.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_tf(0), 5.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_tf(1), 4.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_tf(2), 9.0);
 
-  ASSERT_APPROX_EQ(dictionary_ptr->token_value(0), 5.0 / 18.0);
-  ASSERT_APPROX_EQ(dictionary_ptr->token_value(1), 4.0 / 18.0);
-  ASSERT_APPROX_EQ(dictionary_ptr->token_value(2), 9.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(0), 5.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(1), 4.0 / 18.0);
+  ASSERT_APPROX_EQ(dictionary_ptr.token_value(2), 9.0 / 18.0);
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
@@ -211,15 +221,16 @@ TEST(CollectionParser, VowpalWabbit) {
   while (it != endit) {
     if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
-      std::shared_ptr<artm::Batch> batch = artm::LoadBatch(it->path().string());
-      ASSERT_TRUE(batch->class_id_size() == 3 || batch->class_id_size() == 2);
-      for (int i = 0; i < batch->token_size(); ++i) {
-        if (batch->token(i) == "hello" || batch->token(i) == "world")
-          ASSERT_EQ(batch->class_id(i), "@default_class");
-        if (batch->token(i) == "noname" || batch->token(i) == "alex")
-          ASSERT_EQ(batch->class_id(i), "author");
+      ::artm::Batch batch;
+      ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
+      ASSERT_TRUE(batch.class_id_size() == 3 || batch.class_id_size() == 2);
+      for (int i = 0; i < batch.token_size(); ++i) {
+        if (batch.token(i) == "hello" || batch.token(i) == "world")
+          ASSERT_EQ(batch.class_id(i), "@default_class");
+        if (batch.token(i) == "noname" || batch.token(i) == "alex")
+          ASSERT_EQ(batch.class_id(i), "author");
       }
-      ASSERT_EQ(batch->item_size(), 1);
+      ASSERT_EQ(batch.item_size(), 1);
     }
     ++it;
   }

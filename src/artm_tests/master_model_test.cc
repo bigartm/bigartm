@@ -10,6 +10,7 @@
 #include "artm/messages.pb.h"
 
 #include "artm_tests/test_mother.h"
+#include "artm_tests/api.h"
 
 void runBasicTest(bool skip_batch_dict) {
   // Configure MasterModel
@@ -40,39 +41,39 @@ void runBasicTest(bool skip_batch_dict) {
 
   // Create MasterModel
   ::artm::MasterModel master_model(config);
+  ::artm::test::Api api(master_model);
 
   // Generate batches and load them into MasterModel
-  ::artm::ImportBatchesArgs import_batches_args;
   ::artm::DictionaryData dictionary_data;
   const int nBatches = 20;
   const int nTokens = 30;
-  ::artm::test::TestMother::GenerateBatches(nBatches, nTokens,
-                                            &import_batches_args, &dictionary_data);
+  auto batches = ::artm::test::TestMother::GenerateBatches(nBatches, nTokens, &dictionary_data);
 
   if (skip_batch_dict) {
-    std::string target_folder = artm::test::Helpers::getUniqueString();
-    for (int i = 0; i < import_batches_args.batch_size(); ++i) {
-      ::artm::Batch* batch = import_batches_args.mutable_batch(i);
+    for (auto& batch : batches) {
       batch->clear_class_id();
       batch->clear_token();  // cast tokens away!!!
-      artm::SaveBatch(*batch, target_folder);
     }
+  }
 
+  ::artm::ImportBatchesArgs import_batches_args;
+  for (auto& batch : batches) {
+    import_batches_args.add_batch()->CopyFrom(*batch);
+    import_batches_args.add_batch_name(batch->id());
+  }
+  master_model.ImportBatches(import_batches_args);
+
+  if (skip_batch_dict) {
     try {
       ::artm::GatherDictionaryArgs gather_args;
       gather_args.set_dictionary_target_name("tmp_dict");
-      gather_args.set_data_path(target_folder);
+      gather_args.mutable_batch_path()->CopyFrom(import_batches_args.batch_name());
       master_model.GatherDictionary(gather_args);
       ASSERT_TRUE(false);  // exception expected because batches have no tokens
     }
     catch (const ::artm::InvalidOperationException& ex) {
     }
-
-    try { boost::filesystem::remove_all(target_folder); }
-    catch (...) {}
   }
-
-  master_model.ImportBatches(import_batches_args);
 
   // Create dictionary
   dictionary_data.set_name("dictionary");
@@ -81,14 +82,14 @@ void runBasicTest(bool skip_batch_dict) {
   // Initialize model
   ::artm::InitializeModelArgs initialize_model_args;
   initialize_model_args.set_dictionary_name("dictionary");
-  initialize_model_args.set_model_name("pwt");
-  initialize_model_args.mutable_topic_name()->CopyFrom(config.topic_name());
+  initialize_model_args.set_model_name(master_model.config().pwt_name());
+  initialize_model_args.mutable_topic_name()->CopyFrom(master_model.config().topic_name());
   master_model.InitializeModel(initialize_model_args);
 
-  // Execute offline algorithm
   ::artm::FitOfflineMasterModelArgs fit_offline_args;
   fit_offline_args.mutable_batch_filename()->CopyFrom(import_batches_args.batch_name());
 
+  // Execute offline algorithm
   float expected[] = { 29.9952f, 26.1885f, 25.9853f, 24.5419f };
   for (int pass = 0; pass < 4; pass++) {
     master_model.FitOfflineModel(fit_offline_args);
@@ -110,7 +111,7 @@ void runBasicTest(bool skip_batch_dict) {
     int total_update_count = 0;
     for (int pass = 0; pass < 4; pass++) {
       ::artm::FitOnlineMasterModelArgs fit_online_args;
-      fit_online_args.mutable_batch_filename()->CopyFrom(import_batches_args.batch_name());
+      fit_online_args.mutable_batch_filename()->CopyFrom(fit_offline_args.batch_filename());
       fit_online_args.set_async(is_async == 1);
 
       // Populate update_after and apply_weight fields

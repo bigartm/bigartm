@@ -10,7 +10,6 @@
 #include "boost/uuid/uuid.hpp"
 
 #include "artm/core/thread_safe_holder.h"
-#include "artm/core/instance_schema.h"
 #include "artm/messages.pb.h"
 
 // To run this particular test:

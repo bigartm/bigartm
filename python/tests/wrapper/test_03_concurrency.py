@@ -45,7 +45,7 @@ def test_func():
 
         for num_processors in num_processors_list:
             # Create master component and scores
-            scores = [('PerplexityScore', messages.PerplexityScoreConfig())]
+            scores = {'PerplexityScore': messages.PerplexityScoreConfig()}
             master = mc.MasterComponent(lib, scores=scores)
 
             # Create collection dictionary and import it
@@ -63,11 +63,12 @@ def test_func():
                 start = time.time()
                 
                 # Invoke one scan of the collection and normalize Phi
-                master.process_batches(pwt, nwt, num_inner_iterations, batches_folder, reset_scores=True)
+                master.clear_score_cache()
+                master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
                 master.normalize_model(pwt, nwt)  
 
                 # Retrieve and print perplexity score
-                perplexity_score = master.retrieve_score(pwt, 'PerplexityScore')
+                perplexity_score = master.get_score(pwt, 'PerplexityScore')
 
                 end = time.time()
                 assert abs(expected_perplexity_value_on_iteration[iter] - perplexity_score.value) < perplexity_tol

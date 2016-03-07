@@ -15,6 +15,7 @@
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/helpers.h"
 #include "artm/core/dense_phi_matrix.h"
+#include "artm/core/instance.h"
 #include "artm/regularizer_interface.h"
 
 namespace artm {
@@ -82,7 +83,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
       if (topic_index == -1) {
         std::stringstream ss;
         ss << "GetTopicModelArgs.topic_name[" << i << "] == " << get_model_args.topic_name(i)
-           << " does not exist in ModelConfig.topic_name";
+           << " does not exist in matrix" << phi_matrix.model_name();
         BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(ss.str()));
       }
 
@@ -235,7 +236,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
 
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
-        "ModelIncrement.operation_type", operation_type));
+        "TopicModel.operation_type", operation_type));
     }
   }
 
@@ -244,7 +245,7 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
 }
 
 void PhiMatrixOperations::InvokePhiRegularizers(
-    std::shared_ptr<InstanceSchema> schema,
+    Instance* instance,
     const ::google::protobuf::RepeatedPtrField<RegularizerSettings>& regularizer_settings,
     const PhiMatrix& p_wt, const PhiMatrix& n_wt, PhiMatrix* r_wt) {
 
@@ -259,7 +260,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
   for (auto reg_iterator = regularizer_settings.begin();
        reg_iterator != regularizer_settings.end();
        reg_iterator++) {
-    auto regularizer = schema->regularizer(reg_iterator->name().c_str());
+    auto regularizer = instance->regularizers()->get(reg_iterator->name().c_str());
 
     if (regularizer == nullptr) {
       LOG(ERROR) << "Phi Regularizer with name <" << reg_iterator->name().c_str() << "> does not exist.\n";
@@ -294,7 +295,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         std::vector<core::ClassId> class_ids;
         if (regularizer->class_ids_to_regularize().size() > 0) {
           auto class_ids_to_regularize = regularizer->class_ids_to_regularize();
-          for (auto class_id : class_ids_to_regularize) class_ids.push_back(class_id);
+          for (const auto& class_id : class_ids_to_regularize) class_ids.push_back(class_id);
         } else {
           boost::copy(n_t_all | boost::adaptors::map_keys, std::back_inserter(class_ids));
         }
@@ -304,7 +305,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         else
           topics_to_regularize.assign(topic_size, true);
 
-        for (auto class_id : class_ids) {
+        for (const auto& class_id : class_ids) {
           auto iter = n_t_all.find(class_id);
           if (iter != n_t_all.end()) {
             double n = 0.0;
