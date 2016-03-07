@@ -597,9 +597,6 @@ class ARTM(object):
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
 
-        if reset_num_processed_documents:
-            self._num_online_processed_docs = 0
-
         update_after_final, apply_weight_final, decay_weight_final = [], [], []
         if (update_after is None) or (apply_weight is None) or (decay_weight is None):
             update_after_final = range(update_every, batch_vectorizer.num_batches + 1, update_every)
@@ -608,7 +605,7 @@ class ARTM(object):
 
             for _ in update_after_final:
                 self._num_online_processed_batches += update_every
-                update_count = self._num_online_processed_docs / update_every
+                update_count = self._num_online_processed_batches / update_every
                 rho = pow(tau0 + update_count, -kappa)
                 apply_weight_final.append(rho)
                 decay_weight_final.append(1 - rho)
