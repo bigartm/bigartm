@@ -3,8 +3,8 @@ Master Component
 
 This page describes MasterComponent class.
 
-.. automodule:: artm 
-   
+.. automodule:: artm
+
 .. autoclass:: MasterComponent
    :members:
    :undoc-members:
