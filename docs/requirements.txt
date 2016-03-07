@@ -1,2 +1,1 @@
-numpy>=1.6.0
-pandas>=0.15
+protobuf==2.6.1
