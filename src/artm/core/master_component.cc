@@ -675,6 +675,9 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
 
+  ClearThetaCache(ClearThetaCacheArgs());
+  ClearScoreCache(ClearScoreCacheArgs());
+
   ProcessBatchesArgs process_batches_args;
   process_batches_args.mutable_batch_filename()->CopyFrom(args.batch_filename());
   process_batches_args.mutable_batch()->CopyFrom(args.batch());

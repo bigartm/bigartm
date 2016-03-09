@@ -130,8 +130,7 @@ TEST(CppInterface, BasicTest) {
 
     ::artm::TransformMasterModelArgs transform_args;
     transform_args.add_batch_filename(batch.id());
-    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
-    api.ClearScoreCache(::artm::ClearScoreCacheArgs());
+    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Cache);
     master_component.Transform(transform_args);
     auto perplexity2 = master_component.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
     previous_perplexity = perplexity2.value();
