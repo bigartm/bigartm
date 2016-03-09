@@ -25,8 +25,9 @@ namespace score {
 
 class TopicMassPhi : public ScoreCalculatorInterface {
  public:
-  explicit TopicMassPhi(const TopicMassPhiScoreConfig& config)
-    : config_(config) {}
+  explicit TopicMassPhi(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+    config_ = ParseConfig<TopicMassPhiScoreConfig>();
+  }
 
   std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt);
 

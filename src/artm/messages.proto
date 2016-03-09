@@ -171,6 +171,7 @@ message ScoreConfig {
   optional string name = 1;
   optional Type type = 2;
   optional bytes config = 3;
+  optional string model_name = 4;
 }
 
 // Represents a result of score calculation
@@ -193,7 +194,7 @@ message ScoreData {
   optional bytes data = 3;
 }
 
-message ScoreDataArray {
+message ScoreArray {
   repeated ScoreData score = 1;
 }
 
@@ -517,7 +518,6 @@ message GetThetaMatrixArgs {
 }
 
 message GetScoreValueArgs {
-  optional string model_name = 1;
   optional string score_name = 2;
 }
 

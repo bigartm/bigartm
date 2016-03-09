@@ -203,6 +203,10 @@ ScoreData MasterModel::GetScore(const GetScoreValueArgs& args) {
   return ArtmRequest<ScoreData>(id_, args, ArtmRequestScore);
 }
 
+ScoreArray MasterModel::GetScoreArray(const GetScoreArrayArgs& args) {
+  return ArtmRequest<ScoreArray>(id_, args, ArtmRequestScoreArray);
+}
+
 MasterComponentInfo MasterModel::info() const {
   GetMasterComponentInfoArgs args;
   return ArtmRequest<MasterComponentInfo>(id_, args, ArtmRequestMasterComponentInfo);

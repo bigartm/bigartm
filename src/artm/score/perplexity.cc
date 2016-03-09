@@ -15,12 +15,12 @@
 namespace artm {
 namespace score {
 
-Perplexity::Perplexity(const PerplexityScoreConfig& config)
-    : config_(config) {
+Perplexity::Perplexity(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+  config_ = ParseConfig<PerplexityScoreConfig>();
   std::stringstream ss;
-  ss << ": model_type=" << config.model_type();
-  if (config.has_dictionary_name())
-    ss << ", dictionary_name=" << config.dictionary_name();
+  ss << ": model_type=" << config_.model_type();
+  if (config_.has_dictionary_name())
+    ss << ", dictionary_name=" << config_.dictionary_name();
   LOG(INFO) << "Perplexity score calculator created" << ss.str();
 }
 

@@ -824,14 +824,17 @@ void Processor::ThreadFunction() {
             continue;
           }
 
-          if (!score_calc->is_cumulative() || (part->score_manager() == nullptr))
+          if (!score_calc->is_cumulative())
             continue;
 
           CuckooWatch cuckoo2("CalculateScore(" + score_name + ")", &cuckoo, kTimeLoggingThreshold);
 
           auto score_value = CalcScores(score_calc.get(), batch, p_wt, args, *theta_matrix);
-          if (score_value != nullptr)
-            part->score_manager()->Append(score_name, score_value->SerializeAsString());
+          if (score_value != nullptr) {
+            instance_->score_manager()->Append(score_name, score_value->SerializeAsString());
+            if (part->score_manager() != nullptr)
+              part->score_manager()->Append(score_name, score_value->SerializeAsString());
+          }
         }
 
         VLOG(0) << "Processor: complete processing batch " << batch.id() << " into model " << model_description.str();

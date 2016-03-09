@@ -68,7 +68,7 @@ def test_func():
                 master.normalize_model(pwt, nwt)  
 
                 # Retrieve and print perplexity score
-                perplexity_score = master.get_score(pwt, 'PerplexityScore')
+                perplexity_score = master.get_score('PerplexityScore')
 
                 end = time.time()
                 assert abs(expected_perplexity_value_on_iteration[iter] - perplexity_score.value) < perplexity_tol

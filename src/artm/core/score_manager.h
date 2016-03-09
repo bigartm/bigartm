@@ -43,7 +43,7 @@ class ScoreTracker : boost::noncopyable {
   ScoreTracker() : lock_(), array_() {}
   void Clear();
   ScoreData* Add();
-  void RequestScoreArray(const GetScoreArrayArgs& args, ScoreDataArray* score_data_array);
+  void RequestScoreArray(const GetScoreArrayArgs& args, ScoreArray* score_data_array);
 
  private:
   mutable boost::mutex lock_;

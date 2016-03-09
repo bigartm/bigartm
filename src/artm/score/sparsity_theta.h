@@ -24,8 +24,9 @@ namespace score {
 
 class SparsityTheta : public ScoreCalculatorInterface {
  public:
-  explicit SparsityTheta(const SparsityThetaScoreConfig& config)
-    : config_(config) {}
+  explicit SparsityTheta(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+    config_ = ParseConfig<SparsityThetaScoreConfig>();
+  }
 
   virtual bool is_cumulative() const { return true; }
 

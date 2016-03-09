@@ -69,6 +69,10 @@ int Api::ClearScoreCache(const ClearScoreCacheArgs& args) {
   return ArtmExecute(master_model_.id(), args, ArtmClearScoreCache);
 }
 
+int Api::ClearScoreArrayCache(const ClearScoreArrayCacheArgs& args) {
+  return ArtmExecute(master_model_.id(), args, ArtmClearScoreArrayCache);
+}
+
 ThetaMatrix Api::ProcessBatches(const ProcessBatchesArgs& args) {
   auto process_batches_result = ArtmRequest<ProcessBatchesResult>(master_model_.id(), args, ArtmRequestProcessBatches);
   return process_batches_result.theta_matrix();

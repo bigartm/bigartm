@@ -178,10 +178,10 @@ def test_func():
             master.normalize_model(pwt, nwt)    
 
         # Retrieve and print scores
-        top_tokens_rus = master.get_score(pwt, 'TopTokensRus')
-        top_tokens_eng = master.get_score(pwt, 'TopTokensEng')
-        sp_phi_rus = master.get_score(pwt, 'SparsityPhiRus')
-        sp_phi_eng = master.get_score(pwt, 'SparsityPhiEng')
+        top_tokens_rus = master.get_score('TopTokensRus')
+        top_tokens_eng = master.get_score('TopTokensEng')
+        sp_phi_rus = master.get_score('SparsityPhiRus')
+        sp_phi_eng = master.get_score('SparsityPhiEng')
 
         print 'Top tokens per russian topic:'
         _print_top_tokens(top_tokens_rus, expected_values_rus_topic, tolerance)

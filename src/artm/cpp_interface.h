@@ -132,6 +132,10 @@ class MasterModel {
   template <typename T>
   T GetScoreAs(const GetScoreValueArgs& args);
 
+  ScoreArray GetScoreArray(const GetScoreArrayArgs& args);
+  template <typename T>
+  std::vector<T> GetScoreArrayAs(const GetScoreArrayArgs& args);
+
  private:
   int id_;
   bool is_weak_ref_;
@@ -145,6 +149,18 @@ T MasterModel::GetScoreAs(const GetScoreValueArgs& args) {
   T score;
   score.ParseFromString(score_data.data());
   return score;
+}
+
+template <typename T>
+std::vector<T> MasterModel::GetScoreArrayAs(const GetScoreArrayArgs& args) {
+  auto score_array = GetScoreArray(args);
+  std::vector<T> retval;
+  for (auto& score_data : score_array.score()) {
+    T elem;
+    elem.ParseFromString(score_data.data());
+    retval.push_back(elem);
+  }
+  return retval;
 }
 
 }  // namespace artm

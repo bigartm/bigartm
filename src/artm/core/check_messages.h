@@ -248,10 +248,6 @@ inline std::string DescribeErrors(const ::artm::Batch& message) {
 inline std::string DescribeErrors(const ::artm::GetScoreValueArgs& message) {
   std::stringstream ss;
 
-  if (!message.has_model_name() || message.model_name().empty()) {
-    // Allow this to default to MasterModelConfig.pwt_name
-    // ss << "GetScoreValueArgs.model_name is missing; ";
-  }
   if (!message.has_score_name() || message.score_name().empty())
     ss << "GetScoreValueArgs.score_name is missing; ";
 
@@ -515,7 +511,7 @@ inline std::string DescribeErrors(const ::artm::ProcessBatchesResult& message) {
 inline std::string DescribeErrors(const ::artm::ClearThetaCacheArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ClearScoreCacheArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ClearScoreArrayCacheArgs& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::ScoreDataArray& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ScoreArray& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetScoreArrayArgs& message) { return std::string(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -626,6 +622,11 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
 
   if (message->reuse_theta())
     message->set_cache_theta(true);
+
+  for (int i = 0; i < message->score_config_size(); ++i) {
+    if (!message->score_config(i).has_model_name())
+      message->mutable_score_config(i)->set_model_name(message->pwt_name());
+  }
 }
 
 template<>
@@ -866,7 +867,6 @@ template<>
 inline std::string DescribeMessage(const ::artm::GetScoreValueArgs& message) {
   std::stringstream ss;
   ss << "GetScoreValueArgs";
-  ss << ", model_name=" << message.model_name();
   ss << ", score_name=" << message.score_name();
   return ss.str();
 }

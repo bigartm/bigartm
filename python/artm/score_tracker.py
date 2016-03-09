@@ -35,7 +35,7 @@ class SparsityPhiScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_pwt, score.name)
+            _data = score.master.get_score(score.name)
 
             self._value.append(_data.value)
             self._zero_tokens.append(_data.zero_tokens)
@@ -116,7 +116,7 @@ class SparsityThetaScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_pwt, score.name)
+            _data = score.master.get_score(score.name)
 
             self._value.append(_data.value)
             self._zero_topics.append(_data.zero_topics)
@@ -201,7 +201,7 @@ class PerplexityScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_pwt, score.name)
+            _data = score.master.get_score(score.name)
 
             self._value.append(_data.value)
             self._raw.append(_data.raw)
@@ -344,7 +344,7 @@ class ItemsProcessedScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_pwt, score.name)
+            _data = score.master.get_score(score.name)
             self._value.append(_data.value)
         else:
             self._value.append(None)
@@ -392,7 +392,7 @@ class TopTokensScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_pwt, score.name)
+            _data = score.master.get_score(score.name)
 
             self._num_tokens.append(_data.num_entries)
 
@@ -514,7 +514,7 @@ class TopicKernelScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_pwt, score.name)
+            _data = score.master.get_score(score.name)
 
             self._topic_info.append({})
             for topic_index, topic_name in enumerate(_data.topic_name.value):
@@ -674,7 +674,7 @@ class ThetaSnippetScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_pwt, score.name)
+            _data = score.master.get_score(score.name)
 
             self._document_ids.append([item_id for item_id in _data.item_id])
             self._snippet.append(
@@ -744,7 +744,7 @@ class TopicMassPhiScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_nwt, score.name)
+            _data = score.master.get_score(score.name)
             self._value.append(_data.value)
             self._topic_info.append({})
 
@@ -819,7 +819,7 @@ class ClassPrecisionScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.model_nwt, score.name)
+            _data = score.master.get_score(score.name)
             self._value.append(_data.value)
         else:
             self._value.append(None)

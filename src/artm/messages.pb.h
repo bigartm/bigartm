@@ -55,7 +55,7 @@ class TopicSelectionThetaConfig;
 class TransformConfig;
 class ScoreConfig;
 class ScoreData;
-class ScoreDataArray;
+class ScoreArray;
 class PerplexityScoreConfig;
 class PerplexityScore;
 class SparsityThetaScoreConfig;
@@ -2771,6 +2771,18 @@ class ScoreConfig : public ::google::protobuf::Message {
   inline ::std::string* release_config();
   inline void set_allocated_config(::std::string* config);
 
+  // optional string model_name = 4;
+  inline bool has_model_name() const;
+  inline void clear_model_name();
+  static const int kModelNameFieldNumber = 4;
+  inline const ::std::string& model_name() const;
+  inline void set_model_name(const ::std::string& value);
+  inline void set_model_name(const char* value);
+  inline void set_model_name(const char* value, size_t size);
+  inline ::std::string* mutable_model_name();
+  inline ::std::string* release_model_name();
+  inline void set_allocated_model_name(::std::string* model_name);
+
   // @@protoc_insertion_point(class_scope:artm.ScoreConfig)
  private:
   inline void set_has_name();
@@ -2779,15 +2791,18 @@ class ScoreConfig : public ::google::protobuf::Message {
   inline void clear_has_type();
   inline void set_has_config();
   inline void clear_has_config();
+  inline void set_has_model_name();
+  inline void clear_has_model_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* name_;
   ::std::string* config_;
+  ::std::string* model_name_;
   int type_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -2942,14 +2957,14 @@ class ScoreData : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class ScoreDataArray : public ::google::protobuf::Message {
+class ScoreArray : public ::google::protobuf::Message {
  public:
-  ScoreDataArray();
-  virtual ~ScoreDataArray();
+  ScoreArray();
+  virtual ~ScoreArray();
 
-  ScoreDataArray(const ScoreDataArray& from);
+  ScoreArray(const ScoreArray& from);
 
-  inline ScoreDataArray& operator=(const ScoreDataArray& from) {
+  inline ScoreArray& operator=(const ScoreArray& from) {
     CopyFrom(from);
     return *this;
   }
@@ -2963,17 +2978,17 @@ class ScoreDataArray : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const ScoreDataArray& default_instance();
+  static const ScoreArray& default_instance();
 
-  void Swap(ScoreDataArray* other);
+  void Swap(ScoreArray* other);
 
   // implements Message ----------------------------------------------
 
-  ScoreDataArray* New() const;
+  ScoreArray* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const ScoreDataArray& from);
-  void MergeFrom(const ScoreDataArray& from);
+  void CopyFrom(const ScoreArray& from);
+  void MergeFrom(const ScoreArray& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -3008,7 +3023,7 @@ class ScoreDataArray : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
       mutable_score();
 
-  // @@protoc_insertion_point(class_scope:artm.ScoreDataArray)
+  // @@protoc_insertion_point(class_scope:artm.ScoreArray)
  private:
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -3023,7 +3038,7 @@ class ScoreDataArray : public ::google::protobuf::Message {
   friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
 
   void InitAsDefaultInstance();
-  static ScoreDataArray* default_instance_;
+  static ScoreArray* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -7464,18 +7479,6 @@ class GetScoreValueArgs : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // optional string model_name = 1;
-  inline bool has_model_name() const;
-  inline void clear_model_name();
-  static const int kModelNameFieldNumber = 1;
-  inline const ::std::string& model_name() const;
-  inline void set_model_name(const ::std::string& value);
-  inline void set_model_name(const char* value);
-  inline void set_model_name(const char* value, size_t size);
-  inline ::std::string* mutable_model_name();
-  inline ::std::string* release_model_name();
-  inline void set_allocated_model_name(::std::string* model_name);
-
   // optional string score_name = 2;
   inline bool has_score_name() const;
   inline void clear_score_name();
@@ -7490,18 +7493,15 @@ class GetScoreValueArgs : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:artm.GetScoreValueArgs)
  private:
-  inline void set_has_model_name();
-  inline void clear_has_model_name();
   inline void set_has_score_name();
   inline void clear_has_score_name();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* model_name_;
   ::std::string* score_name_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -13426,6 +13426,76 @@ inline void ScoreConfig::set_allocated_config(::std::string* config) {
   }
 }
 
+// optional string model_name = 4;
+inline bool ScoreConfig::has_model_name() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ScoreConfig::set_has_model_name() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ScoreConfig::clear_has_model_name() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ScoreConfig::clear_model_name() {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    model_name_->clear();
+  }
+  clear_has_model_name();
+}
+inline const ::std::string& ScoreConfig::model_name() const {
+  return *model_name_;
+}
+inline void ScoreConfig::set_model_name(const ::std::string& value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ScoreConfig::set_model_name(const char* value) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(value);
+}
+inline void ScoreConfig::set_model_name(const char* value, size_t size) {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  model_name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ScoreConfig::mutable_model_name() {
+  set_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    model_name_ = new ::std::string;
+  }
+  return model_name_;
+}
+inline ::std::string* ScoreConfig::release_model_name() {
+  clear_has_model_name();
+  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = model_name_;
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void ScoreConfig::set_allocated_model_name(::std::string* model_name) {
+  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete model_name_;
+  }
+  if (model_name) {
+    set_has_model_name();
+    model_name_ = model_name;
+  } else {
+    clear_has_model_name();
+    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
 // -------------------------------------------------------------------
 
 // ScoreData
@@ -13595,30 +13665,30 @@ inline void ScoreData::set_allocated_data(::std::string* data) {
 
 // -------------------------------------------------------------------
 
-// ScoreDataArray
+// ScoreArray
 
 // repeated .artm.ScoreData score = 1;
-inline int ScoreDataArray::score_size() const {
+inline int ScoreArray::score_size() const {
   return score_.size();
 }
-inline void ScoreDataArray::clear_score() {
+inline void ScoreArray::clear_score() {
   score_.Clear();
 }
-inline const ::artm::ScoreData& ScoreDataArray::score(int index) const {
+inline const ::artm::ScoreData& ScoreArray::score(int index) const {
   return score_.Get(index);
 }
-inline ::artm::ScoreData* ScoreDataArray::mutable_score(int index) {
+inline ::artm::ScoreData* ScoreArray::mutable_score(int index) {
   return score_.Mutable(index);
 }
-inline ::artm::ScoreData* ScoreDataArray::add_score() {
+inline ::artm::ScoreData* ScoreArray::add_score() {
   return score_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >&
-ScoreDataArray::score() const {
+ScoreArray::score() const {
   return score_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
-ScoreDataArray::mutable_score() {
+ScoreArray::mutable_score() {
   return &score_;
 }
 
@@ -19004,85 +19074,15 @@ inline void GetThetaMatrixArgs::set_matrix_layout(::artm::GetThetaMatrixArgs_Mat
 
 // GetScoreValueArgs
 
-// optional string model_name = 1;
-inline bool GetScoreValueArgs::has_model_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void GetScoreValueArgs::set_has_model_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void GetScoreValueArgs::clear_has_model_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void GetScoreValueArgs::clear_model_name() {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    model_name_->clear();
-  }
-  clear_has_model_name();
-}
-inline const ::std::string& GetScoreValueArgs::model_name() const {
-  return *model_name_;
-}
-inline void GetScoreValueArgs::set_model_name(const ::std::string& value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void GetScoreValueArgs::set_model_name(const char* value) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(value);
-}
-inline void GetScoreValueArgs::set_model_name(const char* value, size_t size) {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  model_name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* GetScoreValueArgs::mutable_model_name() {
-  set_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    model_name_ = new ::std::string;
-  }
-  return model_name_;
-}
-inline ::std::string* GetScoreValueArgs::release_model_name() {
-  clear_has_model_name();
-  if (model_name_ == &::google::protobuf::internal::GetEmptyString()) {
-    return NULL;
-  } else {
-    ::std::string* temp = model_name_;
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-    return temp;
-  }
-}
-inline void GetScoreValueArgs::set_allocated_model_name(::std::string* model_name) {
-  if (model_name_ != &::google::protobuf::internal::GetEmptyString()) {
-    delete model_name_;
-  }
-  if (model_name) {
-    set_has_model_name();
-    model_name_ = model_name;
-  } else {
-    clear_has_model_name();
-    model_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
-  }
-}
-
 // optional string score_name = 2;
 inline bool GetScoreValueArgs::has_score_name() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void GetScoreValueArgs::set_has_score_name() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void GetScoreValueArgs::clear_has_score_name() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void GetScoreValueArgs::clear_score_name() {
   if (score_name_ != &::google::protobuf::internal::GetEmptyString()) {

@@ -57,14 +57,6 @@
   }                                                                                           \
 }                                                                                             \
 
-#define CREATE_SCORE_CALCULATOR(ConfigType, ScoreType) {                                  \
-  ConfigType score_config;                                                                \
-  if (!score_config.ParseFromArray(config_blob.c_str(), config_blob.length())) {          \
-    BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to parse score config"));     \
-  }                                                                                       \
-  score_calculator.reset(new ScoreType(score_config));                                    \
-}                                                                                         \
-
 namespace artm {
 namespace core {
 
@@ -296,72 +288,57 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
   std::string score_name = config.name();
   artm::ScoreConfig_Type score_type = config.type();
 
-  std::string config_blob;  // Used by CREATE_SCORE_CALCULATOR macro
-  if (config.has_config()) {
-    config_blob = config.config();
-  }
-
   std::shared_ptr<artm::ScoreCalculatorInterface> score_calculator;
 
   // add here new case if adding new score
   switch (score_type) {
     case artm::ScoreConfig_Type_Perplexity: {
-      CREATE_SCORE_CALCULATOR(::artm::PerplexityScoreConfig,
-                              ::artm::score::Perplexity);
+      score_calculator.reset(new ::artm::score::Perplexity(config));
       break;
     }
 
     case artm::ScoreConfig_Type_SparsityTheta: {
-      CREATE_SCORE_CALCULATOR(::artm::SparsityThetaScoreConfig,
-                              ::artm::score::SparsityTheta);
+      score_calculator.reset(new ::artm::score::SparsityTheta(config));
       break;
     }
 
     case artm::ScoreConfig_Type_SparsityPhi: {
-      CREATE_SCORE_CALCULATOR(::artm::SparsityPhiScoreConfig,
-                              ::artm::score::SparsityPhi);
+      score_calculator.reset(new ::artm::score::SparsityPhi(config));
       break;
     }
 
     case artm::ScoreConfig_Type_ItemsProcessed: {
-      CREATE_SCORE_CALCULATOR(::artm::ItemsProcessedScoreConfig,
-                              ::artm::score::ItemsProcessed);
+      score_calculator.reset(new ::artm::score::ItemsProcessed(config));
       break;
     }
 
     case artm::ScoreConfig_Type_TopTokens: {
-      CREATE_SCORE_CALCULATOR(::artm::TopTokensScoreConfig,
-                              ::artm::score::TopTokens);
+      score_calculator.reset(new ::artm::score::TopTokens(config));
       break;
     }
 
     case artm::ScoreConfig_Type_ThetaSnippet: {
-      CREATE_SCORE_CALCULATOR(::artm::ThetaSnippetScoreConfig,
-                              ::artm::score::ThetaSnippet);
+      score_calculator.reset(new ::artm::score::ThetaSnippet(config));
       break;
     }
 
     case artm::ScoreConfig_Type_TopicKernel: {
-      CREATE_SCORE_CALCULATOR(::artm::TopicKernelScoreConfig,
-                              ::artm::score::TopicKernel);
+      score_calculator.reset(new ::artm::score::TopicKernel(config));
       break;
     }
 
     case artm::ScoreConfig_Type_TopicMassPhi: {
-      CREATE_SCORE_CALCULATOR(::artm::TopicMassPhiScoreConfig,
-                              ::artm::score::TopicMassPhi);
+      score_calculator.reset(new ::artm::score::TopicMassPhi(config));
       break;
     }
 
     case artm::ScoreConfig_Type_ClassPrecision: {
-      CREATE_SCORE_CALCULATOR(::artm::ClassPrecisionScoreConfig,
-                              ::artm::score::ClassPrecision);
+      score_calculator.reset(new ::artm::score::ClassPrecision(config));
       break;
     }
 
     case artm::ScoreConfig_Type_PeakMemory: {
-      CREATE_SCORE_CALCULATOR(::artm::PeakMemoryScoreConfig,
-                              ::artm::score::PeakMemory);
+      score_calculator.reset(new ::artm::score::PeakMemory(config));
       break;
     }
 

@@ -105,8 +105,8 @@ def test_func():
             master.normalize_model(pwt, nwt, rwt)  
 
             # Retrieve perplexity score
-            perplexity_doc_score = master.get_score(pwt, 'PerplexityDoc')
-            perplexity_col_score = master.get_score(pwt, 'PerplexityCol')
+            perplexity_doc_score = master.get_score('PerplexityDoc')
+            perplexity_col_score = master.get_score('PerplexityCol')
 
             # Assert and print scores
             string = 'Iter#{0}'.format(iter)

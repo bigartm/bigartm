@@ -656,10 +656,9 @@ class ScoreHelper {
      score_name_.push_back(std::make_pair(score, score_config.type()));
    }
 
-   std::string showScore(const std::string model_name, std::string& score_name, ::artm::ScoreConfig_Type type) {
+   std::string showScore(std::string& score_name, ::artm::ScoreConfig_Type type) {
      std::string retval;
      GetScoreValueArgs get_score_args;
-     get_score_args.set_model_name(model_name);
      get_score_args.set_score_name(score_name);
 
      if (type == ::artm::ScoreConfig_Type_Perplexity) {
@@ -763,21 +762,21 @@ class ScoreHelper {
      output_ << std::endl;
    }
 
-   void showScores(const std::string model_name, int iter, long long elapsed_ms) {
+   void showScores(int iter, long long elapsed_ms) {
      CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
      const std::string sep = artm_options_.csv_separator;
      if (output_.is_open()) output_ << iter << sep << elapsed_ms;
      for (int i = 0; i < score_name_.size(); ++i) {
-       std::string score_value = showScore(model_name, score_name_[i].first, score_name_[i].second);
+       std::string score_value = showScore(score_name_[i].first, score_name_[i].second);
        if (output_.is_open()) output_ << sep << score_value;
      }
      if (output_.is_open()) output_ << std::endl;
      std::cerr << "================= Iteration " << iter << " took " << elapsed_ms << std::endl;
    }
 
-   void showScores(const std::string model_name) {
+   void showScores() {
      for (auto& score_name : score_name_)
-       showScore(model_name, score_name.first, score_name.second);
+       showScore(score_name.first, score_name.second);
    }
 };
 
@@ -1148,11 +1147,11 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       master_component->FitOfflineModel(fit_offline_args);
     }
 
-    score_helper.showScores(pwt_model_name, iter + 1, timer.elapsed_ms());
+    score_helper.showScores(iter + 1, timer.elapsed_ms());
   }  // iter
 
   if ((options.passes > 0) || (options.time_limit > 0))
-    final_score_helper.showScores(pwt_model_name);
+    final_score_helper.showScores();
 
   if (!options.save_model.empty()) {
     ProgressScope scope(std::string("Saving model to ") + options.save_model);
@@ -1229,7 +1228,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
     ::artm::Matrix theta_matrix;
     ThetaMatrix theta_metadata = master_component->Transform(transform_args, &theta_matrix);
-    score_helper.showScores(pwt_model_name);
+    score_helper.showScores();
 
     if (!options.write_predictions.empty())
       WritePredictions(options, theta_metadata, theta_matrix);

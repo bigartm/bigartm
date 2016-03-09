@@ -81,12 +81,12 @@ def test_func():
             master.normalize_model(pwt, nwt)
 
             # Retrieve and print perplexity score
-            perplexity_score = master.get_score(pwt, 'PerplexityScore')
+            perplexity_score = master.get_score('PerplexityScore')
             assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < perplexity_tol
             print 'Iteration#{0} : Perplexity = {1:.3f}'.format(iter, perplexity_score.value)
 
         # Retrieve and print top tokens score
-        top_tokens_score = master.get_score(pwt, 'TopTokensScore')
+        top_tokens_score = master.get_score('TopTokensScore')
 
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))
