@@ -29,8 +29,9 @@ namespace score {
 
 class TopTokens : public ScoreCalculatorInterface {
  public:
-  explicit TopTokens(const TopTokensScoreConfig& config)
-    : config_(config) {}
+  explicit TopTokens(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+    config_ = ParseConfig<TopTokensScoreConfig>();
+  }
 
   virtual std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt);
 

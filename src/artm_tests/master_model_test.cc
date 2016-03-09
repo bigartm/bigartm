@@ -24,7 +24,6 @@ void runBasicTest(bool skip_batch_dict) {
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
 
   ::artm::GetScoreValueArgs get_score_args;
-  get_score_args.set_model_name("pwt");
   get_score_args.set_score_name("Perplexity");
 
   ::artm::RegularizerConfig* reg_theta = config.add_regularizer_config();

@@ -346,7 +346,6 @@ TEST(CppInterface, ProcessBatchesApi) {
   ::artm::PerplexityScore perplexity_score;
   ::artm::GetScoreValueArgs score_args;
   score_args.set_score_name("Perplexity");
-  score_args.set_model_name("pwt");
   for (int i = 0; i < 10; ++i) {  // 10 iterations
     process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
     process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Dense);
@@ -366,7 +365,6 @@ TEST(CppInterface, ProcessBatchesApi) {
   for (int i = 0; i < 10; ++i)
     master.FitOfflineModel(offline_args);
 
-  score_args.set_model_name("pwt0");
   auto perplexity_score2 = master.GetScoreAs< ::artm::PerplexityScore>(score_args);
   ASSERT_APPROX_EQ(perplexity_score2.value(), perplexity_score.value());
 

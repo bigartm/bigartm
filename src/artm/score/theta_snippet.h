@@ -25,8 +25,9 @@ namespace score {
 
 class ThetaSnippet : public ScoreCalculatorInterface {
  public:
-  explicit ThetaSnippet(const ThetaSnippetScoreConfig& config)
-    : config_(config) {}
+  explicit ThetaSnippet(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+    config_ = ParseConfig<ThetaSnippetScoreConfig>();
+  }
 
   virtual bool is_cumulative() const { return true; }
 

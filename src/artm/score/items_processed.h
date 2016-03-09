@@ -22,8 +22,9 @@ namespace score {
 
 class ItemsProcessed : public ScoreCalculatorInterface {
  public:
-  explicit ItemsProcessed(const ItemsProcessedScoreConfig& config)
-    : config_(config) {}
+  explicit ItemsProcessed(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+    config_ = ParseConfig<ItemsProcessedScoreConfig>();
+  }
 
   virtual bool is_cumulative() const { return true; }
 

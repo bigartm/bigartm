@@ -29,8 +29,9 @@ namespace score {
 
 class ClassPrecision : public ScoreCalculatorInterface {
  public:
-  explicit ClassPrecision(const ClassPrecisionScoreConfig& config)
-    : config_(config) {}
+  explicit ClassPrecision(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+    config_ = ParseConfig<ClassPrecisionScoreConfig>();
+  }
 
   virtual bool is_cumulative() const { return true; }
 

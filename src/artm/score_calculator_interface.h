@@ -11,6 +11,7 @@
 #include "artm/core/dictionary.h"
 #include "artm/core/common.h"
 #include "artm/core/phi_matrix.h"
+#include "artm/core/exceptions.h"
 #include "artm/messages.pb.h"
 
 namespace artm {
@@ -19,7 +20,8 @@ typedef ::google::protobuf::Message Score;
 
 class ScoreCalculatorInterface {
  public:
-  ScoreCalculatorInterface() {}
+  explicit ScoreCalculatorInterface(const ScoreConfig& score_config) : score_config_(score_config) {}
+
   virtual ~ScoreCalculatorInterface() { }
 
   virtual ScoreData_Type score_type() const = 0;
@@ -49,9 +51,29 @@ class ScoreCalculatorInterface {
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
   void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
+  std::string model_name() const { return score_config_.model_name(); }
+  std::string score_name() const { return score_config_.name(); }
+
+  template<typename ConfigType>
+  ConfigType ParseConfig() const;
+
  private:
+  ScoreConfig score_config_;
   const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;
 };
+
+template<typename ConfigType>
+ConfigType ScoreCalculatorInterface::ParseConfig() const {
+  ConfigType config;
+  if (!score_config_.has_config())
+    return config;
+
+  const std::string& config_blob = score_config_.config();
+  if (!config.ParseFromArray(config_blob.c_str(), config_blob.length()))
+    BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException("Unable to parse score config"));
+  return config;
+}
+
 }  // namespace artm
 
 #endif  // SRC_ARTM_SCORE_CALCULATOR_INTERFACE_H_

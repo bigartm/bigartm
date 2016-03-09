@@ -27,7 +27,7 @@ namespace score {
 
 class Perplexity : public ScoreCalculatorInterface {
  public:
-  explicit Perplexity(const PerplexityScoreConfig& config);
+  explicit Perplexity(const ScoreConfig& config);
 
   virtual bool is_cumulative() const { return true; }
 

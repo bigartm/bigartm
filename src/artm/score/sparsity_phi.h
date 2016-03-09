@@ -25,8 +25,9 @@ namespace score {
 
 class SparsityPhi : public ScoreCalculatorInterface {
  public:
-  explicit SparsityPhi(const SparsityPhiScoreConfig& config)
-    : config_(config) {}
+  explicit SparsityPhi(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+    config_ = ParseConfig<SparsityPhiScoreConfig>();
+  }
 
   std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt);
 

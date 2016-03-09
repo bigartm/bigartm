@@ -32,8 +32,9 @@ namespace score {
 
 class TopicKernel : public ScoreCalculatorInterface {
  public:
-  explicit TopicKernel(const TopicKernelScoreConfig& config)
-    : config_(config) {}
+  explicit TopicKernel(const ScoreConfig& config) : ScoreCalculatorInterface(config) {
+    config_ = ParseConfig<TopicKernelScoreConfig>();
+  }
 
   std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt);
 

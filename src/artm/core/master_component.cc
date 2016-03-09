@@ -396,10 +396,6 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
 }
 
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
-  std::shared_ptr<MasterModelConfig> config = instance_->config();
-  if (config != nullptr)
-    if (!args.has_model_name()) const_cast<GetScoreValueArgs*>(&args)->set_model_name(config->pwt_name());
-
   if (instance_->score_manager()->RequestScore(args.score_name(), result))
     return;  // success
 
@@ -410,9 +406,10 @@ void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) 
 
   if (score_calculator->is_cumulative())
     BOOST_THROW_EXCEPTION(InvalidOperation(
-    "Score " + args.score_name() + " is cumulative and has not been calculated for  " + args.model_name()));
+      "Score " + args.score_name() + " is cumulative and has not been calculated for  " +
+      score_calculator->model_name()));
 
-  std::shared_ptr<const ::artm::core::PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(args.model_name());
+  auto phi_matrix = instance_->GetPhiMatrixSafe(score_calculator->model_name());
   std::shared_ptr<Score> score = score_calculator->CalculateScore(*phi_matrix);
   result->set_data(score->SerializeAsString());
   result->set_type(score_calculator->score_type());
