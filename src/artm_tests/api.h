@@ -31,6 +31,7 @@ class Api {
   int Duplicate(const DuplicateMasterComponentArgs& args);
   int ClearThetaCache(const ClearThetaCacheArgs& args);
   int ClearScoreCache(const ClearScoreCacheArgs& args);
+  int ClearScoreArrayCache(const ClearScoreArrayCacheArgs& args);
 
   // Test helpers
   ::artm::FitOfflineMasterModelArgs Initialize(const std::vector<std::shared_ptr< ::artm::Batch> >& batches,

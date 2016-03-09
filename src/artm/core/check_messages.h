@@ -511,7 +511,7 @@ inline std::string DescribeErrors(const ::artm::ProcessBatchesResult& message) {
 inline std::string DescribeErrors(const ::artm::ClearThetaCacheArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ClearScoreCacheArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ClearScoreArrayCacheArgs& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::ScoreDataArray& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::ScoreArray& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetScoreArrayArgs& message) { return std::string(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

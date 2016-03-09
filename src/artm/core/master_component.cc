@@ -396,27 +396,10 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
 }
 
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
-  if (instance_->score_manager()->RequestScore(args.score_name(), result))
-    return;  // success
-
-  auto score_calculator = instance_->scores_calculators()->get(args.score_name());
-  if (score_calculator == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation(
-    std::string("Attempt to request non-existing score: " + args.score_name())));
-
-  if (score_calculator->is_cumulative())
-    BOOST_THROW_EXCEPTION(InvalidOperation(
-      "Score " + args.score_name() + " is cumulative and has not been calculated for  " +
-      score_calculator->model_name()));
-
-  auto phi_matrix = instance_->GetPhiMatrixSafe(score_calculator->model_name());
-  std::shared_ptr<Score> score = score_calculator->CalculateScore(*phi_matrix);
-  result->set_data(score->SerializeAsString());
-  result->set_type(score_calculator->score_type());
-  result->set_name(args.score_name());
+  instance_->score_manager()->RequestScore(args.score_name(), result);
 }
 
-void MasterComponent::Request(const GetScoreArrayArgs& args, ScoreDataArray* result) {
+void MasterComponent::Request(const GetScoreArrayArgs& args, ScoreArray* result) {
   instance_->score_tracker()->RequestScoreArray(args, result);
 }
 
@@ -508,7 +491,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(batch_manager);
-    pi->set_score_manager(score_manager != nullptr ? score_manager : instance_->score_manager());
+    pi->set_score_manager(score_manager);
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
     pi->set_model_name(model_name);
@@ -859,9 +842,11 @@ class ArtmExecutor {
     const std::string rwt_name = "rwt";
     master_component_->ClearScoreCache(ClearScoreCacheArgs());
     for (int pass = 0; pass < passes; ++pass) {
-      ProcessBatches(pwt_name_, nwt_name_, iter);
+      ::artm::core::ScoreManager score_manager(master_component_->instance_.get());
+      ProcessBatches(pwt_name_, nwt_name_, iter, &score_manager);
       Regularize(pwt_name_, nwt_name_, rwt_name);
       Normalize(pwt_name_, nwt_name_, rwt_name);
+      StoreScores(&score_manager);
     }
 
     Dispose(rwt_name);
@@ -876,12 +861,13 @@ class ArtmExecutor {
       float apply_weight = iter->apply_weight();
       float decay_weight = iter->decay_weight();
 
-      ProcessBatches(pwt_name_, nwt_hat_index, iter);
+      ::artm::core::ScoreManager score_manager(master_component_->instance_.get());
+      ProcessBatches(pwt_name_, nwt_hat_index, iter, &score_manager);
       Merge(nwt_name_, decay_weight, nwt_hat_index, apply_weight);
       Dispose(nwt_hat_index);
       Regularize(pwt_name_, nwt_name_, rwt_name);
       Normalize(pwt_name_, nwt_name_, rwt_name);
-      StoreScores();
+      StoreScores(&score_manager);
 
       nwt_hat_index++;
     }  // while (iter->more())
@@ -946,7 +932,7 @@ class ArtmExecutor {
   RegularizeModelArgs regularize_model_args_;
   std::vector<std::shared_ptr<BatchManager>> async_;
 
-  void ProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter) {
+  void ProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter, ScoreManager* score_manager) {
     process_batches_args_.set_pwt_source_name(pwt);
     process_batches_args_.set_nwt_target_name(nwt);
     iter->move(&process_batches_args_);
@@ -956,7 +942,7 @@ class ArtmExecutor {
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
                                                  &batch_manager,
                                                  /* async =*/ false,
-                                                 /* score_manager =*/ nullptr,
+                                                 /* score_manager =*/ score_manager,
                                                  /* theta_matrix*/ nullptr);
     process_batches_args_.clear_batch_filename();
   }
@@ -1005,18 +991,12 @@ class ArtmExecutor {
     master_component_->NormalizeModel(normalize_model_args);
   }
 
-  void StoreScores() {
+  void StoreScores(::artm::core::ScoreManager* score_manager) {
     auto config = master_component_->config();
     for (auto& score_config : config->score_config()) {
-      GetScoreValueArgs args;
-      args.set_score_name(score_config.name());
       ScoreData* score_data = master_component_->instance_->score_tracker()->Add();
-      master_component_->Request(args, score_data);
+      score_manager->RequestScore(score_config.name(), score_data);
     }
-
-    // ToDo(sashafrey): ensure that score cache is reset after each synchronization,
-    //                  yet after OnlineAlgorithm score cache has all accumulated data
-    // master_component_->ClearScoreCache(ClearScoreCacheArgs());
   }
 
   void Merge(std::string nwt, double decay_weight, std::string nwt_hat, double apply_weight) {

@@ -23,8 +23,19 @@ void runBasicTest(bool skip_batch_dict) {
   score_config->set_name("Perplexity");
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
 
+  ::artm::ScoreConfig* score_config2 = config.add_score_config();
+  score_config2->set_type(::artm::ScoreConfig_Type_SparsityPhi);
+  score_config2->set_name("SparsityPhi");
+  score_config2->set_config(::artm::SparsityPhiScoreConfig().SerializeAsString());
+
   ::artm::GetScoreValueArgs get_score_args;
   get_score_args.set_score_name("Perplexity");
+
+  ::artm::GetScoreArrayArgs get_score_array_args;
+  get_score_array_args.set_score_name("Perplexity");
+
+  ::artm::GetScoreArrayArgs get_score_array_args2;
+  get_score_array_args2.set_score_name("SparsityPhi");
 
   ::artm::RegularizerConfig* reg_theta = config.add_regularizer_config();
   reg_theta->set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
@@ -95,7 +106,16 @@ void runBasicTest(bool skip_batch_dict) {
     artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
     ASSERT_APPROX_EQ(perplexity_score.value(), expected[pass]);
     // std::cout << "#" << pass << ": " << perplexity_score.value() << "\n";
+
+    auto perplexity_scores = master_model.GetScoreArrayAs< ::artm::PerplexityScore>(get_score_array_args);
+    ASSERT_EQ(perplexity_scores.size(), (pass + 1));
+    ASSERT_EQ(perplexity_scores.back().value(), perplexity_score.value());
+
+    auto sparsity_phi_scores = master_model.GetScoreArrayAs< ::artm::SparsityPhiScore>(get_score_array_args2);
+    ASSERT_EQ(sparsity_phi_scores.size(), (pass + 1));
   }
+
+  api.ClearScoreArrayCache(::artm::ClearScoreArrayCacheArgs());
 
   const int update_every = 2;
   const float tau0 = 1024;
@@ -125,6 +145,14 @@ void runBasicTest(bool skip_batch_dict) {
       master_model.FitOnlineModel(fit_online_args);
       artm::PerplexityScore perplexity_score = master_model.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
       ASSERT_APPROX_EQ(perplexity_score.value(), expected[pass]);
+
+      if (!fit_online_args.async()) {
+        auto perplexity_scores = master_model.GetScoreArrayAs< ::artm::PerplexityScore>(get_score_array_args);
+        ASSERT_EQ(perplexity_scores.size(), (pass + 1) * nBatches / update_every);
+
+        auto sparsity_phi_scores = master_model.GetScoreArrayAs< ::artm::SparsityPhiScore>(get_score_array_args2);
+        ASSERT_EQ(sparsity_phi_scores.size(), (pass + 1) * nBatches / update_every);
+      }
     }
 
     ::artm::TransformMasterModelArgs transform_args;

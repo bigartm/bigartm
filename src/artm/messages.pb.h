@@ -55,7 +55,7 @@ class TopicSelectionThetaConfig;
 class TransformConfig;
 class ScoreConfig;
 class ScoreData;
-class ScoreDataArray;
+class ScoreArray;
 class PerplexityScoreConfig;
 class PerplexityScore;
 class SparsityThetaScoreConfig;
@@ -2957,14 +2957,14 @@ class ScoreData : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class ScoreDataArray : public ::google::protobuf::Message {
+class ScoreArray : public ::google::protobuf::Message {
  public:
-  ScoreDataArray();
-  virtual ~ScoreDataArray();
+  ScoreArray();
+  virtual ~ScoreArray();
 
-  ScoreDataArray(const ScoreDataArray& from);
+  ScoreArray(const ScoreArray& from);
 
-  inline ScoreDataArray& operator=(const ScoreDataArray& from) {
+  inline ScoreArray& operator=(const ScoreArray& from) {
     CopyFrom(from);
     return *this;
   }
@@ -2978,17 +2978,17 @@ class ScoreDataArray : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const ScoreDataArray& default_instance();
+  static const ScoreArray& default_instance();
 
-  void Swap(ScoreDataArray* other);
+  void Swap(ScoreArray* other);
 
   // implements Message ----------------------------------------------
 
-  ScoreDataArray* New() const;
+  ScoreArray* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const ScoreDataArray& from);
-  void MergeFrom(const ScoreDataArray& from);
+  void CopyFrom(const ScoreArray& from);
+  void MergeFrom(const ScoreArray& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -3023,7 +3023,7 @@ class ScoreDataArray : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
       mutable_score();
 
-  // @@protoc_insertion_point(class_scope:artm.ScoreDataArray)
+  // @@protoc_insertion_point(class_scope:artm.ScoreArray)
  private:
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
@@ -3038,7 +3038,7 @@ class ScoreDataArray : public ::google::protobuf::Message {
   friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
 
   void InitAsDefaultInstance();
-  static ScoreDataArray* default_instance_;
+  static ScoreArray* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -13665,30 +13665,30 @@ inline void ScoreData::set_allocated_data(::std::string* data) {
 
 // -------------------------------------------------------------------
 
-// ScoreDataArray
+// ScoreArray
 
 // repeated .artm.ScoreData score = 1;
-inline int ScoreDataArray::score_size() const {
+inline int ScoreArray::score_size() const {
   return score_.size();
 }
-inline void ScoreDataArray::clear_score() {
+inline void ScoreArray::clear_score() {
   score_.Clear();
 }
-inline const ::artm::ScoreData& ScoreDataArray::score(int index) const {
+inline const ::artm::ScoreData& ScoreArray::score(int index) const {
   return score_.Get(index);
 }
-inline ::artm::ScoreData* ScoreDataArray::mutable_score(int index) {
+inline ::artm::ScoreData* ScoreArray::mutable_score(int index) {
   return score_.Mutable(index);
 }
-inline ::artm::ScoreData* ScoreDataArray::add_score() {
+inline ::artm::ScoreData* ScoreArray::add_score() {
   return score_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >&
-ScoreDataArray::score() const {
+ScoreArray::score() const {
   return score_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::artm::ScoreData >*
-ScoreDataArray::mutable_score() {
+ScoreArray::mutable_score() {
   return &score_;
 }
 

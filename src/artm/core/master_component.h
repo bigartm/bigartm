@@ -48,7 +48,7 @@ class MasterComponent : boost::noncopyable {
   void Request(const TransformMasterModelArgs& args, ThetaMatrix* result);
   void Request(const TransformMasterModelArgs& args, ThetaMatrix* result, std::string* external);
   void Request(const GetScoreValueArgs& args, ScoreData* result);
-  void Request(const GetScoreArrayArgs& args, ScoreDataArray* result);
+  void Request(const GetScoreArrayArgs& args, ScoreArray* result);
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result);
   void Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external);
   void Request(const GetDictionaryArgs& args, DictionaryData* result);

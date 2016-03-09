@@ -524,7 +524,7 @@ int ArtmRequestScore(int master_id, int length, const char* args) {
 
 int ArtmRequestScoreArray(int master_id, int length, const char* args) {
   return ArtmRequest< ::artm::GetScoreArrayArgs,
-                      ::artm::ScoreDataArray>(master_id, length, args);
+                      ::artm::ScoreArray>(master_id, length, args);
 }
 
 int ArtmRequestDictionary(int master_id, int length, const char* args) {

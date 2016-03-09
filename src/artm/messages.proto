@@ -194,7 +194,7 @@ message ScoreData {
   optional bytes data = 3;
 }
 
-message ScoreDataArray {
+message ScoreArray {
   repeated ScoreData score = 1;
 }
 

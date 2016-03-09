@@ -52,10 +52,7 @@ bool ScoreManager::RequestScore(const ScoreName& score_name,
     BOOST_THROW_EXCEPTION(InvalidOperation(
       std::string("Attempt to request non-existing score: " + score_name)));
 
-  if (!score_calculator->is_cumulative())
-    return false;
-
-  {
+  if (score_calculator->is_cumulative()) {
     boost::lock_guard<boost::mutex> guard(lock_);
     auto iter = score_map_.find(score_name);
     if (iter != score_map_.end()) {
@@ -63,6 +60,10 @@ bool ScoreManager::RequestScore(const ScoreName& score_name,
     } else {
       score_data->set_data(score_calculator->CreateScore()->SerializeAsString());
     }
+  } else {
+    auto phi_matrix = instance_->GetPhiMatrixSafe(score_calculator->model_name());
+    std::shared_ptr<Score> score = score_calculator->CalculateScore(*phi_matrix);
+    score_data->set_data(score->SerializeAsString());
   }
 
   score_data->set_type(score_calculator->score_type());
@@ -102,11 +103,11 @@ ScoreData* ScoreTracker::Add() {
   return retval.get();
 }
 
-void ScoreTracker::RequestScoreArray(const GetScoreArrayArgs& args, ScoreDataArray* score_data_array) {
+void ScoreTracker::RequestScoreArray(const GetScoreArrayArgs& args, ScoreArray* score_array) {
   boost::lock_guard<boost::mutex> guard(lock_);
   for (auto& elem : array_) {
     if (elem->name() == args.score_name()) {
-      score_data_array->add_score()->CopyFrom(*elem);
+      score_array->add_score()->CopyFrom(*elem);
     }
   }
 }
