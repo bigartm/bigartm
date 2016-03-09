@@ -35,11 +35,11 @@ class SparsityPhiScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
-
-            self._value.append(_data.value)
-            self._zero_tokens.append(_data.zero_tokens)
-            self._total_tokens.append(_data.total_tokens)
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._value.append(_data.value)
+                self._zero_tokens.append(_data.zero_tokens)
+                self._total_tokens.append(_data.total_tokens)
         else:
             self._value.append(None)
             self._zero_tokens.append(None)
@@ -116,11 +116,11 @@ class SparsityThetaScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
-
-            self._value.append(_data.value)
-            self._zero_topics.append(_data.zero_topics)
-            self._total_topics.append(_data.total_topics)
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._value.append(_data.value)
+                self._zero_topics.append(_data.zero_topics)
+                self._total_topics.append(_data.total_topics)
         else:
             self._value.append(None)
             self._zero_topics.append(None)
@@ -201,15 +201,15 @@ class PerplexityScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
-
-            self._value.append(_data.value)
-            self._raw.append(_data.raw)
-            self._normalizer.append(_data.normalizer)
-            self._zero_tokens.append(_data.zero_words)
-            self._theta_sparsity_value.append(_data.theta_sparsity_value)
-            self._theta_sparsity_zero_topics.append(_data.theta_sparsity_zero_topics)
-            self._theta_sparsity_total_topics.append(_data.theta_sparsity_total_topics)
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._value.append(_data.value)
+                self._raw.append(_data.raw)
+                self._normalizer.append(_data.normalizer)
+                self._zero_tokens.append(_data.zero_words)
+                self._theta_sparsity_value.append(_data.theta_sparsity_value)
+                self._theta_sparsity_zero_topics.append(_data.theta_sparsity_zero_topics)
+                self._theta_sparsity_total_topics.append(_data.theta_sparsity_total_topics)
         else:
             self._value.append(None)
             self._raw.append(None)
@@ -344,8 +344,9 @@ class ItemsProcessedScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
-            self._value.append(_data.value)
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._value.append(_data.value)
         else:
             self._value.append(None)
 
@@ -392,29 +393,30 @@ class TopTokensScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._num_tokens.append(_data.num_entries)
 
-            self._num_tokens.append(_data.num_entries)
+                self._topic_info.append({})
+                for top_idx, top_name in enumerate(
+                        collections.OrderedDict.fromkeys(_data.topic_name)):
+                    tokens = []
+                    weights = []
+                    for i in xrange(_data.num_entries):
+                        if _data.topic_name[i] == top_name:
+                            tokens.append(_data.token[i])
+                            weights.append(_data.weight[i])
+                    coherence = -1
+                    if len(_data.coherence.value) > 0:
+                        coherence = _data.coherence.value[top_idx]
+                    self._topic_info[-1][top_name] = \
+                        collections.namedtuple('TopTokensScoreTuple',
+                                               ['tokens', 'weights', 'coherence'])
+                    self._topic_info[-1][top_name].tokens = tokens
+                    self._topic_info[-1][top_name].weights = weights
+                    self._topic_info[-1][top_name].coherence = coherence
 
-            self._topic_info.append({})
-            for top_idx, top_name in enumerate(collections.OrderedDict.fromkeys(_data.topic_name)):
-                tokens = []
-                weights = []
-                for i in xrange(_data.num_entries):
-                    if _data.topic_name[i] == top_name:
-                        tokens.append(_data.token[i])
-                        weights.append(_data.weight[i])
-                coherence = -1
-                if len(_data.coherence.value) > 0:
-                    coherence = _data.coherence.value[top_idx]
-                self._topic_info[-1][top_name] = \
-                    collections.namedtuple('TopTokensScoreTuple',
-                                           ['tokens', 'weights', 'coherence'])
-                self._topic_info[-1][top_name].tokens = tokens
-                self._topic_info[-1][top_name].weights = weights
-                self._topic_info[-1][top_name].coherence = coherence
-
-            self._average_coherence.append(_data.average_coherence)
+                self._average_coherence.append(_data.average_coherence)
         else:
             self._num_tokens.append(None)
             self._topic_info.append(None)
@@ -514,29 +516,30 @@ class TopicKernelScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._topic_info.append({})
+                for topic_index, topic_name in enumerate(_data.topic_name.value):
+                    tokens = [token for token in _data.kernel_tokens[topic_index].value]
+                    coherence = -1
+                    if len(_data.coherence.value) > 0:
+                        coherence = _data.coherence.value[topic_index]
+                    self._topic_info[-1][topic_name] = \
+                        collections.namedtuple('TopicKernelScoreTuple',
+                                               ['tokens', 'size', 'contrast',
+                                                'purity', 'coherence'])
+                    self._topic_info[-1][topic_name].tokens = tokens
+                    self._topic_info[-1][topic_name].size = _data.kernel_size.value[topic_index]
+                    self._topic_info[-1][topic_name].contrast = \
+                        _data.kernel_purity.value[topic_index]
+                    self._topic_info[-1][topic_name].purity = \
+                        _data.kernel_contrast.value[topic_index]
+                    self._topic_info[-1][topic_name].coherence = coherence
 
-            self._topic_info.append({})
-            for topic_index, topic_name in enumerate(_data.topic_name.value):
-                tokens = [token for token in _data.kernel_tokens[topic_index].value]
-                coherence = -1
-                if len(_data.coherence.value) > 0:
-                    coherence = _data.coherence.value[topic_index]
-                self._topic_info[-1][topic_name] = \
-                    collections.namedtuple('TopicKernelScoreTuple',
-                                           ['tokens', 'size', 'contrast', 'purity', 'coherence'])
-                self._topic_info[-1][topic_name].tokens = tokens
-                self._topic_info[-1][topic_name].size = _data.kernel_size.value[topic_index]
-                self._topic_info[-1][topic_name].contrast = \
-                    _data.kernel_purity.value[topic_index]
-                self._topic_info[-1][topic_name].purity = \
-                    _data.kernel_contrast.value[topic_index]
-                self._topic_info[-1][topic_name].coherence = coherence
-
-            self._average_coherence.append(_data.average_coherence)
-            self._average_size.append(_data.average_kernel_size)
-            self._average_contrast.append(_data.average_kernel_contrast)
-            self._average_purity.append(_data.average_kernel_purity)
+                self._average_coherence.append(_data.average_coherence)
+                self._average_size.append(_data.average_kernel_size)
+                self._average_contrast.append(_data.average_kernel_contrast)
+                self._average_purity.append(_data.average_kernel_purity)
         else:
             self._topic_info.append(None)
             self._average_coherence.append(None)
@@ -674,11 +677,11 @@ class ThetaSnippetScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
-
-            self._document_ids.append([item_id for item_id in _data.item_id])
-            self._snippet.append(
-                [[theta_td for theta_td in theta_d.value] for theta_d in _data.values])
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._document_ids.append([item_id for item_id in _data.item_id])
+                self._snippet.append(
+                    [[theta_td for theta_td in theta_d.value] for theta_d in _data.values])
         else:
             self._document_ids.append(None)
             self._snippet.append(None)
@@ -744,15 +747,18 @@ class TopicMassPhiScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
-            self._value.append(_data.value)
-            self._topic_info.append({})
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._value.append(_data.value)
+                self._topic_info.append({})
 
-            for top_idx, top_name in enumerate(collections.OrderedDict.fromkeys(_data.topic_name)):
-                self._topic_info[-1][top_name] = \
-                    collections.namedtuple('TopicMassPhiScoreTuple', ['topic_mass', 'topic_ratio'])
-                self._topic_info[-1][top_name].topic_mass = _data.topic_mass[top_idx]
-                self._topic_info[-1][top_name].topic_ratio = _data.topic_ratio[top_idx]
+                for top_idx, top_name in enumerate(
+                        collections.OrderedDict.fromkeys(_data.topic_name)):
+                    self._topic_info[-1][top_name] = \
+                        collections.namedtuple('TopicMassPhiScoreTuple',
+                                               ['topic_mass', 'topic_ratio'])
+                    self._topic_info[-1][top_name].topic_mass = _data.topic_mass[top_idx]
+                    self._topic_info[-1][top_name].topic_ratio = _data.topic_ratio[top_idx]
         else:
             self._value.append(None)
             self._topic_info.append(None)
@@ -819,8 +825,9 @@ class ClassPrecisionScoreTracker(object):
           means 'Add None values'
         """
         if score is not None:
-            _data = score.master.get_score(score.name)
-            self._value.append(_data.value)
+            _data_array = score.master.get_score_array(score.name)
+            for _data in _data_array:
+                self._value.append(_data.value)
         else:
             self._value.append(None)
 

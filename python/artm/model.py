@@ -531,6 +531,7 @@ class ARTM(object):
             _topic_selection_regularizer_func(self, self._regularizers)
 
             self._synchronizations_processed += 1
+            self.master.clear_score_array_cache()
             self.master.fit_offline(batch_filenames=batches_list,
                                     num_collection_passes=1)
 
@@ -617,13 +618,13 @@ class ARTM(object):
         # temp code for easy using of TopicSelectionThetaRegularizer from Python
         _topic_selection_regularizer_func(self, self._regularizers)
 
+        self.master.clear_score_array_cache()
         self.master.fit_online(batch_filenames=batches_list,
                                update_after=update_after_final,
                                apply_weight=apply_weight_final,
                                decay_weight=decay_weight_final,
                                async=async)
 
-        self._synchronizations_processed += 1
         for name in self.scores.data.keys():
             if name not in self.score_tracker:
                 self.score_tracker[name] =\
@@ -633,6 +634,8 @@ class ARTM(object):
                     self.score_tracker[name].add()
 
             self.score_tracker[name].add(self.scores[name])
+
+        self._synchronizations_processed += len(update_after_final)
 
     def save(self, filename='artm_model'):
         """ARTM.save() --- save the topic model to disk
@@ -764,6 +767,13 @@ class ARTM(object):
         """ARTM.remove_theta() --- removes cached theta matrix
         """
         self.master.clear_theta_cache()
+
+    def get_score(self, score_name):
+        """ARTM.get_score() --- get score after fit_offline, fit_online or transform
+        Args:
+          score_name (str): the name of the score to retrun
+        """
+        return self.master.get_score(score_name)
 
     def fit_transform(self, topic_names=None):
         """ARTM.fit_transform() --- obsolete way of theta retrieval.

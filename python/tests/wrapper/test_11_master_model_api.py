@@ -67,7 +67,7 @@ def test_func():
     try:
         # Create the instance of low-level API and master object
         lib = artm.wrapper.LibArtm()
-        
+
         # Parse collection from disk
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
                                  'docword_file_path': os.path.join(os.getcwd(), docword),
@@ -81,7 +81,7 @@ def test_func():
 
         master.create_score('SparsityTheta', messages.SparsityThetaScoreConfig())
         master.create_score('TopTokens', messages.TopTokensScoreConfig())
-        
+
         # Create collection dictionary and import it
         master.gather_dictionary(dictionary_target_name=dictionary_name,
                                  data_path=batches_folder,
@@ -97,7 +97,7 @@ def test_func():
         master.create_regularizer(name='DecorrelatorPhi',
                                   config=messages.DecorrelatorPhiConfig(),
                                   tau=decor_phi_tau)
-                                  
+
         master.reconfigure_regularizer(name='SmoothSparsePhi', tau=smsp_phi_tau)
         master.reconfigure_regularizer(name='SmoothSparseTheta', tau=smsp_theta_tau)
 
@@ -124,6 +124,9 @@ def test_func():
             assert abs(perplexity_score.value - expected_perplexity_value_on_iteration[iter]) < perplexity_tol
             assert abs(sparsity_phi_score.value - expected_phi_sparsity_value_on_iteration[iter]) < sparsity_tol
             assert abs(sparsity_theta_score.value - expected_theta_sparsity_value_on_iteration[iter]) < sparsity_tol
+
+            perplexity_scores = master.get_score_array('Perplexity')
+            assert len(perplexity_scores) == (iter + 1)
 
         # proceed one online iteration
         batch_filenames = glob.glob(os.path.join(batches_folder, '*.batch'))
@@ -155,5 +158,14 @@ def test_func():
             for _, (token, weight) in group:
                 print_string += ' {0}({1:.3f})'.format(token, weight)
             print print_string
+
+        master.clear_score_array_cache()
+        master.fit_online(batch_filenames=batch_filenames,
+                          update_after=[1, 2, 3, 4],
+                          apply_weight=[0.5, 0.5, 0.5, 0.5],
+                          decay_weight=[0.5, 0.5, 0.5, 0.5])
+        perplexity_scores = master.get_score_array('Perplexity')
+        assert len(perplexity_scores) == 4
+
     finally:
         shutil.rmtree(batches_folder)
