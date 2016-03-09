@@ -538,13 +538,12 @@ class MasterComponent(object):
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
-    def get_score(self, model_name, score_name):
+    def get_score(self, score_name):
         """
-        :param str model_name: name of pwt matrix in BigARTM
         :param str score_name: the user defined name of score to retrieve
         :param score_config: reference to score data object
         """
-        args = messages.GetScoreValueArgs(model_name=model_name, score_name=score_name)
+        args = messages.GetScoreValueArgs(score_name=score_name)
         score_data = self._lib.ArtmRequestScore(self.master_id, args)
 
         score_info = _score_data_func(score_data.type)()

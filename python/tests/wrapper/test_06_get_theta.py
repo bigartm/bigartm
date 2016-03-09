@@ -63,7 +63,7 @@ def test_func():
         # Getting a small snippet of ThetaMatrix for last processed documents (just to get an impression how it looks)
         # This may be useful if you are debugging some weird behavior, playing with regularizer weights, etc.
         # This does not require 'master.config().cache_theta = True'
-        theta_snippet_score = master.get_score(pwt, 'ThetaSnippetScore')
+        theta_snippet_score = master.get_score('ThetaSnippetScore')
 
         print 'Option 1. ThetaSnippetScore.'
         snippet_tuples = zip(theta_snippet_score.values, theta_snippet_score.item_id)

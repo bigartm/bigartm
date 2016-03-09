@@ -57,7 +57,7 @@ def test_func():
             master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
             master.normalize_model(pwt, nwt) 
 
-        theta_snippet_score = master.get_score(pwt, 'ThetaSnippet')
+        theta_snippet_score = master.get_score('ThetaSnippet')
 
         print 'ThetaSnippetScore.'
          # Note that 5th topic is fully zero; this is because we performed "numpy_matrix[:, 4] = 0".

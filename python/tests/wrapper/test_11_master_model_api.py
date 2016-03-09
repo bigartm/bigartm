@@ -110,9 +110,9 @@ def test_func():
             master.fit_offline(batches_folder=batches_folder, num_collection_passes=1)
 
             # Retrieve scores
-            perplexity_score = master.get_score(pwt, 'Perplexity')
-            sparsity_phi_score = master.get_score(pwt, 'SparsityPhi')
-            sparsity_theta_score = master.get_score(pwt, 'SparsityTheta')
+            perplexity_score = master.get_score('Perplexity')
+            sparsity_phi_score = master.get_score('SparsityPhi')
+            sparsity_theta_score = master.get_score('SparsityTheta')
 
             # Assert and print scores
             print_string = 'Iter#{0}'.format(iter)
@@ -130,9 +130,9 @@ def test_func():
         master.fit_online(batch_filenames=batch_filenames, update_after=[4], apply_weight=[0.5], decay_weight=[0.5])
 
         # Retrieve scores
-        perplexity_score = master.get_score(pwt, 'Perplexity')
-        sparsity_phi_score = master.get_score(pwt, 'SparsityPhi')
-        sparsity_theta_score = master.get_score(pwt, 'SparsityTheta')
+        perplexity_score = master.get_score('Perplexity')
+        sparsity_phi_score = master.get_score('SparsityPhi')
+        sparsity_theta_score = master.get_score('SparsityTheta')
 
         # Assert and print scores
         print_string = 'Iter Online'
@@ -146,7 +146,7 @@ def test_func():
         assert abs(sparsity_theta_score.value - expected_theta_sparsity_value_online) < sparsity_tol
 
         # Retrieve and print top tokens score
-        top_tokens_score = master.get_score(pwt, 'TopTokens')
+        top_tokens_score = master.get_score('TopTokens')
 
         print 'Top tokens per topic:'
         top_tokens_triplets = zip(top_tokens_score.topic_index, zip(top_tokens_score.token, top_tokens_score.weight))
