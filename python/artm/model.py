@@ -69,7 +69,7 @@ class ARTM(object):
       key --- class_id, value --- weight, if not specified then all class_ids
       will be used
       cache_theta (bool): save or not the Theta matrix in model. Necessary
-      if ARTM.get_theta() usage expects, default=True
+      if ARTM.get_theta() usage expects, default=False
       scores(list): list of scores (objects of artm.***Score classes), default=None
       regularizers(list): list with regularizers (objects of
       artm.***Regularizer classes), default=None
@@ -97,9 +97,9 @@ class ARTM(object):
     # ========== CONSTRUCTOR ==========
     def __init__(self, num_topics=10, topic_names=None, num_processors=0, class_ids=None,
                  scores=None, regularizers=None, num_document_passes=1,
-                 reuse_theta=True, cache_theta=True, theta_columns_naming='id'):
+                 reuse_theta=True, cache_theta=False, theta_columns_naming='id'):
         self._num_processors = 0
-        self._cache_theta = True
+        self._cache_theta = False
         self._num_document_passes = True
         self._reuse_theta = True
         self._theta_columns_naming = 'id'
