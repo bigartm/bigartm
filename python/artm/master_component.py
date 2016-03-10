@@ -324,6 +324,13 @@ class MasterComponent(object):
         args = messages.ClearScoreCacheArgs()
         self._lib.ArtmClearScoreCache(self.master_id, args)
 
+    def clear_score_array_cache(self):
+        """
+        Clears all entries from score array cache
+        """
+        args = messages.ClearScoreArrayCacheArgs()
+        self._lib.ArtmClearScoreArrayCache(self.master_id, args)
+
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None, find_theta=False,
@@ -550,6 +557,22 @@ class MasterComponent(object):
         score_info.ParseFromString(score_data.data)
 
         return score_info
+
+    def get_score_array(self, score_name):
+        """
+        :param str score_name: the user defined name of score to retrieve
+        :param score_config: reference to score data object
+        """
+        args = messages.GetScoreArrayArgs(score_name=score_name)
+        score_array = self._lib.ArtmRequestScoreArray(self.master_id, args)
+
+        scores = []
+        for score_data in score_array.score:
+            score_info = _score_data_func(score_data.type)()
+            score_info.ParseFromString(score_data.data)
+            scores.append(score_info)
+
+        return scores
 
     def reconfigure_score(self, name, config):
         master_config = messages.MasterModelConfig()

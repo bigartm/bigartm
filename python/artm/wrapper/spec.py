@@ -87,36 +87,17 @@ ARTM_API = [
         [('master_id', int), ('args', messages.ClearScoreCacheArgs)],
     ),
     CallSpec(
+        'ArtmClearScoreArrayCache',
+        [('master_id', int), ('args', messages.ClearScoreArrayCacheArgs)],
+    ),
+    CallSpec(
         'ArtmDisposeBatch',
         [('master_id', int), ('name', str)],
     ),
-
-    ## deprecated
-    #CallSpec(
-    #    'ArtmAddBatch',
-    #    [('master_id', int), ('args', messages.AddBatchArgs)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmInvokeIteration',
-    #    [('master_id', int), ('args', messages.InvokeIterationArgs)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmWaitIdle',
-    #    [('master_id', int), ('args', messages.WaitIdleArgs)],
-    #),
-    ## deprecated
-    #CallSpec(
-    #    'ArtmSynchronizeModel',
-    #    [('master_id', int), ('args', messages.SynchronizeModelArgs)],
-    #),
-
-    ## deprecated
-    #CallSpec(
-    #    'ArtmOverwriteTopicModel',
-    #    [('master_id', int), ('model', messages.TopicModel)],
-    #),
+    CallSpec(
+        'ArtmOverwriteTopicModel',
+        [('master_id', int), ('model', messages.TopicModel)],
+    ),
     CallSpec(
         'ArtmInitializeModel',
         [('master_id', int), ('args', messages.InitializeModelArgs)],
@@ -179,6 +160,11 @@ ARTM_API = [
         'ArtmRequestScore',
         [('master_id', int), ('args', messages.GetScoreValueArgs)],
         request=messages.ScoreData,
+    ),
+    CallSpec(
+        'ArtmRequestScoreArray',
+        [('master_id', int), ('args', messages.GetScoreArrayArgs)],
+        request=messages.ScoreArray,
     ),
     CallSpec(
         'ArtmRequestLoadBatch',
