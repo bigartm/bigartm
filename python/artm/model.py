@@ -73,8 +73,8 @@ class ARTM(object):
       scores(list): list of scores (objects of artm.***Score classes), default=None
       regularizers(list): list with regularizers (objects of
       artm.***Regularizer classes), default=None
-      num_document_passes(int): number of inner iterations over each document, default=1
-      reuse_theta(bool): reuse Theta from previous iteration or not, default=True
+      num_document_passes(int): number of inner iterations over each document, default=10
+      reuse_theta(bool): reuse Theta from previous iteration or not, default=False
       theta_columns_naming (string): either 'id' or 'title',
       determines how to name columns (documents) in theta dataframe, default='id'
 
@@ -96,8 +96,8 @@ class ARTM(object):
 
     # ========== CONSTRUCTOR ==========
     def __init__(self, num_topics=10, topic_names=None, num_processors=0, class_ids=None,
-                 scores=None, regularizers=None, num_document_passes=1,
-                 reuse_theta=True, cache_theta=False, theta_columns_naming='id'):
+                 scores=None, regularizers=None, num_document_passes=10,
+                 reuse_theta=False, cache_theta=False, theta_columns_naming='id'):
         self._num_processors = 0
         self._cache_theta = False
         self._num_document_passes = True
