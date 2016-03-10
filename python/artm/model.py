@@ -533,6 +533,7 @@ class ARTM(object):
             self._synchronizations_processed += 1
             self.master.clear_score_array_cache()
             self.master.fit_offline(batch_filenames=batches_list,
+                                    batch_weights=batch_vectorizer.weights,
                                     num_collection_passes=1)
 
             for name in self.scores.data.keys():
@@ -620,6 +621,7 @@ class ARTM(object):
 
         self.master.clear_score_array_cache()
         self.master.fit_online(batch_filenames=batches_list,
+                               batch_weights=batch_vectorizer.weights,
                                update_after=update_after_final,
                                apply_weight=apply_weight_final,
                                decay_weight=decay_weight_final,
