@@ -5,8 +5,10 @@ import glob
 import shutil
 import tempfile
 import codecs
+import time
 
 from pandas import DataFrame
+from threading import Thread
 
 from . import wrapper
 from wrapper import constants as const
@@ -14,8 +16,10 @@ from . import master_component as mc
 
 from .batches_utils import DICTIONARY_NAME
 from .regularizers import Regularizers
-from .scores import Scores, TopicMassPhiScore  # temp
+from .scores import Scores, ItemsProcessedScore  # temp
 from . import score_tracker
+
+ITEMS_PROCESSED_SCORE_NAME = 'ItemsProcessedScore_422ba95d-dd72-4c24-901b-a51a1718f8bf'
 
 SCORE_TRACKER = {
     const.ScoreConfig_Type_SparsityPhi: score_tracker.SparsityPhiScoreTracker,
@@ -145,6 +149,7 @@ class ARTM(object):
 
         self._regularizers = Regularizers(self._master)
         self._scores = Scores(self._master, self._model_pwt, self._model_nwt)
+        self._scores.add(ItemsProcessedScore(name=ITEMS_PROCESSED_SCORE_NAME))
 
         # add scores and regularizers if necessary
         if scores is not None:
@@ -532,8 +537,15 @@ class ARTM(object):
 
             self._synchronizations_processed += 1
             self.master.clear_score_array_cache()
-            self.master.fit_offline(batch_filenames=batches_list,
-                                    num_collection_passes=1)
+
+            #self.master.fit_offline(batches_list, None, self._num_document_passes, None)
+            artm_main_thread = Thread(target=self.master.fit_offline,
+                                      args=(batches_list, None, self._num_document_passes, None))
+            artm_main_thread.start()
+            while artm_main_thread.isAlive():
+                artm_main_thread.join(1)
+                num_processed_batches = self.master.get_score(score_name=ITEMS_PROCESSED_SCORE_NAME).num_batches
+                print num_processed_batches
 
             for name in self.scores.data.keys():
                 if name not in self.score_tracker:
