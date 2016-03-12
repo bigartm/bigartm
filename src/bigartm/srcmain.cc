@@ -229,7 +229,6 @@ struct artm_options {
   std::string read_vw_corpus;
   std::string read_cooc;
   std::string use_batches;
-  std::string use_batches_v07;
   int batch_size;
 
   // Dictionary
@@ -292,8 +291,7 @@ struct artm_options {
     const bool has_no_input =
       read_vw_corpus.empty() &&
       read_uci_docword.empty() &&
-      use_batches.empty() &&
-      use_batches_v07.empty();
+      use_batches.empty();
 
     return !has_no_input;
   }
@@ -352,11 +350,6 @@ bool verifyWritableFile(const std::string& file, bool force) {
 }
 
 bool verifyOptions(const artm_options& options) {
-  if (!options.use_batches_v07.empty() && options.save_batches.empty()) {
-    std::cerr << "--save-batches is required together with --use-batches-v07";
-    return false;
-  }
-
   if (!options.hasInput()) {
     std::string required_parameters = "--read-vw-corpus, --read-uci-docword, --use-batches";
     if (!options.write_class_predictions.empty() || !options.write_predictions.empty()) {
@@ -925,46 +918,6 @@ void WriteClassPredictions(const artm_options& options,
   }
 }
 
-// Returns true if batches were converted, otherwise false
-void upgrade_batch_07(artm_options* options) {
-  if (options->use_batches_v07.empty() || options->save_batches.empty())
-    return;
-
-  auto batch_file_names = findFilesInDirectory(options->use_batches_v07, ".batch");
-  if (batch_file_names.size() == 0)
-    throw std::runtime_error(std::string("No batches found in batch folder: ") + options->use_batches_v07);
-
-  std::cerr << "Upgrading batches from the old to the new format." << std::endl;
-
-  boost::filesystem::path target_dir(options->save_batches);
-  if (!boost::filesystem::is_directory(target_dir))
-    boost::filesystem::create_directory(target_dir);
-
-  std::vector<std::string> failed_batches;
-  for (unsigned i = 0; i < batch_file_names.size(); ++i) {
-    auto& source_file = batch_file_names[i];
-    try {
-      auto target_file = target_dir / source_file.filename();;
-      std::cerr << "Upgrading batch " << (i + 1) << " / " << batch_file_names.size();
-      ArtmUpgradeBatch_v07(source_file.string().c_str(), target_file.string().c_str());
-      std::cerr << std::endl;
-    } catch (std::exception& ex) {
-      std::cerr << ex.what() << ", batch " << source_file << " will be skipped." << std::endl;
-      failed_batches.push_back(source_file.string());
-      continue;
-    }
-  }
-
-  if (failed_batches.size() > 0) {
-    std::cerr << "WARNING: " << failed_batches.size() << " batches were not upgraded." << std::endl;
-  } else {
-    std::cerr << "All batches upgraded successfully." << std::endl;
-  }
-
-  options->use_batches = options->save_batches;
-  options->save_batches.clear();
-}
-
 int execute(const artm_options& options, int argc, char* argv[]) {
   const std::string pwt_model_name = options.pwt_model_name;
 
@@ -1254,7 +1207,6 @@ int main(int argc, char * argv[]) {
       ("read-cooc", po::value(&options.read_cooc), "read co-occurrences format")
       ("batch-size", po::value(&options.batch_size)->default_value(500), "number of items per batch")
       ("use-batches", po::value(&options.use_batches), "folder with batches to use")
-      ("use-batches-v07", po::value(&options.use_batches_v07), "folder with batches in the old format (prior to BigaRTM v0.8) to convert.")
     ;
 
     po::options_description dictionary_options("Dictionary");
@@ -1369,7 +1321,6 @@ int main(int argc, char * argv[]) {
     if (options.read_vw_corpus.empty() &&
         options.read_uci_docword.empty() &&
         options.use_batches.empty() &&
-        options.use_batches_v07.empty() &&
         options.load_model.empty() &&
         options.use_dictionary.empty())
       show_help = true;
@@ -1447,7 +1398,6 @@ int main(int argc, char * argv[]) {
       ::artm::ConfigureLogging(args);
     }
 
-    upgrade_batch_07(&options);
     return execute(options, argc, argv);
   } catch (std::exception& e) {
     std::cerr << "Exception  : " << e.what() << "\n";

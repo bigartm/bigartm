@@ -40,6 +40,7 @@ class BoolArray;
 class IntArray;
 class StringArray;
 class Item;
+class Field;
 class Batch;
 class RegularizerSettings;
 class RegularizerConfig;
@@ -979,10 +980,22 @@ class Item : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 id() const;
   inline void set_id(::google::protobuf::int32 value);
 
-  // optional string title = 2;
+  // repeated .artm.Field field = 2;
+  inline int field_size() const;
+  inline void clear_field();
+  static const int kFieldFieldNumber = 2;
+  inline const ::artm::Field& field(int index) const;
+  inline ::artm::Field* mutable_field(int index);
+  inline ::artm::Field* add_field();
+  inline const ::google::protobuf::RepeatedPtrField< ::artm::Field >&
+      field() const;
+  inline ::google::protobuf::RepeatedPtrField< ::artm::Field >*
+      mutable_field();
+
+  // optional string title = 3;
   inline bool has_title() const;
   inline void clear_title();
-  static const int kTitleFieldNumber = 2;
+  static const int kTitleFieldNumber = 3;
   inline const ::std::string& title() const;
   inline void set_title(const ::std::string& value);
   inline void set_title(const char* value);
@@ -991,10 +1004,10 @@ class Item : public ::google::protobuf::Message {
   inline ::std::string* release_title();
   inline void set_allocated_title(::std::string* title);
 
-  // repeated int32 token_id = 3;
+  // repeated int32 token_id = 4;
   inline int token_id_size() const;
   inline void clear_token_id();
-  static const int kTokenIdFieldNumber = 3;
+  static const int kTokenIdFieldNumber = 4;
   inline ::google::protobuf::int32 token_id(int index) const;
   inline void set_token_id(int index, ::google::protobuf::int32 value);
   inline void add_token_id(::google::protobuf::int32 value);
@@ -1003,10 +1016,10 @@ class Item : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_token_id();
 
-  // repeated float token_weight = 4;
+  // repeated float token_weight = 5;
   inline int token_weight_size() const;
   inline void clear_token_weight();
-  static const int kTokenWeightFieldNumber = 4;
+  static const int kTokenWeightFieldNumber = 5;
   inline float token_weight(int index) const;
   inline void set_token_weight(int index, float value);
   inline void add_token_weight(float value);
@@ -1024,13 +1037,14 @@ class Item : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
+  ::google::protobuf::RepeatedPtrField< ::artm::Field > field_;
   ::std::string* title_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > token_id_;
   ::google::protobuf::RepeatedField< float > token_weight_;
   ::google::protobuf::int32 id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -1038,6 +1052,256 @@ class Item : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static Item* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class Field : public ::google::protobuf::Message {
+ public:
+  Field();
+  virtual ~Field();
+
+  Field(const Field& from);
+
+  inline Field& operator=(const Field& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Field& default_instance();
+
+  void Swap(Field* other);
+
+  // implements Message ----------------------------------------------
+
+  Field* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Field& from);
+  void MergeFrom(const Field& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1 [default = "@body"];
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // repeated int32 token_id = 2;
+  inline int token_id_size() const;
+  inline void clear_token_id();
+  static const int kTokenIdFieldNumber = 2;
+  inline ::google::protobuf::int32 token_id(int index) const;
+  inline void set_token_id(int index, ::google::protobuf::int32 value);
+  inline void add_token_id(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      token_id() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_token_id();
+
+  // repeated int32 token_count = 3;
+  inline int token_count_size() const;
+  inline void clear_token_count();
+  static const int kTokenCountFieldNumber = 3;
+  inline ::google::protobuf::int32 token_count(int index) const;
+  inline void set_token_count(int index, ::google::protobuf::int32 value);
+  inline void add_token_count(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      token_count() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_token_count();
+
+  // repeated int32 token_offset = 4;
+  inline int token_offset_size() const;
+  inline void clear_token_offset();
+  static const int kTokenOffsetFieldNumber = 4;
+  inline ::google::protobuf::int32 token_offset(int index) const;
+  inline void set_token_offset(int index, ::google::protobuf::int32 value);
+  inline void add_token_offset(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      token_offset() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_token_offset();
+
+  // optional string string_value = 5;
+  inline bool has_string_value() const;
+  inline void clear_string_value();
+  static const int kStringValueFieldNumber = 5;
+  inline const ::std::string& string_value() const;
+  inline void set_string_value(const ::std::string& value);
+  inline void set_string_value(const char* value);
+  inline void set_string_value(const char* value, size_t size);
+  inline ::std::string* mutable_string_value();
+  inline ::std::string* release_string_value();
+  inline void set_allocated_string_value(::std::string* string_value);
+
+  // optional int64 int_value = 6;
+  inline bool has_int_value() const;
+  inline void clear_int_value();
+  static const int kIntValueFieldNumber = 6;
+  inline ::google::protobuf::int64 int_value() const;
+  inline void set_int_value(::google::protobuf::int64 value);
+
+  // optional double double_value = 7;
+  inline bool has_double_value() const;
+  inline void clear_double_value();
+  static const int kDoubleValueFieldNumber = 7;
+  inline double double_value() const;
+  inline void set_double_value(double value);
+
+  // optional string date_value = 8;
+  inline bool has_date_value() const;
+  inline void clear_date_value();
+  static const int kDateValueFieldNumber = 8;
+  inline const ::std::string& date_value() const;
+  inline void set_date_value(const ::std::string& value);
+  inline void set_date_value(const char* value);
+  inline void set_date_value(const char* value, size_t size);
+  inline ::std::string* mutable_date_value();
+  inline ::std::string* release_date_value();
+  inline void set_allocated_date_value(::std::string* date_value);
+
+  // repeated string string_array = 16;
+  inline int string_array_size() const;
+  inline void clear_string_array();
+  static const int kStringArrayFieldNumber = 16;
+  inline const ::std::string& string_array(int index) const;
+  inline ::std::string* mutable_string_array(int index);
+  inline void set_string_array(int index, const ::std::string& value);
+  inline void set_string_array(int index, const char* value);
+  inline void set_string_array(int index, const char* value, size_t size);
+  inline ::std::string* add_string_array();
+  inline void add_string_array(const ::std::string& value);
+  inline void add_string_array(const char* value);
+  inline void add_string_array(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& string_array() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_string_array();
+
+  // repeated int64 int_array = 17;
+  inline int int_array_size() const;
+  inline void clear_int_array();
+  static const int kIntArrayFieldNumber = 17;
+  inline ::google::protobuf::int64 int_array(int index) const;
+  inline void set_int_array(int index, ::google::protobuf::int64 value);
+  inline void add_int_array(::google::protobuf::int64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+      int_array() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+      mutable_int_array();
+
+  // repeated double double_array = 18;
+  inline int double_array_size() const;
+  inline void clear_double_array();
+  static const int kDoubleArrayFieldNumber = 18;
+  inline double double_array(int index) const;
+  inline void set_double_array(int index, double value);
+  inline void add_double_array(double value);
+  inline const ::google::protobuf::RepeatedField< double >&
+      double_array() const;
+  inline ::google::protobuf::RepeatedField< double >*
+      mutable_double_array();
+
+  // repeated string date_array = 19;
+  inline int date_array_size() const;
+  inline void clear_date_array();
+  static const int kDateArrayFieldNumber = 19;
+  inline const ::std::string& date_array(int index) const;
+  inline ::std::string* mutable_date_array(int index);
+  inline void set_date_array(int index, const ::std::string& value);
+  inline void set_date_array(int index, const char* value);
+  inline void set_date_array(int index, const char* value, size_t size);
+  inline ::std::string* add_date_array();
+  inline void add_date_array(const ::std::string& value);
+  inline void add_date_array(const char* value);
+  inline void add_date_array(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& date_array() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_date_array();
+
+  // repeated float token_weight = 20;
+  inline int token_weight_size() const;
+  inline void clear_token_weight();
+  static const int kTokenWeightFieldNumber = 20;
+  inline float token_weight(int index) const;
+  inline void set_token_weight(int index, float value);
+  inline void add_token_weight(float value);
+  inline const ::google::protobuf::RepeatedField< float >&
+      token_weight() const;
+  inline ::google::protobuf::RepeatedField< float >*
+      mutable_token_weight();
+
+  // @@protoc_insertion_point(class_scope:artm.Field)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_string_value();
+  inline void clear_has_string_value();
+  inline void set_has_int_value();
+  inline void clear_has_int_value();
+  inline void set_has_double_value();
+  inline void clear_has_double_value();
+  inline void set_has_date_value();
+  inline void clear_has_date_value();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  static ::std::string* _default_name_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > token_id_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > token_count_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > token_offset_;
+  ::std::string* string_value_;
+  ::google::protobuf::int64 int_value_;
+  double double_value_;
+  ::std::string* date_value_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> string_array_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int64 > int_array_;
+  ::google::protobuf::RepeatedField< double > double_array_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> date_array_;
+  ::google::protobuf::RepeatedField< float > token_weight_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(13 + 31) / 32];
+
+  friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
+  friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
+  friend void protobuf_ShutdownFile_artm_2fmessages_2eproto();
+
+  void InitAsDefaultInstance();
+  static Field* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -11397,15 +11661,40 @@ inline void Item::set_id(::google::protobuf::int32 value) {
   id_ = value;
 }
 
-// optional string title = 2;
+// repeated .artm.Field field = 2;
+inline int Item::field_size() const {
+  return field_.size();
+}
+inline void Item::clear_field() {
+  field_.Clear();
+}
+inline const ::artm::Field& Item::field(int index) const {
+  return field_.Get(index);
+}
+inline ::artm::Field* Item::mutable_field(int index) {
+  return field_.Mutable(index);
+}
+inline ::artm::Field* Item::add_field() {
+  return field_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::artm::Field >&
+Item::field() const {
+  return field_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::artm::Field >*
+Item::mutable_field() {
+  return &field_;
+}
+
+// optional string title = 3;
 inline bool Item::has_title() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void Item::set_has_title() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void Item::clear_has_title() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void Item::clear_title() {
   if (title_ != &::google::protobuf::internal::GetEmptyString()) {
@@ -11467,7 +11756,7 @@ inline void Item::set_allocated_title(::std::string* title) {
   }
 }
 
-// repeated int32 token_id = 3;
+// repeated int32 token_id = 4;
 inline int Item::token_id_size() const {
   return token_id_.size();
 }
@@ -11492,7 +11781,7 @@ Item::mutable_token_id() {
   return &token_id_;
 }
 
-// repeated float token_weight = 4;
+// repeated float token_weight = 5;
 inline int Item::token_weight_size() const {
   return token_weight_.size();
 }
@@ -11514,6 +11803,502 @@ Item::token_weight() const {
 }
 inline ::google::protobuf::RepeatedField< float >*
 Item::mutable_token_weight() {
+  return &token_weight_;
+}
+
+// -------------------------------------------------------------------
+
+// Field
+
+// optional string name = 1 [default = "@body"];
+inline bool Field::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void Field::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void Field::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void Field::clear_name() {
+  if (name_ != _default_name_) {
+    name_->assign(*_default_name_);
+  }
+  clear_has_name();
+}
+inline const ::std::string& Field::name() const {
+  return *name_;
+}
+inline void Field::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void Field::set_name(const char* value) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void Field::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field::mutable_name() {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string(*_default_name_);
+  }
+  return name_;
+}
+inline ::std::string* Field::release_name() {
+  clear_has_name();
+  if (name_ == _default_name_) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(_default_name_);
+    return temp;
+  }
+}
+inline void Field::set_allocated_name(::std::string* name) {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(_default_name_);
+  }
+}
+
+// repeated int32 token_id = 2;
+inline int Field::token_id_size() const {
+  return token_id_.size();
+}
+inline void Field::clear_token_id() {
+  token_id_.Clear();
+}
+inline ::google::protobuf::int32 Field::token_id(int index) const {
+  return token_id_.Get(index);
+}
+inline void Field::set_token_id(int index, ::google::protobuf::int32 value) {
+  token_id_.Set(index, value);
+}
+inline void Field::add_token_id(::google::protobuf::int32 value) {
+  token_id_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+Field::token_id() const {
+  return token_id_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+Field::mutable_token_id() {
+  return &token_id_;
+}
+
+// repeated int32 token_count = 3;
+inline int Field::token_count_size() const {
+  return token_count_.size();
+}
+inline void Field::clear_token_count() {
+  token_count_.Clear();
+}
+inline ::google::protobuf::int32 Field::token_count(int index) const {
+  return token_count_.Get(index);
+}
+inline void Field::set_token_count(int index, ::google::protobuf::int32 value) {
+  token_count_.Set(index, value);
+}
+inline void Field::add_token_count(::google::protobuf::int32 value) {
+  token_count_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+Field::token_count() const {
+  return token_count_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+Field::mutable_token_count() {
+  return &token_count_;
+}
+
+// repeated int32 token_offset = 4;
+inline int Field::token_offset_size() const {
+  return token_offset_.size();
+}
+inline void Field::clear_token_offset() {
+  token_offset_.Clear();
+}
+inline ::google::protobuf::int32 Field::token_offset(int index) const {
+  return token_offset_.Get(index);
+}
+inline void Field::set_token_offset(int index, ::google::protobuf::int32 value) {
+  token_offset_.Set(index, value);
+}
+inline void Field::add_token_offset(::google::protobuf::int32 value) {
+  token_offset_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+Field::token_offset() const {
+  return token_offset_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+Field::mutable_token_offset() {
+  return &token_offset_;
+}
+
+// optional string string_value = 5;
+inline bool Field::has_string_value() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void Field::set_has_string_value() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void Field::clear_has_string_value() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void Field::clear_string_value() {
+  if (string_value_ != &::google::protobuf::internal::GetEmptyString()) {
+    string_value_->clear();
+  }
+  clear_has_string_value();
+}
+inline const ::std::string& Field::string_value() const {
+  return *string_value_;
+}
+inline void Field::set_string_value(const ::std::string& value) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(value);
+}
+inline void Field::set_string_value(const char* value) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(value);
+}
+inline void Field::set_string_value(const char* value, size_t size) {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    string_value_ = new ::std::string;
+  }
+  string_value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field::mutable_string_value() {
+  set_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    string_value_ = new ::std::string;
+  }
+  return string_value_;
+}
+inline ::std::string* Field::release_string_value() {
+  clear_has_string_value();
+  if (string_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = string_value_;
+    string_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Field::set_allocated_string_value(::std::string* string_value) {
+  if (string_value_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete string_value_;
+  }
+  if (string_value) {
+    set_has_string_value();
+    string_value_ = string_value;
+  } else {
+    clear_has_string_value();
+    string_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// optional int64 int_value = 6;
+inline bool Field::has_int_value() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void Field::set_has_int_value() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void Field::clear_has_int_value() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void Field::clear_int_value() {
+  int_value_ = GOOGLE_LONGLONG(0);
+  clear_has_int_value();
+}
+inline ::google::protobuf::int64 Field::int_value() const {
+  return int_value_;
+}
+inline void Field::set_int_value(::google::protobuf::int64 value) {
+  set_has_int_value();
+  int_value_ = value;
+}
+
+// optional double double_value = 7;
+inline bool Field::has_double_value() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void Field::set_has_double_value() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void Field::clear_has_double_value() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void Field::clear_double_value() {
+  double_value_ = 0;
+  clear_has_double_value();
+}
+inline double Field::double_value() const {
+  return double_value_;
+}
+inline void Field::set_double_value(double value) {
+  set_has_double_value();
+  double_value_ = value;
+}
+
+// optional string date_value = 8;
+inline bool Field::has_date_value() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void Field::set_has_date_value() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void Field::clear_has_date_value() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void Field::clear_date_value() {
+  if (date_value_ != &::google::protobuf::internal::GetEmptyString()) {
+    date_value_->clear();
+  }
+  clear_has_date_value();
+}
+inline const ::std::string& Field::date_value() const {
+  return *date_value_;
+}
+inline void Field::set_date_value(const ::std::string& value) {
+  set_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    date_value_ = new ::std::string;
+  }
+  date_value_->assign(value);
+}
+inline void Field::set_date_value(const char* value) {
+  set_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    date_value_ = new ::std::string;
+  }
+  date_value_->assign(value);
+}
+inline void Field::set_date_value(const char* value, size_t size) {
+  set_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    date_value_ = new ::std::string;
+  }
+  date_value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field::mutable_date_value() {
+  set_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    date_value_ = new ::std::string;
+  }
+  return date_value_;
+}
+inline ::std::string* Field::release_date_value() {
+  clear_has_date_value();
+  if (date_value_ == &::google::protobuf::internal::GetEmptyString()) {
+    return NULL;
+  } else {
+    ::std::string* temp = date_value_;
+    date_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    return temp;
+  }
+}
+inline void Field::set_allocated_date_value(::std::string* date_value) {
+  if (date_value_ != &::google::protobuf::internal::GetEmptyString()) {
+    delete date_value_;
+  }
+  if (date_value) {
+    set_has_date_value();
+    date_value_ = date_value;
+  } else {
+    clear_has_date_value();
+    date_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+  }
+}
+
+// repeated string string_array = 16;
+inline int Field::string_array_size() const {
+  return string_array_.size();
+}
+inline void Field::clear_string_array() {
+  string_array_.Clear();
+}
+inline const ::std::string& Field::string_array(int index) const {
+  return string_array_.Get(index);
+}
+inline ::std::string* Field::mutable_string_array(int index) {
+  return string_array_.Mutable(index);
+}
+inline void Field::set_string_array(int index, const ::std::string& value) {
+  string_array_.Mutable(index)->assign(value);
+}
+inline void Field::set_string_array(int index, const char* value) {
+  string_array_.Mutable(index)->assign(value);
+}
+inline void Field::set_string_array(int index, const char* value, size_t size) {
+  string_array_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field::add_string_array() {
+  return string_array_.Add();
+}
+inline void Field::add_string_array(const ::std::string& value) {
+  string_array_.Add()->assign(value);
+}
+inline void Field::add_string_array(const char* value) {
+  string_array_.Add()->assign(value);
+}
+inline void Field::add_string_array(const char* value, size_t size) {
+  string_array_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Field::string_array() const {
+  return string_array_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Field::mutable_string_array() {
+  return &string_array_;
+}
+
+// repeated int64 int_array = 17;
+inline int Field::int_array_size() const {
+  return int_array_.size();
+}
+inline void Field::clear_int_array() {
+  int_array_.Clear();
+}
+inline ::google::protobuf::int64 Field::int_array(int index) const {
+  return int_array_.Get(index);
+}
+inline void Field::set_int_array(int index, ::google::protobuf::int64 value) {
+  int_array_.Set(index, value);
+}
+inline void Field::add_int_array(::google::protobuf::int64 value) {
+  int_array_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+Field::int_array() const {
+  return int_array_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+Field::mutable_int_array() {
+  return &int_array_;
+}
+
+// repeated double double_array = 18;
+inline int Field::double_array_size() const {
+  return double_array_.size();
+}
+inline void Field::clear_double_array() {
+  double_array_.Clear();
+}
+inline double Field::double_array(int index) const {
+  return double_array_.Get(index);
+}
+inline void Field::set_double_array(int index, double value) {
+  double_array_.Set(index, value);
+}
+inline void Field::add_double_array(double value) {
+  double_array_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< double >&
+Field::double_array() const {
+  return double_array_;
+}
+inline ::google::protobuf::RepeatedField< double >*
+Field::mutable_double_array() {
+  return &double_array_;
+}
+
+// repeated string date_array = 19;
+inline int Field::date_array_size() const {
+  return date_array_.size();
+}
+inline void Field::clear_date_array() {
+  date_array_.Clear();
+}
+inline const ::std::string& Field::date_array(int index) const {
+  return date_array_.Get(index);
+}
+inline ::std::string* Field::mutable_date_array(int index) {
+  return date_array_.Mutable(index);
+}
+inline void Field::set_date_array(int index, const ::std::string& value) {
+  date_array_.Mutable(index)->assign(value);
+}
+inline void Field::set_date_array(int index, const char* value) {
+  date_array_.Mutable(index)->assign(value);
+}
+inline void Field::set_date_array(int index, const char* value, size_t size) {
+  date_array_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Field::add_date_array() {
+  return date_array_.Add();
+}
+inline void Field::add_date_array(const ::std::string& value) {
+  date_array_.Add()->assign(value);
+}
+inline void Field::add_date_array(const char* value) {
+  date_array_.Add()->assign(value);
+}
+inline void Field::add_date_array(const char* value, size_t size) {
+  date_array_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Field::date_array() const {
+  return date_array_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Field::mutable_date_array() {
+  return &date_array_;
+}
+
+// repeated float token_weight = 20;
+inline int Field::token_weight_size() const {
+  return token_weight_.size();
+}
+inline void Field::clear_token_weight() {
+  token_weight_.Clear();
+}
+inline float Field::token_weight(int index) const {
+  return token_weight_.Get(index);
+}
+inline void Field::set_token_weight(int index, float value) {
+  token_weight_.Set(index, value);
+}
+inline void Field::add_token_weight(float value) {
+  token_weight_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< float >&
+Field::token_weight() const {
+  return token_weight_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+Field::mutable_token_weight() {
   return &token_weight_;
 }
 

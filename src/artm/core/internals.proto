@@ -15,39 +15,3 @@ message DataLoaderCacheEntry {
   repeated string item_title = 7;
   repeated IntArray topic_index = 8;
 }
-
-// Represents a unit of textual information.
-message Item_v07 {
-  optional int32 id = 1;
-  repeated Field_v07 field = 2;
-  optional string title = 3;
-}
-
-// Represents a field withing an item.
-message Field_v07 {
-  optional string name = 1 [default = "@body"];
-  repeated int32 token_id = 2;
-  repeated int32 token_count = 3;  // obsolete in BigARTM v0.7.2
-  repeated int32 token_offset = 4;
-
-  optional string string_value = 5;
-  optional int64 int_value = 6;
-  optional double double_value = 7;
-  optional string date_value = 8;
-
-  repeated string string_array = 16;
-  repeated int64 int_array = 17;
-  repeated double double_array = 18;
-  repeated string date_array = 19;
-
-  repeated float token_weight = 20;
-}
-
-// Represents a set of items.
-message Batch_v07 {
-  repeated string token = 1;
-  repeated string class_id = 2;
-  repeated Item_v07 item = 3;
-  optional string description = 4;
-  optional string id = 5;
-}

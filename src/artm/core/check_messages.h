@@ -142,7 +142,7 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
   return ss.str();
 }
 
-inline std::string DescribeErrors(const ::artm::core::Batch_v07& message) {
+inline std::string DescribeErrors(const ::artm::Batch& message) {
   std::stringstream ss;
   if (message.has_id()) {
     try {
@@ -190,57 +190,6 @@ inline std::string DescribeErrors(const ::artm::core::Batch_v07& message) {
       }
     }
   }
-
-  return ss.str();
-}
-
-inline std::string DescribeErrors(const ::artm::Batch& message) {
-  std::stringstream ss;
-  if (message.has_id()) {
-    try {
-      boost::lexical_cast<boost::uuids::uuid>(message.id());
-    }
-    catch (...) {
-      ss << "Batch.id must be GUID, got: " << message.id();
-      return ss.str();
-    }
-  } else {
-    ss << "Batch.id is not specified";
-    return ss.str();
-  }
-
-  const bool has_tokens = (message.token_size() > 0);
-  if (!has_tokens && (message.class_id_size() > 0)) {
-    ss << "Empty Batch.token require that Batch.class_id must also be empty, batch.id = " << message.id();
-    return ss.str();
-  }
-
-  if (has_tokens && (message.class_id_size() != message.token_size())) {
-    ss << "Length mismatch in fields Batch.class_id and Batch.token, batch.id = " << message.id();
-    return ss.str();
-  }
-
-  int total_length = 0;
-  for (int item_id = 0; item_id < message.item_size(); ++item_id) {
-    const Item& item = message.item(item_id);
-    if (item.token_weight_size() != item.token_id_size()) {
-      ss << "Length mismatch in field Batch.item(" << item_id << ").token_weight and token_id; ";
-      break;
-    }
-
-    total_length += item.token_id_size();
-    for (int token_index = 0; token_index < item.token_id_size(); token_index++) {
-      int token_id = item.token_id(token_index);
-      if ((token_id < 0) || (has_tokens && (token_id >= message.token_size()))) {
-        ss << "Value " << token_id << " in Batch.Item(" << item_id
-            << ").token_id is negative or exceeds Batch.token_size";
-        return ss.str();
-      }
-    }
-  }
-
-  if (total_length == 0)
-    ss << "Batch " << message.id() << " is empty or was saved with an old format (prior to BigARTM v0.8)";
 
   return ss.str();
 }
@@ -535,7 +484,7 @@ inline void FixMessage(::artm::TopicModel* message) {
 }
 
 template<>
-inline void FixMessage(::artm::core::Batch_v07* message) {
+inline void FixMessage(::artm::Batch* message) {
   if (message->class_id_size() == 0) {
     for (int i = 0; i < message->token_size(); ++i) {
       message->add_class_id(DefaultClass);
@@ -553,14 +502,15 @@ inline void FixMessage(::artm::core::Batch_v07* message) {
       }
     }
   }
-}
 
-template<>
-inline void FixMessage(::artm::Batch* message) {
-  if (message->class_id_size() == 0) {
-    for (int i = 0; i < message->token_size(); ++i) {
-      message->add_class_id(DefaultClass);
+  // Upgrade away from Field
+  for (auto& item : *message->mutable_item()) {
+    for (auto& field : *item.mutable_field()) {
+      item.mutable_token_id()->MergeFrom(field.token_id());
+      item.mutable_token_weight()->MergeFrom(field.token_weight());
     }
+
+    item.clear_field();
   }
 }
 

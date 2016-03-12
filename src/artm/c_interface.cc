@@ -145,13 +145,6 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmUpgradeBatch_v07(const char* source_path, const char* target_path) {
-  try {
-    ::artm::core::BatchHelpers::UpgradeBatch_v07(source_path, target_path);
-    return ARTM_SUCCESS;
-  } CATCH_EXCEPTIONS;
-}
-
 int ArtmCopyRequestResult(int length, char* address) {
   ::artm::CopyRequestResultArgs args;
   std::string blob = args.SerializeAsString();

@@ -181,10 +181,6 @@ ARTM_API = [
         [('filename', str), ('batch', messages.Batch)],
     ),
     CallSpec(
-        'ArtmUpgradeBatch_v07',
-        [('source_path', str), ('target_path', str)],
-    ),
-    CallSpec(
         'ArtmCopyRequestResultEx',
         [('array', numpy.ndarray), ('args', messages.CopyRequestResultArgs)],
     ),
