@@ -29,9 +29,31 @@ message StringArray {
 // Represents a unit of textual information.
 message Item {
   optional int32 id = 1;
-  optional string title = 2;
-  repeated int32 token_id = 3;
-  repeated float token_weight = 4;
+  repeated Field field = 2;  // obsolete in BigARTM v0.8.0
+  optional string title = 3;
+  repeated int32 token_id = 4;
+  repeated float token_weight = 5;
+}
+
+// Represents a field withing an item.
+// Obsolete in BigARTM v0.8.0
+message Field {
+  optional string name = 1 [default = "@body"];
+  repeated int32 token_id = 2;
+  repeated int32 token_count = 3;  // obsolete in BigARTM v0.7.2
+  repeated int32 token_offset = 4;
+
+  optional string string_value = 5;
+  optional int64 int_value = 6;
+  optional double double_value = 7;
+  optional string date_value = 8;
+
+  repeated string string_array = 16;
+  repeated int64 int_array = 17;
+  repeated double double_array = 18;
+  repeated string date_array = 19;
+
+  repeated float token_weight = 20;
 }
 
 // Represents a set of items.

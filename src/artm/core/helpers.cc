@@ -346,43 +346,5 @@ bool BatchHelpers::PopulateThetaMatrixFromCacheEntry(
   return true;
 }
 
-void BatchHelpers::UpgradeBatch_v07(const char* source_path, const char* target_path) {
-  std::vector<boost::filesystem::path> batch_names;
-
-  const bool is_single_file =
-    (boost::filesystem::exists(source_path) &&
-     boost::filesystem::is_regular_file(source_path));
-
-  if (is_single_file)
-    batch_names.push_back(boost::filesystem::path(source_path));
-  else
-    batch_names = ListAllBatches(source_path);
-
-  for (auto& batch_name : batch_names) {
-    ::artm::core::Batch_v07 batch_v07;
-    ::artm::core::BatchHelpers::LoadMessage(batch_name.string(), &batch_v07);
-
-    ::artm::Batch batch;
-    batch.mutable_token()->Swap(batch_v07.mutable_token());
-    batch.mutable_class_id()->Swap(batch_v07.mutable_class_id());
-    if (batch_v07.has_description()) batch.set_description(batch_v07.description());
-    if (batch_v07.has_id()) batch.set_id(batch_v07.id());
-    for (auto& item_v07 : batch_v07.item()) {
-      ::artm::Item* item = batch.add_item();
-      if (item_v07.has_id()) item->set_id(item_v07.id());
-      if (item_v07.has_title()) item->set_title(item_v07.title());
-      for (auto& field_v07 : item_v07.field()) {
-        item->mutable_token_id()->MergeFrom(field_v07.token_id());
-        item->mutable_token_weight()->MergeFrom(field_v07.token_weight());
-      }
-    }
-
-    if (is_single_file)
-      ::artm::core::BatchHelpers::SaveMessage(target_path, batch);
-    else
-      ::artm::core::BatchHelpers::SaveMessage(batch_name.filename().string(), target_path, batch);
-  }
-}
-
 }  // namespace core
 }  // namespace artm
