@@ -100,7 +100,7 @@ class ARTM(object):
                  reuse_theta=False, cache_theta=False, theta_columns_naming='id'):
         self._num_processors = 0
         self._cache_theta = False
-        self._num_document_passes = True
+        self._num_document_passes = num_document_passes
         self._reuse_theta = True
         self._theta_columns_naming = 'id'
 
@@ -123,7 +123,7 @@ class ARTM(object):
         if isinstance(reuse_theta, bool):
             self._reuse_theta = reuse_theta
 
-        if isinstance(num_document_passes, bool):
+        if isinstance(num_document_passes, int):
             self._num_document_passes = num_document_passes
 
         if theta_columns_naming in ['id', 'title']:
@@ -846,6 +846,11 @@ class ARTM(object):
         self._lib.ArtmDisposeModel(self.master.master_id, self.model_pwt)
         self._lib.ArtmDisposeModel(self.master.master_id, self.model_nwt)
         self.master.initialize_model(model_name=self.model_pwt,
+                                     dictionary_name=dictionary_name,
+                                     num_topics=self.num_topics,
+                                     topic_names=self._topic_names,
+                                     seed=seed)
+        self.master.initialize_model(model_name=self.model_nwt,
                                      dictionary_name=dictionary_name,
                                      num_topics=self.num_topics,
                                      topic_names=self._topic_names,
