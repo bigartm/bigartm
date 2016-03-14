@@ -35,9 +35,10 @@ install:
   - pushd python && python setup.py install && popd
 
 before_script:
-  - pushd python/tests/wrapper && ./download_datasets.sh && popd
+  - pushd python/tests && ./download_datasets.sh && popd
 
 script:
   - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests/wrapper && py.test && popd
+  - pushd python/tests/artm && py.test && popd
