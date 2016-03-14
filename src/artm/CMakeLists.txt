@@ -13,8 +13,8 @@ add_custom_command(
     COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./
     COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/core/internals.proto --cpp_out=./
     COMMENT "Generating headers and sources from *.proto files"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..
-    )
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..)
+
 # add custom target
 # to bind targets with *.proto dependencies and
 # *.proto generation
@@ -22,7 +22,9 @@ add_custom_command(
 add_custom_target(proto_generation ALL
     DEPENDS
     ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
-    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h)
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h)
 
 # make separate objective files for every 'external' *.pb.cc file
 # rationale - compiling every *.pb.cc file for different targets
@@ -31,6 +33,11 @@ add_library(messages_proto OBJECT
     messages.pb.cc
     messages.pb.h)
 add_dependencies(messages_proto proto_generation)
+
+add_library(internals_proto OBJECT
+    core/internals.pb.cc
+    core/internals.pb.h)
+add_dependencies(internals_proto proto_generation)
 
 # Static 'artm' library
 
@@ -59,8 +66,6 @@ set(SRC_LIST
 	core/helpers.h
 	core/instance.cc
 	core/instance.h
-	core/internals.pb.cc
-	core/internals.pb.h
 	core/master_component.cc
 	core/master_component.h
 	core/processor.cc
@@ -143,7 +148,9 @@ source_group("utility"             FILES ${SRC_LIST_UTILITY}             )
 source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
 add_definitions("-Dartm_EXPORTS")
-add_library(artm-static STATIC ${SRC_LIST} $<TARGET_OBJECTS:messages_proto>)
+add_library(artm-static STATIC ${SRC_LIST}
+    $<TARGET_OBJECTS:messages_proto>
+    $<TARGET_OBJECTS:internals_proto>)
 
 
 # Shared 'artm' library
@@ -156,7 +163,9 @@ set(ARTM_LIB_DEPS  artm-static
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES})
 
-add_library(artm SHARED ${SRC_LIST} $<TARGET_OBJECTS:messages_proto>)
+add_library(artm SHARED ${SRC_LIST}
+    $<TARGET_OBJECTS:messages_proto>
+    $<TARGET_OBJECTS:internals_proto>)
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 
