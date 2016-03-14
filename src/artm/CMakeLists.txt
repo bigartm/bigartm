@@ -29,12 +29,12 @@ add_custom_target(proto_generation ALL
 # make separate objective files for every 'external' *.pb.cc file
 # rationale - compiling every *.pb.cc file for different targets
 # is very computationaly intensive
-add_library(messages_proto OBJECT
+add_library(messages_proto STATIC EXCLUDE_FROM_ALL
     messages.pb.cc
     messages.pb.h)
 add_dependencies(messages_proto proto_generation)
 
-add_library(internals_proto OBJECT
+add_library(internals_proto STATIC EXCLUDE_FROM_ALL
     core/internals.pb.cc
     core/internals.pb.h)
 add_dependencies(internals_proto proto_generation)
@@ -148,9 +148,9 @@ source_group("utility"             FILES ${SRC_LIST_UTILITY}             )
 source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
 add_definitions("-Dartm_EXPORTS")
-add_library(artm-static STATIC ${SRC_LIST}
-    $<TARGET_OBJECTS:messages_proto>
-    $<TARGET_OBJECTS:internals_proto>)
+add_library(artm-static STATIC ${SRC_LIST})
+target_link_libraries(artm-static messages_proto internals_proto)
+add_dependencies(artm-static messages_proto internals_proto)
 
 
 # Shared 'artm' library
@@ -163,9 +163,7 @@ set(ARTM_LIB_DEPS  artm-static
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES})
 
-add_library(artm SHARED ${SRC_LIST}
-    $<TARGET_OBJECTS:messages_proto>
-    $<TARGET_OBJECTS:internals_proto>)
+add_library(artm SHARED ${SRC_LIST})
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 
@@ -177,4 +175,3 @@ else()
   # FIXME: install headers to /usr/include, protobuf and compiled messages --- to appropriate path
   #install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
 endif()
-

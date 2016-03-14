@@ -25,8 +25,10 @@ set(SRC_LIST
 )
 
 add_definitions("-Dartm_EXPORTS")
-add_executable(artm_tests ${SRC_LIST} $<TARGET_OBJECTS:messages_proto>)
-target_link_libraries(artm_tests artm-static
+add_executable(artm_tests ${SRC_LIST})
+add_dependencies(artm_tests messages_proto)
+target_link_libraries(artm_tests messages_proto
+                                 artm-static
                                  ${Boost_LIBRARIES}
                                  ${PROTOBUF_LIBRARIES}
                                  ${GLOG_LIBRARIES})
