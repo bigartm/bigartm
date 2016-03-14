@@ -1,11 +1,32 @@
 include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 
+# add custom command for creating from *.proto templates
+add_custom_command(
+    OUTPUT
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
+    DEPENDS
+    ${CMAKE_CURRENT_LIST_DIR}/messages.proto
+    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./ --proto_path=./
+    COMMENT "Generating headers and sources from *.proto files"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..
+    )
+# add custom target
+# to bind targets with *.proto dependencies and
+# *.proto generation
+# as a result, we specify the order
+add_custom_target(proto_generation ALL
+    DEPENDS
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h)
+
 # make separate objective files for every 'external' *.pb.cc file
 # rationale - compiling every *.pb.cc file for different targets
 # is very computationaly intensive
 add_library(messages_proto OBJECT
     messages.pb.cc
     messages.pb.h)
+add_dependencies(messages_proto proto_generation)
 
 # Static 'artm' library
 
@@ -104,8 +125,6 @@ FILE(GLOB_RECURSE SRC_LIST_OTHER
 	score_calculator_interface.h
 	c_interface.cc
 	c_interface.h
-	messages.pb.cc
-	messages.pb.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_CORE                core/*.cc                core/*.h                )
