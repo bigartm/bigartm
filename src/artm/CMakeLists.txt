@@ -5,9 +5,13 @@ add_custom_command(
     OUTPUT
     ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
     ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h
     DEPENDS
     ${CMAKE_CURRENT_LIST_DIR}/messages.proto
-    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./ --proto_path=./
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.proto
+    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./
+    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/core/internals.proto --cpp_out=./
     COMMENT "Generating headers and sources from *.proto files"
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..
     )
