@@ -5,14 +5,13 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/../)
 set(SRC_LIST
 	srcmain.cc
 	${CMAKE_SOURCE_DIR}/src/artm/cpp_interface.cc
-	${CMAKE_SOURCE_DIR}/src/artm/messages.pb.cc
 )
 
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC ON)
 find_package(Boost COMPONENTS REQUIRED ${BIGARTM_BOOST_COMPONENTS})
 
-add_executable(bigartm ${SRC_LIST})
+add_executable(bigartm ${SRC_LIST} $<TARGET_OBJECTS:messages_proto>)
 
 if (WIN32)
   target_link_libraries(bigartm artm ${Boost_LIBRARIES})

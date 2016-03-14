@@ -22,11 +22,10 @@ set(SRC_LIST
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest_main.cc
 	${3RD_PARTY_DIR}/gtest/fused-src/gtest/gtest-all.cc
 	${CMAKE_SOURCE_DIR}/src/artm/cpp_interface.cc
-	${CMAKE_SOURCE_DIR}/src/artm/messages.pb.cc
 )
 
 add_definitions("-Dartm_EXPORTS")
-add_executable(artm_tests ${SRC_LIST})
+add_executable(artm_tests ${SRC_LIST} $<TARGET_OBJECTS:messages_proto>)
 target_link_libraries(artm_tests artm-static
                                  ${Boost_LIBRARIES}
                                  ${PROTOBUF_LIBRARIES}

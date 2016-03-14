@@ -1,12 +1,17 @@
 include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 
+# make separate objective files for every 'external' *.pb.cc file
+# rationale - compiling every *.pb.cc file for different targets
+# is very computationaly intensive
+add_library(messages_proto OBJECT
+    messages.pb.cc
+    messages.pb.h)
+
 # Static 'artm' library
 
 set(SRC_LIST
 	c_interface.cc
 	c_interface.h
-	messages.pb.cc
-	messages.pb.h
 	regularizer_interface.cc
 	regularizer_interface.h
 	score_calculator_interface.cc
@@ -115,7 +120,7 @@ source_group("utility"             FILES ${SRC_LIST_UTILITY}             )
 source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
 add_definitions("-Dartm_EXPORTS")
-add_library(artm-static STATIC ${SRC_LIST})
+add_library(artm-static STATIC ${SRC_LIST} $<TARGET_OBJECTS:messages_proto>)
 
 
 # Shared 'artm' library
@@ -128,7 +133,7 @@ set(ARTM_LIB_DEPS  artm-static
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES})
 
-add_library(artm SHARED ${SRC_LIST})
+add_library(artm SHARED ${SRC_LIST} $<TARGET_OBJECTS:messages_proto>)
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 
