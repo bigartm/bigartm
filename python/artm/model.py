@@ -531,7 +531,6 @@ class ARTM(object):
             _topic_selection_regularizer_func(self, self._regularizers)
 
             self._synchronizations_processed += 1
-            self.master.clear_score_array_cache()
             self.master.fit_offline(batch_filenames=batches_list,
                                     batch_weights=batch_vectorizer.weights,
                                     num_collection_passes=1)
@@ -540,11 +539,6 @@ class ARTM(object):
                 if name not in self.score_tracker:
                     self.score_tracker[name] =\
                         SCORE_TRACKER[self.scores[name].type](self.scores[name])
-
-                    for _ in xrange(self._synchronizations_processed - 1):
-                        self.score_tracker[name].add()
-
-                self.score_tracker[name].add(self.scores[name])
 
     def fit_online(self, batch_vectorizer=None, tau0=1024.0, kappa=0.7, update_every=1,
                    apply_weight=None, decay_weight=None, update_after=None,
@@ -619,7 +613,6 @@ class ARTM(object):
         # temp code for easy using of TopicSelectionThetaRegularizer from Python
         _topic_selection_regularizer_func(self, self._regularizers)
 
-        self.master.clear_score_array_cache()
         self.master.fit_online(batch_filenames=batches_list,
                                batch_weights=batch_vectorizer.weights,
                                update_after=update_after_final,
@@ -631,11 +624,6 @@ class ARTM(object):
             if name not in self.score_tracker:
                 self.score_tracker[name] =\
                     SCORE_TRACKER[self.scores[name].type](self.scores[name])
-
-                for _ in xrange(self._synchronizations_processed - 1):
-                    self.score_tracker[name].add()
-
-            self.score_tracker[name].add(self.scores[name])
 
         self._synchronizations_processed += len(update_after_final)
 

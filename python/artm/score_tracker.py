@@ -1,6 +1,3 @@
-import collections
-
-
 __all__ = [
     'SparsityPhiScoreTracker',
     'ItemsProcessedScoreTracker',
@@ -13,838 +10,140 @@ __all__ = [
 ]
 
 
-class SparsityPhiScoreTracker(object):
-    """SparsityPhiScoreTracker represents a result of counting
-    SparsityPhiScore (private class)
+def _get_score(score_name, master, field_attrs, last=False):
+    def __getattr(data, field):
+        try:
+            _ = (e for e in getattr(data, field))
+        except TypeError:
+            return getattr(data, field).value
 
-    Args:
-      score (reference): reference to Score object, no default
-    """
+        return getattr(data, field)
 
+    def __create_dict(keys, values):
+        result_dict = {}
+        for k, v in zip(keys, values):
+            if k not in result_dict:
+                result_dict[k] = []
+            result_dict[k].append(v)
+
+        if len(keys) == len(result_dict.keys()):
+            for k in result_dict.keys():
+                result_dict[k] = result_dict[k][-1]
+
+        return result_dict
+
+    data_array = master.get_score_array(score_name)
+
+    if field_attrs[1] == 'optional' and field_attrs[2] == 'scalar':
+        score_list = [getattr(data, field_attrs[0]) for data in data_array]
+        return score_list[-1] if last else score_list
+
+    else:
+        score_list_list = [__getattr(data, field_attrs[0]) for data in data_array]
+
+        if ((field_attrs[1] == 'repeated' and field_attrs[2] == 'scalar') or
+            (field_attrs[1] == 'optional' and field_attrs[2] == 'array')):  # noqa
+            if field_attrs[3] is None:
+                return score_list_list[-1] if last else score_list_list
+            else:
+                score_topic_list_list = (zip(score_list_list,
+                    [__getattr(data, field_attrs[3]) for data in data_array]))  # noqa
+                score_list_dict = [__create_dict(t, s) for s, t in score_topic_list_list]
+                return score_list_dict[-1] if last else score_list_dict
+
+        elif field_attrs[1] == 'repeated' and field_attrs[2] == 'array':
+            score_topic_list_list = zip(score_list_list,
+                                        [__getattr(data, field_attrs[3]) for data in data_array])
+            score_list_dict = ([{topic: score_array.value for (score_array, topic) in
+                zip(score_arrays, topics)} for score_arrays, topics in score_topic_list_list])  # noqa
+            return score_list_dict[-1] if last else score_list_dict
+
+
+def _set_properties(class_ref, attr_data):
+    for name, params in attr_data.iteritems():
+        _p = [name, 'optional', 'scalar', 'topic_name']
+        for k, v in params.iteritems():
+            _p[0] = v if k == 'proto_name' else _p[0]
+            _p[1] = v if k == 'proto_qualifier' else _p[1]
+            _p[2] = v if k == 'proto_type' else _p[2]
+            _p[3] = v if k == 'key_field_name' else _p[3]
+
+        setattr(class_ref,
+                name,
+                property(lambda self, p=_p: _get_score(self._name, self._master, p)))
+        setattr(class_ref,
+                'last_{}'.format(name),
+                property(lambda self, p=_p: _get_score(self._name, self._master, p, True)))
+
+
+class BaseScoreTracker(object):
     def __init__(self, score):
         self._name = score.name
-        self._value = []
-        self._zero_tokens = []
-        self._total_tokens = []
+        self._master = score.master
 
-    def add(self, score=None):
-        """SparsityPhiScoreTracker.add() --- add info about score after synchronization
 
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._value.append(_data.value)
-                self._zero_tokens.append(_data.zero_tokens)
-                self._total_tokens.append(_data.total_tokens)
-        else:
-            self._value.append(None)
-            self._zero_tokens.append(None)
-            self._total_tokens.append(None)
+SparsityPhiScoreTracker = type('SparsityPhiScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(SparsityPhiScoreTracker, {'value': {}, 'zero_tokens': {}, 'total_tokens': {}})
 
-    @property
-    def name(self):
-        return self._name
 
-    @property
-    def value(self):
-        """Returns:
-          list of double: value of Phi sparsity on synchronizations
-        """
-        return self._value
+SparsityThetaScoreTracker = type('SparsityThetaScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(SparsityThetaScoreTracker, {'value': {}, 'zero_topics': {}, 'total_topics': {}})
 
-    @property
-    def zero_tokens(self):
-        """Returns:
-          list of int: number of zero rows in Phi on synchronizations
-        """
-        return self._zero_tokens
 
-    @property
-    def total_tokens(self):
-        """Returns:
-          list of int: total number of rows in Phi on synchronizations
-        """
-        return self._total_tokens
+PerplexityScoreTracker = type('PerplexityScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {},
+                                         'zero_tokens': {'proto_name': 'zero_words'},
+                                         'theta_sparsity_value': {},
+                                         'theta_sparsity_zero_topics': {},
+                                         'theta_sparsity_total_topics': {}})
 
-    @property
-    def last_value(self):
-        """Returns:
-        double: value of Phi sparsity on the last synchronization
-        """
-        return self._value[-1]
 
-    @property
-    def last_zero_tokens(self):
-        """Returns:
-        int: number of zero rows in Phi on the last synchronization
-        """
-        return self._zero_tokens[-1]
+ItemsProcessedScoreTracker = type('ItemsProcessedScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(ItemsProcessedScoreTracker, {'value': {}})
 
-    @property
-    def last_total_tokens(self):
-        """Returns:
-        int: total number of rows in Phi on the last synchronization
-        """
-        return self._total_tokens[-1]
 
+TopTokensScoreTracker = type('TopTokensScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(TopTokensScoreTracker, {'num_tokens': {'proto_name': 'num_entries'},
+                                        'tokens': {'proto_name': 'token',
+                                                   'proto_qualifier': 'repeated'},
+                                        'weights': {'proto_name': 'weight',
+                                                    'proto_qualifier': 'repeated'},
+                                        'coherence': {'proto_type': 'array'},
+                                        'average_coherence': {}})
 
-###################################################################################################
-class SparsityThetaScoreTracker(object):
-    """SparsityThetaScoreTracker represents a result of counting
-    SparsityThetaScore (private class)
 
-    Args:
-      score (reference): reference to Score object, no default
-    """
+TopicKernelScoreTracker = type('TopicKernelScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(TopicKernelScoreTracker, {'tokens': {'proto_name': 'kernel_tokens',
+                                                     'proto_qualifier': 'repeated',
+                                                     'proto_type': 'array'},
+                                          'size': {'proto_name': 'kernel_size',
+                                                   'proto_type': 'array'},
+                                          'contrast': {'proto_name': 'kernel_contrast',
+                                                       'proto_type': 'array'},
+                                          'purity': {'proto_name': 'kernel_purity',
+                                                     'proto_type': 'array'},
+                                          'coherence': {'proto_type': 'array'},
+                                          'average_size': {'proto_name': 'average_kernel_size'},
+                                          'average_contrast': {'proto_name': 'average_kernel_contrast'},
+                                          'average_purity': {'proto_name': 'average_kernel_purity'},
+                                          'average_coherence': {}})
 
-    def __init__(self, score):
-        self._name = score.name
-        self._value = []
-        self._zero_topics = []
-        self._total_topics = []
 
-    def add(self, score=None):
-        """SparsityThetaScoreTracker.add() --- add info about score
-        after synchronization
+ThetaSnippetScoreTracker = type('ThetaSnippetScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(ThetaSnippetScoreTracker, {'snippet': {'proto_name': 'values',
+                                                       'proto_qualifier': 'repeated',
+                                                       'proto_type': 'array',
+                                                       'key_field_name': 'item_id'},
+                                           'document_ids': {'proto_name': 'item_id',
+                                                            'proto_qualifier': 'repeated',
+                                                            'key_field_name': None}})
 
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._value.append(_data.value)
-                self._zero_topics.append(_data.zero_topics)
-                self._total_topics.append(_data.total_topics)
-        else:
-            self._value.append(None)
-            self._zero_topics.append(None)
-            self._total_topics.append(None)
 
-    @property
-    def name(self):
-        return self._name
+TopicMassPhiScoreTracker = type('TopicMassPhiScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(TopicMassPhiScoreTracker, {'value': {},
+                                           'topic_mass': {'proto_qualifier': 'repeated'},
+                                           'topic_ratio': {'proto_qualifier': 'repeated'}})
 
-    @property
-    def value(self):
-        """Returns:
-          list of double: value of Theta sparsity on synchronizations
-        """
-        return self._value
 
-    @property
-    def zero_topics(self):
-        """Returns:
-          list of int: number of zero rows in Theta on synchronizations
-        """
-        return self._zero_topics
-
-    @property
-    def total_topics(self):
-        """Returns:
-          list of int: total number of rows in Theta on synchronizations
-        """
-        return self._total_topics
-
-    @property
-    def last_value(self):
-        """Returns:
-          double: value of Theta sparsity on the last synchronization
-        """
-        return self._value[-1]
-
-    @property
-    def last_zero_topics(self):
-        """Returns:
-          int: number of zero rows in Theta on the last synchronization
-        """
-        return self._zero_topics[-1]
-
-    @property
-    def last_total_topics(self):
-        """Returns:
-          int: total number of rows in Theta on the last synchronization
-        """
-        return self._total_topics[-1]
-
-
-###################################################################################################
-class PerplexityScoreTracker(object):
-    """PerplexityScoreTracker represents a result of counting PerplexityScore
-    (private class)
-
-    Args:
-      score (reference): reference to Score object, no default
-    """
-
-    def __init__(self, score):
-        self._name = score.name
-        self._value = []
-        self._raw = []
-        self._normalizer = []
-        self._zero_tokens = []
-        self._theta_sparsity_value = []
-        self._theta_sparsity_zero_topics = []
-        self._theta_sparsity_total_topics = []
-
-    def add(self, score=None):
-        """PerplexityScoreTracker.add() --- add info about score after
-        synchronization
-
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._value.append(_data.value)
-                self._raw.append(_data.raw)
-                self._normalizer.append(_data.normalizer)
-                self._zero_tokens.append(_data.zero_words)
-                self._theta_sparsity_value.append(_data.theta_sparsity_value)
-                self._theta_sparsity_zero_topics.append(_data.theta_sparsity_zero_topics)
-                self._theta_sparsity_total_topics.append(_data.theta_sparsity_total_topics)
-        else:
-            self._value.append(None)
-            self._raw.append(None)
-            self._normalizer.append(None)
-            self._zero_tokens.append(None)
-            self._theta_sparsity_value.append(None)
-            self._theta_sparsity_zero_topics.append(None)
-            self._theta_sparsity_total_topics.append(None)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def value(self):
-        """Returns:
-          list of double: value of perplexity on synchronizations
-        """
-        return self._value
-
-    @property
-    def raw(self):
-        """Returns:
-          list of double: raw value in formula of perplexity on synchronizations
-        """
-        return self._raw
-
-    @property
-    def normalizer(self):
-        """Returns:
-          list double: normalizer value in formula of perplexity on synchronizations
-        """
-        return self._normalizer
-
-    @property
-    def zero_tokens(self):
-        """Returns:
-          list of int: number of tokens with zero counters on synchronizations
-        """
-        return self._zero_tokens
-
-    @property
-    def theta_sparsity_value(self):
-        """Returns:
-          list of double: Theta sparsity value on synchronizations
-        """
-        return self._theta_sparsity_value
-
-    @property
-    def theta_sparsity_zero_topics(self):
-        """Returns:
-        list of int: number of zero rows in Theta on synchronizations
-        """
-        return self._theta_sparsity_zero_topics
-
-    @property
-    def theta_sparsity_total_topics(self):
-        """Returns:
-          list of int: total number of rows in Theta on synchronizations
-        """
-        return self._theta_sparsity_total_topics
-
-    @property
-    def last_value(self):
-        """Returns:
-          double: value of perplexity on the last synchronization
-        """
-        return self._value[-1]
-
-    @property
-    def last_raw(self):
-        """Returns:
-          double: raw value in formula of perplexity on the last synchronization
-        """
-        return self._raw[-1]
-
-    @property
-    def last_normalizer(self):
-        """Returns:
-          double: normalizer value in formula of perplexity on the last synchronization
-        """
-        return self._normalizer[-1]
-
-    @property
-    def last_zero_tokens(self):
-        """Returns:
-          int: number of tokens with zero counters on the last synchronization
-        """
-        return self._zero_tokens[-1]
-
-    @property
-    def last_theta_sparsity_value(self):
-        """Returns:
-          double: Theta sparsity value on the last synchronization
-        """
-        return self._theta_sparsity_value[-1]
-
-    @property
-    def last_theta_sparsity_zero_topics(self):
-        """Returns:
-          int: number of zero rows in Theta on the last synchronization
-        """
-        return self._theta_sparsity_zero_topics[-1]
-
-    @property
-    def last_theta_sparsity_total_topics(self):
-        """Returns:
-          int: total number of rows in Theta on the last synchronization
-        """
-        return self._theta_sparsity_total_topics[-1]
-
-
-###################################################################################################
-class ItemsProcessedScoreTracker(object):
-    """ItemsProcessedScoreTracker represents a result of counting
-    ItemsProcessedScore (private class)
-
-    Args:
-      score (reference): reference to Score object, no default
-    """
-
-    def __init__(self, score):
-        self._name = score.name
-        self._value = []
-
-    def add(self, score=None):
-        """ItemsProcessedScoreTracker.add() --- add info about score
-        after synchronization
-
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._value.append(_data.value)
-        else:
-            self._value.append(None)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def value(self):
-        """Returns:
-          list of int: total number of processed documents on synchronizations
-        """
-        return self._value
-
-    @property
-    def last_value(self):
-        """Returns:
-          int: total number of processed documents on the last synchronization
-        """
-        return self._value[-1]
-
-
-###################################################################################################
-class TopTokensScoreTracker(object):
-    """TopTokensScoreTracker represents a result of counting TopTokensScore
-    (private class)
-
-    Args:
-      score (reference): reference to Score object, no default
-    """
-
-    def __init__(self, score):
-        self._name = score.name
-        self._num_tokens = []
-        self._topic_info = []
-        self._average_coherence = []
-
-    def add(self, score=None):
-        """TopTokensScoreTracker.add() --- add info about score
-        after synchronization
-
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._num_tokens.append(_data.num_entries)
-
-                self._topic_info.append({})
-                for top_idx, top_name in enumerate(
-                        collections.OrderedDict.fromkeys(_data.topic_name)):
-                    tokens = []
-                    weights = []
-                    for i in xrange(_data.num_entries):
-                        if _data.topic_name[i] == top_name:
-                            tokens.append(_data.token[i])
-                            weights.append(_data.weight[i])
-                    coherence = -1
-                    if len(_data.coherence.value) > 0:
-                        coherence = _data.coherence.value[top_idx]
-                    self._topic_info[-1][top_name] = \
-                        collections.namedtuple('TopTokensScoreTuple',
-                                               ['tokens', 'weights', 'coherence'])
-                    self._topic_info[-1][top_name].tokens = tokens
-                    self._topic_info[-1][top_name].weights = weights
-                    self._topic_info[-1][top_name].coherence = coherence
-
-                self._average_coherence.append(_data.average_coherence)
-        else:
-            self._num_tokens.append(None)
-            self._topic_info.append(None)
-            self._average_coherence.append(None)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def num_tokens(self):
-        """Returns:
-          list of int: reqested number of top tokens in each topic on
-        synchronizations
-        """
-        return self._num_tokens
-
-    @property
-    def topic_info(self):
-        """Returns:
-          list of sets: information about top tokens per topic on synchronizations;
-          each set contains information about topics,
-          key --- name of topic, value --- named tuple:
-          - *.topic_info[sync_index][topic_name].tokens --- list of top tokens
-            for this topic
-          - *.topic_info[sync_index][topic_name].weights --- list of weights
-            (probabilities), corresponds the tokens
-          - *.topic_info[sync_index][topic_name].coherence --- the coherency
-            of topic due to it's non-zero top tokens
-        """
-        return self._topic_info
-
-    @property
-    def average_coherence(self):
-        """Returns:
-          list of double: average coherence of top tokens in all requested topics
-          on synchronizations
-        """
-        return self._average_coherence
-
-    @property
-    def last_num_tokens(self):
-        """Returns:
-          int: reqested number of top tokens in each topic on the last
-          synchronization
-        """
-        return self._num_tokens[-1]
-
-    @property
-    def last_topic_info(self):
-        """Returns:
-          set: information about top tokens per topic on the last
-          synchronization;
-          each set contains information about topics,
-          key --- name of topic, value --- named tuple:
-          - *.last_topic_info[topic_name].tokens --- list of top tokens
-            for this topic
-          - *.last_topic_info[topic_name].weights --- list of weights
-            (probabilities), corresponds the tokens
-          - *.last_topic_info[topic_name].coherence --- the coherency
-            of topic due to it's top tokens
-        """
-        return self._topic_info[-1]
-
-    @property
-    def last_average_coherence(self):
-        """Returns:
-          double: average coherence of top tokens in all requested topics
-          on the last synchronization
-        """
-        return self._average_coherence[-1]
-
-
-###################################################################################################
-class TopicKernelScoreTracker(object):
-    """TopicKernelScoreTracker represents a result of counting TopicKernelScore
-    (private class)
-
-    Args:
-      score (reference): reference to Score object, no default
-    """
-
-    def __init__(self, score):
-        self._name = score.name
-        self._topic_info = []
-        self._average_coherence = []
-        self._average_size = []
-        self._average_contrast = []
-        self._average_purity = []
-
-    def add(self, score=None):
-        """TopicKernelScoreTracker.add() --- add info about score after
-        synchronization
-
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._topic_info.append({})
-                for topic_index, topic_name in enumerate(_data.topic_name.value):
-                    tokens = [token for token in _data.kernel_tokens[topic_index].value]
-                    coherence = -1
-                    if len(_data.coherence.value) > 0:
-                        coherence = _data.coherence.value[topic_index]
-                    self._topic_info[-1][topic_name] = \
-                        collections.namedtuple('TopicKernelScoreTuple',
-                                               ['tokens', 'size', 'contrast',
-                                                'purity', 'coherence'])
-                    self._topic_info[-1][topic_name].tokens = tokens
-                    self._topic_info[-1][topic_name].size = _data.kernel_size.value[topic_index]
-                    self._topic_info[-1][topic_name].contrast = \
-                        _data.kernel_purity.value[topic_index]
-                    self._topic_info[-1][topic_name].purity = \
-                        _data.kernel_contrast.value[topic_index]
-                    self._topic_info[-1][topic_name].coherence = coherence
-
-                self._average_coherence.append(_data.average_coherence)
-                self._average_size.append(_data.average_kernel_size)
-                self._average_contrast.append(_data.average_kernel_contrast)
-                self._average_purity.append(_data.average_kernel_purity)
-        else:
-            self._topic_info.append(None)
-            self._average_coherence.append(None)
-            self._average_size.append(None)
-            self._average_contrast.append(None)
-            self._average_purity.append(None)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def topic_info(self):
-        """Returns:
-          list of sets: information about kernel tokens per topic on
-          synchronizations; each set contains information
-          about topics, key --- name of topic, value --- named tuple:
-          - *.topic_info[sync_index][topic_name].tokens --- list of
-            kernel tokens for this topic
-          - *.topic_info[sync_index][topic_name].size --- size of
-            kernel for this topic
-          - *.topic_info[sync_index][topic_name].contrast --- contrast of
-            kernel for this topic.
-          - *.topic_info[sync_index][topic_name].purity --- purity of kernel
-            for this topic
-          - *.topic_info[sync_index][topic_name].coherence --- the coherency of
-            topic due to it's kernel
-        """
-        return self._topic_info
-
-    @property
-    def average_coherence(self):
-        """Returns:
-          list of double: average coherence of kernel tokens in all requested
-          topics on synchronizations
-        """
-        return self._average_coherence
-
-    @property
-    def average_size(self):
-        """Returns:
-          list of double: average kernel size of all requested topics on
-          synchronizations
-        """
-        return self._average_size
-
-    @property
-    def average_contrast(self):
-        """Returns:
-          list of double: average kernel contrast of all requested topics on
-        synchronizations
-        """
-        return self._average_contrast
-
-    @property
-    def average_purity(self):
-        """Returns:
-          list of double: average kernel purity of all requested topics on
-        synchronizations
-        """
-        return self._average_purity
-
-    @property
-    def last_topic_info(self):
-        """Returns:
-          set: information about kernel tokens per topic on the last
-          synchronization; each set contains information about topics,
-          key --- name of topic, value --- named tuple:
-          - *.last_topic_info[topic_name].tokens --- list of
-            kernel tokens for this topic
-          - *.last_topic_info[topic_name].size --- size of
-            kernel for this topic
-          - *.last_topic_info[topic_name].contrast --- contrast of
-            kernel for this topic
-          - *.last_topic_info[topic_name].purity --- purity of kernel
-            for this topic
-          - *.last_topic_info[topic_name].coherence --- the coherency of
-            topic due to it's kernel
-        """
-        return self._topic_info[-1]
-
-    @property
-    def last_average_coherence(self):
-        """Returns:
-          double: average coherence of kernel tokens in all requested
-          topics on the last synchronization
-        """
-        return self._average_coherence[-1]
-
-    @property
-    def last_average_size(self):
-        """Returns:
-          double: average kernel size of all requested topics on
-          the last synchronization
-        """
-        return self._average_size[-1]
-
-    @property
-    def last_average_contrast(self):
-        """Returns:
-          double: average kernel contrast of all requested topics on
-          the last synchronization
-        """
-        return self._average_contrast[-1]
-
-    @property
-    def last_average_purity(self):
-        """Returns:
-          double: average kernel purity of all requested topics on
-          the last synchronization
-        """
-        return self._average_purity[-1]
-
-
-###################################################################################################
-class ThetaSnippetScoreTracker(object):
-    """ThetaSnippetScoreTracker represents a result of counting
-    ThetaSnippetScore (private class)
-
-    Args:
-      score (reference): reference to Score object, no default
-    """
-
-    def __init__(self, score):
-        self._name = score.name
-        self._document_ids = []
-        self._snippet = []
-
-    def add(self, score=None):
-        """ThetaSnippetScoreTracker.add() --- add info about score after
-        synchronization
-
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._document_ids.append([item_id for item_id in _data.item_id])
-                self._snippet.append(
-                    [[theta_td for theta_td in theta_d.value] for theta_d in _data.values])
-        else:
-            self._document_ids.append(None)
-            self._snippet.append(None)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def snippet(self):
-        """Returns:
-          list of lists of lists of double: the snippet (part) of Theta
-          corresponds to documents from document_ids on each synchronizations;
-          each most internal list --- theta_d vector for document d,
-          in direct order of document_ids
-        """
-        return self._snippet
-
-    @property
-    def document_ids(self):
-        """Returns:
-          list of int: ids of documents in snippet on synchronizations
-        """
-        return self._document_ids
-
-    @property
-    def last_snippet(self):
-        """Returns:
-          list of lists of double: the snippet (part) of Theta corresponds
-          to documents from document_ids on last synchronization;
-          each internal list --- theta_d vector for document d,
-          in direct order of document_ids
-        """
-        return self._snippet
-
-    @property
-    def last_document_ids(self):
-        """Returns:
-          list of int: ids of documents in snippet on the last synchronization
-        """
-        return self._document_ids
-
-
-###################################################################################################
-class TopicMassPhiScoreTracker(object):
-    """TopicMassPhiScoreTracker represents a result of counting
-    TopicMassPhiScore (private class)
-
-    Args:
-      score (reference): reference to Score object, no default
-    """
-
-    def __init__(self, score):
-        self._name = score.name
-        self._value = []
-        self._topic_info = []
-
-    def add(self, score=None):
-        """TopicMassPhiScoreTracker.add() --- add info about score after synchronization
-
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._value.append(_data.value)
-                self._topic_info.append({})
-
-                for top_idx, top_name in enumerate(
-                        collections.OrderedDict.fromkeys(_data.topic_name)):
-                    self._topic_info[-1][top_name] = \
-                        collections.namedtuple('TopicMassPhiScoreTuple',
-                                               ['topic_mass', 'topic_ratio'])
-                    self._topic_info[-1][top_name].topic_mass = _data.topic_mass[top_idx]
-                    self._topic_info[-1][top_name].topic_ratio = _data.topic_ratio[top_idx]
-        else:
-            self._value.append(None)
-            self._topic_info.append(None)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def value(self):
-        """Returns:
-          list of double: mass of given topics in Nwt on synchronizations
-        """
-        return self._value
-
-    @property
-    def topic_info(self):
-        """Returns:
-          list of sets: information about topic mass in Nwt per topic on
-          synchronizations; each set contains information
-          about topics, key --- name of topic, value --- named tuple:
-          - *.topic_info[sync_index][topic_name].topic_mass --- n_t value
-          - *.topic_info[sync_index][topic_name].topic_ratio --- p_t value
-        """
-        return self._topic_info
-
-    @property
-    def last_value(self):
-        """Returns:
-        double: mass of given topics in Nwt on last synchronization
-        """
-        return self._value[-1]
-
-    @property
-    def last_topic_info(self):
-        """Returns:
-          list of sets: information about topic mass per topic in Nwt
-          on last synchronization; each set contains information
-          about topics, key --- name of topic, value --- named tuple:
-          - *[topic_name].topic_mass --- n_t value
-          - *[topic_name].topic_ratio --- p_t value
-        """
-        return self._topic_info[-1]
-
-
-###################################################################################################
-class ClassPrecisionScoreTracker(object):
-    """ClassPrecisionScoreTracker represents a result of counting
-    ClassPrecisionScore (private class)
-
-    Args:
-      score (reference): reference to Score object, no default
-    """
-
-    def __init__(self, score):
-        self._name = score.name
-        self._value = []
-
-    def add(self, score=None):
-        """ClassPrecisionScoreTracker.add() --- add info about score after synchronization
-
-        Args:
-          score (reference): reference to score object, if not specified
-          means 'Add None values'
-        """
-        if score is not None:
-            _data_array = score.master.get_score_array(score.name)
-            for _data in _data_array:
-                self._value.append(_data.value)
-        else:
-            self._value.append(None)
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def value(self):
-        """Returns:
-          list of double: fraction of correct classifications on synchronizations
-        """
-        return self._value
-
-    @property
-    def last_value(self):
-        """Returns:
-        double: fraction of correct classifications on synchronizations
-        """
-        return self._value[-1]
+ClassPrecisionScoreTracker = type('ClassPrecisionScoreTracker', (BaseScoreTracker, ), {})
+_set_properties(ClassPrecisionScoreTracker, {'value': {}, 'error': {}, 'total': {}})
