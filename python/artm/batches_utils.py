@@ -21,37 +21,31 @@ class Batch(object):
 
 
 class BatchVectorizer(object):
-    """BatchVectorizer() --- class, represents the general type of ARTM input data.
-    Args:
-      collection_name (str): the name of text collection (required if
-      data_format == 'bow_uci'), default=None
-      data_path (str):
-      1) if data_format == 'bow_uci' => folder containing
-      'docword.collection_name.txt' and vocab.collection_name.txt files;
-      2) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;
-      3) if data_format == 'plain_text' => file with text;
-      4) if data_format == 'batches' => folder containing batches
-      default=''
-      data_format (str): the type of input data;
-      1) 'bow_uci' --- Bag-Of-Words in UCI format;
-      2) 'vowpal_wabbit' --- Vowpal Wabbit format;
-      3) 'plain_text' --- source text;
-      4) 'batches' --- the BigARTM data format
-      default='batches'
-      batch_size (int): number of documents to be stored in each batch,
-      default=1000
-      target_folder(str): full path to folder for future batches storing
-      batches(list of str): list with non-full file names of batches (necessary parameters are
-      batches + data_path + data_fromat=='batches' in this case)
-      batch_name_type(str): name batches in natural order ('code') or using random guids (guid),
-      default='code'
-      data_weight (float): weight for a group of batches from data_path;
-      it can be a list of floats, then data_path (and target_folder if not data_format == 'batches')
-      should also be lists; one weight corresponds to one path from the data_path list;
-      default=1.0
-    """
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
                  target_folder='', batch_size=1000, batch_name_type='code', data_weight=1.0):
+        """
+        :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
+        :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
+                                 'docword.collection_name.txt' and vocab.collection_name.txt files;\
+                              2) if data_format == 'vowpal_wabbit' => file in Vowpal Wabbit format;\
+                              3) if data_format == 'plain_text' => file with text;\
+                              4) if data_format == 'batches' => folder containing batches
+        :param str data_format: the type of input data:\
+                              1) 'bow_uci' --- Bag-Of-Words in UCI format;\
+                              2) 'vowpal_wabbit' --- Vowpal Wabbit format;\
+                              3) 'batches' --- the BigARTM data format
+        :param int batch_size: number of documents to be stored in each batch
+        :param str target_folder: full path to folder for future batches storing
+        :param batches: list with non-full file names of batches (necessary parameters are\
+                              batches + data_path + data_fromat=='batches' in this case)
+        :type batches: list of str
+        :param str batch_name_type: name batches in natural order ('code') or using random guids (guid)
+        :param float data_weight: weight for a group of batches from data_path;\
+                              it can be a list of floats, then data_path (and\
+                              target_folder if not data_format == 'batches')\
+                              should also be lists; one weight corresponds to\
+                              one path from the data_path list;
+        """
         self._batches_list = []
         self._weights = []
         self._data_path = data_path if data_format == 'batches' else target_folder
@@ -113,9 +107,6 @@ class BatchVectorizer(object):
                 batch_filenames = glob.glob(os.path.join(target_folder, '*.batch'))
                 self._batches_list += [Batch(filename) for filename in batch_filenames]
                 self._weights += [data_weight for i in xrange(len(batch_filenames))]
-
-            elif data_format == 'plain_text':
-                raise NotImplementedError()
             else:
                 raise IOError('Unknown data format')
 

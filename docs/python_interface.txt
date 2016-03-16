@@ -6,3 +6,6 @@ in python interface of BigARTM library.
 
 .. toctree::
    python_interface/master_component
+   python_interface/batches_utils
+   python_interface/regularizers
+   python_interface/scores
