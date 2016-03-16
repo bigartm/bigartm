@@ -1,0 +1,52 @@
+version: 1.0.{build}
+
+environment:
+  P: "c:/projects/libs"
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
+
+
+# clone directory
+clone_folder: c:\projects\bigartm
+
+platform: x64
+configuration: Release
+
+install:
+  - ps: >-
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+
+    git submodule update --init
+    if (!(Test-Path boost.7z)) {
+      echo "Downloading Boost 1.57 ..."
+      Start-FileDownload "http://iweb.dl.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.7z" -FileName boost.7z -Timeout 1200000
+    }
+    echo "Extracting Boost..."
+    7z x boost.7z -y -o"${env:APPVEYOR_BUILD_FOLDER}" "boost_1_57_0/boost" > $null
+    $env:BOOST_ROOT = "${env:APPVEYOR_BUILD_FOLDER}/boost_1_57_0"
+
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+
+build:
+  project: INSTALL.vcxproj      # path to Visual Studio solution or project
+
+# scripts to run before build
+before_build:
+  - echo Running cmake...
+  - cd c:\projects\bigartm
+  - cmake -G "Visual Studio 12 Win64" -DCMAKE_INSTALL_PREFIX=%P%
+
+# scripts to run after build
+after_build:
+  - cd %P%
+  - 7z a c:\projects\bigartm\bigartm.zip * -tzip
+  - cd c:\projects\bigartm
+
+artifacts:
+  - path: bigartm.zip
+    name: bigartm.zip
+
+cache:
+  - boost.7z
