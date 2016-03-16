@@ -112,20 +112,35 @@ class BatchVectorizer(object):
 
     @property
     def batches_list(self):
+        """
+        :return: list of batches names
+        """
         return self._batches_list
 
     @property
     def weights(self):
+        """
+        :return: list of batches weights
+        """
         return self._weights
 
     @property
     def num_batches(self):
+        """
+        :return: the number of batches
+        """
         return len(self._batches_list)
 
     @property
     def data_path(self):
+        """
+        :return: the dick path of batches
+        """
         return self._data_path
 
     @property
     def batch_size(self):
+        """
+        :return: the user-defined size of the batches
+        """
         return self._batch_size
