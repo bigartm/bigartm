@@ -1,0 +1,46 @@
+Scores
+================
+
+This page describes *Scores classes.
+
+.. automodule:: artm
+
+.. autoclass:: SparsityPhiScore
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: ItemsProcessedScore
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: PerplexityScore
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: SparsityThetaScore
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: ThetaSnippetScore
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: TopicKernelScore
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: TopTokensScore
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: TopicMassPhiScore
+   :members:
+   :undoc-members:
+   :special-members: __init__

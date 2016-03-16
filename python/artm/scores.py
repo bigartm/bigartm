@@ -36,12 +36,6 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
 
 
 class Scores(object):
-    """Scores represents a storage of scores in ArtmModel (private class)
-
-    Args:
-      master (reference): reference to MasterComponent object, no default
-    """
-
     def __init__(self, master, model_pwt, model_nwt):
         self._data = {}
         self._master = master
@@ -49,11 +43,6 @@ class Scores(object):
         self._model_nwt = model_nwt
 
     def add(self, score):
-        """Scores.add() --- add score into ArtmModel.
-
-        Args:
-          score: an object of ***Scores class, no default
-        """
         if score.name in self._data:
             raise ValueError('Score with name {0} is already exist'.format(score.name))
         else:
@@ -64,11 +53,6 @@ class Scores(object):
             self._data[score.name] = score
 
     def __getitem__(self, name):
-        """Scores.__getitem__() --- get score with given name
-
-        Args:
-          name (str): name of the score, no default
-        """
         if name in self._data:
             return self._data[name]
         else:
@@ -158,21 +142,18 @@ class BaseScore(object):
 # SECTION OF SCORE CLASSES
 ###################################################################################################
 class SparsityPhiScore(BaseScore):
-    """SparsityPhiScore is a score in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of score, will be auto-generated if not specified
-      class_id (str): class_id to score, default=None
-      topic_names (list of str): list of names of topics to regularize, will
-      score all topics if not specified
-      eps (double): the tolerance const, everything < eps
-      considered to be zero, default=1e-37
-    """
-
     _config_message = messages.SparsityPhiScoreConfig
     _type = const.ScoreConfig_Type_SparsityPhi
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :patam str class_id: class_id to score
+        :param topic_names: list of names of topics to regularize, will\
+                            score all topics if not specified
+        :type topic_names: list of str
+        :param float eps: the tolerance const, everything < eps considered to be zero
+        """
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
@@ -193,20 +174,17 @@ class SparsityPhiScore(BaseScore):
 
 
 class SparsityThetaScore(BaseScore):
-    """SparsityThetaScore is a score in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of score, will be auto-generated if not specified
-      topic_names (list of str): list of names of topics to regularize, will
-      score all topics if not specified
-      eps (double): the tolerance const, everything < eps
-      considered to be zero, default=1e-37
-    """
-
     _config_message = messages.SparsityThetaScoreConfig
     _type = const.ScoreConfig_Type_SparsityTheta
 
     def __init__(self, name=None, topic_names=None, eps=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :param topic_names: list of names of topics to regularize, will\
+                            score all topics if not specified
+        :type topic_names: list of str
+        :param float eps: the tolerance const, everything < eps considered to be zero
+        """
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
@@ -235,27 +213,24 @@ class SparsityThetaScore(BaseScore):
 
 
 class PerplexityScore(BaseScore):
-    """PerplexityScore is a score in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of score, will be auto-generated if not specified
-      class_ids (list of strs): class_ids to score, default=None, means that tokens
-      of all class_ids will be used
-      topic_names (list of str): list of names of topics to regularize, will
-      score all topics if not specified
-      eps (double, default=None): the tolerance const, everything < eps
-      considered to be zero
-      dictionary_name (str): BigARTM collection dictionary, won't use dictionary
-      if not specified
-      use_unigram_document_model (bool): use uni-gram
-      document/collection model if token's counter == 0, default=True
-    """
-
     _config_message = messages.PerplexityScoreConfig
     _type = const.ScoreConfig_Type_Perplexity
 
     def __init__(self, name=None, class_ids=None, topic_names=None, eps=None,
                  dictionary_name=None, use_unigram_document_model=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :patam class_ids: class_id to score, means that tokens of all class_ids will be used
+        :type class_ids: list of str
+        :param topic_names: list of names of topics to regularize, will\
+                            score all topics if not specified
+        :type topic_names: list of str
+        :param float eps: the tolerance const, everything < eps considered to be zero
+        :param str dictionary_name: BigARTM collection dictionary, won't use\
+                            dictionary if not specified
+        :param bool use_unigram_document_model: use unigram document/collection model\
+                            if token's counter == 0
+        """
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
@@ -335,16 +310,13 @@ class PerplexityScore(BaseScore):
 
 
 class ItemsProcessedScore(BaseScore):
-    """ItemsProcessedScore is a score in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of score, will be auto-generated if not specified
-    """
-
     _config_message = messages.ItemsProcessedScoreConfig
     _type = const.ScoreConfig_Type_ItemsProcessed
 
     def __init__(self, name=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        """
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
@@ -368,24 +340,21 @@ class ItemsProcessedScore(BaseScore):
 
 
 class TopTokensScore(BaseScore):
-    """TopTokensScore is a score in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of score, will be auto-generated if not specified
-      class_id (str): class_id to score, default=None
-      topic_names (list of str): list of names of topics to regularize, will
-      score all topics if not specified
-      num_tokens (int): number of tokens with max probability
-      in each topic, default=10
-      dictionary_name (str): BigARTM collection dictionary, won't use dictionary
-      if not specified
-    """
-
     _config_message = messages.TopTokensScoreConfig
     _type = const.ScoreConfig_Type_TopTokens
 
     def __init__(self, name=None, class_id=None, topic_names=None,
                  num_tokens=None, dictionary_name=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :patam str class_id: class_id to score
+        :param topic_names: list of names of topics to regularize, will\
+                            score all topics if not specified
+        :type topic_names: list of str
+        :param int num_tokens: number of tokens with max probability in each topic
+        :param str dictionary_name: BigARTM collection dictionary, won't use\
+                            dictionary if not specified
+        """
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
@@ -420,19 +389,17 @@ class TopTokensScore(BaseScore):
 
 
 class ThetaSnippetScore(BaseScore):
-    """ThetaSnippetScore is a score in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of score, will be auto-generated if not specified
-      item_ids (list of int): list of names of items to show, default=None
-      num_items (int): number of theta vectors to show from the
-      beginning (no sense if item_ids given), default=10
-    """
-
     _config_message = messages.ThetaSnippetScoreConfig
     _type = const.ScoreConfig_Type_ThetaSnippet
 
     def __init__(self, name=None, item_ids=None, num_items=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :param item_ids: list of names of items to show, default=None
+        :type item_ids: list of int
+        :param int num_items: number of theta vectors to show from the beginning\
+                                (no sense if item_ids was given)
+        """
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
@@ -484,26 +451,23 @@ class ThetaSnippetScore(BaseScore):
 
 
 class TopicKernelScore(BaseScore):
-    """TopicKernelScore is a score in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of score, will be auto-generated if not specified
-      class_id (str): class_id to score, default=None
-      topic_names (list of str): list of names of topics to regularize, will
-      score all topics if not specified
-      eps (double): the tolerance const, everything < eps
-      considered to be zero, default=1e-37
-      dictionary_name (str): BigARTM collection dictionary, won't use dictionary
-      if not specified
-      probability_mass_threshold (double): the threshold for p(t|w) values to
-      get token into topic kernel. Should be in (0, 1), default=0.1
-    """
-
     _config_message = messages.TopicKernelScoreConfig
     _type = const.ScoreConfig_Type_TopicKernel
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary_name=None, probability_mass_threshold=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :patam str class_id: class_id to score
+        :param topic_names: list of names of topics to regularize, will\
+                            score all topics if not specified
+        :type topic_names: list of str
+        :param float probability_mass_threshold: the threshold for p(t|w) values to get\
+                            token into topic kernel. Should be in (0, 1)
+        :param str dictionary_name: BigARTM collection dictionary, won't use\
+                            dictionary if not specified
+        :param float eps: the tolerance const, everything < eps considered to be zero
+        """
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
@@ -551,21 +515,18 @@ class TopicKernelScore(BaseScore):
 
 
 class TopicMassPhiScore(BaseScore):
-    """TopicMassPhiScore is a score in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of score, will be auto-generated if not specified
-      class_id (str): class_id to score, default=None
-      topic_names (list of str): list of names of topics to regularize, will
-      score all topics if not specified
-      eps (double): the tolerance const, if sum_t n_t < eps the
-      result is 0, default=1e-37
-    """
-
     _config_message = messages.TopicMassPhiScoreConfig
     _type = const.ScoreConfig_Type_TopicMassPhi
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :patam str class_id: class_id to score
+        :param topic_names: list of names of topics to regularize, will\
+                            score all topics if not specified
+        :type topic_names: list of str
+        :param float eps: the tolerance const, everything < eps considered to be zero
+        """
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,

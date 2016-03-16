@@ -43,14 +43,11 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
 
 
 class KlFunctionInfo(object):
-    """Contains the info about the function under the KL-div.
-
-    Args:
-      function_type (str): the type of function, 'log' (logarithm) or 'pol' (polynomial)
-      power_value (double): the double power of polynomial, ignored if type = 'log'
-    """
-
     def __init__(self, function_type='log', power_value=2.0):
+        """
+        :param str function_type: the type of function, 'log' (logarithm) or 'pol' (polynomial)
+        :param float power_value: the double power of polynomial, ignored if type = 'log'
+        """
         if function_type not in ['log', 'pol']:
             raise ValueError('Function type can be only "log" or "pol"')
 
@@ -74,22 +71,11 @@ class KlFunctionInfo(object):
 
 
 class Regularizers(object):
-    """Regularizers represents a storage of regularizers in ArtmModel (private class)
-
-    Args:
-      master (reference): reference to MasterComponent object, no default
-    """
-
     def __init__(self, master):
         self._data = {}
         self._master = master
 
     def add(self, regularizer):
-        """Regularizers.add() --- add regularizer into ArtmModel
-
-        Args:
-          regularizer: an object of ***Regularizer class, no default
-        """
         if regularizer.name in self._data:
             raise ValueError('Regularizer with name {0} is already exist'.format(regularizer.name))
         else:
@@ -101,11 +87,6 @@ class Regularizers(object):
             self._data[regularizer.name] = regularizer
 
     def __getitem__(self, name):
-        """Regularizers.__getitem__() --- get regularizer with given name
-
-        Args:
-          name (str): name of the regularizer, no default
-        """
         if name in self._data:
             return self._data[name]
         else:
@@ -117,7 +98,6 @@ class Regularizers(object):
 
 
 class BaseRegularizer(object):
-
     _config_message = None
 
     def __init__(self, name, tau, config):
@@ -246,27 +226,28 @@ class BaseRegularizerTheta(BaseRegularizer):
 # SECTION OF REGULARIZER CLASSES
 ###################################################################################################
 class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
-    """SmoothSparsePhiRegularizer is a regularizer in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of regularizer, will be auto-generated if not specified
-      tau (double): the coefficient of regularization for this regularizer, default=1.0
-      class_ids (list of str): list of class_ids to regularize, will regularize all
-      classes if not specified
-      topic_names (list of str): list of names of topics to regularize, will regularize
-      all topics if not specified
-      dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
-      specified
-      kl_function_info (KlFunctionInfo object): class with additional info about function
-      under KL-div in regularizer
-      config (protobuf object): the low-level config of this regularizer, default=None
-    """
-
     _config_message = messages.SmoothSparsePhiConfig
     _type = const.RegularizerConfig_Type_SmoothSparsePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None,
                  dictionary_name=None, kl_function_info=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param class_ids: list of class_ids to regularize, will\
+                                     regularize all classes if not specified
+        :type class_ids: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param str dictionary_name: BigARTM collection dictionary,\
+                                     won't use dictionary if not specified
+        :param kl_function_info: class with additional info about\
+                                     function under KL-div in regularizer
+        :type kl_function_info: KlFunctionInfo object
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
@@ -291,26 +272,26 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
 
 
 class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
-    """SmoothSparseThetaRegularizer is a regularizer in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of regularizer, will be auto-generated if not specified
-      tau (double): the coefficient of regularization for this regularizer, default=1.0
-      topic_names (list of str): list of names of topics to regularize, will regularize
-      all topics if not specified
-      alpha_iter (list of double, default=None): list of additional coefficients of
-      regularization on each iteration over document. Should have length equal to
-      model.num_document_passes
-      kl_function_info (KlFunctionInfo object): class with additional info about function
-      under KL-div in regularizer
-      config (protobuf object): the low-level config of this regularizer, default=None
-    """
-
     _config_message = messages.SmoothSparseThetaConfig
     _type = const.RegularizerConfig_Type_SmoothSparseTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None,
                  alpha_iter=None, kl_function_info=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param alpha_iter: list of additional coefficients of regularization on each iteration\
+                           over document. Should have length equal to model.num_document_passes
+        :type alpha_iter: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param kl_function_info: class with additional info about\
+                                     function under KL-div in regularizer
+        :type kl_function_info: KlFunctionInfo object
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
         BaseRegularizerTheta.__init__(self,
                                       name=name,
                                       tau=tau,
@@ -334,22 +315,22 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
 
 
 class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
-    """DecorrelatorPhiRegularizer is a regularizer in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of regularizer, will be auto-generated if not specified
-      tau (double): the coefficient of regularization for this regularizer, default=1.0
-      class_ids (list of str): list of class_ids to regularize, will regularize all
-      classes if not specified
-      topic_names (list of str): list of names of topics to regularize, will regularize
-      all topics if not specified
-      config (protobuf object): the low-level config of this regularizer, default=None
-    """
-
     _config_message = messages.DecorrelatorPhiConfig
     _type = const.RegularizerConfig_Type_DecorrelatorPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param class_ids: list of class_ids to regularize, will\
+                                     regularize all classes if not specified
+        :type class_ids: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
@@ -368,25 +349,25 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
 
 
 class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
-    """LabelRegularizationPhiRegularizer is a regularizer in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of regularizer, will be auto-generated if not specified
-      tau (double): the coefficient of regularization for this regularizer, default=1.0
-      class_ids (list of str): list of class_ids to regularize, will regularize all
-      classes if not specified
-      topic_names (list of str): list of names of topics to regularize, will regularize
-      all topics if not specified
-      dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
-      specified
-      config (protobuf object): the low-level config of this regularizer, default=None
-    """
-
     _config_message = messages.LabelRegularizationPhiConfig
     _type = const.RegularizerConfig_Type_LabelRegularizationPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param class_ids: list of class_ids to regularize, will\
+                                     regularize all classes if not specified
+        :type class_ids: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param str dictionary_name: BigARTM collection dictionary,\
+                                     won't use dictionary if not specified
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
@@ -397,28 +378,26 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
 
 
 class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
-    """SpecifiedSparsePhiRegularizer is a regularizer in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of regularizer, will be auto-generated if not specified
-      tau (double): the coefficient of regularization for this regularizer, default=1.0
-      class_id (str): class_id to regularize, default=None
-      topic_names (list of str): list of names of topics to regularize, will regularize
-      all topics if not specified
-      topic_names (list of str, default=None): list of names of topics to regularize
-      num_max_elements (int): number of elements to save in row/column, default=None
-      probability_threshold (double): if m elements in row/column
-      summarize into value >= probability_threshold, m < n => only these elements would
-      be saved. Value should be in (0, 1), default=None
-      sparse_by_columns (bool) --- find max elements in column or in row, default=True
-      config (protobuf object): the low-level config of this regularizer, default=None
-    """
-
     _config_message = messages.SpecifiedSparsePhiConfig
     _type = const.RegularizerConfig_Type_SpecifiedSparsePhi
 
     def __init__(self, name=None, tau=1.0, topic_names=None, class_id=None, num_max_elements=None,
                  probability_threshold=None, sparse_by_columns=True, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param class_id: class_id to regularize
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param int num_max_elements: number of elements to save in row/column
+        :param float probability_threshold: if m elements in row/column sum into value >=\
+                                     probability_threshold, m < n => only these elements would\
+                                     be saved. Value should be in (0, 1), default=None
+        :param bool sparse_by_columns: find max elements in column or in row
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
@@ -508,25 +487,25 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
 
 
 class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
-    """ImproveCoherencePhiRegularizer is a regularizer in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of regularizer, will be auto-generated if not specified
-      tau (double): the coefficient of regularization for this regularizer, default=1.0
-      class_ids (list of str): list of class_ids to regularize, will regularize all
-      classes if not specified
-      topic_names (list of str): list of names of topics to regularize, will regularize
-      all topics if not specified
-      dictionary_name (str): BigARTM collection dictionary, won't use dictionary if not
-      specified
-      config (protobuf object): the low-level config of this regularizer, default=None
-    """
-
     _config_message = messages.ImproveCoherencePhiConfig
     _type = const.RegularizerConfig_Type_ImproveCoherencePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary_name=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param class_ids: list of class_ids to regularize, will\
+                                     regularize all classes if not specified
+        :type class_ids: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param str dictionary_name: BigARTM collection dictionary, won't use dictionary if not\
+                                     specified, in this case regularizer is useless
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
@@ -537,18 +516,16 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
 
 
 class SmoothPtdwRegularizer(BaseRegularizer):
-    """SmoothPtdwRegularizer is a regularizer in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of regularizer, will be auto-generated if not specified
-      tau (double): the coefficient of regularization for this regularizer, default=1.0
-      config (protobuf object): the low-level config of this regularizer, default=None
-    """
-
     _config_message = messages.SmoothPtdwConfig
     _type = const.RegularizerConfig_Type_SmoothPtdw
 
     def __init__(self, name=None, tau=1.0, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
         BaseRegularizer.__init__(self,
                                  name=name,
                                  tau=tau,
@@ -556,24 +533,23 @@ class SmoothPtdwRegularizer(BaseRegularizer):
 
 
 class TopicSelectionThetaRegularizer(BaseRegularizerTheta):
-    """TopicSelectionThetaRegularizer is a regularizer in ArtmModel (public class)
-
-    Args:
-      name (str): the identifier of regularizer, will be auto-generated if not specified
-      tau (double): the coefficient of regularization for this regularizer, default=1.0
-      topic_names (list of str): list of names of topics to regularize, will regularize
-      all topics if not specified
-      alpha_iter (list of double, default=None): list of additional coefficients of
-      regularization on each iteration over document. Should have length equal to
-      model.num_document_passes
-      config (protobuf object): the low-level config of this regularizer, default=None
-    """
-
     _config_message = messages.TopicSelectionThetaConfig
     _type = const.RegularizerConfig_Type_TopicSelectionTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None,
                  alpha_iter=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param alpha_iter: list of additional coefficients of regularization on each iteration\
+                           over document. Should have length equal to model.num_document_passes
+        :type alpha_iter: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
         BaseRegularizerTheta.__init__(self,
                                       name=name,
                                       tau=tau,

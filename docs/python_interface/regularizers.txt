@@ -1,0 +1,51 @@
+Regularizers
+================
+
+This page describes KlFunctionInfo and *Regularizer classes.
+
+.. automodule:: artm
+
+.. autoclass:: KlFunctionInfo
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: SmoothSparsePhiRegularizer
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: SmoothSparseThetaRegularizer
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: DecorrelatorPhiRegularizer
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: LabelRegularizationPhiRegularizer
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: SpecifiedSparsePhiRegularizer
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: ImproveCoherencePhiRegularizer
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: SmoothPtdwRegularizer
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: TopicSelectionThetaRegularizer
+   :members:
+   :undoc-members:
+   :special-members: __init__
