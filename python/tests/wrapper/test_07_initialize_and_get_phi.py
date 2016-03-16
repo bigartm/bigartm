@@ -11,6 +11,7 @@ import artm.master_component as mc
 
 def test_func():
     # Set some constants
+    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     dictionary_name = 'dictionary'
     pwt = 'pwt'
     docword = 'docword.kos.txt'
@@ -26,8 +27,8 @@ def test_func():
         
         # Parse collection from disk
         lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
-                                 'docword_file_path': os.path.join(os.getcwd(), docword),
-                                 'vocab_file_path': os.path.join(os.getcwd(), vocab),
+                                 'docword_file_path': os.path.join(data_path, docword),
+                                 'vocab_file_path': os.path.join(data_path, vocab),
                                  'target_folder': batches_folder})
 
         # Create master component
@@ -36,7 +37,7 @@ def test_func():
         # Create collection dictionary and import it
         master.gather_dictionary(dictionary_target_name=dictionary_name,
                                  data_path=batches_folder,
-                                 vocab_file_path=os.path.join(os.getcwd(), vocab))
+                                 vocab_file_path=os.path.join(data_path, vocab))
 
         # filter the dictionary
         master.filter_dictionary(dictionary_name=dictionary_name,
