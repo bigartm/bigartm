@@ -61,22 +61,22 @@ class ARTM(object):
                  scores=None, regularizers=None, num_document_passes=10,
                  reuse_theta=False, cache_theta=False, theta_columns_naming='id'):
         """
-          :param int num_topics: the number of topics in model, will be overwrited if\
+        :param int num_topics: the number of topics in model, will be overwrited if\
                                  topic_names is set
-          :param int num_processors: how many threads will be used for model training, if\
+        :param int num_processors: how many threads will be used for model training, if\
                                  not specified then number of threads will be detected by the lib
-          :param topic_names: names of topics in model
-          :type topic_names: list of str
-          :param dict class_ids: list of class_ids and their weights to be used in model,\
+        :param topic_names: names of topics in model
+        :type topic_names: list of str
+        :param dict class_ids: list of class_ids and their weights to be used in model,\
                                  key --- class_id, value --- weight, if not specified then\
                                  all class_ids will be used
-          :param bool cache_theta: save or not the Theta matrix in model. Necessary if\
+        :param bool cache_theta: save or not the Theta matrix in model. Necessary if\
                                  ARTM.get_theta() usage expects
-          :param list scores: list of scores (objects of artm.*Score classes)
-          :param list regularizers: list with regularizers (objects of artm.*Regularizer classes)
-          :param int num_document_passes: number of inner iterations over each document
-          :param bool reuse_theta: reuse Theta from previous iteration or not
-          :param str theta_columns_naming: either 'id' or 'title', determines how to name columns\
+        :param list scores: list of scores (objects of artm.*Score classes)
+        :param list regularizers: list with regularizers (objects of artm.*Regularizer classes)
+        :param int num_document_passes: number of inner iterations over each document
+        :param bool reuse_theta: reuse Theta from previous iteration or not
+        :param str theta_columns_naming: either 'id' or 'title', determines how to name columns\
                                  (documents) in theta dataframe
 
         :Important public fields:
@@ -535,30 +535,32 @@ class ARTM(object):
         """
         :Description: proceeds the learning of topic model in online mode
 
-          :param object_reference batch_vectorizer: an instance of BatchVectorizer class
-          :param int update_every: the number of batches; model will be updated once per it
-          :param float tau0: coefficient (see 'Note' paragraph)
-          :param float kappa (float): power for tau0, (see 'Note' paragraph)
-          :param update_after: number of batches to be passed for Phi synchronizations
-          :type update_after: list of int
-          :param apply_weight: weight of applying new counters
-          :type apply_weight: list of float
-          :param decay_weight: weight of applying old counters
-          :type decay_weight: list of float
-          :param bool async: use or not the async implementation of the EM-algorithm
-          :param str dictionary_filename: the name of file with dictionary to use in\
-                      inline initialization
+        :param object_reference batch_vectorizer: an instance of BatchVectorizer class
+        :param int update_every: the number of batches; model will be updated once per it
+        :param float tau0: coefficient (see 'Update formulas' paragraph)
+        :param float kappa (float): power for tau0, (see 'Update formulas' paragraph)
+        :param update_after: number of batches to be passed for Phi synchronizations
+        :type update_after: list of int
+        :param apply_weight: weight of applying new counters
+        :type apply_weight: list of float
+        :param decay_weight: weight of applying old counters
+        :type decay_weight: list of float
+        :param bool async: use or not the async implementation of the EM-algorithm
+        :param str dictionary_filename: the name of file with dictionary to use in\
+                    inline initialization
 
         :Note:
-          * ARTM.initialize() should be proceed before first call ARTM.fit_online(),\
-            or it will be initialized by dictionary during first call
-          * The formulas for decay_weight and apply_weight:\
-            update_count = current_processed_docs / (batch_size * update_every);\
-            rho = pow(tau0 + update_count, -kappa);\
-            decay_weight = 1-rho;\
-            apply_weight = rho;\
-          * if apply_weight, decay_weight and update_after are set, they will be used,\
-            otherwise the code below will be used (with update_every, tau0 and kappa)
+          ARTM.initialize() should be proceed before first call ARTM.fit_online(),\
+          or it will be initialized by dictionary during first call
+
+        :Update formulas:
+          The formulas for decay_weight and apply_weight:
+          * update_count = current_processed_docs / (batch_size * update_every);
+          * rho = pow(tau0 + update_count, -kappa);
+          * decay_weight = 1-rho;
+          * apply_weight = rho;
+          if apply_weight, decay_weight and update_after are set, they will be used,\
+          otherwise the code below will be used (with update_every, tau0 and kappa)
         """
         if batch_vectorizer is None:
             raise IOError('No batches were given for processing')
@@ -654,7 +656,7 @@ class ARTM(object):
     def get_phi(self, topic_names=None, class_ids=None, model_name=None):
         """
         :Description: get custom Phi matrix of model. The extraction of the\
-                      whole Phi matrix expects ARTM.phi_ call.
+                      whole Phi matrix expects ARTM.phi_call.
 
         :param topic_names: list with topics to extract, None value means all topics
         :type topic_names: list of str
@@ -664,10 +666,10 @@ class ARTM(object):
                       reasonable to extract unnormalized counters
 
         :return:
-          pandas.DataFrame: (data, columns, rows), where:\
-          1) columns --- the names of topics in topic model;\
-          2) rows --- the tokens of topic model;\
-          3) data --- content of Phi matrix.
+          pandas.DataFrame: (data, columns, rows), where:
+          * columns --- the names of topics in topic model;
+          * rows --- the tokens of topic model;
+          * data --- content of Phi matrix.
         """
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
@@ -702,10 +704,10 @@ class ARTM(object):
         :type topic_names: list of str
 
         :return:
-          pandas.DataFrame: (data, columns, rows), where:\
-          1) columns --- the ids of documents, for which the Theta matrix was requested;\
-          2) rows --- the names of topics in topic model, that was used to create Theta;\
-          3) data --- content of Theta matrix.
+          pandas.DataFrame: (data, columns, rows), where:
+          * columns --- the ids of documents, for which the Theta matrix was requested;
+          * rows --- the names of topics in topic model, that was used to create Theta;
+          * data --- content of Theta matrix.
         """
         if self.cache_theta is False:
             raise ValueError('cache_theta == False. Set ARTM.cache_theta = True')
@@ -763,10 +765,10 @@ class ARTM(object):
                 p(c|d), which give the probability of class label c for document d.
 
         :return:
-          pandas.DataFrame: (data, columns, rows), where:\
-          1) columns --- the ids of documents, for which the Theta matrix was requested;\
-          2) rows --- the names of topics in topic model, that was used to create Theta;\
-          3) data --- content of Theta matrix.
+          pandas.DataFrame: (data, columns, rows), where:
+          * columns --- the ids of documents, for which the Theta matrix was requested;
+          * rows --- the names of topics in topic model, that was used to create Theta;
+          * data --- content of Theta matrix.
         """
         if batch_vectorizer is None:
             raise IOError('No batches were given for processing')
