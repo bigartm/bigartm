@@ -139,7 +139,7 @@ class ItemsProcessedScoreTracker(BaseScoreTracker):
         * 2
         """
         BaseScoreTracker.__init__(self, score)
- 
+
 _set_properties(ItemsProcessedScoreTracker, {'value': {}})
 
 
@@ -224,6 +224,7 @@ class TopicMassPhiScoreTracker(BaseScoreTracker):
 _set_properties(TopicMassPhiScoreTracker, {'value': {},
                                            'topic_mass': {'proto_qualifier': 'repeated'},
                                            'topic_ratio': {'proto_qualifier': 'repeated'}})
+
 
 class ClassPrecisionScoreTracker(BaseScoreTracker):
     def __init__(self, score):
