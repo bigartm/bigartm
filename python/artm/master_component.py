@@ -47,24 +47,24 @@ def _score_type(config):
 
 
 def _score_data_func(score_data_type):
-        if score_data_type == constants.ScoreData_Type_Perplexity:
-            return messages.PerplexityScore
-        elif score_data_type == constants.ScoreData_Type_SparsityTheta:
-            return messages.SparsityThetaScore
-        elif score_data_type == constants.ScoreData_Type_SparsityPhi:
-            return messages.SparsityPhiScore
-        elif score_data_type == constants.ScoreData_Type_ItemsProcessed:
-            return messages.ItemsProcessedScore
-        elif score_data_type == constants.ScoreData_Type_TopTokens:
-            return messages.TopTokensScore
-        elif score_data_type == constants.ScoreData_Type_ThetaSnippet:
-            return messages.ThetaSnippetScore
-        elif score_data_type == constants.ScoreData_Type_TopicKernel:
-            return messages.TopicKernelScore
-        elif score_data_type == constants.ScoreData_Type_TopicMassPhi:
-            return messages.TopicMassPhiScore
-        elif score_data_type == constants.ScoreData_Type_ClassPrecision:
-            return messages.ClassPrecisionScore
+    if score_data_type == constants.ScoreData_Type_Perplexity:
+        return messages.PerplexityScore
+    elif score_data_type == constants.ScoreData_Type_SparsityTheta:
+        return messages.SparsityThetaScore
+    elif score_data_type == constants.ScoreData_Type_SparsityPhi:
+        return messages.SparsityPhiScore
+    elif score_data_type == constants.ScoreData_Type_ItemsProcessed:
+        return messages.ItemsProcessedScore
+    elif score_data_type == constants.ScoreData_Type_TopTokens:
+        return messages.TopTokensScore
+    elif score_data_type == constants.ScoreData_Type_ThetaSnippet:
+        return messages.ThetaSnippetScore
+    elif score_data_type == constants.ScoreData_Type_TopicKernel:
+        return messages.TopicKernelScore
+    elif score_data_type == constants.ScoreData_Type_TopicMassPhi:
+        return messages.TopicMassPhiScore
+    elif score_data_type == constants.ScoreData_Type_ClassPrecision:
+        return messages.ClassPrecisionScore
 
 
 def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors,

@@ -1,0 +1,51 @@
+Score Tracker
+================
+
+This page describes *ScoreTracker classes.
+
+.. automodule:: artm
+
+.. autoclass:: SparsityPhiScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: SparsityThetaScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: PerplexityScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: TopTokensScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: TopicKernelScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: ItemsProcessedScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: ThetaSnippetScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: TopicMassPhiScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__
+
+.. autoclass:: ClassPrecisionScoreTracker
+   :members:
+   :undoc-members:
+   :special-members: __init__

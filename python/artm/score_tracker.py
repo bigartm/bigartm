@@ -6,7 +6,8 @@ __all__ = [
     'ThetaSnippetScoreTracker',
     'TopicKernelScoreTracker',
     'TopTokensScoreTracker',
-    'TopicMassPhiScoreTracker'
+    'TopicMassPhiScoreTracker',
+    'ClassPrecisionScoreTracker'
 ]
 
 
@@ -82,15 +83,39 @@ class BaseScoreTracker(object):
         self._master = score.master
 
 
-SparsityPhiScoreTracker = type('SparsityPhiScoreTracker', (BaseScoreTracker, ), {})
+class SparsityPhiScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
+
 _set_properties(SparsityPhiScoreTracker, {'value': {}, 'zero_tokens': {}, 'total_tokens': {}})
 
 
-SparsityThetaScoreTracker = type('SparsityThetaScoreTracker', (BaseScoreTracker, ), {})
+class SparsityThetaScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
+
 _set_properties(SparsityThetaScoreTracker, {'value': {}, 'zero_topics': {}, 'total_topics': {}})
 
 
-PerplexityScoreTracker = type('PerplexityScoreTracker', (BaseScoreTracker, ), {})
+class PerplexityScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
+
 _set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {},
                                          'zero_tokens': {'proto_name': 'zero_words'},
                                          'theta_sparsity_value': {},
@@ -98,11 +123,27 @@ _set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {
                                          'theta_sparsity_total_topics': {}})
 
 
-ItemsProcessedScoreTracker = type('ItemsProcessedScoreTracker', (BaseScoreTracker, ), {})
+class ItemsProcessedScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
+ 
 _set_properties(ItemsProcessedScoreTracker, {'value': {}})
 
 
-TopTokensScoreTracker = type('TopTokensScoreTracker', (BaseScoreTracker, ), {})
+class TopTokensScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
+
 _set_properties(TopTokensScoreTracker, {'num_tokens': {'proto_name': 'num_entries'},
                                         'tokens': {'proto_name': 'token',
                                                    'proto_qualifier': 'repeated'},
@@ -112,7 +153,15 @@ _set_properties(TopTokensScoreTracker, {'num_tokens': {'proto_name': 'num_entrie
                                         'average_coherence': {}})
 
 
-TopicKernelScoreTracker = type('TopicKernelScoreTracker', (BaseScoreTracker, ), {})
+class TopicKernelScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
+
 _set_properties(TopicKernelScoreTracker, {'tokens': {'proto_name': 'kernel_tokens',
                                                      'proto_qualifier': 'repeated',
                                                      'proto_type': 'array'},
@@ -129,7 +178,15 @@ _set_properties(TopicKernelScoreTracker, {'tokens': {'proto_name': 'kernel_token
                                           'average_coherence': {}})
 
 
-ThetaSnippetScoreTracker = type('ThetaSnippetScoreTracker', (BaseScoreTracker, ), {})
+class ThetaSnippetScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
+
 _set_properties(ThetaSnippetScoreTracker, {'snippet': {'proto_name': 'values',
                                                        'proto_qualifier': 'repeated',
                                                        'proto_type': 'array',
@@ -139,11 +196,26 @@ _set_properties(ThetaSnippetScoreTracker, {'snippet': {'proto_name': 'values',
                                                             'key_field_name': None}})
 
 
-TopicMassPhiScoreTracker = type('TopicMassPhiScoreTracker', (BaseScoreTracker, ), {})
+class TopicMassPhiScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
+
 _set_properties(TopicMassPhiScoreTracker, {'value': {},
                                            'topic_mass': {'proto_qualifier': 'repeated'},
                                            'topic_ratio': {'proto_qualifier': 'repeated'}})
 
+class ClassPrecisionScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * 1
+        * 2
+        """
+        BaseScoreTracker.__init__(self, score)
 
-ClassPrecisionScoreTracker = type('ClassPrecisionScoreTracker', (BaseScoreTracker, ), {})
 _set_properties(ClassPrecisionScoreTracker, {'value': {}, 'error': {}, 'total': {}})

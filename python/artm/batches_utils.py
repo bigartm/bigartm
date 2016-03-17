@@ -134,7 +134,7 @@ class BatchVectorizer(object):
     @property
     def data_path(self):
         """
-        :return: the dick path of batches
+        :return: the disk path of batches
         """
         return self._data_path
 
