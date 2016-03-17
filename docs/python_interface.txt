@@ -9,3 +9,5 @@ in python interface of BigARTM library.
    python_interface/batches_utils
    python_interface/regularizers
    python_interface/scores
+   python_interface/score_tracker
+   python_interface/model

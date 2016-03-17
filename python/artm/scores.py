@@ -148,7 +148,7 @@ class SparsityPhiScore(BaseScore):
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :patam str class_id: class_id to score
+        :param str class_id: class_id to score
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
         :type topic_names: list of str
@@ -220,7 +220,7 @@ class PerplexityScore(BaseScore):
                  dictionary_name=None, use_unigram_document_model=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :patam class_ids: class_id to score, means that tokens of all class_ids will be used
+        :param class_ids: class_id to score, means that tokens of all class_ids will be used
         :type class_ids: list of str
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
@@ -347,7 +347,7 @@ class TopTokensScore(BaseScore):
                  num_tokens=None, dictionary_name=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :patam str class_id: class_id to score
+        :param str class_id: class_id to score
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
         :type topic_names: list of str
@@ -458,7 +458,7 @@ class TopicKernelScore(BaseScore):
                  dictionary_name=None, probability_mass_threshold=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :patam str class_id: class_id to score
+        :param str class_id: class_id to score
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
         :type topic_names: list of str
@@ -521,7 +521,7 @@ class TopicMassPhiScore(BaseScore):
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
-        :patam str class_id: class_id to score
+        :param str class_id: class_id to score
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
         :type topic_names: list of str
