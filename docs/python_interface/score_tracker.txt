@@ -3,7 +3,7 @@ Score Tracker
 
 This page describes *ScoreTracker classes.
 
-.. automodule:: artm
+.. automodule:: artm.score_tracker
 
 .. autoclass:: SparsityPhiScoreTracker
    :members:
