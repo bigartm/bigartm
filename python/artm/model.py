@@ -554,13 +554,13 @@ class ARTM(object):
           or it will be initialized by dictionary during first call
 
         :Update formulas:
-          The formulas for decay_weight and apply_weight:
+          * The formulas for decay_weight and apply_weight:
           * update_count = current_processed_docs / (batch_size * update_every);
           * rho = pow(tau0 + update_count, -kappa);
           * decay_weight = 1-rho;
           * apply_weight = rho;
-          if apply_weight, decay_weight and update_after are set, they will be used,\
-          otherwise the code below will be used (with update_every, tau0 and kappa)
+          * if apply_weight, decay_weight and update_after are set, they will be used,\
+            otherwise the code below will be used (with update_every, tau0 and kappa)
         """
         if batch_vectorizer is None:
             raise IOError('No batches were given for processing')
@@ -666,7 +666,7 @@ class ARTM(object):
                       reasonable to extract unnormalized counters
 
         :return:
-          pandas.DataFrame: (data, columns, rows), where:
+          * pandas.DataFrame: (data, columns, rows), where:
           * columns --- the names of topics in topic model;
           * rows --- the tokens of topic model;
           * data --- content of Phi matrix.
@@ -704,7 +704,7 @@ class ARTM(object):
         :type topic_names: list of str
 
         :return:
-          pandas.DataFrame: (data, columns, rows), where:
+          * pandas.DataFrame: (data, columns, rows), where:
           * columns --- the ids of documents, for which the Theta matrix was requested;
           * rows --- the names of topics in topic model, that was used to create Theta;
           * data --- content of Theta matrix.
@@ -765,7 +765,7 @@ class ARTM(object):
                 p(c|d), which give the probability of class label c for document d.
 
         :return:
-          pandas.DataFrame: (data, columns, rows), where:
+          * pandas.DataFrame: (data, columns, rows), where:
           * columns --- the ids of documents, for which the Theta matrix was requested;
           * rows --- the names of topics in topic model, that was used to create Theta;
           * data --- content of Theta matrix.

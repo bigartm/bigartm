@@ -86,6 +86,8 @@ class BaseScoreTracker(object):
 class SparsityPhiScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
@@ -98,6 +100,8 @@ _set_properties(SparsityPhiScoreTracker, {'value': {}, 'zero_tokens': {}, 'total
 class SparsityThetaScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
@@ -110,6 +114,8 @@ _set_properties(SparsityThetaScoreTracker, {'value': {}, 'zero_topics': {}, 'tot
 class PerplexityScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
@@ -126,6 +132,8 @@ _set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {
 class ItemsProcessedScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
@@ -138,6 +146,8 @@ _set_properties(ItemsProcessedScoreTracker, {'value': {}})
 class TopTokensScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
@@ -156,6 +166,8 @@ _set_properties(TopTokensScoreTracker, {'num_tokens': {'proto_name': 'num_entrie
 class TopicKernelScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
@@ -181,6 +193,8 @@ _set_properties(TopicKernelScoreTracker, {'tokens': {'proto_name': 'kernel_token
 class ThetaSnippetScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
@@ -199,6 +213,8 @@ _set_properties(ThetaSnippetScoreTracker, {'snippet': {'proto_name': 'values',
 class TopicMassPhiScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
@@ -212,6 +228,8 @@ _set_properties(TopicMassPhiScoreTracker, {'value': {},
 class ClassPrecisionScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
+        :param object_reference score: information about base score, private
+
         :Properties: a
         * 1
         * 2
