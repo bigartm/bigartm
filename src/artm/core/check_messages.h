@@ -767,8 +767,8 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
     ss << ", regularizer=("
        << message.regularizer_config(i).name() << ":"
        << message.regularizer_config(i).tau() << ")";
-  ss << ", reuse_theta=" << message.reuse_theta() ? "yes" : "no";
-  ss << ", opt_for_avx=" << message.opt_for_avx() ? "yes" : "no";
+  ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
+  ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", disk_cache_path" << message.disk_cache_path();
 
   return ss.str();
@@ -798,7 +798,7 @@ inline std::string DescribeMessage(const ::artm::FitOnlineMasterModelArgs& messa
     ss << message.decay_weight(i);
   }
   ss << ")";
-  ss << ", async=" << message.async() ? "yes" : "no";
+  ss << ", async=" << (message.async() ? "yes" : "no");
   return ss.str();
 }
 
