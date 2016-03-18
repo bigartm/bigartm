@@ -135,8 +135,7 @@ void Perplexity::AppendScore(
         auto entry_ptr = dictionary_ptr->entry(token);
         bool failed = true;
         if (entry_ptr != nullptr && entry_ptr->token_value()) {
-          float n_w = entry_ptr->token_value();
-          sum = n_w / dictionary_ptr->size();
+          sum = entry_ptr->token_value();
           failed = false;
         }
         if (failed) {
