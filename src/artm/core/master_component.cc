@@ -675,7 +675,8 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
 
-  ClearThetaCache(ClearThetaCacheArgs());
+  if (args.theta_matrix_type() == TransformMasterModelArgs_ThetaMatrixType_Cache)
+    ClearThetaCache(ClearThetaCacheArgs());
   ClearScoreCache(ClearScoreCacheArgs());
 
   ProcessBatchesArgs process_batches_args;

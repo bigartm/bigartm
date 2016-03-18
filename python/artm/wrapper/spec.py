@@ -177,6 +177,11 @@ ARTM_API = [
         request=messages.DictionaryData,
     ),
     CallSpec(
+        'ArtmRequestMasterComponentInfo',
+        [('master_id', int), ('args', messages.GetMasterComponentInfoArgs)],
+        request=messages.MasterComponentInfo,
+    ),
+    CallSpec(
         'ArtmSaveBatch',
         [('filename', str), ('batch', messages.Batch)],
     ),
