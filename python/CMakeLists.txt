@@ -19,6 +19,7 @@ elseif(UNIX)
     echo "Building python package bigartm"
     COMMAND python ${CMAKE_CURRENT_LIST_DIR}/setup.py build
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+  add_dependencies(python_build protoc)
   install(CODE "message(\"Installing python package bigartm\")")
   install(CODE "execute_process(COMMAND python setup.py install
     WORKING_DIRECTORY \"${CMAKE_CURRENT_LIST_DIR}\")")
