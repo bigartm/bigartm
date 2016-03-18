@@ -27,14 +27,14 @@ def test_func():
 
     perplexity_tol = 0.1
     expected_perp_col_value_on_iteration = {
-        0: 6716.3,
-        1: 2310.1,
-        2: 1997.8,
+        0: 6649.1,
+        1: 2300.2,
+        2: 1996.8,
         3: 1786.1,
-        4: 1692.8,
-        5: 1644.7,
-        6: 1613.2,
-        7: 1591.0
+        4: 1692.7,
+        5: 1644.4,
+        6: 1612.3,
+        7: 1589.5
     }
     expected_perp_doc_value_on_iteration = {
         0: 6614.6,
