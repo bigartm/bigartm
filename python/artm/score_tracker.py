@@ -86,11 +86,13 @@ class BaseScoreTracker(object):
 class SparsityPhiScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * value - values of Phi sparsity.
+        * zero_tokens - number of zero rows in Phi.
+        * total_tokens - number of all rows in Phi.
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
@@ -100,11 +102,13 @@ _set_properties(SparsityPhiScoreTracker, {'value': {}, 'zero_tokens': {}, 'total
 class SparsityThetaScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * value - values of Theta sparsity.
+        * zero_topics - number of zero rows in Theta.
+        * total_topics - number of all rows in Theta.
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
@@ -114,11 +118,14 @@ _set_properties(SparsityThetaScoreTracker, {'value': {}, 'zero_topics': {}, 'tot
 class PerplexityScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * value - values of perplexity.
+        * raw - raw values in formula for perplexity.
+        * normalizer - normalizer values in formula for perplexity.
+        * zero_tokens - number of zero p(w|d) = sum_t p(w|t) p(t|d).
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
@@ -132,11 +139,11 @@ _set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {
 class ItemsProcessedScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * value - numbers of processed documents.
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
@@ -146,11 +153,17 @@ _set_properties(ItemsProcessedScoreTracker, {'value': {}})
 class TopTokensScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * num_tokens - number of requested top tokens.
+        * coherence - each element of list is a dict, key - topic name, value - topic coherence\
+                      counted using top-tokens
+        * average_coherence - average coherencies of all scored topics.
+        * tokens - each element of list is a dict, key - topic name, value - list of top-tokens
+        * weights - each element of list is a dict, key - topic name, value - list of weights of\
+                    corresponding top-tokens (weight of token == p(w|t))
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
@@ -166,11 +179,20 @@ _set_properties(TopTokensScoreTracker, {'num_tokens': {'proto_name': 'num_entrie
 class TopicKernelScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * tokens - each element of list is a dict, key - topic name, value - list of kernel tokens
+        * size - each element of list is a dict, key - topic name, value - kernel size
+        * contrast - each element of list is a dict, key - topic name, value - kernel contrast
+        * purity - each element of list is a dict, key - topic name, value - kernel purity
+        * coherence - each element of list is a dict, key - topic name, value - topic coherence\
+                      counted using kernel tokens
+        * average_size - average kernel size of all scored topics.
+        * average_contrast - average kernel contrast of all scored topics.
+        * average_purity - average kernel purity of all scored topics.
+        * average_coherence - average coherencies of all scored topics.
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
@@ -193,11 +215,13 @@ _set_properties(TopicKernelScoreTracker, {'tokens': {'proto_name': 'kernel_token
 class ThetaSnippetScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * document_ids - each element of list is a list of ids of returned documents.
+        * snippet - each element of list is a dict, key - doc id, value - list with\
+                    corresponding p(t|d) values.
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
@@ -213,11 +237,13 @@ _set_properties(ThetaSnippetScoreTracker, {'snippet': {'proto_name': 'values',
 class TopicMassPhiScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * value - values of ratio of sum_t n_t of scored topics.and all topics
+        * topic_mass - each value is a dict, key - topic name, value - topic mass n_t
+        * topic_ratio - each value is a dict, key - topic name, value - topic ratio
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
@@ -229,11 +255,13 @@ _set_properties(TopicMassPhiScoreTracker, {'value': {},
 class ClassPrecisionScoreTracker(BaseScoreTracker):
     def __init__(self, score):
         """
-        :param object_reference score: information about base score, private
-
-        :Properties: a
-        * 1
-        * 2
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * value - values of ratio of correct predictions.
+        * error - numbers of error predictiona.
+        * total - numbers of all predictions.
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
         """
         BaseScoreTracker.__init__(self, score)
 
