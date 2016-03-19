@@ -768,6 +768,7 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
        << message.regularizer_config(i).name() << ":"
        << message.regularizer_config(i).tau() << ")";
   ss << ", reuse_theta=" << (message.reuse_theta() ? "yes" : "no");
+  ss << ", cache_theta=" << (message.cache_theta() ? "yes" : "no");
   ss << ", opt_for_avx=" << (message.opt_for_avx() ? "yes" : "no");
   ss << ", disk_cache_path" << message.disk_cache_path();
 
