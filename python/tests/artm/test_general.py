@@ -17,6 +17,7 @@ def test_func():
     num_document_passes = 1
     num_topics = 15
     vocab_size = 6906
+    num_docs = 3430
 
     data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     batches_folder = tempfile.mkdtemp()
@@ -123,7 +124,7 @@ def test_func():
 
         phi = model.get_phi()
         assert phi.shape == (vocab_size, num_topics)
-        #theta = model.get_theta()
-        #print theta.shape
+        theta = model.get_theta()
+        assert theta.shape == (num_topics, num_docs)
     finally:
         shutil.rmtree(batches_folder)
