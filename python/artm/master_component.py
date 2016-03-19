@@ -161,7 +161,7 @@ class MasterComponent(object):
 
     def reconfigure(self, topic_names=None, class_ids=None, scores=None, regularizers=None,
                     num_processors=None, pwt_name=None, nwt_name=None, num_document_passes=None,
-                    reuse_theta=None, cache_theta=False):
+                    reuse_theta=None, cache_theta=None):
         master_config = _prepare_config(topic_names=topic_names,
                                         class_ids=class_ids,
                                         scores=scores,
