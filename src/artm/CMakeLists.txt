@@ -1,12 +1,49 @@
 include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 
+# add custom command for creating from *.proto templates
+add_custom_command(
+    OUTPUT
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h
+    DEPENDS
+    ${CMAKE_CURRENT_LIST_DIR}/messages.proto
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.proto
+    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./
+    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/core/internals.proto --cpp_out=./
+    COMMENT "Generating headers and sources from *.proto files"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..)
+
+# add custom target
+# to bind targets with *.proto dependencies and
+# *.proto generation
+# as a result, we specify the order
+add_custom_target(proto_generation ALL
+    DEPENDS
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
+    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h)
+
+# make separate objective files for every 'external' *.pb.cc file
+# rationale - compiling every *.pb.cc file for different targets
+# is very computationaly intensive
+add_library(messages_proto STATIC EXCLUDE_FROM_ALL
+    messages.pb.cc
+    messages.pb.h)
+add_dependencies(messages_proto proto_generation)
+
+add_library(internals_proto STATIC EXCLUDE_FROM_ALL
+    core/internals.pb.cc
+    core/internals.pb.h)
+add_dependencies(internals_proto proto_generation)
+
 # Static 'artm' library
 
 set(SRC_LIST
 	c_interface.cc
 	c_interface.h
-	messages.pb.cc
-	messages.pb.h
 	regularizer_interface.cc
 	regularizer_interface.h
 	score_calculator_interface.cc
@@ -29,8 +66,6 @@ set(SRC_LIST
 	core/helpers.h
 	core/instance.cc
 	core/instance.h
-	core/internals.pb.cc
-	core/internals.pb.h
 	core/master_component.cc
 	core/master_component.h
 	core/processor.cc
@@ -99,8 +134,6 @@ FILE(GLOB_RECURSE SRC_LIST_OTHER
 	score_calculator_interface.h
 	c_interface.cc
 	c_interface.h
-	messages.pb.cc
-	messages.pb.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_CORE                core/*.cc                core/*.h                )
@@ -116,6 +149,8 @@ source_group(""                    FILES ${SRC_LIST_OTHER}               )
 
 add_definitions("-Dartm_EXPORTS")
 add_library(artm-static STATIC ${SRC_LIST})
+target_link_libraries(artm-static messages_proto internals_proto)
+add_dependencies(artm-static messages_proto internals_proto)
 
 
 # Shared 'artm' library
@@ -140,4 +175,3 @@ else()
   # FIXME: install headers to /usr/include, protobuf and compiled messages --- to appropriate path
   #install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
 endif()
-
