@@ -137,7 +137,10 @@ void MasterComponent::AppendDictionary(const DictionaryData& data) {
 }
 
 void MasterComponent::DisposeDictionary(const std::string& name) {
-  instance_->dictionaries()->erase(name);
+  if (name.empty())
+    instance_->dictionaries()->clear();
+  else
+    instance_->dictionaries()->erase(name);
 }
 
 void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {

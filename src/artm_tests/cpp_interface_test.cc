@@ -277,6 +277,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   artm::MasterModel master(master_config);
   artm::test::Api api(master);
 
+  master.DisposeDictionary(std::string());  // Dispose all dictionaries (if any leaked from previous tests)
 
   artm::ImportBatchesArgs import_batches_args;
   for (auto& batch_path : batches) {

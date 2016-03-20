@@ -62,6 +62,13 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
   ThreadSafeCollectionHolder()
       : lock_(), object_(std::map<K, std::shared_ptr<T>>()) {}
 
+  static ThreadSafeCollectionHolder<K, T>& singleton() {
+    // Mayers singleton is thread safe in C++11
+    // http://stackoverflow.com/questions/1661529/is-meyers-implementation-of-singleton-pattern-thread-safe
+    static ThreadSafeCollectionHolder<K, T> holder;
+    return holder;
+  }
+
   ~ThreadSafeCollectionHolder() {}
 
   std::shared_ptr<T> get(const K& key) const {

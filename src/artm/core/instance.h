@@ -51,7 +51,7 @@ class Instance {
   ThreadSafeRegularizerCollection* regularizers() { return &regularizers_; }
   ThreadSafeScoreCollection* scores_calculators() { return &score_calculators_; }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
-  ThreadSafeDictionaryCollection* dictionaries() { return &dictionaries_; }
+  ThreadSafeDictionaryCollection* dictionaries() const { return &ThreadSafeDictionaryCollection::singleton(); }
   ThreadSafeBatchCollection* batches() { return &batches_; }
   ThreadSafeModelCollection* models() { return &models_; }
 
@@ -87,7 +87,6 @@ class Instance {
 
   ThreadSafeRegularizerCollection regularizers_;
   ThreadSafeScoreCollection score_calculators_;
-  ThreadSafeDictionaryCollection dictionaries_;
   ThreadSafeBatchCollection batches_;
   ThreadSafeModelCollection models_;
 

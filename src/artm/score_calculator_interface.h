@@ -49,7 +49,6 @@ class ScoreCalculatorInterface {
       Score* score) {}
 
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
-  void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
   std::string model_name() const { return score_config_.model_name(); }
   std::string score_name() const { return score_config_.name(); }

@@ -65,7 +65,6 @@ Instance::Instance(const MasterModelConfig& config)
       master_model_config_(nullptr),  // copied in Reconfigure (see below)
       regularizers_(),
       score_calculators_(),
-      dictionaries_(),
       batches_(),
       models_(),
       processor_queue_(),
@@ -81,7 +80,6 @@ Instance::Instance(const Instance& rhs)
       master_model_config_(nullptr),  // copied in Reconfigure (see below)
       regularizers_(),
       score_calculators_(),
-      dictionaries_(),
       batches_(),
       models_(),
       processor_queue_(),
@@ -90,15 +88,6 @@ Instance::Instance(const Instance& rhs)
       score_manager_(),
       processors_() {
   Reconfigure(*rhs.config());
-
-  std::vector<std::string> dict_name_impl = rhs.dictionaries_.keys();
-  for (auto& key : dict_name_impl) {
-    std::shared_ptr<Dictionary> value_impl = rhs.dictionaries_.get(key);
-    if (value_impl != nullptr) {
-      auto dict_clone = value_impl->Duplicate();
-      dictionaries_.set(key, std::make_shared<Dictionary>(*dict_clone));
-    }
-  }
 
   std::vector<std::string> batch_name = rhs.batches_.keys();
   for (auto& key : batch_name) {
@@ -148,8 +137,8 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
 
   cache_manager_->RequestMasterComponentInfo(master_info);
 
-  for (auto& name : dictionaries_.keys()) {
-    std::shared_ptr<Dictionary> dict = dictionaries_.get(name);
+  for (auto& name : dictionaries()->keys()) {
+    std::shared_ptr<Dictionary> dict = dictionaries()->get(name);
     if (dict == nullptr)
       continue;
 
@@ -280,7 +269,6 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
         "RegularizerConfig.type", regularizer_type));
   }
 
-  regularizer->set_dictionaries(&dictionaries_);
   this->regularizers()->set(regularizer_name, regularizer);
 }
 
@@ -346,7 +334,6 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("ScoreConfig.type", score_type));
   }
 
-  score_calculator->set_dictionaries(&dictionaries_);
   return score_calculator;
 }
 

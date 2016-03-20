@@ -42,7 +42,7 @@ class RegularizePtdwAgent {
 
 class RegularizerInterface {
  public:
-  RegularizerInterface() : dictionaries_(nullptr) {}
+  RegularizerInterface() {}
   virtual ~RegularizerInterface() { }
 
   virtual std::shared_ptr<RegularizeThetaAgent>
@@ -73,10 +73,6 @@ class RegularizerInterface {
   virtual bool Reconfigure(const RegularizerConfig& config) { return false; }
 
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
-  void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
-
- private:
-  const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;
 };
 
 }  // namespace artm
