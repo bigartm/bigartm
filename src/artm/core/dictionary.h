@@ -19,8 +19,13 @@ namespace core {
 
 class Dictionary;
 
+// ThreadSafeDictionaryCollection is a collection of dictionaries.
+// It is typically accessed via a ThreadSafeDictionaryCollection::singleton(),
+// which ensures that all master components share the same set of dictionaries.
+// The key (std::string) corresponds to the name of the dictionary.
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 
+// DictionaryEntry represents one entry in the dictionary, associated with a specific token.
 class DictionaryEntry {
  public:
   DictionaryEntry(Token token, float value, float tf, float df)
@@ -38,6 +43,12 @@ class DictionaryEntry {
   float token_df_;
 };
 
+// Dictionary is a sequential vector of dictionary entries.
+// It is important that the entries in the dictionary can be accessed by their index.
+// For example, if a dictionary is used to initialize the PhiMatrix the order of the
+// entries will define the order of tokens in the PhiMatrix.
+// Dictionary also supports an efficient lookup of the entries by its token.
+// Dictionary also stores a co-occurence data, used by Coherence score and regularizer.
 class Dictionary {
  public:
   explicit Dictionary(const artm::DictionaryData& data);

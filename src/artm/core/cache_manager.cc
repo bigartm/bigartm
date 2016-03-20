@@ -183,7 +183,7 @@ void CacheManager::RequestThetaMatrix(const GetThetaMatrixArgs& get_theta_args,
 
     if (cache->has_filename()) {
       DataLoaderCacheEntry cache_reloaded;
-      BatchHelpers::LoadMessage(cache->filename(), &cache_reloaded);
+      Helpers::LoadMessage(cache->filename(), &cache_reloaded);
       PopulateThetaMatrixFromCacheEntry(cache_reloaded, get_theta_args, theta_matrix);
     } else {
       PopulateThetaMatrixFromCacheEntry(*cache, get_theta_args, theta_matrix);
@@ -200,7 +200,7 @@ std::shared_ptr<DataLoaderCacheEntry> CacheManager::FindCacheEntry(
   try {
     std::shared_ptr<DataLoaderCacheEntry> copy(std::make_shared<DataLoaderCacheEntry>());
     copy->CopyFrom(*retval);
-    BatchHelpers::LoadMessage(retval->filename(), copy.get());
+    Helpers::LoadMessage(retval->filename(), copy.get());
     // copy->clear_filename();
     return copy;
   } catch(...) {

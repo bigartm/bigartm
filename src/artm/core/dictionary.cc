@@ -180,7 +180,7 @@ Dictionary::Gather(const GatherDictionaryArgs& args,
   std::vector<std::string> batches;
 
   if (args.has_data_path()) {
-    for (auto& batch_path : BatchHelpers::ListAllBatches(args.data_path()))
+    for (auto& batch_path : Helpers::ListAllBatches(args.data_path()))
       batches.push_back(batch_path.string());
     LOG(INFO) << "Found " << batches.size() << " batches in '" << args.data_path() << "' folder";
   } else {
@@ -195,7 +195,7 @@ Dictionary::Gather(const GatherDictionaryArgs& args,
     try {
       if (batch_ptr == nullptr) {
         batch_ptr = std::make_shared<Batch>();
-        ::artm::core::BatchHelpers::LoadMessage(batch_file, batch_ptr.get());
+        ::artm::core::Helpers::LoadMessage(batch_file, batch_ptr.get());
       }
     } catch(std::exception& ex) {
         LOG(ERROR) << ex.what() << ", the batch will be skipped.";

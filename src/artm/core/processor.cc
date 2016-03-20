@@ -171,7 +171,7 @@ static void SaveCache(std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr,
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
   try {
-    BatchHelpers::SaveMessage(file.string(), disk_cache_path, *new_cache_entry_ptr);
+    Helpers::SaveMessage(file.string(), disk_cache_path, *new_cache_entry_ptr);
     new_cache_entry_ptr->set_filename((fs::path(disk_cache_path) / file).string());
     new_cache_entry_ptr->clear_theta();
     new_cache_entry_ptr->clear_item_id();
@@ -688,7 +688,7 @@ void Processor::ThreadFunction() {
             batch.CopyFrom(*mem_batch);
           } else {
             try {
-              ::artm::core::BatchHelpers::LoadMessage(part->batch_filename(), &batch);
+              ::artm::core::Helpers::LoadMessage(part->batch_filename(), &batch);
             } catch (std::exception& ex) {
               LOG(ERROR) << ex.what() << ", the batch will be skipped.";
               continue;

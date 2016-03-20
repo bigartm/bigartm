@@ -1060,7 +1060,7 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
           "Populate this field or provide batches via ArtmImportBatches API"));
       }
     } else {
-      for (auto& batch_path : artm::core::BatchHelpers::ListAllBatches(args.batch_folder()))
+      for (auto& batch_path : artm::core::Helpers::ListAllBatches(args.batch_folder()))
         batch_names.push_back(batch_path.string());
       if (batch_names.empty())
         BOOST_THROW_EXCEPTION(InvalidOperation("No batches found in " + args.batch_folder() + " folder"));

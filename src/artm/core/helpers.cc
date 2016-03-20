@@ -118,7 +118,7 @@ std::vector<float> Helpers::GenerateRandomVector(int size, const Token& token, i
 
 // Return the filenames of all files that have the specified extension
 // in the specified directory.
-std::vector<boost::filesystem::path> BatchHelpers::ListAllBatches(const boost::filesystem::path& root) {
+std::vector<boost::filesystem::path> Helpers::ListAllBatches(const boost::filesystem::path& root) {
   std::vector<boost::filesystem::path> batches;
 
   if (boost::filesystem::exists(root) && boost::filesystem::is_directory(root)) {
@@ -134,10 +134,10 @@ std::vector<boost::filesystem::path> BatchHelpers::ListAllBatches(const boost::f
   return batches;
 }
 
-boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,
-                                           const std::string& disk_path, const std::string& name) {
+boost::uuids::uuid Helpers::SaveBatch(const Batch& batch,
+                                      const std::string& disk_path, const std::string& name) {
   if (!batch.has_id())
-    BOOST_THROW_EXCEPTION(InvalidOperation("BatchHelpers::SaveBatch: batch expecting id"));
+    BOOST_THROW_EXCEPTION(InvalidOperation("Helpers::SaveBatch: batch expecting id"));
 
   boost::uuids::uuid uuid;
   try {
@@ -147,20 +147,20 @@ boost::uuids::uuid BatchHelpers::SaveBatch(const Batch& batch,
   }
 
   boost::filesystem::path file(name + kBatchExtension);
-  SaveMessage(file.string(), disk_path, batch);
+  Helpers::SaveMessage(file.string(), disk_path, batch);
   return uuid;
 }
 
-void BatchHelpers::LoadMessage(const std::string& filename, const std::string& disk_path,
-                               ::google::protobuf::Message* message) {
+void Helpers::LoadMessage(const std::string& filename, const std::string& disk_path,
+                          ::google::protobuf::Message* message) {
   boost::filesystem::path full_path =
     boost::filesystem::path(disk_path) / boost::filesystem::path(filename);
 
   LoadMessage(full_path.string(), message);
 }
 
-void BatchHelpers::LoadMessage(const std::string& full_filename,
-                               ::google::protobuf::Message* message) {
+void Helpers::LoadMessage(const std::string& full_filename,
+                          ::google::protobuf::Message* message) {
   std::ifstream fin(full_filename.c_str(), std::ifstream::binary);
   if (!fin.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to open file " + full_filename));
@@ -196,8 +196,8 @@ void BatchHelpers::LoadMessage(const std::string& full_filename,
     FixAndValidateMessage(batch);
 }
 
-void BatchHelpers::SaveMessage(const std::string& filename, const std::string& disk_path,
-                               const ::google::protobuf::Message& message) {
+void Helpers::SaveMessage(const std::string& filename, const std::string& disk_path,
+                          const ::google::protobuf::Message& message) {
   boost::filesystem::path dir(disk_path);
   if (!boost::filesystem::is_directory(dir)) {
     if (!boost::filesystem::create_directory(dir))
@@ -211,8 +211,8 @@ void BatchHelpers::SaveMessage(const std::string& filename, const std::string& d
   SaveMessage(full_filename.string(), message);
 }
 
-void BatchHelpers::SaveMessage(const std::string& full_filename,
-                               const ::google::protobuf::Message& message) {
+void Helpers::SaveMessage(const std::string& full_filename,
+                          const ::google::protobuf::Message& message) {
   std::ofstream fout(full_filename.c_str(), std::ofstream::binary);
   if (!fout.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + full_filename));

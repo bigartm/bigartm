@@ -18,6 +18,9 @@
 namespace artm {
 namespace core {
 
+// TokenCollection class represents a sequential vector of tokens.
+// It also contains a mapping from Token to its index for efficient lookup.
+// For tokens that are not present in the collection loop up method will return 'UnknownId' constant.
 class TokenCollection {
  public:
   void Clear();
@@ -34,6 +37,7 @@ class TokenCollection {
   std::vector<Token> token_id_to_token_;
 };
 
+// A simple spin lock class, used for synchronization.
 class SpinLock : boost::noncopyable {
  public:
   SpinLock() : state_(kUnlocked) { }
@@ -46,6 +50,11 @@ class SpinLock : boost::noncopyable {
   std::atomic<bool> state_;
 };
 
+// PhiMatrixFrame is a abstract class that partially implements PhiMatrix interface.
+// It implements most methods that manage the structure of the PhiMatrix
+// (e.g. the set of tokens, and the set of topic names).
+// It does not implement the actual storate for the 2D matrix (e.g. n_wt or p(w|t) values).
+// This storate is implemented in derived classes DensePhiMatrix and AttachedPhiMatrix.
 class PhiMatrixFrame : public PhiMatrix {
  public:
   explicit PhiMatrixFrame(const ModelName& model_name,
@@ -84,6 +93,8 @@ class PhiMatrixFrame : public PhiMatrix {
 class DensePhiMatrix;
 class AttachedPhiMatrix;
 
+// DensePhiMatrix class implements PhiMatrix interface as a dense matrix.
+// The class owns the memory allocated to store the elements.
 class DensePhiMatrix : public PhiMatrixFrame {
  public:
   explicit DensePhiMatrix(const ModelName& model_name,
@@ -114,6 +125,10 @@ class DensePhiMatrix : public PhiMatrixFrame {
   std::vector<float*> values_;
 };
 
+// DensePhiMatrix class implements PhiMatrix interface as a dense matrix.
+// The class DOES NOT own the memory, allocated to store the elements.
+// Instead the memory is provided by external code.
+// Typically it will be stored in a numpy matrix in the Python interface.
 class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
  public:
   AttachedPhiMatrix(int address_length, float* address, PhiMatrixFrame* source);

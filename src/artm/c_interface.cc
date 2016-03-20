@@ -189,7 +189,7 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
     artm::Batch batch_object;
     ParseFromArray(batch, length, &batch_object);
     artm::core::FixAndValidateMessage(&batch_object);
-    artm::core::BatchHelpers::SaveBatch(batch_object, std::string(disk_path), batch_object.id());
+    artm::core::Helpers::SaveBatch(batch_object, std::string(disk_path), batch_object.id());
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
@@ -298,7 +298,7 @@ int ArtmRequestLoadBatch(const char* filename) {
   try {
     EnableLogging();
     auto batch = std::make_shared< ::artm::Batch>();
-    ::artm::core::BatchHelpers::LoadMessage(filename, batch.get());
+    ::artm::core::Helpers::LoadMessage(filename, batch.get());
     batch->SerializeToString(last_message());
     return last_message()->size();
   } CATCH_EXCEPTIONS;

@@ -147,7 +147,7 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
 void TestMother::GenerateBatches(int batches_size, int nTokens, const std::string& target_folder) {
   auto batches = GenerateBatches(batches_size, nTokens);
   for (unsigned i = 0; i < batches.size(); ++i)
-    artm::core::BatchHelpers::SaveBatch(*batches[i], target_folder, batches[i]->id());
+    artm::core::Helpers::SaveBatch(*batches[i], target_folder, batches[i]->id());
 }
 
 }  // namespace test
