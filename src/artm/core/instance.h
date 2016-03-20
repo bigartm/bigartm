@@ -24,7 +24,6 @@
 namespace artm {
 namespace core {
 
-class BatchManager;
 class CacheManager;
 class ScoreManager;
 class ScoreTracker;
@@ -55,7 +54,6 @@ class Instance {
   ThreadSafeBatchCollection* batches() { return &batches_; }
   ThreadSafeModelCollection* models() { return &models_; }
 
-  BatchManager* batch_manager();
   CacheManager* cache_manager();
   ScoreManager* score_manager();
   ScoreTracker* score_tracker();
@@ -94,9 +92,6 @@ class Instance {
 
   // Depends on schema_
   std::shared_ptr<CacheManager> cache_manager_;
-
-  // Depends on schema_
-  std::shared_ptr<BatchManager> batch_manager_;
 
   // Depends on [none]
   std::shared_ptr<ScoreManager> score_manager_;

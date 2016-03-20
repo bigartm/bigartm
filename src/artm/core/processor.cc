@@ -674,7 +674,7 @@ void Processor::ThreadFunction() {
 
       call_on_destruction c([&]() {  // NOLINT
         if (part->notifiable() != nullptr) {
-          part->notifiable()->Callback(part->task_id(), part->model_name());
+          part->notifiable()->Callback(part->task_id());
         }
       });
 

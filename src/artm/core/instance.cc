@@ -12,7 +12,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/helpers.h"
-#include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/score_manager.h"
 #include "artm/core/dictionary.h"
@@ -69,7 +68,6 @@ Instance::Instance(const MasterModelConfig& config)
       models_(),
       processor_queue_(),
       cache_manager_(),
-      batch_manager_(),
       score_manager_(),
       processors_() {
   Reconfigure(config);
@@ -84,7 +82,6 @@ Instance::Instance(const Instance& rhs)
       models_(),
       processor_queue_(),
       cache_manager_(),
-      batch_manager_(),
       score_manager_(),
       processors_() {
   Reconfigure(*rhs.config());
@@ -173,10 +170,6 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
   master_info->set_num_processors(processors_.size());
 }
 
-BatchManager* Instance::batch_manager() {
-  return batch_manager_.get();
-}
-
 CacheManager* Instance::cache_manager() {
   return cache_manager_.get();
 }
@@ -191,10 +184,6 @@ ScoreTracker* Instance::score_tracker() {
 
 void Instance::DisposeModel(ModelName model_name) {
   models_.erase(model_name);
-
-  if (batch_manager_ != nullptr) {
-    batch_manager_->DisposeModel(model_name);
-  }
 }
 
 void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
@@ -369,7 +358,6 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
   if (!is_configured_) {
     // First reconfiguration.
     cache_manager_.reset(new CacheManager());
-    batch_manager_.reset(new BatchManager());
     score_manager_.reset(new ScoreManager(this));
     score_tracker_.reset(new ScoreTracker());
 

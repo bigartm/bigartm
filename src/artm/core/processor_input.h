@@ -16,7 +16,7 @@ namespace core {
 class Notifiable {
  public:
   virtual ~Notifiable() {}
-  virtual void Callback(const boost::uuids::uuid& id, const ModelName& model_name) = 0;
+  virtual void Callback(const boost::uuids::uuid& id) = 0;
 };
 
 class ScoreManager;

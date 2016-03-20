@@ -494,7 +494,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   auto createProcessorInput = [&](){  // NOLINT
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
-    batch_manager->Add(task_id, std::string(), model_name);
+    batch_manager->Add(task_id);
 
     auto pi = std::make_shared<ProcessorInput>();
     pi->set_notifiable(batch_manager);
