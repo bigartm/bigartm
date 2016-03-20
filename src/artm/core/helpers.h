@@ -45,10 +45,6 @@ class BatchHelpers {
                           const ::google::protobuf::Message& message);
   static void SaveMessage(const std::string& filename, const std::string& disk_path,
                           const ::google::protobuf::Message& message);
-  static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
-                                                const GetThetaMatrixArgs& get_theta_args,
-                                                ::artm::ThetaMatrix* theta_matrix);
-  static void UpgradeBatch_v07(const char* source_folder, const char* target_folder);
 };
 
 }  // namespace core
