@@ -23,6 +23,8 @@ namespace core {
 
 class Instance;
 
+// ScoreManager class stores and aggregates theta scores.
+// Its implementation is thread safe because it can be called simultaneoudly from multiple processor threads.
 class ScoreManager : boost::noncopyable {
  public:
   explicit ScoreManager(Instance* instance) : instance_(instance), lock_(), score_map_() {}
@@ -38,6 +40,11 @@ class ScoreManager : boost::noncopyable {
   std::map<ScoreName, std::shared_ptr<Score>> score_map_;
 };
 
+// ScoreTracker class stores historical data for each score
+// (which is particularly important for Online algorithm to see the history of all scores within one iteration).
+// It is used to implement RequestScoreArray API.
+// The purpose of this class is solely to store the scores --- not to merge them.
+// This class stores both Phi-scores (non-cumulative) and Theta-scores (cumulative).
 class ScoreTracker : boost::noncopyable {
  public:
   ScoreTracker() : lock_(), array_() {}

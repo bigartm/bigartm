@@ -19,6 +19,11 @@ namespace artm {
 
 typedef ::google::protobuf::Message Score;
 
+// ScoreCalculatorInterface is the base class for all score calculators in BigARTM.
+// See any class in 'src/score' folder for an example of how to implement new score.
+// Keep in mind that scres can be either cumulative (theta-scores) or non-cumulative (phi-scores).
+// ScoreCalculatorInterface is, unfortunately, a base class for both of them.
+// Hopefully we will refactor this at some point in the future.
 class ScoreCalculatorInterface {
  public:
   explicit ScoreCalculatorInterface(const ScoreConfig& score_config) : score_config_(score_config) {}

@@ -25,6 +25,7 @@
 #include "artm/core/call_on_destruction.h"
 #include "artm/core/cuckoo_watch.h"
 #include "artm/core/helpers.h"
+#include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/score_manager.h"
 #include "artm/core/phi_matrix.h"
@@ -674,8 +675,8 @@ void Processor::ThreadFunction() {
       total_processed_batches++;
 
       call_on_destruction c([&]() {  // NOLINT
-        if (part->notifiable() != nullptr) {
-          part->notifiable()->Callback(part->task_id());
+        if (part->batch_manager() != nullptr) {
+          part->batch_manager()->Callback(part->task_id());
         }
       });
 

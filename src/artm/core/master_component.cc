@@ -497,7 +497,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     batch_manager->Add(task_id);
 
     auto pi = std::make_shared<ProcessorInput>();
-    pi->set_notifiable(batch_manager);
+    pi->set_batch_manager(batch_manager);
     pi->set_score_manager(score_manager);
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);

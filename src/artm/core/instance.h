@@ -37,7 +37,9 @@ typedef ThreadSafeCollectionHolder<std::string, RegularizerInterface> ThreadSafe
 typedef ThreadSafeCollectionHolder<std::string, ScoreCalculatorInterface> ThreadSafeScoreCollection;
 typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
 
-// Class Instance is respondible for joint hosting of many other components and data structures.
+// Class Instance is respondible for hosting of other components and data structures.
+// Essentially it implements Pimpl idiom for MasterComponent class,
+// e.g. MasterComponent has no data fields except std::shared_ptr<Instance>.
 class Instance {
  public:
   explicit Instance(const MasterModelConfig& config);

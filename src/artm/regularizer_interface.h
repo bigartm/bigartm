@@ -40,6 +40,16 @@ class RegularizePtdwAgent {
   virtual void Apply(int item_index, int inner_iter, ::artm::utility::DenseMatrix<float>* ptdw) const = 0;
 };
 
+// RegularizerInterface is the base class for all regularizers in BigARTM.
+// See any class in 'src/regularizer' folder for an example of how to implement new regularizer.
+// Keep in mind that scres can be apply either to theta matrix, ptdw matrix or to phi matrix.
+// RegularizerInterface is, unfortunately, a base class for both of them.
+// Hopefully we will refactor this at some point in the future.
+// For performance reasons theta-regularizer involve 'RegularizerThetaAgent' or 'RegularizerPtdwAgent'.
+// The idea is that you may analize the batch and store all information in your theta agent,
+// so that later it can be applied efficiently to the items.
+// A typical task to perform during construction of the agent is to analize the set of topics,
+// to avoid looking at strings (topic_name) during processing of each individual item.
 class RegularizerInterface {
  public:
   RegularizerInterface() {}

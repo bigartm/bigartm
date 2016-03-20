@@ -13,6 +13,9 @@ namespace core {
 typedef std::string ClassId;
 const std::string DefaultClass = "@default_class";
 
+// Token is a pair of keyword and its class_id (also known as tokens' modality).
+// Pay attention to the order of the arguments in the constructor.
+// For historical reasons ClassId goes first, followed by the keyword.
 struct Token {
  public:
   Token(const ClassId& _class_id, const std::string& _keyword)

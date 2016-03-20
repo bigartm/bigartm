@@ -170,7 +170,6 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     optimized_execution = ok;
   }
 
-  std::vector<Token> remove_tokens;
   for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
     const std::string& token_keyword = topic_model.token(token_index);
     const ClassId& class_id = topic_model.class_id(token_index);
@@ -225,11 +224,6 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       }
       break;
 
-    case TopicModel_OperationType_Remove:
-      if (current_token_id != -1)
-        remove_tokens.push_back(token);
-      break;
-
     case TopicModel_OperationType_Ignore:
       // ignore token == do nothing
       break;
@@ -239,9 +233,6 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
         "TopicModel.operation_type", operation_type));
     }
   }
-
-  if (remove_tokens.size() > 0)
-    phi_matrix->RemoveTokens(remove_tokens);
 }
 
 void PhiMatrixOperations::InvokePhiRegularizers(

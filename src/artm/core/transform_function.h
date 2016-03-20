@@ -12,6 +12,7 @@
 namespace artm {
 namespace core {
 
+// An interface for transformation function, used for KL-div regularizers.
 class TransformFunction {
  public:
   static std::shared_ptr<TransformFunction> create(const TransformConfig& config);

@@ -4,28 +4,22 @@
 #define SRC_ARTM_CORE_PROCESSOR_H_
 
 #include <atomic>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 #include "boost/thread.hpp"
 #include "boost/thread/mutex.hpp"
-#include "boost/bind.hpp"
 #include "boost/utility.hpp"
-
-#include "artm/messages.pb.h"
-
-#include "artm/core/common.h"
-#include "artm/core/internals.pb.h"
-
-#include "artm/utility/blas.h"
 
 namespace artm {
 namespace core {
 
 class Instance;
 
+// A class that implements ProcessBatch routine from
+// 'Parallel Non-blocking Deterministic Algorithm for Online Topic Modeling'.
+// Each processor instantiates its own thread that pulls tasks from processor queue, hosted by the Instance.
+// Each master components owns its own processors.
+// The implementation of the processor class is, perhaps, the most complicated code in BigARTM core.
+// If you are looking into Processor then you should consider reading other articles on ARTM theory.
 class Processor : boost::noncopyable {
  public:
   explicit Processor(Instance* instance);

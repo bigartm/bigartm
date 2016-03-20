@@ -13,19 +13,17 @@
 namespace artm {
 namespace core {
 
-class Notifiable {
- public:
-  virtual ~Notifiable() {}
-  virtual void Callback(const boost::uuids::uuid& id) = 0;
-};
-
+class BatchManager;
 class ScoreManager;
 class CacheManager;
 
+// This class describes one task for the processor component.
+// It has all the input data needed to execute ProcessBatch routine.
+// ProcessorInput is an element of the processor queue (Instance::processor_queue_).
 class ProcessorInput {
  public:
   ProcessorInput() : batch_(), args_(), model_name_(), nwt_target_name_(),
-                     batch_filename_(), batch_weight_(1.0f), task_id_(), notifiable_(nullptr),
+                     batch_filename_(), batch_weight_(1.0f), task_id_(), batch_manager_(nullptr),
                      score_manager_(nullptr), cache_manager_(nullptr),
                      ptdw_cache_manager_(nullptr),
                      reuse_theta_cache_manager_(nullptr) {}
@@ -36,8 +34,8 @@ class ProcessorInput {
   ProcessBatchesArgs* mutable_args() { return &args_; }
   const ProcessBatchesArgs& args() const { return args_; }
 
-  Notifiable* notifiable() const { return notifiable_; }
-  void set_notifiable(Notifiable* notifiable) { notifiable_ = notifiable; }
+  BatchManager* batch_manager() const { return batch_manager_; }
+  void set_batch_manager(BatchManager* batch_manager) { batch_manager_ = batch_manager; }
 
   ScoreManager* score_manager() const { return score_manager_; }
   void set_score_manager(ScoreManager* score_manager) { score_manager_ = score_manager; }
@@ -79,7 +77,7 @@ class ProcessorInput {
   std::string batch_filename_;  // if this is set batch_ is ignored;
   float batch_weight_;
   boost::uuids::uuid task_id_;
-  Notifiable* notifiable_;
+  BatchManager* batch_manager_;
   ScoreManager* score_manager_;
   CacheManager* cache_manager_;
   CacheManager* ptdw_cache_manager_;

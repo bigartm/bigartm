@@ -20,10 +20,9 @@ namespace core {
 // BatchManager class keeps track of ongoing tasks.
 // Each task is typically associated with processing a specific batch
 // the UUID 'task_id' then the same as 'batch.id' field.
-class BatchManager : boost::noncopyable, public Notifiable {
+class BatchManager : boost::noncopyable {
  public:
   BatchManager();
-  virtual ~BatchManager() {}
 
   // Adds task for execution
   void Add(const boost::uuids::uuid& task_id);
@@ -32,7 +31,7 @@ class BatchManager : boost::noncopyable, public Notifiable {
   bool IsEverythingProcessed() const;
 
   // Marks task as completed
-  virtual void Callback(const boost::uuids::uuid& task_id);
+  void Callback(const boost::uuids::uuid& task_id);
 
  private:
   mutable boost::mutex lock_;

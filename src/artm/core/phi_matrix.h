@@ -16,6 +16,8 @@
 namespace artm {
 namespace core {
 
+// Phi matrix is an interface (abstract class without methods).
+// It represents a single-precision matrix with two dimentions (tokens and topics).
 class PhiMatrix {
  public:
   static const int kUndefIndex = -1;
@@ -37,7 +39,6 @@ class PhiMatrix {
 
   virtual void Clear() = 0;
   virtual int AddToken(const Token& token) = 0;
-  virtual void RemoveTokens(const std::vector<Token>& tokens) = 0;
 
   virtual std::shared_ptr<PhiMatrix> Duplicate() const = 0;
   virtual ~PhiMatrix() {}

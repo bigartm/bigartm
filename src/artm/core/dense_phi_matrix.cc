@@ -197,10 +197,6 @@ int DensePhiMatrix::AddToken(const Token& token) {
   return retval;
 }
 
-void DensePhiMatrix::RemoveTokens(const std::vector<Token>& tokens) {
-  BOOST_THROW_EXCEPTION(artm::core::InternalError("Tokens removal is not implemented."));
-}
-
 void DensePhiMatrix::Reset() {
   std::for_each(values_.begin(), values_.end(), [&](float* value) {  // NOLINT
     for (int i = 0; i < topic_size(); ++i) value[i] = 0.0f;
@@ -265,10 +261,6 @@ void AttachedPhiMatrix::Clear() {
 
 int AttachedPhiMatrix::AddToken(const Token& token) {
   BOOST_THROW_EXCEPTION(artm::core::InternalError("Tokens addition is not allowed for attached model."));
-}
-
-void AttachedPhiMatrix::RemoveTokens(const std::vector<Token>& tokens) {
-  BOOST_THROW_EXCEPTION(artm::core::InternalError("Tokens removal is not allowed for attached model"));
 }
 
 }  // namespace core

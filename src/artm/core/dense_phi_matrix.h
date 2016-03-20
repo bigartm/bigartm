@@ -111,7 +111,6 @@ class DensePhiMatrix : public PhiMatrixFrame {
 
   virtual void Clear();
   virtual int AddToken(const Token& token);
-  virtual void RemoveTokens(const std::vector<Token>& tokens);
 
   void Reset();
   void Reshape(const PhiMatrix& phi_matrix);
@@ -143,7 +142,6 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
 
   virtual void Clear();
   virtual int AddToken(const Token& token);
-  virtual void RemoveTokens(const std::vector<Token>& tokens);
 
  private:
   friend class DensePhiMatrix;
