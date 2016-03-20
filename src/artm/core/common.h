@@ -10,7 +10,6 @@
 #include <sstream>
 #include <unordered_map>
 
-#include "boost/functional/hash.hpp"
 #include "boost/uuid/uuid.hpp"
 #include "boost/lexical_cast.hpp"
 #include "boost/uuid/uuid_io.hpp"
@@ -28,62 +27,6 @@ typedef std::string ScoreName;
 typedef std::string RegularizerName;
 typedef std::string DictionaryName;
 typedef std::string TopicName;
-
-typedef std::string ClassId;
-
-struct Token {
- public:
-  Token(const ClassId& _class_id, const std::string& _keyword)
-      : keyword(_keyword), class_id(_class_id),
-        hash_(calcHash(_class_id, _keyword)) {}
-
-  Token& operator=(const Token &rhs) {
-    if (this != &rhs) {
-      const_cast<std::string&>(keyword) = rhs.keyword;
-      const_cast<ClassId&>(class_id) = rhs.class_id;
-      const_cast<size_t&>(hash_) = rhs.hash_;
-    }
-
-    return *this;
-  }
-
-  bool operator<(const Token& token) const {
-    if (keyword != token.keyword)
-      return keyword < token.keyword;
-    return class_id < token.class_id;
-  }
-
-  bool operator==(const Token& token) const {
-    if (keyword == token.keyword && class_id == token.class_id) return true;
-    return false;
-  }
-
-  bool operator!=(const Token& token) const {
-    return !(*this == token);
-  }
-
-  const std::string keyword;
-  const ClassId class_id;
-
- private:
-  friend struct TokenHasher;
-  const size_t hash_;
-
-  static size_t calcHash(const ClassId& class_id, const std::string& keyword) {
-    size_t hash = 0;
-    boost::hash_combine<std::string>(hash, keyword);
-    boost::hash_combine<std::string>(hash, class_id);
-    return hash;
-  }
-};
-
-struct TokenHasher {
-  size_t operator()(const Token& token) const {
-    return token.hash_;
-  }
-};
-
-const std::string DefaultClass = "@default_class";
 
 const int UnknownId = -1;
 

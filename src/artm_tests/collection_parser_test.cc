@@ -7,6 +7,7 @@
 #include "artm/messages.pb.h"
 #include "artm/cpp_interface.h"
 #include "artm/core/helpers.h"
+#include "artm/core/token.h"
 
 #include "artm_tests/test_mother.h"
 

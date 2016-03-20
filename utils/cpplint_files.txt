@@ -13,6 +13,7 @@ src/artm/core/phi_matrix_operations.cc
 src/artm/core/processor.cc
 src/artm/core/processor_input.cc
 src/artm/core/score_manager.cc
+src/artm/core/token.cc
 src/artm/core/transform_function.cc
 src/artm/regularizer/decorrelator_phi.cc
 src/artm/regularizer/multilanguage_phi.cc
@@ -72,6 +73,7 @@ src/artm/core/protobuf_helpers.h
 src/artm/core/score_manager.h
 src/artm/core/template_manager.h
 src/artm/core/thread_safe_holder.h
+src/artm/core/token.h
 src/artm/core/transform_function.h
 src/artm_tests/api.h
 src/artm_tests/test_mother.h

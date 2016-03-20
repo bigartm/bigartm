@@ -21,6 +21,8 @@ class Batch;
 
 namespace core {
 
+struct Token;
+
 class Helpers {
  public:
   // Usage: SetThreadName (-1, "MainThread");

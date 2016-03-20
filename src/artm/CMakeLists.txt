@@ -82,6 +82,10 @@ set(SRC_LIST
 	core/sync_event.h
 	core/template_manager.h
 	core/thread_safe_holder.h
+	core/token.h
+	core/token.cc
+	core/transform_function.h
+	core/transform_function.cc
 	regularizer/decorrelator_phi.cc
 	regularizer/decorrelator_phi.h
 	regularizer/multilanguage_phi.cc
@@ -100,8 +104,6 @@ set(SRC_LIST
 	regularizer/improve_coherence_phi.h
 	regularizer/topic_selection_theta.cc
 	regularizer/topic_selection_theta.h
-	core/transform_function.h
-	core/transform_function.cc
 	score/class_precision.cc
 	score/class_precision.h
 	score/items_processed.cc

@@ -34,16 +34,6 @@ int repeated_field_index_of(const T& field, V value) {
   return -1;
 }
 
-inline bool model_has_token(const ::artm::TopicModel& topic_model,
-                            const artm::core::Token& token) {
-  for (int i = 0; i < topic_model.token_size(); ++i) {
-    if (topic_model.token(i) == token.keyword &&
-      topic_model.class_id(i) == token.class_id) return true;
-  }
-
-  return false;
-}
-
 template<class T, class V>
 void repeated_field_append(T* field, int index, V value) {
   V new_value = field->Get(index) + value;

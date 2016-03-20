@@ -19,6 +19,7 @@
 #include "artm/core/helpers.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/protobuf_helpers.h"
+#include "artm/core/token.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>  // NOLINT
