@@ -10,7 +10,6 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/token.h"
-#include "artm/messages.pb.h"
 
 #include "artm/core/internals.pb.h"
 #include "artm/core/call_on_destruction.h"

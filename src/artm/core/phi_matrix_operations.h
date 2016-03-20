@@ -9,7 +9,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/phi_matrix.h"
-#include "artm/messages.pb.h"
 #include "artm/core/instance.h"
 
 namespace artm {

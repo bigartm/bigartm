@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "artm/core/common.h"
-#include "artm/messages.pb.h"
 
 namespace artm {
 namespace core {

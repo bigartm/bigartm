@@ -11,7 +11,6 @@
 
 #include "glog/logging.h"
 
-#include "artm/messages.pb.h"
 #include "artm/score_calculator_interface.h"
 #include "artm/core/common.h"
 #include "artm/core/check_messages.h"

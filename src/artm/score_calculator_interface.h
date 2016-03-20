@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "artm/core/dictionary.h"
 #include "artm/core/common.h"
+#include "artm/core/dictionary.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/token.h"

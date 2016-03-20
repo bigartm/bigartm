@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 
-#include "artm/messages.pb.h"
+#include "artm/core/common.h"
 #include "artm/core/check_messages.h"
 #include "artm/core/master_component.h"
 #include "artm/core/template_manager.h"

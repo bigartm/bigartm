@@ -12,7 +12,6 @@
 #include "boost/uuid/uuid_io.hpp"
 
 #include "artm/core/common.h"
-#include "artm/messages.pb.h"
 
 #define ASSERT_APPROX_EQ(a, b) ASSERT_NEAR(a, b, (a + b) / 1e5)
 

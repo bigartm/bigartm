@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "artm/messages.pb.h"
-
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/token.h"

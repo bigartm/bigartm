@@ -8,7 +8,6 @@
 #include "boost/uuid/uuid.hpp"
 
 #include "artm/core/common.h"
-#include "artm/messages.pb.h"
 
 namespace artm {
 namespace core {

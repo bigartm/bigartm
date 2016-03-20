@@ -4,9 +4,8 @@
 
 #include "gtest/gtest.h"
 
-#include "artm/messages.pb.h"
-
 #include "artm/cpp_interface.h"
+#include "artm/core/common.h"
 #include "artm/core/instance.h"
 
 #include "artm_tests/test_mother.h"

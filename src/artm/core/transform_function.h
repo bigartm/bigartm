@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "artm/messages.pb.h"
+#include "artm/core/common.h"
 
 namespace artm {
 namespace core {

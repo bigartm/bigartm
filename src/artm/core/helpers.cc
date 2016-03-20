@@ -13,7 +13,6 @@
 #include "boost/uuid/uuid_io.hpp"
 #include "boost/uuid/uuid_generators.hpp"
 
-#include "artm/messages.pb.h"
 #include "artm/core/check_messages.h"
 #include "artm/core/common.h"
 #include "artm/core/helpers.h"

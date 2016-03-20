@@ -9,7 +9,7 @@
 #include "artm/c_interface.h"
 #include "artm/cpp_interface.h"
 #include "artm/core/exceptions.h"
-#include "artm/messages.pb.h"
+#include "artm/core/common.h"
 
 #include "artm/core/internals.pb.h"
 #include "artm/core/helpers.h"

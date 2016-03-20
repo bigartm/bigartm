@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 
 #include "artm/cpp_interface.h"
-#include "artm/messages.pb.h"
+#include "artm/core/common.h"
 
 void GenerateBatches(std::vector< ::artm::Batch>* batches, ::artm::DictionaryData* dictionary = nullptr) {
   int nBatches = 10;

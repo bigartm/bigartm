@@ -10,11 +10,10 @@
 #include <memory>
 #include <string>
 
-#include "artm/messages.pb.h"
-#include "artm/utility/blas.h"
 #include "artm/core/common.h"
 #include "artm/core/dictionary.h"
 #include "artm/core/exceptions.h"
+#include "artm/utility/blas.h"
 
 #include "glog/logging.h"
 

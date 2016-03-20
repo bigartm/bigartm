@@ -9,8 +9,8 @@
 #include "boost/uuid/random_generator.hpp"
 #include "boost/uuid/uuid.hpp"
 
+#include "artm/core/common.h"
 #include "artm/core/thread_safe_holder.h"
-#include "artm/messages.pb.h"
 
 // To run this particular test:
 // artm_tests.exe --gtest_filter=BatchManager.*

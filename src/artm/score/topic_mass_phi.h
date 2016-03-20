@@ -17,7 +17,6 @@
 #include <string>
 #include <vector>
 
-#include "artm/messages.pb.h"
 #include "artm/score_calculator_interface.h"
 
 namespace artm {

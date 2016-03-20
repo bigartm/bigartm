@@ -11,7 +11,6 @@
 #include "boost/utility.hpp"
 #include "boost/uuid/uuid.hpp"
 
-#include "artm/messages.pb.h"
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"

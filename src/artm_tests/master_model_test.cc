@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 
 #include "artm/cpp_interface.h"
-#include "artm/messages.pb.h"
+#include "artm/core/common.h"
 
 #include "artm_tests/test_mother.h"
 #include "artm_tests/api.h"
