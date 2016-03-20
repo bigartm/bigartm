@@ -8,7 +8,15 @@
 #include <string>
 #include <vector>
 
+#if defined(WIN32)
+#pragma warning(push)
+#pragma warning(disable: 4244 4267)
 #include "artm/messages.pb.h"
+#pragma warning(pop)
+#else
+#include "artm/messages.pb.h"
+#endif
+
 #include "artm/c_interface.h"
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \

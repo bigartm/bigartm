@@ -22,6 +22,8 @@ std::shared_ptr<TransformFunction> TransformFunction::create(const TransformConf
     case TransformConfig_TransformType_Polynomial:
       return std::make_shared<PolynomialTransformFunction>(PolynomialTransformFunction(config.a(), config.n()));
   }
+
+  BOOST_THROW_EXCEPTION(InvalidOperation("Invalid TransformConfig.transform_type"));
 }
 
 std::shared_ptr<TransformFunction> TransformFunction::create() {

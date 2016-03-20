@@ -11,8 +11,6 @@
 #include "boost/thread/mutex.hpp"
 #include "boost/utility.hpp"
 
-#include "artm/messages.pb.h"
-
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/processor_input.h"
@@ -24,7 +22,6 @@
 namespace artm {
 namespace core {
 
-class BatchManager;
 class CacheManager;
 class ScoreManager;
 class ScoreTracker;
@@ -38,7 +35,9 @@ typedef ThreadSafeCollectionHolder<std::string, RegularizerInterface> ThreadSafe
 typedef ThreadSafeCollectionHolder<std::string, ScoreCalculatorInterface> ThreadSafeScoreCollection;
 typedef ThreadSafeQueue<std::shared_ptr<ProcessorInput>> ProcessorQueue;
 
-// Class Instance is respondible for joint hosting of many other components and data structures.
+// Class Instance is respondible for hosting of other components and data structures.
+// Essentially it implements Pimpl idiom for MasterComponent class,
+// e.g. MasterComponent has no data fields except std::shared_ptr<Instance>.
 class Instance {
  public:
   explicit Instance(const MasterModelConfig& config);
@@ -51,16 +50,15 @@ class Instance {
   ThreadSafeRegularizerCollection* regularizers() { return &regularizers_; }
   ThreadSafeScoreCollection* scores_calculators() { return &score_calculators_; }
   ProcessorQueue* processor_queue() { return &processor_queue_; }
-  ThreadSafeDictionaryCollection* dictionaries() { return &dictionaries_; }
+  ThreadSafeDictionaryCollection* dictionaries() const { return &ThreadSafeDictionaryCollection::singleton(); }
   ThreadSafeBatchCollection* batches() { return &batches_; }
   ThreadSafeModelCollection* models() { return &models_; }
 
-  BatchManager* batch_manager();
   CacheManager* cache_manager();
   ScoreManager* score_manager();
   ScoreTracker* score_tracker();
 
-  int processor_size() { return processors_.size(); }
+  size_t processor_size() { return processors_.size(); }
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
 
   void Reconfigure(const MasterModelConfig& master_config);
@@ -87,7 +85,6 @@ class Instance {
 
   ThreadSafeRegularizerCollection regularizers_;
   ThreadSafeScoreCollection score_calculators_;
-  ThreadSafeDictionaryCollection dictionaries_;
   ThreadSafeBatchCollection batches_;
   ThreadSafeModelCollection models_;
 
@@ -95,9 +92,6 @@ class Instance {
 
   // Depends on schema_
   std::shared_ptr<CacheManager> cache_manager_;
-
-  // Depends on schema_
-  std::shared_ptr<BatchManager> batch_manager_;
 
   // Depends on [none]
   std::shared_ptr<ScoreManager> score_manager_;

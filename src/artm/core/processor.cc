@@ -23,7 +23,9 @@
 
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/call_on_destruction.h"
+#include "artm/core/cuckoo_watch.h"
 #include "artm/core/helpers.h"
+#include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/score_manager.h"
 #include "artm/core/phi_matrix.h"
@@ -37,7 +39,7 @@ namespace fs = boost::filesystem;
 using ::util::CsrMatrix;
 using ::util::DenseMatrix;
 
-const float kProcessorEps = 1e-16;
+const float kProcessorEps = 1e-16f;
 
 namespace artm {
 namespace core {
@@ -170,7 +172,7 @@ static void SaveCache(std::shared_ptr<DataLoaderCacheEntry> new_cache_entry_ptr,
   boost::uuids::uuid uuid = boost::uuids::random_generator()();
   fs::path file(boost::lexical_cast<std::string>(uuid) + ".cache");
   try {
-    BatchHelpers::SaveMessage(file.string(), disk_cache_path, *new_cache_entry_ptr);
+    Helpers::SaveMessage(file.string(), disk_cache_path, *new_cache_entry_ptr);
     new_cache_entry_ptr->set_filename((fs::path(disk_cache_path) / file).string());
     new_cache_entry_ptr->clear_theta();
     new_cache_entry_ptr->clear_item_id();
@@ -326,7 +328,7 @@ InitializeSparseNdw(const Batch& batch, const ProcessBatchesArgs& args) {
 
   // For sparse case
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    n_dw_row_ptr.push_back(n_dw_val.size());
+    n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
     const Item& item = batch.item(item_index);
     for (int token_index = 0; token_index < item.token_id_size(); ++token_index) {
       int token_id = item.token_id(token_index);
@@ -344,7 +346,7 @@ InitializeSparseNdw(const Batch& batch, const ProcessBatchesArgs& args) {
     }
   }
 
-  n_dw_row_ptr.push_back(n_dw_val.size());
+  n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
   return std::make_shared<CsrMatrix<float>>(batch.token_size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
 }
 
@@ -673,8 +675,8 @@ void Processor::ThreadFunction() {
       total_processed_batches++;
 
       call_on_destruction c([&]() {  // NOLINT
-        if (part->notifiable() != nullptr) {
-          part->notifiable()->Callback(part->task_id(), part->model_name());
+        if (part->batch_manager() != nullptr) {
+          part->batch_manager()->Callback(part->task_id());
         }
       });
 
@@ -687,7 +689,7 @@ void Processor::ThreadFunction() {
             batch.CopyFrom(*mem_batch);
           } else {
             try {
-              ::artm::core::BatchHelpers::LoadMessage(part->batch_filename(), &batch);
+              ::artm::core::Helpers::LoadMessage(part->batch_filename(), &batch);
             } catch (std::exception& ex) {
               LOG(ERROR) << ex.what() << ", the batch will be skipped.";
               continue;

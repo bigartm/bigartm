@@ -12,12 +12,14 @@
 
 #include "boost/utility.hpp"
 
-#include "artm/messages.pb.h"
 #include "artm/core/common.h"
+#include "artm/core/token.h"
 
 namespace artm {
 namespace core {
 
+// BatchNameGenerator is a helper class that generates sequential batch names
+// (somehting like 000001.batch, 000002.batch, etc.)
 class BatchNameGenerator {
  public:
   explicit BatchNameGenerator(int length, bool use_guid_name);
@@ -29,6 +31,7 @@ class BatchNameGenerator {
   bool use_guid_name_;
 };
 
+// CollectionParser class is responsible for parsing all text formats, available in BigARTM (UCI Bow and VW parser).
 class CollectionParser : boost::noncopyable {
  public:
   explicit CollectionParser(const ::artm::CollectionParserConfig& config);

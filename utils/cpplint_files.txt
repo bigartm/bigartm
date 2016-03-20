@@ -5,6 +5,7 @@ src/artm/core/batch_manager.cc
 src/artm/core/cache_manager.cc
 src/artm/core/collection_parser.cc
 src/artm/core/dictionary.cc
+src/artm/core/cuckoo_watch.cc
 src/artm/core/dense_phi_matrix.cc
 src/artm/core/helpers.cc
 src/artm/core/instance.cc
@@ -13,6 +14,7 @@ src/artm/core/phi_matrix_operations.cc
 src/artm/core/processor.cc
 src/artm/core/processor_input.cc
 src/artm/core/score_manager.cc
+src/artm/core/token.cc
 src/artm/core/transform_function.cc
 src/artm/regularizer/decorrelator_phi.cc
 src/artm/regularizer/multilanguage_phi.cc
@@ -58,6 +60,7 @@ src/artm/core/call_on_destruction.h
 src/artm/core/check_messages.h
 src/artm/core/collection_parser.h
 src/artm/core/common.h
+src/artm/core/cuckoo_watch.h
 src/artm/core/dense_phi_matrix.h
 src/artm/core/dictionary.h
 src/artm/core/exceptions.h
@@ -72,6 +75,7 @@ src/artm/core/protobuf_helpers.h
 src/artm/core/score_manager.h
 src/artm/core/template_manager.h
 src/artm/core/thread_safe_holder.h
+src/artm/core/token.h
 src/artm/core/transform_function.h
 src/artm_tests/api.h
 src/artm_tests/test_mother.h

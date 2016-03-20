@@ -74,7 +74,7 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     }
 
     // get maxes and their indices
-    int max_queue_size = max_queue.size();
+    int max_queue_size = static_cast<int>(max_queue.size());
     for (int i = 0; i < max_queue_size; ++i) {
       max_and_indices.push_back(max_queue.top());
       max_queue.pop();
@@ -129,7 +129,7 @@ google::protobuf::RepeatedPtrField<std::string> SpecifiedSparsePhi::class_ids_to
 bool SpecifiedSparsePhi::Reconfigure(const RegularizerConfig& config) {
   std::string config_blob = config.config();
   SpecifiedSparsePhiConfig regularizer_config;
-  if (!regularizer_config.ParseFromArray(config_blob.c_str(), config_blob.length())) {
+  if (!regularizer_config.ParseFromString(config_blob)) {
     BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
       "Unable to parse SpecifiedSparsePhiConfig from RegularizerConfig.config"));
   }

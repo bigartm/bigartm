@@ -8,16 +8,22 @@
 #include <string>
 #include <vector>
 
-#include "artm/core/dictionary.h"
 #include "artm/core/common.h"
+#include "artm/core/dictionary.h"
 #include "artm/core/phi_matrix.h"
 #include "artm/core/exceptions.h"
+#include "artm/core/token.h"
 #include "artm/messages.pb.h"
 
 namespace artm {
 
 typedef ::google::protobuf::Message Score;
 
+// ScoreCalculatorInterface is the base class for all score calculators in BigARTM.
+// See any class in 'src/score' folder for an example of how to implement new score.
+// Keep in mind that scres can be either cumulative (theta-scores) or non-cumulative (phi-scores).
+// ScoreCalculatorInterface is, unfortunately, a base class for both of them.
+// Hopefully we will refactor this at some point in the future.
 class ScoreCalculatorInterface {
  public:
   explicit ScoreCalculatorInterface(const ScoreConfig& score_config) : score_config_(score_config) {}
@@ -49,7 +55,6 @@ class ScoreCalculatorInterface {
       Score* score) {}
 
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
-  void set_dictionaries(const ::artm::core::ThreadSafeDictionaryCollection* dictionaries);
 
   std::string model_name() const { return score_config_.model_name(); }
   std::string score_name() const { return score_config_.name(); }
@@ -69,7 +74,7 @@ ConfigType ScoreCalculatorInterface::ParseConfig() const {
     return config;
 
   const std::string& config_blob = score_config_.config();
-  if (!config.ParseFromArray(config_blob.c_str(), config_blob.length()))
+  if (!config.ParseFromString(config_blob))
     BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException("Unable to parse score config"));
   return config;
 }

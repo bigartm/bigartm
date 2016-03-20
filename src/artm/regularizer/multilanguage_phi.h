@@ -3,7 +3,6 @@
 #ifndef SRC_ARTM_REGULARIZER_MULTILANGUAGE_PHI_H_
 #define SRC_ARTM_REGULARIZER_MULTILANGUAGE_PHI_H_
 
-#include "artm/messages.pb.h"
 #include "artm/regularizer_interface.h"
 
 namespace artm {

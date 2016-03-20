@@ -8,8 +8,8 @@
 #include "boost/uuid/uuid.hpp"
 #include "boost/filesystem.hpp"
 
-#include "artm/messages.pb.h"
 #include "artm/cpp_interface.h"
+#include "artm/core/common.h"
 #include "artm_tests/test_mother.h"
 #include "artm_tests/api.h"
 

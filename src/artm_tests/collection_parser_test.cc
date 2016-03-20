@@ -4,9 +4,10 @@
 
 #include "gtest/gtest.h"
 
-#include "artm/messages.pb.h"
 #include "artm/cpp_interface.h"
+#include "artm/core/common.h"
 #include "artm/core/helpers.h"
+#include "artm/core/token.h"
 
 #include "artm_tests/test_mother.h"
 
@@ -33,7 +34,7 @@ TEST(CollectionParser, UciBagOfWords) {
     if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       ::artm::Batch batch;
-      ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
+      ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
       ASSERT_TRUE(batch.item_size() == 1 || batch.item_size() == 3);
       int tokens_size = batch.item(0).token_weight_size();
       ASSERT_TRUE(tokens_size == 2 || tokens_size == 3);
@@ -117,7 +118,7 @@ TEST(CollectionParser, MatrixMarket) {
       batches_count++;
 
       artm::Batch batch;
-      ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
+      ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
       ASSERT_EQ(batch.item_size(), 9);
     }
     ++it;
@@ -147,7 +148,7 @@ TEST(CollectionParser, Multiclass) {
     if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       artm::Batch batch;
-      ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
+      ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
       ASSERT_EQ(batch.class_id_size(), 3);
       ASSERT_EQ(batch.class_id(0), "class1");
       ASSERT_EQ(batch.class_id(1), "class1");
@@ -222,7 +223,7 @@ TEST(CollectionParser, VowpalWabbit) {
     if (boost::filesystem::is_regular_file(*it) && it->path().extension() == ".batch") {
       batches_count++;
       ::artm::Batch batch;
-      ::artm::core::BatchHelpers::LoadMessage(it->path().string(), &batch);
+      ::artm::core::Helpers::LoadMessage(it->path().string(), &batch);
       ASSERT_TRUE(batch.class_id_size() == 3 || batch.class_id_size() == 2);
       for (int i = 0; i < batch.token_size(); ++i) {
         if (batch.token(i) == "hello" || batch.token(i) == "world")

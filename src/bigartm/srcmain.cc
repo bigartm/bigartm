@@ -24,7 +24,7 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 #include "artm/cpp_interface.h"
-#include "artm/messages.pb.h"
+#include "artm/core/common.h"
 #include "glog/logging.h"
 using namespace artm;
 

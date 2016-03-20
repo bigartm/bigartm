@@ -11,7 +11,6 @@
 
 #include "glog/logging.h"
 
-#include "artm/messages.pb.h"
 #include "artm/score_calculator_interface.h"
 #include "artm/core/common.h"
 #include "artm/core/check_messages.h"
@@ -148,7 +147,7 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
 int ArtmCopyRequestResult(int length, char* address) {
   ::artm::CopyRequestResultArgs args;
   std::string blob = args.SerializeAsString();
-  return ArtmCopyRequestResultEx(length, address, blob.size(), blob.c_str());
+  return ArtmCopyRequestResultEx(length, address, static_cast<int>(blob.size()), blob.c_str());
 }
 
 int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args) {
@@ -189,7 +188,7 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
     artm::Batch batch_object;
     ParseFromArray(batch, length, &batch_object);
     artm::core::FixAndValidateMessage(&batch_object);
-    artm::core::BatchHelpers::SaveBatch(batch_object, std::string(disk_path), batch_object.id());
+    artm::core::Helpers::SaveBatch(batch_object, std::string(disk_path), batch_object.id());
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
 }
@@ -298,9 +297,9 @@ int ArtmRequestLoadBatch(const char* filename) {
   try {
     EnableLogging();
     auto batch = std::make_shared< ::artm::Batch>();
-    ::artm::core::BatchHelpers::LoadMessage(filename, batch.get());
+    ::artm::core::Helpers::LoadMessage(filename, batch.get());
     batch->SerializeToString(last_message());
-    return last_message()->size();
+    return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 
@@ -474,7 +473,7 @@ int ArtmRequest(int master_id) {
     master_component(master_id)->Request(&result);
     ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
-    return last_message()->size();
+    return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 
@@ -490,7 +489,7 @@ int ArtmRequest(int master_id, int length, const char* args_blob) {
     master_component(master_id)->Request(args, &result);
     ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
-    return last_message()->size();
+    return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 
@@ -506,7 +505,7 @@ int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
     master_component(master_id)->Request(args, &result, last_message_ex());
     ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
-    return last_message()->size();
+    return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 

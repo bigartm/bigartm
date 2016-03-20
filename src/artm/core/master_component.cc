@@ -137,7 +137,10 @@ void MasterComponent::AppendDictionary(const DictionaryData& data) {
 }
 
 void MasterComponent::DisposeDictionary(const std::string& name) {
-  instance_->dictionaries()->erase(name);
+  if (name.empty())
+    instance_->dictionaries()->clear();
+  else
+    instance_->dictionaries()->erase(name);
 }
 
 void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
@@ -436,6 +439,10 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
 
+  if (instance_->processor_size() <= 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "Can't process batches because there are no processors. Check your MasterModelConfig.threads setting."));
+
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
   const PhiMatrix& p_wt = *phi_matrix;
   const_cast<ProcessBatchesArgs*>(&args)->mutable_topic_name()->CopyFrom(p_wt.topic_name());
@@ -487,10 +494,10 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   auto createProcessorInput = [&](){  // NOLINT
     boost::uuids::uuid task_id = boost::uuids::random_generator()();
-    batch_manager->Add(task_id, std::string(), model_name);
+    batch_manager->Add(task_id);
 
     auto pi = std::make_shared<ProcessorInput>();
-    pi->set_notifiable(batch_manager);
+    pi->set_batch_manager(batch_manager);
     pi->set_score_manager(score_manager);
     pi->set_cache_manager(theta_cache_manager_ptr);
     pi->set_ptdw_cache_manager(ptdw_cache_manager_ptr);
@@ -758,18 +765,18 @@ class OnlineBatchesIterator : public BatchesIterator {
 
   virtual ~OnlineBatchesIterator() {}
 
-  bool more() const { return current_ < update_after_.size(); }
+  bool more() const { return current_ < static_cast<int>(update_after_.size()); }
 
   virtual void move(ProcessBatchesArgs* args) {
     args->clear_batch_filename();
     args->clear_batch_weight();
 
-    if (current_ >= update_after_.size())
+    if (static_cast<int>(current_) >= update_after_.size())
       return;
 
     unsigned first = (current_ == 0) ? 0 : update_after_.Get(current_ - 1);
     unsigned last = update_after_.Get(current_);
-    for (int i = first; i < last; ++i) {
+    for (unsigned i = first; i < last; ++i) {
       args->add_batch_filename(batch_filename_.Get(i));
       args->add_batch_weight(batch_weight_.Get(i));
     }
@@ -957,7 +964,7 @@ class ArtmExecutor {
     process_batches_args_.set_theta_matrix_type(ProcessBatchesArgs_ThetaMatrixType_None);
     iter->move(&process_batches_args_);
 
-    int operation_id = async_.size();
+    int operation_id = static_cast<int>(async_.size());
     async_.push_back(std::make_shared<BatchManager>());
     LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,
@@ -1053,7 +1060,7 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
           "Populate this field or provide batches via ArtmImportBatches API"));
       }
     } else {
-      for (auto& batch_path : artm::core::BatchHelpers::ListAllBatches(args.batch_folder()))
+      for (auto& batch_path : artm::core::Helpers::ListAllBatches(args.batch_folder()))
         batch_names.push_back(batch_path.string());
       if (batch_names.empty())
         BOOST_THROW_EXCEPTION(InvalidOperation("No batches found in " + args.batch_folder() + " folder"));

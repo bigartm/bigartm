@@ -171,7 +171,7 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
       prev_item_id = item_id;
       if (batch.item_size() >= config_.num_items_per_batch()) {
         batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-        ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
+        ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
         batch.Clear();
         batch_dictionary.clear();
       }
@@ -203,7 +203,7 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
 
   if (batch.item_size() > 0) {
     batch.set_id(boost::lexical_cast<std::string>(boost::uuids::random_generator()()));
-    ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
+    ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
   }
 
   LOG_IF(WARNING, token_weight_zero > 0) << "Found " << token_weight_zero << " tokens with zero "
@@ -408,13 +408,13 @@ void CollectionParser::ParseVowpalWabbit() {
     batch_collector.FinishItem(line_no, item_title);
     if (batch_collector.batch().item_size() >= config_.num_items_per_batch()) {
       artm::Batch batch = batch_collector.FinishBatch();
-      ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
+      ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
     }
   }
 
   if (batch_collector.batch().item_size() > 0) {
     artm::Batch batch = batch_collector.FinishBatch();
-    ::artm::core::BatchHelpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
+    ::artm::core::Helpers::SaveBatch(batch, config_.target_folder(), batch_name_generator.next_name(batch));
   }
 }
 

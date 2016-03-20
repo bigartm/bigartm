@@ -9,7 +9,6 @@
 #include "artm/core/common.h"
 #include "artm/c_interface.h"
 #include "artm/cpp_interface.h"
-#include "artm/messages.pb.h"
 
 namespace artm {
 namespace test {

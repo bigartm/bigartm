@@ -11,7 +11,6 @@
 #ifndef SRC_ARTM_SCORE_PEAK_MEMORY_H_
 #define SRC_ARTM_SCORE_PEAK_MEMORY_H_
 
-#include "artm/messages.pb.h"
 #include "artm/score_calculator_interface.h"
 
 namespace artm {

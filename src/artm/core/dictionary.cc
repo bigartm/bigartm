@@ -105,7 +105,7 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
 
   LOG(INFO) << "Exporting dictionary " << args.dictionary_name() << " to " << file_name;
 
-  const int token_size = dict_ptr->size();
+  const int token_size = static_cast<int>(dict_ptr->size());
 
   // ToDo: MelLain
   // Add ability to save and load several token_dict_data
@@ -125,13 +125,13 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
     token_dict_data.add_token_df(entry->token_df());
   }
   std::string str = token_dict_data.SerializeAsString();
-  int length = str.size();
+  int length = static_cast<int>(str.size());
   fout.write(reinterpret_cast<char *>(&length), sizeof(length));
   fout << str;
 
   DictionaryData cooc_dict_data;
   int current_cooc_length = 0;
-  const int max_cooc_length = 1e+7;
+  const int max_cooc_length = 10 * 1000 * 1000;
   if (dict_ptr->cooc_values().size()) {
     for (int token_id = 0; token_id < token_size; ++token_id) {
       auto entry = dict_ptr->entry(token_id);
@@ -148,7 +148,7 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
 
       if ((current_cooc_length >= max_cooc_length) || ((token_id + 1) == token_size)) {
         std::string str = cooc_dict_data.SerializeAsString();
-        int length = str.size();
+        int length = static_cast<int>(str.size());
         fout.write(reinterpret_cast<char *>(&length), sizeof(length));
         fout << str;
         cooc_dict_data.clear_cooc_first_index();
@@ -180,7 +180,7 @@ Dictionary::Gather(const GatherDictionaryArgs& args,
   std::vector<std::string> batches;
 
   if (args.has_data_path()) {
-    for (auto& batch_path : BatchHelpers::ListAllBatches(args.data_path()))
+    for (auto& batch_path : Helpers::ListAllBatches(args.data_path()))
       batches.push_back(batch_path.string());
     LOG(INFO) << "Found " << batches.size() << " batches in '" << args.data_path() << "' folder";
   } else {
@@ -195,7 +195,7 @@ Dictionary::Gather(const GatherDictionaryArgs& args,
     try {
       if (batch_ptr == nullptr) {
         batch_ptr = std::make_shared<Batch>();
-        ::artm::core::BatchHelpers::LoadMessage(batch_file, batch_ptr.get());
+        ::artm::core::Helpers::LoadMessage(batch_file, batch_ptr.get());
       }
     } catch(std::exception& ex) {
         LOG(ERROR) << ex.what() << ", the batch will be skipped.";
@@ -514,7 +514,7 @@ const DictionaryEntry* Dictionary::entry(int index) const {
 
 float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_score) {
   float coherence_value = 0.0;
-  int k = tokens_to_score.size();
+  int k = static_cast<int>(tokens_to_score.size());
   if (k == 0 || k == 1) return 0.0f;
 
   // -1 means that find() result == end()

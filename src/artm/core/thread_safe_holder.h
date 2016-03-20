@@ -62,6 +62,13 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
   ThreadSafeCollectionHolder()
       : lock_(), object_(std::map<K, std::shared_ptr<T>>()) {}
 
+  static ThreadSafeCollectionHolder<K, T>& singleton() {
+    // Mayers singleton is thread safe in C++11
+    // http://stackoverflow.com/questions/1661529/is-meyers-implementation-of-singleton-pattern-thread-safe
+    static ThreadSafeCollectionHolder<K, T> holder;
+    return holder;
+  }
+
   ~ThreadSafeCollectionHolder() {}
 
   std::shared_ptr<T> get(const K& key) const {
@@ -113,12 +120,12 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
     return retval;
   }
 
-  int size() const {
+  size_t size() const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return object_.size();
   }
 
-  int empty() const {
+  bool empty() const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return object_.empty();
   }
@@ -162,15 +169,16 @@ class ThreadSafeQueue : boost::noncopyable {
 
   void release() {
     boost::lock_guard<boost::mutex> guard(lock_);
-    reserved_--;
+    if (reserved_ > 0)
+      reserved_--;
   }
 
-  int size() const {
+  size_t size() const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return queue_.size() + reserved_;
   }
 
-  int empty() const {
+  bool empty() const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return queue_.empty();
   }
@@ -178,7 +186,7 @@ class ThreadSafeQueue : boost::noncopyable {
  private:
   mutable boost::mutex lock_;
   std::queue<T> queue_;
-  int reserved_;
+  size_t reserved_;
 };
 
 }  // namespace core

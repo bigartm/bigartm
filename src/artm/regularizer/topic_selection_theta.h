@@ -27,7 +27,6 @@
 #include <string>
 #include <vector>
 
-#include "artm/messages.pb.h"
 #include "artm/regularizer_interface.h"
 
 namespace artm {

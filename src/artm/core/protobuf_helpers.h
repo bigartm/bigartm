@@ -1,4 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
+// This file contains several helper methods to work with protobuf messages.
+// Most common tasks are to search for a value (or values) in a repeated protobuf field.
+// The name 'is_member' is motivated by MatLab method (http://se.mathworks.com/help/matlab/ref/ismember.html)
 
 #ifndef SRC_ARTM_CORE_PROTOBUF_HELPERS_H_
 #define SRC_ARTM_CORE_PROTOBUF_HELPERS_H_
@@ -7,7 +10,6 @@
 #include <vector>
 
 #include "artm/core/common.h"
-#include "artm/messages.pb.h"
 
 namespace artm {
 namespace core {
@@ -32,16 +34,6 @@ int repeated_field_index_of(const T& field, V value) {
   }
 
   return -1;
-}
-
-inline bool model_has_token(const ::artm::TopicModel& topic_model,
-                            const artm::core::Token& token) {
-  for (int i = 0; i < topic_model.token_size(); ++i) {
-    if (topic_model.token(i) == token.keyword &&
-      topic_model.class_id(i) == token.class_id) return true;
-  }
-
-  return false;
 }
 
 template<class T, class V>

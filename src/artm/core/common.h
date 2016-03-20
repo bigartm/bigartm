@@ -1,24 +1,27 @@
 // Copyright 2014, Additive Regularization of Topic Models.
+//
+// File 'common.h' contains constants, helpers and typedefs used across the entire library.
+// The goal is to keep this file as short as possible.
 
 #ifndef SRC_ARTM_CORE_COMMON_H_
 #define SRC_ARTM_CORE_COMMON_H_
 
-#include <chrono>  // NOLINT
-#include <functional>
-#include <memory>
 #include <string>
-#include <sstream>
-#include <unordered_map>
 
-#include "boost/functional/hash.hpp"
-#include "boost/uuid/uuid.hpp"
 #include "boost/lexical_cast.hpp"
-#include "boost/uuid/uuid_io.hpp"
 
 #include "glog/logging.h"
 
 #include "artm/core/exceptions.h"
-#include "artm/core/internals.pb.h"
+
+#if defined(WIN32)
+#pragma warning(push)
+#pragma warning(disable: 4244 4267)
+#include "artm/messages.pb.h"
+#pragma warning(pop)
+#else
+#include "artm/messages.pb.h"
+#endif
 
 namespace artm {
 namespace core {
@@ -29,62 +32,6 @@ typedef std::string RegularizerName;
 typedef std::string DictionaryName;
 typedef std::string TopicName;
 
-typedef std::string ClassId;
-
-struct Token {
- public:
-  Token(const ClassId& _class_id, const std::string& _keyword)
-      : keyword(_keyword), class_id(_class_id),
-        hash_(calcHash(_class_id, _keyword)) {}
-
-  Token& operator=(const Token &rhs) {
-    if (this != &rhs) {
-      const_cast<std::string&>(keyword) = rhs.keyword;
-      const_cast<ClassId&>(class_id) = rhs.class_id;
-      const_cast<size_t&>(hash_) = rhs.hash_;
-    }
-
-    return *this;
-  }
-
-  bool operator<(const Token& token) const {
-    if (keyword != token.keyword)
-      return keyword < token.keyword;
-    return class_id < token.class_id;
-  }
-
-  bool operator==(const Token& token) const {
-    if (keyword == token.keyword && class_id == token.class_id) return true;
-    return false;
-  }
-
-  bool operator!=(const Token& token) const {
-    return !(*this == token);
-  }
-
-  const std::string keyword;
-  const ClassId class_id;
-
- private:
-  friend struct TokenHasher;
-  const size_t hash_;
-
-  static size_t calcHash(const ClassId& class_id, const std::string& keyword) {
-    size_t hash = 0;
-    boost::hash_combine<std::string>(hash, keyword);
-    boost::hash_combine<std::string>(hash, class_id);
-    return hash;
-  }
-};
-
-struct TokenHasher {
-  size_t operator()(const Token& token) const {
-    return token.hash_;
-  }
-};
-
-const std::string DefaultClass = "@default_class";
-
 const int UnknownId = -1;
 
 const std::string kBatchExtension = ".batch";
@@ -92,48 +39,6 @@ const std::string kBatchExtension = ".batch";
 const int kIdleLoopFrequency = 1;  // 1 ms
 
 const int kBatchNameLength = 6;
-
-class CuckooWatch {
- public:
-  explicit CuckooWatch(std::string message)
-      : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(nullptr),
-        threshold_ms_(0) {}
-  explicit CuckooWatch(std::string message, int threshold_ms)
-      : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(nullptr),
-        threshold_ms_(threshold_ms) {}
-  CuckooWatch(std::string message, CuckooWatch* parent)
-      : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent),
-        threshold_ms_(1) {}
-  CuckooWatch(std::string message, CuckooWatch* parent, int threshold_ms)
-      : message_(message), submessage_(), start_(std::chrono::system_clock::now()), parent_(parent),
-        threshold_ms_(threshold_ms) {}
-
-  ~CuckooWatch() {
-    auto delta = (std::chrono::system_clock::now() - start_);
-    auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-    if (delta_ms.count() < threshold_ms_)
-      return;
-
-    if (parent_ == nullptr) {
-      std::stringstream ss;
-      ss << delta_ms.count() << "ms in " << message_;
-      if (!submessage_.empty())
-        ss << " [including " << submessage_ << "]";
-      LOG(INFO) << ss.str();
-    } else {
-      std::stringstream ss;
-      ss << delta_ms.count() << "ms in " << message_ << "; ";
-      parent_->submessage_ += ss.str();
-    }
-  }
-
- private:
-  std::string message_;
-  std::string submessage_;
-  std::chrono::time_point<std::chrono::system_clock> start_;
-  CuckooWatch* parent_;
-  int threshold_ms_;
-};
 
 template <typename T>
 std::string to_string(T value) {

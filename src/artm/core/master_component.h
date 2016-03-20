@@ -12,8 +12,6 @@
 #include "boost/thread/mutex.hpp"
 #include "boost/utility.hpp"
 
-#include "artm/messages.pb.h"
-
 #include "artm/core/common.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
@@ -30,6 +28,13 @@ class TopicModel;
 class BatchManager;
 class ScoreManager;
 
+// MasterComponent is an orchestration layer that implements most functionality in BigARTM core.
+// Most methods in c_interface (the API) call some methods in MasterComponent.
+// This clas smight be renamed to MasterModel, because it also implements methods
+// ArtmCreateMasterModel, ArtmFitOfflineMasterModel, ArtmFitOnlineMasterModel, ArtmTransformMasterModel.
+// Each instance of MasterComponent defines its own namespace for phi matrices, regularizers, scores.
+// All data fiels of MasterComponent are stored in the 'Instance' class.
+// If you are familiar with Pimpl idiom you may think of 'Instance' as of 'MasterComponentPimpl'.
 class MasterComponent : boost::noncopyable {
  public:
   ~MasterComponent();

@@ -6,19 +6,25 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <utility>
 
-#include "artm/messages.pb.h"
 #include "artm/core/common.h"
 #include "artm/core/thread_safe_holder.h"
+#include "artm/core/token.h"
 
 namespace artm {
 namespace core {
 
 class Dictionary;
 
+// ThreadSafeDictionaryCollection is a collection of dictionaries.
+// It is typically accessed via a ThreadSafeDictionaryCollection::singleton(),
+// which ensures that all master components share the same set of dictionaries.
+// The key (std::string) corresponds to the name of the dictionary.
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
 
+// DictionaryEntry represents one entry in the dictionary, associated with a specific token.
 class DictionaryEntry {
  public:
   DictionaryEntry(Token token, float value, float tf, float df)
@@ -36,6 +42,12 @@ class DictionaryEntry {
   float token_df_;
 };
 
+// Dictionary is a sequential vector of dictionary entries.
+// It is important that the entries in the dictionary can be accessed by their index.
+// For example, if a dictionary is used to initialize the PhiMatrix the order of the
+// entries will define the order of tokens in the PhiMatrix.
+// Dictionary also supports an efficient lookup of the entries by its token.
+// Dictionary also stores a co-occurence data, used by Coherence score and regularizer.
 class Dictionary {
  public:
   explicit Dictionary(const artm::DictionaryData& data);
@@ -65,7 +77,7 @@ class Dictionary {
 
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;
-  inline int size() const { return entries_.size(); }
+  inline size_t size() const { return entries_.size(); }
   inline const std::unordered_map<Token, int, TokenHasher>& token_index() const { return token_index_; }
   inline const std::vector<DictionaryEntry>& entries() const { return entries_; }
   inline const std::unordered_map<int, std::unordered_map<int, float> >& cooc_values() const { return cooc_values_; }

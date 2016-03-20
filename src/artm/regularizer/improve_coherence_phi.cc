@@ -85,7 +85,7 @@ google::protobuf::RepeatedPtrField<std::string> ImproveCoherencePhi::class_ids_t
 bool ImproveCoherencePhi::Reconfigure(const RegularizerConfig& config) {
   std::string config_blob = config.config();
   ImproveCoherencePhiConfig regularizer_config;
-  if (!regularizer_config.ParseFromArray(config_blob.c_str(), config_blob.length())) {
+  if (!regularizer_config.ParseFromString(config_blob)) {
     BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
       "Unable to parse ImproveCoherencePhiConfig from RegularizerConfig.config"));
   }

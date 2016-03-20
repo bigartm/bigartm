@@ -12,7 +12,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/helpers.h"
-#include "artm/core/batch_manager.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/score_manager.h"
 #include "artm/core/dictionary.h"
@@ -43,7 +42,7 @@
 
 #define CREATE_OR_RECONFIGURE_REGULARIZER(ConfigType, RegularizerType) {                      \
   ConfigType regularizer_config;                                                              \
-  if (!regularizer_config.ParseFromArray(config_blob.c_str(), config_blob.length())) {        \
+  if (!regularizer_config.ParseFromString(config_blob)) {                                     \
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to parse regularizer config"));   \
   }                                                                                           \
   if (need_hot_reconfigure) {                                                                 \
@@ -65,12 +64,10 @@ Instance::Instance(const MasterModelConfig& config)
       master_model_config_(nullptr),  // copied in Reconfigure (see below)
       regularizers_(),
       score_calculators_(),
-      dictionaries_(),
       batches_(),
       models_(),
       processor_queue_(),
       cache_manager_(),
-      batch_manager_(),
       score_manager_(),
       processors_() {
   Reconfigure(config);
@@ -81,24 +78,13 @@ Instance::Instance(const Instance& rhs)
       master_model_config_(nullptr),  // copied in Reconfigure (see below)
       regularizers_(),
       score_calculators_(),
-      dictionaries_(),
       batches_(),
       models_(),
       processor_queue_(),
       cache_manager_(),
-      batch_manager_(),
       score_manager_(),
       processors_() {
   Reconfigure(*rhs.config());
-
-  std::vector<std::string> dict_name_impl = rhs.dictionaries_.keys();
-  for (auto& key : dict_name_impl) {
-    std::shared_ptr<Dictionary> value_impl = rhs.dictionaries_.get(key);
-    if (value_impl != nullptr) {
-      auto dict_clone = value_impl->Duplicate();
-      dictionaries_.set(key, std::make_shared<Dictionary>(*dict_clone));
-    }
-  }
 
   std::vector<std::string> batch_name = rhs.batches_.keys();
   for (auto& key : batch_name) {
@@ -148,8 +134,8 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
 
   cache_manager_->RequestMasterComponentInfo(master_info);
 
-  for (auto& name : dictionaries_.keys()) {
-    std::shared_ptr<Dictionary> dict = dictionaries_.get(name);
+  for (auto& name : dictionaries()->keys()) {
+    std::shared_ptr<Dictionary> dict = dictionaries()->get(name);
     if (dict == nullptr)
       continue;
 
@@ -180,11 +166,8 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     }
   }
 
-  master_info->set_processor_queue_size(processor_queue_.size());
-}
-
-BatchManager* Instance::batch_manager() {
-  return batch_manager_.get();
+  master_info->set_processor_queue_size(static_cast<int>(processor_queue_.size()));
+  master_info->set_num_processors(static_cast<int>(processors_.size()));
 }
 
 CacheManager* Instance::cache_manager() {
@@ -201,10 +184,6 @@ ScoreTracker* Instance::score_tracker() {
 
 void Instance::DisposeModel(ModelName model_name) {
   models_.erase(model_name);
-
-  if (batch_manager_ != nullptr) {
-    batch_manager_->DisposeModel(model_name);
-  }
 }
 
 void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
@@ -280,7 +259,6 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
         "RegularizerConfig.type", regularizer_type));
   }
 
-  regularizer->set_dictionaries(&dictionaries_);
   this->regularizers()->set(regularizer_name, regularizer);
 }
 
@@ -346,7 +324,6 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("ScoreConfig.type", score_type));
   }
 
-  score_calculator->set_dictionaries(&dictionaries_);
   return score_calculator;
 }
 
@@ -358,7 +335,7 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
   master_model_config_.set(std::make_shared<MasterModelConfig>(master_config));
 
   int target_processors_count = master_config.threads();
-  if (!master_config.has_threads() || master_config.threads() <= 0) {
+  if (!master_config.has_threads() || master_config.threads() < 0) {
     unsigned int n = std::thread::hardware_concurrency();
     if (n == 0) {
       LOG(INFO) << "MasterModelConfig.processors_count is set to 1 (default)";
@@ -381,7 +358,6 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
   if (!is_configured_) {
     // First reconfiguration.
     cache_manager_.reset(new CacheManager());
-    batch_manager_.reset(new BatchManager());
     score_manager_.reset(new ScoreManager(this));
     score_tracker_.reset(new ScoreTracker());
 

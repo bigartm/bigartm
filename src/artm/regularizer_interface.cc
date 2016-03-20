@@ -6,18 +6,8 @@
 
 namespace artm {
 
-std::shared_ptr< ::artm::core::Dictionary> RegularizerInterface::dictionary(
-    const std::string& dictionary_name) {
-  if (dictionaries_ == nullptr) {
-      return nullptr;
-  }
-
-  return dictionaries_->get(dictionary_name);
-}
-
-void RegularizerInterface::set_dictionaries(
-    const ::artm::core::ThreadSafeDictionaryCollection* dictionaries) {
-  dictionaries_ = dictionaries;
+std::shared_ptr< ::artm::core::Dictionary> RegularizerInterface::dictionary(const std::string& dictionary_name) {
+  return ::artm::core::ThreadSafeDictionaryCollection::singleton().get(dictionary_name);
 }
 
 }  // namespace artm

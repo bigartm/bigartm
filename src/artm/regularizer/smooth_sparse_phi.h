@@ -28,7 +28,6 @@
 #include <memory>
 #include <string>
 
-#include "artm/messages.pb.h"
 #include "artm/regularizer_interface.h"
 #include "artm/core/transform_function.h"
 

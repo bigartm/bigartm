@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 
 #include "artm/cpp_interface.h"
-#include "artm/messages.pb.h"
+#include "artm/core/common.h"
 
 #include "artm_tests/test_mother.h"
 #include "artm_tests/api.h"
@@ -174,4 +174,14 @@ TEST(MasterModel, Basic) {
 // artm_tests.exe --gtest_filter=MasterModel.SkipBatchDict
 TEST(MasterModel, SkipBatchDict) {
   runBasicTest(/*skip_batch_dict=*/ true);
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=MasterModel.TestEmptyMasterModel
+TEST(MasterModel, TestEmptyMasterModel) {
+  ::artm::MasterModelConfig config;
+  config.set_threads(0);
+  ::artm::MasterModel model(config);
+  auto info = model.info();
+  EXPECT_EQ(info.num_processors(), 0);
 }

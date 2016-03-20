@@ -9,7 +9,7 @@
 #include "artm/c_interface.h"
 #include "artm/cpp_interface.h"
 #include "artm/core/exceptions.h"
-#include "artm/messages.pb.h"
+#include "artm/core/common.h"
 
 #include "artm/core/internals.pb.h"
 #include "artm/core/helpers.h"
@@ -277,6 +277,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   artm::MasterModel master(master_config);
   artm::test::Api api(master);
 
+  master.DisposeDictionary(std::string());  // Dispose all dictionaries (if any leaked from previous tests)
 
   artm::ImportBatchesArgs import_batches_args;
   for (auto& batch_path : batches) {

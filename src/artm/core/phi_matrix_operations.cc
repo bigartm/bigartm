@@ -104,7 +104,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
   // Populate topics_count and topic_name fields in the resulting message
   for (int topic_index : topics_to_use)
     topic_model->add_topic_name(this_topic_names.Get(topic_index));
-  topic_model->set_topics_count(topics_to_use.size());
+  topic_model->set_topics_count(static_cast<int>(topics_to_use.size()));
 
   // Populate all non-internal part of the resulting message
   topic_model->set_name(phi_matrix.model_name());
@@ -118,7 +118,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
     ::artm::FloatArray *target = topic_model->add_token_weights();
 
     if (!has_sparse_format) {
-      target->mutable_value()->Reserve(topics_to_use.size());
+      target->mutable_value()->Reserve(static_cast<int>(topics_to_use.size()));
       for (int topic_index : topics_to_use)
         target->add_value(phi_matrix.get(token_index, topic_index));
     } else {
@@ -170,7 +170,6 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     optimized_execution = ok;
   }
 
-  std::vector<Token> remove_tokens;
   for (int token_index = 0; token_index < topic_model.token_size(); ++token_index) {
     const std::string& token_keyword = topic_model.token(token_index);
     const ClassId& class_id = topic_model.class_id(token_index);
@@ -182,7 +181,6 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     TopicModel_OperationType operation_type = topic_model.operation_type(token_index);
     int current_token_id = phi_matrix->token_index(token);
 
-    float* target;
     switch (operation_type) {
     case TopicModel_OperationType_Initialize:
       // Add new tokens discovered by processor
@@ -225,11 +223,6 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       }
       break;
 
-    case TopicModel_OperationType_Remove:
-      if (current_token_id != -1)
-        remove_tokens.push_back(token);
-      break;
-
     case TopicModel_OperationType_Ignore:
       // ignore token == do nothing
       break;
@@ -239,9 +232,6 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
         "TopicModel.operation_type", operation_type));
     }
   }
-
-  if (remove_tokens.size() > 0)
-    phi_matrix->RemoveTokens(remove_tokens);
 }
 
 void PhiMatrixOperations::InvokePhiRegularizers(
