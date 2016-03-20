@@ -57,6 +57,8 @@ set(SRC_LIST
 	core/collection_parser.cc
 	core/collection_parser.h
 	core/common.h
+	core/cuckoo_watch.cc
+	core/cuckoo_watch.h
 	core/dense_phi_matrix.cc
 	core/dense_phi_matrix.h
 	core/dictionary.cc
@@ -82,8 +84,8 @@ set(SRC_LIST
 	core/sync_event.h
 	core/template_manager.h
 	core/thread_safe_holder.h
-	core/token.h
 	core/token.cc
+	core/token.h
 	core/transform_function.h
 	core/transform_function.cc
 	regularizer/decorrelator_phi.cc

@@ -23,6 +23,7 @@
 
 #include "artm/core/protobuf_helpers.h"
 #include "artm/core/call_on_destruction.h"
+#include "artm/core/cuckoo_watch.h"
 #include "artm/core/helpers.h"
 #include "artm/core/cache_manager.h"
 #include "artm/core/score_manager.h"
