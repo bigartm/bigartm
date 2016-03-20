@@ -685,6 +685,7 @@ message MasterComponentInfo {
   repeated CacheEntryInfo cache_entry = 7;
   optional int32 processor_queue_size = 9;
   repeated BatchInfo batch = 10;
+  optional int32 num_processors = 11;
 }
 
 message ImportBatchesArgs {

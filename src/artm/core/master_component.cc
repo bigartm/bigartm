@@ -439,6 +439,10 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   const ProcessBatchesArgs& args = process_batches_args;  // short notation
   ModelName model_name = args.pwt_source_name();
 
+  if (instance_->processor_size() <= 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+    "Can't process batches because there are no processors. Check your MasterModelConfig.threads setting."));
+
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
   const PhiMatrix& p_wt = *phi_matrix;
   const_cast<ProcessBatchesArgs*>(&args)->mutable_topic_name()->CopyFrom(p_wt.topic_name());

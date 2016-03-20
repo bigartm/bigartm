@@ -170,6 +170,7 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
   }
 
   master_info->set_processor_queue_size(processor_queue_.size());
+  master_info->set_num_processors(processors_.size());
 }
 
 BatchManager* Instance::batch_manager() {
@@ -345,7 +346,7 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
   master_model_config_.set(std::make_shared<MasterModelConfig>(master_config));
 
   int target_processors_count = master_config.threads();
-  if (!master_config.has_threads() || master_config.threads() <= 0) {
+  if (!master_config.has_threads() || master_config.threads() < 0) {
     unsigned int n = std::thread::hardware_concurrency();
     if (n == 0) {
       LOG(INFO) << "MasterModelConfig.processors_count is set to 1 (default)";
