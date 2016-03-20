@@ -74,7 +74,7 @@ ConfigType ScoreCalculatorInterface::ParseConfig() const {
     return config;
 
   const std::string& config_blob = score_config_.config();
-  if (!config.ParseFromArray(config_blob.c_str(), config_blob.length()))
+  if (!config.ParseFromString(config_blob))
     BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException("Unable to parse score config"));
   return config;
 }

@@ -31,7 +31,7 @@ void TokenCollection::Swap(TokenCollection* rhs) {
 }
 
 bool TokenCollection::has_token(const Token& token) const {
-  return token_to_token_id_.count(token);
+  return token_to_token_id_.count(token) > 0;
 }
 
 int TokenCollection::token_id(const Token& token) const {
@@ -49,7 +49,7 @@ void TokenCollection::Clear() {
 }
 
 int TokenCollection::token_size() const {
-  return token_to_token_id_.size();
+  return static_cast<int>(token_to_token_id_.size());
 }
 
 // =======================================================

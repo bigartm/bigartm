@@ -62,8 +62,8 @@ class PhiMatrixFrame : public PhiMatrix {
 
   virtual ~PhiMatrixFrame() { }
 
-  virtual int topic_size() const { return topic_name_.size(); }
-  virtual int token_size() const { return token_collection_.token_size(); }
+  virtual int topic_size() const { return static_cast<int>(topic_name_.size()); }
+  virtual int token_size() const { return static_cast<int>(token_collection_.token_size()); }
   virtual const Token& token(int index) const;
   virtual bool has_token(const Token& token) const;
   virtual int token_index(const Token& token) const;

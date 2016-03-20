@@ -47,8 +47,8 @@ TEST(Regularizers, TopicSelection) {
   // Uncomment to dump actual results
   // for (int i = 0; i <= 9; ++i)
   //  std::cout << theta_matrix.item_weights(0).value(i) << std::endl;
-  float expected_values[] = { 0.41836, 0.262486, 0.160616, 0.0845677, 0.032849,
-                              0.022987, 0.0103793, 0.0040327, 0.00267936, 0.00104289 };
+  float expected_values[] = { 0.41836f, 0.262486f, 0.160616f, 0.0845677f, 0.032849f,
+                              0.022987f, 0.0103793f, 0.0040327f, 0.00267936f, 0.00104289f };
   for (int i = 0; i < nTopics; ++i)
     ASSERT_NEAR(theta_matrix.item_weights(0).value(i), expected_values[i], 0.00001);
 }

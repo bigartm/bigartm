@@ -42,7 +42,7 @@
 
 #define CREATE_OR_RECONFIGURE_REGULARIZER(ConfigType, RegularizerType) {                      \
   ConfigType regularizer_config;                                                              \
-  if (!regularizer_config.ParseFromArray(config_blob.c_str(), config_blob.length())) {        \
+  if (!regularizer_config.ParseFromString(config_blob)) {                                     \
     BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to parse regularizer config"));   \
   }                                                                                           \
   if (need_hot_reconfigure) {                                                                 \
@@ -166,8 +166,8 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     }
   }
 
-  master_info->set_processor_queue_size(processor_queue_.size());
-  master_info->set_num_processors(processors_.size());
+  master_info->set_processor_queue_size(static_cast<int>(processor_queue_.size()));
+  master_info->set_num_processors(static_cast<int>(processors_.size()));
 }
 
 CacheManager* Instance::cache_manager() {

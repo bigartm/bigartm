@@ -120,12 +120,12 @@ class ThreadSafeCollectionHolder : boost::noncopyable {
     return retval;
   }
 
-  int size() const {
+  size_t size() const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return object_.size();
   }
 
-  int empty() const {
+  bool empty() const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return object_.empty();
   }
@@ -169,15 +169,16 @@ class ThreadSafeQueue : boost::noncopyable {
 
   void release() {
     boost::lock_guard<boost::mutex> guard(lock_);
-    reserved_--;
+    if (reserved_ > 0)
+      reserved_--;
   }
 
-  int size() const {
+  size_t size() const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return queue_.size() + reserved_;
   }
 
-  int empty() const {
+  bool empty() const {
     boost::lock_guard<boost::mutex> guard(lock_);
     return queue_.empty();
   }
@@ -185,7 +186,7 @@ class ThreadSafeQueue : boost::noncopyable {
  private:
   mutable boost::mutex lock_;
   std::queue<T> queue_;
-  int reserved_;
+  size_t reserved_;
 };
 
 }  // namespace core

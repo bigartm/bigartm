@@ -94,7 +94,7 @@ SmoothPtdw::CreateRegularizePtdwAgent(const Batch& batch,
 bool SmoothPtdw::Reconfigure(const RegularizerConfig& config) {
   std::string config_blob = config.config();
   SmoothPtdwConfig regularizer_config;
-  if (!regularizer_config.ParseFromArray(config_blob.c_str(), config_blob.length())) {
+  if (!regularizer_config.ParseFromString(config_blob)) {
     BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
       "Unable to parse SmoothPtdwConfig from RegularizerConfig.config"));
   }

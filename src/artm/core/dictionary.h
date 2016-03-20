@@ -77,7 +77,7 @@ class Dictionary {
 
   const DictionaryEntry* entry(const Token& token) const;
   const DictionaryEntry* entry(int index) const;
-  inline int size() const { return entries_.size(); }
+  inline size_t size() const { return entries_.size(); }
   inline const std::unordered_map<Token, int, TokenHasher>& token_index() const { return token_index_; }
   inline const std::vector<DictionaryEntry>& entries() const { return entries_; }
   inline const std::unordered_map<int, std::unordered_map<int, float> >& cooc_values() const { return cooc_values_; }

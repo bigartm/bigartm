@@ -58,7 +58,7 @@ class Instance {
   ScoreManager* score_manager();
   ScoreTracker* score_tracker();
 
-  int processor_size() { return processors_.size(); }
+  size_t processor_size() { return processors_.size(); }
   Processor* processor(int processor_index) { return processors_[processor_index].get(); }
 
   void Reconfigure(const MasterModelConfig& master_config);

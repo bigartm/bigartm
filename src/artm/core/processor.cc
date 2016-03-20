@@ -39,7 +39,7 @@ namespace fs = boost::filesystem;
 using ::util::CsrMatrix;
 using ::util::DenseMatrix;
 
-const float kProcessorEps = 1e-16;
+const float kProcessorEps = 1e-16f;
 
 namespace artm {
 namespace core {
@@ -328,7 +328,7 @@ InitializeSparseNdw(const Batch& batch, const ProcessBatchesArgs& args) {
 
   // For sparse case
   for (int item_index = 0; item_index < batch.item_size(); ++item_index) {
-    n_dw_row_ptr.push_back(n_dw_val.size());
+    n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
     const Item& item = batch.item(item_index);
     for (int token_index = 0; token_index < item.token_id_size(); ++token_index) {
       int token_id = item.token_id(token_index);
@@ -346,7 +346,7 @@ InitializeSparseNdw(const Batch& batch, const ProcessBatchesArgs& args) {
     }
   }
 
-  n_dw_row_ptr.push_back(n_dw_val.size());
+  n_dw_row_ptr.push_back(static_cast<int>(n_dw_val.size()));
   return std::make_shared<CsrMatrix<float>>(batch.token_size(), &n_dw_val, &n_dw_row_ptr, &n_dw_col_ind);
 }
 

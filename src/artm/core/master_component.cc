@@ -765,18 +765,18 @@ class OnlineBatchesIterator : public BatchesIterator {
 
   virtual ~OnlineBatchesIterator() {}
 
-  bool more() const { return current_ < update_after_.size(); }
+  bool more() const { return current_ < static_cast<int>(update_after_.size()); }
 
   virtual void move(ProcessBatchesArgs* args) {
     args->clear_batch_filename();
     args->clear_batch_weight();
 
-    if (current_ >= update_after_.size())
+    if (static_cast<int>(current_) >= update_after_.size())
       return;
 
     unsigned first = (current_ == 0) ? 0 : update_after_.Get(current_ - 1);
     unsigned last = update_after_.Get(current_);
-    for (int i = first; i < last; ++i) {
+    for (unsigned i = first; i < last; ++i) {
       args->add_batch_filename(batch_filename_.Get(i));
       args->add_batch_weight(batch_weight_.Get(i));
     }
@@ -964,7 +964,7 @@ class ArtmExecutor {
     process_batches_args_.set_theta_matrix_type(ProcessBatchesArgs_ThetaMatrixType_None);
     iter->move(&process_batches_args_);
 
-    int operation_id = async_.size();
+    int operation_id = static_cast<int>(async_.size());
     async_.push_back(std::make_shared<BatchManager>());
     LOG(INFO) << DescribeMessage(process_batches_args_);
     master_component_->RequestProcessBatchesImpl(process_batches_args_,

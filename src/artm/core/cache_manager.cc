@@ -206,6 +206,8 @@ std::shared_ptr<DataLoaderCacheEntry> CacheManager::FindCacheEntry(
   } catch(...) {
     LOG(ERROR) << "Unable to reload cache for " << retval->filename();
   }
+
+  return nullptr;
 }
 
 void CacheManager::UpdateCacheEntry(std::shared_ptr<DataLoaderCacheEntry> cache_entry) const {
