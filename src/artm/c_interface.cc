@@ -471,7 +471,7 @@ int ArtmRequest(int master_id) {
   try {
     ResultT result;
     master_component(master_id)->Request(&result);
-    ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
+    ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
     return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
@@ -487,7 +487,7 @@ int ArtmRequest(int master_id, int length, const char* args_blob) {
     std::string description = ::artm::core::DescribeMessage(args);
     LOG_IF(INFO, !description.empty()) << "Pass " << description << " to MasterComponent::Request";
     master_component(master_id)->Request(args, &result);
-    ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
+    ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
     return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
@@ -503,7 +503,7 @@ int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
     std::string description = ::artm::core::DescribeMessage(args);
     LOG_IF(INFO, !description.empty()) << "Pass " << description << " to MasterComponent::Request (extended)";
     master_component(master_id)->Request(args, &result, last_message_ex());
-    ::artm::core::ValidateMessage(result, /* throw_error =*/ false);
+    ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
     result.SerializeToString(last_message());
     return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
