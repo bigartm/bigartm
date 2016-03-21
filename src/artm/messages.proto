@@ -422,7 +422,6 @@ message CollectionParserConfig {
 message InitializeModelArgs {
   optional string model_name = 1;
   optional string dictionary_name = 2;
-  optional int32 topics_count = 3;
   repeated string topic_name = 4;
   optional int32 seed = 5 [default = -1];
 }
@@ -496,7 +495,6 @@ message GetThetaMatrixArgs {
   }
 
   repeated string topic_name = 3;
-  repeated int32 topic_index = 4;
   optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
   optional MatrixLayout matrix_layout = 8 [default = Dense];

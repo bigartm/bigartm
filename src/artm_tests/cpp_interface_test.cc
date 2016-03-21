@@ -293,7 +293,8 @@ TEST(CppInterface, ProcessBatchesApi) {
 
   artm::InitializeModelArgs initialize_model_args;
   initialize_model_args.set_dictionary_name("gathered_dictionary");
-  initialize_model_args.set_topics_count(nTopics);
+  for (int i = 0; i < nTopics; ++i)
+    initialize_model_args.add_topic_name("Topic" + boost::lexical_cast<std::string>(i));
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
   ::artm::MasterComponentInfo master_info = master.info();

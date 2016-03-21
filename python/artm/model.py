@@ -812,12 +812,10 @@ class ARTM(object):
         self._lib.ArtmDisposeModel(self.master.master_id, self.model_nwt)
         self.master.initialize_model(model_name=self.model_pwt,
                                      dictionary_name=dictionary_name,
-                                     num_topics=self.num_topics,
                                      topic_names=self._topic_names,
                                      seed=seed)
         self.master.initialize_model(model_name=self.model_nwt,
                                      dictionary_name=dictionary_name,
-                                     num_topics=self.num_topics,
                                      topic_names=self._topic_names,
                                      seed=seed)
 

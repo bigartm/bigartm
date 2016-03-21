@@ -454,8 +454,7 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
   auto tm_all = master->GetThetaMatrix();
 
   bool by_names = args.topic_name_size() > 0;
-  bool by_index = args.topic_index_size() > 0;
-  bool all_topics = (!by_names && !by_index);
+  bool all_topics = !by_names;
 
   ASSERT_EQ(tm_dense.topics_count(), tm_dense.topic_name_size());
   ASSERT_EQ(tm_sparse.topics_count(), tm_sparse.topic_name_size());
@@ -468,8 +467,6 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
     ASSERT_EQ(tm_dense.topics_count(), args.topic_name_size());
     for (int i = 0; i < tm_dense.topics_count(); ++i)
       EXPECT_EQ(tm_dense.topic_name(i), args.topic_name(i));
-  } else if (by_index) {
-    ASSERT_EQ(tm_dense.topics_count(), args.topic_index_size());
   } else {
     ASSERT_EQ(tm_dense.topics_count(), tm_all.topics_count());
   }

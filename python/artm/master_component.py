@@ -281,11 +281,10 @@ class MasterComponent(object):
 
         self._lib.ArtmFilterDictionary(self.master_id, filter_args)
 
-    def initialize_model(self, model_name=None, num_topics=None, topic_names=None,
+    def initialize_model(self, model_name=None, topic_names=None,
                          dictionary_name=None, seed=None, args=None):
         """
         :param str model_name: name of pwt matrix in BigARTM
-        :param int num_topics: number of topics in model
         :param topic_names: the list of names of topics to be used in model
         :type topic_names: list of str
         :param str dictionary_name: name of imported dictionary
@@ -300,8 +299,6 @@ class MasterComponent(object):
             init_args.model_name = model_name
         if seed is not None:
             init_args.seed = seed
-        if num_topics is not None:
-            init_args.topics_count = num_topics
         if topic_names is not None:
             init_args.ClearField('topic_name')
             for topic_name in topic_names:

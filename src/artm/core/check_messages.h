@@ -303,11 +303,6 @@ inline std::string DescribeErrors(const ::artm::TransformMasterModelArgs& messag
 inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
   std::stringstream ss;
 
-  if (message.topics_count() != 0 || message.topic_name_size() != 0) {
-    if (message.topics_count() != message.topic_name_size())
-      ss << "Length mismatch in fields InitializeModelArgs.topics_count and InitializeModelArgs.topic_name";
-  }
-
   if (!message.has_model_name()) {
     // Allow this to default to MasterModelConfig.pwt_name
     // ss << "InitializeModelArgs.model_name is not defined; ";
@@ -509,17 +504,6 @@ inline void FixMessage(::artm::GetTopicModelArgs* message) {
 }
 
 template<>
-inline void FixMessage(::artm::InitializeModelArgs* message) {
-  if (message->topic_name_size() == 0) {
-    for (int i = 0; i < message->topics_count(); ++i) {
-      message->add_topic_name("@topic_" + std::to_string(i));
-    }
-  } else {
-    message->set_topics_count(message->topic_name_size());
-  }
-}
-
-template<>
 inline void FixMessage(::artm::DictionaryData* message) {
   if (message->class_id_size() == 0) {
     for (int i = 0; i < message->token_size(); ++i) {
@@ -632,8 +616,6 @@ inline std::string DescribeMessage(const ::artm::InitializeModelArgs& message) {
 
   if (message.has_dictionary_name())
     ss << ", dictionary_name=" << message.dictionary_name();
-  if (message.has_topics_count())
-    ss << ", topics_count=" << message.topics_count();
   ss << ", topic_name_size=" << message.topic_name_size();
   return ss.str();
 }
