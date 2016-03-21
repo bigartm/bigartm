@@ -192,8 +192,6 @@ TEST(CppInterface, BasicTest) {
   new_topic_model.mutable_topic_name()->CopyFrom(master_component.config().topic_name());
   new_topic_model.add_token("my overwritten token");
   new_topic_model.add_token("my overwritten token2");
-  new_topic_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
-  new_topic_model.add_operation_type(::artm::TopicModel_OperationType_Increment);
   auto weights = new_topic_model.add_token_weights();
   auto weights2 = new_topic_model.add_token_weights();
   for (int i = 0; i < nTopics; ++i) {
@@ -280,20 +278,20 @@ TEST(CppInterface, ProcessBatchesApi) {
   master.DisposeDictionary(std::string());  // Dispose all dictionaries (if any leaked from previous tests)
 
   artm::ImportBatchesArgs import_batches_args;
+  artm::GatherDictionaryArgs gather_args;
   for (auto& batch_path : batches) {
     import_batches_args.add_batch()->CopyFrom(*batch_path);
-    import_batches_args.add_batch_name(batch_path->id());
+    gather_args.add_batch_path(batch_path->id());
   }
   master.ImportBatches(import_batches_args);
 
-  artm::GatherDictionaryArgs gather_args;
-  gather_args.mutable_batch_path()->CopyFrom(import_batches_args.batch_name());
   gather_args.set_dictionary_target_name("gathered_dictionary");
   master.GatherDictionary(gather_args);
 
   artm::InitializeModelArgs initialize_model_args;
   initialize_model_args.set_dictionary_name("gathered_dictionary");
-  initialize_model_args.set_topics_count(nTopics);
+  for (int i = 0; i < nTopics; ++i)
+    initialize_model_args.add_topic_name("Topic" + boost::lexical_cast<std::string>(i));
   initialize_model_args.set_model_name("pwt0");
   master.InitializeModel(initialize_model_args);
   ::artm::MasterComponentInfo master_info = master.info();
@@ -335,8 +333,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   /////////////////////////////////////////////
 
   artm::ProcessBatchesArgs process_batches_args;
-  for (auto& batch_name : import_batches_args.batch_name())
-    process_batches_args.add_batch_filename(batch_name);
+  process_batches_args.mutable_batch_filename()->CopyFrom(gather_args.batch_path());
   process_batches_args.set_nwt_target_name("nwt_hat");
 
   artm::NormalizeModelArgs normalize_model_args;

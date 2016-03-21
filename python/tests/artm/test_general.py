@@ -96,7 +96,6 @@ def test_func():
 
         for i in xrange(num_collection_passes):
             assert abs(model.score_tracker['PerplexityScore'].value[i] - perplexity_value[i]) < perp_zero_eps
-            assert abs(model.score_tracker['PerplexityScore'].theta_sparsity_value[i] - sparsity_theta_value[i]) < perp_zero_eps
 
         for i in xrange(num_collection_passes):
             assert model.score_tracker['TopTokensScore'].num_tokens[i] == top_tokens_num_tokens[i]

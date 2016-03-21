@@ -34,7 +34,7 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
 
   const bool has_topic_data = (message.topics_count() != 0 || message.topic_name_size() != 0);
   const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
-  const bool has_bulk_data = (message.token_weights_size() != 0 || message.operation_type_size() != 0);
+  const bool has_bulk_data = (message.token_weights_size() != 0);
   const bool has_sparse_format = has_bulk_data && (message.topic_index_size() != 0);
 
   if (has_topic_data) {
@@ -54,12 +54,11 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
     ss << "TopicModel.token_size is empty";
 
   if (has_bulk_data) {
-    if ((message.operation_type_size() != message.token_size()) ||
-      (message.token_weights_size() != message.token_size()) ||
-      (has_sparse_format && (message.topic_index_size() != message.token_size()))) {
+    if ((message.token_weights_size() != message.token_size()) ||
+        (has_sparse_format && (message.topic_index_size() != message.token_size()))) {
       ss << "Inconsistent fields size in TopicModel: "
         << message.token_size() << " vs " << message.class_id_size()
-        << " vs " << message.operation_type_size() << " vs " << message.token_weights_size() << ";";
+        << " vs " << message.token_weights_size() << ";";
     }
 
     for (int i = 0; i < message.token_size(); ++i) {
@@ -85,12 +84,9 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
       }
 
       if (!has_sparse_format) {
-        if (message.operation_type(i) == TopicModel_OperationType_Increment ||
-            message.operation_type(i) == TopicModel_OperationType_Overwrite) {
-          if (message.token_weights(i).value_size() != message.topics_count()) {
-            ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
-            break;
-          }
+        if (message.token_weights(i).value_size() != message.topics_count()) {
+          ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+          break;
         }
       }
     }
@@ -303,11 +299,6 @@ inline std::string DescribeErrors(const ::artm::TransformMasterModelArgs& messag
 inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
   std::stringstream ss;
 
-  if (message.topics_count() != 0 || message.topic_name_size() != 0) {
-    if (message.topics_count() != message.topic_name_size())
-      ss << "Length mismatch in fields InitializeModelArgs.topics_count and InitializeModelArgs.topic_name";
-  }
-
   if (!message.has_model_name()) {
     // Allow this to default to MasterModelConfig.pwt_name
     // ss << "InitializeModelArgs.model_name is not defined; ";
@@ -315,13 +306,6 @@ inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
 
   if (!message.has_dictionary_name()) {
     ss << "InitializeModelArgs.dictionary_name is not defined; ";
-  }
-
-  if (message.has_source_type() || message.has_disk_path() ||
-      message.filter_size() || message.batch_filename_size()) {
-    ss << "InitializeModelArgs has no longer support source types (using only dictionary). ";
-    ss << "Fields 'disk_path' and 'batch_filename' are deprecated. ";
-    ss << "Also it doesn't proceed filtering (use ArtmFilterDictionary())";
   }
 
   return ss.str();
@@ -335,18 +319,6 @@ inline std::string DescribeErrors(const ::artm::FilterDictionaryArgs& message) {
 
   if (!message.has_dictionary_target_name())
      ss << "FilterDictionaryArgs has no target dictionary name; ";
-
-  return ss.str();
-}
-
-inline std::string DescribeErrors(const ::artm::CollectionParserConfig& message) {
-  std::stringstream ss;
-
-  if (message.cooccurrence_token_size() || message.has_gather_cooc() ||
-      message.cooccurrence_class_id_size() || message.has_use_symmetric_cooc_values()) {
-    ss << "Collection parser no longer support gathering dictionary and cooc data. ";
-    ss << "Use ArtmParseCollection() and then ArtmGatherDictionary() functions";
-  }
 
   return ss.str();
 }
@@ -438,8 +410,8 @@ inline std::string DescribeErrors(const ::artm::ProcessBatchesArgs& message) {
 inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_name_size() != 0 && message.batch_name_size() != message.batch_size())
-    ss << "Length mismatch in fields ImportBatchesArgs.batch_name and ImportBatchesArgs.batch";
+  if (message.batch_size() == 0)
+    ss << "Empty ImportBatchesArgs.batch field";
 
   return ss.str();
 }
@@ -462,6 +434,7 @@ inline std::string DescribeErrors(const ::artm::ClearScoreCacheArgs& message) { 
 inline std::string DescribeErrors(const ::artm::ClearScoreArrayCacheArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ScoreArray& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetScoreArrayArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::CollectionParserConfig& message) { return std::string(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // FixMessage routines (optional)
@@ -524,17 +497,6 @@ template<>
 inline void FixMessage(::artm::GetTopicModelArgs* message) {
   if (message->has_use_sparse_format())
     message->set_matrix_layout(GetTopicModelArgs_MatrixLayout_Sparse);
-}
-
-template<>
-inline void FixMessage(::artm::InitializeModelArgs* message) {
-  if (message->topic_name_size() == 0) {
-    for (int i = 0; i < message->topics_count(); ++i) {
-      message->add_topic_name("@topic_" + std::to_string(i));
-    }
-  } else {
-    message->set_topics_count(message->topic_name_size());
-  }
 }
 
 template<>
@@ -616,11 +578,6 @@ template<>
 inline void FixMessage(::artm::ImportBatchesArgs* message) {
   for (int i = 0; i < message->batch_size(); ++i)
     FixMessage(message->mutable_batch(i));
-
-  if (message->batch_name_size() == 0) {
-    for (int i = 0; i < message->batch_size(); ++i)
-      message->add_batch_name(message->batch(i).id());
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -650,8 +607,6 @@ inline std::string DescribeMessage(const ::artm::InitializeModelArgs& message) {
 
   if (message.has_dictionary_name())
     ss << ", dictionary_name=" << message.dictionary_name();
-  if (message.has_topics_count())
-    ss << ", topics_count=" << message.topics_count();
   ss << ", topic_name_size=" << message.topic_name_size();
   return ss.str();
 }

@@ -33,24 +33,6 @@ void Perplexity::AppendScore(
     Score* score) {
   int topic_size = p_wt.topic_size();
 
-  // the following code counts sparsity of theta
-  std::vector<bool> topics_to_score;
-  int topics_to_score_size = topic_size;
-  if (config_.theta_sparsity_topic_name_size() == 0) {
-    topics_to_score.assign(topic_size, true);
-  } else {
-    topics_to_score = core::is_member(p_wt.topic_name(), config_.theta_sparsity_topic_name());
-    topics_to_score_size = config_.theta_sparsity_topic_name_size();
-  }
-
-  int zero_topics_count = 0;
-  for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
-    if ((fabs(theta[topic_index]) < config_.theta_sparsity_eps()) &&
-        topics_to_score[topic_index]) {
-      ++zero_topics_count;
-    }
-  }
-
   // the following code counts perplexity
   bool use_classes_from_model = false;
   if (config_.class_id_size() == 0) use_classes_from_model = true;
@@ -159,8 +141,6 @@ void Perplexity::AppendScore(
   perplexity_score.set_normalizer(normalizer);
   perplexity_score.set_raw(raw);
   perplexity_score.set_zero_words(zero_words);
-  perplexity_score.set_theta_sparsity_zero_topics(zero_topics_count);
-  perplexity_score.set_theta_sparsity_total_topics(topics_to_score_size);
   AppendScore(perplexity_score, score);
 }
 
@@ -188,15 +168,6 @@ void Perplexity::AppendScore(const Score& score, Score* target) {
   perplexity_target->set_zero_words(perplexity_target->zero_words() +
                                     perplexity_score->zero_words());
   perplexity_target->set_value(exp(- perplexity_target->raw() / perplexity_target->normalizer()));
-  perplexity_target->set_theta_sparsity_zero_topics(
-      perplexity_target->theta_sparsity_zero_topics() +
-      perplexity_score->theta_sparsity_zero_topics());
-  perplexity_target->set_theta_sparsity_total_topics(
-      perplexity_target->theta_sparsity_total_topics() +
-      perplexity_score->theta_sparsity_total_topics());
-  perplexity_target->set_theta_sparsity_value(
-      static_cast<double>(perplexity_target->theta_sparsity_zero_topics()) /
-      perplexity_target->theta_sparsity_total_topics());
 
   VLOG(1) << "normalizer=" << perplexity_target->normalizer()
           << ", raw=" << perplexity_target->raw()

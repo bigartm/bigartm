@@ -186,7 +186,7 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
 
     auto iter = batch_dictionary.find(token_id);
     if (iter == batch_dictionary.end()) {
-      batch_dictionary.insert(std::make_pair(token_id, batch_dictionary.size()));
+      batch_dictionary.insert(std::make_pair(token_id, static_cast<int>(batch_dictionary.size())));
       batch.add_token((*token_map)[token_id].keyword);
       batch.add_class_id((*token_map)[token_id].class_id);
       iter = batch_dictionary.find(token_id);

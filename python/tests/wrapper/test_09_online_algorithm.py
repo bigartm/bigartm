@@ -56,7 +56,7 @@ def test_func():
 
         # Initialize model
         master.initialize_model(model_name=pwt,
-                                num_topics=num_topics,
+                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
                                 dictionary_name=dictionary_name)
 
         # Get file names of batches to process

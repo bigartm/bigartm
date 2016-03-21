@@ -56,28 +56,13 @@ void CacheManager::Clear() {
 static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
                                               const GetThetaMatrixArgs& get_theta_args,
                                               ::artm::ThetaMatrix* theta_matrix) {
-  if (get_theta_args.topic_index_size() != 0 && get_theta_args.topic_name_size() != 0)
-    BOOST_THROW_EXCEPTION(InvalidOperation(
-    "GetThetaMatrixArgs.topic_name and GetThetaMatrixArgs.topic_index must not be used together"));
-
   auto& args_topic_name = get_theta_args.topic_name();
-  auto& args_topic_index = get_theta_args.topic_index();
   const bool has_sparse_format = get_theta_args.matrix_layout() == GetThetaMatrixArgs_MatrixLayout_Sparse;
   const bool sparse_cache = cache.topic_index_size() > 0;
   bool use_all_topics = false;
 
   std::vector<int> topics_to_use;
-  if (args_topic_index.size() > 0) {
-    for (int i = 0; i < args_topic_index.size(); ++i) {
-      int topic_index = args_topic_index.Get(i);
-      if (topic_index < 0 || topic_index >= cache.topic_name_size()) {
-        std::stringstream ss;
-        ss << "GetThetaMatrixArgs.topic_index[" << i << "] == " << topic_index << " is out of range.";
-        BOOST_THROW_EXCEPTION(artm::core::InvalidOperation(ss.str()));
-      }
-      topics_to_use.push_back(topic_index);
-    }
-  } else if (args_topic_name.size() != 0) {
+  if (args_topic_name.size() != 0) {
     for (int i = 0; i < args_topic_name.size(); ++i) {
       int topic_index = repeated_field_index_of(cache.topic_name(), args_topic_name.Get(i));
       if (topic_index == -1) {

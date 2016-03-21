@@ -130,10 +130,7 @@ class PerplexityScoreTracker(BaseScoreTracker):
         BaseScoreTracker.__init__(self, score)
 
 _set_properties(PerplexityScoreTracker, {'value': {}, 'raw': {}, 'normalizer': {},
-                                         'zero_tokens': {'proto_name': 'zero_words'},
-                                         'theta_sparsity_value': {},
-                                         'theta_sparsity_zero_topics': {},
-                                         'theta_sparsity_total_topics': {}})
+                                         'zero_tokens': {'proto_name': 'zero_words'}})
 
 
 class ItemsProcessedScoreTracker(BaseScoreTracker):

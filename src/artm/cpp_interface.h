@@ -110,7 +110,7 @@ class MasterModel {
 
   // Operatinos to work with batches through memory
   void ImportBatches(const ImportBatchesArgs& args);
-  void DisposeBatch(const std::string& batch_name);
+  void DisposeBatch(const std::string& batch_id);
 
   // Operations to work with model
   void InitializeModel(const InitializeModelArgs& args);
