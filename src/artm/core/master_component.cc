@@ -183,13 +183,10 @@ void MasterComponent::Request(const GetDictionaryArgs& args, DictionaryData* res
 }
 
 void MasterComponent::ImportBatches(const ImportBatchesArgs& args) {
-  if (args.batch_name_size() != args.batch_size())
-    BOOST_THROW_EXCEPTION(InvalidOperation("ImportBatchesArgs: batch_name_size() != batch_size()"));
-
-  for (int i = 0; i < args.batch_name_size(); ++i) {
+  for (int i = 0; i < args.batch_size(); ++i) {
     std::shared_ptr<Batch> batch = std::make_shared<Batch>(args.batch(i));
     FixAndValidateMessage(batch.get(), /* throw_error =*/ true);
-    instance_->batches()->set(args.batch_name(i), batch);
+    instance_->batches()->set(batch->id(), batch);
   }
 }
 

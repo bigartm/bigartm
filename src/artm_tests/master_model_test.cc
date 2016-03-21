@@ -67,17 +67,16 @@ void runBasicTest(bool skip_batch_dict) {
   }
 
   ::artm::ImportBatchesArgs import_batches_args;
+  ::artm::GatherDictionaryArgs gather_args;
   for (auto& batch : batches) {
     import_batches_args.add_batch()->CopyFrom(*batch);
-    import_batches_args.add_batch_name(batch->id());
+    gather_args.add_batch_path(batch->id());
   }
   master_model.ImportBatches(import_batches_args);
 
   if (skip_batch_dict) {
     try {
-      ::artm::GatherDictionaryArgs gather_args;
       gather_args.set_dictionary_target_name("tmp_dict");
-      gather_args.mutable_batch_path()->CopyFrom(import_batches_args.batch_name());
       master_model.GatherDictionary(gather_args);
       ASSERT_TRUE(false);  // exception expected because batches have no tokens
     }
@@ -97,7 +96,7 @@ void runBasicTest(bool skip_batch_dict) {
   master_model.InitializeModel(initialize_model_args);
 
   ::artm::FitOfflineMasterModelArgs fit_offline_args;
-  fit_offline_args.mutable_batch_filename()->CopyFrom(import_batches_args.batch_name());
+  fit_offline_args.mutable_batch_filename()->CopyFrom(gather_args.batch_path());
 
   // Execute offline algorithm
   float expected[] = { 29.9952f, 26.1885f, 25.9853f, 24.5419f };

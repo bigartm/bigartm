@@ -278,14 +278,13 @@ TEST(CppInterface, ProcessBatchesApi) {
   master.DisposeDictionary(std::string());  // Dispose all dictionaries (if any leaked from previous tests)
 
   artm::ImportBatchesArgs import_batches_args;
+  artm::GatherDictionaryArgs gather_args;
   for (auto& batch_path : batches) {
     import_batches_args.add_batch()->CopyFrom(*batch_path);
-    import_batches_args.add_batch_name(batch_path->id());
+    gather_args.add_batch_path(batch_path->id());
   }
   master.ImportBatches(import_batches_args);
 
-  artm::GatherDictionaryArgs gather_args;
-  gather_args.mutable_batch_path()->CopyFrom(import_batches_args.batch_name());
   gather_args.set_dictionary_target_name("gathered_dictionary");
   master.GatherDictionary(gather_args);
 
@@ -334,8 +333,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   /////////////////////////////////////////////
 
   artm::ProcessBatchesArgs process_batches_args;
-  for (auto& batch_name : import_batches_args.batch_name())
-    process_batches_args.add_batch_filename(batch_name);
+  process_batches_args.mutable_batch_filename()->CopyFrom(gather_args.batch_path());
   process_batches_args.set_nwt_target_name("nwt_hat");
 
   artm::NormalizeModelArgs normalize_model_args;

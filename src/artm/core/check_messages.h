@@ -410,8 +410,8 @@ inline std::string DescribeErrors(const ::artm::ProcessBatchesArgs& message) {
 inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
   std::stringstream ss;
 
-  if (message.batch_name_size() != 0 && message.batch_name_size() != message.batch_size())
-    ss << "Length mismatch in fields ImportBatchesArgs.batch_name and ImportBatchesArgs.batch";
+  if (message.batch_size() == 0)
+    ss << "Empty ImportBatchesArgs.batch field";
 
   return ss.str();
 }
@@ -578,11 +578,6 @@ template<>
 inline void FixMessage(::artm::ImportBatchesArgs* message) {
   for (int i = 0; i < message->batch_size(); ++i)
     FixMessage(message->mutable_batch(i));
-
-  if (message->batch_name_size() == 0) {
-    for (int i = 0; i < message->batch_size(); ++i)
-      message->add_batch_name(message->batch(i).id());
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -639,7 +639,6 @@ message MasterComponentInfo {
 }
 
 message ImportBatchesArgs {
-  repeated string batch_name = 1;
   repeated Batch batch = 3;
 }
 

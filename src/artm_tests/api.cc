@@ -111,17 +111,19 @@ int Api::Duplicate(const DuplicateMasterComponentArgs& args) {
                                                   ::artm::InitializeModelArgs* initialize_model_args,
                                                   const ::artm::DictionaryData* dictionary_data) {
   ImportBatchesArgs import_args;
-  for (auto& batch : batches) {
+  for (auto& batch : batches)
     import_args.add_batch()->CopyFrom(*batch);
-    import_args.add_batch_name(batch->id());
-  }
   master_model_.ImportBatches(import_args);
   if (import_batches_args != nullptr)
     import_batches_args->CopyFrom(import_args);
 
+  ::artm::FitOfflineMasterModelArgs fit_offline_args;
+  for (auto& batch : import_args.batch())
+    fit_offline_args.add_batch_filename(batch.id());
+
   if (dictionary_data == nullptr) {
     ::artm::GatherDictionaryArgs gather_args;
-    gather_args.mutable_batch_path()->CopyFrom(import_args.batch_name());
+    gather_args.mutable_batch_path()->CopyFrom(fit_offline_args.batch_filename());
     gather_args.set_dictionary_target_name("dictionary");
     master_model_.GatherDictionary(gather_args);
   } else {
@@ -137,8 +139,6 @@ int Api::Duplicate(const DuplicateMasterComponentArgs& args) {
   if (initialize_model_args != nullptr)
     initialize_model_args->CopyFrom(init_model_args);
 
-  ::artm::FitOfflineMasterModelArgs fit_offline_args;
-  fit_offline_args.mutable_batch_filename()->CopyFrom(import_args.batch_name());
   return fit_offline_args;
 }
 
