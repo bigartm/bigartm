@@ -34,7 +34,7 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
 
   const bool has_topic_data = (message.topics_count() != 0 || message.topic_name_size() != 0);
   const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
-  const bool has_bulk_data = (message.token_weights_size() != 0 || message.operation_type_size() != 0);
+  const bool has_bulk_data = (message.token_weights_size() != 0);
   const bool has_sparse_format = has_bulk_data && (message.topic_index_size() != 0);
 
   if (has_topic_data) {
@@ -54,12 +54,11 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
     ss << "TopicModel.token_size is empty";
 
   if (has_bulk_data) {
-    if ((message.operation_type_size() != message.token_size()) ||
-      (message.token_weights_size() != message.token_size()) ||
-      (has_sparse_format && (message.topic_index_size() != message.token_size()))) {
+    if ((message.token_weights_size() != message.token_size()) ||
+        (has_sparse_format && (message.topic_index_size() != message.token_size()))) {
       ss << "Inconsistent fields size in TopicModel: "
         << message.token_size() << " vs " << message.class_id_size()
-        << " vs " << message.operation_type_size() << " vs " << message.token_weights_size() << ";";
+        << " vs " << message.token_weights_size() << ";";
     }
 
     for (int i = 0; i < message.token_size(); ++i) {
@@ -85,12 +84,9 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
       }
 
       if (!has_sparse_format) {
-        if (message.operation_type(i) == TopicModel_OperationType_Increment ||
-            message.operation_type(i) == TopicModel_OperationType_Overwrite) {
-          if (message.token_weights(i).value_size() != message.topics_count()) {
-            ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
-            break;
-          }
+        if (message.token_weights(i).value_size() != message.topics_count()) {
+          ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+          break;
         }
       }
     }

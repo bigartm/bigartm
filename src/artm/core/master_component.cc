@@ -47,7 +47,6 @@ static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std
   }
 
   topic_model->clear_token_weights();
-  topic_model->clear_operation_type();
 }
 
 static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, std::string* lm) {
@@ -327,11 +326,6 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     FixMessage(mutable_args);
   }
 
-  artm::TopicModel topic_model;
-  topic_model.set_seed(args.seed());
-  topic_model.mutable_topic_name()->CopyFrom(args.topic_name());
-  topic_model.set_topics_count(topic_model.topic_name_size());
-
   auto dict = instance_->dictionaries()->get(args.dictionary_name());
   if (dict == nullptr) {
     std::stringstream ss;
@@ -346,18 +340,17 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
   }
 
   LOG(INFO) << "InitializeModel() with "
-            << topic_model.topic_name_size() << " topics and "
+            << args.topic_name_size() << " topics and "
             << dict->size() << " tokens";
 
+  auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
   for (int index = 0; index < dict->size(); ++index) {
-    topic_model.add_operation_type(TopicModel_OperationType_Initialize);
-    topic_model.add_class_id(dict->entry(index)->token().class_id);
-    topic_model.add_token(dict->entry(index)->token().keyword);
-    topic_model.add_token_weights();
+    ::artm::core::Token token = dict->entry(index)->token();
+    std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
+    int token_id = new_ttm->AddToken(token);
+    new_ttm->increase(token_id, vec);
   }
 
-  auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), topic_model.topic_name());
-  PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, new_ttm.get());
   PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
 
   instance_->SetPhiMatrix(args.model_name(), new_ttm);

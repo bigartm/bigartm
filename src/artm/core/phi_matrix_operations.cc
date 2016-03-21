@@ -113,7 +113,6 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
     const Token& current_token = phi_matrix.token(token_index);
     topic_model->add_token(current_token.keyword);
     topic_model->add_class_id(current_token.class_id);
-    topic_model->add_operation_type(TopicModel_OperationType_Increment);
 
     ::artm::FloatArray *target = topic_model->add_token_weights();
 
@@ -178,28 +177,15 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     const IntArray* sparse_topic_index = has_sparse_format ? &topic_model.topic_index(token_index) : nullptr;
     const bool has_sparse_format_local = (sparse_topic_index != nullptr) && (sparse_topic_index->value_size() > 0);
 
-    TopicModel_OperationType operation_type = topic_model.operation_type(token_index);
     int current_token_id = phi_matrix->token_index(token);
-
-    switch (operation_type) {
-    case TopicModel_OperationType_Initialize:
-      // Add new tokens discovered by processor
-      if (current_token_id == -1) {
-        current_token_id = phi_matrix->AddToken(token);
-        int seed = topic_model.has_seed() ? topic_model.seed() : -1;
-        std::vector<float> vec = Helpers::GenerateRandomVector(phi_matrix->topic_size(), token, seed);
-        phi_matrix->increase(current_token_id, vec);
-      }
-      break;
-
-    case TopicModel_OperationType_Increment:
+    {  // previously this corresponded to TopicModel_OperationType_Increment case
       if (current_token_id == -1)
         current_token_id = phi_matrix->AddToken(token);
 
       if (optimized_execution && !has_sparse_format_local && (counters.value_size() == this_topic_size)) {
         for (int topic_index = 0; topic_index < this_topic_size; ++topic_index)
           phi_matrix->increase(current_token_id, topic_index, counters.value(topic_index));
-        break;
+        continue;
       }
 
       for (int i = 0; i < counters.value_size(); ++i) {
@@ -209,27 +195,6 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
           continue;
         phi_matrix->increase(current_token_id, target_topic_index[topic_index], apply_weight * counters.value(i));
       }
-      break;
-
-    case TopicModel_OperationType_Overwrite:
-      if (current_token_id == -1)
-        current_token_id = phi_matrix->AddToken(token);
-      for (int i = 0; i < counters.value_size(); ++i) {
-        int topic_index = has_sparse_format_local ? sparse_topic_index->value(i) : i;
-        assert(topic_index < target_topic_index.size());
-        if (target_topic_index[topic_index] == -1)
-          continue;
-        phi_matrix->set(current_token_id, target_topic_index[topic_index], counters.value(i));
-      }
-      break;
-
-    case TopicModel_OperationType_Ignore:
-      // ignore token == do nothing
-      break;
-
-    default:
-      BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(
-        "TopicModel.operation_type", operation_type));
     }
   }
 }
