@@ -317,13 +317,6 @@ inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
     ss << "InitializeModelArgs.dictionary_name is not defined; ";
   }
 
-  if (message.has_source_type() || message.has_disk_path() ||
-      message.filter_size() || message.batch_filename_size()) {
-    ss << "InitializeModelArgs has no longer support source types (using only dictionary). ";
-    ss << "Fields 'disk_path' and 'batch_filename' are deprecated. ";
-    ss << "Also it doesn't proceed filtering (use ArtmFilterDictionary())";
-  }
-
   return ss.str();
 }
 
@@ -335,18 +328,6 @@ inline std::string DescribeErrors(const ::artm::FilterDictionaryArgs& message) {
 
   if (!message.has_dictionary_target_name())
      ss << "FilterDictionaryArgs has no target dictionary name; ";
-
-  return ss.str();
-}
-
-inline std::string DescribeErrors(const ::artm::CollectionParserConfig& message) {
-  std::stringstream ss;
-
-  if (message.cooccurrence_token_size() || message.has_gather_cooc() ||
-      message.cooccurrence_class_id_size() || message.has_use_symmetric_cooc_values()) {
-    ss << "Collection parser no longer support gathering dictionary and cooc data. ";
-    ss << "Use ArtmParseCollection() and then ArtmGatherDictionary() functions";
-  }
 
   return ss.str();
 }
@@ -462,6 +443,7 @@ inline std::string DescribeErrors(const ::artm::ClearScoreCacheArgs& message) { 
 inline std::string DescribeErrors(const ::artm::ClearScoreArrayCacheArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::ScoreArray& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetScoreArrayArgs& message) { return std::string(); }
+inline std::string DescribeErrors(const ::artm::CollectionParserConfig& message) { return std::string(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // FixMessage routines (optional)
