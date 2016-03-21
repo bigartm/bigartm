@@ -216,7 +216,7 @@ class PerplexityScore(BaseScore):
     _config_message = messages.PerplexityScoreConfig
     _type = const.ScoreConfig_Type_Perplexity
 
-    def __init__(self, name=None, class_ids=None, topic_names=None, eps=None,
+    def __init__(self, name=None, class_ids=None, topic_names=None,
                  dictionary_name=None, use_unigram_document_model=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
@@ -225,7 +225,6 @@ class PerplexityScore(BaseScore):
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
         :type topic_names: list of str
-        :param float eps: the tolerance const, everything < eps considered to be zero
         :param str dictionary_name: BigARTM collection dictionary, won't use\
                             dictionary if not specified
         :param bool use_unigram_document_model: use unigram document/collection model\
@@ -235,11 +234,6 @@ class PerplexityScore(BaseScore):
                            name=name,
                            class_id=None,
                            topic_names=topic_names)
-
-        self._eps = GLOB_EPS
-        if eps is not None:
-            self._config.theta_sparsity_eps = eps
-            self._eps = eps
 
         self._class_ids = []
         if class_ids is not None:
@@ -262,10 +256,6 @@ class PerplexityScore(BaseScore):
                 self._config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
 
     @property
-    def eps(self):
-        return self._eps
-
-    @property
     def dictionary_name(self):
         return self._dictionary_name
 
@@ -280,10 +270,6 @@ class PerplexityScore(BaseScore):
     @property
     def class_id(self):
         raise KeyError('No class_id parameter')
-
-    @eps.setter
-    def eps(self, eps):
-        _reconfigure_field(self, eps, 'eps')
 
     @dictionary_name.setter
     def dictionary_name(self, dictionary_name):

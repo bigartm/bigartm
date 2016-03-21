@@ -228,8 +228,6 @@ message PerplexityScoreConfig {
   }
   optional Type model_type = 3 [default = UnigramDocumentModel];
   optional string dictionary_name = 4;
-  optional float theta_sparsity_eps = 5 [default = 1e-37];
-  repeated string theta_sparsity_topic_name = 6;
   repeated string class_id = 7;
 }
 
@@ -239,9 +237,6 @@ message PerplexityScore {
   optional double raw = 2;
   optional double normalizer = 3;
   optional int64 zero_words = 4;
-  optional double theta_sparsity_value = 5;
-  optional int32 theta_sparsity_zero_topics = 6;  // obsolete in BigARTM v0.7.4
-  optional int32 theta_sparsity_total_topics = 7;  // obsolete in BigARTM v0.7.4
 }
 
 // Represents a configuration of a theta sparsity score
