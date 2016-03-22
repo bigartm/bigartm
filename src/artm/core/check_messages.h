@@ -24,6 +24,9 @@ inline bool FixAndValidateMessage(T* message, bool throw_error = true);
 template <typename T>
 inline bool ValidateMessage(const T& message, bool throw_error = true);
 
+template<typename T>
+inline void FixPackedMessage(std::string* message);
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescribeErrors routines
 // This method is required for all messages that go through c_interface.
@@ -526,6 +529,13 @@ inline void FixMessage(::artm::ProcessBatchesArgs* message) {
 }
 
 template<>
+inline void FixMessage(::artm::TopTokensScoreConfig* message) {
+  if (!message->has_class_id() || message->class_id().empty()) {
+    message->set_class_id(DefaultClass);
+  }
+}
+
+template<>
 inline void FixMessage(::artm::MasterModelConfig* message) {
   if (message->class_weight_size() == 0) {
     for (int i = 0; i < message->class_id_size(); ++i)
@@ -536,8 +546,12 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
     message->set_cache_theta(true);
 
   for (int i = 0; i < message->score_config_size(); ++i) {
-    if (!message->score_config(i).has_model_name())
-      message->mutable_score_config(i)->set_model_name(message->pwt_name());
+    ScoreConfig* score_config = message->mutable_score_config(i);
+    if (score_config->type() == ScoreConfig_Type_TopTokens)
+      FixPackedMessage<TopTokensScoreConfig>(score_config->mutable_config());
+
+    if (!score_config->has_model_name())
+      score_config->set_model_name(message->pwt_name());
   }
 }
 
@@ -822,6 +836,15 @@ template <typename T>
 inline bool FixAndValidateMessage(T* message, bool throw_error) {
   FixMessage(message);
   return ValidateMessage(*message, throw_error);
+}
+
+template<typename T>
+inline void FixPackedMessage(std::string* message) {
+  T config;
+  if (config.ParseFromString(*message)) {
+    FixMessage<T>(&config);
+    config.SerializeToString(message);
+  }
 }
 
 }  // namespace core
