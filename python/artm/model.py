@@ -10,6 +10,7 @@ from pandas import DataFrame
 
 from . import wrapper
 from wrapper import constants as const
+from wrapper import messages_pb2
 from . import master_component as mc
 
 from .batches_utils import DICTIONARY_NAME
@@ -355,7 +356,7 @@ class ARTM(object):
           encoding (str): an encoding of text in diciotnary
         """
         if dictionary_path is not None and dictionary_name is not None:
-            dictionary_data = messages.DictionaryData()
+            dictionary_data = messages_pb2.DictionaryData()
             with codecs.open(dictionary_path, 'r', encoding) as fin:
                 dictionary_data.name = fin.next().split(' ')[1][0: -1]
                 fin.next()  # skip comment line
