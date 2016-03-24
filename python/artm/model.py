@@ -793,7 +793,12 @@ class ARTM(object):
                                                           theta_matrix_type=theta_matrix_type_real,
                                                           predict_class_id=predict_class_id)
 
-        document_ids = [item_id for item_id in theta_info.item_id]
+        document_ids = []
+        if self._theta_columns_naming == 'title':
+            document_ids = [item_title for item_title in theta_info.item_title]
+        else:
+            document_ids = [item_id for item_id in theta_info.item_id]
+
         topic_names = [topic_name for topic_name in theta_info.topic_name]
         theta_data_frame = DataFrame(data=numpy_ndarray.transpose(),
                                      columns=document_ids,
