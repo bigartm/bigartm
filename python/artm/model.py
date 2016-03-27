@@ -10,6 +10,7 @@ from pandas import DataFrame
 
 from . import wrapper
 from wrapper import constants as const
+from wrapper import messages_pb2
 from . import master_component as mc
 
 from .batches_utils import DICTIONARY_NAME
@@ -355,7 +356,7 @@ class ARTM(object):
           encoding (str): an encoding of text in diciotnary
         """
         if dictionary_path is not None and dictionary_name is not None:
-            dictionary_data = messages.DictionaryData()
+            dictionary_data = messages_pb2.DictionaryData()
             with codecs.open(dictionary_path, 'r', encoding) as fin:
                 dictionary_data.name = fin.next().split(' ')[1][0: -1]
                 fin.next()  # skip comment line
@@ -852,7 +853,12 @@ class ARTM(object):
                                                            find_theta=True,
                                                            predict_class_id=predict_class_id)
 
-        document_ids = [item_id for item_id in theta_info.item_id]
+        document_ids = []
+        if self._theta_columns_naming == 'title':
+            document_ids = [item_title for item_title in theta_info.item_title]
+        else:
+            document_ids = [item_id for item_id in theta_info.item_id]
+
         topic_names = [topic_name for topic_name in theta_info.topic_name]
         theta_data_frame = DataFrame(data=nd_array.transpose(),
                                      columns=document_ids,
