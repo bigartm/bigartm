@@ -1,0 +1,34 @@
+BigARTM v0.8 Release notes
+==========================
+
+BigaRTM v0.8.0
+--------------
+
+* We simplified the ``Item`` message, obsoleting a ``repeated Field field`` field.
+  New message looks as follows:
+
+  .. code-block:: bash
+
+    message Item {
+      optional int32 id = 1;
+      repeated Field field = 2;  // obsolete in BigARTM v0.8.0
+      optional string title = 3;
+      repeated int32 token_id = 4;
+      repeated float token_weight = 5;
+    }
+
+  Users should use new fields ``Item.token_id`` and ``Item.token_weight`` instead of using ``Item.field``.
+
+  Old batches, created prior to `BigARTM v0.8` can still be used.
+  Internally the library will convert them into new format
+  (e.g. concatenate the content of ``Field.token_id``, ``Field.token_weight`` across all fields,
+  and store the result back into ``Item.token_id``, ``Item.token_weight``).
+
+  .. warning::
+  
+    New batches, created in `BigARTM v0.8`, **CAN NOT** be used in previous version of the library.
+
+
+
+  
+
