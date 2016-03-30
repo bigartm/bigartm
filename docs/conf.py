@@ -342,7 +342,6 @@ epub_exclude_files = ['search.html']
 #epub_use_index = True
 
 import os.path
-import mock
 
 # some dirty hacks for mocking missing *_pb2.py files
 # refer to http://effbot.org/zone/import-confusion.htm
