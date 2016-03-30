@@ -340,3 +340,21 @@ epub_exclude_files = ['search.html']
 
 # If false, no index is generated.
 #epub_use_index = True
+
+import os.path
+import mock
+
+# some dirty hacks for mocking missing *_pb2.py files
+# refer to http://effbot.org/zone/import-confusion.htm
+PROTO_MISSING_FILES = [
+    ('../python/artm/wrapper/messages_pb2.py', 'artm.wrapper.messages_pb2')
+]
+
+# create files with mock patches
+for missing_file, module_name in PROTO_MISSING_FILES:
+    if not os.path.exists(missing_file):
+        with open(missing_file, "w") as good_file:
+            good_file.write("import sys\nimport mock\n\n\n")
+            good_file.write("for k, v in sys.modules.items():\n")
+            good_file.write("\tif k == '{}':\n".format(module_name))
+            good_file.write("\t\tsys.modules[k] = mock.MagicMock()")
