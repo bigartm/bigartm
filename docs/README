@@ -8,6 +8,8 @@ To create an HTML version of the docs:
 
 * Install Sphinx (using ``sudo pip install Sphinx`` or some other method)
 
+* Install readthedocs theme (using ``sudo pip install sphinx_rtd_theme`` or some other method)
+
 * In this docs/ directory, type ``make html`` (or ``make.bat html`` on
   Windows) at a shell prompt.
 
