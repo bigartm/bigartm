@@ -117,6 +117,13 @@ def test_func():
 
         model.fit_online(batch_vectorizer=batch_vectorizer)
 
+        info = model.info
+        assert info is not None
+        assert len(info.config.topic_name) == num_topics
+        assert len(info.score) == len(model.score_tracker)
+        assert len(info.regularizer) == len(model.regularizers.data)
+        assert len(info.cache_entry) > 0
+
         temp = model.score_tracker['ThetaSnippetScore'].last_document_ids
         assert len_last_document_ids == len(temp)
         assert len(model.score_tracker['ThetaSnippetScore'].last_snippet[temp[0]]) == num_topics
