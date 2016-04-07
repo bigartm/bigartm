@@ -74,3 +74,8 @@ Skolkovo Institute of Science and Technology (project 081-R), Moscow Institute o
    :alt: MIPT
    :target: http://mipt.ru/en/
 
+**Partners**
+
+.. image:: _images/partner_bBridge.png
+   :alt: bBridge
+   :target: http://bbridge.net/
