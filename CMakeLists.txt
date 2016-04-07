@@ -34,6 +34,7 @@ option(BUILD_STATIC_BIGARTM "Request build of static executable bigartm (for Lin
 
 if (APPLE)
   set (BUILD_STATIC_BIGARTM OFF)
+  set (CMAKE_MACOSX_RPATH 1)
 endif (APPLE)
 
 set(BUILD_STATIC_LIBS ON)
