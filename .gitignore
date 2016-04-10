@@ -104,4 +104,11 @@ docs/_build/*
 
 build*
 
+# protobuf generated files
+/python/artm/wrapper/messages_pb2.py
+src/artm/core/internals.pb.cc
+src/artm/core/internals.pb.h
+src/artm/messages.pb.cc
+src/artm/messages.pb.h
+
 /src/python/.idea/*

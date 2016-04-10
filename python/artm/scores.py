@@ -43,9 +43,7 @@ class Scores(object):
         self._model_nwt = model_nwt
 
     def add(self, score):
-        if score.name in self._data:
-            raise ValueError('Score with name {0} is already exist'.format(score.name))
-        else:
+        if not score.name in self._data:
             self._master.create_score(score.name, score.config)
             score._model_pwt = self._model_pwt
             score._model_nwt = self._model_nwt
@@ -136,6 +134,10 @@ class BaseScore(object):
     @topic_names.setter
     def topic_names(self, topic_names):
         _reconfigure_field(self, topic_names, 'topic_names')
+
+    @name.setter
+    def name(self, name):
+        raise RuntimeError("It's impossible to change score name")
 
 
 ###################################################################################################
@@ -284,7 +286,7 @@ class PerplexityScore(BaseScore):
             score_config.model_type = const.PerplexityScoreConfig_Type_UnigramDocumentModel
         else:
             score_config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
-        _reconfigure_score_in_master(self._master, score_config, self._name)
+        self._master.reconfigure_score(self._name, score_config)
 
     @class_ids.setter
     def class_ids(self, class_ids):

@@ -31,6 +31,14 @@ SCORE_TRACKER = {
 }
 
 
+def _topic_selection_regularizer_func_add_score(self, config, name):
+    if str(config.__class__.__name__) == 'TopicSelectionThetaRegularizer' and\
+            self._internal_topic_mass_score_name is None:
+        self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
+        self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
+                                          class_id='@default_class'))  # ugly hack!
+
+
 def _topic_selection_regularizer_func(self, regularizers):
     topic_selection_regularizer_name = []
     for name, regularizer in regularizers.data.iteritems():
@@ -39,13 +47,19 @@ def _topic_selection_regularizer_func(self, regularizers):
 
     if len(topic_selection_regularizer_name):
         n_t = [0] * self.num_topics
-        if not self._synchronizations_processed:
+        no_score = self._internal_topic_mass_score_name is None
+        if no_score:
+            self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
+            self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
+                                              class_id='@default_class'))  # ugly hack!
+        
+        if not self._synchronizations_processed or no_score:
             phi = self.get_phi(class_ids=['@default_class'])  # ugly hack!
             n_t = list(phi.sum(axis=0))
         else:
             for i, n in enumerate(self.topic_names):
                 n_t[i] = self.score_tracker[
-                    self._internal_topic_mass_score_name].last_topic_info[n].topic_mass
+                    self._internal_topic_mass_score_name].last_topic_mass[n]
 
         n = sum(n_t)
         for name in topic_selection_regularizer_name:

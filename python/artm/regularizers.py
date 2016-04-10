@@ -18,14 +18,6 @@ __all__ = [
 ]
 
 
-def _topic_selection_regularizer_func(self, config, name):
-    if str(config.__class__.__name__) == 'TopicSelectionThetaRegularizer' and\
-            self._internal_topic_mass_score_name is None:
-        self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
-        self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
-                                          class_id='@default_class'))  # ugly hack!
-
-
 def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     if proto_field_name is None:
         proto_field_name = field_name
@@ -39,7 +31,7 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
             getattr(config, proto_field_name).append(value)
     else:
         setattr(config, proto_field_name, field)
-    obj._master.reconfigure_regularizer(obj.name, obj.type, config)
+    obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau)
 
 
 class KlFunctionInfo(object):
@@ -67,7 +59,7 @@ class KlFunctionInfo(object):
 
         obj._config = config
         if not first:
-            obj._master.reconfigure_regularizer(obj.name, obj.type, config)
+            obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau)
 
 
 class Regularizers(object):
@@ -76,12 +68,7 @@ class Regularizers(object):
         self._master = master
 
     def add(self, regularizer):
-        if regularizer.name in self._data:
-            raise ValueError('Regularizer with name {0} is already exist'.format(regularizer.name))
-        else:
-            # temp code for easy using of TopicSelectionThetaRegularizer from Python
-            _topic_selection_regularizer_func(self, regularizer.config, regularizer.name)
-
+        if not regularizer.name in self._data:
             self._master.create_regularizer(regularizer.name, regularizer.config, regularizer.tau)
             regularizer._master = self._master
             self._data[regularizer.name] = regularizer
@@ -108,13 +95,17 @@ class BaseRegularizer(object):
             name = '{0}:{1}'.format(self._type, uuid.uuid1().urn)
 
         self._name = name
-        self.tau = tau
+        self._tau = tau
         self._config = config if config is not None else self._config_message()
         self._master = None  # reserve place for master
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def tau(self):
+        return self._tau
 
     @property
     def regularizer(self):
@@ -128,10 +119,19 @@ class BaseRegularizer(object):
     def type(self):
         return self._type
 
+    @name.setter
+    def name(self, name):
+        raise RuntimeError("It's impossible to change regularizer name")
+
+    @tau.setter
+    def tau(self, tau):
+        self._tau = tau
+        self._master.reconfigure_regularizer(self._name, self._config, tau)
+
     @config.setter
     def config(self, config):
         self._config = config
-        self._master.reconfigure_regularizer(self._name, self._type, self._config)
+        self._master.reconfigure_regularizer(self._name, config, self._tau)
 
 
 class BaseRegularizerPhi(BaseRegularizer):
