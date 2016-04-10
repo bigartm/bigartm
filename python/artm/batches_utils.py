@@ -5,7 +5,10 @@ from . import wrapper
 from wrapper import constants as const
 from wrapper import messages_pb2 as messages
 
-DICTIONARY_NAME = 'dictionary.dict'
+
+__all__ = [
+    'BatchVectorizer'
+]
 
 
 class Batch(object):

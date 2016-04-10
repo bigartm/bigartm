@@ -7,6 +7,7 @@ in python interface of BigARTM library.
 .. toctree::
    python_interface/model
    python_interface/batches_utils
+   python_interface/dictionary
    python_interface/regularizers
    python_interface/scores
    python_interface/score_tracker

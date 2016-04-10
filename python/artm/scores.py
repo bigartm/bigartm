@@ -1,5 +1,6 @@
 import uuid
 
+from . import wrapper
 from wrapper import messages_pb2 as messages
 from wrapper import constants as const
 
@@ -43,7 +44,7 @@ class Scores(object):
         self._model_nwt = model_nwt
 
     def add(self, score):
-        if not score.name in self._data:
+        if score.name not in self._data:
             self._master.create_score(score.name, score.config)
             score._model_pwt = self._model_pwt
             score._model_nwt = self._model_nwt
@@ -219,7 +220,7 @@ class PerplexityScore(BaseScore):
     _type = const.ScoreConfig_Type_Perplexity
 
     def __init__(self, name=None, class_ids=None, topic_names=None,
-                 dictionary_name=None, use_unigram_document_model=None):
+                 dictionary=None, use_unigram_document_model=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param class_ids: class_id to score, means that tokens of all class_ids will be used
@@ -227,8 +228,9 @@ class PerplexityScore(BaseScore):
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
         :type topic_names: list of str
-        :param str dictionary_name: BigARTM collection dictionary, won't use\
+        :param dictionary: BigARTM collection dictionary, won't use\
                             dictionary if not specified
+        :type dictionary: str or reference to Dictionary object
         :param bool use_unigram_document_model: use unigram document/collection model\
                             if token's counter == 0
         """
@@ -245,7 +247,8 @@ class PerplexityScore(BaseScore):
                 self._class_ids.append(class_id)
 
         self._dictionary_name = ''
-        if dictionary_name is not None:
+        if dictionary is not None:
+            dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._dictionary_name = dictionary_name
             self._config.dictionary_name = dictionary_name
 
@@ -258,7 +261,7 @@ class PerplexityScore(BaseScore):
                 self._config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
 
     @property
-    def dictionary_name(self):
+    def dictionary(self):
         return self._dictionary_name
 
     @property
@@ -273,8 +276,9 @@ class PerplexityScore(BaseScore):
     def class_id(self):
         raise KeyError('No class_id parameter')
 
-    @dictionary_name.setter
-    def dictionary_name(self, dictionary_name):
+    @dictionary.setter
+    def dictionary(self, dictionary):
+        dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
         _reconfigure_field(self, dictionary_name, 'dictionary_name')
 
     @use_unigram_document_model.setter
@@ -332,7 +336,7 @@ class TopTokensScore(BaseScore):
     _type = const.ScoreConfig_Type_TopTokens
 
     def __init__(self, name=None, class_id=None, topic_names=None,
-                 num_tokens=None, dictionary_name=None):
+                 num_tokens=None, dictionary=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
@@ -340,8 +344,9 @@ class TopTokensScore(BaseScore):
                             score all topics if not specified
         :type topic_names: list of str
         :param int num_tokens: number of tokens with max probability in each topic
-        :param str dictionary_name: BigARTM collection dictionary, won't use\
+        :param dictionary: BigARTM collection dictionary, won't use\
                             dictionary if not specified
+        :type dictionary: str or reference to Dictionary object
         """
         BaseScore.__init__(self,
                            name=name,
@@ -354,7 +359,8 @@ class TopTokensScore(BaseScore):
             self._num_tokens = num_tokens
 
         self._dictionary_name = ''
-        if dictionary_name is not None:
+        if dictionary is not None:
+            dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._dictionary_name = dictionary_name
             self._config.cooccurrence_dictionary_name = dictionary_name
 
@@ -363,15 +369,16 @@ class TopTokensScore(BaseScore):
         return self._num_tokens
 
     @property
-    def dictionary_name(self):
+    def dictionary(self):
         return self._dictionary_name
 
     @num_tokens.setter
     def num_tokens(self, num_tokens):
         _reconfigure_field(self, num_tokens, 'num_tokens')
 
-    @dictionary_name.setter
-    def dictionary_name(self, dictionary_name):
+    @dictionary.setter
+    def dictionary(self, dictionary):
+        dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
         _reconfigure_field(self, dictionary_name,
                            'dictionary_name', 'cooccurrence_dictionary_name')
 
@@ -443,7 +450,7 @@ class TopicKernelScore(BaseScore):
     _type = const.ScoreConfig_Type_TopicKernel
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
-                 dictionary_name=None, probability_mass_threshold=None):
+                 dictionary=None, probability_mass_threshold=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
@@ -452,8 +459,9 @@ class TopicKernelScore(BaseScore):
         :type topic_names: list of str
         :param float probability_mass_threshold: the threshold for p(t|w) values to get\
                             token into topic kernel. Should be in (0, 1)
-        :param str dictionary_name: BigARTM collection dictionary, won't use\
+        :param dictionary: BigARTM collection dictionary, won't use\
                             dictionary if not specified
+        :type dictionary: str or reference to Dictionary object
         :param float eps: the tolerance const, everything < eps considered to be zero
         """
         BaseScore.__init__(self,
@@ -467,7 +475,8 @@ class TopicKernelScore(BaseScore):
             self._eps = eps
 
         self._dictionary_name = ''
-        if dictionary_name is not None:
+        if dictionary is not None:
+            dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._dictionary_name = dictionary_name
             self.config.cooccurrence_dictionary_name = dictionary_name
 
@@ -481,7 +490,7 @@ class TopicKernelScore(BaseScore):
         return self._eps
 
     @property
-    def dictionary_name(self):
+    def dictionary(self):
         return self._dictionary_name
 
     @property
@@ -492,8 +501,9 @@ class TopicKernelScore(BaseScore):
     def eps(self, eps):
         _reconfigure_field(self, eps, 'eps')
 
-    @dictionary_name.setter
-    def dictionary_name(self, dictionary_name):
+    @dictionary.setter
+    def dictionary(self, dictionary):
+        dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
         _reconfigure_field(self, dictionary_name,
                            'dictionary_name', 'cooccurrence_dictionary_name')
 

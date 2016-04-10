@@ -328,7 +328,7 @@ class MasterComponent(object):
         args = messages.ClearScoreArrayCacheArgs()
         self._lib.ArtmClearScoreArrayCache(self.master_id, args)
 
-    def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
+    def process_batches(self, pwt, nwt=None, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None, find_theta=False,
                         reuse_theta=False, find_ptdw=False,

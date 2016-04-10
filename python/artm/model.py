@@ -4,7 +4,6 @@ import uuid
 import glob
 import shutil
 import tempfile
-import codecs
 
 from pandas import DataFrame
 
@@ -13,7 +12,6 @@ from wrapper import constants as const
 from wrapper import messages_pb2
 from . import master_component as mc
 
-from .batches_utils import DICTIONARY_NAME
 from .regularizers import Regularizers
 from .scores import Scores, TopicMassPhiScore  # temp
 from . import score_tracker
@@ -31,14 +29,6 @@ SCORE_TRACKER = {
 }
 
 
-def _topic_selection_regularizer_func_add_score(self, config, name):
-    if str(config.__class__.__name__) == 'TopicSelectionThetaRegularizer' and\
-            self._internal_topic_mass_score_name is None:
-        self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
-        self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
-                                          class_id='@default_class'))  # ugly hack!
-
-
 def _topic_selection_regularizer_func(self, regularizers):
     topic_selection_regularizer_name = []
     for name, regularizer in regularizers.data.iteritems():
@@ -52,7 +42,7 @@ def _topic_selection_regularizer_func(self, regularizers):
             self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
             self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
                                               class_id='@default_class'))  # ugly hack!
-        
+
         if not self._synchronizations_processed or no_score:
             phi = self.get_phi(class_ids=['@default_class'])  # ugly hack!
             n_t = list(phi.sum(axis=0))
@@ -72,9 +62,9 @@ def _topic_selection_regularizer_func(self, regularizers):
 
 
 class ARTM(object):
-    def __init__(self, num_topics=10, topic_names=None, num_processors=None, class_ids=None,
-                 scores=None, regularizers=None, num_document_passes=10,
-                 reuse_theta=False, cache_theta=False, theta_columns_naming='id'):
+    def __init__(self, num_topics=None, topic_names=None, num_processors=None, class_ids=None,
+                 scores=None, regularizers=None, num_document_passes=10, reuse_theta=False,
+                 dictionary=None, cache_theta=False, theta_columns_naming='id', seed=-1):
         """
         :param int num_topics: the number of topics in model, will be overwrited if\
                                  topic_names is set
@@ -90,9 +80,13 @@ class ARTM(object):
         :param list scores: list of scores (objects of artm.*Score classes)
         :param list regularizers: list with regularizers (objects of artm.*Regularizer classes)
         :param int num_document_passes: number of inner iterations over each document
+        :param dictionary: dictionary to be used for initialization, if None nothing will be done
+        :type dictionary: str or reference to Dictionary object
         :param bool reuse_theta: reuse Theta from previous iteration or not
         :param str theta_columns_naming: either 'id' or 'title', determines how to name columns\
                                  (documents) in theta dataframe
+        :param seed: seed for random initialization, -1 means no seed
+        :type seed: unsigned int or -1
 
         :Important public fields:
           * regularizers: contains dict of regularizers, included into model
@@ -114,11 +108,14 @@ class ARTM(object):
         self._num_document_passes = num_document_passes
         self._reuse_theta = True
         self._theta_columns_naming = 'id'
+        self._seed = seed
 
         if topic_names is not None:
             self._topic_names = topic_names
-        else:
+        elif num_topics is not None:
             self._topic_names = ['topic_{}'.format(i) for i in xrange(num_topics)]
+        else:
+            raise ValueError('Either num_topics or topic_names parameter should be set')
 
         if class_ids is None:
             self._class_ids = {}
@@ -169,11 +166,13 @@ class ARTM(object):
         self._synchronizations_processed = 0
         self._initialized = False
         self._phi_cached = None  # This field will be set during .phi_ call
-        self._phi_synchronization = -1
         self._num_online_processed_batches = 0
 
         # temp code for easy using of TopicSelectionThetaRegularizer from Python
         self._internal_topic_mass_score_name = None
+
+        if dictionary is not None:
+            self.initialize(dictionary)
 
     def __enter__(self):
         return self
@@ -256,10 +255,8 @@ class ARTM(object):
 
     @property
     def phi_(self):
-        if (self._phi_cached is None or
-                self._phi_synchronization != self._synchronizations_processed):
+        if self._phi_cached is None:
             self._phi_cached = self.get_phi()
-            self._phi_synchronization = self._synchronizations_processed
         return self._phi_cached
 
     @property
@@ -330,202 +327,18 @@ class ARTM(object):
             self._class_ids = class_ids
 
     # ========== METHODS ==========
-    def load_dictionary(self, dictionary_name=None, dictionary_path=None):
-        """
-        :Description: loads the BigARTM dictionary of the collection into the lib
-
-        :param str dictionary_name: the name of the dictionary in the lib
-        :param str dictionary_path: full file name of the dictionary
-        """
-        if dictionary_path is not None and dictionary_name is not None:
-            self.master.import_dictionary(filename=dictionary_path,
-                                          dictionary_name=dictionary_name)
-        elif dictionary_path is None:
-            raise IOError('dictionary_path is None')
-        else:
-            raise IOError('dictionary_name is None')
-
-    def save_dictionary(self, dictionary_name=None, dictionary_path=None):
-        """
-        :Description: saves the BigARTM dictionary of the collection on the disk
-
-        :param str dictionary_name: the name of the dictionary in the lib
-        :param str dictionary_path: full file name for the dictionary
-        """
-        if dictionary_path is not None and dictionary_name is not None:
-            self.master.export_dictionary(filename=dictionary_path,
-                                          dictionary_name=dictionary_name)
-        elif dictionary_path is None:
-            raise IOError('dictionary_path is None')
-        else:
-            raise IOError('dictionary_name is None')
-
-    def save_text_dictionary(self, dictionary_name=None, dictionary_path=None, encoding='utf-8'):
-        """
-        :Description: saves the BigARTM dictionary of the collection on the disk\
-                      in the human readable text format
-
-        :param str dictionary_name: the name of the dictionary in the lib
-        :param str dictionary_path: full file name for the text dictionary file
-        :param str encoding: an encoding of text in diciotnary
-        """
-        if dictionary_path is not None and dictionary_name is not None:
-            dictionary_data = self.master.get_dictionary(dictionary_name)
-            with codecs.open(dictionary_path, 'w', encoding) as fout:
-                fout.write(u'name: {}\n'.format(dictionary_data.name))
-                fout.write(u'token, class_id, token_value, token_tf, token_df\n')
-
-                for i in xrange(len(dictionary_data.token)):
-                    fout.write(u'{0}, {1}, {2}, {3}, {4}\n'.format(dictionary_data.token[i],
-                                                                   dictionary_data.class_id[i],
-                                                                   dictionary_data.token_value[i],
-                                                                   dictionary_data.token_tf[i],
-                                                                   dictionary_data.token_df[i]))
-
-        elif dictionary_path is None:
-            raise IOError('dictionary_path is None')
-        else:
-            raise IOError('dictionary_name is None')
-
-    def load_text_dictionary(self, dictionary_name=None, dictionary_path=None, encoding='utf-8'):
-        """
-        :Description: loads the BigARTM dictionary of the collection from the disk\
-                      in the human readable text format
-
-        :param str dictionary_name: the name for the dictionary in the lib
-        :param str dictionary_path: full file name of the text dictionary file
-        :param str encoding: an encoding of text in diciotnary
-        """
-        if dictionary_path is not None and dictionary_name is not None:
-            dictionary_data = messages_pb2.DictionaryData()
-            with codecs.open(dictionary_path, 'r', encoding) as fin:
-                dictionary_data.name = fin.next().split(' ')[1][0: -1]
-                fin.next()  # skip comment line
-
-                for line in fin:
-                    line_list = line.split(' ')
-                    dictionary_data.token.append(line_list[0][0: -1])
-                    dictionary_data.class_id.append(line_list[1][0: -1])
-                    dictionary_data.token_value.append(float(line_list[2][0: -1]))
-                    dictionary_data.token_tf.append(float(line_list[3][0: -1]))
-                    dictionary_data.token_df.append(float(line_list[4][0: -1]))
-
-            self.master.create_dictionary(dictionary_data=dictionary_data,
-                                          dictionary_name=dictionary_name)
-
-        elif dictionary_path is None:
-            raise IOError('dictionary_path is None')
-        else:
-            raise IOError('dictionary_name is None')
-
-    def create_dictionary(self, dictionary_name=None, dictionary_data=None):
-        """
-        :Description: saves the BigARTM dictionary of the collection on the disk
-
-        :param str dictionary_name: the name of the dictionary in the lib
-        :param dictionary_data: configuration of dictionary
-        :type dictionary_data: DictionaryData instance
-        """
-        if dictionary_data is not None and dictionary_name is not None:
-            self.master.create_dictionary(dictionary_data=dictionary_data,
-                                          dictionary_name=dictionary_name)
-        elif dictionary_data is None:
-            raise IOError('dictionary_data is None')
-        else:
-            raise IOError('dictionary_name is None')
-
-    def gather_dictionary(self, dictionary_target_name=None, data_path=None, cooc_file_path=None,
-                          vocab_file_path=None, symmetric_cooc_values=False):
-        """
-        :Description: creates the BigARTM dictionary of the collection,\
-                      represented as batches and load it in the lib
-
-        :param str dictionary_target_name: the name of the dictionary in the lib
-        :param str data_path: full path to batches folder
-        :param str cooc_file_path: full path to the file with cooc info
-        :param str vocab_file_path: full path to the file with vocabulary.\
-                      If given, the dictionary token will have the same order, as in\
-                      this file, otherwise the order will be random
-        :param bool symmetric_cooc_values: if the cooc matrix should considered\
-                      to be symmetric or not
-        """
-        if dictionary_target_name is not None and data_path is not None:
-            self.master.gather_dictionary(dictionary_target_name=dictionary_target_name,
-                                          data_path=data_path,
-                                          cooc_file_path=cooc_file_path,
-                                          vocab_file_path=vocab_file_path,
-                                          symmetric_cooc_values=symmetric_cooc_values)
-        elif data_path is None:
-            raise IOError('data_path is None')
-        else:
-            raise IOError('dictionary_target_name is None')
-
-    def filter_dictionary(self, dictionary_name=None, dictionary_target_name=None, class_id=None,
-                          min_df=None, max_df=None,
-                          min_df_rate=None, max_df_rate=None,
-                          min_tf=None, max_tf=None,):
-        """
-        :Description: filters the BigARTM dictionary of the collection, which\
-                      was already loaded into the lib
-
-        :param str dictionary_name: name of the dictionary in the lib to filter
-        :param str dictionary_target_name: name for the new filtered dictionary in the lib
-        :param str class_id: class_id to filter
-        :param float min_df: min df value to pass the filter
-        :param float max_df: max df value to pass the filter
-        :param float min_df_rate: min df rate to pass the filter
-        :param float max_df_rate: max df rate to pass the filter
-        :param float min_tf: min tf value to pass the filter
-        :param float max_tf: max tf value to pass the filter
-        """
-        if dictionary_name is not None:
-            self.master.filter_dictionary(dictionary_target_name=dictionary_target_name,
-                                          dictionary_name=dictionary_name,
-                                          class_id=class_id,
-                                          min_df=min_df,
-                                          max_df=max_df,
-                                          min_df_rate=min_df_rate,
-                                          max_df_rate=max_df_rate,
-                                          min_tf=min_tf,
-                                          max_tf=max_tf)
-        else:
-            raise IOError('dictionary_name is None')
-
-    def remove_dictionary(self, dictionary_name=None):
-        """
-        :Description: removes the loaded BigARTM dictionary from the lib
-
-        :param str dictionary_name: the name of the dictionary in th lib
-        """
-        if dictionary_name is not None:
-            self._lib.ArtmDisposeDictionary(self.master.master_id, dictionary_name)
-        else:
-            raise IOError('dictionary_name is None')
-
-    def fit_offline(self, batch_vectorizer=None, num_collection_passes=20,
-                    dictionary_filename=DICTIONARY_NAME):
+    def fit_offline(self, batch_vectorizer=None, num_collection_passes=1):
         """
         :Description: proceeds the learning of topic model in offline mode
 
         :param object_referenece batch_vectorizer: an instance of BatchVectorizer class
         :param int num_collection_passes: number of iterations over whole given collection
-        :param str dictionary_filename: the name of file with dictionary to use in\
-                      inline initialization
-
-        :Note: ARTM.initialize() should be proceed before first call ARTM.fit_offline(),\
-               or it will be initialized by dictionary during first call.
         """
         if batch_vectorizer is None:
             raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            dictionary_name = '{0}:{1}'.format(dictionary_filename, str(uuid.uuid4()))
-            self.master.import_dictionary(
-                dictionary_name=dictionary_name,
-                filename=os.path.join(batch_vectorizer.data_path, dictionary_filename))
-
-            self.initialize(dictionary_name=dictionary_name)
-            self.remove_dictionary(dictionary_name)
+            raise RuntimeError('The model was not initialized. Use initialize() method')
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
@@ -544,9 +357,10 @@ class ARTM(object):
                     self.score_tracker[name] =\
                         SCORE_TRACKER[self.scores[name].type](self.scores[name])
 
+        self._phi_cached = None
+
     def fit_online(self, batch_vectorizer=None, tau0=1024.0, kappa=0.7, update_every=1,
-                   apply_weight=None, decay_weight=None, update_after=None,
-                   async=False, dictionary_filename=DICTIONARY_NAME):
+                   apply_weight=None, decay_weight=None, update_after=None, async=False):
         """
         :Description: proceeds the learning of topic model in online mode
 
@@ -561,12 +375,10 @@ class ARTM(object):
         :param decay_weight: weight of applying old counters
         :type decay_weight: list of float
         :param bool async: use or not the async implementation of the EM-algorithm
-        :param str dictionary_filename: the name of file with dictionary to use in\
-                    inline initialization
 
         :Note:
-          ARTM.initialize() should be proceed before first call ARTM.fit_online(),\
-          or it will be initialized by dictionary during first call
+          async=True leads to impossibility of score extraction via score_tracker.\
+          Use get_score() instead.
 
         :Update formulas:
           * The formulas for decay_weight and apply_weight:
@@ -581,13 +393,7 @@ class ARTM(object):
             raise IOError('No batches were given for processing')
 
         if not self._initialized:
-            dictionary_name = '{0}:{1}'.format(dictionary_filename, str(uuid.uuid4()))
-            self.master.import_dictionary(
-                dictionary_name=dictionary_name,
-                filename=os.path.join(batch_vectorizer.data_path, dictionary_filename))
-
-            self.initialize(dictionary_name=dictionary_name)
-            self.remove_dictionary(dictionary_name)
+            raise RuntimeError('The model was not initialized. Use initialize() method')
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
 
@@ -624,6 +430,7 @@ class ARTM(object):
                     SCORE_TRACKER[self.scores[name].type](self.scores[name])
 
         self._synchronizations_processed += len(update_after_final)
+        self._phi_cached = None
 
     def save(self, filename='artm_model'):
         """
@@ -649,6 +456,10 @@ class ARTM(object):
           * All class_ids weights will be set to 1.0, you need to specify them by\
             hand if it's necessary.
           * The method call will empty ARTM.score_tracker.
+          * All regularizers and scores will be forgotten.
+          * etc.
+          * We strongly recommend you to reset all important parameters of the ARTM\
+            model, used earlier.
         """
         self.master.import_model(self.model_pwt, filename)
         self._initialized = True
@@ -667,6 +478,7 @@ class ARTM(object):
         # Remove all info about previous iterations
         self._score_tracker = {}
         self._synchronizations_processed = 0
+        self._phi_cached = None
 
     def get_phi(self, topic_names=None, class_ids=None, model_name=None):
         """
@@ -760,12 +572,6 @@ class ARTM(object):
         """
         return self.master.get_score(score_name)
 
-    def fit_transform(self, topic_names=None):
-        """
-        :Description: obsolete way of train theta retrieval. Use get_theta instead.
-        """
-        return self.get_theta(topic_names)
-
     def transform(self, batch_vectorizer=None, theta_matrix_type='dense_theta',
                   predict_class_id=None):
         """
@@ -773,7 +579,7 @@ class ARTM(object):
 
         :param object_reference batch_vectorizer: an instance of BatchVectorizer class
         :param str theta_matrix_type: type of matrix to be returned, possible values:
-                'dense_theta', 'sparse_theta', 'dense_ptdw', 'sparse_ptdw', default='dense_theta'
+                'dense_theta', 'dense_ptdw', None, default='dense_theta'
         :param str predict_class_id: class_id of a target modality to predict.\
                 When this option is enabled the resulting columns of theta matrix will\
                 correspond to unique labels of a target modality. The values will represent\
@@ -791,7 +597,7 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        theta_matrix_type_real = None
+        theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_None
         if theta_matrix_type == 'dense_theta':
             theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_Dense
         elif theta_matrix_type == 'sparse_theta':
@@ -820,24 +626,25 @@ class ARTM(object):
                                      index=topic_names)
         return theta_data_frame
 
-    def initialize(self, dictionary_name=None, seed=-1):
+    def initialize(self, dictionary=None):
         """
         :Description: initialize topic model before learning
 
-        :param str dictionary_name: the name of loaded BigARTM collection dictionary
-        :param seed: seed for random initialization, -1 means no seed
-        :type seed: unsigned int or -1
+        :param dictionary: loaded BigARTM collection dictionary
+        :type dictionary: str or reference to Dictionary object
         """
+        dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
+
         self._lib.ArtmDisposeModel(self.master.master_id, self.model_pwt)
         self._lib.ArtmDisposeModel(self.master.master_id, self.model_nwt)
         self.master.initialize_model(model_name=self.model_pwt,
                                      dictionary_name=dictionary_name,
                                      topic_names=self._topic_names,
-                                     seed=seed)
+                                     seed=self._seed)
         self.master.initialize_model(model_name=self.model_nwt,
                                      dictionary_name=dictionary_name,
                                      topic_names=self._topic_names,
-                                     seed=seed)
+                                     seed=self._seed)
 
         topics_info = self.master.get_phi_info(
             self.model_pwt, const.GetTopicModelArgs_RequestType_TopicNames)
