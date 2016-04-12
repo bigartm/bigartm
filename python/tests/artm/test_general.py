@@ -67,7 +67,8 @@ def test_func():
                                                 collection_name='kos',
                                                 target_folder=batches_folder)
 
-        dictionary = artm.Dictionary(data_path=batch_vectorizer.data_path)
+        dictionary = artm.Dictionary()
+        dictionary.gather(data_path=batch_vectorizer.data_path)
 
         model = artm.ARTM(topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
                           dictionary=dictionary.name,

@@ -13,11 +13,10 @@ __all__ = [
 
 
 class Dictionary(object):
-    def __init__(self, name=None, has_instance=False, data_path=None):
+    def __init__(self, name=None, dictionary_path=None):
         """
         :param str name: name of the dictionary
-        :param bool has_instance: if the dictionary is exists
-        :param str data_path: can be used for default call of gather() method\
+        :param str dictionary_path: can be used for default call of load() method\
           in constructor
 
         Note: all parameters are optional
@@ -25,17 +24,16 @@ class Dictionary(object):
         self._name = name if name is not None else str(uuid.uuid4())
         self._lib = wrapper.LibArtm()
         self._master = master_component.MasterComponent(self._lib)
-        self._has_instance = has_instance
 
-        if not self._has_instance and data_path is not None:
-            self.gather(data_path=data_path)
+        if dictionary_path is not None:
+            self.load(dictionary_path=dictionary_path)
 
     def __enter__(self):
         return self
 
     def dispose(self):
         if self._master is not None:
-            self.remove()
+            self._reset()
             self._lib.ArtmDisposeMasterComponent(self._master.master_id)
             self._master = None
 
@@ -49,17 +47,17 @@ class Dictionary(object):
     def name(self):
         return self._name
 
+    def _reset(self):
+        self._lib.ArtmDisposeDictionary(self._master.master_id, self._name)
+
     def load(self, dictionary_path):
         """
         :Description: loads the BigARTM dictionary of the collection into the lib
 
         :param str dictionary_path: full filename of the dictionary
         """
-        if self._has_instance:
-            self.remove()
-
+        self._reset()
         self._master.import_dictionary(filename=dictionary_path, dictionary_name=self._name)
-        self._has_instance = True
 
     def save(self, dictionary_path):
         """
@@ -97,9 +95,7 @@ class Dictionary(object):
         :param str dictionary_path: full file name of the text dictionary file
         :param str encoding: an encoding of text in diciotnary
         """
-        if self._has_instance:
-            self.remove()
-
+        self._reset()
         dictionary_data = messages.DictionaryData()
         with codecs.open(dictionary_path, 'r', encoding) as fin:
             dictionary_data.name = fin.next().split(' ')[1][0: -1]
@@ -114,20 +110,16 @@ class Dictionary(object):
                 dictionary_data.token_df.append(float(line_list[4][0: -1]))
 
         self._master.create_dictionary(dictionary_data=dictionary_data, dictionary_name=self._name)
-        self._has_instance = True
 
     def create(self, dictionary_data):
         """
-        :Description: saves the BigARTM dictionary of the collection on the disk
+        :Description: creates dictionary using DictionaryData object
 
         :param dictionary_data: configuration of dictionary
         :type dictionary_data: DictionaryData instance
         """
-        if self._has_instance:
-            self.remove()
-
+        self._reset()
         self._master.create_dictionary(dictionary_data=dictionary_data, dictionary_name=self._name)
-        self._has_instance = True
 
     def gather(self, data_path, cooc_file_path=None, vocab_file_path=None, symmetric_cooc_values=False):
         """
@@ -142,18 +134,15 @@ class Dictionary(object):
         :param bool symmetric_cooc_values: if the cooc matrix should considered\
                       to be symmetric or not
         """
-        if self._has_instance:
-            self.remove()
-
+        self._reset()
         self._master.gather_dictionary(dictionary_target_name=self._name,
                                        data_path=data_path,
                                        cooc_file_path=cooc_file_path,
                                        vocab_file_path=vocab_file_path,
                                        symmetric_cooc_values=symmetric_cooc_values)
-        self._has_instance = True
 
     def filter(self, class_id=None, min_df=None, max_df=None, min_df_rate=None, max_df_rate=None,
-               min_tf=None, max_tf=None, inplace=False):
+               min_tf=None, max_tf=None):
         """
         :Description: filters the BigARTM dictionary of the collection, which\
                       was already loaded into the lib
@@ -167,14 +156,10 @@ class Dictionary(object):
         :param float max_df_rate: max df rate to pass the filter
         :param float min_tf: min tf value to pass the filter
         :param float max_tf: max tf value to pass the filter
-        :param bool inplace: if True the current dictionary will be replaced with filtered,\
-                      else new Dictionary object will be returned
-        """
-        if not self._has_instance:
-            raise ValueError('Dictionary should be created first via create/load/load_text/gather methods')
 
-        dictionary_name = self._name if inplace else str(uuid.uuid4())
-        self._master.filter_dictionary(dictionary_target_name=dictionary_name,
+        :Note: the current dictionary will be replaced with filtered
+        """
+        self._master.filter_dictionary(dictionary_target_name=self._name,
                                        dictionary_name=self._name,
                                        class_id=class_id,
                                        min_df=min_df,
@@ -184,12 +169,8 @@ class Dictionary(object):
                                        min_tf=min_tf,
                                        max_tf=max_tf)
 
-        if not inplace:
-            return Dictionary(name=dictionary_name, has_instance=True)
-
-    def remove(self):
+    def copy():
         """
-        :Description: removes the loaded BigARTM dictionary from the lib
+        :Description: returns a copy the dictionary loaded in lib with another name.
         """
-        self._lib.ArtmDisposeDictionary(self._master.master_id, self._name)
-        self._has_instance = False
+        raise NotImplementedError()
