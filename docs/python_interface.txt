@@ -1,0 +1,8 @@
+Python Interface
+====================
+
+This document describes all classes and functions
+in python interface of BigARTM library.
+
+.. toctree::
+   python_interface/model
