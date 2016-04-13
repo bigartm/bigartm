@@ -30,7 +30,8 @@ sys.path.insert(0, os.path.abspath('../python'))
 # ones.
 extensions = [
     'sphinx.ext.pngmath',
-    'sphinx.ext.autodoc'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon'
 ]
 
 autodoc_mock_imports = ['numpy', 'pandas']
