@@ -67,10 +67,12 @@ def test_func():
                                                 collection_name='kos',
                                                 target_folder=batches_folder)
 
-        model = artm.ARTM(topic_names=['topic_{}'.format(i) for i in xrange(num_topics)], cache_theta=True)
+        dictionary = artm.Dictionary()
+        dictionary.gather(data_path=batch_vectorizer.data_path)
 
-        model.gather_dictionary(dictionary_name, batch_vectorizer.data_path)
-        model.initialize(dictionary_name=dictionary_name)
+        model = artm.ARTM(topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                          dictionary=dictionary.name,
+                          cache_theta=True)
 
         model.regularizers.add(artm.SmoothSparsePhiRegularizer(name='SparsePhi', tau=sp_reg_tau))
         model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='DecorrelatorPhi', tau=decor_tau))
@@ -78,7 +80,7 @@ def test_func():
         model.scores.add(artm.SparsityThetaScore(name='SparsityThetaScore'))
         model.scores.add(artm.PerplexityScore(name='PerplexityScore',
                                               use_unigram_document_model=False,
-                                              dictionary_name=dictionary_name))
+                                              dictionary=dictionary))
         model.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
         model.scores.add(artm.TopTokensScore(name='TopTokensScore', num_tokens=num_tokens))
         model.scores.add(artm.TopicKernelScore(name='TopicKernelScore',

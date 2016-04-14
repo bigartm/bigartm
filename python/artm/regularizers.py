@@ -1,6 +1,7 @@
 import uuid
 import random
 
+from . import wrapper
 from wrapper import messages_pb2 as messages
 from wrapper import constants as const
 
@@ -18,14 +19,6 @@ __all__ = [
 ]
 
 
-def _topic_selection_regularizer_func(self, config, name):
-    if str(config.__class__.__name__) == 'TopicSelectionThetaRegularizer' and\
-            self._internal_topic_mass_score_name is None:
-        self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
-        self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
-                                          class_id='@default_class'))  # ugly hack!
-
-
 def _reconfigure_field(obj, field, field_name, proto_field_name=None):
     if proto_field_name is None:
         proto_field_name = field_name
@@ -39,7 +32,7 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
             getattr(config, proto_field_name).append(value)
     else:
         setattr(config, proto_field_name, field)
-    obj._master.reconfigure_regularizer(obj.name, obj.type, config)
+    obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau)
 
 
 class KlFunctionInfo(object):
@@ -67,7 +60,7 @@ class KlFunctionInfo(object):
 
         obj._config = config
         if not first:
-            obj._master.reconfigure_regularizer(obj.name, obj.type, config)
+            obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau)
 
 
 class Regularizers(object):
@@ -76,12 +69,7 @@ class Regularizers(object):
         self._master = master
 
     def add(self, regularizer):
-        if regularizer.name in self._data:
-            raise ValueError('Regularizer with name {0} is already exist'.format(regularizer.name))
-        else:
-            # temp code for easy using of TopicSelectionThetaRegularizer from Python
-            _topic_selection_regularizer_func(self, regularizer.config, regularizer.name)
-
+        if regularizer.name not in self._data:
             self._master.create_regularizer(regularizer.name, regularizer.config, regularizer.tau)
             regularizer._master = self._master
             self._data[regularizer.name] = regularizer
@@ -108,13 +96,17 @@ class BaseRegularizer(object):
             name = '{0}:{1}'.format(self._type, uuid.uuid1().urn)
 
         self._name = name
-        self.tau = tau
+        self._tau = tau
         self._config = config if config is not None else self._config_message()
         self._master = None  # reserve place for master
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def tau(self):
+        return self._tau
 
     @property
     def regularizer(self):
@@ -128,14 +120,23 @@ class BaseRegularizer(object):
     def type(self):
         return self._type
 
+    @name.setter
+    def name(self, name):
+        raise RuntimeError("It's impossible to change regularizer name")
+
+    @tau.setter
+    def tau(self, tau):
+        self._tau = tau
+        self._master.reconfigure_regularizer(self._name, self._config, tau)
+
     @config.setter
     def config(self, config):
         self._config = config
-        self._master.reconfigure_regularizer(self._name, self._type, self._config)
+        self._master.reconfigure_regularizer(self._name, config, self._tau)
 
 
 class BaseRegularizerPhi(BaseRegularizer):
-    def __init__(self, name, tau, config, topic_names, class_ids, dictionary_name):
+    def __init__(self, name, tau, config, topic_names, class_ids, dictionary):
         BaseRegularizer.__init__(self,
                                  name=name,
                                  tau=tau,
@@ -156,7 +157,8 @@ class BaseRegularizerPhi(BaseRegularizer):
                 self._topic_names.append(topic_name)
 
         self._dictionary_name = ''
-        if dictionary_name is not None:
+        if dictionary is not None:
+            dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._config.dictionary_name = dictionary_name
             self._dictionary_name = dictionary_name
 
@@ -169,15 +171,16 @@ class BaseRegularizerPhi(BaseRegularizer):
         return self._topic_names
 
     @property
-    def dictionary_name(self):
+    def dictionary(self):
         return self._dictionary_name
 
     @class_ids.setter
     def class_ids(self, class_ids):
         _reconfigure_field(self, class_ids, 'class_ids')
 
-    @dictionary_name.setter
-    def dictionary_name(self, dictionary_name):
+    @dictionary.setter
+    def dictionary(self, dictionary):
+        dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
         _reconfigure_field(self, dictionary_name, 'dictionary_name')
 
     @topic_names.setter
@@ -230,7 +233,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
     _type = const.RegularizerConfig_Type_SmoothSparsePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None,
-                 dictionary_name=None, kl_function_info=None, config=None):
+                 dictionary=None, kl_function_info=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
@@ -240,8 +243,9 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
         :param topic_names: list of names of topics to regularize,\
                                      will regularize all topics if not specified
         :type topic_names: list of str
-        :param str dictionary_name: BigARTM collection dictionary,\
+        :param dictionary: BigARTM collection dictionary,\
                                      won't use dictionary if not specified
+        :type dictionary: str or reference to Dictionary object
         :param kl_function_info: class with additional info about\
                                      function under KL-div in regularizer
         :type kl_function_info: KlFunctionInfo object
@@ -254,7 +258,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    dictionary_name=dictionary_name)
+                                    dictionary=dictionary)
 
         self._kl_function_info = KlFunctionInfo()
         if kl_function_info is not None:
@@ -337,15 +341,15 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    dictionary_name=None)
+                                    dictionary=None)
 
     @property
-    def dictionary_name(self):
-        raise KeyError('No dictionary_name parameter')
+    def dictionary(self):
+        raise KeyError('No dictionary parameter')
 
-    @dictionary_name.setter
-    def dictionary_name(self, dictionary_name):
-        raise KeyError('No dictionary_name parameter')
+    @dictionary.setter
+    def dictionary(self, dictionary):
+        raise KeyError('No dictionary parameter')
 
 
 class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
@@ -353,7 +357,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
     _type = const.RegularizerConfig_Type_LabelRegularizationPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
-                 topic_names=None, dictionary_name=None, config=None):
+                 topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
@@ -363,8 +367,9 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
         :param topic_names: list of names of topics to regularize,\
                                      will regularize all topics if not specified
         :type topic_names: list of str
-        :param str dictionary_name: BigARTM collection dictionary,\
+        :param dictionary: BigARTM collection dictionary,\
                                      won't use dictionary if not specified
+        :type dictionary: str or reference to Dictionary object
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
@@ -374,7 +379,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    dictionary_name=dictionary_name)
+                                    dictionary=dictionary)
 
 
 class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
@@ -403,7 +408,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
                                     tau=tau,
                                     config=config,
                                     topic_names=topic_names,
-                                    dictionary_name=None,
+                                    dictionary=None,
                                     class_ids=None)
 
         self._class_id = '@default_class'
@@ -451,8 +456,8 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         raise KeyError('No class_ids parameter')
 
     @property
-    def dictionary_name(self):
-        raise KeyError('No dictionary_name parameter')
+    def dictionary(self):
+        raise KeyError('No dictionary parameter')
 
     @class_id.setter
     def class_id(self, class_id):
@@ -481,9 +486,9 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
     def class_ids(self, class_ids):
         raise KeyError('No class_ids parameter')
 
-    @dictionary_name.setter
-    def dictionary_name(self, dictionary_name):
-        raise KeyError('No dictionary_name parameter')
+    @dictionary.setter
+    def dictionary(self, dictionary):
+        raise KeyError('No dictionary parameter')
 
 
 class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
@@ -491,7 +496,7 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
     _type = const.RegularizerConfig_Type_ImproveCoherencePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
-                 topic_names=None, dictionary_name=None, config=None):
+                 topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
@@ -501,8 +506,9 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
         :param topic_names: list of names of topics to regularize,\
                                      will regularize all topics if not specified
         :type topic_names: list of str
-        :param str dictionary_name: BigARTM collection dictionary, won't use dictionary if not\
+        :param dictionary: BigARTM collection dictionary, won't use dictionary if not\
                                      specified, in this case regularizer is useless
+        :type dictionary: str or reference to Dictionary object
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
@@ -512,7 +518,7 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
-                                    dictionary_name=dictionary_name)
+                                    dictionary=dictionary)
 
 
 class SmoothPtdwRegularizer(BaseRegularizer):
