@@ -67,12 +67,11 @@ def test_func():
                                                 collection_name='kos',
                                                 target_folder=batches_folder)
 
-        dictionary = artm.Dictionary()
-        dictionary.gather(data_path=batch_vectorizer.data_path)
-
         model = artm.ARTM(topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
-                          dictionary=dictionary.name,
                           cache_theta=True)
+
+        model.gather_dictionary(dictionary_target_name=dictionary_name, data_path=batch_vectorizer.data_path)
+        model.initialize(dictionary_name=dictionary_name)
 
         model.regularizers.add(artm.SmoothSparsePhiRegularizer(name='SparsePhi', tau=sp_reg_tau))
         model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='DecorrelatorPhi', tau=decor_tau))
@@ -80,7 +79,7 @@ def test_func():
         model.scores.add(artm.SparsityThetaScore(name='SparsityThetaScore'))
         model.scores.add(artm.PerplexityScore(name='PerplexityScore',
                                               use_unigram_document_model=False,
-                                              dictionary=dictionary))
+                                              dictionary_name=dictionary_name))
         model.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
         model.scores.add(artm.TopTokensScore(name='TopTokensScore', num_tokens=num_tokens))
         model.scores.add(artm.TopicKernelScore(name='TopicKernelScore',
@@ -88,7 +87,7 @@ def test_func():
         model.scores.add(artm.ThetaSnippetScore(name='ThetaSnippetScore'))
 
         model.num_document_passes = num_document_passes
-        model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
+        model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes, reuse_theta=False)
 
         for i in xrange(num_collection_passes):
             assert abs(model.score_tracker['SparsityPhiScore'].value[i] - sparsity_phi_value[i]) < sp_zero_eps
@@ -103,14 +102,14 @@ def test_func():
             assert model.score_tracker['TopTokensScore'].num_tokens[i] == top_tokens_num_tokens[i]
 
         for i in xrange(num_tokens):
-            assert model.score_tracker['TopTokensScore'].last_tokens[model.topic_names[0]][i] == top_tokens_topic_0_tokens[i]
-            assert abs(model.score_tracker['TopTokensScore'].last_weights[model.topic_names[0]][i] - top_tokens_topic_0_weights[i]) < top_zero_eps
+            assert model.score_tracker['TopTokensScore'].last_topic_info[model.topic_names[0]].tokens[i] == top_tokens_topic_0_tokens[i]
+            assert abs(model.score_tracker['TopTokensScore'].last_topic_info[model.topic_names[0]].weights[i] - top_tokens_topic_0_weights[i]) < top_zero_eps
 
-        assert len(model.score_tracker['TopicKernelScore'].last_tokens[model.topic_names[0]]) > 0
+        assert len(model.score_tracker['TopicKernelScore'].last_topic_info[model.topic_names[0]].tokens) > 0
 
-        assert abs(topic_kernel_topic_0_contrast - model.score_tracker['TopicKernelScore'].last_contrast[model.topic_names[0]]) < ker_zero_eps
-        assert abs(topic_kernel_topic_0_purity - model.score_tracker['TopicKernelScore'].last_purity[model.topic_names[0]]) < ker_zero_eps
-        assert abs(topic_kernel_topic_0_size - model.score_tracker['TopicKernelScore'].last_size[model.topic_names[0]]) < ker_zero_eps
+        assert abs(topic_kernel_topic_0_contrast - model.score_tracker['TopicKernelScore'].last_topic_info[model.topic_names[0]].contrast) < ker_zero_eps
+        assert abs(topic_kernel_topic_0_purity - model.score_tracker['TopicKernelScore'].last_topic_info[model.topic_names[0]].purity) < ker_zero_eps
+        assert abs(topic_kernel_topic_0_size - model.score_tracker['TopicKernelScore'].last_topic_info[model.topic_names[0]].size) < ker_zero_eps
 
         for i in xrange(num_collection_passes):
             assert abs(model.score_tracker['TopicKernelScore'].average_size[i] - topic_kernel_average_size[i]) < ker_zero_eps
@@ -121,14 +120,9 @@ def test_func():
 
         info = model.info
         assert info is not None
-        assert len(info.config.topic_name) == num_topics
         assert len(info.score) == len(model.score_tracker)
         assert len(info.regularizer) == len(model.regularizers.data)
         assert len(info.cache_entry) > 0
-
-        temp = model.score_tracker['ThetaSnippetScore'].last_document_ids
-        assert len_last_document_ids == len(temp)
-        assert len(model.score_tracker['ThetaSnippetScore'].last_snippet[temp[0]]) == num_topics
 
         phi = model.get_phi()
         assert phi.shape == (vocab_size, num_topics)

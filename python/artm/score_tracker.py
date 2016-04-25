@@ -528,9 +528,9 @@ class TopicKernelScoreTracker(object):
                 self._topic_info[-1][topic_name].tokens = tokens
                 self._topic_info[-1][topic_name].size = _data.kernel_size.value[topic_index]
                 self._topic_info[-1][topic_name].contrast = \
-                    _data.kernel_purity.value[topic_index]
-                self._topic_info[-1][topic_name].purity = \
                     _data.kernel_contrast.value[topic_index]
+                self._topic_info[-1][topic_name].purity = \
+                    _data.kernel_purity.value[topic_index]
                 self._topic_info[-1][topic_name].coherence = coherence
 
             self._average_coherence.append(_data.average_coherence)
