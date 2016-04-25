@@ -478,6 +478,7 @@ class ARTM(object):
         # Remove all info about previous iterations
         self._score_tracker = {}
         self._synchronizations_processed = 0
+        self._num_online_processed_batches = 0
         self._phi_cached = None
 
     def get_phi(self, topic_names=None, class_ids=None, model_name=None):
@@ -656,3 +657,4 @@ class ARTM(object):
         self._score_tracker = {}
         self._synchronizations_processed = 0
         self._num_online_processed_batches = 0
+        self._phi_cached = None
