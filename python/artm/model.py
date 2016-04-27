@@ -400,7 +400,7 @@ class ARTM(object):
         update_after_final, apply_weight_final, decay_weight_final = [], [], []
         if (update_after is None) or (apply_weight is None) or (decay_weight is None):
             update_after_final = range(update_every, batch_vectorizer.num_batches + 1, update_every)
-            if update_after_final[-1] != batch_vectorizer.num_batches:
+            if len(update_after_final) == 0 or (update_after_final[-1] != batch_vectorizer.num_batches):
                 update_after_final.append(batch_vectorizer.num_batches)
 
             for _ in update_after_final:
