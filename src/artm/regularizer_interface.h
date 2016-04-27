@@ -41,7 +41,7 @@ class RegularizePtdwAgent {
 
 // RegularizerInterface is the base class for all regularizers in BigARTM.
 // See any class in 'src/regularizer' folder for an example of how to implement new regularizer.
-// Keep in mind that scres can be apply either to theta matrix, ptdw matrix or to phi matrix.
+// Keep in mind that scres can be applied to either theta matrix, ptdw matrix or phi matrix.
 // RegularizerInterface is, unfortunately, a base class for both of them.
 // Hopefully we will refactor this at some point in the future.
 // For performance reasons theta-regularizer involve 'RegularizerThetaAgent' or 'RegularizerPtdwAgent'.
