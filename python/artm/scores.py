@@ -225,9 +225,6 @@ class PerplexityScore(BaseScore):
         :param str name: the identifier of score, will be auto-generated if not specified
         :param class_ids: class_id to score, means that tokens of all class_ids will be used
         :type class_ids: list of str
-        :param topic_names: list of names of topics to regularize, will\
-                            score all topics if not specified
-        :type topic_names: list of str
         :param dictionary: BigARTM collection dictionary, won't use\
                             dictionary if not specified
         :type dictionary: str or reference to Dictionary object
@@ -237,7 +234,7 @@ class PerplexityScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
-                           topic_names=topic_names)
+                           topic_names=None)
 
         self._class_ids = []
         if class_ids is not None:
@@ -276,6 +273,10 @@ class PerplexityScore(BaseScore):
     def class_id(self):
         raise KeyError('No class_id parameter')
 
+    @property
+    def topic_names(self):
+        raise KeyError('No topic_names parameter')
+
     @dictionary.setter
     def dictionary(self, dictionary):
         dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
@@ -299,6 +300,10 @@ class PerplexityScore(BaseScore):
     @class_id.setter
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
+
+    @topic_names.setter
+    def topic_names(self, topic_names):
+        raise KeyError('No topic_names parameter')
 
 
 class ItemsProcessedScore(BaseScore):

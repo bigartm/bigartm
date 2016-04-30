@@ -793,14 +793,17 @@ class MasterComponent(object):
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
 
-        theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
+        if theta_matrix_type != constants.TransformMasterModelArgs_ThetaMatrixType_None:
+            theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
 
-        num_rows = len(theta_matrix_info.item_id)
-        num_cols = theta_matrix_info.topics_count
-        numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
+            num_rows = len(theta_matrix_info.item_id)
+            num_cols = theta_matrix_info.topics_count
+            numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
-        cp_args = messages.CopyRequestResultArgs()
-        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
-        self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+            cp_args = messages.CopyRequestResultArgs()
+            cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
+            self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
-        return theta_matrix_info, numpy_ndarray
+            return theta_matrix_info, numpy_ndarray
+        else:
+            self._lib.ArtmRequestTransformMasterModel(self.master_id, args)
