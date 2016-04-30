@@ -45,7 +45,7 @@ class Scores(object):
 
     def add(self, score):
         if score.name not in self._data:
-            self._master.create_score(score.name, score.config)
+            self._master.create_score(score.name, score.config, score._model_name)
             score._model_pwt = self._model_pwt
             score._model_nwt = self._model_nwt
             score._master = self._master
@@ -66,13 +66,10 @@ class BaseScore(object):
 
     _config_message = None
 
-    def __init__(self, name, class_id, topic_names):
+    def __init__(self, name, class_id, topic_names, model_name):
         if self._config_message is None:
             raise NotImplementedError()
         config = self._config_message()
-
-        if name is None:
-            name = '{0}:{1}'.format(self._type, uuid.uuid1().urn)
 
         self._class_id = '@default_class'
         if class_id is not None:
@@ -86,8 +83,9 @@ class BaseScore(object):
                 config.topic_name.append(topic_name)
                 self._topic_names.append(topic_name)
 
-        self._name = name
+        self._name = name if name is not None else '{0}:{1}'.format(self._type, uuid.uuid1().urn)
         self._config = config
+        self._model_name = model_name if model_name is not None else 'pwt'
         self._model_pwt = None  # Reserve place for the model
         self._model_nwt = None  # Reserve place for the model
         self._master = None  # Reserve place for the master (to reconfigure Scores)
@@ -99,6 +97,10 @@ class BaseScore(object):
     @property
     def config(self):
         return self._config
+
+    @property
+    def model_name(self):
+        return self._model_name
 
     @property
     def type(self):
@@ -140,6 +142,10 @@ class BaseScore(object):
     def name(self, name):
         raise RuntimeError("It's impossible to change score name")
 
+    @name.setter
+    def model_name(self, model_name):
+        raise RuntimeError("It's impossible to change score model_name")
+
 
 ###################################################################################################
 # SECTION OF SCORE CLASSES
@@ -148,19 +154,22 @@ class SparsityPhiScore(BaseScore):
     _config_message = messages.SparsityPhiScoreConfig
     _type = const.ScoreConfig_Type_SparsityPhi
 
-    def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
+    def __init__(self, name=None, class_id=None, topic_names=None, model_name=None, eps=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
         :type topic_names: list of str
+        :param model_name: phi-like matrix to be scored (typically 'pwt' or 'nwt'), 'pwt'\
+                           if not specified
         :param float eps: the tolerance const, everything < eps considered to be zero
         """
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
-                           topic_names=topic_names)
+                           topic_names=topic_names,
+                           model_name=model_name)
 
         self._eps = GLOB_EPS
         if eps is not None:
@@ -191,7 +200,8 @@ class SparsityThetaScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
-                           topic_names=topic_names)
+                           topic_names=topic_names,
+                           model_name=None)
 
         self._eps = GLOB_EPS
         if eps is not None:
@@ -206,6 +216,10 @@ class SparsityThetaScore(BaseScore):
     def class_id(self):
         raise KeyError('No class_id parameter')
 
+    @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
+
     @eps.setter
     def eps(self, eps):
         _reconfigure_field(self, eps, 'eps')
@@ -213,6 +227,10 @@ class SparsityThetaScore(BaseScore):
     @class_id.setter
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
+
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')
 
 
 class PerplexityScore(BaseScore):
@@ -234,7 +252,8 @@ class PerplexityScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
-                           topic_names=None)
+                           topic_names=None,
+                           model_name=None)
 
         self._class_ids = []
         if class_ids is not None:
@@ -274,6 +293,10 @@ class PerplexityScore(BaseScore):
         raise KeyError('No class_id parameter')
 
     @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
+
+    @property
     def topic_names(self):
         raise KeyError('No topic_names parameter')
 
@@ -301,6 +324,10 @@ class PerplexityScore(BaseScore):
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
 
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')
+
     @topic_names.setter
     def topic_names(self, topic_names):
         raise KeyError('No topic_names parameter')
@@ -317,7 +344,8 @@ class ItemsProcessedScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
-                           topic_names=None)
+                           topic_names=None,
+                           model_name=None)
 
     @property
     def topic_names(self):
@@ -327,6 +355,10 @@ class ItemsProcessedScore(BaseScore):
     def class_id(self):
         raise KeyError('No class_id parameter')
 
+    @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
+
     @topic_names.setter
     def topic_names(self, topic_names):
         raise KeyError('No topic_names parameter')
@@ -334,6 +366,10 @@ class ItemsProcessedScore(BaseScore):
     @class_id.setter
     def class_id(self, class_id):
         raise KeyError('No class_id parameter')
+
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')
 
 
 class TopTokensScore(BaseScore):
@@ -356,7 +392,8 @@ class TopTokensScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
-                           topic_names=topic_names)
+                           topic_names=topic_names,
+                           model_name=None)
 
         self._num_tokens = 10
         if num_tokens is not None:
@@ -377,6 +414,10 @@ class TopTokensScore(BaseScore):
     def dictionary(self):
         return self._dictionary_name
 
+    @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
+
     @num_tokens.setter
     def num_tokens(self, num_tokens):
         _reconfigure_field(self, num_tokens, 'num_tokens')
@@ -386,6 +427,10 @@ class TopTokensScore(BaseScore):
         dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
         _reconfigure_field(self, dictionary_name,
                            'dictionary_name', 'cooccurrence_dictionary_name')
+
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')
 
 
 class ThetaSnippetScore(BaseScore):
@@ -403,7 +448,8 @@ class ThetaSnippetScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=None,
-                           topic_names=None)
+                           topic_names=None,
+                           model_name=None)
 
         self._item_ids = []
         if item_ids is not None:
@@ -424,6 +470,10 @@ class ThetaSnippetScore(BaseScore):
     @property
     def class_id(self):
         raise KeyError('No class_id parameter')
+
+    @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
 
     @property
     def item_ids(self):
@@ -449,6 +499,10 @@ class ThetaSnippetScore(BaseScore):
     def num_items(self, num_items):
         _reconfigure_field(self, num_items, 'num_items', 'item_count')
 
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')
+
 
 class TopicKernelScore(BaseScore):
     _config_message = messages.TopicKernelScoreConfig
@@ -472,7 +526,8 @@ class TopicKernelScore(BaseScore):
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
-                           topic_names=topic_names)
+                           topic_names=topic_names,
+                           model_name=None)
 
         self._eps = GLOB_EPS
         if eps is not None:
@@ -506,6 +561,10 @@ class TopicKernelScore(BaseScore):
     def eps(self, eps):
         _reconfigure_field(self, eps, 'eps')
 
+    @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
+
     @dictionary.setter
     def dictionary(self, dictionary):
         dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
@@ -516,24 +575,31 @@ class TopicKernelScore(BaseScore):
     def probability_mass_threshold(self, probability_mass_threshold):
         _reconfigure_field(self, probability_mass_threshold, 'probability_mass_threshold')
 
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')
+
 
 class TopicMassPhiScore(BaseScore):
     _config_message = messages.TopicMassPhiScoreConfig
     _type = const.ScoreConfig_Type_TopicMassPhi
 
-    def __init__(self, name=None, class_id=None, topic_names=None, eps=None):
+    def __init__(self, name=None, class_id=None, topic_names=None, model_name=None, eps=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param str class_id: class_id to score
         :param topic_names: list of names of topics to regularize, will\
                             score all topics if not specified
         :type topic_names: list of str
+        :param model_name: phi-like matrix to be scored (typically 'pwt' or 'nwt'), 'pwt'\
+                           if not specified
         :param float eps: the tolerance const, everything < eps considered to be zero
         """
         BaseScore.__init__(self,
                            name=name,
                            class_id=class_id,
-                           topic_names=topic_names)
+                           topic_names=topic_names,
+                           model_name=model_name)
 
         self._eps = GLOB_EPS
         if eps is not None:
