@@ -526,7 +526,7 @@ class MasterComponent(object):
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
-    def create_score(self, name, config):
+    def create_score(self, name, config, model_name=None):
         """
         :param str name: the name of the future score
         :param config: an instance of \*\*\*ScoreConfig
@@ -538,6 +538,9 @@ class MasterComponent(object):
         score_config.name = name
         score_config.type = _score_type(config)
         score_config.config = config.SerializeToString()
+
+        if model_name is not None:
+            score_config.model_name = model_name
 
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
