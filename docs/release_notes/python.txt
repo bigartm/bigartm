@@ -1,0 +1,10 @@
+Changes in Python API
+=====================
+
+Note that Python API might be affected by changes in the underlying protobuf messages.
+For this reason we recommend to review the changes in :doc:`messages`.
+
+v0.8.0
+------
+
+

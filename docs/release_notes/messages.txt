@@ -1,8 +1,8 @@
-BigARTM v0.8 Release notes
-==========================
+Changes in protobuf messages
+============================
 
-BigaRTM v0.8.0
---------------
+v0.8.0
+------
 
 * We simplified the ``Item`` message, obsoleting a ``repeated Field field`` field.
   New message looks as follows:
