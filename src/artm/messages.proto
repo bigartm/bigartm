@@ -48,12 +48,12 @@ message Field {
   optional double double_value = 7;
   optional string date_value = 8;
 
-  repeated string string_array = 16;
-  repeated int64 int_array = 17;
-  repeated double double_array = 18;
-  repeated string date_array = 19;
+  repeated string string_array = 9;
+  repeated int64 int_array = 10;
+  repeated double double_array = 11;
+  repeated string date_array = 12;
 
-  repeated float token_weight = 20;
+  repeated float token_weight = 13;
 }
 
 // Represents a set of items.
@@ -151,8 +151,8 @@ message SmoothPtdwConfig {
   }
 
   optional Type type = 1 [default = MovingAverage];
-  optional int32 window = 3 [default = 10];
-  optional double threshold = 4 [default = 1.0];
+  optional int32 window = 2 [default = 10];
+  optional double threshold = 3 [default = 1.0];
 }
 
 // Represents a configuration of a TopicSelection Theta regularizer
@@ -226,9 +226,9 @@ message PerplexityScoreConfig {
     UnigramDocumentModel = 0;
     UnigramCollectionModel = 1;
   }
-  optional Type model_type = 3 [default = UnigramDocumentModel];
-  optional string dictionary_name = 4;
-  repeated string class_id = 7;
+  optional Type model_type = 1 [default = UnigramDocumentModel];
+  optional string dictionary_name = 2;
+  repeated string class_id = 3;
 }
 
 // Represents a result of calculation of a perplexity score
@@ -241,8 +241,8 @@ message PerplexityScore {
 
 // Represents a configuration of a theta sparsity score
 message SparsityThetaScoreConfig {
-  optional float eps = 3 [default = 1e-37];
-  repeated string topic_name = 4;
+  optional float eps = 1 [default = 1e-37];
+  repeated string topic_name = 2;
 }
 
 // Represents a result of calculation of a theta sparsity score
@@ -291,13 +291,13 @@ message TopTokensScore {
   repeated int32 topic_index = 3;
   repeated string token = 4;
   repeated float weight = 5;
-  optional FloatArray coherence = 6;
+  repeated float coherence = 6;
   optional float average_coherence = 7;
 }
 
 // Represents a configuration of a theta snippet score
 message ThetaSnippetScoreConfig {
-  optional int32 item_count = 4 [default = 10];
+  optional int32 num_items = 1 [default = 10];
 }
 
 
@@ -318,16 +318,16 @@ message TopicKernelScoreConfig {
 
 // Represents a result of calculation of a topic kernel score
 message TopicKernelScore {
-  optional DoubleArray kernel_size = 1;
-  optional DoubleArray kernel_purity = 2;
-  optional DoubleArray kernel_contrast = 3;
+  repeated double kernel_size = 1;
+  repeated double kernel_purity = 2;
+  repeated double kernel_contrast = 3;
   optional double average_kernel_size = 4;
   optional double average_kernel_purity = 5;
   optional double average_kernel_contrast = 6;
-  optional DoubleArray coherence = 7;
+  repeated double coherence = 7;
   optional float average_coherence = 8;
   repeated StringArray kernel_tokens = 9;
-  optional StringArray topic_name = 10;
+  repeated string topic_name = 10;
 }
 
 // Represents a configuration of a topic part in nwt score
@@ -368,12 +368,12 @@ message PeakMemoryScore {
 // Represents a topic model (or an operation on topic model)
 message TopicModel {
   optional string name = 1 [default = "@model"];
-  optional int32 topics_count = 2;
+  optional int32 num_topics = 2;
   repeated string topic_name = 3;
   repeated string token = 4;
   repeated FloatArray token_weights = 5;
   repeated string class_id = 6;
-  repeated IntArray topic_index = 8;
+  repeated IntArray topic_indices = 7;
 }
 
 // Represents a theta matrix.
@@ -381,9 +381,9 @@ message ThetaMatrix {
   repeated int32 item_id = 2;
   repeated FloatArray item_weights = 3;
   repeated string topic_name = 4;
-  optional int32 topics_count = 5;
+  optional int32 num_topics = 5;
   repeated string item_title = 6;
-  repeated IntArray topic_index = 7;
+  repeated IntArray topic_indices = 7;
 }
 
 // Represents a configuration of a collection parser.
@@ -412,8 +412,8 @@ message CollectionParserConfig {
 message InitializeModelArgs {
   optional string model_name = 1;
   optional string dictionary_name = 2;
-  repeated string topic_name = 4;
-  optional int32 seed = 5 [default = -1];
+  repeated string topic_name = 3;
+  optional int32 seed = 4 [default = -1];
 }
 
 // Represents a static dictionary.
@@ -448,7 +448,7 @@ message GatherDictionaryArgs {
   optional string cooc_file_path = 3;
   optional string vocab_file_path = 4;
   optional bool symmetric_cooc_values = 5 [default = false];
-  repeated string batch_path = 6;
+  repeated string batch_file_path = 6;
 }
 
 message GetDictionaryArgs {
@@ -484,18 +484,18 @@ message GetThetaMatrixArgs {
     Sparse = 1;
   }
 
-  repeated string topic_name = 3;
-  optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
-  optional float eps = 7 [default = 1e-37];
-  optional MatrixLayout matrix_layout = 8 [default = Dense];
+  repeated string topic_name = 1;
+  optional bool use_sparse_format = 2;  // deprecated, use matrix_layout
+  optional float eps = 3 [default = 1e-37];
+  optional MatrixLayout matrix_layout = 4 [default = Dense];
 }
 
 message GetScoreValueArgs {
-  optional string score_name = 2;
+  optional string score_name = 1;
 }
 
 message GetScoreArrayArgs {
-  optional string score_name = 2;
+  optional string score_name = 1;
 }
 
 message ExportModelArgs {
@@ -526,19 +526,19 @@ message ProcessBatchesArgs {
 
   repeated string batch_filename = 2;
   optional string pwt_source_name = 3;
-  optional int32 inner_iterations_count = 4 [default = 10];
-  repeated string regularizer_name = 6;
-  repeated double regularizer_tau = 7;
-  repeated string class_id = 8;
-  repeated float class_weight = 9;
-  optional bool reuse_theta = 10 [default = false];
-  optional bool opt_for_avx = 11 [default = true];
-  optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
-  repeated float batch_weight = 15;
-  optional string predict_class_id = 17;
-  repeated Batch batch = 18;
-  optional bool use_random_theta = 19 [default = false];
-  repeated string topic_name = 20;
+  optional int32 num_inner_iterations = 4 [default = 10];
+  repeated string regularizer_name = 5;
+  repeated double regularizer_tau = 6;
+  repeated string class_id = 7;
+  repeated float class_weight = 8;
+  optional bool reuse_theta = 9 [default = false];
+  optional bool opt_for_avx = 10 [default = true];
+  optional ThetaMatrixType theta_matrix_type = 11 [default = Cache];
+  repeated float batch_weight = 12;
+  optional string predict_class_id = 13;
+  repeated Batch batch = 14;
+  optional bool use_random_theta = 15 [default = false];
+  repeated string topic_name = 16;
 }
 
 message ProcessBatchesResult {
@@ -568,12 +568,12 @@ message NormalizeModelArgs {
 }
 
 message ImportDictionaryArgs {
-  optional string file_name = 1;
+  optional string file_path = 1;
   optional string dictionary_name = 2;
 }
 
 message ExportDictionaryArgs {
-  optional string file_name = 1;
+  optional string file_path = 1;
   optional string dictionary_name = 2;
 }
 
@@ -606,20 +606,20 @@ message MasterComponentInfo {
 
   message DictionaryInfo {
     optional string name = 1;
-    optional int64 entries_count = 2;
+    optional int64 num_entries = 2;
   }
 
   message BatchInfo {
     optional string name = 1;
-    optional int32 items_count = 2;
-    optional int32 token_count = 3;
+    optional int32 num_items = 2;
+    optional int32 num_tokens = 3;
   }
 
   message ModelInfo {
     optional string name = 1;
     optional string type = 2;
-    optional int32 topics_count = 3;
-    optional int32 token_count = 4;
+    optional int32 num_topics = 3;
+    optional int32 num_tokens = 4;
   }
 
   message CacheEntryInfo {
@@ -627,19 +627,19 @@ message MasterComponentInfo {
     optional int32 byte_size = 2;
   }
 
-  optional MasterModelConfig config = 2;
-  repeated RegularizerInfo regularizer = 3;
-  repeated ScoreInfo score = 4;
-  repeated DictionaryInfo dictionary = 5;
-  repeated ModelInfo model = 6;
-  repeated CacheEntryInfo cache_entry = 7;
-  optional int32 processor_queue_size = 9;
-  repeated BatchInfo batch = 10;
-  optional int32 num_processors = 11;
+  optional MasterModelConfig config = 1;
+  repeated RegularizerInfo regularizer = 2;
+  repeated ScoreInfo score = 3;
+  repeated DictionaryInfo dictionary = 4;
+  repeated ModelInfo model = 5;
+  repeated CacheEntryInfo cache_entry = 6;
+  optional int32 processor_queue_size = 7;
+  repeated BatchInfo batch = 8;
+  optional int32 num_processors = 9;
 }
 
 message ImportBatchesArgs {
-  repeated Batch batch = 3;
+  repeated Batch batch = 1;
 }
 
 message AwaitOperationArgs {
@@ -652,20 +652,20 @@ message MasterModelConfig {
   repeated float class_weight = 3;
   repeated ScoreConfig score_config = 4;
   repeated RegularizerConfig regularizer_config = 5;
-  optional int32 threads = 6;
+  optional int32 num_processors = 6;
   optional string pwt_name = 7 [default = "pwt"];
   optional string nwt_name = 8 [default = "nwt"];
-  optional int32 inner_iterations_count = 9;
+  optional int32 num_inner_iterations = 9;
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
-  optional string disk_cache_path = 13;
-  optional bool cache_theta = 15 [default = false];
+  optional string disk_cache_path = 12;
+  optional bool cache_theta = 13 [default = false];
 }
 
 message FitOfflineMasterModelArgs {
   repeated string batch_filename = 1;
   repeated float batch_weight = 2;
-  optional int32 passes = 3 [default = 1];
+  optional int32 num_outer_iterations = 3 [default = 1];
   optional string batch_folder = 4;
 }
 
