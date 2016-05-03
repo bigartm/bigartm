@@ -104,7 +104,7 @@ def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors
                 regularizer_config.tau = config_tau[1]
 
         if num_processors is not None:
-            master_config.threads = num_processors
+            master_config.num_processors = num_processors
 
         if reuse_theta is not None:
             master_config.reuse_theta = reuse_theta
@@ -136,7 +136,7 @@ class MasterComponent(object):
         :param dict class_ids: key - class_id, value - class_weight
         :param dict scores: key - score name, value - config
         :param dict regularizers: key - regularizer name, value - pair (config, tau)
-        :param int num_processors: number of work threads to use
+        :param int num_processors: number of worker threads to use for processing the collection
         :param str pwt_name: name of pwt matrix
         :param str nwt_name: name of nwt matrix
         :param in num_document_passes: num passes through each document

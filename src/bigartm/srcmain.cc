@@ -925,7 +925,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
   // Step 1. Configuration
   MasterModelConfig master_config;
-  master_config.set_threads(options.threads);
+  master_config.set_num_processors(options.threads);
   master_config.set_num_document_passes(options.num_document_passes);
   master_config.set_pwt_name(options.pwt_model_name);
   master_config.set_nwt_name(options.nwt_model_name);

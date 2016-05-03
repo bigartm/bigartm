@@ -431,7 +431,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   if (instance_->processor_size() <= 0)
     BOOST_THROW_EXCEPTION(InvalidOperation(
-    "Can't process batches because there are no processors. Check your MasterModelConfig.threads setting."));
+    "Can't process batches because there are no processors. Check your MasterModelConfig.num_processors setting."));
 
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrixSafe(model_name);
   const PhiMatrix& p_wt = *phi_matrix;
@@ -477,7 +477,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   if (args.batch_filename_size() < instance_->processor_size()) {
     LOG_FIRST_N(INFO, 1) << "Batches count (=" << args.batch_filename_size()
-                         << ") is smaller than processors threads count (="
+                         << ") is smaller than num processors (="
                          << instance_->processor_size()
                          << "), which may cause suboptimal performance.";
   }

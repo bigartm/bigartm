@@ -335,8 +335,8 @@ void Instance::DisposeRegularizer(const std::string& name) {
 void Instance::Reconfigure(const MasterModelConfig& master_config) {
   master_model_config_.set(std::make_shared<MasterModelConfig>(master_config));
 
-  int target_processors_count = master_config.threads();
-  if (!master_config.has_threads() || master_config.threads() < 0) {
+  int target_processors_count = master_config.num_processors();
+  if (!master_config.has_num_processors() || master_config.num_processors() < 0) {
     unsigned int n = std::thread::hardware_concurrency();
     if (n == 0) {
       LOG(INFO) << "MasterModelConfig.processors_count is set to 1 (default)";

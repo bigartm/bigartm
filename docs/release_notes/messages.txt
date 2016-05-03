@@ -1,4 +1,4 @@
-Changes in protobuf messages
+Changes in Protobuf Messages
 ============================
 
 v0.8.0
@@ -27,6 +27,7 @@ v0.8.0
 * renamed ``topics_count`` into ``num_topics`` across multiple messsages (``TopicModel``, ``ThetaMatrix``, etc)
 * renamed ``inner_iterations_count`` into ``num_document_passes`` in ``ProcessBatchesArgs``
 * renamed ``passes`` into ``num_collection_passes`` in ``FitOfflineMasterModelArgs``
+* renamed ``threads`` into ``num_processors`` in ``MasterModelConfig``
 * added messages ``ScoreArray``, ``GetScoreArrayArgs`` and ``ClearScoreArrayCacheArgs`` to bring score tracking functionality down into BigARTM core
 * moved ``model_name`` from ``GetScoreValueArgs`` into ``ScoreConfig``;
   this is done to support score tracking functionality in BigARTM core;
