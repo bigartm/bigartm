@@ -35,14 +35,14 @@ inline void FixPackedMessage(std::string* message);
 inline std::string DescribeErrors(const ::artm::TopicModel& message) {
   std::stringstream ss;
 
-  const bool has_topic_data = (message.topics_count() != 0 || message.topic_name_size() != 0);
+  const bool has_topic_data = (message.num_topics() != 0 || message.topic_name_size() != 0);
   const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
   const bool has_bulk_data = (message.token_weights_size() != 0);
   const bool has_sparse_format = has_bulk_data && (message.topic_index_size() != 0);
 
   if (has_topic_data) {
-    if (message.topics_count() != message.topic_name_size())
-      ss << "Length mismatch in fields TopicModel.topics_count and TopicModel.topic_name";
+    if (message.num_topics() != message.topic_name_size())
+      ss << "Length mismatch in fields TopicModel.num_topics and TopicModel.topic_name";
   }
 
   if (has_token_data) {
@@ -74,9 +74,9 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
 
         bool ok = true;
         for (int topic_index : message.topic_index(i).value()) {
-          if (topic_index < 0 || topic_index >= message.topics_count()) {
+          if (topic_index < 0 || topic_index >= message.num_topics()) {
             ss << "Value " << topic_index << " in message.topic_index(" << i
-               << ") is negative or exceeds TopicModel.topics_count";
+               << ") is negative or exceeds TopicModel.num_topics";
             ok = false;
             break;
           }
@@ -87,8 +87,8 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
       }
 
       if (!has_sparse_format) {
-        if (message.token_weights(i).value_size() != message.topics_count()) {
-          ss << "Length mismatch between TopicModel.topics_count and TopicModel.token_weights(" << i << ")";
+        if (message.token_weights(i).value_size() != message.num_topics()) {
+          ss << "Length mismatch between TopicModel.num_topics and TopicModel.token_weights(" << i << ")";
           break;
         }
       }
@@ -111,10 +111,10 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
        << " vs " << message.item_title_size() << " vs " << message.topic_index_size() << ";";
   }
 
-  if (message.topics_count() == 0 || message.topic_name_size() == 0)
+  if (message.num_topics() == 0 || message.topic_name_size() == 0)
     ss << "ThetaMatrix.topic_name_size is empty";
-  if (message.topics_count() != message.topic_name_size())
-    ss << "Length mismatch in fields ThetaMatrix.topics_count and ThetaMatrix.topic_name";
+  if (message.num_topics() != message.topic_name_size())
+    ss << "Length mismatch in fields ThetaMatrix.num_topics and ThetaMatrix.topic_name";
 
   for (int i = 0; i < message.item_id_size(); ++i) {
     if (has_sparse_format) {
@@ -125,9 +125,9 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
 
       bool ok = true;
       for (int topic_index : message.topic_index(i).value()) {
-        if (topic_index < 0 || topic_index >= message.topics_count()) {
+        if (topic_index < 0 || topic_index >= message.num_topics()) {
           ss << "Value " << topic_index << " in message.topic_index(" << i
-             << ") is negative or exceeds ThetaMatrix.topics_count";
+             << ") is negative or exceeds ThetaMatrix.num_topics";
           ok = false;
           break;
         }
@@ -208,8 +208,8 @@ inline std::string DescribeErrors(const ::artm::MasterModelConfig& message) {
   if (message.class_weight_size() != message.class_id_size())
     ss << "Length mismatch in fields MasterModelConfig.class_id and MasterModelConfig.class_weight; ";
 
-  if (message.inner_iterations_count() < 0)
-    ss << "Field MasterModelConfig.inner_iterations_count must be non-negative; ";
+  if (message.num_document_passes() < 0)
+    ss << "Field MasterModelConfig.num_document_passes must be non-negative; ";
 
   for (int i = 0; i < message.regularizer_config_size(); ++i) {
     const RegularizerConfig& config = message.regularizer_config(i);
@@ -228,7 +228,7 @@ inline std::string DescribeErrors(const ::artm::FitOfflineMasterModelArgs& messa
     ss << "Length mismatch in fields FitOfflineMasterModelArgs.batch_filename "
        << "and FitOfflineMasterModelArgs.batch_weight; ";
 
-  if (message.passes() <= 0)
+  if (message.num_collection_passes() <= 0)
     ss << "FitOfflineMasterModelArgs.passes() must be a positive number";
 
   if (message.has_batch_folder() && (message.batch_filename_size() != 0))
@@ -456,7 +456,7 @@ inline void FixMessage(::artm::TopicModel* message) {
   }
 
   if (message->topic_name_size() > 0)
-    message->set_topics_count(message->topic_name_size());
+    message->set_num_topics(message->topic_name_size());
 }
 
 template<>
@@ -676,7 +676,7 @@ inline std::string DescribeMessage(const ::artm::ProcessBatchesArgs& message) {
   ss << ", batch_size=" << message.batch_size();
   ss << ", batch_weight_size=" << message.batch_weight_size();
   ss << ", pwt_source_name=" << message.pwt_source_name();
-  ss << ", inner_iterations_count=" << message.inner_iterations_count();
+  ss << ", num_document_passes=" << message.num_document_passes();
   for (int i = 0; i < message.regularizer_name_size(); ++i)
     ss << ", regularizer=(name:" << message.regularizer_name(i) << ", tau:" << message.regularizer_tau(i) << ")";
   for (int i = 0; i < message.class_id_size(); ++i)
@@ -731,7 +731,7 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
   ss << ", threads=" << message.threads();
   ss << ", pwt_name=" << message.pwt_name();
   ss << ", nwt_name=" << message.nwt_name();
-  ss << ", inner_iterations_count=" << message.inner_iterations_count();
+  ss << ", num_document_passes=" << message.num_document_passes();
   for (int i = 0; i < message.regularizer_config_size(); ++i)
     ss << ", regularizer=("
        << message.regularizer_config(i).name() << ":"
@@ -750,7 +750,7 @@ inline std::string DescribeMessage(const ::artm::FitOfflineMasterModelArgs& mess
   ss << "FitOfflineMasterModelArgs";
   ss << ", batch_filename_size=" << message.batch_filename_size();
   ss << ", batch_weight_size=" << message.batch_weight_size();
-  ss << ", passes=" << message.passes();
+  ss << ", num_collection_passes=" << message.num_collection_passes();
   return ss.str();
 }
 

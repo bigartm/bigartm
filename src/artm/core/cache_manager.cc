@@ -82,21 +82,21 @@ static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
     use_all_topics = true;
   }
 
-  // Populate topics_count and topic_name fields in the resulting message
+  // Populate num_topics and topic_name fields in the resulting message
   ::google::protobuf::RepeatedPtrField< ::std::string> result_topic_name;
   for (int topic_index : topics_to_use)
     result_topic_name.Add()->assign(cache.topic_name(topic_index));
 
   if (theta_matrix->topic_name_size() == 0) {
     // Assign
-    theta_matrix->set_topics_count(result_topic_name.size());
+    theta_matrix->set_num_topics(result_topic_name.size());
     assert(theta_matrix->topic_name_size() == 0);
     for (const TopicName& topic_name : result_topic_name)
       theta_matrix->add_topic_name(topic_name);
   } else {
     // Verify
-    if (theta_matrix->topics_count() != result_topic_name.size())
-      BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->topics_count() != result_topic_name.size()"));
+    if (theta_matrix->num_topics() != result_topic_name.size())
+      BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->num_topics() != result_topic_name.size()"));
     for (int i = 0; i < theta_matrix->topic_name_size(); ++i) {
       if (theta_matrix->topic_name(i) != result_topic_name.Get(i))
         BOOST_THROW_EXCEPTION(artm::core::InternalError("theta_matrix->topic_name(i) != result_topic_name.Get(i)"));

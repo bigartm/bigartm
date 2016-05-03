@@ -141,7 +141,7 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
 
     MasterComponentInfo::DictionaryInfo* info = master_info->add_dictionary();
     info->set_name(name);
-    info->set_entries_count(dict->size());
+    info->set_num_entries(dict->size());
   }
 
   for (auto& name : batches_.keys()) {
@@ -151,8 +151,8 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
 
     MasterComponentInfo::BatchInfo* info = master_info->add_batch();
     info->set_name(name);
-    info->set_token_count(batch->token_size());
-    info->set_items_count(batch->item_size());
+    info->set_num_tokens(batch->token_size());
+    info->set_num_items(batch->item_size());
   }
 
   for (auto& name : models_.keys()) {
@@ -160,8 +160,8 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     if (p_wt != nullptr) {
       MasterComponentInfo::ModelInfo* info = master_info->add_model();
       info->set_name(p_wt->model_name());
-      info->set_token_count(p_wt->token_size());
-      info->set_topics_count(p_wt->topic_size());
+      info->set_num_tokens(p_wt->token_size());
+      info->set_num_topics(p_wt->topic_size());
       info->set_type(typeid(*p_wt).name());
     }
   }

@@ -21,7 +21,7 @@ def test_func():
 
     num_topics = 8
     num_outer_iterations = 2
-    num_inner_iterations = 1
+    num_document_passes = 1
     
     theta_value = 0.1
     theta_tol = 0.1
@@ -57,7 +57,7 @@ def test_func():
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi
             master.clear_score_cache()
-            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
+            master.process_batches(pwt, nwt, num_document_passes, batches_folder)
             master.normalize_model(pwt, nwt)
 
         # Option 1.
@@ -102,7 +102,7 @@ def test_func():
                 batches.append(os.path.join(batches_folder, name))
         for batch_index, batch_filename in enumerate(batches):
             master.clear_score_cache()
-            master.process_batches(pwt, nwt, num_inner_iterations, batches=[batch_filename])
+            master.process_batches(pwt, nwt, num_document_passes, batches=[batch_filename])
             master.normalize_model(pwt, nwt)
 
             # The following rule defines when to retrieve Theta matrix. You decide :)
@@ -120,7 +120,7 @@ def test_func():
         master.clear_score_cache()
         info, matrix = master.process_batches(pwt=pwt,
                                               nwt=nwt,
-                                              num_inner_iterations=1,
+                                              num_document_passes=1,
                                               batches=[batches[0]],
                                               find_theta=True)
         print 'Option 4. ThetaMatrix for test batch, #item {0}'.format(len(info.item_id))

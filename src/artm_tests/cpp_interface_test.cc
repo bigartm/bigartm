@@ -155,7 +155,7 @@ TEST(CppInterface, BasicTest) {
 
     EXPECT_EQ(theta_matrix.item_id_size(), nDocs);
     EXPECT_EQ(theta_matrix.item_title_size(), nDocs);
-    EXPECT_EQ(theta_matrix.topics_count(), nTopics);
+    EXPECT_EQ(theta_matrix.num_topics(), nTopics);
     for (int item_index = 0; item_index < theta_matrix.item_id_size(); ++item_index) {
       EXPECT_EQ(theta_matrix.item_id(item_index), 666 + item_index);
       EXPECT_EQ(theta_matrix.item_title(item_index), item_title[item_index]);
@@ -176,7 +176,7 @@ TEST(CppInterface, BasicTest) {
     get_theta_args.add_topic_name("4th topic");
     ::artm::ThetaMatrix theta_matrix23 = master_component.GetThetaMatrix(get_theta_args);
     EXPECT_EQ(theta_matrix23.item_id_size(), nDocs);
-    EXPECT_EQ(theta_matrix23.topics_count(), 2);
+    EXPECT_EQ(theta_matrix23.num_topics(), 2);
     for (int item_index = 0; item_index < theta_matrix23.item_id_size(); ++item_index) {
       const ::artm::FloatArray& weights23 = theta_matrix23.item_weights(item_index);
       const ::artm::FloatArray& weights = theta_matrix.item_weights(item_index);
@@ -297,7 +297,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   ::artm::MasterComponentInfo master_info = master.info();
   ASSERT_EQ(master_info.model_size(), 1);  // "pwt0"
   EXPECT_EQ(master_info.model(0).name(), "pwt0");
-  EXPECT_EQ(master_info.model(0).topics_count(), nTopics);
+  EXPECT_EQ(master_info.model(0).num_topics(), nTopics);
 
   ::artm::GetTopicModelArgs get_topic_model_args;
   get_topic_model_args.set_model_name("pwt0");
@@ -349,7 +349,7 @@ TEST(CppInterface, ProcessBatchesApi) {
     api.ClearScoreCache(::artm::ClearScoreCacheArgs());
     artm::ThetaMatrix result = api.ProcessBatches(process_batches_args);
     perplexity_score = master.GetScoreAs< ::artm::PerplexityScore>(score_args);
-    EXPECT_EQ(result.topics_count(), nTopics);
+    EXPECT_EQ(result.num_topics(), nTopics);
     EXPECT_EQ(result.item_id_size(), nBatches);  // assuming that each batch has just one document
     api.NormalizeModel(normalize_model_args);
   }
@@ -385,14 +385,14 @@ TEST(CppInterface, ProcessBatchesApi) {
   master.CreateDictionary(dict_config);
   master_info = master.info();
   ASSERT_EQ(master_info.dictionary_size(), 2);
-  EXPECT_EQ(master_info.dictionary(0).entries_count(), 1);
+  EXPECT_EQ(master_info.dictionary(0).num_entries(), 1);
 
   {
     artm::MasterModel master_clone(api.Duplicate(::artm::DuplicateMasterComponentArgs()));
     ::artm::MasterComponentInfo clone_master_info = master_clone.info();
     ASSERT_EQ(clone_master_info.model_size(), 4);  // "pwt", "nwt_hat"; "pwt0" is not cloned (old-style model)
     ASSERT_EQ(clone_master_info.dictionary_size(), 2);
-    EXPECT_EQ(clone_master_info.dictionary(0).entries_count(), 1);
+    EXPECT_EQ(clone_master_info.dictionary(0).num_entries(), 1);
     ASSERT_EQ(clone_master_info.score_size(), master_info.score_size());
     ASSERT_EQ(clone_master_info.regularizer_size(), master_info.regularizer_size());
 
@@ -415,7 +415,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   api.MergeModel(merge_model_args);
   get_topic_model_args.set_model_name("nwt_merge");
   ::artm::TopicModel nwt_merge = master.GetTopicModel(get_topic_model_args);
-  ASSERT_EQ(nwt_merge.topics_count(), nTopics);
+  ASSERT_EQ(nwt_merge.num_topics(), nTopics);
 
   // Dummy test to verify we can regularize models
   auto config = master.config();
@@ -474,7 +474,7 @@ TEST(CppInterface, AttachModel) {
   api.AttachTopicModel(attach_args, &attached_pwt);
   ::artm::TopicModel pwt0_model = master.GetTopicModel(get_model_args);
   ASSERT_EQ(attached_pwt.no_rows(), pwt0_model.token_size());
-  ASSERT_EQ(attached_pwt.no_columns(), pwt0_model.topics_count());
+  ASSERT_EQ(attached_pwt.no_columns(), pwt0_model.num_topics());
 
   ::artm::MergeModelArgs merge_model_args;
   merge_model_args.add_nwt_source_name(master_config.pwt_name()); merge_model_args.add_source_weight(1.0f);
@@ -486,11 +486,11 @@ TEST(CppInterface, AttachModel) {
   api.AttachTopicModel(attach_args, &attached_nwt_merge);
   ::artm::TopicModel nwt_merge_model = master.GetTopicModel(get_model_args);
   ASSERT_EQ(attached_nwt_merge.no_rows(), nwt_merge_model.token_size());
-  ASSERT_EQ(attached_nwt_merge.no_columns(), nwt_merge_model.topics_count());
+  ASSERT_EQ(attached_nwt_merge.no_columns(), nwt_merge_model.num_topics());
 
   // Verify that it is possible to modify the attached matrix
   for (int token_index = 0; token_index < nwt_merge_model.token_size(); ++token_index) {
-    for (int topic_index = 0; topic_index < nwt_merge_model.topics_count(); ++topic_index) {
+    for (int topic_index = 0; topic_index < nwt_merge_model.num_topics(); ++topic_index) {
       EXPECT_EQ(attached_nwt_merge(token_index, topic_index),
                 nwt_merge_model.token_weights(token_index).value(topic_index));
       attached_nwt_merge(token_index, topic_index) = 2.0f * token_index + 3.0f * topic_index;
@@ -499,7 +499,7 @@ TEST(CppInterface, AttachModel) {
 
   ::artm::TopicModel updated_model = master.GetTopicModel(get_model_args);
   for (int token_index = 0; token_index < nwt_merge_model.token_size(); ++token_index) {
-    for (int topic_index = 0; topic_index < nwt_merge_model.topics_count(); ++topic_index) {
+    for (int topic_index = 0; topic_index < nwt_merge_model.num_topics(); ++topic_index) {
       EXPECT_EQ(updated_model.token_weights(token_index).value(topic_index),
                 2.0f * token_index + 3.0f * topic_index);
     }

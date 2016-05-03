@@ -16,7 +16,7 @@ def test_func():
     nwt = 'nwt'
     
     num_topics = 10
-    num_inner_iterations = 10
+    num_document_passes = 10
     num_outer_iterations = 10
     num_top_tokens = 4
 
@@ -77,7 +77,7 @@ def test_func():
         for iter in xrange(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi
             master.clear_score_cache()
-            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
+            master.process_batches(pwt, nwt, num_document_passes, batches_folder)
             master.normalize_model(pwt, nwt)
 
             # Retrieve and print perplexity score

@@ -243,9 +243,9 @@ struct artm_options {
   std::string predict_class;
 
   // Learning
-  int passes;
+  int num_collection_passes;
   int time_limit;
-  int inner_iterations_count;
+  int num_document_passes;
   int update_every;
   float tau0;
   float kappa;
@@ -304,7 +304,7 @@ struct artm_options {
       write_predictions.empty() &&
       write_model_readable.empty() &&
       save_model.empty() &&
-      (passes <= 0) &&
+      (num_collection_passes <= 0) &&
       (time_limit <= 0);
 
     return !model_is_not_required;
@@ -620,7 +620,7 @@ class ScoreHelper {
      }
      else if (score_type == "thetasnippet") {
        ThetaSnippetScoreConfig specific_config;
-       if (score_arg != 0) specific_config.set_item_count(score_arg);
+       if (score_arg != 0) specific_config.set_num_items(score_arg);
        score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
        score_config.set_config(specific_config.SerializeAsString());
      }
@@ -856,7 +856,7 @@ void WritePredictions(const artm_options& options,
 
   // header
   output << "id" << sep << "title";
-  for (int j = 0; j < theta_metadata.topics_count(); ++j) {
+  for (int j = 0; j < theta_metadata.num_topics(); ++j) {
     if (theta_metadata.topic_name_size() > 0)
       output << sep << escape.apply(theta_metadata.topic_name(j));
     else
@@ -874,7 +874,7 @@ void WritePredictions(const artm_options& options,
     int index = id_to_index[i].second;
     output << theta_metadata.item_id(index) << sep;
     output << (theta_metadata.item_title_size() == 0 ? "" : escape.apply(theta_metadata.item_title(index)));
-    for (int j = 0; j < theta_metadata.topics_count(); ++j) {
+    for (int j = 0; j < theta_metadata.num_topics(); ++j) {
       output << sep << theta_matrix(index, j);
     }
     output << std::endl;
@@ -904,7 +904,7 @@ void WriteClassPredictions(const artm_options& options,
 
     float max = 0;
     float max_index = 0;
-    for (int j = 0; j < theta_metadata.topics_count(); ++j) {
+    for (int j = 0; j < theta_metadata.num_topics(); ++j) {
       float value = theta_matrix(index, j);
       if (value > max) {
         max = value;
@@ -926,7 +926,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   // Step 1. Configuration
   MasterModelConfig master_config;
   master_config.set_threads(options.threads);
-  master_config.set_inner_iterations_count(options.inner_iterations_count);
+  master_config.set_num_document_passes(options.num_document_passes);
   master_config.set_pwt_name(options.pwt_model_name);
   master_config.set_nwt_name(options.nwt_model_name);
 
@@ -1066,8 +1066,8 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   int update_count = 0;
   CuckooWatch total_timer;
   for (int iter = 0;; ++iter) {
-    if ((options.passes <= 0) && (options.time_limit <= 0)) break;
-    if ((options.passes > 0) && (iter >= options.passes)) break;
+    if ((options.num_collection_passes <= 0) && (options.time_limit <= 0)) break;
+    if ((options.num_collection_passes > 0) && (iter >= options.num_collection_passes)) break;
     if ((options.time_limit > 0) && (total_timer.elapsed_ms() >= options.time_limit)) {
       std::cerr << "Stopping iterations, time limit is reached." << std::endl;
       break;
@@ -1103,7 +1103,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     score_helper.showScores(iter + 1, timer.elapsed_ms());
   }  // iter
 
-  if ((options.passes > 0) || (options.time_limit > 0))
+  if ((options.num_collection_passes > 0) || (options.time_limit > 0))
     final_score_helper.showScores();
 
   if (!options.save_model.empty()) {
@@ -1142,15 +1142,15 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
     ::artm::Matrix matrix;
     ::artm::TopicModel model = master_component->GetTopicModel(get_topic_model_args, &matrix);
-    if (matrix.no_columns() != model.topics_count())
-      throw "internal error (matrix.no_columns() != theta->topics_count())";
+    if (matrix.no_columns() != model.num_topics())
+      throw "internal error (matrix.no_columns() != theta->num_topics())";
 
     std::ofstream output(options.write_model_readable);
     const std::string sep = options.csv_separator;
 
     // header
     output << "token" << sep << "class_id";
-    for (int j = 0; j < model.topics_count(); ++j) {
+    for (int j = 0; j < model.num_topics(); ++j) {
       if (model.topic_name_size() > 0)
         output << sep << escape.apply(model.topic_name(j));
       else
@@ -1162,7 +1162,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     for (int i = 0; i < model.token_size(); ++i) {
       output << escape.apply(model.token(i)) << sep;
       output << (model.class_id_size() == 0 ? "" : escape.apply(model.class_id(i)));
-      for (int j = 0; j < model.topics_count(); ++j) {
+      for (int j = 0; j < model.num_topics(); ++j) {
         output << sep << matrix(i, j);
       }
       output << std::endl;
@@ -1226,8 +1226,8 @@ int main(int argc, char * argv[]) {
 
     po::options_description learning_options("Learning");
     learning_options.add_options()
-      ("passes,p", po::value(&options.passes)->default_value(0), "number of outer iterations")
-      ("inner-iterations-count", po::value(&options.inner_iterations_count)->default_value(10), "number of inner iterations")
+      ("num_collection_passes,p", po::value(&options.num_collection_passes)->default_value(0), "number of outer iterations (passes through the collection)")
+      ("num-document-passes", po::value(&options.num_document_passes)->default_value(10), "number of inner iterations (passes through the document)")
       ("update-every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
@@ -1336,7 +1336,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt \n";
       std::cerr << std::endl;
       std::cerr << "* Parse docword and vocab files from UCI bag-of-word format; then fit topic model with 20 topics:\n";
-      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10\n";
+      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
       std::cerr << std::endl;
       std::cerr << "* Parse VW format; then save the resulting batches and dictionary:\n";
       std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --save-batches mmro_batches --save-dictionary mmro.dict\n";
@@ -1351,7 +1351,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --use-dictionary mmro.dict --write-dictionary-readable mmro.dict.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Use batches to fit a model with 20 topics; then save the model in a binary format:\n";
-      std::cerr << "  bigartm --use-batches mmro_batches --passes 10 -t 20 --save-model mmro.model\n";
+      std::cerr << "  bigartm --use-batches mmro_batches --num_collection_passes 10 -t 20 --save-model mmro.model\n";
       std::cerr << std::endl;
       std::cerr << "* Load the model and export it in a human-readable format:\n";
       std::cerr << "  bigartm --load-model mmro.model --write-model-readable mmro.model.txt\n";
@@ -1360,19 +1360,19 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --load-model mmro.model --write-predictions mmro.predict.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Fit model with two modalities (@default_class and @target), and use it to predict @target label:\n";
-      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --passes 10 --save-model model.bin\n";
+      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --num_collection_passes 10 --save-model model.bin\n";
       std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --load-model model.bin\n";
       std::cerr << "          --write-predictions pred.txt --csv-separator=tab\n";
       std::cerr << "          --predict-class @target --write-class-predictions pred_class.txt --score ClassPrecision\n";
       std::cerr << std::endl;
       std::cerr << "* Fit simple regularized model (increase sparsity up to 60-70%):\n";
       std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2\n";
-      std::cerr << "          --passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt\n";
+      std::cerr << "          --num_collection_passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt\n";
       std::cerr << "          --regularizer \"0.05 SparsePhi\" \"0.05 SparseTheta\"\n";
       std::cerr << std::endl;
       std::cerr << "* Fit more advanced regularize model, with 10 sparse objective topics, and 2 smooth background topics:\n";
       std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2\n";
-      std::cerr << "          --passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt\n";
+      std::cerr << "          --num_collection_passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt\n";
       std::cerr << "          --regularizer \"0.05 SparsePhi #obj\"\n";
       std::cerr << "          --regularizer \"0.05 SparseTheta #obj\"\n";
       std::cerr << "          --regularizer \"0.25 SmoothPhi #background\"\n";
@@ -1382,7 +1382,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --use-batches old_folder --save-batches new_folder\n";
       std::cerr << std::endl;
       std::cerr << "* Configure logger to output into stderr:\n";
-      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --passes 10\n";
+      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
       return 1;
     }
 

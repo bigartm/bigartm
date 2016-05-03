@@ -1,0 +1,8 @@
+Changes in BigARTM command line interface
+=========================================
+
+v0.8.0
+------
+
+* renamed ``--passes`` into ``--num-collection-passes``
+* renamed ``--num-inner-iterations`` into ``--num-document-passes``

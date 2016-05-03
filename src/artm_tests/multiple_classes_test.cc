@@ -280,7 +280,7 @@ void configurePerplexityScore(std::string score_name, artm::MasterModelConfig* m
 void configureThetaSnippetScore(std::string score_name, int num_items, artm::MasterModelConfig* master_config) {
   ::artm::ScoreConfig score_config;
   ::artm::ThetaSnippetScoreConfig theta_snippet_config;
-  theta_snippet_config.set_item_count(num_items);
+  theta_snippet_config.set_num_items(num_items);
   score_config.set_config(theta_snippet_config.SerializeAsString());
   score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
   score_config.set_name(score_name);
@@ -455,23 +455,23 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
   bool by_names = args.topic_name_size() > 0;
   bool all_topics = !by_names;
 
-  ASSERT_EQ(tm_dense.topics_count(), tm_dense.topic_name_size());
-  ASSERT_EQ(tm_sparse.topics_count(), tm_sparse.topic_name_size());
-  ASSERT_GT(tm_dense.topics_count(), 0);
-  ASSERT_GT(tm_sparse.topics_count(), 0);
+  ASSERT_EQ(tm_dense.num_topics(), tm_dense.topic_name_size());
+  ASSERT_EQ(tm_sparse.num_topics(), tm_sparse.topic_name_size());
+  ASSERT_GT(tm_dense.num_topics(), 0);
+  ASSERT_GT(tm_sparse.num_topics(), 0);
   ASSERT_GT(tm_dense.item_id_size(), 0);
   ASSERT_GT(tm_sparse.item_id_size(), 0);
 
   if (by_names) {
-    ASSERT_EQ(tm_dense.topics_count(), args.topic_name_size());
-    for (int i = 0; i < tm_dense.topics_count(); ++i)
+    ASSERT_EQ(tm_dense.num_topics(), args.topic_name_size());
+    for (int i = 0; i < tm_dense.num_topics(); ++i)
       EXPECT_EQ(tm_dense.topic_name(i), args.topic_name(i));
   } else {
-    ASSERT_EQ(tm_dense.topics_count(), tm_all.topics_count());
+    ASSERT_EQ(tm_dense.num_topics(), tm_all.num_topics());
   }
 
-  ASSERT_EQ(tm_sparse.topics_count(), tm_all.topics_count());
-  for (int i = 0; i < tm_sparse.topics_count(); ++i)
+  ASSERT_EQ(tm_sparse.num_topics(), tm_all.num_topics());
+  for (int i = 0; i < tm_sparse.num_topics(); ++i)
     EXPECT_EQ(tm_sparse.topic_name(i), tm_all.topic_name(i));
 
   ASSERT_EQ(tm_sparse.item_id_size(), tm_dense.item_id_size());
@@ -491,7 +491,7 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
     for (int j = 0; j < sparse_topic.value_size(); ++j) {
       int topic_index = sparse_topic_index.value(j);
       float value = sparse_topic.value(j);
-      ASSERT_TRUE(topic_index >= 0 && topic_index <= tm_all.topics_count());
+      ASSERT_TRUE(topic_index >= 0 && topic_index <= tm_all.num_topics());
       EXPECT_TRUE(value >= args.eps());
       EXPECT_EQ(value, dense_topic.value(topic_index));
     }
@@ -521,7 +521,7 @@ TEST(MultipleClasses, GetTopicModel) {
   std::vector<std::shared_ptr< ::artm::Batch>> batches;
   batches.push_back(std::make_shared< ::artm::Batch>(batch));
   auto offline_args = api.Initialize(batches);
-  offline_args.set_passes(5);
+  offline_args.set_num_collection_passes(5);
   master.FitOfflineModel(offline_args);
 
   ::artm::GetTopicModelArgs args;

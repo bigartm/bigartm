@@ -43,15 +43,15 @@ SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
   const int item_size = batch.item_size();
 
   if (config_.alpha_iter_size() != 0) {
-    if (args.inner_iterations_count() != config_.alpha_iter_size()) {
-      LOG(ERROR) << "ProcessBatchesArgs.inner_iterations_count() != SmoothSparseThetaConfig.alpha_iter_size()";
+    if (args.num_document_passes() != config_.alpha_iter_size()) {
+      LOG(ERROR) << "ProcessBatchesArgs.num_document_passes() != SmoothSparseThetaConfig.alpha_iter_size()";
       return nullptr;
     }
 
     for (int i = 0; i < config_.alpha_iter_size(); ++i)
       agent->alpha_weight.push_back(config_.alpha_iter(i));
   } else {
-    for (int i = 0; i < args.inner_iterations_count(); ++i)
+    for (int i = 0; i < args.num_document_passes(); ++i)
       agent->alpha_weight.push_back(1.0f);
   }
 

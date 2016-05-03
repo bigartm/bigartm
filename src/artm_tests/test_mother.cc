@@ -84,7 +84,7 @@ std::string Helpers::DescribeThetaMatrix(const ::artm::ThetaMatrix& theta_matrix
   std::stringstream ss;
   for (int i = 0; i < theta_matrix.item_id_size(); ++i) {
     ss << theta_matrix.item_id(i) << ": ";
-    for (int j = 0; j < theta_matrix.topics_count(); ++j) {
+    for (int j = 0; j < theta_matrix.num_topics(); ++j) {
       ss << theta_matrix.item_weights(i).value(j) << " ";
     }
     ss << std::endl;

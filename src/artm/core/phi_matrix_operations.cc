@@ -27,7 +27,7 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
   if (get_model_args.request_type() == GetTopicModelArgs_RequestType_TopicNames) {
     for (auto& topic_name : phi_matrix.topic_name())
       topic_model->add_topic_name(topic_name);
-    topic_model->set_topics_count(phi_matrix.topic_size());
+    topic_model->set_num_topics(phi_matrix.topic_size());
     return;
   }
 
@@ -101,10 +101,10 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
 
   auto this_topic_names = phi_matrix.topic_name();
 
-  // Populate topics_count and topic_name fields in the resulting message
+  // Populate num_topics and topic_name fields in the resulting message
   for (int topic_index : topics_to_use)
     topic_model->add_topic_name(this_topic_names.Get(topic_index));
-  topic_model->set_topics_count(static_cast<int>(topics_to_use.size()));
+  topic_model->set_num_topics(static_cast<int>(topics_to_use.size()));
 
   // Populate all non-internal part of the resulting message
   topic_model->set_name(phi_matrix.model_name());
@@ -153,9 +153,9 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
       return;
     }
   } else {
-    if (phi_matrix->topic_size() != topic_model.topics_count())
-      BOOST_THROW_EXCEPTION(InvalidOperation("Mismatch between target topics_count and TopicModel.topics_count"));
-    for (int i = 0; i < topic_model.topics_count(); ++i)
+    if (phi_matrix->topic_size() != topic_model.num_topics())
+      BOOST_THROW_EXCEPTION(InvalidOperation("Mismatch between target num_topics and TopicModel.num_topics"));
+    for (int i = 0; i < topic_model.num_topics(); ++i)
       target_topic_index.push_back(i);
   }
 

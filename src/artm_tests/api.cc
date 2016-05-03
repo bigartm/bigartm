@@ -43,18 +43,18 @@ TopicModel Api::AttachTopicModel(const AttachModelArgs& args, Matrix* matrix) {
   std::string args_blob;
   args.SerializeToString(&args_blob);
 
-  if (topics.topics_count() == 0)
+  if (topics.num_topics() == 0)
     throw ArgumentOutOfRangeException("Unable to attach to topic model with zero topics");
   if (tokens.token_size() == 0)
     throw ArgumentOutOfRangeException("Unable to attach to topic model with zero tokens");
 
-  matrix->resize(tokens.token_size(), topics.topics_count());
+  matrix->resize(tokens.token_size(), topics.num_topics());
   int address_length = matrix->no_columns() * matrix->no_rows() * sizeof(float);
   artm::HandleErrorCode(ArtmAttachModel(master_model_.id(), args_blob.size(), args_blob.c_str(),
                         address_length, reinterpret_cast<char*>(matrix->get_data())));
 
   TopicModel retval;
-  retval.set_topics_count(topics.topics_count());
+  retval.set_num_topics(topics.num_topics());
   retval.mutable_topic_name()->CopyFrom(topics.topic_name());
   retval.mutable_class_id()->CopyFrom(tokens.class_id());
   retval.mutable_token()->CopyFrom(tokens.token());

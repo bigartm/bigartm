@@ -20,7 +20,7 @@ def test_func():
     vocab = 'vocab.kos.txt'
 
     num_topics = 10
-    num_inner_iterations = 10
+    num_document_passes = 10
     num_outer_iterations = 8
     num_processors = 2
     
@@ -74,7 +74,7 @@ def test_func():
                 batches_to_process.append(batch_filename)
                 if ((batch_index + 1) % update_every == 0) or ((batch_index + 1) == len(batches)):
                     master.clear_score_cache()
-                    master.process_batches(pwt, nwt_hat, num_inner_iterations, batches=batches_to_process)
+                    master.process_batches(pwt, nwt_hat, num_document_passes, batches=batches_to_process)
                     master.merge_model({nwt: decay_weight, nwt_hat: apply_weight}, nwt=nwt)
                     master.normalize_model(pwt, nwt)
 

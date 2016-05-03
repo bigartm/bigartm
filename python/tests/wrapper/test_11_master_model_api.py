@@ -24,7 +24,7 @@ def test_func():
     decor_phi_tau = 1000000
 
     num_topics = 10
-    num_inner_iterations = 10
+    num_document_passes = 10
     num_outer_iterations = 8
 
     perplexity_tol = 0.001
@@ -78,7 +78,7 @@ def test_func():
         # Create master component and scores
         scores = {'Perplexity': messages.PerplexityScoreConfig(),
                   'SparsityPhi': messages.SparsityPhiScoreConfig()}
-        master = mc.MasterComponent(lib, scores=scores, num_document_passes=num_inner_iterations)
+        master = mc.MasterComponent(lib, scores=scores, num_document_passes=num_document_passes)
 
         master.create_score('SparsityTheta', messages.SparsityThetaScoreConfig())
         master.create_score('TopTokens', messages.TopTokensScoreConfig())

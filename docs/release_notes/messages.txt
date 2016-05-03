@@ -4,6 +4,10 @@ Changes in protobuf messages
 v0.8.0
 ------
 
+* renamed ``topics_count`` into ``num_topics`` across multiple messsages (``TopicModel``, ``ThetaMatrix``, etc)
+* renamed ``inner_iterations_count`` into ``num_document_passes`` in ``ProcessBatchesArgs``
+* renamed ``passes`` into ``num_collection_passes`` in ``FitOfflineMasterModelArgs``
+* renamed ``item_count`` into ``num_items`` in ``ThetaSnippetScoreConfig``
 * We simplified the ``Item`` message, obsoleting a ``repeated Field field`` field.
   New message looks as follows:
 
@@ -27,8 +31,3 @@ v0.8.0
   .. warning::
   
     New batches, created in `BigARTM v0.8`, **CAN NOT** be used in previous version of the library.
-
-
-
-  
-

@@ -13,5 +13,6 @@ Release Notes
 
    python
    messages
+   bigartm_cli
    other_changes
    v0.7
