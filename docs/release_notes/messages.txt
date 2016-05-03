@@ -6,13 +6,13 @@ v0.8.0
 
 .. warning::
 
-  New batches, created in `BigARTM v0.8`, **CAN NOT** be used in previous version of the library.
-  Old batches, created prior to `BigARTM v0.8` can still be used. See below for details.
+  New batches, created in `BigARTM v0.8`, **CAN NOT** be used in the previous versions of the library.
+  Old batches, created prior to `BigARTM v0.8`, can still be used. See below for details.
 
 * added ``token_id`` and ``token_weight`` field in ``Item`` message, and obsoleted ``Item.field``.
-  Internally the library will convert and merge the data from ``field`` them into new format
-  (e.g. concatenate the content of ``Field.token_id``, ``Field.token_weight`` across all fields,
-  and store the result back into ``Item.token_id``, ``Item.token_weight``).
+  Internally the library will merge the content of ``Field.token_id`` and ``Field.token_weight``
+  across all fields,
+  and store the result back into ``Item.token_id``, ``Item.token_weight``.
   New ``Item`` message is as follows:
 
   .. code-block:: bash
