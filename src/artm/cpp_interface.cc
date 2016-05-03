@@ -162,7 +162,7 @@ TopicModel MasterModel::GetTopicModel(Matrix* matrix) {
 TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::TopicModel>(id_, args, ArtmRequestTopicModelExternal);
   auto type = CopyRequestResultArgs_RequestType_GetModelSecondPass;
-  ArtmRequestEx(retval.token_size(), retval.topics_count(), type, matrix);
+  ArtmRequestEx(retval.token_size(), retval.num_topics(), type, matrix);
   return retval;
 }
 
@@ -183,7 +183,7 @@ ThetaMatrix MasterModel::GetThetaMatrix(Matrix* matrix) {
 ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestThetaMatrixExternal);
   auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
-  ArtmRequestEx(retval.item_id_size(), retval.topics_count(), type, matrix);
+  ArtmRequestEx(retval.item_id_size(), retval.num_topics(), type, matrix);
   return retval;
 }
 
@@ -195,7 +195,7 @@ ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args) {
 ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestTransformMasterModelExternal);
   auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
-  ArtmRequestEx(retval.item_id_size(), retval.topics_count(), type, matrix);
+  ArtmRequestEx(retval.item_id_size(), retval.num_topics(), type, matrix);
   return retval;
 }
 

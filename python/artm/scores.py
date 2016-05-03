@@ -460,7 +460,7 @@ class ThetaSnippetScore(BaseScore):
 
         self._num_items = 10
         if num_items is not None:
-            self._config.item_count = num_items
+            self._config.num_items = num_items
             self._num_items = num_items
 
     @property
@@ -497,7 +497,7 @@ class ThetaSnippetScore(BaseScore):
 
     @num_items.setter
     def num_items(self, num_items):
-        _reconfigure_field(self, num_items, 'num_items', 'item_count')
+        _reconfigure_field(self, num_items, 'num_items', 'num_items')
 
     @model_name.setter
     def model_name(self, model_name):

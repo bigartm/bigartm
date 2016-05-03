@@ -297,7 +297,7 @@ message TopTokensScore {
 
 // Represents a configuration of a theta snippet score
 message ThetaSnippetScoreConfig {
-  optional int32 item_count = 4 [default = 10];
+  optional int32 num_items = 4 [default = 10];
 }
 
 
@@ -368,7 +368,7 @@ message PeakMemoryScore {
 // Represents a topic model (or an operation on topic model)
 message TopicModel {
   optional string name = 1 [default = "@model"];
-  optional int32 topics_count = 2;
+  optional int32 num_topics = 2;
   repeated string topic_name = 3;
   repeated string token = 4;
   repeated FloatArray token_weights = 5;
@@ -381,7 +381,7 @@ message ThetaMatrix {
   repeated int32 item_id = 2;
   repeated FloatArray item_weights = 3;
   repeated string topic_name = 4;
-  optional int32 topics_count = 5;
+  optional int32 num_topics = 5;
   repeated string item_title = 6;
   repeated IntArray topic_index = 7;
 }
@@ -526,7 +526,7 @@ message ProcessBatchesArgs {
 
   repeated string batch_filename = 2;
   optional string pwt_source_name = 3;
-  optional int32 inner_iterations_count = 4 [default = 10];
+  optional int32 num_document_passes = 4 [default = 10];
   repeated string regularizer_name = 6;
   repeated double regularizer_tau = 7;
   repeated string class_id = 8;
@@ -606,20 +606,20 @@ message MasterComponentInfo {
 
   message DictionaryInfo {
     optional string name = 1;
-    optional int64 entries_count = 2;
+    optional int64 num_entries = 2;
   }
 
   message BatchInfo {
     optional string name = 1;
-    optional int32 items_count = 2;
-    optional int32 token_count = 3;
+    optional int32 num_items = 2;
+    optional int32 num_tokens = 3;
   }
 
   message ModelInfo {
     optional string name = 1;
     optional string type = 2;
-    optional int32 topics_count = 3;
-    optional int32 token_count = 4;
+    optional int32 num_topics = 3;
+    optional int32 num_tokens = 4;
   }
 
   message CacheEntryInfo {
@@ -655,7 +655,7 @@ message MasterModelConfig {
   optional int32 threads = 6;
   optional string pwt_name = 7 [default = "pwt"];
   optional string nwt_name = 8 [default = "nwt"];
-  optional int32 inner_iterations_count = 9;
+  optional int32 num_document_passes = 9;
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
   optional string disk_cache_path = 13;
@@ -665,7 +665,7 @@ message MasterModelConfig {
 message FitOfflineMasterModelArgs {
   repeated string batch_filename = 1;
   repeated float batch_weight = 2;
-  optional int32 passes = 3 [default = 1];
+  optional int32 num_collection_passes = 3 [default = 1];
   optional string batch_folder = 4;
 }
 

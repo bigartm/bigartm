@@ -45,10 +45,10 @@ void ThetaSnippet::AppendScore(const Score& score, Score* target) {
     BOOST_THROW_EXCEPTION(::artm::core::InternalError(error_message));
   }
 
-  if (config_.item_count() <= 0 || theta_snippet_score->values_size() == 0)
+  if (config_.num_items() <= 0 || theta_snippet_score->values_size() == 0)
     return;
 
-  while (theta_snippet_target->values_size() < config_.item_count()) {
+  while (theta_snippet_target->values_size() < config_.num_items()) {
     theta_snippet_target->add_item_id(-1);
     artm::FloatArray* values_target = theta_snippet_target->add_values();
     for (int i = 0; i < theta_snippet_score->values(0).value_size(); ++i)
@@ -60,8 +60,8 @@ void ThetaSnippet::AppendScore(const Score& score, Score* target) {
     if (item_id < 0)
       continue;
 
-    theta_snippet_target->set_item_id(item_id % config_.item_count(), item_id);
-    artm::FloatArray* values_target = theta_snippet_target->mutable_values(item_id % config_.item_count());
+    theta_snippet_target->set_item_id(item_id % config_.num_items(), item_id);
+    artm::FloatArray* values_target = theta_snippet_target->mutable_values(item_id % config_.num_items());
     values_target->Clear();
 
     auto theta_snippet_item_score = theta_snippet_score->values(item_index);

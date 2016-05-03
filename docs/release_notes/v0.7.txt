@@ -5,14 +5,14 @@
 
 .. _release_notes:
 
-Release Notes
-=============
+BigARTM v0.7.X Release Notes
+============================
 
 .. toctree::
    :maxdepth: 2
 
-   python
-   messages
-   bigartm_cli
-   c_interface
-   v0.7
+   v0.7.0
+   v0.7.1
+   v0.7.2
+   v0.7.3
+   v0.7.4

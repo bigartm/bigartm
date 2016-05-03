@@ -15,7 +15,7 @@ namespace regularizer {
 
 void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::DenseMatrix<float>* ptdw) const {
   int local_token_size = ptdw->no_rows();
-  int topics_count = ptdw->no_columns();
+  int num_topics = ptdw->no_columns();
   if (config_.type() == SmoothPtdwConfig_Type_MovingAverage) {
     // 1. evaluate wich tokens are background
     double threshold = config_.threshold();
@@ -24,7 +24,7 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Den
     for (int i = 0; i < local_token_size; ++i) {
       const float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
       double sum_background = 0.0;
-      for (int k = 0; k < topics_count; ++k) {
+      for (int k = 0; k < num_topics; ++k) {
         char b = 'b';
         if (args_.topic_name(k)[0] == b) {  // background topic
           sum_background += local_ptdw_ptr[k];
@@ -41,13 +41,13 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Den
     int h = config_.window() / 2;
     double tau = tau_;
     ::artm::utility::DenseMatrix<float> copy_ptdw(*ptdw);
-    ::artm::utility::DenseMatrix<float> smoothed(1, topics_count);
+    ::artm::utility::DenseMatrix<float> smoothed(1, num_topics);
     smoothed.InitializeZeros();
     float* smoothed_ptr = &smoothed(0, 0);
     for (int i = 0; i < h && i < local_token_size; ++i) {
       if (is_background[i]) continue;
       const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
-      for (int k = 0; k < topics_count; ++k) {
+      for (int k = 0; k < num_topics; ++k) {
         smoothed_ptr[k] += copy_ptdw_ptr[k];
       }
     }
@@ -57,7 +57,7 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Den
       if (is_background[i]) continue;
       const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
       float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
-      for (int k = 0; k < topics_count; ++k) {
+      for (int k = 0; k < num_topics; ++k) {
         local_ptdw_ptr[k] += tau_ * smoothed_ptr[k];
         if (i + h < local_token_size && !is_background[i + h])
           smoothed_ptr[k] += copy_ptdw(i + h, k);
@@ -73,7 +73,7 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Den
     for (int i = 0; i < local_token_size; ++i) {
       const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
       float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT
-      for (int k = 0; k < topics_count; ++k) {
+      for (int k = 0; k < num_topics; ++k) {
         if (i + 1 < local_token_size)
           local_ptdw_ptr[k] *= copy_ptdw(i + 1, k);
         if (i - 1 >= 0)

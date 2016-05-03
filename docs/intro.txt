@@ -76,6 +76,10 @@ Skolkovo Institute of Science and Technology (project 081-R), Moscow Institute o
 
 **Partners**
 
+.. image:: _images/partners_ap-logo.png
+   :alt: antiplagian
+   :target: http://https://confluence.ap-team.ru/display/research/Antiplagiat+Research+Home/
+
 .. image:: _images/partner_bBridge.png
    :alt: bBridge
    :target: http://bbridge.net/

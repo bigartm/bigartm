@@ -1,0 +1,95 @@
+Changes in Python API
+=====================
+
+This page describes recent changes in BigARTM's Python API.
+Note that the API might be affected by changes in the underlying protobuf messages.
+For this reason we recommend to review the changes in :doc:`messages`.
+
+For further reference about Python API refer to `the documentation <http://docs.bigartm.org/en/stable/python_interface/model.html>`_,
+`BigARTM cookbook for Python <https://github.com/bigartm/bigartm/wiki/BigARTM-Cookbook-for-Python>`_,
+`Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
+
+v0.8.0
+------
+
+.. warning::
+
+   Note that your script can be affected by our changes in the default values for ``num_document_passes`` and ``reuse_theta`` parameters (see below).
+   We recommend to use our new default settings, ``num_document_passes = 10`` and ``reuse_theta = False``.
+   However, if you choose to explicitly set ``num_document_passes = 1`` then make sure to also set ``reuse_theta = True``,
+   otherwise you will experience very slow convergence.
+
+
+* all operations to work with dictionaries were moved into a separate class ``artm.Dictionary``.
+  (details in `the documentation <http://docs.bigartm.org/en/master/python_interface/dictionary.html>`_).
+  The mapping between old and new methods is very straighforward:
+  ``ARTM.gather_dictionary`` is replaced with ``Dictionary.gather`` method, which allows to gather a dictionary from a set of batches;
+  ``ARTM.filter_dictionary`` is replaced with ``Dictionary.filter`` method, which allows to filter a dictionary based on term frequency and document frequency;
+  ``ARTM.load_dictionary`` is replaced with ``Dictionary.load`` method, which allows to load a dictionary previously exported to disk in ``Dictionary.save`` method;
+  ``ARTM.create_dictionary`` is replaced with ``Dictionary.create`` method, which allows to create a dictionary based on custom protobuf message ``DictionaryData``, containing a set of dictionary entries;
+  etc... The following code snippet gives a basic example:
+  
+  .. code-block:: bash
+
+    my_dictionary = artm.Dictionary()
+    my_dictionary.gather(data_path='my_collection_batches', vocab_file_path='vocab.txt')
+    my_dictionary.save(dictionary_path='my_collection_batches/my_dictionary')
+    my_dictionary.load(dictionary_path='my_collection_batches/my_dictionary.dict')
+    model = artm.ARTM(num_topics=20, dictionary=my_dictionary)
+    model.scores.add(artm.PerplexityScore(name='my_fisrt_perplexity_score',
+                                          use_unigram_document_model=False,
+                                          dictionary=my_dictionary))
+  
+* ``dictionary_name`` argument had been renamed to ``dictionary`` in many places across python interface, including scores and regularizers.
+  This is done because those arguments can now except not just a string, but also the ``artm.Dictionary`` class itself.
+* with ``Dictionary`` class users no longer have to generate names for their dictionaries (e.g. the unique ``dictionary_name`` identifier that references the dictionary).
+  You may use ``Dictionary.name`` field to access to the underlying name of the dictionary.
+* added ``dictionary`` argument to ``ARTM.__init__`` constructor to let user initialize the model;
+  note that we've change the behavior that model is automatically initialized whenever user calls ``fit_offline`` or ``fit_online``.
+  Now this is no longer the case, and we expect user to either pass a dictionary in ``ARTM.__init__`` constructor, or manually call ``ARTM.initialize`` method.
+  If neither is performed then ``ARTM.fit_offline`` and ``ARTM.fit_online`` will throw an exception.
+* added ``seed`` argument to ``ARTM.__init__`` constructor to let user randomly initialize the model;
+* moved argument ``reuse_theta`` from ``fit_offline`` method into ``ARTM.__init__`` constructor;
+  the argument is still used to indicate that the previous theta matrix should be re-used on the next pass over the collection;
+  setting ``reuse_theta = True`` in the constructor will now be applied to ``fit_online``, which previously did not have this option.
+* moved common argument ``num_document_passes`` from ``ARTM.fit_offline``, ``ARTM.fit_online``, ``ARTM.transform`` methods into ``ARTM.__init__`` constructor.
+* changed the default value of ``cache_theta`` parameter from ``True`` to ``False`` (in ``ARTM.__init__`` constructor);
+  this is done to avoid excessive memory usage due to caching of the entire Theta matrix;
+  if caching is indeed required user has to manually turn it on by setting ``cache_theta = True``.
+* changed the default value of ``reuse_theta`` parameter from ``True`` to ``False`` (in ``ARTM.__init__`` constructor);
+  the reason is the same as for changing the default for ``cache_theta`` parameter
+* changed the default value of ``num_document_passes`` parameter from ``1`` to ``10`` (in ``ARTM.__init__`` constructor);
+* added arguments ``apply_weight``, ``decay_weight`` and ``update_after`` in ``ARTM.fit_online`` method;
+  each argument accepts a list of floats;
+  setting all three arguments will override the default behavior of the online algorithm
+  that rely on a specific formula with ``tau0``, ``kappa`` and ``update_every``.
+* added argument ``async`` (boolean flag) in ``ARTM.fit_online`` method for improved performance.
+* added argument ``theta_matrix_type`` in ``ARTM.transform`` method;
+  potential values are: ``"dense_theta"``, ``"dense_ptdw"``, ``None``; default matrix type is ``"dense_theta"``.
+* introduced a separate method ``ARTM.remove_theta`` to clear cached theta matrix; remove corresponding boolean switch ``remove_theta`` from ``ARTM.get_theta`` method.
+* removed ``ARTM.fit_transform`` method;
+  note that the name was confusing because this method has never fitted the model;
+  the purpose of ``ARTM.fit_transform`` was to retrieve Theta matrix after fitting the model (``ARTM.fit_offline`` or ``ARTM.fit_online``);
+  same functionality is now available via ``ARTM.get_theta`` method.
+* introduced ``ARTM.get_score`` method, which will exist in parallel score tracking functionality;
+  the goal for ``ARTM.get_score(score_name)`` is to always return the latest version of the score;
+  for Phi scores this means to calculate them on fly;
+  for Theta scores this means to return a score aggregated over last call to ``ARTM.fit_offline``, ``ARTM.fit_online`` or ``ARTM.transform`` methods;
+  opposite to ``ARTM.get_score`` the score tracking functionality returns the overall history of a score.
+  For further details on score calculation refer to `Q&A section <https://github.com/bigartm/bigartm/wiki/Q&A#how-to-calculate-perplexity-on-held-out-sample>`_ in our wiki page.
+* added ``data_weight`` in ``BatchVectorizer.__init__`` constructor to let user specify an individual weight for each batch
+* score tracker classes had been rewritten, so you should make minor changes in the code that retrieves scores; for example:
+
+  .. code-block:: bash
+
+     # in v0.7.x
+     print model.score_tracker['Top100Tokens'].last_topic_info[topic_name].tokens
+
+     # in v0.8.0
+     last_tokens = model.score_tracker['Top100Tokens'].last_tokens
+     print last_tokens[topic_name]
+
+v0.7.x
+------
+
+See :doc:`v0.7`.

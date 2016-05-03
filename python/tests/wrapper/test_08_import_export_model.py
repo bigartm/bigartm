@@ -18,7 +18,7 @@ def test_func():
     vocab = 'vocab.kos.txt'
 
     num_topics = 10
-    num_inner_iterations = 1
+    num_document_passes = 1
     num_outer_iterations = 2
 
     batches_folder = tempfile.mkdtemp()
@@ -57,10 +57,10 @@ def test_func():
         master_new.import_model(pwt, model_filename)
         phi_matrix_info_new = master_new.get_phi_info(model=pwt)
         assert phi_matrix_info.token == phi_matrix_info_new.token
-        assert phi_matrix_info_new.topics_count == num_topics
+        assert phi_matrix_info_new.num_topics == num_topics
         
         print_string = 'Number of topic in new model is'
-        print_string += ' {0} and number of tokens is {1}'.format(phi_matrix_info_new.topics_count,
+        print_string += ' {0} and number of tokens is {1}'.format(phi_matrix_info_new.num_topics,
                                                                   len(phi_matrix_info.token))
         print print_string
     finally:

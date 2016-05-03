@@ -1,0 +1,15 @@
+Changes in BigARTM CLI
+======================
+
+v0.8.0
+------
+
+* renamed ``--passes`` into ``--num-collection-passes``
+* renamed ``--num-inner-iterations`` into ``--num-document-passes``
+* removed ``--model-v06`` option
+* removed ``--use-dense-bow`` option
+
+v0.7.x
+------
+
+See :doc:`v0.7`.

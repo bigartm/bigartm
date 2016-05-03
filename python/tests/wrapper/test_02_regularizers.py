@@ -24,7 +24,7 @@ def test_func():
     decor_phi_tau = 1000000
 
     num_topics = 10
-    num_inner_iterations = 10
+    num_document_passes = 10
     num_outer_iterations = 8
 
     perplexity_tol = 0.001
@@ -105,7 +105,7 @@ def test_func():
             master.clear_score_cache()
             master.process_batches(pwt=pwt,
                                    nwt=nwt,
-                                   num_inner_iterations=num_inner_iterations,
+                                   num_document_passes=num_document_passes,
                                    batches_folder=batches_folder,
                                    regularizer_name=['SmoothSparseTheta'],
                                    regularizer_tau=[smsp_theta_tau])

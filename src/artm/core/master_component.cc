@@ -36,12 +36,12 @@ namespace artm {
 namespace core {
 
 static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std::string* lm) {
-  lm->resize(sizeof(float) * topic_model->token_size() * topic_model->topics_count());
+  lm->resize(sizeof(float) * topic_model->token_size() * topic_model->num_topics());
   char* lm_ptr = &(*lm)[0];
   float* lm_float = reinterpret_cast<float*>(lm_ptr);
   for (int token_index = 0; token_index < topic_model->token_size(); ++token_index) {
-    for (int topic_index = 0; topic_index < topic_model->topics_count(); ++topic_index) {
-      int index = token_index * topic_model->topics_count() + topic_index;
+    for (int topic_index = 0; topic_index < topic_model->num_topics(); ++topic_index) {
+      int index = token_index * topic_model->num_topics() + topic_index;
       lm_float[index] = topic_model->token_weights(token_index).value(topic_index);
     }
   }
@@ -50,12 +50,12 @@ static void HandleExternalTopicModelRequest(::artm::TopicModel* topic_model, std
 }
 
 static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, std::string* lm) {
-  lm->resize(sizeof(float) * theta_matrix->item_id_size() * theta_matrix->topics_count());
+  lm->resize(sizeof(float) * theta_matrix->item_id_size() * theta_matrix->num_topics());
   char* lm_ptr = &(*lm)[0];
   float* lm_float = reinterpret_cast<float*>(lm_ptr);
-  for (int topic_index = 0; topic_index < theta_matrix->topics_count(); ++topic_index) {
+  for (int topic_index = 0; topic_index < theta_matrix->num_topics(); ++topic_index) {
     for (int item_index = 0; item_index < theta_matrix->item_id_size(); ++item_index) {
-      int index = item_index * theta_matrix->topics_count() + topic_index;
+      int index = item_index * theta_matrix->num_topics() + topic_index;
       lm_float[index] = theta_matrix->item_weights(item_index).value(topic_index);
     }
   }
@@ -680,8 +680,8 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   process_batches_args.mutable_batch_filename()->CopyFrom(args.batch_filename());
   process_batches_args.mutable_batch()->CopyFrom(args.batch());
   process_batches_args.set_pwt_source_name(config->pwt_name());
-  if (config->has_inner_iterations_count())
-    process_batches_args.set_inner_iterations_count(config->inner_iterations_count());
+  if (config->has_num_document_passes())
+    process_batches_args.set_num_document_passes(config->num_document_passes());
   for (auto& regularizer : config->regularizer_config()) {
     process_batches_args.add_regularizer_name(regularizer.name());
     process_batches_args.add_regularizer_tau(regularizer.tau());
@@ -817,8 +817,8 @@ class ArtmExecutor {
         pwt_name_(master_model_config.pwt_name()),
         nwt_name_(master_model_config.nwt_name()),
         master_component_(master_component) {
-    if (master_model_config.has_inner_iterations_count())
-      process_batches_args_.set_inner_iterations_count(master_model_config.inner_iterations_count());
+    if (master_model_config.has_num_document_passes())
+      process_batches_args_.set_num_document_passes(master_model_config.num_document_passes());
     process_batches_args_.mutable_class_id()->CopyFrom(master_model_config.class_id());
     process_batches_args_.mutable_class_weight()->CopyFrom(master_model_config.class_weight());
     for (auto& regularizer : master_model_config.regularizer_config()) {
@@ -839,10 +839,10 @@ class ArtmExecutor {
       process_batches_args_.set_reuse_theta(master_model_config.reuse_theta());
   }
 
-  void ExecuteOfflineAlgorithm(int passes, OfflineBatchesIterator* iter) {
+  void ExecuteOfflineAlgorithm(int num_collection_passes, OfflineBatchesIterator* iter) {
     const std::string rwt_name = "rwt";
     master_component_->ClearScoreCache(ClearScoreCacheArgs());
-    for (int pass = 0; pass < passes; ++pass) {
+    for (int pass = 0; pass < num_collection_passes; ++pass) {
       ::artm::core::ScoreManager score_manager(master_component_->instance_.get());
       ProcessBatches(pwt_name_, nwt_name_, iter, &score_manager);
       Regularize(pwt_name_, nwt_name_, rwt_name);
@@ -1064,7 +1064,7 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
 
   ArtmExecutor artm_executor(*config, this);
   OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());
-  artm_executor.ExecuteOfflineAlgorithm(args.passes(), &iter);
+  artm_executor.ExecuteOfflineAlgorithm(args.num_collection_passes(), &iter);
 }
 
 }  // namespace core

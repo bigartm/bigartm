@@ -18,7 +18,7 @@ def test_func():
     vocab = 'vocab.kos.txt'
 
     num_topics = 10
-    num_inner_iterations = 1
+    num_document_passes = 1
     num_outer_iterations = 5
     index_to_zero = 4
     zero_tol = 1e-37
@@ -55,7 +55,7 @@ def test_func():
         # Perform iterations
         for iter in xrange(num_outer_iterations):
             master.clear_score_cache()
-            master.process_batches(pwt, nwt, num_inner_iterations, batches_folder)
+            master.process_batches(pwt, nwt, num_document_passes, batches_folder)
             master.normalize_model(pwt, nwt) 
 
         theta_snippet_score = master.get_score('ThetaSnippet')

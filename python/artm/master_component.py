@@ -119,7 +119,7 @@ def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors
             master_config.nwt_name = nwt_name
 
         if num_document_passes is not None:
-            master_config.inner_iterations_count = num_document_passes
+            master_config.num_document_passes = num_document_passes
 
         return master_config
 
@@ -328,7 +328,7 @@ class MasterComponent(object):
         args = messages.ClearScoreArrayCacheArgs()
         self._lib.ArtmClearScoreArrayCache(self.master_id, args)
 
-    def process_batches(self, pwt, nwt=None, num_inner_iterations=None, batches_folder=None,
+    def process_batches(self, pwt, nwt=None, num_document_passes=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None, find_theta=False,
                         reuse_theta=False, find_ptdw=False,
@@ -336,7 +336,7 @@ class MasterComponent(object):
         """
         :param str pwt: name of pwt matrix in BigARTM
         :param str nwt: name of nwt matrix in BigARTM
-        :param int num_inner_iterations: number of inner iterations during processing
+        :param int num_document_passes: number of inner iterations during processing
         :param str batches_folder: full path to data folder (alternative 1)
         :param batches: full file names of batches to process (alternative 2)
         :type batches: list of str
@@ -350,7 +350,7 @@ class MasterComponent(object):
         :type class_weights: list of float
         :param bool find_theta: find theta matrix for 'batches' (if alternative 2)
         :param bool reuse_theta: initialize by theta from previous collection pass
-        :param bool find_ptdw: count and return Ptdw matrix or not\
+        :param bool find_ptdw: calculate and return Ptdw matrix or not\
                 (works if find_theta == False)
         :param predict_class_id: class_id of a target modality to predict
         :type predict_class_id: str, default None
@@ -372,8 +372,8 @@ class MasterComponent(object):
             for batch in batches:
                 args.batch_filename.append(batch)
 
-        if num_inner_iterations is not None:
-            args.inner_iterations_count = num_inner_iterations
+        if num_document_passes is not None:
+            args.num_document_passes = num_document_passes
 
         if regularizer_name is not None and regularizer_tau is not None:
             for name, tau in zip(regularizer_name, regularizer_tau):
@@ -403,7 +403,7 @@ class MasterComponent(object):
             return result.theta_matrix
 
         num_rows = len(result.theta_matrix.item_id)
-        num_cols = result.theta_matrix.topics_count
+        num_cols = result.theta_matrix.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
@@ -480,14 +480,14 @@ class MasterComponent(object):
         tokens = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_Tokens)
 
         num_rows = len(tokens.token)
-        num_cols = topics.topics_count
+        num_cols = topics.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         self._lib.ArtmAttachModel(self.master_id,
                                   messages.AttachModelArgs(model_name=model),
                                   numpy_ndarray)
 
-        topic_model = messages.TopicModel(topics_count=topics.topics_count)
+        topic_model = messages.TopicModel(num_topics=topics.num_topics)
         topic_model.topic_name.MergeFrom(topics.topic_name)
         topic_model.class_id.MergeFrom(tokens.class_id)
         topic_model.token.MergeFrom(tokens.token)
@@ -611,7 +611,7 @@ class MasterComponent(object):
         theta_matrix_info = self._lib.ArtmRequestThetaMatrixExternal(self.master_id, args)
 
         num_rows = len(theta_matrix_info.item_id)
-        num_cols = theta_matrix_info.topics_count
+        num_cols = theta_matrix_info.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
@@ -659,7 +659,7 @@ class MasterComponent(object):
         phi_matrix_info = self._lib.ArtmRequestTopicModelExternal(self.master_id, args)
 
         num_rows = len(phi_matrix_info.token)
-        num_cols = phi_matrix_info.topics_count
+        num_cols = phi_matrix_info.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
@@ -707,7 +707,7 @@ class MasterComponent(object):
                 args.batch_weight.append(weight)
 
         if num_collection_passes is not None:
-            args.passes = num_collection_passes
+            args.num_collection_passes = num_collection_passes
 
         if batches_folder is not None:
             args.batch_folder = batches_folder
@@ -800,7 +800,7 @@ class MasterComponent(object):
             theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
 
             num_rows = len(theta_matrix_info.item_id)
-            num_cols = theta_matrix_info.topics_count
+            num_cols = theta_matrix_info.num_topics
             numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
             cp_args = messages.CopyRequestResultArgs()

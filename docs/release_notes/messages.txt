@@ -1,0 +1,58 @@
+Changes in protobuf messages
+============================
+
+v0.8.0
+------
+
+.. warning::
+
+  New batches, created in `BigARTM v0.8`, **CAN NOT** be used in previous version of the library.
+  Old batches, created prior to `BigARTM v0.8` can still be used. See below for details.
+
+* added ``token_id`` and ``token_weight`` field in ``Item`` message, and obsoleted ``Item.field``.
+  Internally the library will convert and merge the data from ``field`` them into new format
+  (e.g. concatenate the content of ``Field.token_id``, ``Field.token_weight`` across all fields,
+  and store the result back into ``Item.token_id``, ``Item.token_weight``).
+  New ``Item`` message is as follows:
+
+  .. code-block:: bash
+
+    message Item {
+      optional int32 id = 1;
+      repeated Field field = 2;  // obsolete in BigARTM v0.8.0
+      optional string title = 3;
+      repeated int32 token_id = 4;
+      repeated float token_weight = 5;
+    }
+* renamed ``topics_count`` into ``num_topics`` across multiple messsages (``TopicModel``, ``ThetaMatrix``, etc)
+* renamed ``inner_iterations_count`` into ``num_document_passes`` in ``ProcessBatchesArgs``
+* renamed ``passes`` into ``num_collection_passes`` in ``FitOfflineMasterModelArgs``
+* added messages ``ScoreArray``, ``GetScoreArrayArgs`` and ``ClearScoreArrayCacheArgs`` to bring score tracking functionality down into BigARTM core
+* moved ``model_name`` from ``GetScoreValueArgs`` into ``ScoreConfig``;
+  this is done to support score tracking functionality in BigARTM core;
+  each Phi score needs to know which model to use in calculation
+* removed ``topics_count`` from ``InitializeModelArgs``; users must specify topic names in ``InitializeModelArgs.topic_name`` field
+* removed ``topic_index`` from ``GetThetaMatrixArgs``; users must specify topic names to retrieve in ``GetThetaMatrixArgs.topic_name``
+* removed ``batch`` field in ``GetThetaMatrixArgs`` and ``GetScoreValueArgs.batch`` messages;
+  users should use ``ArtmRequestTransformMasterModel`` or ``ArtmRequestProcessBatches`` to process new batches and calculate theta scores
+* removed ``reset_scores`` flag in ``ProcessBatchesArgs``; users should use new API ``ArtmClearScoreCache``
+* removed ``clean_cache`` flag in ``GetThetaMatrixArgs``; users should use new API ``ArtmClearThetaCache``
+* removed ``MasterComponentConfig``; users should user ``ArtmCreateMasterModel`` and pass ``MasterModelConfig`` 
+* removed obsolete fields in ``CollectionParserConfig``; same arguments can be specified at ``GatherDictionaryArgs`` and passed to ``ArtmGatherDictionary``
+* removed ``Filter`` message in ``InitializeModelArgs``; same arguments can be specified at ``FilterDictionaryArgs`` and passed to ``ArtmFilterDictionary``
+* removed ``batch_name`` from ``ImportBatchesArgs``; the field is no longer needed; batches will be identified via their ``Batch.id`` identifier
+* removed ``use_v06_api`` in ``MasterModelConfig``
+* removed ``ModelConfig`` message
+* removed ``SynchronizeModelArgs``, ``AddBatchArgs``, ``InvokeIterationArgs``, ``WaitIdleArgs`` messages; users should use new APIs based on MasterModel
+* removed ``GetRegularizerStateArgs``, ``RegularizerInternalState``, ``MultiLanguagePhiInternalState`` messages
+* removed ``model_name`` and ``model_name_cache`` in ``ThetaMatrix``, ``GetThetaMatrixArgs`` and ``ProcessBatchesArgs``;
+  the code of master component is simplified to only handle one theta matrix, so there is no longer any reason to identify theta matrix with ``model_name``
+* removed ``Stream`` message, ``MasterComponentConfig.stream`` field, and all ``stream_name`` fields across several messages;
+  train/test streaming functionality is fully removed; users are expected to manage their train and test collections (for example as separate folders with batches)
+* removed ``use_sparse_bow`` field in several messages; the computation mode with dense matrices is no longer supported;
+* renamed ``item_count`` into ``num_items`` in ``ThetaSnippetScoreConfig``
+
+v0.7.x
+------
+
+See :doc:`v0.7`.
