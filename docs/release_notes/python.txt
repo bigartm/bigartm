@@ -3,7 +3,7 @@ Changes in Python API
 
 This page describes recent changes in BigARTM's Python API.
 Note that the API might be affected by changes in the underlying protobuf messages.
-For this reason we recommend to review the changes in :doc:`messages`.
+For this reason we recommend to review :doc:`messages`.
 
 For further reference about Python API refer to `the documentation <http://docs.bigartm.org/en/stable/python_interface/model.html>`_,
 `BigARTM cookbook for Python <https://github.com/bigartm/bigartm/wiki/BigARTM-Cookbook-for-Python>`_,
@@ -49,6 +49,8 @@ v0.8.0
   Now this is no longer the case, and we expect user to either pass a dictionary in ``ARTM.__init__`` constructor, or manually call ``ARTM.initialize`` method.
   If neither is performed then ``ARTM.fit_offline`` and ``ARTM.fit_online`` will throw an exception.
 * added ``seed`` argument to ``ARTM.__init__`` constructor to let user randomly initialize the model;
+* remove the default value from ``num_topics`` argument in ``ARTM.__init__`` constructor, which previously was defaulting to ``num_topics = 10``;
+  now user must always specify the desired number of topics;
 * moved argument ``reuse_theta`` from ``fit_offline`` method into ``ARTM.__init__`` constructor;
   the argument is still used to indicate that the previous theta matrix should be re-used on the next pass over the collection;
   setting ``reuse_theta = True`` in the constructor will now be applied to ``fit_online``, which previously did not have this option.
@@ -71,7 +73,7 @@ v0.8.0
   note that the name was confusing because this method has never fitted the model;
   the purpose of ``ARTM.fit_transform`` was to retrieve Theta matrix after fitting the model (``ARTM.fit_offline`` or ``ARTM.fit_online``);
   same functionality is now available via ``ARTM.get_theta`` method.
-* introduced ``ARTM.get_score`` method, which will exist in parallel score tracking functionality;
+* introduced ``ARTM.get_score`` method, which will exist in parallel to score tracking functionality;
   the goal for ``ARTM.get_score(score_name)`` is to always return the latest version of the score;
   for Phi scores this means to calculate them on fly;
   for Theta scores this means to return a score aggregated over last call to ``ARTM.fit_offline``, ``ARTM.fit_online`` or ``ARTM.transform`` methods;

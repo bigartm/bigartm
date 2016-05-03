@@ -178,6 +178,15 @@ class ARTM(object):
         return self
 
     def dispose(self):
+        """
+        :Description: free all native memory, allocated for this model
+
+        :Note:
+          * This method does not free memory occupied by dictionaries,
+            because dictionaries are shared across all models
+          * ARTM class implements __exit__ and __del___ methods,
+            which automatically call dispose.
+        """
         if self._master is not None:
             self._lib.ArtmDisposeMasterComponent(self.master.master_id)
             self._master = None
@@ -261,6 +270,9 @@ class ARTM(object):
 
     @property
     def info(self):
+        """
+        :Description: returns internal diagnostics information about the model
+        """
         return self.master.get_info()
 
     # ========== SETTERS ==========
@@ -591,6 +603,14 @@ class ARTM(object):
           * columns --- the ids of documents, for which the Theta matrix was requested;
           * rows --- the names of topics in topic model, that was used to create Theta;
           * data --- content of Theta matrix.
+
+        :Note:
+          * 'dense_ptdw' mode provides simple access to values of p(t|w,d).
+            The resulting pandas.DataFrame object will contain a flat theta matrix (no 3D) where
+            each item has multiple columns - as many as the number of tokens in that document.
+            These columns will have the same item_id.
+            The order of columns with equal item_id is the same
+            as the order of tokens in the input data (batch.item.token_id).
         """
         if batch_vectorizer is None:
             raise IOError('No batches were given for processing')

@@ -1,4 +1,4 @@
-Changes in protobuf messages
+Changes in Protobuf Messages
 ============================
 
 v0.8.0
