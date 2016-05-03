@@ -1,0 +1,17 @@
+Low level c_interface
+=====================
+
+v0.8.0
+------
+
+* Removed ``ArtmCreateMasterComponent`` and ``ArtmReconfigureMasterComponent``
+* Removed ``ArtmCreateModel`` and ``ArtmReconfigureModel``
+* Removed ``ArtmAddBatch``, ``ArtmInvokeIteration``, ``ArtmWaitIdle``, ``ArtmSynchronizeModel``
+* Removed ``ArtmRequestRegularizerState``
+* Added ``ArtmClearThetaCache`` and ``ArtmClearScoreCache``
+* Added ``ArtmRequestScoreArray`` and ``ArtmClearScoreArrayCache``
+
+v0.7.x
+------
+
+See :doc:`v0.7`.

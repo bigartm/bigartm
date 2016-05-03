@@ -88,3 +88,8 @@ v0.8.0
      # in v0.8.0
      last_tokens = model.score_tracker['Top100Tokens'].last_tokens
      print last_tokens[topic_name]
+
+v0.7.x
+------
+
+See :doc:`v0.7`.

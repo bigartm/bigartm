@@ -14,5 +14,5 @@ Release Notes
    python
    messages
    bigartm_cli
-   other_changes
+   c_interface
    v0.7
