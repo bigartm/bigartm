@@ -25,7 +25,7 @@ std::string runOfflineTest() {
 
   ::artm::MasterModelConfig master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
   master_config.set_cache_theta(true);
-  master_config.set_threads(1);
+  master_config.set_num_processors(1);
   master_config.set_pwt_name(artm::test::Helpers::getUniqueString());
   ::artm::MasterModel master_component(master_config);
   ::artm::test::Api api(master_component);
@@ -94,7 +94,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_
 
   auto master_config = ::artm::test::TestMother::GenerateMasterModelConfig(nTopics);
   master_config.set_cache_theta(true);
-  master_config.set_threads(1);
+  master_config.set_num_processors(1);
 
   ::artm::RegularizerConfig* sparse_phi_config = master_config.add_regularizer_config();
   sparse_phi_config->set_name("sparse_phi");

@@ -652,7 +652,7 @@ message MasterModelConfig {
   repeated float class_weight = 3;
   repeated ScoreConfig score_config = 4;
   repeated RegularizerConfig regularizer_config = 5;
-  optional int32 threads = 6;
+  optional int32 num_processors = 6;
   optional string pwt_name = 7 [default = "pwt"];
   optional string nwt_name = 8 [default = "nwt"];
   optional int32 num_document_passes = 9;

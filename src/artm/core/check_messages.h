@@ -728,7 +728,7 @@ inline std::string DescribeMessage(const ::artm::MasterModelConfig& message) {
   for (int i = 0; i < message.class_id_size(); ++i)
     ss << ", class=(" << message.class_id(i) << ":" << message.class_weight(i) << ")";
   ss << ", score_config_size=" << message.score_config_size();
-  ss << ", threads=" << message.threads();
+  ss << ", num_processors=" << message.num_processors();
   ss << ", pwt_name=" << message.pwt_name();
   ss << ", nwt_name=" << message.nwt_name();
   ss << ", num_document_passes=" << message.num_document_passes();

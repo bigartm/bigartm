@@ -15,7 +15,7 @@
 void runBasicTest(bool skip_batch_dict) {
   // Configure MasterModel
   ::artm::MasterModelConfig config;
-  config.set_threads(2);
+  config.set_num_processors(2);
   config.set_pwt_name("pwt");
   config.add_topic_name("topic1"); config.add_topic_name("topic2");
   ::artm::ScoreConfig* score_config = config.add_score_config();
@@ -179,7 +179,7 @@ TEST(MasterModel, SkipBatchDict) {
 // artm_tests.exe --gtest_filter=MasterModel.TestEmptyMasterModel
 TEST(MasterModel, TestEmptyMasterModel) {
   ::artm::MasterModelConfig config;
-  config.set_threads(0);
+  config.set_num_processors(0);
   ::artm::MasterModel model(config);
   auto info = model.info();
   EXPECT_EQ(info.num_processors(), 0);
