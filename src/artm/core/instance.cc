@@ -324,6 +324,7 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException("ScoreConfig.type", score_type));
   }
 
+  score_calculator->set_instance(this);
   return score_calculator;
 }
 

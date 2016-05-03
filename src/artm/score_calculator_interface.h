@@ -19,6 +19,10 @@ namespace artm {
 
 typedef ::google::protobuf::Message Score;
 
+namespace core {
+class Instance;
+}  // namespace core
+
 // ScoreCalculatorInterface is the base class for all score calculators in BigARTM.
 // See any class in 'src/score' folder for an example of how to implement new score.
 // Keep in mind that scres can be either cumulative (theta-scores) or non-cumulative (phi-scores).
@@ -34,6 +38,7 @@ class ScoreCalculatorInterface {
 
   // Non-cumulative calculation (based on Phi matrix)
   virtual std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt) { return nullptr; }
+  virtual std::shared_ptr<Score> CalculateScore();
 
   // Cumulative calculation (such as perplexity, or sparsity of Theta matrix)
   virtual bool is_cumulative() const { return false; }
@@ -55,15 +60,18 @@ class ScoreCalculatorInterface {
       Score* score) {}
 
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(const std::string& model_name);
 
   std::string model_name() const { return score_config_.model_name(); }
   std::string score_name() const { return score_config_.name(); }
+  void set_instance(::artm::core::Instance* instance) { instance_ = instance; }
 
   template<typename ConfigType>
   ConfigType ParseConfig() const;
 
  private:
   ScoreConfig score_config_;
+  ::artm::core::Instance* instance_;
   const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;
 };
 

@@ -61,8 +61,7 @@ bool ScoreManager::RequestScore(const ScoreName& score_name,
       score_data->set_data(score_calculator->CreateScore()->SerializeAsString());
     }
   } else {
-    auto phi_matrix = instance_->GetPhiMatrixSafe(score_calculator->model_name());
-    std::shared_ptr<Score> score = score_calculator->CalculateScore(*phi_matrix);
+    std::shared_ptr<Score> score = score_calculator->CalculateScore();
     score_data->set_data(score->SerializeAsString());
   }
 
