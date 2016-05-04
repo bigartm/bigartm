@@ -43,7 +43,7 @@ class ItemsProcessed : public ScoreCalculatorInterface {
       const Batch& batch,
       Score* score);
 
-  virtual ScoreType score_type() const { return ::artm::ScoreType::ItemsProcessed; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_ItemsProcessed; }
 
  private:
   ItemsProcessedScoreConfig config_;

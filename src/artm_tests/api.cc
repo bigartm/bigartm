@@ -32,7 +32,7 @@ ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
 TopicModel Api::AttachTopicModel(const AttachModelArgs& args, Matrix* matrix) {
   GetTopicModelArgs topic_args;
   topic_args.set_model_name(args.model_name());
-  topic_args.set_matrix_layout(MatrixLayout::Sparse);
+  topic_args.set_matrix_layout(MatrixLayout_Sparse);
   topic_args.set_eps(1.001f);  // hack-hack to return no entries
   TopicModel retval = master_model_.GetTopicModel(topic_args);
 

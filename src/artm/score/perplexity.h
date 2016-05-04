@@ -42,7 +42,7 @@ class Perplexity : public ScoreCalculatorInterface {
       const std::vector<float>& theta,
       Score* score);
 
-  virtual ScoreType score_type() const { return ::artm::ScoreType::Perplexity; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_Perplexity; }
 
  private:
   PerplexityScoreConfig config_;

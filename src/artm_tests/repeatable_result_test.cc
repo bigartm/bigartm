@@ -98,7 +98,7 @@ void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
 
   ::artm::RegularizerConfig* sparse_phi_config = master_config.add_regularizer_config();
   sparse_phi_config->set_name("sparse_phi");
-  sparse_phi_config->set_type(::artm::RegularizerType::SmoothSparsePhi);
+  sparse_phi_config->set_type(::artm::RegularizerType_SmoothSparsePhi);
   sparse_phi_config->set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
   sparse_phi_config->set_tau(-0.05);
 
@@ -194,11 +194,11 @@ void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_dense
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_dense) {
-  OverwriteTopicModel_internal(artm::MatrixLayout::Dense);
+  OverwriteTopicModel_internal(artm::MatrixLayout_Dense);
 }
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_sparse
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_sparse) {
-  OverwriteTopicModel_internal(artm::MatrixLayout::Sparse);
+  OverwriteTopicModel_internal(artm::MatrixLayout_Sparse);
 }
 

@@ -29,7 +29,7 @@ RegularizerConfig TestMother::GenerateRegularizerConfig() const {
 
   ::artm::RegularizerConfig general_regularizer_1_config;
   general_regularizer_1_config.set_name(regularizer_name);
-  general_regularizer_1_config.set_type(artm::RegularizerType::SmoothSparseTheta);
+  general_regularizer_1_config.set_type(artm::RegularizerType_SmoothSparseTheta);
   general_regularizer_1_config.set_config(regularizer_1_config.SerializeAsString());
 
   return general_regularizer_1_config;

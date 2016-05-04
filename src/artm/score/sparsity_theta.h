@@ -41,7 +41,7 @@ class SparsityTheta : public ScoreCalculatorInterface {
       const std::vector<float>& theta,
       Score* score);
 
-  virtual ScoreType score_type() const { return ::artm::ScoreType::SparsityTheta; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_SparsityTheta; }
 
  private:
   SparsityThetaScoreConfig config_;

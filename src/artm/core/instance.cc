@@ -200,55 +200,55 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
 
   // add here new case if adding new regularizer
   switch (regularizer_type) {
-    case artm::RegularizerType::SmoothSparseTheta: {
+    case artm::RegularizerType_SmoothSparseTheta: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothSparseThetaConfig,
                                         ::artm::regularizer::SmoothSparseTheta);
       break;
     }
 
-    case artm::RegularizerType::SmoothSparsePhi: {
+    case artm::RegularizerType_SmoothSparsePhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothSparsePhiConfig,
                                         ::artm::regularizer::SmoothSparsePhi);
       break;
     }
 
-    case artm::RegularizerType::LabelRegularizationPhi: {
+    case artm::RegularizerType_LabelRegularizationPhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::LabelRegularizationPhiConfig,
                                         ::artm::regularizer::LabelRegularizationPhi);
       break;
     }
 
-    case artm::RegularizerType::DecorrelatorPhi: {
+    case artm::RegularizerType_DecorrelatorPhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::DecorrelatorPhiConfig,
                                         ::artm::regularizer::DecorrelatorPhi);
       break;
     }
 
-    case artm::RegularizerType::MultiLanguagePhi: {
+    case artm::RegularizerType_MultiLanguagePhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::MultiLanguagePhiConfig,
                                         ::artm::regularizer::MultiLanguagePhi);
       break;
     }
 
-    case artm::RegularizerType::SpecifiedSparsePhi: {
+    case artm::RegularizerType_SpecifiedSparsePhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SpecifiedSparsePhiConfig,
                                         ::artm::regularizer::SpecifiedSparsePhi);
       break;
     }
 
-    case artm::RegularizerType::ImproveCoherencePhi: {
+    case artm::RegularizerType_ImproveCoherencePhi: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::ImproveCoherencePhiConfig,
                                         ::artm::regularizer::ImproveCoherencePhi);
       break;
     }
 
-    case artm::RegularizerType::SmoothPtdw: {
+    case artm::RegularizerType_SmoothPtdw: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::SmoothPtdwConfig,
                                         ::artm::regularizer::SmoothPtdw);
       break;
     }
 
-    case artm::RegularizerType::TopicSelectionTheta: {
+    case artm::RegularizerType_TopicSelectionTheta: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::TopicSelectionThetaConfig,
                                         ::artm::regularizer::TopicSelectionTheta);
       break;
@@ -270,52 +270,52 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
 
   // add here new case if adding new score
   switch (score_type) {
-    case artm::ScoreType::Perplexity: {
+    case artm::ScoreType_Perplexity: {
       score_calculator.reset(new ::artm::score::Perplexity(config));
       break;
     }
 
-    case artm::ScoreType::SparsityTheta: {
+    case artm::ScoreType_SparsityTheta: {
       score_calculator.reset(new ::artm::score::SparsityTheta(config));
       break;
     }
 
-    case artm::ScoreType::SparsityPhi: {
+    case artm::ScoreType_SparsityPhi: {
       score_calculator.reset(new ::artm::score::SparsityPhi(config));
       break;
     }
 
-    case artm::ScoreType::ItemsProcessed: {
+    case artm::ScoreType_ItemsProcessed: {
       score_calculator.reset(new ::artm::score::ItemsProcessed(config));
       break;
     }
 
-    case artm::ScoreType::TopTokens: {
+    case artm::ScoreType_TopTokens: {
       score_calculator.reset(new ::artm::score::TopTokens(config));
       break;
     }
 
-    case artm::ScoreType::ThetaSnippet: {
+    case artm::ScoreType_ThetaSnippet: {
       score_calculator.reset(new ::artm::score::ThetaSnippet(config));
       break;
     }
 
-    case artm::ScoreType::TopicKernel: {
+    case artm::ScoreType_TopicKernel: {
       score_calculator.reset(new ::artm::score::TopicKernel(config));
       break;
     }
 
-    case artm::ScoreType::TopicMassPhi: {
+    case artm::ScoreType_TopicMassPhi: {
       score_calculator.reset(new ::artm::score::TopicMassPhi(config));
       break;
     }
 
-    case artm::ScoreType::ClassPrecision: {
+    case artm::ScoreType_ClassPrecision: {
       score_calculator.reset(new ::artm::score::ClassPrecision(config));
       break;
     }
 
-    case artm::ScoreType::PeakMemory: {
+    case artm::ScoreType_PeakMemory: {
       score_calculator.reset(new ::artm::score::PeakMemory(config));
       break;
     }

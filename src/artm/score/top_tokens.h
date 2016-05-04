@@ -36,7 +36,7 @@ class TopTokens : public ScoreCalculatorInterface {
 
   virtual bool is_cumulative() const { return false; }
 
-  virtual ScoreType score_type() const { return ::artm::ScoreType::TopTokens; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_TopTokens; }
 
  private:
   TopTokensScoreConfig config_;

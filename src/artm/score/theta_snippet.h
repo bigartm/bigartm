@@ -42,7 +42,7 @@ class ThetaSnippet : public ScoreCalculatorInterface {
       const std::vector<float>& theta,
       Score* score);
 
-  virtual ScoreType score_type() const { return ::artm::ScoreType::ThetaSnippet; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_ThetaSnippet; }
 
  private:
   ThetaSnippetScoreConfig config_;

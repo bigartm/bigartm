@@ -73,15 +73,15 @@ message RegularizerSettings {
 }
 
 enum RegularizerType {
-  SmoothSparseTheta = 0;
-  SmoothSparsePhi = 1;
-  DecorrelatorPhi = 2;
-  MultiLanguagePhi = 3;
-  LabelRegularizationPhi = 4;
-  SpecifiedSparsePhi = 5;
-  ImproveCoherencePhi = 6;
-  SmoothPtdw = 7;
-  TopicSelectionTheta = 8;
+  RegularizerType_SmoothSparseTheta = 0;
+  RegularizerType_SmoothSparsePhi = 1;
+  RegularizerType_DecorrelatorPhi = 2;
+  RegularizerType_MultiLanguagePhi = 3;
+  RegularizerType_LabelRegularizationPhi = 4;
+  RegularizerType_SpecifiedSparsePhi = 5;
+  RegularizerType_ImproveCoherencePhi = 6;
+  RegularizerType_SmoothPtdw = 7;
+  RegularizerType_TopicSelectionTheta = 8;
 }
 
 // Represents a configuration of a general regularizer
@@ -176,16 +176,16 @@ message TransformConfig {
 }
 
 enum ScoreType {
-  Perplexity = 0;
-  SparsityTheta = 1;
-  SparsityPhi = 2;
-  ItemsProcessed = 3;
-  TopTokens = 4;
-  ThetaSnippet = 5;
-  TopicKernel = 6;
-  TopicMassPhi = 7;
-  ClassPrecision = 8;
-  PeakMemory = 9;
+  ScoreType_Perplexity = 0;
+  ScoreType_SparsityTheta = 1;
+  ScoreType_SparsityPhi = 2;
+  ScoreType_ItemsProcessed = 3;
+  ScoreType_TopTokens = 4;
+  ScoreType_ThetaSnippet = 5;
+  ScoreType_TopicKernel = 6;
+  ScoreType_TopicMassPhi = 7;
+  ScoreType_ClassPrecision = 8;
+  ScoreType_PeakMemory = 9;
 }
 
 // Represents a configuration of a general score
@@ -443,8 +443,8 @@ message GetDictionaryArgs {
 }
 
 enum MatrixLayout {
-  Dense = 0;
-  Sparse = 1;
+  MatrixLayout_Dense = 0;
+  MatrixLayout_Sparse = 1;
 }
 
 message GetTopicModelArgs {
@@ -454,14 +454,14 @@ message GetTopicModelArgs {
   repeated string class_id = 4;
   optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
-  optional MatrixLayout matrix_layout = 8 [default = Dense];
+  optional MatrixLayout matrix_layout = 8 [default = MatrixLayout_Dense];
 }
 
 message GetThetaMatrixArgs {
   repeated string topic_name = 3;
   optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
-  optional MatrixLayout matrix_layout = 8 [default = Dense];
+  optional MatrixLayout matrix_layout = 8 [default = MatrixLayout_Dense];
 }
 
 message GetScoreValueArgs {

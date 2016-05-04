@@ -493,13 +493,13 @@ inline void FixMessage(::artm::Batch* message) {
 template<>
 inline void FixMessage(::artm::GetThetaMatrixArgs* message) {
   if (message->has_use_sparse_format())
-    message->set_matrix_layout(MatrixLayout::Sparse);
+    message->set_matrix_layout(MatrixLayout_Sparse);
 }
 
 template<>
 inline void FixMessage(::artm::GetTopicModelArgs* message) {
   if (message->has_use_sparse_format())
-    message->set_matrix_layout(MatrixLayout::Sparse);
+    message->set_matrix_layout(MatrixLayout_Sparse);
 }
 
 template<>
@@ -547,7 +547,7 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
 
   for (int i = 0; i < message->score_config_size(); ++i) {
     ScoreConfig* score_config = message->mutable_score_config(i);
-    if (score_config->type() == ScoreType::TopTokens)
+    if (score_config->type() == ScoreType_TopTokens)
       FixPackedMessage<TopTokensScoreConfig>(score_config->mutable_config());
 
     if (!score_config->has_model_name())

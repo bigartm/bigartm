@@ -32,7 +32,7 @@ class SparsityPhi : public ScoreCalculatorInterface {
 
   virtual bool is_cumulative() const { return false; }
 
-  virtual ScoreType score_type() const { return ::artm::ScoreType::SparsityPhi; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_SparsityPhi; }
 
  private:
   SparsityPhiScoreConfig config_;

@@ -32,7 +32,7 @@ class TopicMassPhi : public ScoreCalculatorInterface {
 
   virtual bool is_cumulative() const { return false; }
 
-  virtual ScoreType score_type() const { return ::artm::ScoreType::TopicMassPhi; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_TopicMassPhi; }
 
  private:
   TopicMassPhiScoreConfig config_;

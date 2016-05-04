@@ -131,7 +131,7 @@ TEST(MultipleClasses, BasicTest) {
   // Create theta-regularizer for some (not all) topics
   ::artm::RegularizerConfig* regularizer_config = master_config_reg.add_regularizer_config();
   regularizer_config->set_name("regularizer_smsp_theta");
-  regularizer_config->set_type(::artm::RegularizerType::SmoothSparseTheta);
+  regularizer_config->set_type(::artm::RegularizerType_SmoothSparseTheta);
   ::artm::SmoothSparseThetaConfig smooth_sparse_theta_config;
   smooth_sparse_theta_config.add_topic_name("Topic3");
   smooth_sparse_theta_config.add_topic_name("Topic7");
@@ -141,7 +141,7 @@ TEST(MultipleClasses, BasicTest) {
   // Create ptdw-regularizer
   ::artm::RegularizerConfig* regularizer_config2 = master_config_reg.add_regularizer_config();
   regularizer_config2->set_name("regularizer_ptdw");
-  regularizer_config2->set_type(::artm::RegularizerType::SmoothPtdw);
+  regularizer_config2->set_type(::artm::RegularizerType_SmoothPtdw);
   ::artm::SmoothPtdwConfig smooth_ptdw_config;
   smooth_ptdw_config.set_window(5);
   regularizer_config2->set_config(smooth_ptdw_config.SerializeAsString());
@@ -263,7 +263,7 @@ void configureTopTokensScore(std::string score_name, std::string class_id, artm:
   top_tokens_config.set_num_tokens(4);
   if (!class_id.empty()) top_tokens_config.set_class_id(class_id);
   score_config.set_config(top_tokens_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreType::TopTokens);
+  score_config.set_type(::artm::ScoreType_TopTokens);
   score_config.set_name(score_name);
   master_config->add_score_config()->CopyFrom(score_config);
 }
@@ -272,7 +272,7 @@ void configurePerplexityScore(std::string score_name, artm::MasterModelConfig* m
   ::artm::ScoreConfig score_config;
   ::artm::PerplexityScoreConfig perplexity_config;
   score_config.set_config(perplexity_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreType::Perplexity);
+  score_config.set_type(::artm::ScoreType_Perplexity);
   score_config.set_name(score_name);
   master_config->add_score_config()->CopyFrom(score_config);
 }
@@ -282,7 +282,7 @@ void configureThetaSnippetScore(std::string score_name, int num_items, artm::Mas
   ::artm::ThetaSnippetScoreConfig theta_snippet_config;
   theta_snippet_config.set_num_items(num_items);
   score_config.set_config(theta_snippet_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreType::ThetaSnippet);
+  score_config.set_type(::artm::ScoreType_ThetaSnippet);
   score_config.set_name(score_name);
   master_config->add_score_config()->CopyFrom(score_config);
 }
@@ -291,7 +291,7 @@ void configureItemsProcessedScore(std::string score_name, artm::MasterModelConfi
   ::artm::ScoreConfig score_config;
   ::artm::ItemsProcessedScore items_processed_config;
   score_config.set_config(items_processed_config.SerializeAsString());
-  score_config.set_type(::artm::ScoreType::ItemsProcessed);
+  score_config.set_type(::artm::ScoreType_ItemsProcessed);
   score_config.set_name(score_name);
   master_config->add_score_config()->CopyFrom(score_config);
 }
@@ -373,11 +373,11 @@ TEST(MultipleClasses, WithoutDefaultClass) {
 
 void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::artm::MasterModel* master) {
   ::artm::GetTopicModelArgs args_dense(args);
-  args_dense.set_matrix_layout(artm::MatrixLayout::Dense);
+  args_dense.set_matrix_layout(artm::MatrixLayout_Dense);
   auto tm_dense = master->GetTopicModel(args_dense);
 
   ::artm::GetTopicModelArgs args_sparse(args);
-  args_sparse.set_matrix_layout(artm::MatrixLayout::Sparse);
+  args_sparse.set_matrix_layout(artm::MatrixLayout_Sparse);
   auto tm_sparse = master->GetTopicModel(args_sparse);
 
   ::artm::GetTopicModelArgs args_all;
@@ -443,11 +443,11 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
 
 void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, ::artm::MasterModel* master) {
   ::artm::GetThetaMatrixArgs args_dense(args);
-  args_dense.set_matrix_layout(artm::MatrixLayout::Dense);
+  args_dense.set_matrix_layout(artm::MatrixLayout_Dense);
   auto tm_dense = master->GetThetaMatrix(args_dense);
 
   ::artm::GetThetaMatrixArgs args_sparse(args);
-  args_sparse.set_matrix_layout(artm::MatrixLayout::Sparse);
+  args_sparse.set_matrix_layout(artm::MatrixLayout_Sparse);
   auto tm_sparse = master->GetThetaMatrix(args_sparse);
 
   auto tm_all = master->GetThetaMatrix();
