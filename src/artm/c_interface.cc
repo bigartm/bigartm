@@ -144,42 +144,43 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCopyRequestResult(int length, char* address) {
-  ::artm::CopyRequestResultArgs args;
-  std::string blob = args.SerializeAsString();
-  return ArtmCopyRequestResultEx(length, address, static_cast<int>(blob.size()), blob.c_str());
-}
-
-int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args) {
+int ArtmCopyRequestResultImpl(int length, char* address, int args_length, const char* copy_result_args,
+                              std::string* source) {
   try {
     ::artm::CopyRequestResultArgs args;
     ParseFromArray(copy_result_args, args_length, &args);
 
-    std::string* source = nullptr;
-    if (args.request_type() == artm::CopyRequestResultArgs_RequestType_DefaultRequestType) source = last_message();
-    if (args.request_type() == artm::CopyRequestResultArgs_RequestType_GetThetaSecondPass) source = last_message_ex();
-    if (args.request_type() == artm::CopyRequestResultArgs_RequestType_GetModelSecondPass) source = last_message_ex();
-
     if (source == nullptr) {
       std::stringstream ss;
-      ss << "CopyRequestResultArgs.request_type=" << args.request_type()  << " is not valid.";
+      ss << "There is no data to copy; check if ArtmRequestXxx method is executed before copying the result";
       set_last_error(ss.str().c_str());
       return ARTM_INVALID_OPERATION;
     }
 
     if (length != static_cast<int>(source->size())) {
       std::stringstream ss;
-      ss << "ArtmCopyRequestResultEx() called with invalid 'length' parameter ";
+      ss << "Invalid 'length' parameter ";
       ss << "(" << source->size() << " expected, found " << length << ").";
       set_last_error(ss.str());
       return ARTM_INVALID_OPERATION;
     }
 
     memcpy(address, StringAsArray(source), length);
-    LOG(INFO) << "ArtmCopyRequestResultEx(request_type=" << args.request_type() << ") copied " << length << " bytes";
 
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
+}
+
+int ArtmCopyRequestResult(int length, char* address) {
+  ::artm::CopyRequestResultArgs args;
+  std::string blob = args.SerializeAsString();
+  LOG(INFO) << "ArtmCopyRequestResult is copying " << length << " bytes...";
+  return ArtmCopyRequestResultImpl(length, address, static_cast<int>(blob.size()), blob.c_str(), last_message());
+}
+
+int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args) {
+  LOG(INFO) << "ArtmCopyRequestResultEx is copying " << length << " bytes...";
+  return ArtmCopyRequestResultImpl(length, address, args_length, copy_result_args, last_message_ex());
 }
 
 int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {

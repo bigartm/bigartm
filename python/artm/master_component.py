@@ -8,62 +8,62 @@ from .wrapper import constants
 
 def _regularizer_type(config):
     if isinstance(config, messages.SmoothSparseThetaConfig):
-        return constants.RegularizerConfig_Type_SmoothSparseTheta
+        return constants.RegularizerType_SmoothSparseTheta
     elif isinstance(config, messages.SmoothSparsePhiConfig):
-        return constants.RegularizerConfig_Type_SmoothSparsePhi
+        return constants.RegularizerType_SmoothSparsePhi
     elif isinstance(config, messages.DecorrelatorPhiConfig):
-        return constants.RegularizerConfig_Type_DecorrelatorPhi
+        return constants.RegularizerType_DecorrelatorPhi
     elif isinstance(config, messages.LabelRegularizationPhiConfig):
-        return constants.RegularizerConfig_Type_LabelRegularizationPhi
+        return constants.RegularizerType_LabelRegularizationPhi
     elif isinstance(config, messages.SpecifiedSparsePhiConfig):
-        return constants.RegularizerConfig_Type_SpecifiedSparsePhi
+        return constants.RegularizerType_SpecifiedSparsePhi
     elif isinstance(config, messages.ImproveCoherencePhiConfig):
-        return constants.RegularizerConfig_Type_ImproveCoherencePhi
+        return constants.RegularizerType_ImproveCoherencePhi
     elif isinstance(config, messages.SmoothPtdwConfig):
-        return constants.RegularizerConfig_Type_SmoothPtdw
+        return constants.RegularizerType_SmoothPtdw
     elif isinstance(config, messages.TopicSelectionThetaConfig):
-        return constants.RegularizerConfig_Type_TopicSelectionTheta
+        return constants.RegularizerType_TopicSelectionTheta
 
 
 def _score_type(config):
     if isinstance(config, messages.PerplexityScoreConfig):
-        return constants.ScoreConfig_Type_Perplexity
+        return constants.ScoreType_Perplexity
     elif isinstance(config, messages.SparsityThetaScoreConfig):
-        return constants.ScoreConfig_Type_SparsityTheta
+        return constants.ScoreType_SparsityTheta
     elif isinstance(config, messages.SparsityPhiScoreConfig):
-        return constants.ScoreConfig_Type_SparsityPhi
+        return constants.ScoreType_SparsityPhi
     elif isinstance(config, messages.ItemsProcessedScoreConfig):
-        return constants.ScoreConfig_Type_ItemsProcessed
+        return constants.ScoreType_ItemsProcessed
     elif isinstance(config, messages.TopTokensScoreConfig):
-        return constants.ScoreConfig_Type_TopTokens
+        return constants.ScoreType_TopTokens
     elif isinstance(config, messages.ThetaSnippetScoreConfig):
-        return constants.ScoreConfig_Type_ThetaSnippet
+        return constants.ScoreType_ThetaSnippet
     elif isinstance(config, messages.TopicKernelScoreConfig):
-        return constants.ScoreConfig_Type_TopicKernel
+        return constants.ScoreType_TopicKernel
     elif isinstance(config, messages.TopicMassPhiScoreConfig):
-        return constants.ScoreConfig_Type_TopicMassPhi
+        return constants.ScoreType_TopicMassPhi
     elif isinstance(config, messages.ClassPrecisionScoreConfig):
-        return constants.ScoreConfig_Type_ClassPrecision
+        return constants.ScoreType_ClassPrecision
 
 
 def _score_data_func(score_data_type):
-    if score_data_type == constants.ScoreData_Type_Perplexity:
+    if score_data_type == constants.ScoreType_Perplexity:
         return messages.PerplexityScore
-    elif score_data_type == constants.ScoreData_Type_SparsityTheta:
+    elif score_data_type == constants.ScoreType_SparsityTheta:
         return messages.SparsityThetaScore
-    elif score_data_type == constants.ScoreData_Type_SparsityPhi:
+    elif score_data_type == constants.ScoreType_SparsityPhi:
         return messages.SparsityPhiScore
-    elif score_data_type == constants.ScoreData_Type_ItemsProcessed:
+    elif score_data_type == constants.ScoreType_ItemsProcessed:
         return messages.ItemsProcessedScore
-    elif score_data_type == constants.ScoreData_Type_TopTokens:
+    elif score_data_type == constants.ScoreType_TopTokens:
         return messages.TopTokensScore
-    elif score_data_type == constants.ScoreData_Type_ThetaSnippet:
+    elif score_data_type == constants.ScoreType_ThetaSnippet:
         return messages.ThetaSnippetScore
-    elif score_data_type == constants.ScoreData_Type_TopicKernel:
+    elif score_data_type == constants.ScoreType_TopicKernel:
         return messages.TopicKernelScore
-    elif score_data_type == constants.ScoreData_Type_TopicMassPhi:
+    elif score_data_type == constants.ScoreType_TopicMassPhi:
         return messages.TopicMassPhiScore
-    elif score_data_type == constants.ScoreData_Type_ClassPrecision:
+    elif score_data_type == constants.ScoreType_ClassPrecision:
         return messages.ClassPrecisionScore
 
 
@@ -390,9 +390,9 @@ class MasterComponent(object):
 
         func = None
         if find_theta or find_ptdw:
-            args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_Dense
+            args.theta_matrix_type = constants.ThetaMatrixType_Dense
             if find_ptdw:
-                args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_DensePtdw
+                args.theta_matrix_type = constants.ThetaMatrixType_DensePtdw
             func = self._lib.ArtmRequestProcessBatchesExternal
         elif not find_theta or find_theta is None:
             func = self._lib.ArtmRequestProcessBatches
@@ -407,7 +407,6 @@ class MasterComponent(object):
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
-        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
         return result.theta_matrix, numpy_ndarray
@@ -476,21 +475,15 @@ class MasterComponent(object):
             * messahes.TopicModel() object with info about Phi matrix
             * numpy.ndarray with Phi data (i.e., p(w|t) values)
         """
-        topics = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_TopicNames)
-        tokens = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_Tokens)
+        topic_model = self.get_phi_info(model)
 
-        num_rows = len(tokens.token)
-        num_cols = topics.num_topics
+        num_rows = len(topic_model.token)
+        num_cols = topic_model.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         self._lib.ArtmAttachModel(self.master_id,
                                   messages.AttachModelArgs(model_name=model),
                                   numpy_ndarray)
-
-        topic_model = messages.TopicModel(num_topics=topics.num_topics)
-        topic_model.topic_name.MergeFrom(topics.topic_name)
-        topic_model.class_id.MergeFrom(tokens.class_id)
-        topic_model.token.MergeFrom(tokens.token)
 
         return topic_model, numpy_ndarray
 
@@ -590,8 +583,8 @@ class MasterComponent(object):
         :return: messages.ThetaMatrix object
         """
         args = messages.GetThetaMatrixArgs()
+        args.matrix_layout = constants.MatrixLayout_Sparse
         args.eps = 1.001  # hack to not get any data back
-        args.matrix_layout = 1  # GetThetaMatrixArgs_MatrixLayout_Sparse
         theta_matrix_info = self._lib.ArtmRequestThetaMatrix(self.master_id, args)
 
         return theta_matrix_info
@@ -615,21 +608,18 @@ class MasterComponent(object):
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
-        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
         return theta_matrix_info, numpy_ndarray
 
-    def get_phi_info(self, model, request_type=None):
+    def get_phi_info(self, model):
         """
         :param str model: name of matrix in BigARTM
-        :param int request_type: Pwt = 0 | Nwt = 1 | TopicNames = 2 | Tokens = 3
         :return: messages.TopicModel object
         """
         args = messages.GetTopicModelArgs(model_name=model)
-        if request_type is not None:
-            args.request_type = request_type
-
+        args.matrix_layout = constants.MatrixLayout_Sparse
+        args.eps = 1.001  # hack to not get any data back
         phi_matrix_info = self._lib.ArtmRequestTopicModel(self.master_id, args)
 
         return phi_matrix_info
@@ -654,7 +644,7 @@ class MasterComponent(object):
             for class_id in class_ids:
                 args.class_id.append(class_id)
         if use_sparse_format is not None:
-            args.matrix_layout = constants.GetTopicModelArgs_MatrixLayout_Sparse
+            args.matrix_layout = constants.MatrixLayout_Sparse
 
         phi_matrix_info = self._lib.ArtmRequestTopicModelExternal(self.master_id, args)
 
@@ -663,7 +653,6 @@ class MasterComponent(object):
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
-        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetModelSecondPass
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
         return phi_matrix_info, numpy_ndarray
@@ -796,7 +785,7 @@ class MasterComponent(object):
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
 
-        if theta_matrix_type != constants.TransformMasterModelArgs_ThetaMatrixType_None:
+        if theta_matrix_type != constants.ThetaMatrixType_None:
             theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
 
             num_rows = len(theta_matrix_info.item_id)
@@ -804,7 +793,6 @@ class MasterComponent(object):
             numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
             cp_args = messages.CopyRequestResultArgs()
-            cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
             self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
             return theta_matrix_info, numpy_ndarray

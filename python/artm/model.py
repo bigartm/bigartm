@@ -17,22 +17,22 @@ from .scores import Scores, TopicMassPhiScore  # temp
 from . import score_tracker
 
 SCORE_TRACKER = {
-    const.ScoreConfig_Type_SparsityPhi: score_tracker.SparsityPhiScoreTracker,
-    const.ScoreConfig_Type_SparsityTheta: score_tracker.SparsityThetaScoreTracker,
-    const.ScoreConfig_Type_Perplexity: score_tracker.PerplexityScoreTracker,
-    const.ScoreConfig_Type_ThetaSnippet: score_tracker.ThetaSnippetScoreTracker,
-    const.ScoreConfig_Type_ItemsProcessed: score_tracker.ItemsProcessedScoreTracker,
-    const.ScoreConfig_Type_TopTokens: score_tracker.TopTokensScoreTracker,
-    const.ScoreConfig_Type_TopicKernel: score_tracker.TopicKernelScoreTracker,
-    const.ScoreConfig_Type_TopicMassPhi: score_tracker.TopicMassPhiScoreTracker,
-    const.ScoreConfig_Type_ClassPrecision: score_tracker.ClassPrecisionScoreTracker,
+    const.ScoreType_SparsityPhi: score_tracker.SparsityPhiScoreTracker,
+    const.ScoreType_SparsityTheta: score_tracker.SparsityThetaScoreTracker,
+    const.ScoreType_Perplexity: score_tracker.PerplexityScoreTracker,
+    const.ScoreType_ThetaSnippet: score_tracker.ThetaSnippetScoreTracker,
+    const.ScoreType_ItemsProcessed: score_tracker.ItemsProcessedScoreTracker,
+    const.ScoreType_TopTokens: score_tracker.TopTokensScoreTracker,
+    const.ScoreType_TopicKernel: score_tracker.TopicKernelScoreTracker,
+    const.ScoreType_TopicMassPhi: score_tracker.TopicMassPhiScoreTracker,
+    const.ScoreType_ClassPrecision: score_tracker.ClassPrecisionScoreTracker,
 }
 
 
 def _topic_selection_regularizer_func(self, regularizers):
     topic_selection_regularizer_name = []
     for name, regularizer in regularizers.data.iteritems():
-        if regularizer.type == const.RegularizerConfig_Type_TopicSelectionTheta:
+        if regularizer.type == const.RegularizerType_TopicSelectionTheta:
             topic_selection_regularizer_name.append(name)
 
     if len(topic_selection_regularizer_name):
@@ -475,15 +475,11 @@ class ARTM(object):
         """
         self.master.import_model(self.model_pwt, filename)
         self._initialized = True
-        topics_info = self.master.get_phi_info(
-            self.model_pwt, const.GetTopicModelArgs_RequestType_TopicNames)
-        self._topic_names = [topic_name for topic_name in topics_info.topic_name]
-
-        tokens_info = self.master.get_phi_info(
-            self.model_pwt, const.GetTopicModelArgs_RequestType_Tokens)
+        topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
+        self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
 
         class_ids = {}
-        for class_id in tokens_info.class_id:
+        for class_id in topics_and_tokens_info.class_id:
             class_ids[class_id] = 1.0
         self._class_ids = class_ids
 
@@ -516,19 +512,15 @@ class ARTM(object):
 
         valid_model_name = self.model_pwt if model_name is None else model_name
 
-        topics_info = self.master.get_phi_info(
-            valid_model_name, const.GetTopicModelArgs_RequestType_TopicNames)
-
-        tokens_info = self.master.get_phi_info(
-            valid_model_name, const.GetTopicModelArgs_RequestType_Tokens)
+        topics_and_tokens_info = self.master.get_phi_info(valid_model_name)
 
         _, nd_array = self.master.get_phi_matrix(model=valid_model_name,
                                                  topic_names=topic_names,
                                                  class_ids=class_ids)
 
-        tokens = [token for token, class_id in zip(tokens_info.token, tokens_info.class_id)
+        tokens = [token for token, class_id in zip(topics_and_tokens_info.token, topics_and_tokens_info.class_id)
                   if class_ids is None or class_id in class_ids]
-        topic_names = [topic_name for topic_name in topics_info.topic_name
+        topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name
                        if topic_names is None or topic_name in topic_names]
         phi_data_frame = DataFrame(data=nd_array,
                                    columns=topic_names,
@@ -618,16 +610,16 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_None
+        theta_matrix_type_real = const.ThetaMatrixType_None
         if theta_matrix_type == 'dense_theta':
-            theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_Dense
+            theta_matrix_type_real = const.ThetaMatrixType_Dense
         elif theta_matrix_type == 'sparse_theta':
-            theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_Sparse
+            theta_matrix_type_real = const.ThetaMatrixType_Sparse
             raise NotImplementedError('Sparse format is currently unavailable from Python')
         elif theta_matrix_type == 'dense_ptdw':
-            theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_DensePtdw
+            theta_matrix_type_real = const.ThetaMatrixType_DensePtdw
         elif theta_matrix_type == 'sparse_ptdw':
-            theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_SparsePtdw
+            theta_matrix_type_real = const.ThetaMatrixType_SparsePtdw
             raise NotImplementedError('Sparse format is currently unavailable from Python')
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
@@ -672,10 +664,9 @@ class ARTM(object):
                                      topic_names=self._topic_names,
                                      seed=self._seed)
 
-        topics_info = self.master.get_phi_info(
-            self.model_pwt, const.GetTopicModelArgs_RequestType_TopicNames)
+        topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
 
-        self._topic_names = [topic_name for topic_name in topics_info.topic_name]
+        self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
         self._initialized = True
 
         # Remove all info about previous iterations

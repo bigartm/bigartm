@@ -24,7 +24,7 @@ class PeakMemory : public ScoreCalculatorInterface {
 
   virtual std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt);
 
-  virtual ScoreData_Type score_type() const { return ::artm::ScoreData_Type_PeakMemory; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_PeakMemory; }
 };
 
 }  // namespace score

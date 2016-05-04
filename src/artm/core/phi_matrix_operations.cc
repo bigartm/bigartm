@@ -24,23 +24,7 @@ namespace core {
 void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix,
                                                      const ::artm::GetTopicModelArgs& get_model_args,
                                                      ::artm::TopicModel* topic_model) {
-  if (get_model_args.request_type() == GetTopicModelArgs_RequestType_TopicNames) {
-    for (auto& topic_name : phi_matrix.topic_name())
-      topic_model->add_topic_name(topic_name);
-    topic_model->set_num_topics(phi_matrix.topic_size());
-    return;
-  }
-
-  if (get_model_args.request_type() == GetTopicModelArgs_RequestType_Tokens) {
-    for (int token_index = 0; token_index < phi_matrix.token_size(); token_index++) {
-      const Token& current_token = phi_matrix.token(token_index);
-      topic_model->add_token(current_token.keyword);
-      topic_model->add_class_id(current_token.class_id);
-    }
-    return;
-  }
-
-  const bool has_sparse_format = (get_model_args.matrix_layout() == GetTopicModelArgs_MatrixLayout_Sparse);
+  const bool has_sparse_format = (get_model_args.matrix_layout() == MatrixLayout_Sparse);
 
   std::vector<int> tokens_to_use;
   if (get_model_args.token_size() > 0) {

@@ -152,7 +152,7 @@ class BaseScore(object):
 ###################################################################################################
 class SparsityPhiScore(BaseScore):
     _config_message = messages.SparsityPhiScoreConfig
-    _type = const.ScoreConfig_Type_SparsityPhi
+    _type = const.ScoreType_SparsityPhi
 
     def __init__(self, name=None, class_id=None, topic_names=None, model_name=None, eps=None):
         """
@@ -187,7 +187,7 @@ class SparsityPhiScore(BaseScore):
 
 class SparsityThetaScore(BaseScore):
     _config_message = messages.SparsityThetaScoreConfig
-    _type = const.ScoreConfig_Type_SparsityTheta
+    _type = const.ScoreType_SparsityTheta
 
     def __init__(self, name=None, topic_names=None, eps=None):
         """
@@ -235,7 +235,7 @@ class SparsityThetaScore(BaseScore):
 
 class PerplexityScore(BaseScore):
     _config_message = messages.PerplexityScoreConfig
-    _type = const.ScoreConfig_Type_Perplexity
+    _type = const.ScoreType_Perplexity
 
     def __init__(self, name=None, class_ids=None, topic_names=None,
                  dictionary=None, use_unigram_document_model=None):
@@ -335,7 +335,7 @@ class PerplexityScore(BaseScore):
 
 class ItemsProcessedScore(BaseScore):
     _config_message = messages.ItemsProcessedScoreConfig
-    _type = const.ScoreConfig_Type_ItemsProcessed
+    _type = const.ScoreType_ItemsProcessed
 
     def __init__(self, name=None):
         """
@@ -374,7 +374,7 @@ class ItemsProcessedScore(BaseScore):
 
 class TopTokensScore(BaseScore):
     _config_message = messages.TopTokensScoreConfig
-    _type = const.ScoreConfig_Type_TopTokens
+    _type = const.ScoreType_TopTokens
 
     def __init__(self, name=None, class_id=None, topic_names=None,
                  num_tokens=None, dictionary=None):
@@ -435,7 +435,7 @@ class TopTokensScore(BaseScore):
 
 class ThetaSnippetScore(BaseScore):
     _config_message = messages.ThetaSnippetScoreConfig
-    _type = const.ScoreConfig_Type_ThetaSnippet
+    _type = const.ScoreType_ThetaSnippet
 
     def __init__(self, name=None, item_ids=None, num_items=None):
         """
@@ -506,7 +506,7 @@ class ThetaSnippetScore(BaseScore):
 
 class TopicKernelScore(BaseScore):
     _config_message = messages.TopicKernelScoreConfig
-    _type = const.ScoreConfig_Type_TopicKernel
+    _type = const.ScoreType_TopicKernel
 
     def __init__(self, name=None, class_id=None, topic_names=None, eps=None,
                  dictionary=None, probability_mass_threshold=None):
@@ -582,7 +582,7 @@ class TopicKernelScore(BaseScore):
 
 class TopicMassPhiScore(BaseScore):
     _config_message = messages.TopicMassPhiScoreConfig
-    _type = const.ScoreConfig_Type_TopicMassPhi
+    _type = const.ScoreType_TopicMassPhi
 
     def __init__(self, name=None, class_id=None, topic_names=None, model_name=None, eps=None):
         """

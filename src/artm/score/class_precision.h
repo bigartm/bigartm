@@ -46,7 +46,7 @@ class ClassPrecision : public ScoreCalculatorInterface {
       const std::vector<float>& theta,
       Score* score);
 
-  virtual ScoreData_Type score_type() const { return ::artm::ScoreData_Type_ClassPrecision; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType_ClassPrecision; }
 
  private:
   ClassPrecisionScoreConfig config_;

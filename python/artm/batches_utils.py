@@ -90,19 +90,19 @@ class BatchVectorizer(object):
                 parser_config = messages.CollectionParserConfig()
                 parser_config.num_items_per_batch = batch_size
 
-                parser_config.name_type = const.CollectionParserConfig_NameType_Code
+                parser_config.name_type = const.CollectionParserConfig_BatchNameType_Code
                 if batch_name_type == 'guid':
-                    parser_config.name_type = const.CollectionParserConfig_NameType_Guid
+                    parser_config.name_type = const.CollectionParserConfig_BatchNameType_Guid
 
                 if data_format == 'bow_uci':
                     parser_config.docword_file_path = os.path.join(
                         data_path, 'docword.{0}.txt'.format(collection_name))
                     parser_config.vocab_file_path = os.path.join(
                         data_path, 'vocab.{0}.txt'.format(collection_name))
-                    parser_config.format = const.CollectionParserConfig_Format_BagOfWordsUci
+                    parser_config.format = const.CollectionParserConfig_CollectionFormat_BagOfWordsUci
                 elif data_format == 'vowpal_wabbit':
                     parser_config.docword_file_path = data_path
-                    parser_config.format = const.CollectionParserConfig_Format_VowpalWabbit
+                    parser_config.format = const.CollectionParserConfig_CollectionFormat_VowpalWabbit
                 parser_config.target_folder = target_folder
 
                 lib = wrapper.LibArtm()

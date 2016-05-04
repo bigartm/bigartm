@@ -32,32 +32,23 @@ ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
 TopicModel Api::AttachTopicModel(const AttachModelArgs& args, Matrix* matrix) {
   GetTopicModelArgs topic_args;
   topic_args.set_model_name(args.model_name());
-  topic_args.set_request_type(GetTopicModelArgs_RequestType_TopicNames);
-  TopicModel topics = master_model_.GetTopicModel(topic_args);
-
-  GetTopicModelArgs token_args;
-  token_args.set_model_name(args.model_name());
-  token_args.set_request_type(GetTopicModelArgs_RequestType_Tokens);
-  TopicModel tokens = master_model_.GetTopicModel(token_args);
+  topic_args.set_matrix_layout(MatrixLayout_Sparse);
+  topic_args.set_eps(1.001f);  // hack-hack to return no entries
+  TopicModel retval = master_model_.GetTopicModel(topic_args);
 
   std::string args_blob;
   args.SerializeToString(&args_blob);
 
-  if (topics.num_topics() == 0)
+  if (retval.num_topics() == 0)
     throw ArgumentOutOfRangeException("Unable to attach to topic model with zero topics");
-  if (tokens.token_size() == 0)
+  if (retval.token_size() == 0)
     throw ArgumentOutOfRangeException("Unable to attach to topic model with zero tokens");
 
-  matrix->resize(tokens.token_size(), topics.num_topics());
+  matrix->resize(retval.token_size(), retval.num_topics());
   int address_length = matrix->no_columns() * matrix->no_rows() * sizeof(float);
   artm::HandleErrorCode(ArtmAttachModel(master_model_.id(), args_blob.size(), args_blob.c_str(),
                         address_length, reinterpret_cast<char*>(matrix->get_data())));
 
-  TopicModel retval;
-  retval.set_num_topics(topics.num_topics());
-  retval.mutable_topic_name()->CopyFrom(topics.topic_name());
-  retval.mutable_class_id()->CopyFrom(tokens.class_id());
-  retval.mutable_token()->CopyFrom(tokens.token());
   return retval;
 }
 

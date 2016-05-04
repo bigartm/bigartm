@@ -72,22 +72,23 @@ message RegularizerSettings {
   optional double gamma = 4;
 }
 
+enum RegularizerType {
+  RegularizerType_SmoothSparseTheta = 0;
+  RegularizerType_SmoothSparsePhi = 1;
+  RegularizerType_DecorrelatorPhi = 2;
+  RegularizerType_MultiLanguagePhi = 3;
+  RegularizerType_LabelRegularizationPhi = 4;
+  RegularizerType_SpecifiedSparsePhi = 5;
+  RegularizerType_ImproveCoherencePhi = 6;
+  RegularizerType_SmoothPtdw = 7;
+  RegularizerType_TopicSelectionTheta = 8;
+  RegularizerType_Unknown = 9999;
+}
+
 // Represents a configuration of a general regularizer
 message RegularizerConfig {
-  enum Type {
-    SmoothSparseTheta = 0;
-    SmoothSparsePhi = 1;
-    DecorrelatorPhi = 2;
-    MultiLanguagePhi = 3;
-    LabelRegularizationPhi = 4;
-    SpecifiedSparsePhi = 5;
-    ImproveCoherencePhi = 6;
-    SmoothPtdw = 7;
-    TopicSelectionTheta = 8;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional RegularizerType type = 2 [default = RegularizerType_Unknown];
   optional bytes config = 3;
   optional float tau = 4;
 }
@@ -124,7 +125,7 @@ message LabelRegularizationPhiConfig {
 }
 
 message SpecifiedSparsePhiConfig {
-  enum Mode {
+  enum SparseMode {
     SparseTopics = 0;
     SparseTokens = 1;
   }
@@ -133,7 +134,7 @@ message SpecifiedSparsePhiConfig {
   optional string class_id = 2 [default = "@default_class"];
   optional int32 max_elements_count = 3 [default = 20];
   optional float probability_threshold = 4 [default = 0.99];
-  optional Mode mode = 5 [default = SparseTopics];
+  optional SparseMode mode = 5 [default = SparseTopics];
 }
 
 // Represents a configuration of a ImproveCoherence Phi regularizer
@@ -145,12 +146,12 @@ message ImproveCoherencePhiConfig {
 
 // Represents a configuration of a Smooth Ptdw regularizer
 message SmoothPtdwConfig {
-  enum Type {
+  enum SmoothType {
     MovingAverage = 1;
     MovingProduct = 2;
   }
 
-  optional Type type = 1 [default = MovingAverage];
+  optional SmoothType type = 1 [default = MovingAverage];
   optional int32 window = 3 [default = 10];
   optional double threshold = 4 [default = 1.0];
 }
@@ -170,49 +171,37 @@ message TransformConfig {
     Constant = 2; // f(x) = 1
   }
 
-  optional TransformType transform_type = 1 [default = Constant];
+  optional TransformType type = 1 [default = Constant];
   optional double n = 2 [default = 1];
   optional double a = 3 [default = 1];
 }
 
+enum ScoreType {
+  ScoreType_Perplexity = 0;
+  ScoreType_SparsityTheta = 1;
+  ScoreType_SparsityPhi = 2;
+  ScoreType_ItemsProcessed = 3;
+  ScoreType_TopTokens = 4;
+  ScoreType_ThetaSnippet = 5;
+  ScoreType_TopicKernel = 6;
+  ScoreType_TopicMassPhi = 7;
+  ScoreType_ClassPrecision = 8;
+  ScoreType_PeakMemory = 9;
+  ScoreType_Unknown = 9999;
+}
+
 // Represents a configuration of a general score
 message ScoreConfig {
-  enum Type {
-    Perplexity = 0;
-    SparsityTheta = 1;
-    SparsityPhi = 2;
-    ItemsProcessed = 3;
-    TopTokens = 4;
-    ThetaSnippet = 5;
-    TopicKernel = 6;
-    TopicMassPhi = 7;
-    ClassPrecision = 8;
-    PeakMemory = 9;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional ScoreType type = 2 [default = ScoreType_Unknown];
   optional bytes config = 3;
   optional string model_name = 4;
 }
 
 // Represents a result of score calculation
 message ScoreData {
-  enum Type {
-    Perplexity = 0;
-    SparsityTheta = 1;
-    SparsityPhi = 2;
-    ItemsProcessed = 3;
-    TopTokens = 4;
-    ThetaSnippet = 5;
-    TopicKernel = 6;
-    TopicMassPhi = 7;
-    ClassPrecision = 8;
-    PeakMemory = 9;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional ScoreType type = 2 [default = ScoreType_Unknown];
   optional bytes data = 3;
 }
 
@@ -388,24 +377,24 @@ message ThetaMatrix {
 
 // Represents a configuration of a collection parser.
 message CollectionParserConfig {
-  enum Format {
+  enum CollectionFormat {
     BagOfWordsUci = 0;
     MatrixMarket = 1;
     VowpalWabbit = 2;
   }
 
-  enum NameType {
+  enum BatchNameType {
     Guid = 0;
     Code = 1;
   }
 
-  optional Format format = 1 [default = BagOfWordsUci];
+  optional CollectionFormat format = 1 [default = BagOfWordsUci];
   optional string docword_file_path = 2;
   optional string vocab_file_path = 3;
   optional string target_folder = 4;
   optional int32 num_items_per_batch = 5 [default = 1000];
   optional bool use_unity_based_indices = 6 [default = true];
-  optional NameType name_type = 7 [default = Guid];
+  optional BatchNameType name_type = 7 [default = Guid];
 }
 
 // Represents an argument of 'initialize model' operation
@@ -455,39 +444,26 @@ message GetDictionaryArgs {
   optional string dictionary_name = 1;
 }
 
+enum MatrixLayout {
+  MatrixLayout_Dense = 0;
+  MatrixLayout_Sparse = 1;
+}
+
 message GetTopicModelArgs {
-  enum RequestType {
-    Pwt = 0;
-    Nwt = 1;
-    TopicNames = 2;
-    Tokens = 3;
-  }
-
-  enum MatrixLayout {
-    Dense = 0;
-    Sparse = 1;
-  }
-
   optional string model_name = 1;
   repeated string topic_name = 2;
   repeated string token = 3;
   repeated string class_id = 4;
   optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
-  optional RequestType request_type = 7 [default = Pwt];
-  optional MatrixLayout matrix_layout = 8 [default = Dense];
+  optional MatrixLayout matrix_layout = 8 [default = MatrixLayout_Dense];
 }
 
 message GetThetaMatrixArgs {
-  enum MatrixLayout {
-    Dense = 0;
-    Sparse = 1;
-  }
-
   repeated string topic_name = 3;
   optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];
-  optional MatrixLayout matrix_layout = 8 [default = Dense];
+  optional MatrixLayout matrix_layout = 8 [default = MatrixLayout_Dense];
 }
 
 message GetScoreValueArgs {
@@ -512,18 +488,17 @@ message AttachModelArgs {
   optional string model_name = 1;
 }
 
+enum ThetaMatrixType {
+  ThetaMatrixType_None = 0;
+  ThetaMatrixType_Dense = 1;
+  ThetaMatrixType_Sparse = 2;
+  ThetaMatrixType_Cache = 3;
+  ThetaMatrixType_DensePtdw = 4;
+  ThetaMatrixType_SparsePtdw = 5;
+}
+
 message ProcessBatchesArgs {
-  enum ThetaMatrixType {
-    None = 0;
-    Dense = 1;
-    Sparse = 2;
-    Cache = 3;
-    DensePtdw = 4;
-    SparsePtdw = 5;
-  }
-
   optional string nwt_target_name = 1;
-
   repeated string batch_filename = 2;
   optional string pwt_source_name = 3;
   optional int32 num_document_passes = 4 [default = 10];
@@ -533,7 +508,7 @@ message ProcessBatchesArgs {
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
-  optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
+  optional ThetaMatrixType theta_matrix_type = 14 [default = ThetaMatrixType_Cache];
   repeated float batch_weight = 15;
   optional string predict_class_id = 17;
   repeated Batch batch = 18;
@@ -578,13 +553,6 @@ message ExportDictionaryArgs {
 }
 
 message CopyRequestResultArgs {
-  enum RequestType {
-    DefaultRequestType = 0;
-    GetThetaSecondPass = 1;
-    GetModelSecondPass = 2;
-  }
-
-  optional RequestType request_type = 1 [default = DefaultRequestType];
 }
 
 message DuplicateMasterComponentArgs {
@@ -679,18 +647,9 @@ message FitOnlineMasterModelArgs {
 }
 
 message TransformMasterModelArgs {
-  enum ThetaMatrixType {
-    None = 0;
-    Dense = 1;
-    Sparse = 2;
-    Cache = 3;
-    DensePtdw = 4;
-    SparsePtdw = 5;
-  }
-
   repeated Batch batch = 1;
   repeated string batch_filename = 2;
-  optional ThetaMatrixType theta_matrix_type = 3 [default = Dense];
+  optional ThetaMatrixType theta_matrix_type = 3 [default = ThetaMatrixType_Dense];
   optional string predict_class_id = 4;
 }
 

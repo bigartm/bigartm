@@ -19,12 +19,12 @@ void runBasicTest(bool skip_batch_dict) {
   config.set_pwt_name("pwt");
   config.add_topic_name("topic1"); config.add_topic_name("topic2");
   ::artm::ScoreConfig* score_config = config.add_score_config();
-  score_config->set_type(::artm::ScoreConfig_Type_Perplexity);
+  score_config->set_type(::artm::ScoreType_Perplexity);
   score_config->set_name("Perplexity");
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
 
   ::artm::ScoreConfig* score_config2 = config.add_score_config();
-  score_config2->set_type(::artm::ScoreConfig_Type_SparsityPhi);
+  score_config2->set_type(::artm::ScoreType_SparsityPhi);
   score_config2->set_name("SparsityPhi");
   score_config2->set_config(::artm::SparsityPhiScoreConfig().SerializeAsString());
 
@@ -38,13 +38,13 @@ void runBasicTest(bool skip_batch_dict) {
   get_score_array_args2.set_score_name("SparsityPhi");
 
   ::artm::RegularizerConfig* reg_theta = config.add_regularizer_config();
-  reg_theta->set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
+  reg_theta->set_type(::artm::RegularizerType_SmoothSparseTheta);
   reg_theta->set_tau(-0.2);
   reg_theta->set_name("SparseTheta");
   reg_theta->set_config(::artm::SmoothSparseThetaConfig().SerializeAsString());
 
   ::artm::RegularizerConfig* reg_phi = config.add_regularizer_config();
-  reg_phi->set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+  reg_phi->set_type(::artm::RegularizerType_SmoothSparsePhi);
   reg_phi->set_tau(-0.1);
   reg_phi->set_name("SparsePhi");
   reg_phi->set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());

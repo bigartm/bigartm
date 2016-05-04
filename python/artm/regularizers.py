@@ -52,9 +52,9 @@ class KlFunctionInfo(object):
         config.CopyFrom(obj._config)
 
         if self.function_type == 'log':
-            config.transform_config.transform_type = const.TransformConfig_TransformType_Constant
+            config.transform_config.type = const.TransformConfig_TransformType_Constant
         elif self.function_type == 'pol':
-            config.transform_config.transform_type = const.TransformConfig_TransformType_Polynomial
+            config.transform_config.type = const.TransformConfig_TransformType_Polynomial
             config.transform_config.n = self.power_value  # power_value - 1, but *x gives no change
             config.transform_config.a = self.power_value
 
@@ -230,7 +230,7 @@ class BaseRegularizerTheta(BaseRegularizer):
 ###################################################################################################
 class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.SmoothSparsePhiConfig
-    _type = const.RegularizerConfig_Type_SmoothSparsePhi
+    _type = const.RegularizerType_SmoothSparsePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None,
                  dictionary=None, kl_function_info=None, config=None):
@@ -277,7 +277,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
 
 class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
     _config_message = messages.SmoothSparseThetaConfig
-    _type = const.RegularizerConfig_Type_SmoothSparseTheta
+    _type = const.RegularizerType_SmoothSparseTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None,
                  alpha_iter=None, kl_function_info=None, config=None):
@@ -320,7 +320,7 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
 
 class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.DecorrelatorPhiConfig
-    _type = const.RegularizerConfig_Type_DecorrelatorPhi
+    _type = const.RegularizerType_DecorrelatorPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None, config=None):
         """
@@ -354,7 +354,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
 
 class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.LabelRegularizationPhiConfig
-    _type = const.RegularizerConfig_Type_LabelRegularizationPhi
+    _type = const.RegularizerType_LabelRegularizationPhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary=None, config=None):
@@ -384,7 +384,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
 
 class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.SpecifiedSparsePhiConfig
-    _type = const.RegularizerConfig_Type_SpecifiedSparsePhi
+    _type = const.RegularizerType_SpecifiedSparsePhi
 
     def __init__(self, name=None, tau=1.0, topic_names=None, class_id=None, num_max_elements=None,
                  probability_threshold=None, sparse_by_columns=True, config=None):
@@ -429,10 +429,10 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         self._sparse_by_columns = True
         if sparse_by_columns is not None:
             if sparse_by_columns is True:
-                self._config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTopics
+                self._config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTopics
                 self._sparse_by_columns = True
             else:
-                self._config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTokens
+                self._config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTokens
                 self._sparse_by_columns = False
 
     @property
@@ -477,9 +477,9 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         config = messages.SpecifiedSparseRegularizationPhiConfig()
         config.CopyFrom(self._config)
         if sparse_by_columns is True:
-            config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTopics
+            config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTopics
         else:
-            config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTokens
+            config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTokens
         self.regularizer.Reconfigure(self.regularizer.config_.type, config)
 
     @class_ids.setter
@@ -493,7 +493,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
 
 class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.ImproveCoherencePhiConfig
-    _type = const.RegularizerConfig_Type_ImproveCoherencePhi
+    _type = const.RegularizerType_ImproveCoherencePhi
 
     def __init__(self, name=None, tau=1.0, class_ids=None,
                  topic_names=None, dictionary=None, config=None):
@@ -523,7 +523,7 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
 
 class SmoothPtdwRegularizer(BaseRegularizer):
     _config_message = messages.SmoothPtdwConfig
-    _type = const.RegularizerConfig_Type_SmoothPtdw
+    _type = const.RegularizerType_SmoothPtdw
 
     def __init__(self, name=None, tau=1.0, config=None):
         """
@@ -540,7 +540,7 @@ class SmoothPtdwRegularizer(BaseRegularizer):
 
 class TopicSelectionThetaRegularizer(BaseRegularizerTheta):
     _config_message = messages.TopicSelectionThetaConfig
-    _type = const.RegularizerConfig_Type_TopicSelectionTheta
+    _type = const.RegularizerType_TopicSelectionTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None,
                  alpha_iter=None, config=None):

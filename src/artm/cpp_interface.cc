@@ -93,14 +93,13 @@ std::shared_ptr<ResultT> ArtmRequestShared(int master_id, const ArgsT& args, Fun
   return std::make_shared<ResultT>(ArtmRequest<ResultT>(master_id, args, func));
 }
 
-void ArtmRequestEx(int no_rows, int no_cols, CopyRequestResultArgs_RequestType type, Matrix* matrix) {
+void ArtmRequestEx(int no_rows, int no_cols, Matrix* matrix) {
   if (matrix == nullptr)
     return;
 
   matrix->resize(no_rows, no_cols);
 
   CopyRequestResultArgs copy_request_args;
-  copy_request_args.set_request_type(type);
   std::string args_blob;
   copy_request_args.SerializeToString(&args_blob);
 
@@ -161,8 +160,7 @@ TopicModel MasterModel::GetTopicModel(Matrix* matrix) {
 
 TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::TopicModel>(id_, args, ArtmRequestTopicModelExternal);
-  auto type = CopyRequestResultArgs_RequestType_GetModelSecondPass;
-  ArtmRequestEx(retval.token_size(), retval.num_topics(), type, matrix);
+  ArtmRequestEx(retval.token_size(), retval.num_topics(), matrix);
   return retval;
 }
 
@@ -182,8 +180,7 @@ ThetaMatrix MasterModel::GetThetaMatrix(Matrix* matrix) {
 
 ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestThetaMatrixExternal);
-  auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
-  ArtmRequestEx(retval.item_id_size(), retval.num_topics(), type, matrix);
+  ArtmRequestEx(retval.item_id_size(), retval.num_topics(), matrix);
   return retval;
 }
 
@@ -194,8 +191,7 @@ ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args) {
 
 ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestTransformMasterModelExternal);
-  auto type = CopyRequestResultArgs_RequestType_GetThetaSecondPass;
-  ArtmRequestEx(retval.item_id_size(), retval.num_topics(), type, matrix);
+  ArtmRequestEx(retval.item_id_size(), retval.num_topics(), matrix);
   return retval;
 }
 

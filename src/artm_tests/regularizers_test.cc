@@ -23,7 +23,7 @@ TEST(Regularizers, TopicSelection) {
   ::artm::RegularizerConfig* regularizer_config = master_config.add_regularizer_config();
 
   regularizer_config->set_name("TopicSelectionRegularizer");
-  regularizer_config->set_type(::artm::RegularizerConfig_Type_TopicSelectionTheta);
+  regularizer_config->set_type(::artm::RegularizerType_TopicSelectionTheta);
   regularizer_config->set_tau(0.5f);
 
   ::artm::TopicSelectionThetaConfig internal_config;

@@ -45,7 +45,7 @@ std::string runOfflineTest() {
   for (unsigned i = 0; i < batches.size(); ++i) {
     ::artm::TransformMasterModelArgs args;
     args.add_batch_filename(batches[i]->id());
-    args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
     auto theta_matrix = master_component.Transform(args);
     ss << ::artm::test::Helpers::DescribeThetaMatrix(theta_matrix);
   }
@@ -87,7 +87,7 @@ TEST(RepeatableResult, TokenHasher) {
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_2", "token_2"))[0], 0.410061);
 }
 
-void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_layout) {
+void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
   const int nTopics = 16;
   int batches_size = 2;
   int nTokens = 10;
@@ -98,7 +98,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_
 
   ::artm::RegularizerConfig* sparse_phi_config = master_config.add_regularizer_config();
   sparse_phi_config->set_name("sparse_phi");
-  sparse_phi_config->set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+  sparse_phi_config->set_type(::artm::RegularizerType_SmoothSparsePhi);
   sparse_phi_config->set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
   sparse_phi_config->set_tau(-0.05);
 
@@ -158,7 +158,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_
   ASSERT_TRUE(ok && ok2);
   for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
     ::artm::TransformMasterModelArgs transform_args;
-    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
     transform_args.add_batch_filename(batches[iBatch]->id());
     ::artm::test::Helpers::CompareThetaMatrices(master2.Transform(transform_args),
                                                 master_component.Transform(transform_args), &ok);
@@ -182,7 +182,7 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_
 
   for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
     ::artm::TransformMasterModelArgs transform_args;
-    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
     transform_args.add_batch_filename(batches[iBatch]->id());
     ::artm::test::Helpers::CompareThetaMatrices(master2.Transform(transform_args),
                                                 master_component.Transform(transform_args), &ok);
@@ -194,11 +194,11 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_dense
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_dense) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_MatrixLayout_Dense);
+  OverwriteTopicModel_internal(artm::MatrixLayout_Dense);
 }
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_sparse
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_sparse) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_MatrixLayout_Sparse);
+  OverwriteTopicModel_internal(artm::MatrixLayout_Sparse);
 }
 

@@ -26,7 +26,7 @@ def test_func():
         lib = artm.wrapper.LibArtm()
         
         # Parse collection from disk
-        lib.ArtmParseCollection({'format': constants.CollectionParserConfig_Format_BagOfWordsUci,
+        lib.ArtmParseCollection({'format': constants.CollectionParserConfig_CollectionFormat_BagOfWordsUci,
                                  'docword_file_path': os.path.join(data_path, docword),
                                  'vocab_file_path': os.path.join(data_path, vocab),
                                  'target_folder': batches_folder})

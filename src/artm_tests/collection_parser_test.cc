@@ -19,7 +19,7 @@ TEST(CollectionParser, UciBagOfWords) {
   std::string target_folder = artm::test::Helpers::getUniqueString();
 
   ::artm::CollectionParserConfig config;
-  config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
+  config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
   config.set_target_folder(target_folder);
   config.set_num_items_per_batch(1);
   config.set_vocab_file_path("../../../test_data/vocab.parser_test.txt");
@@ -83,7 +83,7 @@ TEST(CollectionParser, UciBagOfWords) {
 
 TEST(CollectionParser, ErrorHandling) {
   ::artm::CollectionParserConfig config;
-  config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
+  config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
 
   config.set_vocab_file_path("../../../test_data/vocab.parser_test_non_unique.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
@@ -102,7 +102,7 @@ TEST(CollectionParser, MatrixMarket) {
   std::string target_folder = artm::test::Helpers::getUniqueString();
 
   ::artm::CollectionParserConfig config;
-  config.set_format(::artm::CollectionParserConfig_Format_MatrixMarket);
+  config.set_format(::artm::CollectionParserConfig_CollectionFormat_MatrixMarket);
   config.set_target_folder(target_folder);
   config.set_num_items_per_batch(10000);
   config.set_vocab_file_path("../../../test_data/deerwestere.txt");
@@ -134,7 +134,7 @@ TEST(CollectionParser, Multiclass) {
   std::string target_folder = artm::test::Helpers::getUniqueString();
 
   ::artm::CollectionParserConfig config;
-  config.set_format(::artm::CollectionParserConfig_Format_BagOfWordsUci);
+  config.set_format(::artm::CollectionParserConfig_CollectionFormat_BagOfWordsUci);
   config.set_target_folder(target_folder);
   config.set_vocab_file_path("../../../test_data/vocab.parser_test_multiclass.txt");
   config.set_docword_file_path("../../../test_data/docword.parser_test.txt");
@@ -209,7 +209,7 @@ TEST(CollectionParser, VowpalWabbit) {
   std::string target_folder = artm::test::Helpers::getUniqueString();
 
   ::artm::CollectionParserConfig config;
-  config.set_format(::artm::CollectionParserConfig_Format_VowpalWabbit);
+  config.set_format(::artm::CollectionParserConfig_CollectionFormat_VowpalWabbit);
   config.set_target_folder(target_folder);
   config.set_docword_file_path("../../../test_data/vw_data.txt");
   config.set_num_items_per_batch(1);

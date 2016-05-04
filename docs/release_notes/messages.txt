@@ -52,6 +52,25 @@ v0.8.0
   train/test streaming functionality is fully removed; users are expected to manage their train and test collections (for example as separate folders with batches)
 * removed ``use_sparse_bow`` field in several messages; the computation mode with dense matrices is no longer supported;
 * renamed ``item_count`` into ``num_items`` in ``ThetaSnippetScoreConfig``
+* add global enum ``ScoreType`` as a replacement for enums ``Type`` from ``ScoreConfig`` and ``ScoreData`` messages
+* add global enum ``RegularizerType`` as a replacement for enum ``Type`` from ``RegularizerConfig`` message
+* add global enum ``MatrixLayout`` as a replacement for enum ``MatrixLayout`` from ``GetThetaMatrixArgs`` and ``GetTopicModelArgs`` messages
+* add global enum ``ThetaMatrixType`` as a replacement for enum ``ThetaMatrixType`` from ``ProcessBatchesArgs`` and ``TransformMasterModelArgs`` messages
+* renamed enum ``Type`` into ``SmoothType`` in ``SmoothPtdwConfig`` to avoid conflicts in C# messages
+* renamed enum ``Mode`` into ``SparseMode`` in ``SpecifiedSparsePhiConfig`` to avoid conflicts in C# messages
+* renamed enum ``Format`` into ``CollectionFormat`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
+* renamed enum ``NameType`` into ``BatchNameType`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
+* renamed field ``transform_type`` into ``type`` in ``TransformConfig`` to avoid conflicts in C# messages
+* remove field ``request_type`` in ``CopyRequestResultArgs``;
+  this is a breaking change; please check if you make calls to ArtmCopyRequestResultEx with CopyRequestResultArgs_RequestType_DefaultRequestType;
+  such calls must be changed to call ArtmCopyRequestResult;
+  calls to ArtmCopyRequestResultEx with both other request types
+  (CopyRequestResultArgs_RequestType_GetThetaSecondPass and CopyRequestResultArgs_RequestType_GetModelSecondPass)
+  should keep using ArtmCopyRequestResultEx.
+* remove field ``request_type`` in ``GetTopicModelArgs``;
+  to request only topics and/or tokens users should set ``GetTopicModelArgs.matrix_layout`` to ``MatrixLayout_Sparse``,
+  and ``GetTopicModelArgs.eps = 1.001`` (any number greather that 1.0).
+
 
 v0.7.x
 ------

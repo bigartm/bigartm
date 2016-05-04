@@ -487,7 +487,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     if (regularizer_type == "sparsetheta") tau = -tau;
 
     config->set_name(regularizer);
-    config->set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
+    config->set_type(::artm::RegularizerType_SmoothSparseTheta);
     config->set_config(specific_config.SerializeAsString());
     config->set_tau(tau);
   }
@@ -503,7 +503,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     if (regularizer_type == "sparsephi") tau = -tau;
 
     config->set_name(regularizer);
-    config->set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+    config->set_type(::artm::RegularizerType_SmoothSparsePhi);
     config->set_config(specific_config.SerializeAsString());
     config->set_tau(tau);
   }
@@ -515,7 +515,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
       specific_config.add_class_id(class_id.first);
 
     config->set_name(regularizer);
-    config->set_type(::artm::RegularizerConfig_Type_DecorrelatorPhi);
+    config->set_type(::artm::RegularizerType_DecorrelatorPhi);
     config->set_config(specific_config.SerializeAsString());
     config->set_tau(tau);
   } else {
@@ -529,7 +529,7 @@ class ScoreHelper {
    ::artm::MasterModel* master_;
    ::artm::MasterModelConfig* config_;
    std::map<std::string, std::string>* dictionary_map_;
-   std::vector<std::pair<std::string, ::artm::ScoreConfig_Type>> score_name_;
+   std::vector<std::pair<std::string, ::artm::ScoreType>> score_name_;
    std::ofstream output_;
  public:
    ScoreHelper(const artm_options& artm_options,
@@ -593,20 +593,20 @@ class ScoreHelper {
          specific_config.set_model_type(PerplexityScoreConfig_Type_UnigramCollectionModel);
          specific_config.set_dictionary_name(dictionary_name);
        }
-       score_config.set_type(::artm::ScoreConfig_Type_Perplexity);
+       score_config.set_type(::artm::ScoreType_Perplexity);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "sparsitytheta") {
        SparsityThetaScoreConfig specific_config;
        for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
-       score_config.set_type(::artm::ScoreConfig_Type_SparsityTheta);
+       score_config.set_type(::artm::ScoreType_SparsityTheta);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "sparsityphi") {
        SparsityPhiScoreConfig specific_config;
        for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
        for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
-       score_config.set_type(::artm::ScoreConfig_Type_SparsityPhi);
+       score_config.set_type(::artm::ScoreType_SparsityPhi);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "toptokens") {
@@ -615,13 +615,13 @@ class ScoreHelper {
        for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
        for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
        if (!dictionary_name.empty()) specific_config.set_cooccurrence_dictionary_name(dictionary_name);
-       score_config.set_type(::artm::ScoreConfig_Type_TopTokens);
+       score_config.set_type(::artm::ScoreType_TopTokens);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "thetasnippet") {
        ThetaSnippetScoreConfig specific_config;
        if (score_arg != 0) specific_config.set_num_items(score_arg);
-       score_config.set_type(::artm::ScoreConfig_Type_ThetaSnippet);
+       score_config.set_type(::artm::ScoreType_ThetaSnippet);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "topickernel") {
@@ -630,17 +630,17 @@ class ScoreHelper {
        for (auto& topic_name : topic_names) specific_config.add_topic_name(topic_name);
        for (auto& class_id : class_ids) specific_config.set_class_id(class_id.first);
        if (!dictionary_name.empty()) specific_config.set_cooccurrence_dictionary_name(dictionary_name);
-       score_config.set_type(::artm::ScoreConfig_Type_TopicKernel);
+       score_config.set_type(::artm::ScoreType_TopicKernel);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "classprecision") {
        ClassPrecisionScoreConfig specific_config;
-       score_config.set_type(::artm::ScoreConfig_Type_ClassPrecision);
+       score_config.set_type(::artm::ScoreType_ClassPrecision);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else if (score_type == "peakmemory") {
        PeakMemoryScoreConfig specific_config;
-       score_config.set_type(::artm::ScoreConfig_Type_PeakMemory);
+       score_config.set_type(::artm::ScoreType_PeakMemory);
        score_config.set_config(specific_config.SerializeAsString());
      }
      else {
@@ -649,33 +649,33 @@ class ScoreHelper {
      score_name_.push_back(std::make_pair(score, score_config.type()));
    }
 
-   std::string showScore(std::string& score_name, ::artm::ScoreConfig_Type type) {
+   std::string showScore(std::string& score_name, ::artm::ScoreType type) {
      std::string retval;
      GetScoreValueArgs get_score_args;
      get_score_args.set_score_name(score_name);
 
-     if (type == ::artm::ScoreConfig_Type_Perplexity) {
+     if (type == ::artm::ScoreType_Perplexity) {
        auto score_data = master_->GetScoreAs< ::artm::PerplexityScore>(get_score_args);
        std::cerr << "Perplexity      = " << score_data.value();
        if (boost::to_lower_copy(score_name) != "perplexity") std::cerr << "\t(" << score_name << ")";
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
-     else if (type == ::artm::ScoreConfig_Type_SparsityTheta) {
+     else if (type == ::artm::ScoreType_SparsityTheta) {
        auto score_data = master_->GetScoreAs< ::artm::SparsityThetaScore>(get_score_args);
        std::cerr << "SparsityTheta   = " << score_data.value();
        if (boost::to_lower_copy(score_name) != "sparsitytheta") std::cerr << "\t(" << score_name << ")";
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
-     else if (type == ::artm::ScoreConfig_Type_SparsityPhi) {
+     else if (type == ::artm::ScoreType_SparsityPhi) {
        auto score_data = master_->GetScoreAs< ::artm::SparsityPhiScore>(get_score_args);
        std::cerr << "SparsityPhi     = " << score_data.value();
        if (boost::to_lower_copy(score_name) != "sparsityphi") std::cerr << "\t(" << score_name << ")";
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
-     else if (type == ::artm::ScoreConfig_Type_TopTokens) {
+     else if (type == ::artm::ScoreType_TopTokens) {
        auto score_data = master_->GetScoreAs< ::artm::TopTokensScore>(get_score_args);
        std::cerr << "TopTokens (" << score_name << "):";
        int topic_index = -1;
@@ -689,7 +689,7 @@ class ScoreHelper {
        }
        std::cerr << "\n";
      }
-     else if (type == ::artm::ScoreConfig_Type_ThetaSnippet) {
+     else if (type == ::artm::ScoreType_ThetaSnippet) {
        auto score_data = master_->GetScoreAs< ::artm::ThetaSnippetScore>(get_score_args);
        int docs_to_show = score_data.values_size();
        std::cerr << "ThetaSnippet (" << score_name << ")\n";
@@ -703,7 +703,7 @@ class ScoreHelper {
          std::cerr << "\n";
        }
      }
-     else if (type == ::artm::ScoreConfig_Type_TopicKernel) {
+     else if (type == ::artm::ScoreType_TopicKernel) {
        auto score_data = master_->GetScoreAs< ::artm::TopicKernelScore>(get_score_args);
        std::stringstream suffix;
        if (boost::to_lower_copy(score_name) != "topickernel") suffix << "\t(" << score_name << ")";
@@ -714,14 +714,14 @@ class ScoreHelper {
        if (score_data.has_average_coherence())
          std::cerr << "KernelCoherence = " << score_data.average_coherence() << suffix.str() << "\n";
      }
-     else if (type == ::artm::ScoreConfig_Type_ClassPrecision) {
+     else if (type == ::artm::ScoreType_ClassPrecision) {
        auto score_data = master_->GetScoreAs< ::artm::ClassPrecisionScore>(get_score_args);
        std::stringstream suffix;
        if (boost::to_lower_copy(score_name) != "classprecision") suffix << "\t(" << score_name << ")";
        std::cerr << "ClassPrecision  = " << score_data.value() << suffix.str() << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
      }
-     else if (type == ::artm::ScoreConfig_Type_PeakMemory) {
+     else if (type == ::artm::ScoreType_PeakMemory) {
        auto score_data = master_->GetScoreAs< ::artm::PeakMemoryScore>(get_score_args);
        std::cerr << "PeakMemory      = " << score_data.value() / 1024 << "KB";
        if (boost::to_lower_copy(score_name) != "peakmemory") std::cerr << "\t(" << score_name << ")";
@@ -811,9 +811,9 @@ class BatchVectorizer {
 
       ProgressScope scope("Parsing text collection");
       ::artm::CollectionParserConfig collection_parser_config;
-      if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
-      else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_Format_VowpalWabbit);
-      else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_Format");
+      if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_BagOfWordsUci);
+      else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_VowpalWabbit);
+      else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_CollectionFormat");
 
       collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
       if (!options_.read_uci_vocab.empty())
@@ -1056,7 +1056,8 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
   if (options.isModelRequired()) {
     ::artm::GetTopicModelArgs get_model_args;
-    get_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Tokens);
+    get_model_args.set_matrix_layout(::artm::MatrixLayout_Sparse);
+    get_model_args.set_eps(1.001f);  // hack-hack to return no entries
     get_model_args.set_model_name(pwt_model_name);
     ::artm::TopicModel topic_model = master_component->GetTopicModel(get_model_args);
     std::cerr << "Number of tokens in the model: " << topic_model.token_size() << std::endl;
@@ -1173,7 +1174,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     ProgressScope scope(std::string("Generating predictions"));
 
     TransformMasterModelArgs transform_args;
-    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
     if (!options.predict_class.empty())
       transform_args.set_predict_class_id(options.predict_class);
     for (auto& batch_filename : batch_file_names)

@@ -45,7 +45,7 @@ TEST(CppInterface, BasicTest) {
 
   ::artm::ScoreConfig* score_config = master_config.add_score_config();
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
-  score_config->set_type(::artm::ScoreConfig_Type_Perplexity);
+  score_config->set_type(::artm::ScoreType_Perplexity);
   score_config->set_name("PerplexityScore");
 
   // check log level
@@ -57,7 +57,7 @@ TEST(CppInterface, BasicTest) {
   ::artm::RegularizerConfig* reg_decor_config = master_config.add_regularizer_config();
   artm::DecorrelatorPhiConfig decor_config;
   reg_decor_config->set_name("decorrelator");
-  reg_decor_config->set_type(artm::RegularizerConfig_Type_DecorrelatorPhi);
+  reg_decor_config->set_type(artm::RegularizerType_DecorrelatorPhi);
   reg_decor_config->set_config(decor_config.SerializeAsString());
   reg_decor_config->set_tau(1.0);
 
@@ -130,7 +130,7 @@ TEST(CppInterface, BasicTest) {
 
     ::artm::TransformMasterModelArgs transform_args;
     transform_args.add_batch_filename(batch.id());
-    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Cache);
+    transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Cache);
     master_component.Transform(transform_args);
     auto perplexity2 = master_component.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
     previous_perplexity = perplexity2.value();
@@ -269,7 +269,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   master_config.set_pwt_name("pwt0");
   artm::ScoreConfig* score_config = master_config.add_score_config();
   score_config->set_name("Perplexity");
-  score_config->set_type(artm::ScoreConfig_Type_Perplexity);
+  score_config->set_type(artm::ScoreType_Perplexity);
   ::artm::PerplexityScoreConfig perplexity_score_config;
   score_config->set_config(perplexity_score_config.SerializeAsString());
   artm::MasterModel master(master_config);
@@ -345,7 +345,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   score_args.set_score_name("Perplexity");
   for (int i = 0; i < 10; ++i) {  // 10 iterations
     process_batches_args.set_pwt_source_name(i == 0 ? "pwt0" : "pwt");
-    process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_Dense);
+    process_batches_args.set_theta_matrix_type(artm::ThetaMatrixType_Dense);
     api.ClearScoreCache(::artm::ClearScoreCacheArgs());
     artm::ThetaMatrix result = api.ProcessBatches(process_batches_args);
     perplexity_score = master.GetScoreAs< ::artm::PerplexityScore>(score_args);
@@ -421,7 +421,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   auto config = master.config();
   ::artm::RegularizerConfig* sparse_phi_config = config.add_regularizer_config();
   sparse_phi_config->set_name("sparse_phi");
-  sparse_phi_config->set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+  sparse_phi_config->set_type(::artm::RegularizerType_SmoothSparsePhi);
   sparse_phi_config->set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
   sparse_phi_config->set_tau(1.0);
   master.Reconfigure(config);
@@ -439,7 +439,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   ASSERT_EQ(rwt.topic_name_size(), nTopics);
 
   // Test to verify Ptdw extraction
-  process_batches_args.set_theta_matrix_type(artm::ProcessBatchesArgs_ThetaMatrixType_SparsePtdw);
+  process_batches_args.set_theta_matrix_type(artm::ThetaMatrixType_SparsePtdw);
   artm::ThetaMatrix theta_matrix = api.ProcessBatches(process_batches_args);
 
   const int expected_combined_items_length = 154;
@@ -540,7 +540,7 @@ TEST(CppInterface, AsyncProcessBatches) {
     process_batches_args.add_batch_filename(batch_name);
     process_batches_args.set_pwt_source_name(std::string(master_config.pwt_name()));
     process_batches_args.set_nwt_target_name(std::string("nwt_hat") + boost::lexical_cast<std::string>(i));
-    process_batches_args.set_theta_matrix_type(::artm::ProcessBatchesArgs_ThetaMatrixType_None);
+    process_batches_args.set_theta_matrix_type(::artm::ThetaMatrixType_None);
     operation_ids.push_back(api.AsyncProcessBatches(process_batches_args));
   }
 

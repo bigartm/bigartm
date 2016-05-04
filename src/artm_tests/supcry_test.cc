@@ -105,17 +105,17 @@ TEST(Supcry, Fit) {
   for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
 
   ::artm::ScoreConfig* score_config = config.add_score_config();
-  score_config->set_type(::artm::ScoreConfig_Type_Perplexity);
+  score_config->set_type(::artm::ScoreType_Perplexity);
   score_config->set_name("Perplexity");
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
 
   ::artm::ScoreConfig* tts_config = config.add_score_config();
-  tts_config->set_type(::artm::ScoreConfig_Type_TopTokens);
+  tts_config->set_type(::artm::ScoreType_TopTokens);
   tts_config->set_name("TopTokens");
   tts_config->set_config(::artm::TopTokensScoreConfig().SerializeAsString());
 
   ::artm::RegularizerConfig* reg_theta = config.add_regularizer_config();
-  reg_theta->set_type(::artm::RegularizerConfig_Type_SmoothSparseTheta);
+  reg_theta->set_type(::artm::RegularizerType_SmoothSparseTheta);
   reg_theta->set_tau(-0.2);
   reg_theta->set_name("SparseTheta");
   reg_theta->set_config(::artm::SmoothSparseThetaConfig().SerializeAsString());
@@ -235,7 +235,7 @@ TEST(Supcry, FitFromDiskFolder) {
   ::artm::MasterModelConfig config;
   for (auto& topic_name : getTopicNames()) config.add_topic_name(topic_name);
   ::artm::ScoreConfig* score_config = config.add_score_config();
-  score_config->set_type(::artm::ScoreConfig_Type_Perplexity);
+  score_config->set_type(::artm::ScoreType_Perplexity);
   score_config->set_name("Perplexity");
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
   ::artm::MasterModel master_model(config);
