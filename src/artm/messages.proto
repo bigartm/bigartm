@@ -124,7 +124,7 @@ message LabelRegularizationPhiConfig {
 }
 
 message SpecifiedSparsePhiConfig {
-  enum Mode {
+  enum SparseMode {
     SparseTopics = 0;
     SparseTokens = 1;
   }
@@ -133,7 +133,7 @@ message SpecifiedSparsePhiConfig {
   optional string class_id = 2 [default = "@default_class"];
   optional int32 max_elements_count = 3 [default = 20];
   optional float probability_threshold = 4 [default = 0.99];
-  optional Mode mode = 5 [default = SparseTopics];
+  optional SparseMode mode = 5 [default = SparseTopics];
 }
 
 // Represents a configuration of a ImproveCoherence Phi regularizer

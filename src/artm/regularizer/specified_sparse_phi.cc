@@ -34,7 +34,7 @@ bool SpecifiedSparsePhi::RegularizePhi(const ::artm::core::PhiMatrix& p_wt,
     topics_to_regularize = core::is_member(n_wt.topic_name(), config_.topic_name());
 
   // proceed the regularization
-  bool mode_topics = config_.mode() == artm::SpecifiedSparsePhiConfig_Mode_SparseTopics;
+  bool mode_topics = config_.mode() == artm::SpecifiedSparsePhiConfig_SparseMode_SparseTopics;
   const int global_end = mode_topics ? topic_size : token_size;
   const int local_end = !mode_topics ? topic_size : token_size;
 

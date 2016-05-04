@@ -429,10 +429,10 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         self._sparse_by_columns = True
         if sparse_by_columns is not None:
             if sparse_by_columns is True:
-                self._config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTopics
+                self._config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTopics
                 self._sparse_by_columns = True
             else:
-                self._config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTokens
+                self._config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTokens
                 self._sparse_by_columns = False
 
     @property
@@ -477,9 +477,9 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         config = messages.SpecifiedSparseRegularizationPhiConfig()
         config.CopyFrom(self._config)
         if sparse_by_columns is True:
-            config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTopics
+            config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTopics
         else:
-            config.mode = const.SpecifiedSparsePhiConfig_Mode_SparseTokens
+            config.mode = const.SpecifiedSparsePhiConfig_SparseMode_SparseTokens
         self.regularizer.Reconfigure(self.regularizer.config_.type, config)
 
     @class_ids.setter
