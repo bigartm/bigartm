@@ -7,7 +7,8 @@ __all__ = [
     'TopicKernelScoreTracker',
     'TopTokensScoreTracker',
     'TopicMassPhiScoreTracker',
-    'ClassPrecisionScoreTracker'
+    'ClassPrecisionScoreTracker',
+    'BackgroundTokensPartScoreTracker'
 ]
 
 
@@ -263,3 +264,19 @@ class ClassPrecisionScoreTracker(BaseScoreTracker):
         BaseScoreTracker.__init__(self, score)
 
 _set_properties(ClassPrecisionScoreTracker, {'value': {}, 'error': {}, 'total': {}})
+
+
+class BackgroundTokensPartScoreTracker(BaseScoreTracker):
+    def __init__(self, score):
+        """
+        :Properties:
+        * Note: every field is a list of info about score on all synchronizations.
+        * value - values of part of background tokens.
+        * tokens - each element of list is a lists of background tokens\
+                   (can be acceced if 'save_tokens' was True)
+        * Note: every field has a version with prefix 'last_', means retrieving only\
+          info about the last synchronization.
+        """
+        BaseScoreTracker.__init__(self, score)
+
+_set_properties(BackgroundTokensPartScoreTracker, {'value': {}, 'tokens': {'proto_name': 'token'}})
