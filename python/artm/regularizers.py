@@ -52,9 +52,9 @@ class KlFunctionInfo(object):
         config.CopyFrom(obj._config)
 
         if self.function_type == 'log':
-            config.transform_config.transform_type = const.TransformConfig_TransformType_Constant
+            config.transform_config.type = const.TransformConfig_TransformType_Constant
         elif self.function_type == 'pol':
-            config.transform_config.transform_type = const.TransformConfig_TransformType_Polynomial
+            config.transform_config.type = const.TransformConfig_TransformType_Polynomial
             config.transform_config.n = self.power_value  # power_value - 1, but *x gives no change
             config.transform_config.a = self.power_value
 

@@ -12,7 +12,7 @@ namespace artm {
 namespace core {
 
 std::shared_ptr<TransformFunction> TransformFunction::create(const TransformConfig& config) {
-  switch (config.transform_type()) {
+  switch (config.type()) {
     case TransformConfig_TransformType_Constant:
       return std::make_shared<ConstantTransformFunction>(ConstantTransformFunction());
 
@@ -23,12 +23,12 @@ std::shared_ptr<TransformFunction> TransformFunction::create(const TransformConf
       return std::make_shared<PolynomialTransformFunction>(PolynomialTransformFunction(config.a(), config.n()));
   }
 
-  BOOST_THROW_EXCEPTION(InvalidOperation("Invalid TransformConfig.transform_type"));
+  BOOST_THROW_EXCEPTION(InvalidOperation("Invalid TransformConfig.type"));
 }
 
 std::shared_ptr<TransformFunction> TransformFunction::create() {
   TransformConfig config;
-  config.set_transform_type(TransformConfig_TransformType_Constant);
+  config.set_type(TransformConfig_TransformType_Constant);
   return TransformFunction::create(config);
 }
 

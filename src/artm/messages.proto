@@ -170,7 +170,7 @@ message TransformConfig {
     Constant = 2; // f(x) = 1
   }
 
-  optional TransformType transform_type = 1 [default = Constant];
+  optional TransformType type = 1 [default = Constant];
   optional double n = 2 [default = 1];
   optional double a = 3 [default = 1];
 }
