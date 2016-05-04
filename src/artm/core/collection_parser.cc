@@ -63,7 +63,7 @@ CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config)
 
 void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   BatchNameGenerator batch_name_generator(kBatchNameLength,
-    config_.name_type() == CollectionParserConfig_NameType_Guid);
+    config_.name_type() == CollectionParserConfig_BatchNameType_Guid);
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
 
@@ -346,7 +346,7 @@ void CollectionParser::ParseVowpalWabbit() {
   BatchCollector batch_collector;
 
   BatchNameGenerator batch_name_generator(kBatchNameLength,
-    config_.name_type() == CollectionParserConfig_NameType_Guid);
+    config_.name_type() == CollectionParserConfig_BatchNameType_Guid);
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
 

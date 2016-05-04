@@ -57,6 +57,7 @@ v0.8.0
 * renamed enum ``Type`` into ``SmoothType`` in ``SmoothPtdwConfig`` to avoid conflicts in C# messages
 * renamed enum ``Mode`` into ``SparseMode`` in ``SpecifiedSparsePhiConfig`` to avoid conflicts in C# messages
 * renamed enum ``Format`` into ``CollectionFormat`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
+* renamed enum ``NameType`` into ``BatchNameType`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
 * renamed field ``transform_type`` into ``type`` in ``TransformConfig`` to avoid conflicts in C# messages
 
 
