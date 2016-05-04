@@ -43,15 +43,15 @@ def test_func():
                                   0.0068, 0.0067, 0.0065, 0.0058,
                                   0.0053, 0.0053, 0.0051]
 
-    ker_zero_eps = 0.01
+    ker_zero_eps = 0.02
     topic_kernel_topic_0_contrast = 0.96
     topic_kernel_topic_0_purity = 0.014
     topic_kernel_topic_0_size = 18.0
     topic_kernel_average_size = [0.0, 0.0, 0.0, 0.0, 0.0,
-                                 0.0, 0.0, 0.13, 0.53, 1.6,
-                                 3.33, 7.13, 12.067, 19.53, 27.8]
+                                 0.0, 0.0, 0.13, 0.6, 1.6,
+                                 3.53, 7.15, 12.6, 20.4, 29.06]
     topic_kernel_average_contrast = [0.0, 0.0, 0.0, 0.0, 0.0,
-                                     0.0, 0.0, 0.12, 0.25, 0.7,
+                                     0.0, 0.0, 0.12, 0.31, 0.7,
                                      0.96, 0.96, 0.96, 0.96, 0.97]
     topic_kernel_average_purity = [0.0, 0.0, 0.0, 0.0, 0.0,
                                    0.0, 0.0, 0.01, 0.01, 0.015,

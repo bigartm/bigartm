@@ -68,23 +68,27 @@ std::shared_ptr<Score> TopicKernel::CalculateScore(const artm::core::PhiMatrix& 
     }
   }
 
-  std::vector<std::vector<core::Token> > topic_kernel_tokens;
+  auto n_wt = GetPhiMatrix(instance_->config()->nwt_name());
+  std::vector<double> n_t(topic_size, 0.0);
+  std::vector<std::vector<core::Token> > topic_kernel_tokens(
+      topic_size, std::vector<core::Token>());
+
   for (int topic_index = 0; topic_index < topic_size; ++topic_index)
-    topic_kernel_tokens.push_back(std::vector<core::Token>());
+    for (int token_index = 0; token_index < token_size; ++token_index)
+      n_t[topic_index] += static_cast<double>(n_wt->get(token_index, topic_index));
 
   for (int token_index = 0; token_index < token_size; ++token_index) {
     if (p_wt.token(token_index).class_id == class_id) {
-      // calculate normalizer
-      double normalizer = 0.0;
+      double p_w = 0.0;
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if (topics_to_score[topic_index])
-          normalizer += static_cast<double>(p_wt.get(token_index, topic_index));
+          p_w += static_cast<double>(p_wt.get(token_index, topic_index) * n_t[topic_index]);
       }
 
       for (int topic_index = 0; topic_index < topic_size; ++topic_index) {
         if (topics_to_score[topic_index]) {
-          float value = p_wt.get(token_index, topic_index);
-          double p_tw = (normalizer > 0.0) ? (value / normalizer) : 0.0;
+          double value = static_cast<double>(p_wt.get(token_index, topic_index));
+          double p_tw = (p_w > 0.0) ? (value * n_t[topic_index] / p_w) : 0.0;
 
           if (p_tw >= probability_mass_threshold) {
             artm::core::repeated_field_append(kernel_size->mutable_value(), topic_index, 1.0);

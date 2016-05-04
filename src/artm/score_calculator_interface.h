@@ -30,7 +30,10 @@ class Instance;
 // Hopefully we will refactor this at some point in the future.
 class ScoreCalculatorInterface {
  public:
-  explicit ScoreCalculatorInterface(const ScoreConfig& score_config) : score_config_(score_config) {}
+  explicit ScoreCalculatorInterface(const ScoreConfig& score_config)
+    : score_config_(score_config),
+      dictionaries_(nullptr),
+      instance_(nullptr) {}
 
   virtual ~ScoreCalculatorInterface() { }
 
@@ -71,8 +74,10 @@ class ScoreCalculatorInterface {
 
  private:
   ScoreConfig score_config_;
-  ::artm::core::Instance* instance_;
   const ::artm::core::ThreadSafeDictionaryCollection* dictionaries_;
+
+ protected:
+  ::artm::core::Instance* instance_;
 };
 
 template<typename ConfigType>

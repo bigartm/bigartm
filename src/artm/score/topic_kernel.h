@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "artm/score_calculator_interface.h"
+#include "artm/core/instance.h"
 
 namespace artm {
 namespace score {
