@@ -45,7 +45,7 @@ TEST(CppInterface, BasicTest) {
 
   ::artm::ScoreConfig* score_config = master_config.add_score_config();
   score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
-  score_config->set_type(::artm::ScoreConfig_Type_Perplexity);
+  score_config->set_type(::artm::ScoreType::Perplexity);
   score_config->set_name("PerplexityScore");
 
   // check log level
@@ -57,7 +57,7 @@ TEST(CppInterface, BasicTest) {
   ::artm::RegularizerConfig* reg_decor_config = master_config.add_regularizer_config();
   artm::DecorrelatorPhiConfig decor_config;
   reg_decor_config->set_name("decorrelator");
-  reg_decor_config->set_type(artm::RegularizerConfig_Type_DecorrelatorPhi);
+  reg_decor_config->set_type(artm::RegularizerType::DecorrelatorPhi);
   reg_decor_config->set_config(decor_config.SerializeAsString());
   reg_decor_config->set_tau(1.0);
 
@@ -269,7 +269,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   master_config.set_pwt_name("pwt0");
   artm::ScoreConfig* score_config = master_config.add_score_config();
   score_config->set_name("Perplexity");
-  score_config->set_type(artm::ScoreConfig_Type_Perplexity);
+  score_config->set_type(artm::ScoreType::Perplexity);
   ::artm::PerplexityScoreConfig perplexity_score_config;
   score_config->set_config(perplexity_score_config.SerializeAsString());
   artm::MasterModel master(master_config);
@@ -421,7 +421,7 @@ TEST(CppInterface, ProcessBatchesApi) {
   auto config = master.config();
   ::artm::RegularizerConfig* sparse_phi_config = config.add_regularizer_config();
   sparse_phi_config->set_name("sparse_phi");
-  sparse_phi_config->set_type(::artm::RegularizerConfig_Type_SmoothSparsePhi);
+  sparse_phi_config->set_type(::artm::RegularizerType::SmoothSparsePhi);
   sparse_phi_config->set_config(::artm::SmoothSparsePhiConfig().SerializeAsString());
   sparse_phi_config->set_tau(1.0);
   master.Reconfigure(config);

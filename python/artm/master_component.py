@@ -8,62 +8,62 @@ from .wrapper import constants
 
 def _regularizer_type(config):
     if isinstance(config, messages.SmoothSparseThetaConfig):
-        return constants.RegularizerConfig_Type_SmoothSparseTheta
+        return constants.RegularizerType_SmoothSparseTheta
     elif isinstance(config, messages.SmoothSparsePhiConfig):
-        return constants.RegularizerConfig_Type_SmoothSparsePhi
+        return constants.RegularizerType_SmoothSparsePhi
     elif isinstance(config, messages.DecorrelatorPhiConfig):
-        return constants.RegularizerConfig_Type_DecorrelatorPhi
+        return constants.RegularizerType_DecorrelatorPhi
     elif isinstance(config, messages.LabelRegularizationPhiConfig):
-        return constants.RegularizerConfig_Type_LabelRegularizationPhi
+        return constants.RegularizerType_LabelRegularizationPhi
     elif isinstance(config, messages.SpecifiedSparsePhiConfig):
-        return constants.RegularizerConfig_Type_SpecifiedSparsePhi
+        return constants.RegularizerType_SpecifiedSparsePhi
     elif isinstance(config, messages.ImproveCoherencePhiConfig):
-        return constants.RegularizerConfig_Type_ImproveCoherencePhi
+        return constants.RegularizerType_ImproveCoherencePhi
     elif isinstance(config, messages.SmoothPtdwConfig):
-        return constants.RegularizerConfig_Type_SmoothPtdw
+        return constants.RegularizerType_SmoothPtdw
     elif isinstance(config, messages.TopicSelectionThetaConfig):
-        return constants.RegularizerConfig_Type_TopicSelectionTheta
+        return constants.RegularizerType_TopicSelectionTheta
 
 
 def _score_type(config):
     if isinstance(config, messages.PerplexityScoreConfig):
-        return constants.ScoreConfig_Type_Perplexity
+        return constants.ScoreType_Perplexity
     elif isinstance(config, messages.SparsityThetaScoreConfig):
-        return constants.ScoreConfig_Type_SparsityTheta
+        return constants.ScoreType_SparsityTheta
     elif isinstance(config, messages.SparsityPhiScoreConfig):
-        return constants.ScoreConfig_Type_SparsityPhi
+        return constants.ScoreType_SparsityPhi
     elif isinstance(config, messages.ItemsProcessedScoreConfig):
-        return constants.ScoreConfig_Type_ItemsProcessed
+        return constants.ScoreType_ItemsProcessed
     elif isinstance(config, messages.TopTokensScoreConfig):
-        return constants.ScoreConfig_Type_TopTokens
+        return constants.ScoreType_TopTokens
     elif isinstance(config, messages.ThetaSnippetScoreConfig):
-        return constants.ScoreConfig_Type_ThetaSnippet
+        return constants.ScoreType_ThetaSnippet
     elif isinstance(config, messages.TopicKernelScoreConfig):
-        return constants.ScoreConfig_Type_TopicKernel
+        return constants.ScoreType_TopicKernel
     elif isinstance(config, messages.TopicMassPhiScoreConfig):
-        return constants.ScoreConfig_Type_TopicMassPhi
+        return constants.ScoreType_TopicMassPhi
     elif isinstance(config, messages.ClassPrecisionScoreConfig):
-        return constants.ScoreConfig_Type_ClassPrecision
+        return constants.ScoreType_ClassPrecision
 
 
 def _score_data_func(score_data_type):
-    if score_data_type == constants.ScoreData_Type_Perplexity:
+    if score_data_type == constants.ScoreType_Perplexity:
         return messages.PerplexityScore
-    elif score_data_type == constants.ScoreData_Type_SparsityTheta:
+    elif score_data_type == constants.ScoreType_SparsityTheta:
         return messages.SparsityThetaScore
-    elif score_data_type == constants.ScoreData_Type_SparsityPhi:
+    elif score_data_type == constants.ScoreType_SparsityPhi:
         return messages.SparsityPhiScore
-    elif score_data_type == constants.ScoreData_Type_ItemsProcessed:
+    elif score_data_type == constants.ScoreType_ItemsProcessed:
         return messages.ItemsProcessedScore
-    elif score_data_type == constants.ScoreData_Type_TopTokens:
+    elif score_data_type == constants.ScoreType_TopTokens:
         return messages.TopTokensScore
-    elif score_data_type == constants.ScoreData_Type_ThetaSnippet:
+    elif score_data_type == constants.ScoreType_ThetaSnippet:
         return messages.ThetaSnippetScore
-    elif score_data_type == constants.ScoreData_Type_TopicKernel:
+    elif score_data_type == constants.ScoreType_TopicKernel:
         return messages.TopicKernelScore
-    elif score_data_type == constants.ScoreData_Type_TopicMassPhi:
+    elif score_data_type == constants.ScoreType_TopicMassPhi:
         return messages.TopicMassPhiScore
-    elif score_data_type == constants.ScoreData_Type_ClassPrecision:
+    elif score_data_type == constants.ScoreType_ClassPrecision:
         return messages.ClassPrecisionScore
 
 

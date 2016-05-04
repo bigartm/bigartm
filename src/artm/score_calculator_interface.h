@@ -37,7 +37,7 @@ class ScoreCalculatorInterface {
 
   virtual ~ScoreCalculatorInterface() { }
 
-  virtual ScoreData_Type score_type() const = 0;
+  virtual ScoreType score_type() const = 0;
 
   // Non-cumulative calculation (based on Phi matrix)
   virtual std::shared_ptr<Score> CalculateScore(const artm::core::PhiMatrix& p_wt) { return nullptr; }

@@ -52,6 +52,8 @@ v0.8.0
   train/test streaming functionality is fully removed; users are expected to manage their train and test collections (for example as separate folders with batches)
 * removed ``use_sparse_bow`` field in several messages; the computation mode with dense matrices is no longer supported;
 * renamed ``item_count`` into ``num_items`` in ``ThetaSnippetScoreConfig``
+* add global enum ``ScoreType`` as a replacement for enums ``Type`` from ``ScoreConfig`` and ``ScoreData`` messages
+* add global enum ``RegularizerType`` as a replacement for enum ``Type`` from ``RegularizerConfig`` message
 
 v0.7.x
 ------

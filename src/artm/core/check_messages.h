@@ -547,7 +547,7 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
 
   for (int i = 0; i < message->score_config_size(); ++i) {
     ScoreConfig* score_config = message->mutable_score_config(i);
-    if (score_config->type() == ScoreConfig_Type_TopTokens)
+    if (score_config->type() == ScoreType::TopTokens)
       FixPackedMessage<TopTokensScoreConfig>(score_config->mutable_config());
 
     if (!score_config->has_model_name())

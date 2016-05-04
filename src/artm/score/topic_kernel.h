@@ -40,7 +40,7 @@ class TopicKernel : public ScoreCalculatorInterface {
 
   virtual bool is_cumulative() const { return false; }
 
-  virtual ScoreData_Type score_type() const { return ::artm::ScoreData_Type_TopicKernel; }
+  virtual ScoreType score_type() const { return ::artm::ScoreType::TopicKernel; }
 
  private:
   TopicKernelScoreConfig config_;

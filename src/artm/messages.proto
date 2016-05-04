@@ -72,22 +72,22 @@ message RegularizerSettings {
   optional double gamma = 4;
 }
 
+enum RegularizerType {
+  SmoothSparseTheta = 0;
+  SmoothSparsePhi = 1;
+  DecorrelatorPhi = 2;
+  MultiLanguagePhi = 3;
+  LabelRegularizationPhi = 4;
+  SpecifiedSparsePhi = 5;
+  ImproveCoherencePhi = 6;
+  SmoothPtdw = 7;
+  TopicSelectionTheta = 8;
+}
+
 // Represents a configuration of a general regularizer
 message RegularizerConfig {
-  enum Type {
-    SmoothSparseTheta = 0;
-    SmoothSparsePhi = 1;
-    DecorrelatorPhi = 2;
-    MultiLanguagePhi = 3;
-    LabelRegularizationPhi = 4;
-    SpecifiedSparsePhi = 5;
-    ImproveCoherencePhi = 6;
-    SmoothPtdw = 7;
-    TopicSelectionTheta = 8;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional RegularizerType type = 2;
   optional bytes config = 3;
   optional float tau = 4;
 }
@@ -175,44 +175,31 @@ message TransformConfig {
   optional double a = 3 [default = 1];
 }
 
+enum ScoreType {
+  Perplexity = 0;
+  SparsityTheta = 1;
+  SparsityPhi = 2;
+  ItemsProcessed = 3;
+  TopTokens = 4;
+  ThetaSnippet = 5;
+  TopicKernel = 6;
+  TopicMassPhi = 7;
+  ClassPrecision = 8;
+  PeakMemory = 9;
+}
+
 // Represents a configuration of a general score
 message ScoreConfig {
-  enum Type {
-    Perplexity = 0;
-    SparsityTheta = 1;
-    SparsityPhi = 2;
-    ItemsProcessed = 3;
-    TopTokens = 4;
-    ThetaSnippet = 5;
-    TopicKernel = 6;
-    TopicMassPhi = 7;
-    ClassPrecision = 8;
-    PeakMemory = 9;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional ScoreType type = 2;
   optional bytes config = 3;
   optional string model_name = 4;
 }
 
 // Represents a result of score calculation
 message ScoreData {
-  enum Type {
-    Perplexity = 0;
-    SparsityTheta = 1;
-    SparsityPhi = 2;
-    ItemsProcessed = 3;
-    TopTokens = 4;
-    ThetaSnippet = 5;
-    TopicKernel = 6;
-    TopicMassPhi = 7;
-    ClassPrecision = 8;
-    PeakMemory = 9;
-  }
-
   optional string name = 1;
-  optional Type type = 2;
+  optional ScoreType type = 2;
   optional bytes data = 3;
 }
 

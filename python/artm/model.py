@@ -17,22 +17,22 @@ from .scores import Scores, TopicMassPhiScore  # temp
 from . import score_tracker
 
 SCORE_TRACKER = {
-    const.ScoreConfig_Type_SparsityPhi: score_tracker.SparsityPhiScoreTracker,
-    const.ScoreConfig_Type_SparsityTheta: score_tracker.SparsityThetaScoreTracker,
-    const.ScoreConfig_Type_Perplexity: score_tracker.PerplexityScoreTracker,
-    const.ScoreConfig_Type_ThetaSnippet: score_tracker.ThetaSnippetScoreTracker,
-    const.ScoreConfig_Type_ItemsProcessed: score_tracker.ItemsProcessedScoreTracker,
-    const.ScoreConfig_Type_TopTokens: score_tracker.TopTokensScoreTracker,
-    const.ScoreConfig_Type_TopicKernel: score_tracker.TopicKernelScoreTracker,
-    const.ScoreConfig_Type_TopicMassPhi: score_tracker.TopicMassPhiScoreTracker,
-    const.ScoreConfig_Type_ClassPrecision: score_tracker.ClassPrecisionScoreTracker,
+    const.ScoreType_SparsityPhi: score_tracker.SparsityPhiScoreTracker,
+    const.ScoreType_SparsityTheta: score_tracker.SparsityThetaScoreTracker,
+    const.ScoreType_Perplexity: score_tracker.PerplexityScoreTracker,
+    const.ScoreType_ThetaSnippet: score_tracker.ThetaSnippetScoreTracker,
+    const.ScoreType_ItemsProcessed: score_tracker.ItemsProcessedScoreTracker,
+    const.ScoreType_TopTokens: score_tracker.TopTokensScoreTracker,
+    const.ScoreType_TopicKernel: score_tracker.TopicKernelScoreTracker,
+    const.ScoreType_TopicMassPhi: score_tracker.TopicMassPhiScoreTracker,
+    const.ScoreType_ClassPrecision: score_tracker.ClassPrecisionScoreTracker,
 }
 
 
 def _topic_selection_regularizer_func(self, regularizers):
     topic_selection_regularizer_name = []
     for name, regularizer in regularizers.data.iteritems():
-        if regularizer.type == const.RegularizerConfig_Type_TopicSelectionTheta:
+        if regularizer.type == const.RegularizerType_TopicSelectionTheta:
             topic_selection_regularizer_name.append(name)
 
     if len(topic_selection_regularizer_name):
