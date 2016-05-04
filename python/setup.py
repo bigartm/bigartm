@@ -51,6 +51,8 @@ def generate_proto_files(
             if subprocess.call(protoc_command):
                 raise
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")
+            if os.path.exists(dst_py_file):
+              os.remove(dst_py_file)
             os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
         finally:
             if os.path.exists(tmp_dir):
