@@ -65,6 +65,9 @@ v0.8.0
   calls to ArtmCopyRequestResultEx with both other request types
   (CopyRequestResultArgs_RequestType_GetThetaSecondPass and CopyRequestResultArgs_RequestType_GetModelSecondPass)
   should keep using ArtmCopyRequestResultEx.
+* remove field ``request_type`` in ``GetTopicModelArgs``;
+  to request only topics and/or tokens users should set ``GetTopicModelArgs.matrix_layout`` to ``GetTopicModelArgs_MatrixLayout_sparse``,
+  and ``GetTopicModelArgs.eps = 1.001`` (any number greather that 1.0).
 
 
 v0.7.x

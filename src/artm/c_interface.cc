@@ -144,7 +144,8 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCopyRequestResultImpl(int length, char* address, int args_length, const char* copy_result_args, std::string* source) {
+int ArtmCopyRequestResultImpl(int length, char* address, int args_length, const char* copy_result_args,
+                              std::string* source) {
   try {
     ::artm::CopyRequestResultArgs args;
     ParseFromArray(copy_result_args, args_length, &args);

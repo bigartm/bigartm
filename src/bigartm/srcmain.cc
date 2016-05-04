@@ -1056,7 +1056,8 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
   if (options.isModelRequired()) {
     ::artm::GetTopicModelArgs get_model_args;
-    get_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Tokens);
+    get_model_args.set_matrix_layout(::artm::GetTopicModelArgs_MatrixLayout_Sparse);
+    get_model_args.set_eps(1.001f);  // hack-hack to return no entries
     get_model_args.set_model_name(pwt_model_name);
     ::artm::TopicModel topic_model = master_component->GetTopicModel(get_model_args);
     std::cerr << "Number of tokens in the model: " << topic_model.token_size() << std::endl;

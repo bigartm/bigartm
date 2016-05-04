@@ -475,15 +475,11 @@ class ARTM(object):
         """
         self.master.import_model(self.model_pwt, filename)
         self._initialized = True
-        topics_info = self.master.get_phi_info(
-            self.model_pwt, const.GetTopicModelArgs_RequestType_TopicNames)
-        self._topic_names = [topic_name for topic_name in topics_info.topic_name]
-
-        tokens_info = self.master.get_phi_info(
-            self.model_pwt, const.GetTopicModelArgs_RequestType_Tokens)
+        topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
+        self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
 
         class_ids = {}
-        for class_id in tokens_info.class_id:
+        for class_id in topics_and_tokens_info.class_id:
             class_ids[class_id] = 1.0
         self._class_ids = class_ids
 
@@ -516,19 +512,15 @@ class ARTM(object):
 
         valid_model_name = self.model_pwt if model_name is None else model_name
 
-        topics_info = self.master.get_phi_info(
-            valid_model_name, const.GetTopicModelArgs_RequestType_TopicNames)
-
-        tokens_info = self.master.get_phi_info(
-            valid_model_name, const.GetTopicModelArgs_RequestType_Tokens)
+        topics_and_tokens_info = self.master.get_phi_info(valid_model_name)
 
         _, nd_array = self.master.get_phi_matrix(model=valid_model_name,
                                                  topic_names=topic_names,
                                                  class_ids=class_ids)
 
-        tokens = [token for token, class_id in zip(tokens_info.token, tokens_info.class_id)
+        tokens = [token for token, class_id in zip(topics_and_tokens_info.token, topics_and_tokens_info.class_id)
                   if class_ids is None or class_id in class_ids]
-        topic_names = [topic_name for topic_name in topics_info.topic_name
+        topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name
                        if topic_names is None or topic_name in topic_names]
         phi_data_frame = DataFrame(data=nd_array,
                                    columns=topic_names,
@@ -672,10 +664,9 @@ class ARTM(object):
                                      topic_names=self._topic_names,
                                      seed=self._seed)
 
-        topics_info = self.master.get_phi_info(
-            self.model_pwt, const.GetTopicModelArgs_RequestType_TopicNames)
+        topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
 
-        self._topic_names = [topic_name for topic_name in topics_info.topic_name]
+        self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
         self._initialized = True
 
         # Remove all info about previous iterations

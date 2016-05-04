@@ -219,7 +219,6 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 
   ::artm::GetTopicModelArgs get_topic_model_args;
   get_topic_model_args.set_model_name(args.model_name());
-  get_topic_model_args.set_request_type(::artm::GetTopicModelArgs_RequestType_Nwt);
   get_topic_model_args.set_matrix_layout(::artm::GetTopicModelArgs_MatrixLayout_Sparse);
   get_topic_model_args.mutable_token()->Reserve(tokens_per_chunk);
   get_topic_model_args.mutable_class_id()->Reserve(tokens_per_chunk);

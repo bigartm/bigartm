@@ -475,21 +475,15 @@ class MasterComponent(object):
             * messahes.TopicModel() object with info about Phi matrix
             * numpy.ndarray with Phi data (i.e., p(w|t) values)
         """
-        topics = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_TopicNames)
-        tokens = self.get_phi_info(model, constants.GetTopicModelArgs_RequestType_Tokens)
+        topic_model = self.get_phi_info(model)
 
-        num_rows = len(tokens.token)
-        num_cols = topics.num_topics
+        num_rows = len(topic_model.token)
+        num_cols = topic_model.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         self._lib.ArtmAttachModel(self.master_id,
                                   messages.AttachModelArgs(model_name=model),
                                   numpy_ndarray)
-
-        topic_model = messages.TopicModel(num_topics=topics.num_topics)
-        topic_model.topic_name.MergeFrom(topics.topic_name)
-        topic_model.class_id.MergeFrom(tokens.class_id)
-        topic_model.token.MergeFrom(tokens.token)
 
         return topic_model, numpy_ndarray
 
@@ -589,8 +583,8 @@ class MasterComponent(object):
         :return: messages.ThetaMatrix object
         """
         args = messages.GetThetaMatrixArgs()
+        args.matrix_layout = constants.GetThetaMatrixArgs_MatrixLayout_Sparse
         args.eps = 1.001  # hack to not get any data back
-        args.matrix_layout = 1  # GetThetaMatrixArgs_MatrixLayout_Sparse
         theta_matrix_info = self._lib.ArtmRequestThetaMatrix(self.master_id, args)
 
         return theta_matrix_info
@@ -618,16 +612,14 @@ class MasterComponent(object):
 
         return theta_matrix_info, numpy_ndarray
 
-    def get_phi_info(self, model, request_type=None):
+    def get_phi_info(self, model):
         """
         :param str model: name of matrix in BigARTM
-        :param int request_type: Pwt = 0 | Nwt = 1 | TopicNames = 2 | Tokens = 3
         :return: messages.TopicModel object
         """
         args = messages.GetTopicModelArgs(model_name=model)
-        if request_type is not None:
-            args.request_type = request_type
-
+        args.matrix_layout = constants.GetTopicModelArgs_MatrixLayout_Sparse
+        args.eps = 1.001  # hack to not get any data back
         phi_matrix_info = self._lib.ArtmRequestTopicModel(self.master_id, args)
 
         return phi_matrix_info

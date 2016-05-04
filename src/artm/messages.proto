@@ -443,13 +443,6 @@ message GetDictionaryArgs {
 }
 
 message GetTopicModelArgs {
-  enum RequestType {
-    Pwt = 0;
-    Nwt = 1;
-    TopicNames = 2;
-    Tokens = 3;
-  }
-
   enum MatrixLayout {
     Dense = 0;
     Sparse = 1;
@@ -461,7 +454,6 @@ message GetTopicModelArgs {
   repeated string class_id = 4;
   optional bool use_sparse_format = 5;  // deprecated, use matrix_layout
   optional float eps = 6 [default = 1e-37];
-  optional RequestType request_type = 7 [default = Pwt];
   optional MatrixLayout matrix_layout = 8 [default = Dense];
 }
 
