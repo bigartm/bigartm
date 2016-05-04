@@ -15,7 +15,8 @@ __all__ = [
     'ThetaSnippetScore',
     'TopicKernelScore',
     'TopTokensScore',
-    'TopicMassPhiScore'
+    'TopicMassPhiScore',
+    'BackgroundTokensPartScore'
 ]
 
 
@@ -557,13 +558,13 @@ class TopicKernelScore(BaseScore):
     def probability_mass_threshold(self):
         return self._probability_mass_threshold
 
-    @eps.setter
-    def eps(self, eps):
-        _reconfigure_field(self, eps, 'eps')
-
     @property
     def model_name(self):
         raise KeyError('No model_name parameter')
+
+    @eps.setter
+    def eps(self, eps):
+        _reconfigure_field(self, eps, 'eps')
 
     @dictionary.setter
     def dictionary(self, dictionary):
@@ -613,3 +614,79 @@ class TopicMassPhiScore(BaseScore):
     @eps.setter
     def eps(self, eps):
         _reconfigure_field(self, eps, 'eps')
+
+
+class BackgroundTokensPartScore(BaseScore):
+    _config_message = messages.BackgroundTokensPartScoreConfig
+    _type = const.ScoreConfig_Type_BackgroundTokensPart
+
+    def __init__(self, name=None, class_id=None, delta_threshold=None,
+                 save_tokens=None, direct_kl=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        :param str class_id: class_id to score
+        :param float delta_threshold: the threshold for KL-div between p(t|w) and p(t) to get\
+                            token into background. Should be non-negative
+        :param bool save_tokens: save background tokens or not, save if field not specified
+        :param bool direct_kl: use KL(p(t) || p(t|w)) or via versa, true if field not specified
+        """
+        BaseScore.__init__(self,
+                           name=name,
+                           class_id=class_id,
+                           topic_names=None,
+                           model_name=None)
+
+        self._save_tokens = True
+        if save_tokens is not None:
+            self._config.save_tokens = save_tokens
+            self._save_tokens = save_tokens
+
+        self._direct_kl = True
+        if direct_kl is not None:
+            self._config.direct_kl = direct_kl
+            self._direct_kl = direct_kl
+
+        self._delta_threshold = 0.5
+        if delta_threshold is not None:
+            self._config.delta_threshold = delta_threshold
+            self._delta_threshold = delta_threshold
+
+    @property
+    def save_tokens(self):
+        return self._save_tokens
+
+    @property
+    def direct_kl(self):
+        return self._direct_kl
+
+    @property
+    def delta_threshold(self):
+        return self._delta_threshold
+
+    @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
+
+    @property
+    def topic_names(self):
+        raise KeyError('No topic_names parameter')
+
+    @save_tokens.setter
+    def save_tokens(self, save_tokens):
+        _reconfigure_field(self, save_tokens, 'save_tokens')
+
+    @direct_kl.setter
+    def direct_kl(self, direct_kl):
+        _reconfigure_field(self, direct_kl, 'direct_kl')
+
+    @delta_threshold.setter
+    def delta_threshold(self, delta_threshold):
+        _reconfigure_field(self, delta_threshold, 'delta_threshold')
+
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')
+
+    @topic_names.setter
+    def topic_names(self, topic_names):
+        raise KeyError('No topic_names parameter')

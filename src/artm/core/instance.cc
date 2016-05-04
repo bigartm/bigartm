@@ -39,6 +39,7 @@
 #include "artm/score/perplexity.h"
 #include "artm/score/topic_mass_phi.h"
 #include "artm/score/class_precision.h"
+#include "artm/score/background_tokens_part.h"
 
 #define CREATE_OR_RECONFIGURE_REGULARIZER(ConfigType, RegularizerType) {                      \
   ConfigType regularizer_config;                                                              \
@@ -317,6 +318,11 @@ std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const 
 
     case artm::ScoreConfig_Type_PeakMemory: {
       score_calculator.reset(new ::artm::score::PeakMemory(config));
+      break;
+    }
+
+    case artm::ScoreConfig_Type_BackgroundTokensPart: {
+      score_calculator.reset(new ::artm::score::BackgroundTokensPart(config));
       break;
     }
 
