@@ -565,13 +565,6 @@ message ExportDictionaryArgs {
 }
 
 message CopyRequestResultArgs {
-  enum RequestType {
-    DefaultRequestType = 0;
-    GetThetaSecondPass = 1;
-    GetModelSecondPass = 2;
-  }
-
-  optional RequestType request_type = 1 [default = DefaultRequestType];
 }
 
 message DuplicateMasterComponentArgs {

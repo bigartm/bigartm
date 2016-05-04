@@ -407,7 +407,6 @@ class MasterComponent(object):
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
-        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
         return result.theta_matrix, numpy_ndarray
@@ -615,7 +614,6 @@ class MasterComponent(object):
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
-        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
         return theta_matrix_info, numpy_ndarray
@@ -663,7 +661,6 @@ class MasterComponent(object):
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
         cp_args = messages.CopyRequestResultArgs()
-        cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetModelSecondPass
         self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
         return phi_matrix_info, numpy_ndarray
@@ -804,7 +801,6 @@ class MasterComponent(object):
             numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
 
             cp_args = messages.CopyRequestResultArgs()
-            cp_args.request_type = constants.CopyRequestResultArgs_RequestType_GetThetaSecondPass
             self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
 
             return theta_matrix_info, numpy_ndarray

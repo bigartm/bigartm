@@ -59,6 +59,12 @@ v0.8.0
 * renamed enum ``Format`` into ``CollectionFormat`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
 * renamed enum ``NameType`` into ``BatchNameType`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
 * renamed field ``transform_type`` into ``type`` in ``TransformConfig`` to avoid conflicts in C# messages
+* remove field ``request_type`` in ``CopyRequestResultArgs``;
+  this is a breaking change; please check if you make calls to ArtmCopyRequestResultEx with CopyRequestResultArgs_RequestType_DefaultRequestType;
+  such calls must be changed to call ArtmCopyRequestResult;
+  calls to ArtmCopyRequestResultEx with both other request types
+  (CopyRequestResultArgs_RequestType_GetThetaSecondPass and CopyRequestResultArgs_RequestType_GetModelSecondPass)
+  should keep using ArtmCopyRequestResultEx.
 
 
 v0.7.x
