@@ -610,16 +610,16 @@ class ARTM(object):
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
-        theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_None
+        theta_matrix_type_real = const.ThetaMatrixType_None
         if theta_matrix_type == 'dense_theta':
-            theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_Dense
+            theta_matrix_type_real = const.ThetaMatrixType_Dense
         elif theta_matrix_type == 'sparse_theta':
-            theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_Sparse
+            theta_matrix_type_real = const.ThetaMatrixType_Sparse
             raise NotImplementedError('Sparse format is currently unavailable from Python')
         elif theta_matrix_type == 'dense_ptdw':
-            theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_DensePtdw
+            theta_matrix_type_real = const.ThetaMatrixType_DensePtdw
         elif theta_matrix_type == 'sparse_ptdw':
-            theta_matrix_type_real = const.TransformMasterModelArgs_ThetaMatrixType_SparsePtdw
+            theta_matrix_type_real = const.ThetaMatrixType_SparsePtdw
             raise NotImplementedError('Sparse format is currently unavailable from Python')
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]

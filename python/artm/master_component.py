@@ -390,9 +390,9 @@ class MasterComponent(object):
 
         func = None
         if find_theta or find_ptdw:
-            args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_Dense
+            args.theta_matrix_type = constants.ThetaMatrixType_Dense
             if find_ptdw:
-                args.theta_matrix_type = constants.ProcessBatchesArgs_ThetaMatrixType_DensePtdw
+                args.theta_matrix_type = constants.ThetaMatrixType_DensePtdw
             func = self._lib.ArtmRequestProcessBatchesExternal
         elif not find_theta or find_theta is None:
             func = self._lib.ArtmRequestProcessBatches
@@ -785,7 +785,7 @@ class MasterComponent(object):
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
 
-        if theta_matrix_type != constants.TransformMasterModelArgs_ThetaMatrixType_None:
+        if theta_matrix_type != constants.ThetaMatrixType_None:
             theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
 
             num_rows = len(theta_matrix_info.item_id)

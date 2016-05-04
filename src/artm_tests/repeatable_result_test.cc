@@ -45,7 +45,7 @@ std::string runOfflineTest() {
   for (unsigned i = 0; i < batches.size(); ++i) {
     ::artm::TransformMasterModelArgs args;
     args.add_batch_filename(batches[i]->id());
-    args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
     auto theta_matrix = master_component.Transform(args);
     ss << ::artm::test::Helpers::DescribeThetaMatrix(theta_matrix);
   }
@@ -158,7 +158,7 @@ void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
   ASSERT_TRUE(ok && ok2);
   for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
     ::artm::TransformMasterModelArgs transform_args;
-    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
     transform_args.add_batch_filename(batches[iBatch]->id());
     ::artm::test::Helpers::CompareThetaMatrices(master2.Transform(transform_args),
                                                 master_component.Transform(transform_args), &ok);
@@ -182,7 +182,7 @@ void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
 
   for (unsigned iBatch = 0; iBatch < batches.size(); ++iBatch) {
     ::artm::TransformMasterModelArgs transform_args;
-    transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+    transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
     transform_args.add_batch_filename(batches[iBatch]->id());
     ::artm::test::Helpers::CompareThetaMatrices(master2.Transform(transform_args),
                                                 master_component.Transform(transform_args), &ok);

@@ -194,7 +194,7 @@ TEST(MultipleClasses, BasicTest) {
       // This imply that we should cached theta matrix with GetThetaMatrix(batch) at the one-before-last iteration.
       // An alternative would be to not invoke model.Synchronize on the last iteration.
       ::artm::TransformMasterModelArgs transform_args;
-      transform_args.set_theta_matrix_type(::artm::TransformMasterModelArgs_ThetaMatrixType_Dense);
+      transform_args.set_theta_matrix_type(::artm::ThetaMatrixType_Dense);
       transform_args.add_batch_filename(batch.id());
 
       theta_matrix1_explicit = master.Transform(transform_args);

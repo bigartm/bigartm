@@ -486,18 +486,17 @@ message AttachModelArgs {
   optional string model_name = 1;
 }
 
+enum ThetaMatrixType {
+  ThetaMatrixType_None = 0;
+  ThetaMatrixType_Dense = 1;
+  ThetaMatrixType_Sparse = 2;
+  ThetaMatrixType_Cache = 3;
+  ThetaMatrixType_DensePtdw = 4;
+  ThetaMatrixType_SparsePtdw = 5;
+}
+
 message ProcessBatchesArgs {
-  enum ThetaMatrixType {
-    None = 0;
-    Dense = 1;
-    Sparse = 2;
-    Cache = 3;
-    DensePtdw = 4;
-    SparsePtdw = 5;
-  }
-
   optional string nwt_target_name = 1;
-
   repeated string batch_filename = 2;
   optional string pwt_source_name = 3;
   optional int32 num_document_passes = 4 [default = 10];
@@ -507,7 +506,7 @@ message ProcessBatchesArgs {
   repeated float class_weight = 9;
   optional bool reuse_theta = 10 [default = false];
   optional bool opt_for_avx = 11 [default = true];
-  optional ThetaMatrixType theta_matrix_type = 14 [default = Cache];
+  optional ThetaMatrixType theta_matrix_type = 14 [default = ThetaMatrixType_Cache];
   repeated float batch_weight = 15;
   optional string predict_class_id = 17;
   repeated Batch batch = 18;
@@ -646,18 +645,9 @@ message FitOnlineMasterModelArgs {
 }
 
 message TransformMasterModelArgs {
-  enum ThetaMatrixType {
-    None = 0;
-    Dense = 1;
-    Sparse = 2;
-    Cache = 3;
-    DensePtdw = 4;
-    SparsePtdw = 5;
-  }
-
   repeated Batch batch = 1;
   repeated string batch_filename = 2;
-  optional ThetaMatrixType theta_matrix_type = 3 [default = Dense];
+  optional ThetaMatrixType theta_matrix_type = 3 [default = ThetaMatrixType_Dense];
   optional string predict_class_id = 4;
 }
 

@@ -406,8 +406,8 @@ void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResu
 }
 
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external) {
-  const bool is_dense_theta = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_Dense;
-  const bool is_dense_ptdw = args.theta_matrix_type() == artm::ProcessBatchesArgs_ThetaMatrixType_DensePtdw;
+  const bool is_dense_theta = args.theta_matrix_type() == artm::ThetaMatrixType_Dense;
+  const bool is_dense_ptdw = args.theta_matrix_type() == artm::ThetaMatrixType_DensePtdw;
   if (!is_dense_theta && !is_dense_ptdw)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestProcessBatchesExternal"));
 
@@ -445,7 +445,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
     instance_->SetPhiMatrix(args.nwt_target_name(), nwt_target);
   }
 
-  if (async && args.theta_matrix_type() != ProcessBatchesArgs_ThetaMatrixType_None)
+  if (async && args.theta_matrix_type() != ThetaMatrixType_None)
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "ArtmAsyncProcessBatches require ProcessBatchesArgs.theta_matrix_type to be set to None"));
 
@@ -459,17 +459,17 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   CacheManager* ptdw_cache_manager_ptr = nullptr;
   CacheManager* theta_cache_manager_ptr = nullptr;
   switch (args.theta_matrix_type()) {
-    case ProcessBatchesArgs_ThetaMatrixType_Cache:
+    case ThetaMatrixType_Cache:
       if (instance_->config()->cache_theta())
         theta_cache_manager_ptr = instance_->cache_manager();
       break;
-    case ProcessBatchesArgs_ThetaMatrixType_Dense:
-    case ProcessBatchesArgs_ThetaMatrixType_Sparse:
+    case ThetaMatrixType_Dense:
+    case ThetaMatrixType_Sparse:
       theta_cache_manager_ptr = &cache_manager;
       return_theta = true;
       break;
-    case ProcessBatchesArgs_ThetaMatrixType_DensePtdw:
-    case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
+    case ThetaMatrixType_DensePtdw:
+    case ThetaMatrixType_SparsePtdw:
       ptdw_cache_manager_ptr = &cache_manager;
       return_ptdw = true;
   }
@@ -528,12 +528,12 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
 
   GetThetaMatrixArgs get_theta_matrix_args;
   switch (args.theta_matrix_type()) {
-    case ProcessBatchesArgs_ThetaMatrixType_Dense:
-    case ProcessBatchesArgs_ThetaMatrixType_DensePtdw:
+    case ThetaMatrixType_Dense:
+    case ThetaMatrixType_DensePtdw:
       get_theta_matrix_args.set_matrix_layout(MatrixLayout::Dense);
       break;
-    case ProcessBatchesArgs_ThetaMatrixType_Sparse:
-    case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
+    case ThetaMatrixType_Sparse:
+    case ThetaMatrixType_SparsePtdw:
       get_theta_matrix_args.set_matrix_layout(MatrixLayout::Sparse);
       break;
   }
@@ -671,7 +671,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
     BOOST_THROW_EXCEPTION(InvalidOperation(
     "Invalid master_id; use ArtmCreateMasterModel instead of ArtmCreateMasterComponent"));
 
-  if (args.theta_matrix_type() == TransformMasterModelArgs_ThetaMatrixType_Cache)
+  if (args.theta_matrix_type() == ThetaMatrixType_Cache)
     ClearThetaCache(ClearThetaCacheArgs());
   ClearScoreCache(ClearScoreCacheArgs());
 
@@ -691,7 +691,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 
   process_batches_args.mutable_class_id()->CopyFrom(config->class_id());
   process_batches_args.mutable_class_weight()->CopyFrom(config->class_weight());
-  process_batches_args.set_theta_matrix_type((::artm::ProcessBatchesArgs_ThetaMatrixType)args.theta_matrix_type());
+  process_batches_args.set_theta_matrix_type(args.theta_matrix_type());
   if (args.has_predict_class_id()) process_batches_args.set_predict_class_id(args.predict_class_id());
 
   FixMessage(&process_batches_args);
@@ -704,8 +704,8 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
 void MasterComponent::Request(const TransformMasterModelArgs& args,
                               ::artm::ThetaMatrix* result,
                               std::string* external) {
-  const bool is_dense_theta = args.theta_matrix_type() == artm::TransformMasterModelArgs_ThetaMatrixType_Dense;
-  const bool is_dense_ptdw = args.theta_matrix_type() == artm::TransformMasterModelArgs_ThetaMatrixType_DensePtdw;
+  const bool is_dense_theta = args.theta_matrix_type() == artm::ThetaMatrixType_Dense;
+  const bool is_dense_ptdw = args.theta_matrix_type() == artm::ThetaMatrixType_DensePtdw;
   if (!is_dense_theta && !is_dense_ptdw)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestProcessBatchesExternal"));
 
@@ -950,7 +950,7 @@ class ArtmExecutor {
   int AsyncProcessBatches(std::string pwt, std::string nwt, BatchesIterator* iter) {
     process_batches_args_.set_pwt_source_name(pwt);
     process_batches_args_.set_nwt_target_name(nwt);
-    process_batches_args_.set_theta_matrix_type(ProcessBatchesArgs_ThetaMatrixType_None);
+    process_batches_args_.set_theta_matrix_type(ThetaMatrixType_None);
     iter->move(&process_batches_args_);
 
     int operation_id = static_cast<int>(async_.size());
