@@ -145,12 +145,12 @@ message ImproveCoherencePhiConfig {
 
 // Represents a configuration of a Smooth Ptdw regularizer
 message SmoothPtdwConfig {
-  enum Type {
+  enum SmoothType {
     MovingAverage = 1;
     MovingProduct = 2;
   }
 
-  optional Type type = 1 [default = MovingAverage];
+  optional SmoothType type = 1 [default = MovingAverage];
   optional int32 window = 3 [default = 10];
   optional double threshold = 4 [default = 1.0];
 }

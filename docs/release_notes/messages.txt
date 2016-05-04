@@ -54,6 +54,8 @@ v0.8.0
 * renamed ``item_count`` into ``num_items`` in ``ThetaSnippetScoreConfig``
 * add global enum ``ScoreType`` as a replacement for enums ``Type`` from ``ScoreConfig`` and ``ScoreData`` messages
 * add global enum ``RegularizerType`` as a replacement for enum ``Type`` from ``RegularizerConfig`` message
+* renamed enum ``Type`` into ``SmoothType`` in ``SmoothPtdwConfig`` to avoid conflicts in C# messages
+
 
 v0.7.x
 ------
