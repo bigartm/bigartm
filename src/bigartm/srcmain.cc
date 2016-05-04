@@ -811,9 +811,9 @@ class BatchVectorizer {
 
       ProgressScope scope("Parsing text collection");
       ::artm::CollectionParserConfig collection_parser_config;
-      if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_Format_BagOfWordsUci);
-      else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_Format_VowpalWabbit);
-      else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_Format");
+      if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_BagOfWordsUci);
+      else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_VowpalWabbit);
+      else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_CollectionFormat");
 
       collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
       if (!options_.read_uci_vocab.empty())

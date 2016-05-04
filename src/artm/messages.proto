@@ -375,7 +375,7 @@ message ThetaMatrix {
 
 // Represents a configuration of a collection parser.
 message CollectionParserConfig {
-  enum Format {
+  enum CollectionFormat {
     BagOfWordsUci = 0;
     MatrixMarket = 1;
     VowpalWabbit = 2;
@@ -386,7 +386,7 @@ message CollectionParserConfig {
     Code = 1;
   }
 
-  optional Format format = 1 [default = BagOfWordsUci];
+  optional CollectionFormat format = 1 [default = BagOfWordsUci];
   optional string docword_file_path = 2;
   optional string vocab_file_path = 3;
   optional string target_folder = 4;

@@ -421,17 +421,17 @@ void CollectionParser::ParseVowpalWabbit() {
 void CollectionParser::Parse() {
   TokenMap token_map;
   switch (config_.format()) {
-    case CollectionParserConfig_Format_BagOfWordsUci:
+    case CollectionParserConfig_CollectionFormat_BagOfWordsUci:
       token_map = ParseVocabBagOfWordsUci();
       ParseDocwordBagOfWordsUci(&token_map);
       break;
 
-    case CollectionParserConfig_Format_MatrixMarket:
+    case CollectionParserConfig_CollectionFormat_MatrixMarket:
       token_map = ParseVocabMatrixMarket();
       ParseDocwordBagOfWordsUci(&token_map);
       break;
 
-    case CollectionParserConfig_Format_VowpalWabbit:
+    case CollectionParserConfig_CollectionFormat_VowpalWabbit:
       ParseVowpalWabbit();
       break;
 
