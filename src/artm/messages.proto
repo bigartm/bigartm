@@ -82,12 +82,13 @@ enum RegularizerType {
   RegularizerType_ImproveCoherencePhi = 6;
   RegularizerType_SmoothPtdw = 7;
   RegularizerType_TopicSelectionTheta = 8;
+  RegularizerType_Unknown = 9999;
 }
 
 // Represents a configuration of a general regularizer
 message RegularizerConfig {
   optional string name = 1;
-  optional RegularizerType type = 2;
+  optional RegularizerType type = 2 [default = RegularizerType_Unknown];
   optional bytes config = 3;
   optional float tau = 4;
 }
@@ -186,12 +187,13 @@ enum ScoreType {
   ScoreType_TopicMassPhi = 7;
   ScoreType_ClassPrecision = 8;
   ScoreType_PeakMemory = 9;
+  ScoreType_Unknown = 9999;
 }
 
 // Represents a configuration of a general score
 message ScoreConfig {
   optional string name = 1;
-  optional ScoreType type = 2;
+  optional ScoreType type = 2 [default = ScoreType_Unknown];
   optional bytes config = 3;
   optional string model_name = 4;
 }
@@ -199,7 +201,7 @@ message ScoreConfig {
 // Represents a result of score calculation
 message ScoreData {
   optional string name = 1;
-  optional ScoreType type = 2;
+  optional ScoreType type = 2 [default = ScoreType_Unknown];
   optional bytes data = 3;
 }
 
