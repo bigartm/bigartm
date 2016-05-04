@@ -57,7 +57,7 @@ static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
                                               const GetThetaMatrixArgs& get_theta_args,
                                               ::artm::ThetaMatrix* theta_matrix) {
   auto& args_topic_name = get_theta_args.topic_name();
-  const bool has_sparse_format = get_theta_args.matrix_layout() == GetThetaMatrixArgs_MatrixLayout_Sparse;
+  const bool has_sparse_format = get_theta_args.matrix_layout() == MatrixLayout::Sparse;
   const bool sparse_cache = cache.topic_index_size() > 0;
   bool use_all_topics = false;
 

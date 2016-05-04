@@ -87,7 +87,7 @@ TEST(RepeatableResult, TokenHasher) {
   ASSERT_APPROX_EQ(Helpers::GenerateRandomVector(3, Token("class_id_2", "token_2"))[0], 0.410061);
 }
 
-void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_layout) {
+void OverwriteTopicModel_internal(::artm::MatrixLayout matrix_layout) {
   const int nTopics = 16;
   int batches_size = 2;
   int nTokens = 10;
@@ -194,11 +194,11 @@ void OverwriteTopicModel_internal(::artm::GetTopicModelArgs_MatrixLayout matrix_
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_dense
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_dense) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_MatrixLayout_Dense);
+  OverwriteTopicModel_internal(artm::MatrixLayout::Dense);
 }
 
 // artm_tests.exe --gtest_filter=RepeatableResult.OverwriteTopicModel_Pwt_sparse
 TEST(RepeatableResult, OverwriteTopicModel_Pwt_sparse) {
-  OverwriteTopicModel_internal(artm::GetTopicModelArgs_MatrixLayout_Sparse);
+  OverwriteTopicModel_internal(artm::MatrixLayout::Sparse);
 }
 

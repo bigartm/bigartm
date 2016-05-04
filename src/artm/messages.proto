@@ -442,12 +442,12 @@ message GetDictionaryArgs {
   optional string dictionary_name = 1;
 }
 
-message GetTopicModelArgs {
-  enum MatrixLayout {
-    Dense = 0;
-    Sparse = 1;
-  }
+enum MatrixLayout {
+  Dense = 0;
+  Sparse = 1;
+}
 
+message GetTopicModelArgs {
   optional string model_name = 1;
   repeated string topic_name = 2;
   repeated string token = 3;
@@ -458,11 +458,6 @@ message GetTopicModelArgs {
 }
 
 message GetThetaMatrixArgs {
-  enum MatrixLayout {
-    Dense = 0;
-    Sparse = 1;
-  }
-
   repeated string topic_name = 3;
   optional bool use_sparse_format = 6;  // deprecated, use matrix_layout
   optional float eps = 7 [default = 1e-37];

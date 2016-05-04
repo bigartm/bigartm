@@ -583,7 +583,7 @@ class MasterComponent(object):
         :return: messages.ThetaMatrix object
         """
         args = messages.GetThetaMatrixArgs()
-        args.matrix_layout = constants.GetThetaMatrixArgs_MatrixLayout_Sparse
+        args.matrix_layout = constants.MatrixLayout_Sparse
         args.eps = 1.001  # hack to not get any data back
         theta_matrix_info = self._lib.ArtmRequestThetaMatrix(self.master_id, args)
 
@@ -618,7 +618,7 @@ class MasterComponent(object):
         :return: messages.TopicModel object
         """
         args = messages.GetTopicModelArgs(model_name=model)
-        args.matrix_layout = constants.GetTopicModelArgs_MatrixLayout_Sparse
+        args.matrix_layout = constants.MatrixLayout_Sparse
         args.eps = 1.001  # hack to not get any data back
         phi_matrix_info = self._lib.ArtmRequestTopicModel(self.master_id, args)
 
@@ -644,7 +644,7 @@ class MasterComponent(object):
             for class_id in class_ids:
                 args.class_id.append(class_id)
         if use_sparse_format is not None:
-            args.matrix_layout = constants.GetTopicModelArgs_MatrixLayout_Sparse
+            args.matrix_layout = constants.MatrixLayout_Sparse
 
         phi_matrix_info = self._lib.ArtmRequestTopicModelExternal(self.master_id, args)
 

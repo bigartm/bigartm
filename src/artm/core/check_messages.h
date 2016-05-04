@@ -493,13 +493,13 @@ inline void FixMessage(::artm::Batch* message) {
 template<>
 inline void FixMessage(::artm::GetThetaMatrixArgs* message) {
   if (message->has_use_sparse_format())
-    message->set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
+    message->set_matrix_layout(MatrixLayout::Sparse);
 }
 
 template<>
 inline void FixMessage(::artm::GetTopicModelArgs* message) {
   if (message->has_use_sparse_format())
-    message->set_matrix_layout(GetTopicModelArgs_MatrixLayout_Sparse);
+    message->set_matrix_layout(MatrixLayout::Sparse);
 }
 
 template<>

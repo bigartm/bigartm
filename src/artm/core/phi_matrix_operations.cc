@@ -24,7 +24,7 @@ namespace core {
 void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix,
                                                      const ::artm::GetTopicModelArgs& get_model_args,
                                                      ::artm::TopicModel* topic_model) {
-  const bool has_sparse_format = (get_model_args.matrix_layout() == GetTopicModelArgs_MatrixLayout_Sparse);
+  const bool has_sparse_format = (get_model_args.matrix_layout() == MatrixLayout::Sparse);
 
   std::vector<int> tokens_to_use;
   if (get_model_args.token_size() > 0) {

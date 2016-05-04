@@ -219,7 +219,7 @@ void MasterComponent::ExportModel(const ExportModelArgs& args) {
 
   ::artm::GetTopicModelArgs get_topic_model_args;
   get_topic_model_args.set_model_name(args.model_name());
-  get_topic_model_args.set_matrix_layout(::artm::GetTopicModelArgs_MatrixLayout_Sparse);
+  get_topic_model_args.set_matrix_layout(::artm::MatrixLayout::Sparse);
   get_topic_model_args.mutable_token()->Reserve(tokens_per_chunk);
   get_topic_model_args.mutable_class_id()->Reserve(tokens_per_chunk);
 
@@ -380,7 +380,7 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result, std::string* external) {
-  if (args.matrix_layout() != artm::GetTopicModelArgs_MatrixLayout_Dense)
+  if (args.matrix_layout() != artm::MatrixLayout::Dense)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestTopicModelExternal"));
 
   Request(args, result);
@@ -530,11 +530,11 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   switch (args.theta_matrix_type()) {
     case ProcessBatchesArgs_ThetaMatrixType_Dense:
     case ProcessBatchesArgs_ThetaMatrixType_DensePtdw:
-      get_theta_matrix_args.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Dense);
+      get_theta_matrix_args.set_matrix_layout(MatrixLayout::Dense);
       break;
     case ProcessBatchesArgs_ThetaMatrixType_Sparse:
     case ProcessBatchesArgs_ThetaMatrixType_SparsePtdw:
-      get_theta_matrix_args.set_matrix_layout(GetThetaMatrixArgs_MatrixLayout_Sparse);
+      get_theta_matrix_args.set_matrix_layout(MatrixLayout::Sparse);
       break;
   }
 
@@ -656,7 +656,7 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatri
 void MasterComponent::Request(const GetThetaMatrixArgs& args,
                               ::artm::ThetaMatrix* result,
                               std::string* external) {
-  if (args.matrix_layout() != artm::GetThetaMatrixArgs_MatrixLayout_Dense)
+  if (args.matrix_layout() != artm::MatrixLayout::Dense)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestThetaMatrixExternal"));
 
   Request(args, result);

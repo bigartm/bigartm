@@ -54,6 +54,7 @@ v0.8.0
 * renamed ``item_count`` into ``num_items`` in ``ThetaSnippetScoreConfig``
 * add global enum ``ScoreType`` as a replacement for enums ``Type`` from ``ScoreConfig`` and ``ScoreData`` messages
 * add global enum ``RegularizerType`` as a replacement for enum ``Type`` from ``RegularizerConfig`` message
+* add global enum ``MatrixLayout`` as a replacement for enum ``MatrixLayout`` from ``GetThetaMatrixArgs`` and ``GetTopicModelArgs`` messages
 * renamed enum ``Type`` into ``SmoothType`` in ``SmoothPtdwConfig`` to avoid conflicts in C# messages
 * renamed enum ``Mode`` into ``SparseMode`` in ``SpecifiedSparsePhiConfig`` to avoid conflicts in C# messages
 * renamed enum ``Format`` into ``CollectionFormat`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
@@ -66,7 +67,7 @@ v0.8.0
   (CopyRequestResultArgs_RequestType_GetThetaSecondPass and CopyRequestResultArgs_RequestType_GetModelSecondPass)
   should keep using ArtmCopyRequestResultEx.
 * remove field ``request_type`` in ``GetTopicModelArgs``;
-  to request only topics and/or tokens users should set ``GetTopicModelArgs.matrix_layout`` to ``GetTopicModelArgs_MatrixLayout_sparse``,
+  to request only topics and/or tokens users should set ``GetTopicModelArgs.matrix_layout`` to ``MatrixLayout_Sparse``,
   and ``GetTopicModelArgs.eps = 1.001`` (any number greather that 1.0).
 
 

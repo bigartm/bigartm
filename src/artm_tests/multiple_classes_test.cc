@@ -373,11 +373,11 @@ TEST(MultipleClasses, WithoutDefaultClass) {
 
 void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::artm::MasterModel* master) {
   ::artm::GetTopicModelArgs args_dense(args);
-  args_dense.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_Dense);
+  args_dense.set_matrix_layout(artm::MatrixLayout::Dense);
   auto tm_dense = master->GetTopicModel(args_dense);
 
   ::artm::GetTopicModelArgs args_sparse(args);
-  args_sparse.set_matrix_layout(artm::GetTopicModelArgs_MatrixLayout_Sparse);
+  args_sparse.set_matrix_layout(artm::MatrixLayout::Sparse);
   auto tm_sparse = master->GetTopicModel(args_sparse);
 
   ::artm::GetTopicModelArgs args_all;
@@ -443,11 +443,11 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
 
 void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, ::artm::MasterModel* master) {
   ::artm::GetThetaMatrixArgs args_dense(args);
-  args_dense.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_Dense);
+  args_dense.set_matrix_layout(artm::MatrixLayout::Dense);
   auto tm_dense = master->GetThetaMatrix(args_dense);
 
   ::artm::GetThetaMatrixArgs args_sparse(args);
-  args_sparse.set_matrix_layout(artm::GetThetaMatrixArgs_MatrixLayout_Sparse);
+  args_sparse.set_matrix_layout(artm::MatrixLayout::Sparse);
   auto tm_sparse = master->GetThetaMatrix(args_sparse);
 
   auto tm_all = master->GetThetaMatrix();
