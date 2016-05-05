@@ -26,6 +26,7 @@ ScoreType_ThetaSnippet = 5
 ScoreType_TopicKernel = 6
 ScoreType_TopicMassPhi = 7
 ScoreType_ClassPrecision = 8
+ScoreType_BackgroundTokensRatio = 10
 PerplexityScoreConfig_Type_UnigramDocumentModel = 0
 PerplexityScoreConfig_Type_UnigramCollectionModel = 1
 CollectionParserConfig_CollectionFormat_BagOfWordsUci = 0

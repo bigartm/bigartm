@@ -44,6 +44,8 @@ def _score_type(config):
         return constants.ScoreType_TopicMassPhi
     elif isinstance(config, messages.ClassPrecisionScoreConfig):
         return constants.ScoreType_ClassPrecision
+    elif isinstance(config, messages.BackgroundTokensRatioScoreConfig):
+        return constants.ScoreType_BackgroundTokensRatio
 
 
 def _score_data_func(score_data_type):
@@ -65,6 +67,8 @@ def _score_data_func(score_data_type):
         return messages.TopicMassPhiScore
     elif score_data_type == constants.ScoreType_ClassPrecision:
         return messages.ClassPrecisionScore
+    elif score_data_type == constants.ScoreType_BackgroundTokensRatio:
+        return messages.BackgroundTokensRatioScore
 
 
 def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors,

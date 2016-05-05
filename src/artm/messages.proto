@@ -187,6 +187,7 @@ enum ScoreType {
   ScoreType_TopicMassPhi = 7;
   ScoreType_ClassPrecision = 8;
   ScoreType_PeakMemory = 9;
+  ScoreType_BackgroundTokensRatio = 10;
   ScoreType_Unknown = 9999;
 }
 
@@ -352,6 +353,20 @@ message PeakMemoryScoreConfig {
 // Represents a result of calculation of a class precision score
 message PeakMemoryScore {
   optional int64 value = 1;
+}
+
+// Represents a configuration of a background tokens part score
+message BackgroundTokensRatioScoreConfig {
+  optional float delta_threshold = 1 [default = 0.5];
+  optional bool save_tokens = 2 [default = true];
+  optional bool direct_kl = 3 [default = true];
+  optional string class_id = 4 [default = "@default_class"];
+}
+
+// Represents a result of calculation of a background tokens part score
+message BackgroundTokensRatioScore {
+  optional float value = 1;
+  repeated string token = 2;
 }
 
 // Represents a topic model (or an operation on topic model)
