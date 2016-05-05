@@ -372,10 +372,12 @@ void CollectionParser::ParseVowpalWabbit() {
     ClassId class_id = DefaultClass;
     for (unsigned elem_index = 1; elem_index < strs.size(); ++elem_index) {
       std::string elem = strs[elem_index];
-      if (elem.size() <= 1)
+      if (elem.size() == 0)
         continue;
       if (elem[0] == '|') {
         class_id = elem.substr(1);
+        if (class_id.empty())
+          class_id = DefaultClass;
         continue;
       }
 
