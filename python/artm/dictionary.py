@@ -13,10 +13,12 @@ __all__ = [
 
 
 class Dictionary(object):
-    def __init__(self, name=None, dictionary_path=None):
+    def __init__(self, name=None, dictionary_path=None, data_path=None):
         """
         :param str name: name of the dictionary
         :param str dictionary_path: can be used for default call of load() method\
+          in constructor
+        :param str data_path: can be used for default call of gather() method\
           in constructor
 
         Note: all parameters are optional
@@ -27,6 +29,8 @@ class Dictionary(object):
 
         if dictionary_path is not None:
             self.load(dictionary_path=dictionary_path)
+        if data_path is not None:
+            self.gather(data_path=data_path)
 
     def __enter__(self):
         return self
