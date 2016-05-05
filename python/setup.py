@@ -57,7 +57,7 @@ def generate_proto_files(
                 raise
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")
             if os.path.exists(dst_py_file):
-              os.remove(dst_py_file)
+                os.remove(dst_py_file)
             os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
         finally:
             if os.path.exists(tmp_dir):
@@ -81,7 +81,7 @@ class build(_build):
 
 setup(
     name='bigartm',
-    version='0.7.5',
+    version='0.8.0',
     packages=find_packages(),
     install_requires=[
         'pandas',
