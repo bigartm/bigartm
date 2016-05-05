@@ -49,6 +49,7 @@ v0.8.0
   Now this is no longer the case, and we expect user to either pass a dictionary in ``ARTM.__init__`` constructor, or manually call ``ARTM.initialize`` method.
   If neither is performed then ``ARTM.fit_offline`` and ``ARTM.fit_online`` will throw an exception.
 * added ``seed`` argument to ``ARTM.__init__`` constructor to let user randomly initialize the model;
+* added new score and score tracker ``BackgroundTokensRatio`` 
 * remove the default value from ``num_topics`` argument in ``ARTM.__init__`` constructor, which previously was defaulting to ``num_topics = 10``;
   now user must always specify the desired number of topics;
 * moved argument ``reuse_theta`` from ``fit_offline`` method into ``ARTM.__init__`` constructor;

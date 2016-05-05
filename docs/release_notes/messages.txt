@@ -29,6 +29,7 @@ v0.8.0
 * renamed ``passes`` into ``num_collection_passes`` in ``FitOfflineMasterModelArgs``
 * renamed ``threads`` into ``num_processors`` in ``MasterModelConfig``
 * added messages ``ScoreArray``, ``GetScoreArrayArgs`` and ``ClearScoreArrayCacheArgs`` to bring score tracking functionality down into BigARTM core
+* added messages ``BackgroundTokensRatioConfig`` and ``BackgroundTokensRatio`` (new score)
 * moved ``model_name`` from ``GetScoreValueArgs`` into ``ScoreConfig``;
   this is done to support score tracking functionality in BigARTM core;
   each Phi score needs to know which model to use in calculation

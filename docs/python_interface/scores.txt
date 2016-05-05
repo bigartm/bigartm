@@ -36,3 +36,11 @@ This page describes *Scores classes.
 .. autoclass:: TopicMassPhiScore
    :members:
    :special-members: __init__
+
+.. autoclass:: ClassPrecisionScore
+   :members:
+   :special-members: __init__
+
+.. autoclass:: BackgroundTokensRatioScore
+   :members:
+   :special-members: __init__
