@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from setuptools import setup, find_packages
 from distutils.spawn import find_executable
 
@@ -7,17 +9,20 @@ import os.path
 import tempfile
 import shutil
 import subprocess
-from exceptions import BaseException
 
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
     protoc_exec = os.environ['PROTOC']
 elif os.path.exists("../build/3rdparty/protobuf-cmake/protoc/protoc"):
+    print("Find protoc in 3rdparty")
     protoc_exec = "../build/3rdparty/protobuf-cmake/protoc/protoc"
 elif os.path.exists("../build/3rdparty/protobuf-cmake/protoc/protoc.exe"):
     protoc_exec = "../build/3rdparty/protobuf-cmake/protoc/protoc.exe"
 else:
     protoc_exec = find_executable("protoc")
+
+if not protoc_exec:
+    raise ValueError("No protobuf compiler executable was found!")
 
 
 def generate_proto_files(
@@ -34,7 +39,7 @@ def generate_proto_files(
     if (not os.path.exists(output_file) or
             os.path.exists(output_file) and
             os.path.getmtime(source_file) > os.path.getmtime(output_file)):
-        print "Generating {}...".format(dst_py_file)
+        print("Generating {}...".format(dst_py_file))
 
         if not os.path.exists(source_file):
             sys.stderr.write("Can't find required file: {}\n".format(
@@ -52,7 +57,7 @@ def generate_proto_files(
                 raise
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")
             if os.path.exists(dst_py_file):
-              os.remove(dst_py_file)
+                os.remove(dst_py_file)
             os.rename(os.path.join(tmp_dir, src_py_file), dst_py_file)
         finally:
             if os.path.exists(tmp_dir):
@@ -76,11 +81,11 @@ class build(_build):
 
 setup(
     name='bigartm',
-    version='0.7.4',
+    version='0.8.0',
     packages=find_packages(),
     install_requires=[
         'pandas',
         'numpy'
     ],
-    cmdclass = {'build': build},
+    cmdclass={'build': build},
 )
