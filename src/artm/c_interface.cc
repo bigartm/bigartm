@@ -12,6 +12,7 @@
 #include "glog/logging.h"
 
 #include "artm/score_calculator_interface.h"
+#include "artm/version.h"
 #include "artm/core/common.h"
 #include "artm/core/check_messages.h"
 #include "artm/core/exceptions.h"
@@ -133,6 +134,14 @@ const char* ArtmGetLastErrorMessage() {
   return last_error_->c_str();
 }
 
+const char* ArtmGetVersion() {
+  static std::string version(
+    boost::lexical_cast<std::string>(ARTM_VERSION_MAJOR)+"." +
+    boost::lexical_cast<std::string>(ARTM_VERSION_MINOR)+"." +
+    boost::lexical_cast<std::string>(ARTM_VERSION_PATCH));
+  return version.c_str();
+}
+
 int ArtmConfigureLogging(int length, const char* configure_logging_args) {
   try {
     ::artm::ConfigureLoggingArgs args;
@@ -144,12 +153,8 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCopyRequestResultImpl(int length, char* address, int args_length, const char* copy_result_args,
-                              std::string* source) {
+int ArtmCopyRequestImpl(int length, char* address, std::string* source) {
   try {
-    ::artm::CopyRequestResultArgs args;
-    ParseFromArray(copy_result_args, args_length, &args);
-
     if (source == nullptr) {
       std::stringstream ss;
       ss << "There is no data to copy; check if ArtmRequestXxx method is executed before copying the result";
@@ -171,16 +176,14 @@ int ArtmCopyRequestResultImpl(int length, char* address, int args_length, const 
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCopyRequestResult(int length, char* address) {
-  ::artm::CopyRequestResultArgs args;
-  std::string blob = args.SerializeAsString();
-  LOG(INFO) << "ArtmCopyRequestResult is copying " << length << " bytes...";
-  return ArtmCopyRequestResultImpl(length, address, static_cast<int>(blob.size()), blob.c_str(), last_message());
+int ArtmCopyRequestedMessage(int length, char* address) {
+  LOG(INFO) << "ArtmCopyRequestedMessage is copying " << length << " bytes...";
+  return ArtmCopyRequestImpl(length, address, last_message());
 }
 
-int ArtmCopyRequestResultEx(int length, char* address, int args_length, const char* copy_result_args) {
-  LOG(INFO) << "ArtmCopyRequestResultEx is copying " << length << " bytes...";
-  return ArtmCopyRequestResultImpl(length, address, args_length, copy_result_args, last_message_ex());
+int ArtmCopyRequestedObject(int length, char* address) {
+  LOG(INFO) << "ArtmCopyRequestedObject is copying " << length << " bytes...";
+  return ArtmCopyRequestImpl(length, address, last_message_ex());
 }
 
 int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {

@@ -15,7 +15,7 @@ from .spec import ARTM_API
 
 
 class LibArtm(object):
-    def __init__(self, lib_name=None):
+    def __init__(self, lib_name=None, logging_config=None):
         self.cdll = self._load_cdll(lib_name)
 
         # adding specified functions
@@ -23,6 +23,9 @@ class LibArtm(object):
             func = self.cdll[spec.name]
             setattr(self, spec.name, self._wrap_call(func, spec))
             # TODO: add docstring for wrapped function
+
+        if logging_config is not None:
+            self.ArtmConfigureLogging(logging_config)
 
     def _load_cdll(self, lib_name):
         # choose default library name
@@ -54,6 +57,10 @@ class LibArtm(object):
 
         return cdll
 
+    def version(self):
+        self.cdll.ArtmGetVersion.restype = ctypes.c_char_p
+        return self.cdll.ArtmGetVersion()
+
     def _check_error(self, error_code):
         if error_code < -1:
             self.cdll.ArtmGetLastErrorMessage.restype = ctypes.c_char_p
@@ -70,7 +77,7 @@ class LibArtm(object):
 
     def _get_requested_message(self, length, func):
         message_blob = ctypes.create_string_buffer(length)
-        error_code = self.cdll.ArtmCopyRequestResult(length, message_blob)
+        error_code = self.cdll.ArtmCopyRequestedMessage(length, message_blob)
         self._check_error(error_code)
         message = func()
         message.ParseFromString(message_blob)

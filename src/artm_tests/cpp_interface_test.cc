@@ -22,6 +22,11 @@ namespace fs = boost::filesystem;
 TEST(CppInterface, Canary) {
 }
 
+TEST(CppInterface, Version) {
+  std::string version(ArtmGetVersion());
+  EXPECT_GT(version.size(), 0);
+}
+
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest
 TEST(CppInterface, BasicTest) {
   artm::ConfigureLoggingArgs log_args;
@@ -444,12 +449,12 @@ TEST(CppInterface, ProcessBatchesApi) {
 
   const int expected_combined_items_length = 154;
   ASSERT_EQ(theta_matrix.item_id_size(), expected_combined_items_length);
-  ASSERT_EQ(theta_matrix.topic_index_size(), expected_combined_items_length);
+  ASSERT_EQ(theta_matrix.topic_indices_size(), expected_combined_items_length);
   ASSERT_EQ(theta_matrix.item_weights_size(), expected_combined_items_length);
   for (int index = 0; index < theta_matrix.item_id_size(); ++index) {
-    ASSERT_GE(theta_matrix.topic_index(index).value_size(), 0);
+    ASSERT_GE(theta_matrix.topic_indices(index).value_size(), 0);
     ASSERT_GE(theta_matrix.item_weights(index).value_size(), 0);
-    ASSERT_EQ(theta_matrix.topic_index(index).value_size(), theta_matrix.item_weights(index).value_size());
+    ASSERT_EQ(theta_matrix.topic_indices(index).value_size(), theta_matrix.item_weights(index).value_size());
   }
 
   try { boost::filesystem::remove_all(target_folder); }

@@ -28,6 +28,7 @@ v0.8.0
 * renamed ``inner_iterations_count`` into ``num_document_passes`` in ``ProcessBatchesArgs``
 * renamed ``passes`` into ``num_collection_passes`` in ``FitOfflineMasterModelArgs``
 * renamed ``threads`` into ``num_processors`` in ``MasterModelConfig``
+* renamed ``topic_index`` field into ``topic_indices`` in ``TopicModel`` and ``ThetaMatrix`` messages
 * added messages ``ScoreArray``, ``GetScoreArrayArgs`` and ``ClearScoreArrayCacheArgs`` to bring score tracking functionality down into BigARTM core
 * added messages ``BackgroundTokensRatioConfig`` and ``BackgroundTokensRatio`` (new score)
 * moved ``model_name`` from ``GetScoreValueArgs`` into ``ScoreConfig``;
@@ -62,15 +63,19 @@ v0.8.0
 * renamed enum ``Format`` into ``CollectionFormat`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
 * renamed enum ``NameType`` into ``BatchNameType`` in ``CollectionParserConfig`` to avoid conflicts in C# messages
 * renamed field ``transform_type`` into ``type`` in ``TransformConfig`` to avoid conflicts in C# messages
-* remove field ``request_type`` in ``CopyRequestResultArgs``;
-  this is a breaking change; please check if you make calls to ArtmCopyRequestResultEx with CopyRequestResultArgs_RequestType_DefaultRequestType;
-  such calls must be changed to call ArtmCopyRequestResult;
-  calls to ArtmCopyRequestResultEx with both other request types
-  (CopyRequestResultArgs_RequestType_GetThetaSecondPass and CopyRequestResultArgs_RequestType_GetModelSecondPass)
-  should keep using ArtmCopyRequestResultEx.
+* remove message ``CopyRequestResultArgs``;
+  this is a breaking change; please check that
+
+  * all previous calls to ``ArtmCopyRequestResult`` are changed to to ``ArtmCopyRequestedMessage``
+  * all previous calls to ``ArtmCopyRequestResultEx`` with request types ``GetThetaSecondPass`` and ``GetModelSecondPass`` are changed to ``ArtmCopyRequestedObject``
+  * all previous calls to ``ArtmCopyRequestResultEx`` with ``DefaultRequestType`` are changed to ``ArtmCopyRequestedMessage``
+
 * remove field ``request_type`` in ``GetTopicModelArgs``;
   to request only topics and/or tokens users should set ``GetTopicModelArgs.matrix_layout`` to ``MatrixLayout_Sparse``,
   and ``GetTopicModelArgs.eps = 1.001`` (any number greather that 1.0).
+* change ``optional FloatArray`` into ``repeated float`` in field ``coherence`` of ``TopTokensScore``
+* change ``optional DoubleArray`` into ``repeated double`` in fields ``kernel_size``, ``kernel_purity``, ``kernel_contrast`` and ``coherence`` of ``TopicKernelScore``
+* change ``optional StringArray`` into ``repeated string`` in field ``topic_name`` of ``TopicKernelScore``
 
 
 v0.7.x

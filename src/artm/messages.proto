@@ -281,7 +281,7 @@ message TopTokensScore {
   repeated int32 topic_index = 3;
   repeated string token = 4;
   repeated float weight = 5;
-  optional FloatArray coherence = 6;
+  repeated float coherence = 6;
   optional float average_coherence = 7;
 }
 
@@ -308,16 +308,16 @@ message TopicKernelScoreConfig {
 
 // Represents a result of calculation of a topic kernel score
 message TopicKernelScore {
-  optional DoubleArray kernel_size = 1;
-  optional DoubleArray kernel_purity = 2;
-  optional DoubleArray kernel_contrast = 3;
+  repeated double kernel_size = 1;
+  repeated double kernel_purity = 2;
+  repeated double kernel_contrast = 3;
   optional double average_kernel_size = 4;
   optional double average_kernel_purity = 5;
   optional double average_kernel_contrast = 6;
-  optional DoubleArray coherence = 7;
+  repeated double coherence = 7;
   optional float average_coherence = 8;
   repeated StringArray kernel_tokens = 9;
-  optional StringArray topic_name = 10;
+  repeated string topic_name = 10;
 }
 
 // Represents a configuration of a topic part in nwt score
@@ -377,7 +377,7 @@ message TopicModel {
   repeated string token = 4;
   repeated FloatArray token_weights = 5;
   repeated string class_id = 6;
-  repeated IntArray topic_index = 8;
+  repeated IntArray topic_indices = 8;
 }
 
 // Represents a theta matrix.
@@ -387,7 +387,7 @@ message ThetaMatrix {
   repeated string topic_name = 4;
   optional int32 num_topics = 5;
   repeated string item_title = 6;
-  repeated IntArray topic_index = 7;
+  repeated IntArray topic_indices = 7;
 }
 
 // Represents a configuration of a collection parser.
@@ -565,9 +565,6 @@ message ImportDictionaryArgs {
 message ExportDictionaryArgs {
   optional string file_name = 1;
   optional string dictionary_name = 2;
-}
-
-message CopyRequestResultArgs {
 }
 
 message DuplicateMasterComponentArgs {

@@ -276,6 +276,13 @@ class ARTM(object):
         """
         return self.master.get_info()
 
+    @property
+    def library_version(self):
+        """
+        :Description: the version of BigARTM library in a MAJOR.MINOR.PATCH format
+        """
+        return self._lib.version()
+
     # ========== SETTERS ==========
     @num_processors.setter
     def num_processors(self, num_processors):

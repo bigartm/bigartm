@@ -123,19 +123,19 @@ static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
           theta_vec->add_value(item_theta.value(topic_index));
       }
     } else {
-      ::artm::IntArray* sparse_topic_index = theta_matrix->add_topic_index();
+      ::artm::IntArray* sparse_topic_indices = theta_matrix->add_topic_indices();
       if (sparse_cache) {
         // sparse output -- sparse cache
         for (int index = 0; index < cache.topic_index(item_index).value_size(); ++index) {
           int topic_index = cache.topic_index(item_index).value(index);
           if (use_all_topics) {
             theta_vec->add_value(item_theta.value(index));
-            sparse_topic_index->add_value(topic_index);
+            sparse_topic_indices->add_value(topic_index);
           } else {
             for (unsigned i = 0; i < topics_to_use.size(); ++i) {
               if (topics_to_use[i] == topic_index) {
                 theta_vec->add_value(item_theta.value(index));
-                sparse_topic_index->add_value(topic_index);
+                sparse_topic_indices->add_value(topic_index);
                 break;
               }
             }
@@ -148,7 +148,7 @@ static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
           float value = item_theta.value(topic_index);
           if (value >= get_theta_args.eps()) {
             theta_vec->add_value(value);
-            sparse_topic_index->add_value(index);
+            sparse_topic_indices->add_value(index);
           }
         }
       }

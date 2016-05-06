@@ -134,5 +134,7 @@ def test_func():
         assert phi.shape == (vocab_size, num_topics)
         theta = model.get_theta()
         assert theta.shape == (num_topics, num_docs)
+
+        assert model.library_version.count('.') == 2  # major.minor.patch
     finally:
         shutil.rmtree(batches_folder)

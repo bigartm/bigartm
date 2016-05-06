@@ -38,7 +38,7 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
   const bool has_topic_data = (message.num_topics() != 0 || message.topic_name_size() != 0);
   const bool has_token_data = (message.class_id_size() != 0 || message.token_size() != 0);
   const bool has_bulk_data = (message.token_weights_size() != 0);
-  const bool has_sparse_format = has_bulk_data && (message.topic_index_size() != 0);
+  const bool has_sparse_format = has_bulk_data && (message.topic_indices_size() != 0);
 
   if (has_topic_data) {
     if (message.num_topics() != message.topic_name_size())
@@ -58,24 +58,25 @@ inline std::string DescribeErrors(const ::artm::TopicModel& message) {
 
   if (has_bulk_data) {
     if ((message.token_weights_size() != message.token_size()) ||
-        (has_sparse_format && (message.topic_index_size() != message.token_size()))) {
+        (has_sparse_format && (message.topic_indices_size() != message.token_size()))) {
       ss << "Inconsistent fields size in TopicModel: "
         << message.token_size() << " vs " << message.class_id_size()
         << " vs " << message.token_weights_size() << ";";
     }
 
     for (int i = 0; i < message.token_size(); ++i) {
-      bool has_sparse_format_local = has_sparse_format && (message.topic_index(i).value_size() > 0);
+      bool has_sparse_format_local = has_sparse_format && (message.topic_indices(i).value_size() > 0);
       if (has_sparse_format_local) {
-        if (message.topic_index(i).value_size() != message.token_weights(i).value_size()) {
-          ss << "Length mismatch between TopicModel.topic_index(" << i << ") and TopicModel.token_weights(" << i << ")";
+        if (message.topic_indices(i).value_size() != message.token_weights(i).value_size()) {
+          ss << "Length mismatch between TopicModel.topic_indices(" << i << ")"
+             << " and TopicModel.token_weights(" << i << ")";
           break;
         }
 
         bool ok = true;
-        for (int topic_index : message.topic_index(i).value()) {
-          if (topic_index < 0 || topic_index >= message.num_topics()) {
-            ss << "Value " << topic_index << " in message.topic_index(" << i
+        for (int topic_indices : message.topic_indices(i).value()) {
+          if (topic_indices < 0 || topic_indices >= message.num_topics()) {
+            ss << "Value " << topic_indices << " in message.topic_indices(" << i
                << ") is negative or exceeds TopicModel.num_topics";
             ok = false;
             break;
@@ -102,13 +103,13 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
   std::stringstream ss;
   const int item_size = message.item_id_size();
   const bool has_title = (message.item_title_size() > 0);
-  const bool has_sparse_format = (message.topic_index_size() != 0);
+  const bool has_sparse_format = (message.topic_indices_size() != 0);
   if ((message.item_weights_size() != item_size) ||
       (has_title && (message.item_title_size() != item_size)) ||
-      (has_sparse_format && (message.topic_index_size() != item_size))) {
+      (has_sparse_format && (message.topic_indices_size() != item_size))) {
     ss << "Inconsistent fields size in ThetaMatrix: "
        << message.item_id_size() << " vs " << message.item_weights_size()
-       << " vs " << message.item_title_size() << " vs " << message.topic_index_size() << ";";
+       << " vs " << message.item_title_size() << " vs " << message.topic_indices_size() << ";";
   }
 
   if (message.num_topics() == 0 || message.topic_name_size() == 0)
@@ -118,15 +119,16 @@ inline std::string DescribeErrors(const ::artm::ThetaMatrix& message) {
 
   for (int i = 0; i < message.item_id_size(); ++i) {
     if (has_sparse_format) {
-      if (message.topic_index(i).value_size() != message.item_weights(i).value_size()) {
-        ss << "Length mismatch between ThetaMatrix.topic_index(" << i << ") and ThetaMatrix.item_weights(" << i << ")";
+      if (message.topic_indices(i).value_size() != message.item_weights(i).value_size()) {
+        ss << "Length mismatch between ThetaMatrix.topic_indices(" << i << ")"
+           << " and ThetaMatrix.item_weights(" << i << ")";
         break;
       }
 
       bool ok = true;
-      for (int topic_index : message.topic_index(i).value()) {
-        if (topic_index < 0 || topic_index >= message.num_topics()) {
-          ss << "Value " << topic_index << " in message.topic_index(" << i
+      for (int topic_indices : message.topic_indices(i).value()) {
+        if (topic_indices < 0 || topic_indices >= message.num_topics()) {
+          ss << "Value " << topic_indices << " in message.topic_indices(" << i
              << ") is negative or exceeds ThetaMatrix.num_topics";
           ok = false;
           break;

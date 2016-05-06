@@ -68,7 +68,7 @@ ResultT ArtmRequest(int master_id, FuncT func) {
 
   std::string result_blob;
   result_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&result_blob)));
+  HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
 
   ResultT result;
   result.ParseFromString(result_blob);
@@ -81,7 +81,7 @@ ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
 
   std::string result_blob;
   result_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&result_blob)));
+  HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
 
   ResultT result;
   result.ParseFromString(result_blob);
@@ -93,19 +93,14 @@ std::shared_ptr<ResultT> ArtmRequestShared(int master_id, const ArgsT& args, Fun
   return std::make_shared<ResultT>(ArtmRequest<ResultT>(master_id, args, func));
 }
 
-void ArtmRequestEx(int no_rows, int no_cols, Matrix* matrix) {
+void ArtmRequestMatrix(int no_rows, int no_cols, Matrix* matrix) {
   if (matrix == nullptr)
     return;
 
   matrix->resize(no_rows, no_cols);
 
-  CopyRequestResultArgs copy_request_args;
-  std::string args_blob;
-  copy_request_args.SerializeToString(&args_blob);
-
   int length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
-  HandleErrorCode(ArtmCopyRequestResultEx(length, reinterpret_cast<char*>(matrix->get_data()),
-    args_blob.size(), args_blob.c_str()));
+  HandleErrorCode(ArtmCopyRequestedObject(length, reinterpret_cast<char*>(matrix->get_data())));
 }
 
 void ParseCollection(const CollectionParserConfig& config) {
@@ -160,7 +155,7 @@ TopicModel MasterModel::GetTopicModel(Matrix* matrix) {
 
 TopicModel MasterModel::GetTopicModel(const GetTopicModelArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::TopicModel>(id_, args, ArtmRequestTopicModelExternal);
-  ArtmRequestEx(retval.token_size(), retval.num_topics(), matrix);
+  ArtmRequestMatrix(retval.token_size(), retval.num_topics(), matrix);
   return retval;
 }
 
@@ -180,7 +175,7 @@ ThetaMatrix MasterModel::GetThetaMatrix(Matrix* matrix) {
 
 ThetaMatrix MasterModel::GetThetaMatrix(const GetThetaMatrixArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestThetaMatrixExternal);
-  ArtmRequestEx(retval.item_id_size(), retval.num_topics(), matrix);
+  ArtmRequestMatrix(retval.item_id_size(), retval.num_topics(), matrix);
   return retval;
 }
 
@@ -191,7 +186,7 @@ ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args) {
 
 ThetaMatrix MasterModel::Transform(const TransformMasterModelArgs& args, Matrix* matrix) {
   auto retval = ArtmRequest< ::artm::ThetaMatrix>(id_, args, ArtmRequestTransformMasterModelExternal);
-  ArtmRequestEx(retval.item_id_size(), retval.num_topics(), matrix);
+  ArtmRequestMatrix(retval.item_id_size(), retval.num_topics(), matrix);
   return retval;
 }
 

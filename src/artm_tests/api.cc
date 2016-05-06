@@ -22,7 +22,7 @@ ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
 
   std::string result_blob;
   result_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestResult(length, StringAsArray(&result_blob)));
+  HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
 
   ResultT result;
   result.ParseFromString(result_blob);

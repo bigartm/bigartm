@@ -40,6 +40,7 @@ v0.8.0
                                           use_unigram_document_model=False,
                                           dictionary=my_dictionary))
   
+* added ``library_version`` property to ``ARTM`` class to query for the version of the underlying BigARTM library; returns a string in MAJOR.MINOR.PATCH format;
 * ``dictionary_name`` argument had been renamed to ``dictionary`` in many places across python interface, including scores and regularizers.
   This is done because those arguments can now except not just a string, but also the ``artm.Dictionary`` class itself.
 * with ``Dictionary`` class users no longer have to generate names for their dictionaries (e.g. the unique ``dictionary_name`` identifier that references the dictionary).
@@ -82,6 +83,8 @@ v0.8.0
   For further details on score calculation refer to `Q&A section <https://github.com/bigartm/bigartm/wiki/Q&A#how-to-calculate-perplexity-on-held-out-sample>`_ in our wiki page.
 * added ``data_weight`` in ``BatchVectorizer.__init__`` constructor to let user specify an individual weight for each batch
 * score tracker classes had been rewritten, so you should make minor changes in the code that retrieves scores; for example:
+* added an API to initialize logging with custom logging directory, log level, etc...
+  Search out wiki page `Q&A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ for more details.
 
   .. code-block:: bash
 

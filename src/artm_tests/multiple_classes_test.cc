@@ -426,10 +426,10 @@ void VerifySparseVersusDenseTopicModel(const ::artm::GetTopicModelArgs& args, ::
       EXPECT_TRUE(contains);  // only return classes that had been requested
     }
 
-    EXPECT_EQ(tm_dense.topic_index_size(), 0);
+    EXPECT_EQ(tm_dense.topic_indices_size(), 0);
     const ::artm::FloatArray& dense_topic = tm_dense.token_weights(i);
     const ::artm::FloatArray& sparse_topic = tm_sparse.token_weights(i);
-    const ::artm::IntArray& sparse_topic_index = tm_sparse.topic_index(i);
+    const ::artm::IntArray& sparse_topic_index = tm_sparse.topic_indices(i);
     ASSERT_EQ(sparse_topic.value_size(), sparse_topic_index.value_size());
     for (int j = 0; j < sparse_topic.value_size(); ++j) {
       int topic_index = sparse_topic_index.value(j);
@@ -483,10 +483,10 @@ void VerifySparseVersusDenseThetaMatrix(const ::artm::GetThetaMatrixArgs& args, 
   for (int i = 0; i < tm_sparse.item_id_size(); ++i) {
     EXPECT_EQ(tm_sparse.item_id(i), tm_dense.item_id(i));
     EXPECT_EQ(tm_sparse.item_title(i), tm_dense.item_title(i));
-    EXPECT_EQ(tm_dense.topic_index_size(), 0);
+    EXPECT_EQ(tm_dense.topic_indices_size(), 0);
     const ::artm::FloatArray& dense_topic = tm_dense.item_weights(i);
     const ::artm::FloatArray& sparse_topic = tm_sparse.item_weights(i);
-    const ::artm::IntArray& sparse_topic_index = tm_sparse.topic_index(i);
+    const ::artm::IntArray& sparse_topic_index = tm_sparse.topic_indices(i);
     ASSERT_EQ(sparse_topic.value_size(), sparse_topic_index.value_size());
     for (int j = 0; j < sparse_topic.value_size(); ++j) {
       int topic_index = sparse_topic_index.value(j);

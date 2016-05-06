@@ -28,7 +28,7 @@ Non-negative return values represent a success, and for some API methods
 might also incorporate some useful information.
 For example, :c:func:`ArtmCreateMasterComponent` returns the ID of newly created master component,
 and :c:func:`ArtmRequestTopicModel` returns the length of the buffer that should be allocated before
-calling :c:func:`ArtmCopyRequestResult`.
+calling :c:func:`ArtmCopyRequestedMessage`.
 
 
 ArtmCreateMasterComponent
@@ -445,7 +445,7 @@ ArtmRequestThetaMatrix
 
 .. c:function::  int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args)
 
-   Requests theta matrix. Use :cpp:func:`ArtmCopyRequestResult` to copy the resulting message.
+   Requests theta matrix. Use :cpp:func:`ArtmCopyRequestedMessage` to copy the resulting message.
 
    :param int master_id: The ID of a master component,
       returned by :c:func:`ArtmCreateMasterComponent` method.
@@ -457,7 +457,7 @@ ArtmRequestThetaMatrix
    :param int length: The length in bytes of the *get_theta_args* message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestResult` method.
+            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
             This will populate the buffer with :ref:`ThetaMatrix` message, carrying the requested information.
             In case of a failure, returns one of the :ref:`error codes <error-codes>`.
 
@@ -478,7 +478,7 @@ ArtmRequestTopicModel
    :param int length: The length in bytes of the *get_model_args* message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestResult` method.
+            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
             This will populate the buffer with :ref:`TopicModel` message, carrying the requested information.
             In case of a failure, returns one of the :ref:`error codes <error-codes>`.
 
@@ -495,7 +495,7 @@ ArtmRequestRegularizerState
    :param const_char* regularizer_name:  A string identified of the regularizer.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestResult` method.
+            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
             This will populate the buffer with :ref:`RegularizerInternalState` message, carrying the requested information.
             In case of a failure, returns one of the :ref:`error codes <error-codes>`.
 
@@ -516,7 +516,7 @@ ArtmRequestScore
    :param int length: The length in bytes of the *get_score_args* message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestResult` method.
+            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
             This will populate the buffer with :ref:`ScoreData` message, carrying the requested information.
             In case of a failure, returns one of the :ref:`error codes <error-codes>`.
 
@@ -540,7 +540,7 @@ ArtmRequestParseCollection
    :param int length: The length in bytes of the *collection_parser_config* message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestResult` method.
+            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
             The buffer will contain :ref:`DictionaryConfig` message,
             that lists all unique tokens from the collection being parsed.
             In case of a failure, returns one of the :ref:`error codes <error-codes>`.
@@ -567,7 +567,7 @@ ArtmRequestLoadDictionary
             A full file name of a file that contains a serialized DictionaryConfig message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestResult` method.
+            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
             The buffer will contain the resulting :ref:`DictionaryConfig` message.
             In case of a failure, returns one of the :ref:`error codes <error-codes>`.
 
@@ -587,18 +587,18 @@ ArtmRequestLoadBatch
             A full file name of a file that contains a serialized Batch message.
 
    :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestResult` method.
+            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
             The buffer will contain the resulting :ref:`Batch` message.
             In case of a failure, returns one of the :ref:`error codes <error-codes>`.
 
 This method can be used to load batches saved by :ref:`ArtmRequestParseCollection` method or :ref:`ArtmSaveBatch` method.
 
-.. _ArtmCopyRequestResult:
+.. ArtmCopyRequestedMessage:
 
-ArtmCopyRequestResult
----------------------
+ArtmCopyRequestedMessage
+------------------------
 
-.. c:function::  int ArtmCopyRequestResult(int length, char* address)
+.. c:function::  int ArtmCopyRequestedMessage(int length, char* address)
 
   Copies the result of the last request.
 
