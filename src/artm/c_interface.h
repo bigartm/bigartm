@@ -84,6 +84,7 @@ extern "C" {
 
   DLL_PUBLIC int ArtmSaveBatch(const char* disk_path, int length, const char* batch);
   DLL_PUBLIC const char* ArtmGetLastErrorMessage();
+  DLL_PUBLIC const char* ArtmGetVersion();
   DLL_PUBLIC int ArtmConfigureLogging(int length, const char* configure_logging_args);
 }
 

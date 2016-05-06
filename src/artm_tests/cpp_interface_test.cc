@@ -22,6 +22,11 @@ namespace fs = boost::filesystem;
 TEST(CppInterface, Canary) {
 }
 
+TEST(CppInterface, Version) {
+  std::string version(ArtmGetVersion());
+  EXPECT_GT(version.size(), 0);
+}
+
 // artm_tests.exe --gtest_filter=CppInterface.BasicTest
 TEST(CppInterface, BasicTest) {
   artm::ConfigureLoggingArgs log_args;

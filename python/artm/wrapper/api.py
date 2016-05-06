@@ -54,6 +54,10 @@ class LibArtm(object):
 
         return cdll
 
+    def version(self):
+        self.cdll.ArtmGetVersion.restype = ctypes.c_char_p
+        return self.cdll.ArtmGetVersion()
+
     def _check_error(self, error_code):
         if error_code < -1:
             self.cdll.ArtmGetLastErrorMessage.restype = ctypes.c_char_p

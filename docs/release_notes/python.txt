@@ -40,6 +40,7 @@ v0.8.0
                                           use_unigram_document_model=False,
                                           dictionary=my_dictionary))
   
+* added ``library_version`` property to ``ARTM`` class to query for the version of the underlying BigARTM library; returns a string in MAJOR.MINOR.PATCH format;
 * ``dictionary_name`` argument had been renamed to ``dictionary`` in many places across python interface, including scores and regularizers.
   This is done because those arguments can now except not just a string, but also the ``artm.Dictionary`` class itself.
 * with ``Dictionary`` class users no longer have to generate names for their dictionaries (e.g. the unique ``dictionary_name`` identifier that references the dictionary).

@@ -26,6 +26,18 @@ add_custom_target(proto_generation ALL
     ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
     ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h)
 
+# The version number.
+set (ARTM_VERSION_MAJOR 0)
+set (ARTM_VERSION_MINOR 8)
+set (ARTM_VERSION_PATCH 0)
+
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file (
+  "${CMAKE_CURRENT_LIST_DIR}/version.h.in"
+  "${CMAKE_CURRENT_LIST_DIR}/version.h"
+  )
+
 # make separate objective files for every 'external' *.pb.cc file
 # rationale - compiling every *.pb.cc file for different targets
 # is very computationaly intensive

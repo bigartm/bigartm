@@ -12,6 +12,7 @@
 #include "glog/logging.h"
 
 #include "artm/score_calculator_interface.h"
+#include "artm/version.h"
 #include "artm/core/common.h"
 #include "artm/core/check_messages.h"
 #include "artm/core/exceptions.h"
@@ -131,6 +132,14 @@ const char* ArtmGetLastErrorMessage() {
   }
 
   return last_error_->c_str();
+}
+
+const char* ArtmGetVersion() {
+  static std::string version(
+    boost::lexical_cast<std::string>(ARTM_VERSION_MAJOR)+"." +
+    boost::lexical_cast<std::string>(ARTM_VERSION_MINOR)+"." +
+    boost::lexical_cast<std::string>(ARTM_VERSION_PATCH));
+  return version.c_str();
 }
 
 int ArtmConfigureLogging(int length, const char* configure_logging_args) {

@@ -10,6 +10,7 @@ v0.8.0
 * Removed ``ArtmRequestRegularizerState``
 * Added ``ArtmClearThetaCache`` and ``ArtmClearScoreCache``
 * Added ``ArtmRequestScoreArray`` and ``ArtmClearScoreArrayCache``
+* Added ``GetArtmVersion`` to query for the version; returns a string in "<MAJOR>.<MINOR>.<PATCH>" format
 
 v0.7.x
 ------

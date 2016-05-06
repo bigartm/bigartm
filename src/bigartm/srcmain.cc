@@ -1198,7 +1198,9 @@ int main(int argc, char * argv[]) {
   try {
     artm_options options;
 
-    po::options_description all_options("BigARTM - library for advanced topic modeling (http://bigartm.org)");
+    std::stringstream options_header_text;
+    options_header_text << "BigARTM v" << ArtmGetVersion() << " - library for advanced topic modeling (http://bigartm.org)";
+    po::options_description all_options(options_header_text.str());
 
     po::options_description input_data_options("Input data");
     input_data_options.add_options()
