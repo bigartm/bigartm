@@ -190,6 +190,10 @@ ARTM_API = [
         [('array', numpy.ndarray)],
     ),
     CallSpec(
+        'ArtmConfigureLogging',
+        [('config', messages.ConfigureLoggingArgs)],
+    ),
+    CallSpec(
         'ArtmCreateMasterModel',
         [('config', messages.MasterModelConfig)],
         result=ctypes.c_int,

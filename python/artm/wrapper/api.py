@@ -15,7 +15,7 @@ from .spec import ARTM_API
 
 
 class LibArtm(object):
-    def __init__(self, lib_name=None):
+    def __init__(self, lib_name=None, logging_config=None):
         self.cdll = self._load_cdll(lib_name)
 
         # adding specified functions
@@ -23,6 +23,9 @@ class LibArtm(object):
             func = self.cdll[spec.name]
             setattr(self, spec.name, self._wrap_call(func, spec))
             # TODO: add docstring for wrapped function
+
+        if logging_config is not None:
+            self.ArtmConfigureLogging(logging_config)
 
     def _load_cdll(self, lib_name):
         # choose default library name
