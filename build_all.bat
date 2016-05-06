@@ -1,4 +1,4 @@
-set BIGARTM_VERSION="v0.7.4"
+set BIGARTM_VERSION="v0.7.6"
 
 call "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\vcvarsall.bat"
 set VSVERSION=11
