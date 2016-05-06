@@ -73,6 +73,9 @@ v0.8.0
 * remove field ``request_type`` in ``GetTopicModelArgs``;
   to request only topics and/or tokens users should set ``GetTopicModelArgs.matrix_layout`` to ``MatrixLayout_Sparse``,
   and ``GetTopicModelArgs.eps = 1.001`` (any number greather that 1.0).
+* change ``optional FloatArray`` into ``repeated float`` in field ``coherence`` of ``TopTokensScore``
+* change ``optional DoubleArray`` into ``repeated double`` in fields ``kernel_size``, ``kernel_purity``, ``kernel_contrast`` and ``coherence`` of ``TopicKernelScore``
+* change ``optional StringArray`` into ``repeated string`` in field ``topic_name`` of ``TopicKernelScore``
 
 
 v0.7.x
