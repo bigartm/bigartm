@@ -25,7 +25,7 @@ MasterModelConfig TestMother::GenerateMasterModelConfig(int nTopics) {
 RegularizerConfig TestMother::GenerateRegularizerConfig() const {
   ::artm::SmoothSparseThetaConfig regularizer_1_config;
   for (int i = 0; i < 12; ++i)
-    regularizer_1_config.add_alpha_iter(0.8);
+    regularizer_1_config.add_alpha_iter(0.8f);
 
   ::artm::RegularizerConfig general_regularizer_1_config;
   general_regularizer_1_config.set_name(regularizer_name);
@@ -97,9 +97,9 @@ void Helpers::CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::To
   *ok = false;
   ASSERT_EQ(tm1.token_size(), tm2.token_size());
   ASSERT_EQ(tm1.token_weights_size(), tm2.token_weights_size());
-  ASSERT_EQ(tm1.topic_index_size(), tm2.topic_index_size());
-  if (tm1.topic_index_size() > 0)
-    ASSERT_EQ(tm1.topic_index_size(), tm1.token_size());
+  ASSERT_EQ(tm1.topic_indices_size(), tm2.topic_indices_size());
+  if (tm1.topic_indices_size() > 0)
+    ASSERT_EQ(tm1.topic_indices_size(), tm1.token_size());
 
   for (int i = 0; i < tm1.token_size(); ++i) {
     ASSERT_EQ(tm1.token(i), tm2.token(i));
@@ -111,10 +111,10 @@ void Helpers::CompareTopicModels(const ::artm::TopicModel& tm1, const ::artm::To
       if (fabs(tm2_value) < 1e-12) tm2_value = 0.0f;
       ASSERT_APPROX_EQ(tm1_value, tm2_value);
     }
-    if (tm1.topic_index_size() > 0) {
-      ASSERT_EQ(tm1.topic_index(i).value_size(), tm2.topic_index(i).value_size());
-      for (int j = 0; j < tm1.topic_index(i).value_size(); ++j) {
-        ASSERT_EQ(tm1.topic_index(i).value(j), tm2.topic_index(i).value(j));
+    if (tm1.topic_indices_size() > 0) {
+      ASSERT_EQ(tm1.topic_indices(i).value_size(), tm2.topic_indices(i).value_size());
+      for (int j = 0; j < tm1.topic_indices(i).value_size(); ++j) {
+        ASSERT_EQ(tm1.topic_indices(i).value(j), tm2.topic_indices(i).value(j));
       }
     }
   }
@@ -125,19 +125,19 @@ void Helpers::CompareThetaMatrices(const ::artm::ThetaMatrix& tm1, const ::artm:
   *ok = false;
   ASSERT_EQ(tm1.item_id_size(), tm2.item_id_size());
   ASSERT_EQ(tm1.item_weights_size(), tm2.item_weights_size());
-  ASSERT_EQ(tm1.topic_index_size(), tm2.topic_index_size());
-  if (tm1.topic_index_size() > 0)
-    ASSERT_EQ(tm1.topic_index_size(), tm1.item_id_size());
+  ASSERT_EQ(tm1.topic_indices_size(), tm2.topic_indices_size());
+  if (tm1.topic_indices_size() > 0)
+    ASSERT_EQ(tm1.topic_indices_size(), tm1.item_id_size());
 
   for (int i = 0; i < tm1.item_id_size(); ++i) {
     ASSERT_EQ(tm1.item_id(i), tm2.item_id(i));
     ASSERT_EQ(tm1.item_weights(i).value_size(), tm2.item_weights(i).value_size());
     for (int j = 0; j < tm1.item_weights(i).value_size(); ++j)
       ASSERT_APPROX_EQ(tm1.item_weights(i).value(j), tm2.item_weights(i).value(j));
-    if (tm1.topic_index_size() > 0) {
-      ASSERT_EQ(tm1.topic_index(i).value_size(), tm2.topic_index(i).value_size());
-      for (int j = 0; j < tm1.topic_index(i).value_size(); ++j) {
-        ASSERT_EQ(tm1.topic_index(i).value(j), tm2.topic_index(i).value(j));
+    if (tm1.topic_indices_size() > 0) {
+      ASSERT_EQ(tm1.topic_indices(i).value_size(), tm2.topic_indices(i).value_size());
+      for (int j = 0; j < tm1.topic_indices(i).value_size(); ++j) {
+        ASSERT_EQ(tm1.topic_indices(i).value(j), tm2.topic_indices(i).value(j));
       }
     }
   }

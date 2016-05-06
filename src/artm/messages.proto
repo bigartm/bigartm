@@ -377,7 +377,7 @@ message TopicModel {
   repeated string token = 4;
   repeated FloatArray token_weights = 5;
   repeated string class_id = 6;
-  repeated IntArray topic_index = 8;
+  repeated IntArray topic_indices = 8;
 }
 
 // Represents a theta matrix.
@@ -387,7 +387,7 @@ message ThetaMatrix {
   repeated string topic_name = 4;
   optional int32 num_topics = 5;
   repeated string item_title = 6;
-  repeated IntArray topic_index = 7;
+  repeated IntArray topic_indices = 7;
 }
 
 // Represents a configuration of a collection parser.
