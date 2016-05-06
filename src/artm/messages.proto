@@ -567,9 +567,6 @@ message ExportDictionaryArgs {
   optional string dictionary_name = 2;
 }
 
-message CopyRequestResultArgs {
-}
-
 message DuplicateMasterComponentArgs {
 }
 

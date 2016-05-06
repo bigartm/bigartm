@@ -409,9 +409,7 @@ class MasterComponent(object):
         num_rows = len(result.theta_matrix.item_id)
         num_cols = result.theta_matrix.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
-
-        cp_args = messages.CopyRequestResultArgs()
-        self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+        self._lib.ArtmCopyRequestedObject(numpy_ndarray)
 
         return result.theta_matrix, numpy_ndarray
 
@@ -610,9 +608,7 @@ class MasterComponent(object):
         num_rows = len(theta_matrix_info.item_id)
         num_cols = theta_matrix_info.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
-
-        cp_args = messages.CopyRequestResultArgs()
-        self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+        self._lib.ArtmCopyRequestedObject(numpy_ndarray)
 
         return theta_matrix_info, numpy_ndarray
 
@@ -655,9 +651,7 @@ class MasterComponent(object):
         num_rows = len(phi_matrix_info.token)
         num_cols = phi_matrix_info.num_topics
         numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
-
-        cp_args = messages.CopyRequestResultArgs()
-        self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+        self._lib.ArtmCopyRequestedObject(numpy_ndarray)
 
         return phi_matrix_info, numpy_ndarray
 
@@ -795,9 +789,7 @@ class MasterComponent(object):
             num_rows = len(theta_matrix_info.item_id)
             num_cols = theta_matrix_info.num_topics
             numpy_ndarray = numpy.zeros(shape=(num_rows, num_cols), dtype=numpy.float32)
-
-            cp_args = messages.CopyRequestResultArgs()
-            self._lib.ArtmCopyRequestResultEx(numpy_ndarray, cp_args)
+            self._lib.ArtmCopyRequestedObject(numpy_ndarray)
 
             return theta_matrix_info, numpy_ndarray
         else:

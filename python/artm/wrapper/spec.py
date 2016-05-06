@@ -186,8 +186,8 @@ ARTM_API = [
         [('filename', str), ('batch', messages.Batch)],
     ),
     CallSpec(
-        'ArtmCopyRequestResultEx',
-        [('array', numpy.ndarray), ('args', messages.CopyRequestResultArgs)],
+        'ArtmCopyRequestedObject',
+        [('array', numpy.ndarray)],
     ),
     CallSpec(
         'ArtmCreateMasterModel',

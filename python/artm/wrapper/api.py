@@ -74,7 +74,7 @@ class LibArtm(object):
 
     def _get_requested_message(self, length, func):
         message_blob = ctypes.create_string_buffer(length)
-        error_code = self.cdll.ArtmCopyRequestResult(length, message_blob)
+        error_code = self.cdll.ArtmCopyRequestedMessage(length, message_blob)
         self._check_error(error_code)
         message = func()
         message.ParseFromString(message_blob)
