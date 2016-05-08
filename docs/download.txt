@@ -3,8 +3,8 @@ Downloads
 
 * **Windows**
 
-  * Latest 32 bit release: `BigARTM_v0.8.0_win32 <https://github.com/bigartm/bigartm/releases/download/v0.8.0/BigARTM_v0.8.0_win32.7z>`_
-  * Latest 64 bit release: `BigARTM_v0.8.0_x64 <https://github.com/bigartm/bigartm/releases/download/v0.8.0/BigARTM_v0.8.0_x64.7z>`_
+  * Latest 32 bit release: `BigARTM_v0.8.0_vs12_win32_RelWithDebInfo <https://github.com/bigartm/bigartm/releases/download/v0.8.0/BigARTM_v0.8.0_vs12_win32_RelWithDebInfo.7z>`_
+  * Latest 64 bit release: `BigARTM_v0.8.0_vs12_win64_RelWithDebInfo <https://github.com/bigartm/bigartm/releases/download/v0.8.0/BigARTM_v0.8.0_vs12_win64_RelWithDebInfo.7z>`_
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
   Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
