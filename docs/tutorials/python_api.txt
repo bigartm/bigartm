@@ -1,7 +1,13 @@
 Running BigARTM from Python API
 ===============================
 
-Refer to ARTM notebook 
+Refer to ARTM tutorial 
+(`in Russian <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_basic_tutorial_RU.ipynb>`_
+or `in English <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_basic_tutorial_EN.ipynb>`_),
+which describes high-level Python API of BigARTM.
+
+Refer to ARTM notebook with model experiment
 (`in Russian <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_RU.ipynb>`_
 or `in English <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb>`_),
 which describes high-level Python API of BigARTM.
+

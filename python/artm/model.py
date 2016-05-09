@@ -109,7 +109,7 @@ class ARTM(object):
         self._num_document_passes = num_document_passes
         self._reuse_theta = True
         self._theta_columns_naming = 'id'
-        self._seed = seed
+        self._seed = -1
 
         if topic_names is not None:
             self._topic_names = topic_names
@@ -137,6 +137,9 @@ class ARTM(object):
 
         if theta_columns_naming in ['id', 'title']:
             self._theta_columns_naming = theta_columns_naming
+
+        if isinstance(seed, int) and seed >= 0:
+            self._seed = seed
 
         self._model_pwt = 'pwt'
         self._model_nwt = 'nwt'
@@ -264,6 +267,10 @@ class ARTM(object):
         return self._num_online_processed_batches
 
     @property
+    def seed(self):
+        return self._seed
+
+    @property
     def phi_(self):
         if self._phi_cached is None:
             self._phi_cached = self.get_phi()
@@ -345,6 +352,13 @@ class ARTM(object):
         else:
             self.master.reconfigure(class_ids=class_ids)
             self._class_ids = class_ids
+
+    @seed.setter
+    def seed(self, seed):
+        if seed < 0 or not isinstance(seed, int):
+            raise IOError('Random seed should be a positive integer')
+        else:
+            self._seed = seed
 
     # ========== METHODS ==========
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=1):
