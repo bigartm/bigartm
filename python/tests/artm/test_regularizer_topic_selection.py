@@ -19,7 +19,6 @@ def test_func():
     perplexity_value = [8963.45939171117, 2550.7275062628664, 2301.3291199618243]
 
     try:
-        data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
         batch_vectorizer = artm.BatchVectorizer(data_path=data_path,
                                                 data_format='bow_uci',
                                                 collection_name='kos',

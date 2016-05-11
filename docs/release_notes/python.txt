@@ -9,6 +9,12 @@ For further reference about Python API refer to `the documentation <http://docs.
 `BigARTM cookbook for Python <https://github.com/bigartm/bigartm/wiki/BigARTM-Cookbook-for-Python>`_,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
 
+v0.8.1
+------
+
+* New source type 'bow_n_wd' was added into BatchVectorizer class. This type oriented on using the output of CountVectorizer and TfIdfVectorizers classes from sklearn.
+  New parameters of BatchVectorizer are: n_wd (numpy.array) and vocabulary(dict)
+
 v0.8.0
 ------
 
