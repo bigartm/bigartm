@@ -261,6 +261,7 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
   }
 
   this->regularizers()->set(regularizer_name, regularizer);
+  regularizer->set_instance(this);
 }
 
 std::shared_ptr<ScoreCalculatorInterface> Instance::CreateScoreCalculator(const ScoreConfig& config) {
