@@ -16,30 +16,28 @@ namespace artm {
 namespace regularizer {
 
 void iTopicThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
-  /*
-    for (int topic_id = 0; topic_id < model->Topics(); ++topic_id) {
-        for (size_t item_index = 0; item_index < model->Docs(); ++item_index) {
-            for (auto wordcount : model->doc_link_counts[item_index]) {
-                size_t link = wordcount.first;
-                size_t w = wordcount.second;
-                result.data[topic_id][item_index] += w * model->link_phi.data[link][topic_id];
-            }
-        }
+  auto phi = GetPhiMatrix(instance_->config()->nwt_name());
+  // now we need to get tokens inside current document
+  const Item& item = mybatch.item(item_index);
+  for (int token_index = 0; token_index < item.token_id_size(); ++token_index) {
+    int token_id = item.token_id(token_index);
+    ClassId class_id = batch.class_id(token_id);
+    if (class_id == config_.class_name) {
+      float token_weight = item.token_weight(token_index);
+      // auto iter = class_id_to_weight.find(class_id);
+      // float class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
+
+      // NOTE: we could use class_weight * token_weight here instead
+      // but that makes combining iTopicTheta with log-likelihood 
+      // regularizer more tricky for no actual gain
+      for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
+        theta[topic_id] += token_weight * phi->get(token_index, topic_index);
+      }
     }
-
-  */
-  assert(topics_size == topic_weight.size());
-  assert(inner_iter < alpha_weight.size());
-  if (topics_size != topic_weight.size()) return;
-  if (inner_iter >= alpha_weight.size()) return;
-
-  for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-    if (theta[topic_id] > 0.0f)
-      theta[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] * topic_value[topic_id] * theta[topic_id];
   }
 }
 
-TopicSelectionTheta::TopicSelectionTheta(const TopicSelectionThetaConfig& config) : config_(config) { }
+iTopicTheta::iTopicTheta(const iTopicThetaConfig& config) : config_(config) { }
 
 std::shared_ptr<RegularizeThetaAgent>
 TopicSelectionTheta::CreateRegularizeThetaAgent(const Batch& batch,
