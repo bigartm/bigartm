@@ -34,6 +34,7 @@ class iTopicThetaAgent : public RegularizeThetaAgent {
 
  private:
   friend class iTopicTheta;
+  const Batch& mybatch;
 
 };
 
