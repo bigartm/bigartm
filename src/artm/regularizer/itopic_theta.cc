@@ -14,28 +14,22 @@ namespace regularizer {
 
 
 void iTopicThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
-  std::shared_ptr<const ::artm::core::PhiMatrix> phi = myinstance_->GetPhiMatrixSafe(myinstance_->config()->nwt_name());
+
+  auto phi = myinstance_->GetPhiMatrixSafe(myinstance_->config()->nwt_name());
   // now we need to get tokens inside current document
   const Item& item = mybatch.item(item_index);
   for (int token_index = 0; token_index < item.token_id_size(); ++token_index) {
     int token_id = item.token_id(token_index);
     ::artm::core::ClassId class_id = mybatch.class_id(token_id);
-    // std::cout << "class_id of [" << token_id << "] is " << class_id << std::endl;
-    // std::cout << "Adding phi: " << phi->get(token_index, 0) << std::endl;
-
     if (class_id == myclass) {
-      // std::cout << "OK" << std::endl;
-
       float token_weight = item.token_weight(token_index);
-      // std::cout << "token_weight : " << token_weight << std::endl;
-
       // NOTE: we could use class_weight * token_weight here instead
       // but that makes combining iTopicTheta with log-likelihood 
       // regularizer more tricky for no actual gain
+
       for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
         theta[topic_id] += token_weight * phi->get(token_index, topic_id);
-        std::cout << "Adding phi: " << phi->get(token_index, topic_id) << std::endl;
-        // std::cout << "Adding: " << token_weight * phi->get(token_index, topic_id) << std::endl;
+        // phi->get always returns 0 here for some reason, but it shouldn't
       }
     }
   }
@@ -46,28 +40,16 @@ iTopicTheta::iTopicTheta(const iTopicThetaConfig& config) : config_(config) { }
 std::shared_ptr<RegularizeThetaAgent>
 iTopicTheta::CreateRegularizeThetaAgent(const Batch& batch,
                                                 const ProcessBatchesArgs& args, double tau) {
-  // std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(const std::string& model_name);
   iTopicThetaAgent* agent = new iTopicThetaAgent(batch, instance_);
   std::shared_ptr<iTopicThetaAgent> retval(agent);
 
   const int topic_size = args.topic_name_size();
   const int item_size = batch.item_size();
-  // agent->myclass = config_.class_name();
-
   agent->myclass = config_.class_name();
-  std::cout << "myclass is " << config_.class_name() << std::endl;
-  std::shared_ptr<const ::artm::core::PhiMatrix> phi = instance_->GetPhiMatrixSafe(instance_->config()->nwt_name());
-  std::cout << "phi: " << phi->get(0, 0) << std::endl;
-  // phi->set(0, 0, 1);
-  // std::cout << "phi: " << phi->get(0, 0) << std::endl;
-  std::cout << "phi: " << phi->token_size() << phi->topic_size() << std::endl;
-  std::cout << "name: " << instance_->config()->nwt_name() << std::endl;
-  // instance_->
+
   
   // TODO: various checks here
   // use_classes == true, class_name is valid, class_weight != 0, etc
-  // auto iter = class_id_to_weight.find(config_.class_name);
-  // float class_weight = (iter == class_id_to_weight.end()) ? 0.0f : iter->second;
   return retval;
 }
 
