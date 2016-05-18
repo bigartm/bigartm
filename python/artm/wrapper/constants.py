@@ -14,6 +14,7 @@ RegularizerType_SpecifiedSparsePhi = 5
 RegularizerType_ImproveCoherencePhi = 6
 RegularizerType_SmoothPtdw = 7
 RegularizerType_TopicSelectionTheta = 8
+RegularizerType_iTopicTheta = 9
 TransformConfig_TransformType_Logarithm = 0
 TransformConfig_TransformType_Polynomial = 1
 TransformConfig_TransformType_Constant = 2

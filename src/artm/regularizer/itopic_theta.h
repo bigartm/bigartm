@@ -24,6 +24,8 @@
 #include <vector>
 
 #include "artm/regularizer_interface.h"
+#include "artm/core/instance.h"
+#include "artm/core/token.h"
 
 namespace artm {
 namespace regularizer {
@@ -31,11 +33,14 @@ namespace regularizer {
 class iTopicThetaAgent : public RegularizeThetaAgent {
  public:
   virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const;
+  explicit iTopicThetaAgent(const Batch& batch, const ::artm::core::Instance* instance_) : 
+      mybatch(batch), myinstance_(instance_) {}
 
  private:
   friend class iTopicTheta;
   const Batch& mybatch;
-
+  const ::artm::core::Instance* myinstance_;
+  ::artm::core::ClassId myclass;
 };
 
 class iTopicTheta : public RegularizerInterface {
@@ -45,7 +50,8 @@ class iTopicTheta : public RegularizerInterface {
   virtual std::shared_ptr<RegularizeThetaAgent>
   CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau);
 
-  virtual google::protobuf::RepeatedPtrField<std::string> class_name();
+  // virtual google::protobuf::OptionalField<std::string> class_name();
+  // virtual google::protobuf::RepeatedPtrField<std::string> class_name();
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 

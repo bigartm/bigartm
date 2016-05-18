@@ -562,3 +562,25 @@ class TopicSelectionThetaRegularizer(BaseRegularizerTheta):
                                       config=config,
                                       topic_names=topic_names,
                                       alpha_iter=alpha_iter)
+
+class iTopicThetaRegularizer(BaseRegularizerTheta):
+    _config_message = messages.iTopicThetaConfig
+    _type = const.RegularizerType_iTopicTheta
+
+    def __init__(self, name=None, tau=1.0, class_name=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param class_name: name of modality containing graph-related data
+        :type class_name: str
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
+        print("here!")
+        print(name)
+        print(config)
+        BaseRegularizerTheta.__init__(self,
+                                      name=name,
+                                      tau=tau,
+                                      config=config,
+                                      class_name=class_name)
