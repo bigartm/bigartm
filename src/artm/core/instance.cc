@@ -255,13 +255,13 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
                                         ::artm::regularizer::TopicSelectionTheta);
       break;
     }
-    
+
     case artm::RegularizerType_iTopicTheta: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::iTopicThetaConfig,
                                         ::artm::regularizer::iTopicTheta);
       break;
     }
-    
+
 
     default:
       BOOST_THROW_EXCEPTION(ArgumentOutOfRangeException(

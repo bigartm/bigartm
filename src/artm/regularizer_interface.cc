@@ -13,7 +13,11 @@ std::shared_ptr< ::artm::core::Dictionary> RegularizerInterface::dictionary(cons
 }
 
 std::shared_ptr<const ::artm::core::PhiMatrix> RegularizerInterface::GetPhiMatrix(const std::string& model_name) {
-  return instance_->GetPhiMatrixSafe(model_name);
+    return instance_->GetPhiMatrixSafe(model_name);
+}
+
+std::shared_ptr<const ::artm::core::PhiMatrix> RegularizerInterface::GetPhiMatrix() {
+    return GetPhiMatrix(instance_->config()->nwt_name());
 }
 
 }  // namespace artm
