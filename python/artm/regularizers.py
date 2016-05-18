@@ -576,9 +576,6 @@ class iTopicThetaRegularizer(BaseRegularizerTheta):
         :param config: the low-level config of this regularizer
         :type config: protobuf object
         """
-        print("here!")
-        print(name)
-        print(config)
         BaseRegularizerTheta.__init__(self,
                                       name=name,
                                       tau=tau,
