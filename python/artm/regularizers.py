@@ -563,6 +563,7 @@ class TopicSelectionThetaRegularizer(BaseRegularizerTheta):
                                       topic_names=topic_names,
                                       alpha_iter=alpha_iter)
 
+
 class iTopicThetaRegularizer(BaseRegularizerTheta):
     _config_message = messages.iTopicThetaConfig
     _type = const.RegularizerType_iTopicTheta

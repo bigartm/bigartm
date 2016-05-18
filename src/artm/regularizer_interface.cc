@@ -16,10 +16,4 @@ std::shared_ptr<const ::artm::core::PhiMatrix> RegularizerInterface::GetPhiMatri
   return instance_->GetPhiMatrixSafe(model_name);
 }
 
-//std::shared_ptr<Score> ScoreCalculatorInterface::CalculateScore() {
-//  auto phi_matrix = GetPhiMatrix(model_name());
-//  return CalculateScore(*phi_matrix);
-//}
-
-
 }  // namespace artm

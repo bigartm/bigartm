@@ -86,6 +86,7 @@ class RegularizerInterface {
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
   std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(const std::string& model_name);
   void set_instance(::artm::core::Instance* instance) { instance_ = instance; }
+
  protected:
   ::artm::core::Instance* instance_;
 };
