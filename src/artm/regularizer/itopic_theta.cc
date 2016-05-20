@@ -1,6 +1,6 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
-// Author: me
+// Author: Bulatov Victor
 
 #include <vector>
 
@@ -15,27 +15,25 @@ namespace regularizer {
 
 void iTopicThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
 
-  auto phi = myinstance_->GetPhiMatrixSafe(myinstance_->config()->nwt_name());
+  auto phi = myinstance_->GetPhiMatrixSafe(config_.nwt_name());
   // now we need to get tokens inside current document
   const Item& item = mybatch.item(item_index);
   for (int token_index = 0; token_index < item.token_id_size(); ++token_index) {
     int token_id = item.token_id(token_index);
     ::artm::core::ClassId class_id = mybatch.class_id(token_id);
-    if (class_id == myclass) {
+    if (class_id == config_.class_name()) {
       float token_weight = item.token_weight(token_index);
-      // NOTE: we could use class_weight * token_weight here instead
-      // but that makes combining iTopicTheta with log-likelihood 
-      // regularizer more tricky for no actual gain
+      // NOTE: why I use token_weight instead of class_weight * token_weight?
+      // Short version: adjusting for class_weight is easier than un-adjusting. 
+      // And damages perfomance (in a certain sense).
 
       for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-        theta[topic_id] += token_weight * phi->get(token_index, topic_id);
-        // phi->get always returns 0 here for some reason, but it shouldn't
+        theta[topic_id] += tau_ * token_weight * phi->get(token_id, topic_id);
       }
     }
   }
 }
 
-iTopicTheta::iTopicTheta(const iTopicThetaConfig& config) : config_(config) { }
 
 std::shared_ptr<RegularizeThetaAgent>
 iTopicTheta::CreateRegularizeThetaAgent(const Batch& batch,
@@ -45,7 +43,8 @@ iTopicTheta::CreateRegularizeThetaAgent(const Batch& batch,
 
   const int topic_size = args.topic_name_size();
   const int item_size = batch.item_size();
-  agent->myclass = config_.class_name();
+  agent->config_ = config_;
+  agent->tau_ = tau;
 
   
   // TODO: various checks here

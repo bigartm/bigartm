@@ -1,18 +1,17 @@
 /* Copyright 2014, Additive Regularization of Topic Models.
 
-   Author: me
+   Author: Bulatov Victor
 
-   This class proceeds
-   The formula of M-step is
+   The original formula of M-step is
    
-   // p_td \propto n_td - tau * n_td * topic_value[t],
-   
-   // where topic_value[t] = n / (n_t * |T|) --- shuld be defined
-   // by user for each topic, and alpha_iter is an array of
-   // additional coefficients, one per document pass. If n_td is
-   // negative, nothing will be done.
-   
-   The parameters of the regularizer:
+   // p_td \propto n_td + tau * sum_v w_dv * p_tv,
+   // the idea is to mix topical distribution of documents if they are linked together in some way
+   // (e.g. are citing each other)
+
+   // this operation is difficult to parallelize, 
+   // so this implementation uses this modified formula instead:
+   // p_td \propto n_td + tau * sum_v w_dv * phi_vt
+
 
 */
 
@@ -40,18 +39,15 @@ class iTopicThetaAgent : public RegularizeThetaAgent {
   friend class iTopicTheta;
   const Batch& mybatch;
   const ::artm::core::Instance* myinstance_;
-  ::artm::core::ClassId myclass;
+  iTopicThetaConfig config_;
+  float tau_;
 };
 
 class iTopicTheta : public RegularizerInterface {
  public:
-  explicit iTopicTheta(const iTopicThetaConfig& config);
-
+  explicit iTopicTheta(const iTopicThetaConfig& config) : config_(config) { }
   virtual std::shared_ptr<RegularizeThetaAgent>
   CreateRegularizeThetaAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau);
-
-  // virtual google::protobuf::OptionalField<std::string> class_name();
-  // virtual google::protobuf::RepeatedPtrField<std::string> class_name();
 
   virtual bool Reconfigure(const RegularizerConfig& config);
 
