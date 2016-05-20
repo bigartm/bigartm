@@ -25,7 +25,7 @@ class Dictionary(object):
         """
         self._name = name if name is not None else str(uuid.uuid4())
         self._lib = wrapper.LibArtm()
-        self._master = master_component.MasterComponent(self._lib)
+        self._master = master_component.MasterComponent(self._lib, num_processors=0)
 
         if dictionary_path is not None:
             self.load(dictionary_path=dictionary_path)
