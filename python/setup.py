@@ -9,20 +9,27 @@ import os.path
 import tempfile
 import shutil
 import subprocess
+import argparse
 
-# Find the Protocol Compiler.
-if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
-    protoc_exec = os.environ['PROTOC']
-elif os.path.exists("../build/3rdparty/protobuf-cmake/protoc/protoc"):
-    print("Find protoc in 3rdparty")
-    protoc_exec = "../build/3rdparty/protobuf-cmake/protoc/protoc"
-elif os.path.exists("../build/3rdparty/protobuf-cmake/protoc/protoc.exe"):
-    protoc_exec = "../build/3rdparty/protobuf-cmake/protoc/protoc.exe"
-else:
-    protoc_exec = find_executable("protoc")
 
-if not protoc_exec:
-    raise ValueError("No protobuf compiler executable was found!")
+# Find the Protocol Buffer Compiler.
+def find_protoc_exec():
+    # extract path to protobuf executable from command-line arguments
+    argument_prefix = "protoc_executable"
+    parser = argparse.ArgumentParser(description="", add_help=False)
+    parser.add_argument("--{}".format(argument_prefix), action="store")
+    found_args, rest_args = parser.parse_known_args(sys.argv)
+    sys.argv = rest_args
+    result = vars(found_args).get(argument_prefix, None)
+    # try to guess from environment variables
+    if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
+        result = result or os.environ['PROTOC']
+    # try to find using distutils helper function
+    result = result or find_executable("protoc")
+    return result
+
+
+protoc_exec = find_protoc_exec()
 
 
 def generate_proto_files(
@@ -45,6 +52,9 @@ def generate_proto_files(
             sys.stderr.write("Can't find required file: {}\n".format(
                 source_file))
             sys.exit(-1)
+
+        if not protoc_exec:
+            raise ValueError("No protobuf compiler executable was found!")
 
         try:
             tmp_dir = tempfile.mkdtemp(dir="./")

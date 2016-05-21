@@ -14,6 +14,12 @@ endif (UNIX)
 
 set(PROTOBUF_PROTOC_EXECUTABLE protoc CACHE INTERNAL "protoc build")
 
+set(PROTOBUF_PROTOC_EXECUTABLE_PATH
+	${CMAKE_CURRENT_BINARY_DIR}/protoc
+  CACHE
+  FILEPATH
+  "path to protoc executable")
+
 if (MSVC)
   install(TARGETS protoc RUNTIME DESTINATION ${BIN_DIR})
 elseif (UNIX)
