@@ -27,9 +27,9 @@ add_custom_target(proto_generation ALL
     ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h)
 
 # The version number.
-set (ARTM_VERSION_MAJOR 0)
-set (ARTM_VERSION_MINOR 8)
-set (ARTM_VERSION_PATCH 0)
+set(ARTM_VERSION_MAJOR 0)
+set(ARTM_VERSION_MINOR 8)
+set(ARTM_VERSION_PATCH 0)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -185,11 +185,11 @@ add_library(artm SHARED ${SRC_LIST})
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 
-if(MSVC)
+if (MSVC)
   install(TARGETS artm DESTINATION bin)
   install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
-else()
+else (MSVC)
   install(TARGETS artm DESTINATION lib)
   # FIXME: install headers to /usr/include, protobuf and compiled messages --- to appropriate path
   #install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)
-endif()
+endif (MSVC)

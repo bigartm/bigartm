@@ -14,12 +14,13 @@ find_package(Boost COMPONENTS REQUIRED ${BIGARTM_BOOST_COMPONENTS})
 add_executable(bigartm ${SRC_LIST})
 add_dependencies(bigartm messages_proto)
 
+if (BUILD_STATIC_BIGARTM)
+  set(CMAKE_EXE_LINKER_FLAGS "-static")
+endif (BUILD_STATIC_BIGARTM)
+
 if (WIN32)
   target_link_libraries(bigartm artm ${Boost_LIBRARIES})
 else (WIN32)
-  if (BUILD_STATIC_BIGARTM)
-    set(CMAKE_EXE_LINKER_FLAGS "-static")
-  endif (BUILD_STATIC_BIGARTM)
   target_link_libraries(bigartm
       messages_proto
 	  artm-static
