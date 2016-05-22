@@ -15,7 +15,7 @@ endif (UNIX)
 set(PROTOBUF_PROTOC_EXECUTABLE protoc CACHE INTERNAL "protoc build")
 
 set(PROTOBUF_PROTOC_EXECUTABLE_PATH
-	${CMAKE_CURRENT_BINARY_DIR}/protoc
+    ${CMAKE_CURRENT_BINARY_DIR}/protoc${CMAKE_EXECUTABLE_SUFFIX}
   CACHE
   FILEPATH
   "path to protoc executable")
@@ -25,5 +25,5 @@ if (MSVC)
 elseif (UNIX)
   add_custom_command(TARGET protoc
     POST_BUILD
-    COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/protoc ${CMAKE_SOURCE_DIR}/3rdparty/protobuf/src/)
+    COMMAND cp ${PROTOBUF_PROTOC_EXECUTABLE_PATH} ${CMAKE_SOURCE_DIR}/3rdparty/protobuf/src/)
 endif (MSVC)
