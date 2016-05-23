@@ -60,8 +60,6 @@ def test_func():
     len_last_document_ids = 10
 
     try:
-        data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-        batch_vectorizer = None
         batch_vectorizer = artm.BatchVectorizer(data_path=data_path,
                                                 data_format='bow_uci',
                                                 collection_name='kos',

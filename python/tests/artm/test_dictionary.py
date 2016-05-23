@@ -23,8 +23,6 @@ def test_func():
             assert counter == (num_tokens if not filtered else num_filtered_tokens)
 
     try:
-        data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-        batch_vectorizer = None
         batch_vectorizer = artm.BatchVectorizer(data_path=data_path,
                                                 data_format='bow_uci',
                                                 collection_name='kos',
