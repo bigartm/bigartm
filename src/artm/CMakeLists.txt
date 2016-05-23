@@ -2,29 +2,38 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 
 # add custom command for creating from *.proto templates
 add_custom_command(
-    OUTPUT
-    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
-    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
-    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
-    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h
-    DEPENDS
-    ${CMAKE_CURRENT_LIST_DIR}/messages.proto
-    ${CMAKE_CURRENT_LIST_DIR}/core/internals.proto
-    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./
-    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/core/internals.proto --cpp_out=./
-    COMMENT "Generating headers and sources from *.proto files"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..)
+  OUTPUT
+  ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+  ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
+  ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
+  ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h
+  DEPENDS
+  ${CMAKE_CURRENT_LIST_DIR}/messages.proto
+  ${CMAKE_CURRENT_LIST_DIR}/core/internals.proto
+  COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/messages.proto --cpp_out=./
+  COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} artm/core/internals.proto --cpp_out=./
+  COMMENT "Generating headers and sources from *.proto files"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..)
+
+set(GENERATED_PROTO_FILES ${GENERATED_PROTO_FILES}
+  ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
+  ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
+  ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
+  ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h)
+    
+set_source_files_properties(${GENERATED_PROTO_FILES} PROPERTIES GENERATED TRUE)
+
+if (MSVC)
+  set_source_files_properties(${GENERATED_PROTO_FILES} PROPERTIES COMPILE_FLAGS "/wd4244" "/wd4267")
+endif (MSVC)
 
 # add custom target
 # to bind targets with *.proto dependencies and
 # *.proto generation
 # as a result, we specify the order
 add_custom_target(proto_generation ALL
-    DEPENDS
-    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.cc
-    ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
-    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
-    ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h)
+  DEPENDS
+  ${GENERATED_PROTO_FILES})
 
 # The version number.
 set(ARTM_VERSION_MAJOR 0)
