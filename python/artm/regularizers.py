@@ -80,6 +80,9 @@ class Regularizers(object):
         else:
             raise KeyError('No regularizer with name {0}'.format(name))
 
+    def size(self):
+        return len(self._data.keys())
+
     @property
     def data(self):
         return self._data

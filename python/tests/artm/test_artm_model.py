@@ -8,7 +8,6 @@ import artm
 
 def test_func():
     # constants
-    dictionary_name = 'dictionary'
     num_tokens = 11
     probability_mass_threshold = 0.9
     sp_reg_tau = -0.1

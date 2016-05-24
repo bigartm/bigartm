@@ -14,6 +14,7 @@ v0.8.1
 
 * New source type 'bow_n_wd' was added into BatchVectorizer class. This type oriented on using the output of CountVectorizer and TfIdfVectorizers classes from sklearn.
   New parameters of BatchVectorizer are: n_wd (numpy.array) and vocabulary(dict)
+* LDA model was added as one of the public interfaces. It is a restricted ARTM model created to simplify BigARTM usage for new users with few experience in topic modeling.
 
 v0.8.0
 ------

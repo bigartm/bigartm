@@ -1,4 +1,5 @@
-from model import ARTM
+from artm_model import ARTM
+from lda_model import LDA
 from dictionary import *
 from regularizers import *
 from scores import *

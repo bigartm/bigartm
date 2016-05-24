@@ -5,7 +5,8 @@ This document describes all classes and functions
 in python interface of BigARTM library.
 
 .. toctree::
-   python_interface/model
+   python_interface/artm_model
+   python_interface/lda_model
    python_interface/batches_utils
    python_interface/dictionary
    python_interface/regularizers
