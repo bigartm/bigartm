@@ -24,7 +24,7 @@ set(GENERATED_PROTO_FILES ${GENERATED_PROTO_FILES}
 set_source_files_properties(${GENERATED_PROTO_FILES} PROPERTIES GENERATED TRUE)
 
 if (MSVC)
-  set_source_files_properties(${GENERATED_PROTO_FILES} PROPERTIES COMPILE_FLAGS "/wd4244" "/wd4267")
+  set_source_files_properties(${GENERATED_PROTO_FILES} PROPERTIES COMPILE_FLAGS "/wd4244 /wd4267")
 endif (MSVC)
 
 # add custom target
