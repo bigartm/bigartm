@@ -17,14 +17,6 @@ The state-of-the-art platform for topic modeling.
 
 BigARTM is a tool for [topic modeling](https://www.cs.princeton.edu/~blei/papers/Blei2012.pdf) based on a novel technique called Additive Regularization of Topic Models. This technique effectively builds multi-objective models by adding the weighted sums of regularizers to the optimization criterion. BigARTM is known to combine well very different objectives, including sparsing, smoothing, topics decorrelation and many others. Such combinations of regularizers significantly improves several quality measures at once almost without any loss of the perplexity.
 
-Here are some examples of when you could use BigARTM:
-
-  - Build model from interactive ipython notebook. [Demo](https://github.com/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb)
-  - Construct accurate text classifiers by very small training set. [Demo](https://github.com/bigartm/bigartm-book/blob/master/applications/eurlex/Main_EN.ipynb)
-  - Evaluate coherence-based quality metrics. [Demo](https://github.com/bigartm/bigartm-book/blob/master/MMRO_coherence_experiment.ipynb)
-  - Query similar documents on different languages.
-
-
 ### References
 
 * Vorontsov K., Frei O., Apishev M., Romov P., Dudarenko M. BigARTM: [Open Source Library for Regularized Multimodal Topic Modeling of Large Collections](https://s3-eu-west-1.amazonaws.com/artm/Voron15aist.pdf) //  Analysis of Images, Social Networks and Texts. 2015.
@@ -91,8 +83,8 @@ bigartm.exe -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictio
 ### Interactive Python interface
 
 Check out the documentation for the ARTM Python interface 
-[in English](http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_EN.ipynb) and
-[in Russian](http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/BigARTM_example_RU.ipynb) 
+[in English](http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/ARTM_tutorial_EN.ipynb) and
+[in Russian](http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/ARTM_tutorial_RU.ipynb) 
 
 Refer to [tutorials](http://docs.bigartm.org/en/latest/tutorials/index.html) for details on how to install and start using Python interface.
 
