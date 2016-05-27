@@ -32,7 +32,7 @@ class Batch(object):
 class BatchVectorizer(object):
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
                  target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0,
-                 n_wd=None, vocabulary=None):
+                 n_wd=None, vocabulary=None, gather_dictionary=True):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
@@ -59,6 +59,9 @@ class BatchVectorizer(object):
                               one path from the data_path list;
         :param array n_wd: numpy.array with n_wd counters
         :param dict vocabulary: dict with vocabulary, key - index of n_wd, value - token
+        :param bool gather_dictionary: create or not the default dictionary in vectorizer;\
+                                       if data_format == 'bow_n_wd' - automatically set to True;\
+                                       and if data_weight is list - automatically set to False
         """
         self._remove_batches = False
         if data_format == 'bow_n_wd':
@@ -78,7 +81,10 @@ class BatchVectorizer(object):
         self._weights = []
         self._data_path = data_path
         self._batch_size = batch_size
+
         self._dictionary = None
+        if gather_dictionary and not isinstance(data_weight, list):
+            self._dictionary = Dictionary()
 
         if data_format == 'bow_n_wd':
             self._parse_n_wd(data_weight=1.0, n_wd=n_wd, vocab=vocabulary)
@@ -158,6 +164,10 @@ class BatchVectorizer(object):
             self._batches_list += [Batch(filename) for filename in batch_filenames]
             self._weights += [data_w for i in xrange(len(batch_filenames))]
 
+            # next code will be processed only if for-loop has only one iteration
+            if self._dictionary is not None:
+                self._dictionary.gather(data_path=target_f)
+
     def _parse_batches(self, data_weight=None, batches=None):
         data_paths, data_weights, target_folders = self._populate_data(data_weight)
         for (data_p, data_w, target_f) in zip(data_paths, data_weights, target_folders):
@@ -172,6 +182,10 @@ class BatchVectorizer(object):
             else:
                 self._batches_list += [Batch(os.path.join(data_p, batch)) for batch in batches]
                 self._weights += [data_w for i in xrange(len(batches))]
+
+            # next code will be processed only if for-loop has only one iteration
+            if self._dictionary is not None:
+                self._dictionary.gather(data_path=data_p)
 
     def _parse_n_wd(self, data_weight=None, n_wd=None, vocab=None):
         def __reset_batch():
@@ -223,7 +237,6 @@ class BatchVectorizer(object):
             dictionary_data.token_df.append(value[1])
             dictionary_data.token_value.append(value[0] / global_n)
 
-        self._dictionary = Dictionary()
         self._dictionary.create(dictionary_data)
 
     @property
@@ -264,6 +277,6 @@ class BatchVectorizer(object):
     @property
     def dictionary(self):
         """
-        :return: Dictionary object (if data_format was 'bow_n_wd') or None
+        :return: Dictionary object, if parameter gather_dictionary was True, else None
         """
         return self._dictionary

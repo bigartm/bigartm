@@ -514,7 +514,7 @@ class ARTM(object):
     def get_phi(self, topic_names=None, class_ids=None, model_name=None):
         """
         :Description: get custom Phi matrix of model. The extraction of the\
-                      whole Phi matrix expects ARTM.phi_call.
+                      whole Phi matrix expects ARTM.phi_ call.
 
         :param topic_names: list with topics to extract, None value means all topics
         :type topic_names: list of str
@@ -595,7 +595,7 @@ class ARTM(object):
         """
         :Description: get score after fit_offline, fit_online or transform
 
-        :param str score_name: the name of the score to retrun
+        :param str score_name: the name of the score to return
         """
         return self.master.get_score(score_name)
 
