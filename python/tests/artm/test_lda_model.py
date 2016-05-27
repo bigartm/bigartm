@@ -9,8 +9,8 @@ import artm
 def test_func():
     # constants
     num_tokens = 15
-    alpha = 0.0
-    beta = 0.0
+    alpha = 0.01
+    beta = 0.02
     num_collection_passes = 15
     num_document_passes = 1
     num_topics = 15

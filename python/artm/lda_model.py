@@ -259,11 +259,13 @@ class LDA(object):
         """
         self._internal_model.master.clear_theta_cache()
 
-    def transform(self, batch_vectorizer):
+    def transform(self, batch_vectorizer, theta_matrix_type='dense_theta'):
         """
         :Description: find Theta matrix for new documents
 
         :param object_reference batch_vectorizer: an instance of BatchVectorizer class
+        :param str theta_matrix_type: type of matrix to be returned, possible values:
+                'dense_theta', None, default='dense_theta'
 
         :return:
           * pandas.DataFrame: (data, columns, rows), where:
@@ -271,7 +273,7 @@ class LDA(object):
           * rows --- the names of topics in topic model, that was used to create Theta;
           * data --- content of Theta matrix.
         """
-        return self._internal_model.transform(batch_vectorizer=batch_vectorizer)
+        return self._internal_model.transform(batch_vectorizer=batch_vectorizer, theta_matrix_type=theta_matrix_type)
 
     def initialize(self, dictionary):
         """
