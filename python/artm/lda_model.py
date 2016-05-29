@@ -284,25 +284,27 @@ class LDA(object):
         """
         self._internal_model.initialize(dictionary=dictionary)
 
-    def save(self, filename):
+    def save(self, filename, model_name='p_wt'):
         """
-        :Description: saves the topic model to disk
+        :Description: saves one Phi-like matrix to disk
 
         :param str filename: the name of file to store model
+        :param str model_name: the name of matrix to be saved, 'p_wt' or 'n_wt'
         """
-        self._internal_model.save(filename=filename)
+        self._internal_model.save(filename=filename, model_name=model_name)
 
-    def load(self, filename):
+    def load(self, filename, model_name='p_wt'):
         """
         :Description: loads from disk the topic model saved by LDA.save()
 
         :param str filename: the name of file containing model
+        :param str model_name: the name of matrix to be saved, 'p_wt' or 'n_wt'
 
         :Note:
           * We strongly recommend you to reset all important parameters of the LDA\
             model, used earlier.
         """
-        self._internal_model.load(filename=filename)
+        self._internal_model.load(filename=filename, model_name=model_name)
         self._create_regularizers_and_scores()
 
     def get_top_tokens(self, num_tokens=10, with_weights=False):
