@@ -466,24 +466,33 @@ class ARTM(object):
         self._synchronizations_processed += len(update_after_final)
         self._phi_cached = None
 
-    def save(self, filename='artm_model'):
+    def save(self, filename, model_name='p_wt'):
         """
-        :Description: saves the topic model to disk
+        :Description: saves one Phi-like matrix to disk
 
         :param str filename: the name of file to store model
+        :param str model_name: the name of matrix to be saved, 'p_wt' or 'n_wt'
         """
         if not self._initialized:
             raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
 
         if os.path.isfile(filename):
             os.remove(filename)
-        self.master.export_model(self.model_pwt, filename)
 
-    def load(self, filename):
+        _model_name = None
+        if model_name == 'p_wt':
+            _model_name = self.model_pwt
+        elif model_name == 'n_wt':
+            _model_name = self.model_nwt
+
+        self.master.export_model(_model_name, filename)
+
+    def load(self, filename, model_name='p_wt'):
         """
         :Description: loads from disk the topic model saved by ARTM.save()
 
         :param str filename: the name of file containing model
+        :param str model_name: the name of matrix to be saved, 'p_wt' or 'n_wt'
 
         :Note:
           * Loaded model will overwrite ARTM.topic_names and class_ids fields.
@@ -495,7 +504,13 @@ class ARTM(object):
           * We strongly recommend you to reset all important parameters of the ARTM\
             model, used earlier.
         """
-        self.master.import_model(self.model_pwt, filename)
+        _model_name = None
+        if model_name == 'p_wt':
+            _model_name = self.model_pwt
+        elif model_name == 'n_wt':
+            _model_name = self.model_nwt
+
+        self.master.import_model(_model_name, filename)
         self._initialized = True
         topics_and_tokens_info = self.master.get_phi_info(self.model_pwt)
         self._topic_names = [topic_name for topic_name in topics_and_tokens_info.topic_name]
