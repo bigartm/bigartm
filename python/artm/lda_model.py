@@ -40,9 +40,6 @@ class LDA(object):
         if isinstance(beta, list) and not (len(beta) == num_topics):
             raise ValueError('LDA.beta should have the length equal to num_topics')
 
-        if dictionary is None:
-            raise ValueError('LDA.dicionary should be set')
-
         self._internal_model = ARTM(num_topics=num_topics,
                                     num_processors=num_processors,
                                     num_document_passes=num_document_passes,
@@ -73,9 +70,13 @@ class LDA(object):
         else:
             self._internal_model.regularizers.add(SmoothSparsePhiRegularizer(name=self._phi_reg_name, tau=self._beta))
 
-        self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name,
-                                                        use_unigram_document_model=False,
-                                                        dictionary=self._dictionary))
+        if self._dictionary is None:
+            self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name))
+        else:
+            self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name,
+                                                            use_unigram_document_model=False,
+                                                            dictionary=self._dictionary))
+
         self._internal_model.scores.add(SparsityThetaScore(name=self._sp_theta_score_name))
         self._internal_model.scores.add(SparsityPhiScore(name=self._sp_phi_score_name))
 
@@ -282,6 +283,11 @@ class LDA(object):
         :param dictionary: loaded BigARTM collection dictionary
         :type dictionary: str or reference to Dictionary object
         """
+        if self._dictionary is None:
+            self._dictionary = dictionary
+            self._internal_model.scores[self._perp_score_name].use_unigram_document_model = False
+            self._internal_model.scores[self._perp_score_name].dictionary = dictionary
+
         self._internal_model.initialize(dictionary=dictionary)
 
     def save(self, filename, model_name='p_wt'):
