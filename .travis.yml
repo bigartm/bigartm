@@ -4,24 +4,29 @@ language:
   - python
   - cpp
 
-compiler:
-  - clang
-  - gcc
 
-python:
-  - "2.7"
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      python:
+        - "2.7"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - libboost-all-dev
+            - python-numpy
+            - python-pandas
+            - python-virtualenv
+            - g++-4.9
+      env: COMPILER=g++-4.9
+
 
 virtualenv:
   system_site_packages: true
-
-addons:
-  apt:
-    packages:
-      - cmake
-      - libboost-all-dev
-      - python-numpy
-      - python-pandas
-      - python-virtualenv
 
 before_install:
   - pip install pep8
