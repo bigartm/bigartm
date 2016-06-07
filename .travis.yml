@@ -33,7 +33,7 @@ before_install:
 install:
   - ./codestyle_checks.sh
   - mkdir build
-  - pushd build && cmake .. && make && file ./src/bigartm/bigartm && popd
+  - pushd build && cmake .. && make CXX=$COMPILER && file ./src/bigartm/bigartm && popd
   - pushd 3rdparty/protobuf/python && python setup.py install && popd
   - pushd python && python setup.py install && popd
 
