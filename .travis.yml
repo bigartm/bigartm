@@ -12,10 +12,11 @@ matrix:
       addons:
         apt:
           sources:
+            - boost-latest
             - ubuntu-toolchain-r-test
           packages:
             - cmake
-            - libboost1.55-all-dev
+            - boost1.55 # from boost-latest
             - python-numpy
             - python-pandas
             - python-virtualenv
