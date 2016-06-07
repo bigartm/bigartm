@@ -16,7 +16,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - cmake
-            - boost1.55 # from boost-latest
+            - libboost1.55-all-dev # from boost-latest
             - python-numpy
             - python-pandas
             - python-virtualenv
