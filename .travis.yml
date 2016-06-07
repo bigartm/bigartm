@@ -1,5 +1,4 @@
 sudo: false
-dist: trusty
 
 language:
   - python
@@ -16,7 +15,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - cmake
-            - libboost-all-dev
+            - libboost1.55-all-dev
             - python-numpy
             - python-pandas
             - python-virtualenv
