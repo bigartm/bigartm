@@ -10,7 +10,7 @@ matrix:
     - os: linux
       compiler: gcc
       python:
-        - "2.7"
+        - 2.7
       addons:
         apt:
           sources:
