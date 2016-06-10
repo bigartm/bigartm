@@ -112,3 +112,11 @@ src/artm/messages.pb.cc
 src/artm/messages.pb.h
 
 /src/python/.idea/*
+
+# pytest temp files
+/python/build/*
+/python/.cache/*
+/python/tests/wrapper/__pycache__/*
+/python/tests/artm/__pycache__/*
+
+/src/artm/version.h

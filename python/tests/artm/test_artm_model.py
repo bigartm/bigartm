@@ -12,6 +12,7 @@ def test_func():
     probability_mass_threshold = 0.9
     sp_reg_tau = -0.1
     decor_tau = 1.5e+5
+    decor_rel_tau = 0.3
     num_collection_passes = 15
     num_document_passes = 1
     num_topics = 15
@@ -26,12 +27,20 @@ def test_func():
                           0.170, 0.194, 0.220, 0.246, 0.277,
                           0.312, 0.351, 0.390, 0.428, 0.464]
 
+    sparsity_phi_rel_value = [0.442, 0.444, 0.444, 0.446, 0.448,
+                              0.449, 0.458, 0.468, 0.476, 0.488,
+                              0.501, 0.522, 0.574, 0.609, 0.670]
+
     sparsity_theta_value = [0.0] * num_collection_passes
 
     perp_zero_eps = 2.0
     perplexity_value = [6873, 2590, 2685, 2578, 2603,
                         2552, 2536, 2481, 2419, 2331,
                         2235, 2140, 2065, 2009, 1964]
+
+    perplexity_rel_value = [6873, 2667, 2458, 2323, 2150,
+                            2265, 2015, 1967, 1807, 1747,
+                            1713, 1607, 1632, 1542, 1469]
 
     top_zero_eps= 0.0001
     top_tokens_num_tokens = [num_tokens * num_topics] * num_collection_passes
@@ -133,5 +142,27 @@ def test_func():
         assert theta.shape == (num_topics, num_docs)
 
         assert model.library_version.count('.') == 2  # major.minor.patch
+
+        # test relative coefficients for Phi matrix regularizers
+        model = artm.ARTM(num_topics=num_topics,
+                          dictionary=dictionary.name,
+                          cache_theta=False)
+
+        model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='DecorrelatorPhi', tau=decor_rel_tau))
+        model.regularizers['DecorrelatorPhi'].gamma = 0.0
+
+        model.scores.add(artm.PerplexityScore(name='PerplexityScore',
+                                              use_unigram_document_model=False,
+                                              dictionary=dictionary))
+        model.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
+
+        model.num_document_passes = num_document_passes
+        model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
+
+        for i in xrange(num_collection_passes):
+            assert abs(model.score_tracker['SparsityPhiScore'].value[i] - sparsity_phi_rel_value[i]) < sp_zero_eps
+
+        for i in xrange(num_collection_passes):
+            assert abs(model.score_tracker['PerplexityScore'].value[i] - perplexity_rel_value[i]) < perp_zero_eps
     finally:
         shutil.rmtree(batches_folder)

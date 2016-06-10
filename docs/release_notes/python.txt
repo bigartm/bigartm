@@ -5,8 +5,7 @@ This page describes recent changes in BigARTM's Python API.
 Note that the API might be affected by changes in the underlying protobuf messages.
 For this reason we recommend to review :doc:`messages`.
 
-For further reference about Python API refer to `the documentation <http://docs.bigartm.org/en/stable/python_interface/model.html>`_,
-`BigARTM cookbook for Python <https://github.com/bigartm/bigartm/wiki/BigARTM-Cookbook-for-Python>`_,
+For further reference about Python API refer to `the documentation <http://docs.bigartm.org/en/stable/python_interface/artm_model.html>`_,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
 
 v0.8.1
@@ -17,6 +16,7 @@ v0.8.1
 * LDA model was added as one of the public interfaces. It is a restricted ARTM model created to simplify BigARTM usage for new users with few experience in topic modeling.
 * BatchVectorizer got a flag 'gather_dictionary', which has default value 'True'. This means that BV would create dictionary and save it in the BV.dictionary field.
   For 'bow_n_wd' format the dictionary will be gathered whenever the flag was set to 'False' or to 'True'.
+* Add relative regularization for Phi matrix
 
 v0.8.0
 ------

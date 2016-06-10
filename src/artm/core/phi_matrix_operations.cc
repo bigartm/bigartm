@@ -208,7 +208,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
 
     {
       double tau = reg_iterator->tau();
-      bool relative_reg = reg_iterator->use_relative_regularization();
+      bool relative_reg = reg_iterator->has_gamma();
 
       if (p_wt.token_size() != n_wt.token_size() || p_wt.topic_size() != n_wt.topic_size() ||
           local_r_wt.token_size() != n_wt.token_size() || local_r_wt.topic_size() != n_wt.topic_size()) {
@@ -263,7 +263,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
               for (int token_id = 0; token_id < token_size; ++token_id) {
                 if (n_wt.token(token_id).class_id != iter->first) continue;
 
-                r_it_current += local_r_wt.get(token_id, topic_id);
+                r_it_current += fabs(local_r_wt.get(token_id, topic_id));
               }
 
               r_it.push_back(r_it_current);
@@ -287,6 +287,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
         if (relative_reg) {
           if (iter == parameters.end()) continue;
         }
+        // ToDo (MelLain): move this loop outside the outer one
         for (int topic_id = 0; topic_id < topic_size; ++topic_id) {
           float coefficient = 1.0f;
           if (relative_reg) {
@@ -297,7 +298,7 @@ void PhiMatrixOperations::InvokePhiRegularizers(
             float n = iter->second.first.first;
             float r_it = iter->second.second.second[topic_id];
             float r_i = iter->second.second.first;
-            coefficient = static_cast<float>(gamma)* (n_t / r_it) * static_cast<float>(1 - gamma) * (n / r_i);
+            coefficient = static_cast<float>(gamma) * (n_t / r_it) + static_cast<float>(1 - gamma) * (n / r_i);
           }
           // update global r_wt using coefficient and tau
           float increment = coefficient * tau * local_r_wt.get(token_id, topic_id);

@@ -608,10 +608,10 @@ inline std::string DescribeMessage(const ::artm::RegularizerSettings& message) {
   std::stringstream ss;
   ss << ", regularizer=(name:" << message.name() <<
         ", tau:" << message.tau();
-  if (message.use_relative_regularization())
-    ss << "relative_regularization:True, gamma:" << message.gamma() << ")";
+  if (message.has_gamma())
+    ss << "gamma:" << message.gamma() << ")";
   else
-    ss << "relative_regularization:False" << ")";
+    ss << "gamma:None" << ")";
   return ss.str();
 }
 

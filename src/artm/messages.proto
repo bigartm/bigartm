@@ -68,8 +68,7 @@ message Batch {
 message RegularizerSettings {
   optional string name = 1;
   optional double tau = 2;
-  optional bool use_relative_regularization = 3;
-  optional double gamma = 4;
+  optional double gamma = 3;
 }
 
 enum RegularizerType {
@@ -91,6 +90,7 @@ message RegularizerConfig {
   optional RegularizerType type = 2 [default = RegularizerType_Unknown];
   optional bytes config = 3;
   optional float tau = 4;
+  optional double gamma = 5;
 }
 
 // Represents a configuration of a SmoothSparse Theta regularizer
