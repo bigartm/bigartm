@@ -24,10 +24,10 @@ else (WIN32)
   target_link_libraries(bigartm
       messages_proto
 	  artm-static
-	  rt
 	  ${PROTOBUF_LIBRARIES}
 	  ${GLOG_LIBRARIES}
-	  ${Boost_LIBRARIES})
+	  ${Boost_LIBRARIES}
+	  rt)
 endif (WIN32)
 
 install(TARGETS bigartm DESTINATION bin)
