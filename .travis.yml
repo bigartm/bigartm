@@ -17,7 +17,7 @@ addons:
   apt:
     sources:
       - boost-latest                # for boost 1.55
-      - ubuntu-toolchain-r-latest   # for g++-4.9
+      - ubuntu-toolchain-r-test   # for g++-4.9
     packages:
       - cmake
       - libboost1.55-all-dev
