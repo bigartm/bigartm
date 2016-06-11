@@ -4,24 +4,28 @@ language:
   - python
   - cpp
 
-compiler:
-  - clang
-  - gcc
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      python: '2.7'
+      addons:
+        apt:
+          sources:
+            - boost-latest
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - libboost1.55-all-dev # from boost-latest
+            - python-numpy
+            - python-pandas
+            - python-virtualenv
+            - g++-4.9
+      env: COMPILER=g++-4.9
 
-python:
-  - "2.7"
 
 virtualenv:
   system_site_packages: true
-
-addons:
-  apt:
-    packages:
-      - cmake
-      - libboost-all-dev
-      - python-numpy
-      - python-pandas
-      - python-virtualenv
 
 before_install:
   - pip install pep8
@@ -30,7 +34,7 @@ before_install:
 install:
   - ./codestyle_checks.sh
   - mkdir build
-  - pushd build && cmake .. && make && file ./src/bigartm/bigartm && popd
+  - pushd build && export CXX=$COMPILER && cmake .. && make -j2 && file ./src/bigartm/bigartm && popd
   - pushd 3rdparty/protobuf/python && python setup.py install && popd
   - pushd python && python setup.py install && popd
 
