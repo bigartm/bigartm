@@ -829,7 +829,8 @@ class ArtmExecutor {
       RegularizerSettings* settings = regularize_model_args_.add_regularizer_settings();
       settings->set_tau(regularizer.tau());
       settings->set_name(regularizer.name());
-      settings->set_use_relative_regularization(false);
+      if (regularizer.has_gamma())
+        settings->set_gamma(regularizer.gamma());
     }
 
     if (master_model_config.has_opt_for_avx())

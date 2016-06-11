@@ -100,12 +100,14 @@ def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors
 
         if regularizers is not None:
             master_config.ClearField('regularizer_config')
-            for name, config_tau in regularizers.iteritems():
+            for name, config_tau_gamma in regularizers.iteritems():
                 regularizer_config = master_config.regularizer_config.add()
                 regularizer_config.name = name
                 regularizer_config.type = _regularizer_type(config)
-                regularizer_config.config = config_tau[0].SerializeToString()
-                regularizer_config.tau = config_tau[1]
+                regularizer_config.config = config_tau_gamma[0].SerializeToString()
+                regularizer_config.tau = config_tau_gamma[1]
+                if len(config_tau_gamma) == 3 and config_tau_gamma[2] is not None:
+                    regularizer_config.gamma = config_tau_gamma[2]
 
         if num_processors is not None:
             master_config.num_processors = num_processors
@@ -139,7 +141,8 @@ class MasterComponent(object):
         :type topic_names: list of str
         :param dict class_ids: key - class_id, value - class_weight
         :param dict scores: key - score name, value - config
-        :param dict regularizers: key - regularizer name, value - pair (config, tau)
+        :param dict regularizers: key - regularizer name, value - tuple (config, tau)\
+                                  or triple (config, tau, gamma)
         :param int num_processors: number of worker threads to use for processing the collection
         :param str pwt_name: name of pwt matrix
         :param str nwt_name: name of nwt matrix
@@ -413,7 +416,7 @@ class MasterComponent(object):
 
         return result.theta_matrix, numpy_ndarray
 
-    def regularize_model(self, pwt, nwt, rwt, regularizer_name, regularizer_tau):
+    def regularize_model(self, pwt, nwt, rwt, regularizer_name, regularizer_tau, regularizer_gamma=None):
         """
         :param str pwt: name of pwt matrix in BigARTM
         :param str nwt: name of nwt matrix in BigARTM
@@ -422,16 +425,22 @@ class MasterComponent(object):
         :type regularizer_name: list of str
         :param regularizer_tau: list of tau coefficients for Phi regularizers
         :type regularizer_tau: list of double
+        :type regularizer_tau: list of double
         """
         args = messages.RegularizeModelArgs(pwt_source_name=pwt,
                                             nwt_source_name=nwt,
                                             rwt_target_name=rwt)
 
-        for name, tau in zip(regularizer_name, regularizer_tau):
+        _gamma = regularizer_gamma
+        if regularizer_gamma is None:
+            _gamma = [None] * len(regularizer_tau)
+
+        for name, tau, gamma in zip(regularizer_name, regularizer_tau, _gamma):
             reg_set = args.regularizer_settings.add()
             reg_set.name = name
             reg_set.tau = tau
-            reg_set.use_relative_regularization = False
+            if gamma is not None:
+                reg_set.gamma = gamma
 
         self._lib.ArtmRegularizeModel(self.master_id, args)
 
@@ -489,7 +498,7 @@ class MasterComponent(object):
 
         return topic_model, numpy_ndarray
 
-    def create_regularizer(self, name, config, tau):
+    def create_regularizer(self, name, config, tau, gamma=None):
         """
         :param str name: the name of the future regularizer
         :param config: the config of the future regularizer
@@ -503,11 +512,13 @@ class MasterComponent(object):
         regularizer_config.type = _regularizer_type(config)
         regularizer_config.config = config.SerializeToString()
         regularizer_config.tau = tau
+        if gamma is not None:
+            regularizer_config.gamma = gamma
 
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
 
-    def reconfigure_regularizer(self, name, config=None, tau=None):
+    def reconfigure_regularizer(self, name, config=None, tau=None, gamma=None):
         master_config = messages.MasterModelConfig()
         master_config.CopyFrom(self._config)
 
@@ -517,6 +528,8 @@ class MasterComponent(object):
                     master_config.regularizer_config[index].config = config.SerializeToString()
                 if tau is not None:
                     master_config.regularizer_config[index].tau = tau
+                if gamma is not None:
+                    master_config.regularizer_config[index].gamma = gamma
 
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)

@@ -32,7 +32,7 @@ def _reconfigure_field(obj, field, field_name, proto_field_name=None):
             getattr(config, proto_field_name).append(value)
     else:
         setattr(config, proto_field_name, field)
-    obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau)
+    obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau, obj.gamma)
 
 
 class KlFunctionInfo(object):
@@ -60,7 +60,7 @@ class KlFunctionInfo(object):
 
         obj._config = config
         if not first:
-            obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau)
+            obj._master.reconfigure_regularizer(obj.name, obj.config, obj.tau, obj.gamma)
 
 
 class Regularizers(object):
@@ -70,7 +70,7 @@ class Regularizers(object):
 
     def add(self, regularizer):
         if regularizer.name not in self._data:
-            self._master.create_regularizer(regularizer.name, regularizer.config, regularizer.tau)
+            self._master.create_regularizer(regularizer.name, regularizer.config, regularizer.tau, regularizer.gamma)
             regularizer._master = self._master
             self._data[regularizer.name] = regularizer
 
@@ -91,7 +91,7 @@ class Regularizers(object):
 class BaseRegularizer(object):
     _config_message = None
 
-    def __init__(self, name, tau, config):
+    def __init__(self, name, tau, gamma, config):
         if self._config_message is None:
             raise NotImplementedError()
 
@@ -100,6 +100,7 @@ class BaseRegularizer(object):
 
         self._name = name
         self._tau = tau
+        self._gamma = gamma
         self._config = config if config is not None else self._config_message()
         self._master = None  # reserve place for master
 
@@ -110,6 +111,10 @@ class BaseRegularizer(object):
     @property
     def tau(self):
         return self._tau
+
+    @property
+    def gamma(self):
+        return self._gamma
 
     @property
     def regularizer(self):
@@ -130,19 +135,25 @@ class BaseRegularizer(object):
     @tau.setter
     def tau(self, tau):
         self._tau = tau
-        self._master.reconfigure_regularizer(self._name, self._config, tau)
+        self._master.reconfigure_regularizer(self._name, self._config, tau, self._gamma)
+
+    @gamma.setter
+    def gamma(self, gamma):
+        self._gamma = gamma
+        self._master.reconfigure_regularizer(self._name, self._config, self._tau, gamma)
 
     @config.setter
     def config(self, config):
         self._config = config
-        self._master.reconfigure_regularizer(self._name, config, self._tau)
+        self._master.reconfigure_regularizer(self._name, config, self._tau, self._gamma)
 
 
 class BaseRegularizerPhi(BaseRegularizer):
-    def __init__(self, name, tau, config, topic_names, class_ids, dictionary):
+    def __init__(self, name, tau, gamma, config, topic_names, class_ids, dictionary):
         BaseRegularizer.__init__(self,
                                  name=name,
                                  tau=tau,
+                                 gamma=gamma,
                                  config=config)
 
         self._class_ids = []
@@ -196,6 +207,7 @@ class BaseRegularizerTheta(BaseRegularizer):
         BaseRegularizer.__init__(self,
                                  name=name,
                                  tau=tau,
+                                 gamma=None,
                                  config=config)
         self._alpha_iter = []
         if alpha_iter is not None:
@@ -235,11 +247,12 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.SmoothSparsePhiConfig
     _type = const.RegularizerType_SmoothSparsePhi
 
-    def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, topic_names=None,
                  dictionary=None, kl_function_info=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_ids: list of class_ids to regularize, will\
                                      regularize all classes if not specified
         :type class_ids: list of str
@@ -258,6 +271,7 @@ class SmoothSparsePhiRegularizer(BaseRegularizerPhi):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    gamma=gamma,
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
@@ -325,10 +339,11 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.DecorrelatorPhiConfig
     _type = const.RegularizerType_DecorrelatorPhi
 
-    def __init__(self, name=None, tau=1.0, class_ids=None, topic_names=None, config=None):
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None, topic_names=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_ids: list of class_ids to regularize, will\
                                      regularize all classes if not specified
         :type class_ids: list of str
@@ -341,6 +356,7 @@ class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    gamma=gamma,
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
@@ -359,11 +375,12 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.LabelRegularizationPhiConfig
     _type = const.RegularizerType_LabelRegularizationPhi
 
-    def __init__(self, name=None, tau=1.0, class_ids=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None,
                  topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_ids: list of class_ids to regularize, will\
                                      regularize all classes if not specified
         :type class_ids: list of str
@@ -379,6 +396,7 @@ class LabelRegularizationPhiRegularizer(BaseRegularizerPhi):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    gamma=gamma,
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
@@ -389,11 +407,12 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.SpecifiedSparsePhiConfig
     _type = const.RegularizerType_SpecifiedSparsePhi
 
-    def __init__(self, name=None, tau=1.0, topic_names=None, class_id=None, num_max_elements=None,
-                 probability_threshold=None, sparse_by_columns=True, config=None):
+    def __init__(self, name=None, tau=1.0, gamma=None, topic_names=None, class_id=None,
+                 num_max_elements=None, probability_threshold=None, sparse_by_columns=True, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_id: class_id to regularize
         :param topic_names: list of names of topics to regularize,\
                                      will regularize all topics if not specified
@@ -409,6 +428,7 @@ class SpecifiedSparsePhiRegularizer(BaseRegularizerPhi):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    gamma=gamma,
                                     config=config,
                                     topic_names=topic_names,
                                     dictionary=None,
@@ -498,11 +518,12 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.ImproveCoherencePhiConfig
     _type = const.RegularizerType_ImproveCoherencePhi
 
-    def __init__(self, name=None, tau=1.0, class_ids=None,
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None,
                  topic_names=None, dictionary=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_ids: list of class_ids to regularize, will\
                                      regularize all classes if not specified
         :type class_ids: list of str
@@ -518,6 +539,7 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
         BaseRegularizerPhi.__init__(self,
                                     name=name,
                                     tau=tau,
+                                    gamma=gamma,
                                     config=config,
                                     topic_names=topic_names,
                                     class_ids=class_ids,
@@ -538,6 +560,7 @@ class SmoothPtdwRegularizer(BaseRegularizer):
         BaseRegularizer.__init__(self,
                                  name=name,
                                  tau=tau,
+                                 gamma=None,
                                  config=config)
 
 
