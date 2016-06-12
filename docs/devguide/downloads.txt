@@ -1,0 +1,27 @@
+Downloads (Windows)
+=========================
+
+Download and install the following tools:
+
+* Git for Windows from http://git-scm.com/download/win
+    * https://github.com/msysgit/msysgit/releases/download/Git-1.9.5-preview20141217/Git-1.9.5-preview20141217.exe
+* Github for Windows from https://windows.github.com/
+    * https://github-windows.s3.amazonaws.com/GitHubSetup.exe
+* Visual Studio 2013 Express for Windows Desktop from https://www.visualstudio.com/en-us/products/visual-studio-express-vs.aspx
+* CMake from http://www.cmake.org/download/ 
+    * http://www.cmake.org/files/v3.0/cmake-3.0.2-win32-x86.exe
+* Prebuilt Boost binaries from http://sourceforge.net/projects/boost/files/boost-binaries/, for example these two:
+    * http://sourceforge.net/projects/boost/files/boost-binaries/1.57.0/boost_1_57_0-msvc-12.0-32.exe/download
+    * http://sourceforge.net/projects/boost/files/boost-binaries/1.57.0/boost_1_57_0-msvc-12.0-64.exe/download
+* Python from https://www.python.org/downloads/
+    * https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi
+    * https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi
+* (optional) If you plan to build documentation, download and install sphinx-doc as described here: http://sphinx-doc.org/latest/index.html
+* (optional) 7-zip -- http://www.7-zip.org/a/7z920-x64.msi
+* (optional) Putty -- http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe
+
+All explicit links are given just for convenience if you are setting up new environment.
+You are free to choose other versions or tools, and most likely they will work just fine for BigARTM.
+Remember to match the following:
+* Visual Studio version must match Boost binaries version, unless you build Boost yourself
+* Use the same configuration (32 bit or 64 bit) for your Python and BigARTM binaries

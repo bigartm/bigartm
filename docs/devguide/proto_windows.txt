@@ -1,0 +1,19 @@
+Compiling .proto files on Windows
+=========================
+
+1. Open a new command prompt
+
+2. Copy the following file into ``$(BIGARTM_ROOT)/src/``
+
+   * ``$(BIGARTM_ROOT)/build/bin/CONFIG/protoc.exe``
+
+   Here CONFIG can be either Debug or Release (both options will work equally well).
+
+3. Change working directory to ``$(BIGARTM_ROOT)/src/``
+
+4. Run the following commands
+
+   .. code-block:: bash
+
+      .\protoc.exe --cpp_out=. --python_out=. .\artm\messages.proto
+      .\protoc.exe --cpp_out=. .\artm\core\internals.proto
