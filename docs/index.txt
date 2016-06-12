@@ -52,10 +52,3 @@ Welcome to BigARTM's documentation!
    release_notes/index
    publications
    legacy_pages
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

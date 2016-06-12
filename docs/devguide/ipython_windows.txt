@@ -1,0 +1,19 @@
+Working with iPython notebooks remotely
+=========================
+
+It turned out to be common scenario to run BigARTM on a Linux server (for example on Amazon EC2), while connecting to it from Windows through ``putty``.
+Here is a convenient way to use ``ipython notebook`` in this scenario:
+
+1. Connect to the Linux machine via `putty <http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe>`_.
+   Putty needs to be configured with dynamic tunnel for port ``8888`` as describe here on `this page <https://anapnea.net/tut_putty_tunneling.php>`_
+   (port ``8888`` is a default port for ``ipython notebook``).
+   The same page describes how to configure internet properties:
+   
+   *Clicking on Settings in Internet Explorer, or Proxy Settings in Google Chrome, should open this dialogue. Navigate through to the Advanced Proxy section and add localhost:9090 as a SOCKS Proxy.*
+
+2. Start ``ipython notebook`` in your putty terminal.
+
+3. Open your favourite browser on Windows, and go to http://localhost:8888. Enjoy your notebook while the engine runs on remotely :)
+   
+.. image:: _images/remote_ipython.png
+   :alt: Working with iPython notebooks remotely

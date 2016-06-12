@@ -1,0 +1,33 @@
+Python code on Windows
+=========================
+
+* Install Python 2.7 (this step is already done if you are following the instructions above),
+
+* Add Python to the ``PATH`` environmental variable
+
+  http://stackoverflow.com/questions/6318156/adding-python-path-on-windows-7
+
+* Follow the instructions in ``README`` file in directory ``$(BIGARTM_ROOT)/3rdparty/protobuf/python/``.
+  In brief, this instructions ask you to run the following commands:
+
+  .. code-block:: bash
+
+     python setup.py build
+     python setup.py test
+     python setup.py install
+
+  On second step you fill see two failing tests:
+
+  .. code-block:: bash
+
+     Ran 216 tests in 1.252s
+     FAILED (failures=2)
+
+  This 2 failures are OK to ignore.
+
+At this point you should be able to run BigARTM tests for Python, located under ``$(BIGARTM_ROOT)/python/tests/``.
+
+* [Optional] Download and add to MSVS Python Tools 2.0.
+  All necessary instructions can be found at https://pytools.codeplex.com/.
+  This will allow you debug you Python scripts using Visual Studio.
+  You may start with the following solution: ``$(BIGARTM_ROOT)/src/artm_vs2012.sln``.

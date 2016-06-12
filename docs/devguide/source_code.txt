@@ -1,0 +1,21 @@
+Source code
+=========================
+
+BigARTM is hosted in public GitHub repository:
+
+https://github.com/bigartm/bigartm
+
+We maintain two branches: `master <https://github.com/bigartm/bigartm/tree/master>`_ and `stable <https://github.com/bigartm/bigartm/tree/stable>`_.
+`master` branch is the latest source code, potentially including some unfinished features.
+`stable` branch will be lagging behind `master`, and moved forward to `master` as soon as mainteiners decide that it is ready.
+Typically this should happen at the end of each month.
+At the same point we will introduce a new tag (something like `v0.7.3 <https://github.com/bigartm/bigartm/tree/v0.7.3>`_ ) and produce a new release for Windows.
+In addition, `stable` branch also might receive small urgent fixes in between releases,
+typically to address critical issues reported by our users. Such fixes will be also included in `master` branch.
+
+To contribute a fix you should `fork <https://help.github.com/articles/fork-a-repo>`_ the repository,
+code your fix and submit a `pull request <https://help.github.com/articles/using-pull-requests>`_. against *master* branch.
+All pull requests are regularly monitored by BigARTM maintainers and will be soon merged.
+Please, keep monitoring the status of your pull request
+`on travis <https://travis-ci.org/bigartm/bigartm/pull_requests>`_,
+which is a continuous integration system used by BigARTM project.
