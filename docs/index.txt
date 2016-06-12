@@ -48,7 +48,10 @@ Welcome to BigARTM's documentation!
    installation/index
    tutorials/index
    python_interface
-   faq
-   devguide
    release_notes/index
+
+.. toctree::
+   :titlesonly:
+   
+   devguide
    legacy_pages
