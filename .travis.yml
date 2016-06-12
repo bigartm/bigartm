@@ -20,7 +20,7 @@ addons:
       - ubuntu-toolchain-r-test     # for g++-4.9
     packages:
       - cmake
-      - libboost1.54-all-dev
+      - libboost1.55-all-dev
       - python-numpy
       - python-pandas
       - python-virtualenv
