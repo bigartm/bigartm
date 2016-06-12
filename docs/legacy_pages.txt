@@ -11,7 +11,7 @@ Legacy documentation pages
 Legacy pages are kept to preserve existing user's links (favourites in browser, etc).
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 0
 
    tutorials/linux_basic
    tutorials/windows_basic
