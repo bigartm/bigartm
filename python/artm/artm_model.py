@@ -711,3 +711,7 @@ class ARTM(object):
         self._synchronizations_processed = 0
         self._num_online_processed_batches = 0
         self._phi_cached = None
+
+
+def version():
+    return ARTM(num_topics=1).library_version
