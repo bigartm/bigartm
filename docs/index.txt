@@ -17,14 +17,14 @@ Welcome to BigARTM's documentation!
 
   Having trouble? We'd like to help!
 
-  * Learn more about BigARTM from our interactive notebooks (in `English`_ or in `Russian`_), `NLPub.ru`_, `MachineLearning.ru`_ and several :doc:`publications`.
+  * Learn more about BigARTM from our interactive notebooks (`Notebooks`_), `NLPub.ru`_, `MachineLearning.ru`_ and several `publications`_.
 
   * Search for information in the archives of the `bigartm-users`_ mailing list, or
     `post a question`_.
 
   * Report bugs with BigARTM in our `ticket tracker`_.
 
-  * Try the :doc:`FAQ <faq>` -- it's got answers to many common questions.
+  * Try the `Q&A`_ -- it's got answers to many common questions.
 
   * Looking for specific information? Try the :ref:`genindex`,
     or :ref:`search`.
@@ -33,10 +33,11 @@ Welcome to BigARTM's documentation!
   .. _bigartm-users: https://groups.google.com/group/bigartm-users
   .. _post a question: https://groups.google.com/d/forum/bigartm-users
   .. _ticket tracker: https://github.com/bigartm/bigartm/issues
-  .. _English: http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/Topic_Modeling_with_BigARTM.ipynb
-  .. _Russian: http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/Topic_Modeling_with_BigARTM_RU.ipynb
+  .. _Notebooks: https://github.com/bigartm/bigartm-book
   .. _NLPub.ru: https://nlpub.ru/BigARTM
   .. _MachineLearning.ru: http://www.machinelearning.ru/wiki/index.php?title=BigARTM
+  .. _Q&A: https://github.com/bigartm/bigartm/wiki/Q&A
+  .. _publications: https://github.com/bigartm/bigartm/wiki/Publications
    
 .. toctree::
    :maxdepth: 2
@@ -50,5 +51,4 @@ Welcome to BigARTM's documentation!
    faq
    devguide
    release_notes/index
-   publications
    legacy_pages

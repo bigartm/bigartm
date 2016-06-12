@@ -15,5 +15,5 @@ Here is a convenient way to use ``ipython notebook`` in this scenario:
 
 3. Open your favourite browser on Windows, and go to http://localhost:8888. Enjoy your notebook while the engine runs on remotely :)
    
-.. image:: _images/remote_ipython.png
+.. image:: ../_images/remote_ipython.png
    :alt: Working with iPython notebooks remotely

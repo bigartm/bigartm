@@ -16,7 +16,7 @@ You should not follow this guide if you are using pre-built BigARTM library via 
 `Here <https://github.com/bigartm/bigartm/wiki/Creating-new-regularizers>`_ you can see the tutorial to creating new regularizers.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 0
 
    devguide/downloads.txt
    devguide/source_code.txt
