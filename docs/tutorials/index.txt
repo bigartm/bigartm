@@ -5,7 +5,7 @@
 
 .. _tutorial:
 
-Tutorials
+Tutorial references
 =========
 
 .. toctree::
