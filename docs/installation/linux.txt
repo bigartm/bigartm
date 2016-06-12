@@ -27,6 +27,9 @@ To simplify things, you may type:
   ``sudo yum install git make cmake gcc-c++ glibc-static libstdc++-static boost boost-static python``
   (for Fedora 22 or higher use ``dnf`` instead of ``yum``) 
 
+* **On Mac OS distributions**:
+  ``sudo brew install git cmake boost``
+
 
 Download sources and build
 --------------------------
