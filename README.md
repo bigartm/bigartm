@@ -23,7 +23,7 @@ BigARTM is a tool for [topic modeling](https://www.cs.princeton.edu/~blei/papers
 * Vorontsov K., Frei O., Apishev M., Romov P., Dudarenko M., Yanina A. [Non-Bayesian Additive Regularization for Multimodal Topic Modeling of Large Collections](https://s3-eu-west-1.amazonaws.com/artm/Voron15cikm-tm.pdf) // Proceedings of the 2015 Workshop on Topic Models: Post-Processing and Applications, October 19, 2015 - pp. 29-37.
 * Vorontsov K., Potapenko A., Plavin A. [Additive Regularization of Topic Models for Topic Selection and Sparse Factorization.](https://s3-eu-west-1.amazonaws.com/artm/voron15slds.pdf) // Statistical Learning and Data Sciences. 2015 — pp. 193-202.
 * Vorontsov K. V., Potapenko A. A. [Additive Regularization of Topic Models](https://s3-eu-west-1.amazonaws.com/artm/voron-potap14artm-eng.pdf) // Machine Learning Journal, Special Issue “Data Analysis and Intelligent Optimization”, Springer, 2014.
-
+* More publications can be found in our [wiki page](https://github.com/bigartm/bigartm/wiki/Publications).
 
 ### Related Software Packages
 
