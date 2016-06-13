@@ -16,9 +16,8 @@ import subprocess
 import argparse
 
 # specify classifiers
-
 BIGARTM_CLASSIFIERS = [
-    'Development Status :: 5 - Production/Stable',
+    'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
     'Intended Audience :: Science/Research',
     'License :: OSI Approved',
@@ -134,5 +133,12 @@ setup(
     # metadata for upload to PyPI
     license='New BSD license',
     url='https://github.com/bigartm/bigartm',
-    classifiers=BIGARTM_CLASSIFIERS
+    description='BigARTM: the state-of-the-art platform for topic modeling',
+    classifiers=BIGARTM_CLASSIFIERS,
+    # Who should referred as author and how?
+    # author = 'Somebody'
+    # author_email = 'Somebody\'s email'
+    # Now include `artm_dev` Google group as primary maintainer
+    maintainer='artm_dev@googlegroups.com',
+    maintainer_email='artm_dev@googlegroups.com'
 )
