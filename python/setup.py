@@ -15,6 +15,23 @@ import shutil
 import subprocess
 import argparse
 
+# specify classifiers
+
+BIGARTM_CLASSIFIERS = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+    'Topic :: Scientific/Engineering',
+    'Topic :: Scientific/Engineering :: Information Analysis',
+    'Topic :: Software Development'
+]
+
 
 # Find the Protocol Buffer Compiler.
 def find_protoc_exec():
@@ -94,9 +111,12 @@ class build(_build):
 
 
 setup(
+    # some common information
     name='bigartm',
     version='0.8.0',
     packages=find_packages(),
+
+    # information about dependencies
     install_requires=[
         'pandas',
         'numpy'
@@ -110,4 +130,9 @@ setup(
         'numpy'
     ],
     cmdclass={'build': build},
+
+    # metadata for upload to PyPI
+    license='New BSD license',
+    url='https://github.com/bigartm/bigartm',
+    classifiers=BIGARTM_CLASSIFIERS
 )
