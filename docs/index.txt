@@ -15,7 +15,7 @@ Welcome to BigARTM's documentation!
 
 .. sidebar:: Getting help
 
-  * Learn more about BigARTM from our interactive notebooks (`Notebooks`_), `NLPub.ru`_, `MachineLearning.ru`_ and several `publications`_.
+  * Learn more about BigARTM from `IPython Notebooks`_, `NLPub.ru`_, `MachineLearning.ru`_ and several `publications`_.
 
   * Search for information in the archives of the `bigartm-users`_ mailing list, or
     `post a question`_.
@@ -28,7 +28,7 @@ Welcome to BigARTM's documentation!
   .. _bigartm-users: https://groups.google.com/group/bigartm-users
   .. _post a question: https://groups.google.com/d/forum/bigartm-users
   .. _ticket tracker: https://github.com/bigartm/bigartm/issues
-  .. _Notebooks: https://github.com/bigartm/bigartm-book/blob/master/README.md
+  .. _IPython notebooks: https://github.com/bigartm/bigartm-book/blob/master/README.md
   .. _NLPub.ru: https://nlpub.ru/BigARTM
   .. _MachineLearning.ru: http://www.machinelearning.ru/wiki/index.php?title=BigARTM
   .. _Q&A: https://github.com/bigartm/bigartm/wiki/Q&A
