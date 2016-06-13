@@ -6,6 +6,7 @@ import pytest
 
 import artm
 
+
 def test_func():
     topic_selection_tau = 1.0
     num_collection_passes = 3
@@ -33,7 +34,12 @@ def test_func():
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
 
         # Verify that only 7 topics are non-zero (due to TopicSelection regularizer)
-        assert 7 == sum(x == 0 for x in model.get_score('TopicMass').topic_mass)
+        # assert 7 == sum(x == 0 for x in model.get_score('TopicMass').topic_mass)
+
+        # According to https://github.com/bigartm/bigartm/issues/580,
+        # we will check only whether the number of non-zero topics changed or not
+        topics_left = sum(x == 0 for x in model.get_score('TopicMass').topic_mass)
+        assert topics_left != 0 and topics_left != num_topics
 
         # print model.score_tracker['PerplexityScore'].value
         # the following asssertion fails on travis-ci builds, but passes locally
