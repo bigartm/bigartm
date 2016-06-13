@@ -19,11 +19,11 @@ If you intent is to contribute to the development BigARTM, please proceed to the
 
    devguide/downloads.txt
    devguide/source_code.txt
-   devguide/build_windows.txt
+   devguide/dev_build_windows.txt
    devguide/python_windows.txt
    devguide/proto_windows.txt
    devguide/ipython_windows.txt
-   devguide/build_linux.txt
+   devguide/dev_build_linux.txt
    devguide/code_style.txt
 
 Wiki pages:

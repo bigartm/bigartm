@@ -1,0 +1,78 @@
+Build C++ code on Windows
+=========================
+
+The following steps describe the procedure to build BigARTM's C++ code on Windows.
+
+* Download and install `GitHub for Windows <http://windows.github.com/>`_.
+
+* Clone https://github.com/bigartm/bigartm/ repository to any location on your computer.
+  This location is further refered to as ``$(BIGARTM_ROOT)``.
+
+* Download and install Visual Studio 2012 or any newer version.
+  BigARTM will compile just fine with any edition, including any Visual Studio Express edition (available
+  at `www.visualstudio.com <http://www.visualstudio.com/en-us/products/visual-studio-express-vs.aspx>`_).
+
+* Install `CMake <http://www.cmake.org/cmake/resources/software.html>`_
+  (tested with cmake-3.0.1, Win32 Installer).
+
+  Make sure that CMake executable is added to the ``PATH`` environmental variable.
+  To achieve this either select the option *"Add CMake to the system PATH for all users"*
+  during installation of CMake, or add it to the ``PATH`` manually.
+
+* Download and install Boost 1.55 or any newer version.
+
+  We suggest to use the `Prebuilt Windows Binaries <http://sourceforge.net/projects/boost/files/boost-binaries/>`_.
+  Make sure to select version that match your version of Visual Studio.
+  You may choose to work with either x64 or Win32 configuration, both of them are supported.
+
+* Configure system variables ``BOOST_ROOT`` and ``Boost_LIBRARY_DIR``.
+
+  If you have installed boost from the link above, and used the default location, then the setting should look similar to this:
+
+  .. code-block:: bash
+
+   setx BOOST_ROOT C:\local\boost_1_56_0
+   setx BOOST_LIBRARYDIR C:\local\boost_1_56_0\lib32-msvc-12.0
+
+  For all future details please refer to the documentation of `FindBoost module <http://www.cmake.org/cmake/help/v3.0/module/FindBoost.html>`_.
+  We also encourage new CMake users to step through `CMake tutorial <http://www.cmake.org/cmake/help/cmake_tutorial.html>`_.
+
+* Install Python 2.7
+  (tested with `Python 2.7.6 <https://www.python.org/ftp/python/2.7.6/python-2.7.6.msi>`_).
+
+  You may choose to work with either x64 or Win32 version of the Python,
+  but make sure this matches the configuration of BigARTM you have choosed earlier.
+  The x64 installation of python will be incompatible with 32 bit BigARTM,
+  and virse versus.
+
+* Use CMake to generate Visual Studio projects and solution files.
+  To do so, open a command prompt, change working directory to ``$(BIGARTM_ROOT)``
+  and execute the following commands:
+
+  .. code-block:: bash
+
+     mkdir build
+     cd build
+     cmake ..
+
+  You might have to explicitly specify the `cmake generator <http://www.cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html>`_,
+  especially if you are working with x64 configuration. To do so, use the following syntax:
+
+  .. code-block:: bash
+
+     cmake .. -G"Visual Studio 12 Win64"
+
+  CMake will generate Visual Studio under ``$(BIGARTM_ROOT)/build/``.
+
+* Open generated solution in Visual Studio and build it as you would usually build any other Visual Studio solution.
+  You may also use MSBuild from Visual Studio command prompt.
+
+  The build will output result into the following folders:
+
+  * ``$(BIGARTM_ROOT)/build/bin/[Debug|Release]`` --- binaries (.dll and .exe)
+
+  * ``$(BIGARTM_ROOT)/build/lib/[Debug|Release]`` --- static libraries
+
+
+At this point you should be able to run BigARTM tests, located here:
+``$(BIGARTM_ROOT)/build/bin/*/artm_tests.exe``.

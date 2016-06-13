@@ -1,0 +1,4 @@
+Build C++ code on Linux
+=========================
+
+Refer to :doc:`/../tutorials/linux_basic`.
