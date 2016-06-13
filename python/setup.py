@@ -1,7 +1,11 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 
 from setuptools import setup, find_packages
 from distutils.spawn import find_executable
+
+# DISTUTILS_DEBUG = True
 
 # parse arguments
 import sys
