@@ -30,9 +30,12 @@ else (MSVC)
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif (MSVC)
 
-if (UNIX AND NOT APPLE)
-  option(BUILD_STATIC_BIGARTM "Request build of static executable bigartm (for Linux only)" ON)
-endif (UNIX AND NOT APPLE)
+option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
+option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
+
+if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
+  option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
+endif (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
 
 if (APPLE)
   set(CMAKE_MACOSX_RPATH 1)
