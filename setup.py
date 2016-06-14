@@ -70,7 +70,7 @@ class build(_build):
             retval = subprocess.call(cmake_process)
             # run make command
             make_process = ["make"]
-            make_process.append("-j6")
+            # make_process.append("-j6")
             retval = subprocess.call(make_process)
             # run make install command
             install_process = ["make", "install"]
@@ -86,7 +86,7 @@ class build(_build):
 setup(
     # some common information
     name='bigartm',
-    version='0.8.1rc1',
+    version='0.8.1rc2',
     packages=['artm', 'artm.wrapper'],
     package_dir={'': './python'},
     # add shared library to package
