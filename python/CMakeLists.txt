@@ -1,18 +1,25 @@
 # vim: set ts=2 sw=2:
 project(python)
 
+<<<<<<< 9bf648c11cc86d37a1b0ff66be98b02a8db12a1c
 
 if (BUILD_INTERNAL_PYTHON_API)
   if (BUILD_TESTS)
     add_subdirectory(tests)
   endif (BUILD_TESTS)
 
+  add_custom_target(python_generate_proto ALL
+    python ${CMAKE_CURRENT_LIST_DIR}/gen_proto.py --protoc_executable=$<TARGET_FILE:protoc>
+    COMMENT "Generating python protobuf files"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+  add_dependencies(python_generate_proto protoc)
+
   # perform "python setup.py build" during executing make
   add_custom_target(python_bigartm_build ALL
-    python ${CMAKE_CURRENT_LIST_DIR}/setup.py build --protoc_executable=$<TARGET_FILE:protoc>
+    python ${CMAKE_CURRENT_LIST_DIR}/setup.py build
     COMMENT "Building python package bigartm"
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-  add_dependencies(python_bigartm_build protoc)
+  add_dependencies(python_bigartm_build python_generate_proto)
 
   if (MSVC)
     FILE(GLOB PYTHON_ARTM artm/*.py)
