@@ -194,6 +194,10 @@ add_library(artm SHARED ${SRC_LIST})
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 
+add_custom_command(TARGET artm
+  POST_BUILD
+  COMMAND cp $<TARGET_FILE:artm> ${CMAKE_SOURCE_DIR}/python/artm/wrapper/)
+
 if (MSVC)
   install(TARGETS artm DESTINATION bin)
   install(FILES messages.proto messages.pb.h messages.pb.cc c_interface.h cpp_interface.h cpp_interface.cc DESTINATION src)

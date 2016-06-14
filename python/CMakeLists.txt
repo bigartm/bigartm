@@ -1,7 +1,6 @@
 # vim: set ts=2 sw=2:
 project(python)
 
-<<<<<<< 9bf648c11cc86d37a1b0ff66be98b02a8db12a1c
 
 if (BUILD_INTERNAL_PYTHON_API)
   if (BUILD_TESTS)
