@@ -20,6 +20,7 @@ recursive-include src *.cc *.h *.in *.proto
 
 include python/gen_proto.py
 
+# exclude generated and temporary files
 global-exclude *_pb2.py
 recursive-exclude src *.pb.cc *.pb.h
 global-exclude *.swp
