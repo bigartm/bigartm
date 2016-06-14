@@ -101,8 +101,8 @@ remove folder ``~bigartm/``.
 Troubleshooting
 ---------------
 
-If you build BigARTM in existing folder `build` (e.g. you built BigARTM before) and encounter any errors,
-it may be due to out-of-date file `CMakeCache.txt` in folder `build`. In that case we strongly recommend
+If you build BigARTM in existing folder ``build`` (e.g. you built BigARTM before) and encounter any errors,
+it may be due to out-of-date file ``CMakeCache.txt`` in folder ``build``. In that case we strongly recommend
 to delete this file and try to build again.
 
 ----------------
