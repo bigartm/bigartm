@@ -107,7 +107,10 @@ endif (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
        ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
 
 add_subdirectory(src)
-add_subdirectory(python)
+
+if (BUILD_INTERNAL_PYTHON_API)
+  add_subdirectory(python)
+endif (BUILD_INTERNAL_PYTHON_API)
 
 if (MSVC)
   install(FILES LICENSE.txt DESTINATION .)
