@@ -18,7 +18,7 @@ if (BUILD_INTERNAL_PYTHON_API)
     python ${CMAKE_CURRENT_LIST_DIR}/setup.py build
     COMMENT "Building python package bigartm"
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-  add_dependencies(python_bigartm_build python_generate_proto)
+  add_dependencies(python_bigartm_build python_generate_proto artm)
 
   if (MSVC)
     FILE(GLOB PYTHON_ARTM artm/*.py)
