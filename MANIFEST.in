@@ -4,6 +4,7 @@ include MANIFEST.in
 include README.md
 # add CMakeLists.txt
 global-include CMakeLists.txt
+graft cmake_modules
 # add 3rdparty
 graft 3rdparty/glog
 graft 3rdparty/gflags
@@ -17,7 +18,9 @@ graft 3rdparty/protobuf-cmake
 # add sources
 recursive-include src *.cc *.h *.in *.proto
 
-global-exclude *.pb.cc *.pb.h *_pb2.py
+include python/gen_proto.py
+
+global-exclude *_pb2.py
+recursive-exclude src *.pb.cc *.pb.h
 global-exclude *.swp
 global-exclude *.pyc *.pyo *.pyd
-
