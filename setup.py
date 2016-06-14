@@ -62,9 +62,7 @@ class build(_build):
             # run cmake
             cmake_process = [cmake_exec]
             cmake_process.append("../")
-            cmake_process.append("-DBUILD_TESTS=OFF")
-            cmake_process.append("-DBUILD_BIGARTM_CLI=OFF")
-            cmake_process.append("-DBUILD_INTERNAL_PYTHON_API=OFF")
+            cmake_process.append("-DBUILD_PIP_DIST=ON")
             # FIXME
             # validate return code
             retval = subprocess.call(cmake_process)
