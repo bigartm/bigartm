@@ -3,6 +3,8 @@ Scores
 
 This page describes *Scores classes.
 
+See `detailed descrition of scores <https://github.com/bigartm/bigartm/wiki/Implemented-scores>`_ for understanding their sence.
+
 .. automodule:: artm
 
 .. autoclass:: SparsityPhiScore
