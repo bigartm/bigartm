@@ -32,6 +32,7 @@ endif (MSVC)
 
 option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
 option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
+option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
 
 if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
   option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
@@ -104,7 +105,10 @@ endif (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
        ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
 
 add_subdirectory(src)
-add_subdirectory(python)
+
+if (BUILD_INTERNAL_PYTHON_API)
+  add_subdirectory(python)
+endif (BUILD_INTERNAL_PYTHON_API)
 
 if (MSVC)
   install(FILES LICENSE DESTINATION .)
