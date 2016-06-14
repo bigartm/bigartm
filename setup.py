@@ -40,7 +40,9 @@ from distutils.command.build import build as _build
 cmake_exec = "cmake"
 # name of artm shared library
 artm_library_name = 'libartm.so'
-if sys.platform.startswith('darwin'):
+if sys.platform.startswith('win'):
+    artm_library_name = 'artm.dll'
+elif sys.platform.startswith('darwin'):
     artm_library_name = 'artm.dylib'
 # find absolute path of working directory
 try:
@@ -66,13 +68,19 @@ class build(_build):
             # FIXME
             # validate return code
             retval = subprocess.call(cmake_process)
+            if retval:
+                sys.exit(-1)
             # run make command
             make_process = ["make"]
             # make_process.append("-j6")
             retval = subprocess.call(make_process)
+            if retval:
+                sys.exit(-1)
             # run make install command
             install_process = ["make", "install"]
             retval = subprocess.call(install_process)
+            if retval:
+                sys.exit(-1)
         finally:
             os.chdir(working_dir)
             if os.path.exists(build_directory):
@@ -84,7 +92,7 @@ class build(_build):
 setup(
     # some common information
     name='bigartm',
-    version='0.8.1rc2',
+    version='0.8.1rc4-r2',
     packages=['artm', 'artm.wrapper'],
     package_dir={'': './python'},
     # add shared library to package

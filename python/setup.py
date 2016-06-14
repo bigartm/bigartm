@@ -31,12 +31,19 @@ BIGARTM_CLASSIFIERS = [
     'Topic :: Software Development'
 ]
 
+# name of artm shared library
+artm_library_name = 'libartm.so'
+if sys.platform.startswith('win'):
+    artm_library_name = 'artm.dll'
+elif sys.platform.startswith('darwin'):
+    artm_library_name = 'artm.dylib'
 
 setup(
     # some common information
     name='bigartm',
     version='0.8.1',
     packages=find_packages(),
+    package_data={'artm.wrapper': [artm_library_name]},
 
     # information about dependencies
     install_requires=[
