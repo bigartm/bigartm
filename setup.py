@@ -38,6 +38,10 @@ from distutils.command.build import build as _build
 # guess name of cmake executable
 # FIXME: make cross-platform guessing
 cmake_exec = "cmake"
+# name of artm shared library
+artm_library_name = 'libartm.so'
+if sys.platform.startswith('darwin'):
+    artm_library_name = 'artm.dylib'
 # find absolute path of working directory
 try:
     filename = __file__
@@ -68,6 +72,9 @@ class build(_build):
             make_process = ["make"]
             make_process.append("-j6")
             retval = subprocess.call(make_process)
+            # run make install command
+            install_process = ["make", "install"]
+            retval = subprocess.call(install_process)
         finally:
             os.chdir(working_dir)
             if os.path.exists(build_directory):
@@ -82,6 +89,8 @@ setup(
     version='0.8.1rc1',
     packages=['artm', 'artm.wrapper'],
     package_dir={'': './python'},
+    # add shared library to package
+    package_data={'artm.wrapper': [artm_library_name]},
 
     # information about dependencies
     install_requires=[

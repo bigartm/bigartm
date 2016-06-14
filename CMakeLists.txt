@@ -30,9 +30,13 @@ else (MSVC)
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif (MSVC)
 
-option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
-option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
-option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
+option(BUILD_PIP_DIST "Indicates whether CMake is used to create Python package" ON)
+
+if (NOT BUILD_PIP_DIST)
+  option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
+  option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
+  option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
+endif (NOT BUILD_PIP_DIST)
 
 if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
   option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
