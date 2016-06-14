@@ -2,10 +2,11 @@ sudo: false
 
 language:
   - python
-  - cpp
+# Currently Travis doesn't support multiple values for language variable
+#  - cpp
 
-compiler:
-  - gcc
+# compiler:
+#  - gcc
 
 python:
   - "2.7"
@@ -20,11 +21,19 @@ addons:
       - ubuntu-toolchain-r-test     # for g++-4.9
     packages:
       - cmake
-      - libboost1.55-all-dev
       - python-numpy
       - python-pandas
       - python-virtualenv
       - g++-4.9
+      # specify only necessary boost packages
+      - libboost-chrono1.55-dev
+      - libboost-date-time1.55-dev
+      - libboost-filesystem1.55-dev
+      - libboost-iostreams1.55-dev
+      - libboost-program-options1.55-dev
+      - libboost-system1.55-dev
+      - libboost-thread1.55-dev
+      - libboost-timer1.55-dev
 
 env:
   - COMPILER=g++-4.9
