@@ -30,7 +30,7 @@ else (MSVC)
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif (MSVC)
 
-option(BUILD_PIP_DIST "Indicates whether CMake is used to create Python package" ON)
+option(BUILD_PIP_DIST "Indicates whether CMake is used to create Python package" OFF)
 
 if (NOT BUILD_PIP_DIST)
   option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
