@@ -35,7 +35,7 @@ BIGARTM_CLASSIFIERS = [
 setup(
     # some common information
     name='bigartm',
-    version='0.8.0',
+    version='0.8.1rc1',
     packages=find_packages(),
 
     # information about dependencies
