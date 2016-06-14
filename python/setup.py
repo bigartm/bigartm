@@ -139,6 +139,6 @@ setup(
     # author = 'Somebody'
     # author_email = 'Somebody\'s email'
     # Now include `artm_dev` Google group as primary maintainer
-    maintainer='artm_dev@googlegroups.com',
-    maintainer_email='artm_dev@googlegroups.com'
+    maintainer='ARTM developers group',
+    maintainer_email='artm_dev+pypi_develop@googlegroups.com'
 )
