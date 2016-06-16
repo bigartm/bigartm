@@ -23,6 +23,8 @@ def _regularizer_type(config):
         return constants.RegularizerType_SmoothPtdw
     elif isinstance(config, messages.TopicSelectionThetaConfig):
         return constants.RegularizerType_TopicSelectionTheta
+    elif isinstance(config, messages.BitermsPhiConfig):
+        return constants.RegularizerType_BitermsPhi
 
 
 def _score_type(config):

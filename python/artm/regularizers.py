@@ -525,7 +525,8 @@ class ImproveCoherencePhiRegularizer(BaseRegularizerPhi):
         :param float tau: the coefficient of regularization for this regularizer
         :param float gamma: the coefficient of relative regularization for this regularizer
         :param class_ids: list of class_ids to regularize, will\
-                                     regularize all classes if not specified
+                                     regularize all classes if not specified,
+                                     dictionaty should contain pairwise tokens coocurancy info
         :type class_ids: list of str
         :param topic_names: list of names of topics to regularize,\
                                      will regularize all topics if not specified
@@ -588,3 +589,36 @@ class TopicSelectionThetaRegularizer(BaseRegularizerTheta):
                                       config=config,
                                       topic_names=topic_names,
                                       alpha_iter=alpha_iter)
+
+
+class BitermsPhiRegularizer(BaseRegularizerPhi):
+    _config_message = messages.BitermsPhiConfig
+    _type = const.RegularizerType_BitermsPhi
+
+    def __init__(self, name=None, tau=1.0, gamma=None, class_ids=None,
+                 topic_names=None, dictionary=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param float gamma: the coefficient of relative regularization for this regularizer
+        :param class_ids: list of class_ids to regularize, will\
+                                     regularize all classes if not specified
+        :type class_ids: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param dictionary: BigARTM collection dictionary, won't use dictionary if not\
+                                     specified, in this case regularizer is useless,
+                                     dictionaty should contain pairwise tokens coocurancy info
+        :type dictionary: str or reference to Dictionary object
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
+        BaseRegularizerPhi.__init__(self,
+                                    name=name,
+                                    tau=tau,
+                                    gamma=gamma,
+                                    config=config,
+                                    topic_names=topic_names,
+                                    class_ids=class_ids,
+                                    dictionary=dictionary)

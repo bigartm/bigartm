@@ -28,6 +28,7 @@
 #include "artm/regularizer/improve_coherence_phi.h"
 #include "artm/regularizer/smooth_ptdw.h"
 #include "artm/regularizer/topic_selection_theta.h"
+#include "artm/regularizer/biterms_phi.h"
 
 #include "artm/score/items_processed.h"
 #include "artm/score/sparsity_theta.h"
@@ -252,6 +253,12 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
     case artm::RegularizerType_TopicSelectionTheta: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::TopicSelectionThetaConfig,
                                         ::artm::regularizer::TopicSelectionTheta);
+      break;
+    }
+
+    case artm::RegularizerType_BitermsPhi: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::BitermsPhiConfig,
+        ::artm::regularizer::BitermsPhi);
       break;
     }
 

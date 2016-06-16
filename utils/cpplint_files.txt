@@ -25,6 +25,7 @@ src/artm/regularizer/specified_sparse_phi.cc
 src/artm/regularizer/improve_coherence_phi.cc
 src/artm/regularizer/smooth_ptdw.cc
 src/artm/regularizer/topic_selection_theta.cc
+src/artm/regularizer/biterms_phi.cc
 src/artm/score/class_precision.cc
 src/artm/score/peak_memory.cc
 src/artm/score/perplexity.cc
@@ -89,6 +90,7 @@ src/artm/regularizer/specified_sparse_phi.h
 src/artm/regularizer/improve_coherence_phi.h
 src/artm/regularizer/smooth_ptdw.h
 src/artm/regularizer/topic_selection_theta.h
+src/artm/regularizer/biterms_phi.h
 src/artm/score/class_precision.h
 src/artm/score/peak_memory.h
 src/artm/score/perplexity.h
