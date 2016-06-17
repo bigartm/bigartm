@@ -43,7 +43,7 @@ artm_library_name = 'libartm.so'
 if sys.platform.startswith('win'):
     artm_library_name = 'artm.dll'
 elif sys.platform.startswith('darwin'):
-    artm_library_name = 'artm.dylib'
+    artm_library_name = 'libartm.dylib'
 # find absolute path of working directory
 try:
     filename = __file__
