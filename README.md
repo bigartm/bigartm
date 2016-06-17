@@ -5,7 +5,7 @@
 The state-of-the-art platform for topic modeling.
 
 [![Build Status](https://secure.travis-ci.org/bigartm/bigartm.png)](https://travis-ci.org/bigartm/bigartm)
-[![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://raw.github.com/bigartm/bigartm/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg)](https://raw.github.com/bigartm/bigartm/master/LICENSE.txt)
 
   - [Full Documentation](http://docs.bigartm.org/)
   - [User Mailing List](https://groups.google.com/forum/#!forum/bigartm-users)
