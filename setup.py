@@ -55,6 +55,15 @@ if os.path.dirname(filename):
 working_dir = os.path.abspath(os.getcwd())
 
 
+# Hook to distribute platform-dependent wheels if necessary
+from setuptools.dist import Distribution
+
+
+class BigARTMDistribution(Distribution):
+    def is_pure(self):
+        return false
+
+
 class build(_build):
     def run(self):
         # Create build directories and run cmake
@@ -92,11 +101,12 @@ class build(_build):
 setup(
     # some common information
     name='bigartm',
-    version='0.8.1rc4-r2',
+    version='0.8.1rc4-r3',
     packages=['artm', 'artm.wrapper'],
     package_dir={'': './python'},
     # add shared library to package
     package_data={'artm.wrapper': [artm_library_name]},
+    distclass=BigARTMDistribution,
 
     # information about dependencies
     install_requires=[

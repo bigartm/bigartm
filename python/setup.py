@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# This file is for developer's use
 
 from __future__ import print_function
 
@@ -41,7 +42,7 @@ elif sys.platform.startswith('darwin'):
 setup(
     # some common information
     name='bigartm',
-    version='0.8.1rc4-r2',
+    version='0.8.1rc4-r3',
     packages=find_packages(),
     package_data={'artm.wrapper': [artm_library_name]},
 
