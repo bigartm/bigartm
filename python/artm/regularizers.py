@@ -16,6 +16,7 @@ __all__ = [
     'ImproveCoherencePhiRegularizer',
     'SmoothPtdwRegularizer',
     'TopicSelectionThetaRegularizer',
+    'BitermsPhiRegularizer',
 ]
 
 
