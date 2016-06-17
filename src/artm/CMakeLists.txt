@@ -101,8 +101,6 @@ set(SRC_LIST
 	core/phi_matrix_operations.h
 	core/score_manager.cc
 	core/score_manager.h
-	core/sync_event.cc
-	core/sync_event.h
 	core/template_manager.h
 	core/thread_safe_holder.h
 	core/token.cc
