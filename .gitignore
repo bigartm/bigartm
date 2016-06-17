@@ -76,8 +76,6 @@ src/Win32/*
 /3rdparty/glog/vsprojects/libglog/Release/*
 /3rdparty/glog/vsprojects/libglog_static/Debug/*
 /3rdparty/glog/vsprojects/libglog_static/Release/*
-/3rdparty/rpcz/vsprojects/Intermediate/*
-/3rdparty/rpcz/vsprojects/Win32/*
 /3rdparty/protobuf/python/dist/*
 /3rdparty/protobuf/python/google/protobuf/compiler/*
 /3rdparty/protobuf/python/google/protobuf/descriptor_pb2.py
