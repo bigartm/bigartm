@@ -34,7 +34,7 @@ class LibArtm(object):
         if sys.platform.startswith('win'):
             default_lib_name = 'artm.dll'
         if sys.platform.startswith('darwin'):
-            default_lib_name = 'artm.dylib'
+            default_lib_name = 'libartm.dylib'
         default_lib_name = os.path.join(package_directory, default_lib_name)
 
         if lib_name is None:
