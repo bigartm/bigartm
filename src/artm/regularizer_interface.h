@@ -25,6 +25,8 @@ class Dictionary;
 class PhiMatrix;
 template<typename K, typename T> class ThreadSafeCollectionHolder;
 typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionaryCollection;
+
+class Instance;
 }
 
 class RegularizeThetaAgent {
@@ -82,6 +84,12 @@ class RegularizerInterface {
   virtual bool Reconfigure(const RegularizerConfig& config) { return false; }
 
   std::shared_ptr< ::artm::core::Dictionary> dictionary(const std::string& dictionary_name);
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix(const std::string& model_name);
+  std::shared_ptr<const ::artm::core::PhiMatrix> GetPhiMatrix();
+  void set_instance(::artm::core::Instance* instance) { instance_ = instance; }
+
+ protected:
+  ::artm::core::Instance* instance_;
 };
 
 }  // namespace artm

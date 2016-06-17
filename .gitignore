@@ -110,6 +110,7 @@ src/artm/core/internals.pb.cc
 src/artm/core/internals.pb.h
 src/artm/messages.pb.cc
 src/artm/messages.pb.h
+src/artm/version.h
 
 /src/python/.idea/*
 
