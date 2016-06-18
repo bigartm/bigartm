@@ -2,10 +2,11 @@ sudo: false
 
 language:
   - python
-  - cpp
+# Currently Travis doesn't support multiple values for language variable
+#  - cpp
 
-compiler:
-  - gcc
+# compiler:
+#  - gcc
 
 python:
   - "2.7"
@@ -20,11 +21,19 @@ addons:
       - ubuntu-toolchain-r-test     # for g++-4.9
     packages:
       - cmake
-      - libboost1.55-all-dev
       - python-numpy
       - python-pandas
       - python-virtualenv
       - g++-4.9
+      # specify only necessary boost packages
+      - libboost-chrono1.55-dev
+      - libboost-date-time1.55-dev
+      - libboost-filesystem1.55-dev
+      - libboost-iostreams1.55-dev
+      - libboost-program-options1.55-dev
+      - libboost-system1.55-dev
+      - libboost-thread1.55-dev
+      - libboost-timer1.55-dev
 
 env:
   - COMPILER=g++-4.9
@@ -36,7 +45,7 @@ before_install:
 install:
   - ./codestyle_checks.sh
   - mkdir build
-  - pushd build && export CXX=$COMPILER && cmake -DBUILD_STATIC_BIGARTM=OFF .. && make -j2 && file ./src/bigartm/bigartm && popd
+  - pushd build && export CXX=$COMPILER && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./src/bigartm/bigartm && popd
   - pushd 3rdparty/protobuf/python && python setup.py install && popd
   - pushd python && python setup.py install && popd
 
@@ -44,7 +53,7 @@ before_script:
   - pushd python/tests && ./download_datasets.sh && popd
 
 script:
-  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
+#  - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
   - pushd build/src/artm_tests && ./artm_tests && popd
   - pushd python/tests/wrapper && py.test && popd
   - pushd python/tests/artm && py.test && popd
