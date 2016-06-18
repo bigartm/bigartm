@@ -93,6 +93,8 @@ src/Win32/*
 /3rdparty/protobuf/python/google/protobuf/unittest_pb2.py
 /3rdparty/protobuf/python/protobuf.egg_info/*
 /3rdparty/protobuf/python/setuptools-0.6c11-py2.7.egg
+/3rdparty/protobuf/python/protobuf.egg-info/*
+/3rdparty/protobuf/src/protoc
 
 /libs/libboost*
 /libs/v100/*
@@ -116,5 +118,10 @@ src/artm/messages.pb.h
 /python/.cache/*
 /python/tests/wrapper/__pycache__/*
 /python/tests/artm/__pycache__/*
+/python/..INFO
+/python/artm/#*
+/python/artm/wrapper/#*
+/python/bigartm.egg-info/*
+/python/dist/*
 
 /src/artm/version.h
