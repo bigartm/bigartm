@@ -196,7 +196,7 @@ target_link_libraries(artm ${ARTM_LIB_DEPS})
 
 add_custom_command(TARGET artm
   POST_BUILD
-  COMMAND cp $<TARGET_FILE:artm> ${CMAKE_SOURCE_DIR}/python/artm/wrapper/)
+  COMMAND cmake -E copy $<TARGET_FILE:artm> ${CMAKE_SOURCE_DIR}/python/artm/wrapper/)
 
 if (MSVC)
   install(TARGETS artm DESTINATION bin)
