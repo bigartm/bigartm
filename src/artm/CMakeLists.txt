@@ -192,9 +192,11 @@ add_library(artm SHARED ${SRC_LIST})
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 
-add_custom_command(TARGET artm
-  POST_BUILD
-  COMMAND cp $<TARGET_FILE:artm> ${CMAKE_SOURCE_DIR}/python/artm/wrapper/)
+if (NOT MSVC)
+  add_custom_command(TARGET artm
+    POST_BUILD
+    COMMAND cp $<TARGET_FILE:artm> ${CMAKE_SOURCE_DIR}/python/artm/wrapper/)
+endif (NOT MSVC)
 
 if (MSVC)
   install(TARGETS artm DESTINATION bin)
