@@ -27,6 +27,7 @@ cd C:\Users\Administrator\Documents\GitHub\bigartm
 
 REM  Cleanup
 rmdir build /s /q
+rmdir python\build /s /q
 rmdir %INSTALL_FOLDER% /s /q
 if EXIST %TARGET_PACKAGE% (del %TARGET_PACKAGE%)
 

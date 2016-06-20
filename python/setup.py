@@ -21,12 +21,13 @@ def find_protoc_exec():
     found_args, rest_args = parser.parse_known_args(sys.argv)
     sys.argv = rest_args
     result = vars(found_args).get(argument_prefix, None)
+    if os.path.exists(result):
+        return result
     # try to guess from environment variables
     if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
-        result = result or os.environ['PROTOC']
+        return os.environ['PROTOC']
     # try to find using distutils helper function
-    result = result or find_executable("protoc")
-    return result
+    return find_executable("protoc")
 
 
 protoc_exec = find_protoc_exec()
@@ -63,6 +64,7 @@ def generate_proto_files(
                 "-I" + src_folder,
                 "--python_out=" + tmp_dir,
                 source_file]
+            print("Executing {}...".format(protoc_command))
             if subprocess.call(protoc_command):
                 raise
             src_py_file = src_proto_file.replace(".proto", "_pb2.py")
@@ -93,17 +95,5 @@ setup(
     name='bigartm',
     version='0.8.1',
     packages=find_packages(),
-    install_requires=[
-        'pandas',
-        'numpy'
-    ],
-    # this option must solve problem with installing
-    # numpy as dependency during `setup.py install` execution
-    # some explanations here:
-    # https://github.com/nengo/nengo/issues/508#issuecomment-64962892
-    # https://github.com/numpy/numpy/issues/2434#issuecomment-65252402
-    setup_requires=[
-        'numpy'
-    ],
     cmdclass={'build': build},
 )
