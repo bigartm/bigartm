@@ -95,17 +95,5 @@ setup(
     name='bigartm',
     version='0.8.1',
     packages=find_packages(),
-    install_requires=[
-        'pandas',
-        'numpy'
-    ],
-    # this option must solve problem with installing
-    # numpy as dependency during `setup.py install` execution
-    # some explanations here:
-    # https://github.com/nengo/nengo/issues/508#issuecomment-64962892
-    # https://github.com/numpy/numpy/issues/2434#issuecomment-65252402
-    setup_requires=[
-        'numpy'
-    ],
     cmdclass={'build': build},
 )
