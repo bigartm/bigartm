@@ -2,6 +2,7 @@
 
 include MANIFEST.in
 include README.md
+include LICENSE.txt
 # add CMakeLists.txt
 global-include CMakeLists.txt
 graft cmake_modules
