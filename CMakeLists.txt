@@ -104,5 +104,5 @@ add_subdirectory(src)
 add_subdirectory(python)
 
 if (MSVC)
-  install(FILES LICENSE DESTINATION .)
+  install(FILES LICENSE.txt DESTINATION .)
 endif (MSVC)
