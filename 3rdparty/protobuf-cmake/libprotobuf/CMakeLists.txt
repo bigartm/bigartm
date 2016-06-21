@@ -38,6 +38,9 @@ append_if_exist(SOURCES
   ${PROTOBUF_ROOT}/src/google/protobuf/wire_format.cc
   ${PROTOBUF_ROOT}/src/google/protobuf/wire_format_lite.cc
 #  ${PROTOBUF_ROOT}/src/google/protobuf/stubs/hash.cc
+
+# v2.6.1
+  ${PROTOBUF_ROOT}/src/google/protobuf/io/strtod.cc
 )
 
 add_library(libprotobuf STATIC ${SOURCES} )
