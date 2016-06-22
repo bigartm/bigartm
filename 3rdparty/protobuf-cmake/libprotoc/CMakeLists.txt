@@ -37,6 +37,13 @@ append_if_exist(SOURCES
   ${PROTOBUF_ROOT}/src/google/protobuf/compiler/subprocess.cc
   ${PROTOBUF_ROOT}/src/google/protobuf/compiler/java/java_string_field.cc
   ${PROTOBUF_ROOT}/src/google/protobuf/compiler/java/java_doc_comment.cc
+
+  # new as of 2.6.x
+  ${PROTOBUF_ROOT}/src/google/protobuf/compiler/java/java_context.cc
+  ${PROTOBUF_ROOT}/src/google/protobuf/compiler/java/java_generator_factory.cc
+  ${PROTOBUF_ROOT}/src/google/protobuf/compiler/java/java_lazy_message_field.cc
+  ${PROTOBUF_ROOT}/src/google/protobuf/compiler/java/java_name_resolver.cc
+  ${PROTOBUF_ROOT}/src/google/protobuf/compiler/java/java_shared_code_generator.cc
   )
 
 add_library(libprotoc STATIC ${SOURCES})
