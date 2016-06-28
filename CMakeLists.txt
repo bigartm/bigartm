@@ -4,6 +4,8 @@ project(BigARTM)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
+enable_testing()
+
 if (WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
