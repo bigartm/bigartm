@@ -1,5 +1,7 @@
 project(python)
 
+add_subdirectory(tests)
+
 # perform "python setup.py build" during executing make
 add_custom_target(python_build ALL
   COMMENT "Building python package bigartm"
