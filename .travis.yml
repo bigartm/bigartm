@@ -45,6 +45,4 @@ before_script:
 
 script:
   - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
-  - pushd build/src/artm_tests && ./artm_tests && popd
-  - pushd python/tests/wrapper && py.test && popd
-  - pushd python/tests/artm && py.test && popd
+  - pushd build && make test ARGS="-V" && popd
