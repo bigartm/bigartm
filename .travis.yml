@@ -37,7 +37,6 @@ install:
   - ./codestyle_checks.sh
   - mkdir build
   - pushd build && export CXX=$COMPILER && cmake -DBUILD_STATIC_BIGARTM=OFF .. && make -j2 && file ./src/bigartm/bigartm && popd
-  - pushd 3rdparty/protobuf/python && python setup.py install && popd
   - pushd python && python setup.py install && popd
 
 before_script:
