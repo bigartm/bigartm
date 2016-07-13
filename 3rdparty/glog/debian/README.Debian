@@ -1,6 +1,0 @@
-Notes for the Debian gflags packages:
-
- To compile code against gflags, use:
-
-   gcc -c code.c -o code.o -lgoogle-glog
-
