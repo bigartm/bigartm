@@ -42,21 +42,15 @@ endif (APPLE)
 
 set(BUILD_STATIC_LIBS ON)
 set(BUILD_SHARED_LIBS OFF)
-set(BUILD_gflags_LIB ON)
-set(BUILD_gflags_nothreads_LIB OFF)
-set(rpcz_build_static ON)
-set(rpcz_build_shared ON)
 
 # set compiler flags
 if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
     ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread -fPIC")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Werror")
-  set(GFLAGS_INTTYPES_FORMAT "C99")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   set(Boost_USE_MULTITHREADED ON)
   set(Boost_USE_STATIC_LIBS ON)
-  set(GFLAGS_INTTYPES_FORMAT "VC7")
   include(InstallRequiredSystemLibraries)
 else (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
       ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
@@ -64,7 +58,7 @@ else (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
 endif (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
        ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
 
-set(Boost_ADDITIONAL_VERSIONS "1.57" "1.57.0" "1.56" "1.56.0" "1.55" "1.55.0" "1.54" "1.54.0" "1.53" "1.53.0" "1.52" "1.52.0" "1.51" "1.51.0" "1.50" "1.50.0" "1.49" "1.49.0" "1.48" "1.48.0" "1.47" "1.47.0" "1.46" "1.46.0" "1.45" "1.45.0" "1.44" "1.44.0" "1.42" "1.42.0" "1.41.0" "1.41" "1.40.0" "1.40")
+set(Boost_ADDITIONAL_VERSIONS "1.61" "1.61.0" "1.60" "1.60.0" "1.59" "1.59.0" "1.58" "1.58.0" "1.57" "1.57.0" "1.56" "1.56.0" "1.55" "1.55.0" "1.54" "1.54.0" "1.53" "1.53.0" "1.52" "1.52.0" "1.51" "1.51.0" "1.50" "1.50.0" "1.49" "1.49.0" "1.48" "1.48.0" "1.47" "1.47.0" "1.46" "1.46.0" "1.45" "1.45.0" "1.44" "1.44.0" "1.42" "1.42.0" "1.41.0" "1.41" "1.40.0" "1.40")
 
 # find boost
 find_package(Boost REQUIRED)
@@ -85,7 +79,7 @@ else (NOT Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif (NOT Boost_FOUND)
 
-add_subdirectory(3rdparty)  # gflags must be compiled without -std=c++11
+add_subdirectory(3rdparty)
 
 if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
     ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))

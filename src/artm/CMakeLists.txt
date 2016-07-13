@@ -185,10 +185,9 @@ set(SRC_LIST c_interface.cc c_interface.h)
 source_group("" FILES c_interface.cc c_interface.h)
 
 set(ARTM_LIB_DEPS  artm-static
-                   gflags-static
                    ${Boost_LIBRARIES}
                    ${PROTOBUF_LIBRARIES}
-                   ${GLOG_LIBRARIES})
+                   glog)
 
 add_library(artm SHARED ${SRC_LIST})
 

@@ -8,7 +8,6 @@ else (MSVC)
   add_definitions("-w")
 endif (MSVC)
 
-add_subdirectory(gflags)
 add_subdirectory(glog)
 
 add_subdirectory(protobuf-cmake)

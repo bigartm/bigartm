@@ -25,7 +25,7 @@ else (WIN32)
       messages_proto
 	  artm-static
 	  ${PROTOBUF_LIBRARIES}
-	  ${GLOG_LIBRARIES}
+	  glog
 	  ${Boost_LIBRARIES})
 endif (WIN32)
 

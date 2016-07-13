@@ -31,7 +31,7 @@ target_link_libraries(artm_tests messages_proto
                                  artm-static
                                  ${Boost_LIBRARIES}
                                  ${PROTOBUF_LIBRARIES}
-                                 ${GLOG_LIBRARIES})
+                                 glog)
 
 # add target for testing
 add_test(NAME core_tests COMMAND artm_tests)
