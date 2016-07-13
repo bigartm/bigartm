@@ -18,9 +18,6 @@ else (NOT GLOG_FOUND)
   include_directories(${GLOG_INCLUDE_DIRS})
 endif (NOT GLOG_FOUND)
 
-# can it be avoided?
-include_directories(${GFLAGS_INCLUDE_DIRS})
-
 add_subdirectory(artm)
 add_subdirectory(artm_tests)
 add_subdirectory(bigartm)
