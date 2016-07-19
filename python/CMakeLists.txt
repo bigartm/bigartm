@@ -3,7 +3,9 @@ project(python)
 
 
 if (BUILD_INTERNAL_PYTHON_API)
-  add_subdirectory(tests)
+  if (BUILD_TESTS)
+    add_subdirectory(tests)
+  endif (BUILD_TESTS)
 
   # perform "python setup.py build" during executing make
   add_custom_target(python_bigartm_build ALL

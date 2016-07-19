@@ -22,5 +22,11 @@ endif (NOT GLOG_FOUND)
 include_directories(${GFLAGS_INCLUDE_DIRS})
 
 add_subdirectory(artm)
-add_subdirectory(artm_tests)
-add_subdirectory(bigartm)
+
+IF (BUILD_TESTS)
+  add_subdirectory(artm_tests)
+ENDIF (BUILD_TESTS)
+
+if (BUILD_BIGARTM_CLI)
+  add_subdirectory(bigartm)
+endif (BUILD_BIGARTM_CLI)
