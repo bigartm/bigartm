@@ -17,7 +17,8 @@ environment:
   BOOST_ROOT: C:\Libraries\boost_1_60_0
   BOOST_LIBRARYDIR: C:\Libraries\boost_1_60_0\lib64-msvc-14.0
   PYTHON_VERSION: 2.7
-  MINICONDA: C:\Miniconda
+  MINICONDA: C:\Miniconda-x64
+  PROTOC: C:\projects\bigartm\build\bin\Release\protoc.exe
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -35,9 +36,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - "conda create -q -n test-environment python=%PYTHON_VERSION% numpy scipy nose"
-  - activate test-environment
-  - pip install coverage
+  - conda install numpy pandas
 
 # scripts to run before build
 before_build:
