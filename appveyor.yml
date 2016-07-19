@@ -19,6 +19,8 @@ environment:
   PYTHON_VERSION: 2.7
   MINICONDA: C:\Miniconda-x64
   PROTOC: C:\projects\bigartm\build\bin\Release\protoc.exe
+  ARTM_SHARED_LIBRARY: C:\projects\bigartm\build\bin\Release\artm.dll
+  BIGARTM_UNITTEST_DATA: C:\projects\bigartm\test_data
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -52,7 +54,20 @@ build:
   parallel: true                                    # enable MSBuild parallel builds
   verbosity: normal                                 # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
-test: off
+after_build:
+  - cmd: cd C:\projects\bigartm\python
+  - cmd: python setup.py install
+
+before_test:
+  - cmd: cd %BIGARTM_UNITTEST_DATA%
+  - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt'
+  - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt'
+
+test_script:
+  - cmd: cd C:\projects\bigartm\build\bin\Release
+  - cmd: artm_tests.exe
+  - cmd: cd C:\projects\bigartm\python\tests
+  - cmd: py.test
 
 # Enable RDP connection to test server as described here: http://www.appveyor.com/docs/how-to/rdp-to-build-worker
 on_finish:
