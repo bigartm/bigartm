@@ -33,7 +33,7 @@ else (MSVC)
 endif (MSVC)
 
 if (UNIX AND NOT APPLE)
-  option(BUILD_STATIC_BIGARTM "Request build of static executable bigartm (for Linux only)" ON)
+  option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
 endif (UNIX AND NOT APPLE)
 
 if (APPLE)

@@ -48,7 +48,7 @@ and build it via CMake as in the following script.
 
 **Note for Linux users:** By default building
 binary executable ``bigartm`` requiers static versions of Boost, C and C++ libraries.
-To alter it, run ``cmake`` command with option ``-DBUILD_STATIC_BIGARTM=OFF``.
+To alter it, run ``cmake`` command with option ``-DBUILD_BIGARTM_CLI_STATIC=OFF``.
 
 
 System-wide installation
