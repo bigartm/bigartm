@@ -101,7 +101,7 @@ class build(_build):
 setup(
     # some common information
     name='bigartm',
-    version='0.8.1rc4-r3',
+    version='0.8.1',
     packages=['artm', 'artm.wrapper'],
     package_dir={'': './python'},
     # add shared library to package
