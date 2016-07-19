@@ -1,9 +1,11 @@
+# vim: set ts=2 sw=2:
 project(python)
 
-add_subdirectory(tests)
 
-# perform "python setup.py build" during executing make
 if (BUILD_INTERNAL_PYTHON_API)
+  add_subdirectory(tests)
+
+  # perform "python setup.py build" during executing make
   add_custom_target(python_bigartm_build ALL
     python ${CMAKE_CURRENT_LIST_DIR}/setup.py build --protoc_executable=$<TARGET_FILE:protoc>
     COMMENT "Building python package bigartm"
