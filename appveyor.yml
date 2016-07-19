@@ -8,8 +8,8 @@ clone_folder: C:\bigartm
 # need to install nuget packages before Visual Studio starts to make ANTLR targets available.
 build_script:
 - cd c:\bigartm
+- utils\.nuget\nuget install -o utils utils\packages.config
 - mkdir build
 - cd build
 - cmake .. -G"Visual Studio 14 Win64"
 - cd ..
-- utils\.nuget\nuget install -o utils utils\packages.config
