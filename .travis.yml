@@ -40,8 +40,9 @@ install:
   - pushd python && python setup.py install && popd
 
 before_script:
-  - pushd python/tests && ./download_datasets.sh && popd
+  - pushd test_data && ./download_datasets.sh && popd
 
 script:
   - export ARTM_SHARED_LIBRARY=`pwd`/build/src/artm/libartm.so
+  - export BIGARTM_UNITTEST_DATA=`pwd`/test_data
   - pushd build && make test ARGS="-V" && popd

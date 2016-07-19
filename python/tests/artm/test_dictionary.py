@@ -7,7 +7,7 @@ import pytest
 import artm
 
 def test_func():
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     batches_folder = tempfile.mkdtemp()
     
     num_tokens = 6906

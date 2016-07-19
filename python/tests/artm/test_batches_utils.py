@@ -19,7 +19,7 @@ def test_func():
     n_wd_token_tf_list = ['15.0', '25.0', '20.0', '30.0']
     n_wd_token_df_list = [str(float(n_wd.shape[1])) + '\n'] * n_wd.shape[0]
 
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     batches_folder = tempfile.mkdtemp()
     try:
         uci_batch_vectorizer = artm.BatchVectorizer(data_path=data_path,

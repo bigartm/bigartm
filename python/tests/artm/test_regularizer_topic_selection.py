@@ -13,7 +13,7 @@ def test_func():
     num_document_passes = 10
     num_topics = 15
 
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     batches_folder = tempfile.mkdtemp()
 
     perplexity_eps = 2.0

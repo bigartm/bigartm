@@ -12,7 +12,7 @@ import artm.master_component as mc
 
 def test_func():
     # Set some constants
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     dictionary_name = 'dictionary'
     pwt = 'pwt'
     nwt = 'nwt'

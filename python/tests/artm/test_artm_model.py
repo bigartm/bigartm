@@ -19,7 +19,7 @@ def test_func():
     vocab_size = 6906
     num_docs = 3430
 
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     batches_folder = tempfile.mkdtemp()
 
     sp_zero_eps = 0.001
