@@ -2,10 +2,11 @@ sudo: false
 
 language:
   - python
-  - cpp
+# Currently Travis doesn't support multiple values for language variable
+#  - cpp
 
-compiler:
-  - gcc
+# compiler:
+#  - gcc
 
 python:
   - "2.7"
