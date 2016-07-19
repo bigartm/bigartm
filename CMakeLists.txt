@@ -32,6 +32,8 @@ else (MSVC)
   message("-- Build type: ${CMAKE_BUILD_TYPE}")
 endif (MSVC)
 
+option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
+
 if (UNIX AND NOT APPLE)
   option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
 endif (UNIX AND NOT APPLE)
