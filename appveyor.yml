@@ -16,6 +16,8 @@ environment:
   MSVC_DEFAULT_OPTIONS: ON
   BOOST_ROOT: C:\Libraries\boost_1_60_0
   BOOST_LIBRARYDIR: C:\Libraries\boost_1_60_0\lib64-msvc-14.0
+  PYTHON_VERSION: 2.7
+  MINICONDA: C:\Miniconda
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -27,6 +29,15 @@ shallow_clone: true
 
 # clone directory
 clone_folder: C:\projects\bigartm
+
+install:
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - "conda create -q -n test-environment python=%PYTHON_VERSION% numpy scipy nose"
+  - activate test-environment
+  - pip install coverage
 
 # scripts to run before build
 before_build:
