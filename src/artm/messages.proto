@@ -82,6 +82,7 @@ enum RegularizerType {
   RegularizerType_SmoothPtdw = 7;
   RegularizerType_TopicSelectionTheta = 8;
   RegularizerType_BitermsPhi = 9;
+  RegularizerType_HierarchySparsingTheta = 10;
   RegularizerType_Unknown = 9999;
 }
 
@@ -169,6 +170,14 @@ message BitermsPhiConfig {
   repeated string topic_name = 1;
   repeated string class_id = 2;
   optional string dictionary_name = 3;
+}
+
+// Represents a configuration of a HierarchySparsing Theta regularizer
+message HierarchySparsingThetaConfig {
+  repeated string topic_name = 1;
+  repeated float topic_proportion = 2;  // high-level interface counted value p(topic)
+  repeated float parent_topic_proportion = 3;  // high-level interface counted value p(supertopic), optional
+  repeated float alpha_iter = 4;
 }
 
 // Represents the transform functions
