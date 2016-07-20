@@ -38,7 +38,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda install numpy pandas
+  - conda install numpy pandas pytest
 
 # scripts to run before build
 before_build:
