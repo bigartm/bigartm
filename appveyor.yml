@@ -51,8 +51,8 @@ before_build:
 
 build:
   project: C:\projects\bigartm\build\INSTALL.vcxproj    # path to Visual Studio solution or project
-  parallel: true                                    # enable MSBuild parallel builds
-  verbosity: normal                                 # MSBuild verbosity level (quiet|minimal|normal|detailed)
+  parallel: false                                       # enable MSBuild parallel builds
+  verbosity: normal                                     # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
 after_build:
   - cmd: cd C:\projects\bigartm\python
