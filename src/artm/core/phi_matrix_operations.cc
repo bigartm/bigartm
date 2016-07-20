@@ -157,8 +157,9 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
     const std::string& token_keyword = topic_model.token(token_index);
     const ClassId& class_id = topic_model.class_id(token_index);
     Token token(class_id, token_keyword);
-    const FloatArray& counters = topic_model.token_weights(token_index);
-    const IntArray* sparse_topic_indices = has_sparse_format ? &topic_model.topic_indices(token_index) : nullptr;
+    const ::artm::FloatArray& counters = topic_model.token_weights(token_index);
+    const ::artm::IntArray* sparse_topic_indices =
+      has_sparse_format ? &topic_model.topic_indices(token_index) : nullptr;
     const bool has_sparse_format_local = (sparse_topic_indices != nullptr) && (sparse_topic_indices->value_size() > 0);
 
     int current_token_id = phi_matrix->token_index(token);

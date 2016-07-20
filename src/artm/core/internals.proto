@@ -1,6 +1,12 @@
 package artm.core;
 
-import "artm/messages.proto";
+message FloatArray {
+  repeated float value = 1 [packed = true];
+}
+
+message IntArray {
+  repeated int32 value = 1 [packed = true];
+}
 
 message DataLoaderCacheEntry {
   optional string batch_uuid = 2;

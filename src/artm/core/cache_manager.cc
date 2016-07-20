@@ -109,7 +109,7 @@ static bool PopulateThetaMatrixFromCacheEntry(const DataLoaderCacheEntry& cache,
     if (has_title) theta_matrix->add_item_title(cache.item_title(item_index));
     ::artm::FloatArray* theta_vec = theta_matrix->add_item_weights();
 
-    const artm::FloatArray& item_theta = cache.theta(item_index);
+    const artm::core::FloatArray& item_theta = cache.theta(item_index);
     if (!has_sparse_format) {
       if (sparse_cache) {
         // dense output -- sparse cache
