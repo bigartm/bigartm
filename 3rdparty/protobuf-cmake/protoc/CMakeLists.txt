@@ -14,16 +14,10 @@ endif (UNIX)
 
 set(PROTOBUF_PROTOC_EXECUTABLE protoc CACHE INTERNAL "protoc build")
 
-set(PROTOBUF_PROTOC_EXECUTABLE_PATH
-    ${CMAKE_CURRENT_BINARY_DIR}/protoc${CMAKE_EXECUTABLE_SUFFIX}
-  CACHE
-  FILEPATH
-  "path to protoc executable")
-
 if (MSVC)
   install(TARGETS protoc RUNTIME DESTINATION ${BIN_DIR})
 elseif (UNIX)
   add_custom_command(TARGET protoc
     POST_BUILD
-    COMMAND cp ${PROTOBUF_PROTOC_EXECUTABLE_PATH} ${CMAKE_SOURCE_DIR}/3rdparty/protobuf/src/)
+    COMMAND cmake -E copy $<TARGET_FILE:protoc> ${CMAKE_SOURCE_DIR}/3rdparty/protobuf/src/)
 endif (MSVC)
