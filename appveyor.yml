@@ -50,7 +50,7 @@ before_build:
   - cmd: cmake -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" ..
 
 build:
-  project: C:\projects\bigartm\build\bigartm.sln    # path to Visual Studio solution or project
+  project: C:\projects\bigartm\build\INSTALL.vcxproj    # path to Visual Studio solution or project
   parallel: true                                    # enable MSBuild parallel builds
   verbosity: normal                                 # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
@@ -70,5 +70,5 @@ test_script:
   - cmd: py.test
 
 # Enable RDP connection to test server as described here: http://www.appveyor.com/docs/how-to/rdp-to-build-worker
-#on_finish:
-#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+on_finish:
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
