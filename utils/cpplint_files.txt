@@ -17,6 +17,7 @@ src/artm/core/score_manager.cc
 src/artm/core/token.cc
 src/artm/core/transform_function.cc
 src/artm/regularizer/decorrelator_phi.cc
+src/artm/regularizer/hierarchy_sparsing_theta.cc
 src/artm/regularizer/multilanguage_phi.cc
 src/artm/regularizer/smooth_sparse_phi.cc
 src/artm/regularizer/label_regularization_phi.cc
@@ -82,6 +83,7 @@ src/artm/core/transform_function.h
 src/artm_tests/api.h
 src/artm_tests/test_mother.h
 src/artm/regularizer/decorrelator_phi.h
+src/artm/regularizer/hierarchy_sparsing_theta.h
 src/artm/regularizer/multilanguage_phi.h
 src/artm/regularizer/smooth_sparse_phi.h
 src/artm/regularizer/label_regularization_phi.h
