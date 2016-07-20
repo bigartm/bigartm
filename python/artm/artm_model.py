@@ -42,7 +42,8 @@ def _topic_selection_regularizer_func(self, regularizers):
         if no_score:
             self._internal_topic_mass_score_name = 'ITMScore_{}'.format(str(uuid.uuid4()))
             self.scores.add(TopicMassPhiScore(name=self._internal_topic_mass_score_name,
-                                              class_id='@default_class'))  # ugly hack!
+                                              class_id='@default_class',
+                                              model_name=self.model_nwt))  # ugly hack!
 
         if not self._synchronizations_processed or no_score:
             phi = self.get_phi(class_ids=['@default_class'])  # ugly hack!

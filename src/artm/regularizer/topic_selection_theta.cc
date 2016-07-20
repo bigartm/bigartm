@@ -33,11 +33,10 @@ TopicSelectionTheta::CreateRegularizeThetaAgent(const Batch& batch,
   std::shared_ptr<TopicSelectionThetaAgent> retval(agent);
 
   const int topic_size = args.topic_name_size();
-  const int item_size = batch.item_size();
 
   if (config_.alpha_iter_size()) {
     if (args.num_document_passes() != config_.alpha_iter_size()) {
-      LOG(ERROR) << "ProcessBatchesArgs.num_document_passes() != SmoothSparseThetaConfig.alpha_iter_size()";
+      LOG(ERROR) << "ProcessBatchesArgs.num_document_passes() != TopicSelectionThetaConfig.alpha_iter_size()";
       return nullptr;
     }
 
