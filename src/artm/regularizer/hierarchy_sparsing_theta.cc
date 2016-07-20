@@ -72,10 +72,9 @@ namespace artm {
 					agent->topic_proportion.push_back(config_.topic_proportion(i));
 			}
 			else {
-				//for (int i = 0; i < config_.topic_value_size(); ++i)
-				//	agent->topic_value.push_back(1.0f);
+				for (int i = 0; i < topic_size; ++i)
+					agent->topic_proportion.push_back(1.0f);
 				LOG(ERROR) << "No TopicSelectionThetaConfig.topic_proportion were found";
-				return nullptr;
 			}
 
 			if (config_.parent_topic_proportion_size()) {

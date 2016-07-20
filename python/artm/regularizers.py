@@ -17,7 +17,7 @@ __all__ = [
     'SmoothPtdwRegularizer',
     'TopicSelectionThetaRegularizer',
     'BitermsPhiRegularizer',
-	'HierarchySparsingThetaRegularizer'
+    'HierarchySparsingThetaRegularizer'
 ]
 
 
@@ -624,14 +624,15 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
                                     topic_names=topic_names,
                                     class_ids=class_ids,
                                     dictionary=dictionary)
-									
-									
+                                    
+                                    
 class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
     _config_message = messages.HierarchySparsingThetaConfig
     _type = const.RegularizerType_HierarchySparsingTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None,
-                 alpha_iter=None, config=None):
+                 alpha_iter=None, topic_proportion=None, 
+                 parent_topic_proportion=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
@@ -650,3 +651,10 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
                                       config=config,
                                       topic_names=topic_names,
                                       alpha_iter=alpha_iter)
+                                                        
+        if topic_proportion is not None:
+            for elem in topic_proportion:
+                self._config.topic_proportion.append(elem)
+        if parent_topic_proportion is not None:
+            for elem in parent_topic_proportion:
+                self._config.parent_topic_proportion.append(elem)
