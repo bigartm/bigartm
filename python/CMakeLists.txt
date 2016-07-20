@@ -22,7 +22,6 @@ if (BUILD_INTERNAL_PYTHON_API)
     FILE(GLOB PYTHON_EXAMPLES tests/wrapper/*.py)
     install(FILES ${PYTHON_EXAMPLES} DESTINATION python/tests/wrapper)
     install(FILES setup.py DESTINATION python)
-    install(FILES ../datasets/docword.kos.txt ../datasets/vocab.kos.txt DESTINATION python/examples)
   elseif (UNIX)
     install(CODE "message(\"Installing python package bigartm\")")
     install(CODE "execute_process(COMMAND python setup.py install

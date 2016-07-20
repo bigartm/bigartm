@@ -21,6 +21,7 @@ environment:
   PROTOC: C:\projects\bigartm\build\bin\Release\protoc.exe
   ARTM_SHARED_LIBRARY: C:\projects\bigartm\build\bin\Release\artm.dll
   BIGARTM_UNITTEST_DATA: C:\projects\bigartm\test_data
+  INSTALL_FOLDER: '"C:\Program Files\BigARTM"'
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -48,26 +49,36 @@ before_build:
   - cmd: if "%platform%"=="Win32" set CMAKE_GENERATOR_NAME=Visual Studio 14 2015
   - cmd: if "%platform%"=="x64"   set CMAKE_GENERATOR_NAME=Visual Studio 14 2015 Win64
   - cmd: cmake -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" ..
+  - cmd: cd %BIGARTM_UNITTEST_DATA%
+  - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt'
+  - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt'
 
 build:
-  project: C:\projects\bigartm\build\bigartm.sln    # path to Visual Studio solution or project
-  parallel: true                                    # enable MSBuild parallel builds
-  verbosity: normal                                 # MSBuild verbosity level (quiet|minimal|normal|detailed)
+  project: C:\projects\bigartm\build\INSTALL.vcxproj    # path to Visual Studio solution or project
+  parallel: false                                       # enable MSBuild parallel builds
+  verbosity: normal                                     # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
 after_build:
   - cmd: cd C:\projects\bigartm\python
   - cmd: python setup.py install
-
-before_test:
-  - cmd: cd %BIGARTM_UNITTEST_DATA%
-  - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt'
-  - ps: Start-FileDownload 'https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt'
+  - cmd: mkdir %INSTALL_FOLDER%\lib
+  - cmd: mkdir %INSTALL_FOLDER%\python\examples
+  - cmd: cd C:\projects\bigartm
+  - cmd: cp build\lib\release\artm.lib %INSTALL_FOLDER%\lib\artm.lib
+  - cmd: cp build\lib\release\protobuf.lib %INSTALL_FOLDER%\lib\protobuf.lib
+  - cmd: cp test_data\docword.kos.txt %INSTALL_FOLDER%\python\examples\docword.kos.txt
+  - cmd: cp test_data\vocab.kos.txt %INSTALL_FOLDER%\python\examples\vocab.kos.txt
+  - cmd: 7z.exe a BigARTM.7z %INSTALL_FOLDER%\*
 
 test_script:
   - cmd: cd C:\projects\bigartm\build\bin\Release
   - cmd: artm_tests.exe
   - cmd: cd C:\projects\bigartm\python\tests
   - cmd: py.test
+
+artifacts:
+  - path: BigARTM.7z
+    name: BigARTM
 
 # Enable RDP connection to test server as described here: http://www.appveyor.com/docs/how-to/rdp-to-build-worker
 #on_finish:
