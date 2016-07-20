@@ -2,6 +2,46 @@
 
 Author: Nadia Chirkova (nadiinchi@gmail.com)
 Based on code of Murat Apishev (great-mel@yandex.ru)
+
+This regularizer improves structure of topic hierarchy and
+affects psi matrix that contains p(topic|supertopic) values.
+
+Shortly about hierarchy construction:
+  we build hierarchy top down, level by level, each level is a single topic model.
+  Suppose you have build few levels and want to build new level.
+  Last built level is called parent level; its topic are called supertopics.
+  We create extra batch containig parent level phi columns as documents.
+  Corresponding to this extra batch theta matrix contains p(topic|supertopic) values
+  and is called Psi.
+
+Regularizer formula (remember d is not a document but is a supertopic!):
+   p_td \propto n_td - tau * (1 / count(supertopics) - p(supertopic|topic)),
+   
+   where count(supertopics) equals |T| of parent level, 
+   p(supertopic|topic) = p(topic|supertopic) * p(supertopic) / p(topic).
+   If n_td is negative, nothing will be done.
+   
+The parameters of the regularizer:
+- topic_names (the names of topics to regularize, empty == all)
+- alpha_iter (an array of additional coefficients, one per document pass,
+                an array of floats with length == number of inner iterations,
+				if not passed 1.0 is used as value)
+- topic_proportion  (an array of p(topic) values,
+                    p(topic) = \sum_{supertopic} p(topic|supertopic) * p(supertopic)   (*),
+					an array of floats with length == count(topics),
+					if not passed 1.0 is used as value)
+- parent_topic_proportion (an array of p(supertopic) values,
+                            an array of floats with length == count(supertopics),
+							if not passed 1.0 is used as value)
+
+!Note!
+* topic_proportion is necessary argument, if it is not passed,
+  regularizer will work incorrectly! The simpliest way to compute it
+  is to summarize psi matrix by rows.
+* parent_topic_proportion is optional argument. But if you pass it,
+  remember to take these values into account when computing p(topic)
+  in formula (*)!
+
 */
 
 #ifndef SRC_ARTM_REGULARIZER_HIERARCHY_SPARSING_THETA_H_
