@@ -46,36 +46,48 @@ TEST(CollectionParser, UciBagOfWords) {
 
   artm::MasterModelConfig master_config;
   ::artm::MasterModel mc(master_config);
-  artm::GatherDictionaryArgs gather_config;
-  gather_config.set_data_path(target_folder);
-  gather_config.set_vocab_file_path(config.vocab_file_path());
-  gather_config.set_dictionary_target_name("mydictionary");
-  mc.GatherDictionary(gather_config);
 
-  ::artm::GetDictionaryArgs get_dictionary_args;
-  get_dictionary_args.set_dictionary_name("mydictionary");
-  auto dictionary = mc.GetDictionary(get_dictionary_args);
-  ASSERT_EQ(dictionary.token_size(), 3);
+  auto dictionary_checker = [&mc, &target_folder] (
+    const std::string &path_to_vocab,
+    const std::string &dict_name) -> void {
+    // first of all, we gather dictionary into the core
+    artm::GatherDictionaryArgs gather_config;
+    gather_config.set_data_path(target_folder);
+    gather_config.set_vocab_file_path(path_to_vocab);
+    gather_config.set_dictionary_target_name(dict_name);
+    mc.GatherDictionary(gather_config);
 
-  EXPECT_EQ(dictionary.token(0), "token1");
-  EXPECT_EQ(dictionary.token(1), "token2");
-  EXPECT_EQ(dictionary.token(2), "token3");
+    // next, we retrieve it from the core
+    ::artm::GetDictionaryArgs get_dictionary_args;
+    get_dictionary_args.set_dictionary_name(dict_name);
+    auto dict = mc.GetDictionary(get_dictionary_args);
 
-  EXPECT_EQ(dictionary.class_id(0), "@default_class");
-  EXPECT_EQ(dictionary.class_id(1), "@default_class");
-  EXPECT_EQ(dictionary.class_id(2), "@default_class");
+    // now we check its consistency
+    ASSERT_EQ(dict.token_size(), 3);
 
-  EXPECT_EQ(dictionary.token_df(0), 1);
-  EXPECT_EQ(dictionary.token_df(1), 2);
-  EXPECT_EQ(dictionary.token_df(2), 2);
+    EXPECT_EQ(dict.token(0), "token1");
+    EXPECT_EQ(dict.token(1), "token2");
+    EXPECT_EQ(dict.token(2), "token3");
 
-  EXPECT_EQ(dictionary.token_tf(0), 5);
-  EXPECT_EQ(dictionary.token_tf(1), 4);
-  EXPECT_EQ(dictionary.token_tf(2), 9);
+    EXPECT_EQ(dict.class_id(0), "@default_class");
+    EXPECT_EQ(dict.class_id(1), "@default_class");
+    EXPECT_EQ(dict.class_id(2), "@default_class");
 
-  ASSERT_APPROX_EQ(dictionary.token_value(0), 5.0 / 18.0);
-  ASSERT_APPROX_EQ(dictionary.token_value(1), 2.0 / 9.0);
-  ASSERT_APPROX_EQ(dictionary.token_value(2), 0.5);
+    EXPECT_EQ(dict.token_df(0), 1);
+    EXPECT_EQ(dict.token_df(1), 2);
+    EXPECT_EQ(dict.token_df(2), 2);
+
+    EXPECT_EQ(dict.token_tf(0), 5);
+    EXPECT_EQ(dict.token_tf(1), 4);
+    EXPECT_EQ(dict.token_tf(2), 9);
+
+    ASSERT_APPROX_EQ(dict.token_value(0), 5.0 / 18.0);
+    ASSERT_APPROX_EQ(dict.token_value(1), 2.0 / 9.0);
+    ASSERT_APPROX_EQ(dict.token_value(2), 0.5);
+  };
+
+  dictionary_checker(config.vocab_file_path(), "default_dictionary");
+  dictionary_checker("../../../test_data/vocab.parser_test_no_newline.txt", "no_newline_dictionary");
 
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
@@ -241,3 +253,4 @@ TEST(CollectionParser, VowpalWabbit) {
   try { boost::filesystem::remove_all(target_folder); }
   catch (...) {}
 }
+// vim: set ts=2 sw=2 sts=2:

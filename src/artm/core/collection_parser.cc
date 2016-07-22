@@ -221,7 +221,7 @@ CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
   int token_id = 0;
   while (!vocab.eof()) {
     std::getline(vocab, str);
-    if (vocab.eof())
+    if (vocab.eof() && str.empty())
       break;
 
     boost::algorithm::trim(str);
@@ -445,3 +445,4 @@ void CollectionParser::Parse() {
 
 }  // namespace core
 }  // namespace artm
+// vim: set ts=2 sw=2:
