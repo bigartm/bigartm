@@ -95,7 +95,7 @@ class DenseMatrix {
     }
   }
 
-  ~DenseMatrix() {
+  virtual ~DenseMatrix() {
     delete[] data_;
   }
 
@@ -163,6 +163,26 @@ class DenseMatrix {
   int no_columns_;
   bool store_by_rows_;
   T* data_;
+};
+
+template<typename T>
+class LocalThetaMatrix : public DenseMatrix<T> {
+ public:
+  explicit LocalThetaMatrix(int num_topics, int num_items)
+      : DenseMatrix<T>(num_topics, num_items, /* store_by_rows = */ false) {}
+  virtual ~LocalThetaMatrix() {}
+  int num_topics() const { return this->no_rows(); }
+  int num_items() const { return this->no_columns(); }
+};
+
+template<typename T>
+class LocalPhiMatrix : public DenseMatrix<T> {
+ public:
+  explicit LocalPhiMatrix(int num_tokens, int num_topics)
+      : DenseMatrix<T>(num_tokens, num_topics, /* store_by_rows = */ true) {}
+  virtual ~LocalPhiMatrix() {}
+  int num_tokens() const { return this->no_rows(); }
+  int num_topics() const { return this->no_columns(); }
 };
 
 template<typename T>

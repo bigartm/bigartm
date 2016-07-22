@@ -36,7 +36,7 @@ class RegularizeThetaAgent {
 class RegularizePtdwAgent {
  public:
   virtual ~RegularizePtdwAgent() {}
-  virtual void Apply(int item_index, int inner_iter, ::artm::utility::DenseMatrix<float>* ptdw) const = 0;
+  virtual void Apply(int item_index, int inner_iter, ::artm::utility::LocalPhiMatrix<float>* ptdw) const = 0;
 };
 
 // RegularizerInterface is the base class for all regularizers in BigARTM.
