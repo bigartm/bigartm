@@ -37,7 +37,7 @@ class SmoothSparseThetaAgent : public RegularizeThetaAgent {
  public:
   explicit SmoothSparseThetaAgent(std::shared_ptr<artm::core::TransformFunction> func)
     : transform_function_(func) { }
-  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const;
+  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const;
 
  private:
   friend class SmoothSparseTheta;

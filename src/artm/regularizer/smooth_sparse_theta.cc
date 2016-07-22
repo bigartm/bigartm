@@ -12,15 +12,16 @@
 namespace artm {
 namespace regularizer {
 
-void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
+void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter, int topics_size,
+                                   const float* n_td, float* r_td) const {
   assert(topics_size == topic_weight.size());
   assert(inner_iter < alpha_weight.size());
   if (topics_size != topic_weight.size()) return;
   if (inner_iter >= alpha_weight.size()) return;
 
   for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-    double value = transform_function_->apply(theta[topic_id]);
-    theta[topic_id] += value > 0.0f ? alpha_weight[inner_iter] * topic_weight[topic_id] * value : 0.0f;
+    double value = transform_function_->apply(n_td[topic_id]);
+    r_td[topic_id] += value > 0.0f ? alpha_weight[inner_iter] * topic_weight[topic_id] * value : 0.0f;
   }
 }
 

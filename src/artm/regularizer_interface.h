@@ -30,7 +30,9 @@ typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionary
 class RegularizeThetaAgent {
  public:
   virtual ~RegularizeThetaAgent() {}
-  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const = 0;
+
+  // Define how theta regularizer applies to an individual item.
+  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const = 0;
 };
 
 class RegularizePtdwAgent {
