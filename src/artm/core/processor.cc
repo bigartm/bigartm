@@ -61,6 +61,11 @@ class RegularizeThetaAgentCollection : public RegularizeThetaAgent {
     for (auto& agent : agents_)
       agent->Apply(item_index, inner_iter, topics_size, n_td, r_td);
   }
+
+  virtual void Apply(int inner_iter, const LocalThetaMatrix<float>& n_td, LocalThetaMatrix<float>* r_td) const {
+    for (auto& agent : agents_)
+      agent->Apply(inner_iter, n_td, r_td);
+  }
 };
 
 class RegularizePtdwAgentCollection : public RegularizePtdwAgent {
@@ -451,10 +456,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
     AssignDenseMatrixByProduct(*theta_matrix, helper_td, theta_matrix);
 
     helper_td.InitializeZeros();  // from now this represents r_td
-    for (int item_index = 0; item_index < batch.item_size(); ++item_index)
-      theta_agents.Apply(item_index, inner_iter, num_topics,
-                         &(*theta_matrix)(0, item_index),  // NOLINT
-                         &(helper_td)(0, item_index));  // NOLINT
+    theta_agents.Apply(inner_iter, *theta_matrix, &helper_td);
   }
   }
 

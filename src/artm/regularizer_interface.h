@@ -32,7 +32,17 @@ class RegularizeThetaAgent {
   virtual ~RegularizeThetaAgent() {}
 
   // Define how theta regularizer applies to an individual item.
-  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const = 0;
+  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const {}
+
+  // The following method allows to calculate regularization for all elements of the theta matrix.
+  // This seems convenient, however we do not recommended to overwrite this method.
+  // The problem is that the default execution mode in BigARTM does not create full theta matrix even within a batch;
+  // instead, each document withing a batch is processed one-by-one.
+  // Therefore this option has effect only if opt_for_avx is set to false.
+  // See code in processor.cc for more details.
+  virtual void Apply(int inner_iter,
+                     const ::artm::utility::LocalThetaMatrix<float>& n_td,
+                     ::artm::utility::LocalThetaMatrix<float>* r_td) const;
 };
 
 class RegularizePtdwAgent {

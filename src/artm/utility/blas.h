@@ -146,7 +146,7 @@ class DenseMatrix {
   int no_rows() const { return no_rows_; }
   int no_columns() const { return no_columns_; }
   int size() const { return no_rows_ * no_columns_; }
-  bool is_equal_size(const DenseMatrix<T>& rhs) {
+  bool is_equal_size(const DenseMatrix<T>& rhs) const {
     return no_rows_ == rhs.no_rows_ && no_columns_ == rhs.no_columns_;
   }
 
