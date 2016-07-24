@@ -13,9 +13,9 @@
 namespace artm {
 namespace regularizer {
 
-void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::DenseMatrix<float>* ptdw) const {
-  int local_token_size = ptdw->no_rows();
-  int num_topics = ptdw->no_columns();
+void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::LocalPhiMatrix<float>* ptdw) const {
+  int local_token_size = ptdw->num_tokens();
+  int num_topics = ptdw->num_topics();
   if (config_.type() == SmoothPtdwConfig_SmoothType_MovingAverage) {
     // 1. evaluate wich tokens are background
     double threshold = config_.threshold();
@@ -40,8 +40,8 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Den
     // 2. prepare ptdw copy and smoothing profile
     int h = config_.window() / 2;
     double tau = tau_;
-    ::artm::utility::DenseMatrix<float> copy_ptdw(*ptdw);
-    ::artm::utility::DenseMatrix<float> smoothed(1, num_topics);
+    ::artm::utility::LocalPhiMatrix<float> copy_ptdw(*ptdw);
+    ::artm::utility::LocalPhiMatrix<float> smoothed(1, num_topics);
     smoothed.InitializeZeros();
     float* smoothed_ptr = &smoothed(0, 0);
     for (int i = 0; i < h && i < local_token_size; ++i) {
@@ -69,7 +69,7 @@ void SmoothPtdwAgent::Apply(int item_index, int inner_iter, ::artm::utility::Den
 
   // Multiplying neighbours (mode = 2)
   if (config_.type() == SmoothPtdwConfig_SmoothType_MovingProduct) {
-    ::artm::utility::DenseMatrix<float> copy_ptdw(*ptdw);
+    ::artm::utility::LocalPhiMatrix<float> copy_ptdw(*ptdw);
     for (int i = 0; i < local_token_size; ++i) {
       const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
       float* local_ptdw_ptr = &(*ptdw)(i, 0);  // NOLINT

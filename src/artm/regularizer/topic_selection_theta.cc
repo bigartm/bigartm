@@ -12,15 +12,16 @@
 namespace artm {
 namespace regularizer {
 
-void TopicSelectionThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
+void TopicSelectionThetaAgent::Apply(int item_index, int inner_iter, int topics_size,
+                                     const float* n_td, float* r_td) const {
   assert(topics_size == topic_weight.size());
   assert(inner_iter < alpha_weight.size());
   if (topics_size != topic_weight.size()) return;
   if (inner_iter >= alpha_weight.size()) return;
 
   for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-    if (theta[topic_id] > 0.0f)
-      theta[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] * topic_value[topic_id] * theta[topic_id];
+    if (n_td[topic_id] > 0.0f)
+      r_td[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] * topic_value[topic_id] * n_td[topic_id];
   }
 }
 
