@@ -7,6 +7,9 @@
 
 #include "boost/functional/hash.hpp"
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/version.hpp"
+
 namespace artm {
 namespace core {
 
@@ -18,6 +21,7 @@ const std::string DefaultClass = "@default_class";
 // For historical reasons ClassId goes first, followed by the keyword.
 struct Token {
  public:
+  Token() : keyword(), class_id(), hash_(0) {}  // Default constructor - used for serialization only
   Token(const ClassId& _class_id, const std::string& _keyword)
       : keyword(_keyword), class_id(_class_id),
         hash_(calcHash(_class_id, _keyword)) {}
@@ -47,6 +51,15 @@ struct Token {
     return !(*this == token);
   }
 
+  template<class Archive>
+  void serialize(Archive &ar, const unsigned int version) {  // NOLINT
+    ar & const_cast<std::string&>(keyword);
+    ar & const_cast<ClassId&>(class_id);
+
+    if (Archive::is_loading::value)
+      const_cast<size_t&>(hash_) = calcHash(class_id, keyword);
+  }
+
   const std::string keyword;
   const ClassId class_id;
 
@@ -70,5 +83,7 @@ struct TokenHasher {
 
 }  // namespace core
 }  // namespace artm
+
+BOOST_CLASS_VERSION(::artm::core::Token, 0)  // NOLINT
 
 #endif  // SRC_ARTM_CORE_TOKEN_H_

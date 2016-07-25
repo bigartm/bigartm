@@ -83,7 +83,7 @@ if (NOT Boost_FOUND)
   message(SEND_ERROR "Failed to find boost libraries.")
 endif (NOT Boost_FOUND)
 
-set(BIGARTM_BOOST_COMPONENTS thread program_options date_time filesystem iostreams system)
+set(BIGARTM_BOOST_COMPONENTS thread program_options date_time filesystem iostreams serialization system)
 if (Boost_VERSION GREATER 104700)
   set(BIGARTM_BOOST_COMPONENTS ${BIGARTM_BOOST_COMPONENTS} chrono timer)
 endif (Boost_VERSION GREATER 104700)
