@@ -88,6 +88,7 @@ class Dictionary {
   std::vector<DictionaryEntry> entries_;
   std::unordered_map<Token, int, TokenHasher> token_index_;
   std::unordered_map<int, std::unordered_map<int, float> > cooc_values_;
+  size_t num_items_in_collection_;
 };
 
 }  // namespace core

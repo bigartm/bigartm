@@ -439,6 +439,7 @@ message DictionaryData {
   repeated int32 cooc_first_index = 7;
   repeated int32 cooc_second_index = 8;
   repeated float cooc_value = 9;
+  optional int64 num_items_in_collection = 10;  // number of documents in the collection
 }
 
 message FilterDictionaryArgs {

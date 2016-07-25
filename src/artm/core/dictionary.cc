@@ -23,6 +23,7 @@ namespace core {
 
 Dictionary::Dictionary(const artm::DictionaryData& data) {
   if (data.cooc_value_size() == 0) {
+    num_items_in_collection_ = data.num_items_in_collection();
     for (int index = 0; index < data.token_size(); ++index) {
       ClassId class_id = data.class_id_size() ? data.class_id(index) : DefaultClass;
       bool has_token_value = data.token_value_size() > 0;
@@ -116,6 +117,7 @@ void Dictionary::Export(const ExportDictionaryArgs& args,
 
   DictionaryData token_dict_data;
   token_dict_data.set_name(args.dictionary_name());
+  token_dict_data.set_num_items_in_collection(dict_ptr->num_items_in_collection_);
   for (int token_id = 0; token_id < token_size; ++token_id) {
     auto entry = dict_ptr->entry(token_id);
     token_dict_data.add_token(entry->token().keyword);
@@ -304,6 +306,7 @@ Dictionary::Gather(const GatherDictionaryArgs& args,
 
   auto dictionary_data = std::make_shared<artm::DictionaryData>();
   dictionary_data->set_name(args.dictionary_target_name());
+  dictionary_data->set_num_items_in_collection(total_items_count);
 
   for (auto& token : collection_vocab) {
     dictionary_data->add_token(token.keyword);
@@ -397,7 +400,7 @@ Dictionary::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollect
   auto& dictionary_token_index = src_dictionary_ptr->token_index();
   std::unordered_map<int, int> old_index_new_index;
 
-  float size = static_cast<float>(src_dictionary_ptr->size());
+  float size = static_cast<float>(src_dictionary_ptr->num_items_in_collection_);
 
   int accepted_tokens_count = 0;
   for (auto& entry : src_entries) {
@@ -480,6 +483,7 @@ std::shared_ptr<Dictionary> Dictionary::Duplicate() const {
 }
 
 void Dictionary::StoreIntoDictionaryData(DictionaryData* data) const {
+  data->set_num_items_in_collection(num_items_in_collection_);
   for (int i = 0; i < entries_.size(); ++i) {
     data->add_token(entries_[i].token().keyword);
     data->add_class_id(entries_[i].token().class_id);
