@@ -74,7 +74,7 @@ namespace artm {
 			else {
 				for (int i = 0; i < topic_size; ++i)
 					agent->topic_proportion.push_back(1.0f);
-				LOG(ERROR) << "No TopicSelectionThetaConfig.topic_proportion were found";
+				LOG(ERROR) << "No HierarchySparsingThetaConfig.topic_proportion were found";
 			}
 
 			if (config_.parent_topic_proportion_size()) {
@@ -118,7 +118,7 @@ namespace artm {
 
 		bool HierarchySparsingTheta::Reconfigure(const RegularizerConfig& config) {
 			std::string config_blob = config.config();
-			TopicSelectionThetaConfig regularizer_config;
+			HierarchySparsingThetaConfig regularizer_config;
 			if (!regularizer_config.ParseFromString(config_blob)) {
 				BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException(
 					"Unable to parse HierarchySparsingThetaConfig from RegularizerConfig.config"));
