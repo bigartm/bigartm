@@ -125,3 +125,6 @@ src/artm/messages.pb.h
 /python/dist/*
 
 /src/artm/version.h
+
+# configuration file for YouCompleteMe
+.ycm_extra_conf.py

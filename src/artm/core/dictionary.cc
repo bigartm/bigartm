@@ -256,7 +256,7 @@ Dictionary::Gather(const GatherDictionaryArgs& args,
       int token_id = 0;
       while (!vocab.eof()) {
         std::getline(vocab, str);
-        if (vocab.eof())
+        if (vocab.eof() && str.empty())
           break;
 
         boost::algorithm::trim(str);
@@ -545,3 +545,4 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
 
 }  // namespace core
 }  // namespace artm
+// vim: set ts=2 sw=2:

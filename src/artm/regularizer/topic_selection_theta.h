@@ -34,7 +34,7 @@ namespace regularizer {
 
 class TopicSelectionThetaAgent : public RegularizeThetaAgent {
  public:
-  virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const;
+  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const;
 
  private:
   friend class TopicSelectionTheta;
