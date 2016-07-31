@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-# This file is for developer's use
 
 from __future__ import print_function
 
 from setuptools import setup, find_packages
 from distutils.spawn import find_executable
 
-# DISTUTILS_DEBUG = True
+DISTUTILS_DEBUG = True
 
 # parse arguments
 import sys
@@ -14,7 +13,6 @@ import os.path
 import tempfile
 import shutil
 import subprocess
-import argparse
 
 # specify classifiers
 BIGARTM_CLASSIFIERS = [
@@ -32,25 +30,88 @@ BIGARTM_CLASSIFIERS = [
     'Topic :: Software Development'
 ]
 
+
+from distutils.command.build import build as _build
+
+
+# Initialize necessary variables
+# guess name of cmake executable
+# FIXME: make cross-platform guessing
+cmake_exec = "cmake"
 # name of artm shared library
 artm_library_name = 'libartm.so'
 if sys.platform.startswith('win'):
     artm_library_name = 'artm.dll'
 elif sys.platform.startswith('darwin'):
     artm_library_name = 'libartm.dylib'
+# find absolute path of working directory
+try:
+    filename = __file__
+except NameError:
+    filename = sys.argv[0]
+filename = os.path.abspath(filename)
+if os.path.dirname(filename):
+    os.chdir(os.path.dirname(filename))
+working_dir = os.path.abspath(os.getcwd())
+
+
+# Hook to distribute platform-dependent wheels if necessary
+from setuptools.dist import Distribution
+
+
+class BigARTMDistribution(Distribution):
+    def is_pure(self):
+        return false
+
+
+class build(_build):
+    def run(self):
+        # Create build directories and run cmake
+        try:
+            build_directory = tempfile.mkdtemp(dir="./")
+            os.chdir(build_directory)
+            # run cmake
+            cmake_process = [cmake_exec]
+            cmake_process.append("../")
+            cmake_process.append("-DBUILD_PIP_DIST=ON")
+            # FIXME
+            # validate return code
+            retval = subprocess.call(cmake_process)
+            if retval:
+                sys.exit(-1)
+            # run make command
+            make_process = ["make"]
+            # make_process.append("-j6")
+            retval = subprocess.call(make_process)
+            if retval:
+                sys.exit(-1)
+            # run make install command
+            install_process = ["make", "install"]
+            retval = subprocess.call(install_process)
+            if retval:
+                sys.exit(-1)
+        finally:
+            os.chdir(working_dir)
+            if os.path.exists(build_directory):
+                shutil.rmtree(build_directory)
+        # _build is an old-style class, so super() doesn't work.
+        _build.run(self)
+
 
 setup(
     # some common information
     name='bigartm',
     version='0.8.1',
-    packages=find_packages(),
+    packages=['artm', 'artm.wrapper'],
+    package_dir={'': './python'},
+    # add shared library to package
     package_data={'artm.wrapper': [artm_library_name]},
+    distclass=BigARTMDistribution,
 
     # information about dependencies
     install_requires=[
         'pandas',
-        'numpy',
-        'protobuf==2.6.1'
+        'numpy'
     ],
     # this option must solve problem with installing
     # numpy as dependency during `setup.py install` execution
@@ -60,6 +121,7 @@ setup(
     setup_requires=[
         'numpy'
     ],
+    cmdclass={'build': build},
 
     # metadata for upload to PyPI
     license='New BSD license',

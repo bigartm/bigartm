@@ -29,11 +29,13 @@ class LibArtm(object):
 
     def _load_cdll(self, lib_name):
         # choose default library name
+        package_directory = os.path.dirname(os.path.abspath(__file__))
         default_lib_name = 'libartm.so'
         if sys.platform.startswith('win'):
             default_lib_name = 'artm.dll'
         if sys.platform.startswith('darwin'):
             default_lib_name = 'libartm.dylib'
+        default_lib_name = os.path.join(package_directory, default_lib_name)
 
         if lib_name is None:
             # try to get library path from environment variable
