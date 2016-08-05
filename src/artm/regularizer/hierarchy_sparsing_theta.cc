@@ -1,7 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
 // Author: Nadia Chirkova (nadiinchi@gmail.com)
-// Based on code of Murat Apishev(great - mel@yandex.ru)
+// Based on code of Murat Apishev (great-mel@yandex.ru)
 
 #include <vector>
 
@@ -13,21 +13,73 @@
 namespace artm {
 	namespace regularizer {
 
-		void HierarchySparsingThetaAgent::Apply(int item_index, int inner_iter, int topics_size, float* theta) const {
-			if (!(regularization_on)) return;
+        void HierarchySparsingThetaAgent::Apply(int item_index, int inner_iter, int topics_size,
+            const float* n_td, float* r_td) const {
+            if (!(regularization_on)) return;
 			assert(topics_size == topic_weight.size());
 			assert(inner_iter < alpha_weight.size());
 			if (topics_size != topic_weight.size()) return;
-			if (inner_iter >= alpha_weight.size()) return;
+            if (inner_iter >= alpha_weight.size()) return;
 
+            int topic_sum = 0;
+            for (int topic_id = 0; topic_id < topics_size; ++topic_id)
+                topic_sum += n_td[topic_id];
+ 
 			for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-				if (theta[topic_id] > 0.0f)
-					theta[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] *
+				if (n_td[topic_id] > 0.0f)
+					r_td[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] *
 				                       (prior_parent_topic_probability
-                                       - theta[topic_id] * parent_topic_proportion[item_index] 
+                                       - n_td[topic_id] / topic_sum // it is theta_td(topic_id, item_id) 
+                                        * parent_topic_proportion[item_index] 
 									    / topic_proportion[topic_id]);
 			}
 		}
+
+        void HierarchySparsingThetaAgent::Apply(int inner_iter,
+            const ::artm::utility::LocalThetaMatrix<float>& n_td,
+            ::artm::utility::LocalThetaMatrix<float>* r_td) const {
+            if (!(regularization_on)) return;
+
+            std::vector<double> n_d, n_t;
+            int topics_num = n_td.num_topics(), items_num = n_td.num_items();
+            double item_sum = 0, topic_sum = 0;
+
+            // count n_d
+            for (int item_id = 0; item_id < items_num; ++item_id) {
+                item_sum = 0;
+                for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
+                    item_sum += n_td(topic_id, item_id);
+                }
+                n_d.push_back(item_sum);
+            }
+
+            //count topic_proportion (n_t)
+            for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
+                topic_sum = 0;
+                for (int item_id = 0; item_id < items_num; ++item_id) {
+                    topic_sum += parent_topic_proportion[item_id] * n_td(topic_id, item_id) / n_d[item_id];
+                }
+                n_t.push_back(topic_sum);
+                
+            }
+
+            //make regularization
+            if (topics_num != topic_weight.size()) return;
+            if (inner_iter >= alpha_weight.size()) return;
+
+            for (int item_id = 0; item_id < items_num; ++item_id)
+                for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
+                    if (n_td(topic_id, item_id) > 0.0f)
+                        (*r_td)(topic_id, item_id) += alpha_weight[inner_iter] * topic_weight[topic_id] *
+                                                        (prior_parent_topic_probability
+                                                            - n_td(topic_id, item_id) / n_d[item_id]
+                                                            * parent_topic_proportion[item_id]
+                                                            / n_t[topic_id]);
+                }
+
+                
+
+        }
 
 		HierarchySparsingTheta::HierarchySparsingTheta(const HierarchySparsingThetaConfig& config) : config_(config) { }
 
@@ -74,7 +126,6 @@ namespace artm {
 			else {
 				for (int i = 0; i < topic_size; ++i)
 					agent->topic_proportion.push_back(1.0f);
-				LOG(ERROR) << "No HierarchySparsingThetaConfig.topic_proportion were found";
 			}
 
 			if (config_.parent_topic_proportion_size()) {

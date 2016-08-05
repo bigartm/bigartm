@@ -57,7 +57,10 @@ namespace artm {
 
 		class HierarchySparsingThetaAgent : public RegularizeThetaAgent {
 		public:
-			virtual void Apply(int item_index, int inner_iter, int topics_size, float* theta) const;
+            virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const;
+            virtual void Apply(int inner_iter,
+                const ::artm::utility::LocalThetaMatrix<float>& n_td,
+                ::artm::utility::LocalThetaMatrix<float>* r_td) const;
 
 		private:
 			friend class HierarchySparsingTheta;
