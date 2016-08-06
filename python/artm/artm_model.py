@@ -6,6 +6,7 @@ import shutil
 import tempfile
 
 from pandas import DataFrame
+from six.moves import range
 
 from . import wrapper
 from .wrapper import constants as const
@@ -115,7 +116,7 @@ class ARTM(object):
         if topic_names is not None:
             self._topic_names = topic_names
         elif num_topics is not None:
-            self._topic_names = ['topic_{}'.format(i) for i in xrange(num_topics)]
+            self._topic_names = ['topic_{}'.format(i) for i in range(num_topics)]
         else:
             raise ValueError('Either num_topics or topic_names parameter should be set')
 
@@ -378,7 +379,7 @@ class ARTM(object):
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
-        for _ in xrange(num_collection_passes):
+        for _ in range(num_collection_passes):
             # temp code for easy using of TopicSelectionThetaRegularizer from Python
             _topic_selection_regularizer_func(self, self._regularizers)
 

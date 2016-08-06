@@ -19,6 +19,8 @@ import glob
 import time
 import artm
 
+from six.moves import range
+
 
 HELP_STR = '\nUsage: python create_cooc_dictionary'
 HELP_STR += '<folder_with_batches_and_dictionary> [<window_size>] [<merge_modalities>]\n'
@@ -68,8 +70,8 @@ def __process_batch(global_cooc_dictionary, batch, merge_modalities, window_size
     batch_dictionary = __create_batch_dictionary(batch)
 
     def __process_window(token_ids, token_weights):
-        for i in xrange(len(token_ids)):
-            for j in xrange(i + 1, len(token_ids)):
+        for i in range(len(token_ids)):
+            for j in range(i + 1, len(token_ids)):
                 value = min(token_weights[i], token_weights[j])
                 token_1 = batch_dictionary[token_ids[i]]
                 token_2 = batch_dictionary[token_ids[j]]
@@ -109,7 +111,7 @@ def __process_batch(global_cooc_dictionary, batch, merge_modalities, window_size
 
     for item in batch.item:
         real_window_size = window_size if window_size > 0 else len(item.token_id)
-        for window_start_id in xrange(0, len(item.token_id) - real_window_size + 1):
+        for window_start_id in range(0, len(item.token_id) - real_window_size + 1):
             window = {}
             for i, w in zip(item.token_id[window_start_id: (window_start_id + real_window_size)],
                             item.token_weight[window_start_id: (window_start_id + real_window_size)]):

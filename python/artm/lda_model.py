@@ -1,3 +1,5 @@
+from six.moves import range
+
 from .artm_model import ARTM
 
 from .regularizers import SmoothSparsePhiRegularizer, SmoothSparseThetaRegularizer
@@ -330,7 +332,7 @@ class LDA(object):
 
         tokens = []
         global_token_index = 0
-        for topic_index in xrange(self.num_topics):
+        for topic_index in range(self.num_topics):
             if not with_weights:
                 tokens.append(result.token[global_token_index: (global_token_index + num_tokens)])
             else:
