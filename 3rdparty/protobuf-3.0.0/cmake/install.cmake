@@ -105,16 +105,16 @@ export(TARGETS libprotobuf-lite libprotobuf libprotoc protoc
   FILE ${CMAKE_INSTALL_CMAKEDIR}/protobuf-targets.cmake
 )
 
-install(EXPORT protobuf-targets
-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-  NAMESPACE protobuf::
-  COMPONENT protobuf-export)
+#install(EXPORT protobuf-targets
+#  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+#  NAMESPACE protobuf::
+#  COMPONENT protobuf-export)
 
-install(DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-  COMPONENT protobuf-export
-  PATTERN protobuf-targets.cmake EXCLUDE
-)
+#install(DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
+#  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+#  COMPONENT protobuf-export
+#  PATTERN protobuf-targets.cmake EXCLUDE
+#)
 
 option(protobuf_INSTALL_EXAMPLES "Install the examples folder" OFF)
 if(protobuf_INSTALL_EXAMPLES)

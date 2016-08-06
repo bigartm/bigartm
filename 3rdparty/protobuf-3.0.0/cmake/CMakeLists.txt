@@ -162,6 +162,12 @@ include(libprotobuf.cmake)
 include(libprotoc.cmake)
 include(protoc.cmake)
 
+set(PROTOBUF_ROOT "${protobuf_source_dir}" CACHE PATH "Location of protobuf sources.")
+set(PROTOBUF_LIBRARY libprotobuf CACHE INTERNAL "protobuf library")
+set(PROTOBUF_INCLUDE_DIR "${protobuf_source_dir}/src" CACHE INTERNAL "protobuf library")
+set(PROTOBUF_PROTOC_LIBRARY libprotoc CACHE INTERNAL "libprotoc build")
+set(PROTOBUF_PROTOC_EXECUTABLE protoc CACHE INTERNAL "protoc build")
+
 if (protobuf_BUILD_TESTS)
   include(tests.cmake)
 endif (protobuf_BUILD_TESTS)
