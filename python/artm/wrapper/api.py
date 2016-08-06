@@ -8,6 +8,7 @@ import ctypes
 
 import numpy
 import six
+from six.moves import zip
 from google import protobuf
 
 from . import utils

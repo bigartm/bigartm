@@ -1,4 +1,5 @@
 from six import iteritems
+from six.moves import zip
 
 __all__ = [
     'SparsityPhiScoreTracker',

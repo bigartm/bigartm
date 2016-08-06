@@ -20,7 +20,7 @@ import time
 import artm
 
 from six import iteritems
-from six.moves import range
+from six.moves import range, zip
 
 
 HELP_STR = '\nUsage: python create_cooc_dictionary'

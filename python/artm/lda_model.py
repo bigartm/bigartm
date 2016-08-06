@@ -1,4 +1,4 @@
-from six.moves import range
+from six.moves import range, zip
 
 from .artm_model import ARTM
 
@@ -338,7 +338,7 @@ class LDA(object):
             else:
                 result_token = result.token[global_token_index: (global_token_index + num_tokens)]
                 result_weight = result.weight[global_token_index: (global_token_index + num_tokens)]
-                tokens.append(zip(result_token, result_weight))
+                tokens.append(list(zip(result_token, result_weight)))
             global_token_index += num_tokens
 
         return tokens

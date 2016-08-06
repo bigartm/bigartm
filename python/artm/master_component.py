@@ -3,6 +3,7 @@ import numpy
 import codecs
 
 from six import iteritems
+from six.moves import zip
 
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants

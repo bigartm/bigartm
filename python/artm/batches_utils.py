@@ -4,7 +4,7 @@ import uuid
 import shutil
 
 from six import iteritems
-from six.moves import range
+from six.moves import range, zip
 
 from . import wrapper
 from .wrapper import constants as const
