@@ -4,8 +4,8 @@ import uuid
 import shutil
 
 from . import wrapper
-from wrapper import constants as const
-from wrapper import messages_pb2 as messages
+from .wrapper import constants as const
+from .wrapper import messages_pb2 as messages
 
 from .dictionary import Dictionary
 

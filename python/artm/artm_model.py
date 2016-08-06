@@ -8,8 +8,8 @@ import tempfile
 from pandas import DataFrame
 
 from . import wrapper
-from wrapper import constants as const
-from wrapper import messages_pb2
+from .wrapper import constants as const
+from .wrapper import messages_pb2
 from . import master_component as mc
 
 from .regularizers import Regularizers

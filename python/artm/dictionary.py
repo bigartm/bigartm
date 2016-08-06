@@ -4,7 +4,7 @@ import glob
 import codecs
 
 from . import wrapper
-from wrapper import messages_pb2 as messages
+from .wrapper import messages_pb2 as messages
 from . import master_component
 
 __all__ = [
