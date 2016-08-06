@@ -6,6 +6,7 @@ import shutil
 import tempfile
 
 from pandas import DataFrame
+from six import iteritems
 from six.moves import range
 
 from . import wrapper
@@ -33,7 +34,7 @@ SCORE_TRACKER = {
 
 def _topic_selection_regularizer_func(self, regularizers):
     topic_selection_regularizer_name = []
-    for name, regularizer in regularizers.data.iteritems():
+    for name, regularizer in iteritems(regularizers.data):
         if regularizer.type == const.RegularizerType_TopicSelectionTheta:
             topic_selection_regularizer_name.append(name)
 

@@ -3,6 +3,7 @@ import glob
 import uuid
 import shutil
 
+from six import iteritems
 from six.moves import range
 
 from . import wrapper
@@ -233,7 +234,7 @@ class BatchVectorizer(object):
 
         dictionary_data = messages.DictionaryData()
         dictionary_data.name = uuid.uuid1().urn.translate(None, ':')
-        for key, value in global_vocab.iteritems():
+        for key, value in iteritems(global_vocab):
             dictionary_data.token.append(key)
             dictionary_data.token_tf.append(value[0])
             dictionary_data.token_df.append(value[1])

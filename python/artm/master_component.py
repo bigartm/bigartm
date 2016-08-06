@@ -2,6 +2,8 @@ import os
 import numpy
 import codecs
 
+from six import iteritems
+
 from .wrapper import messages_pb2 as messages
 from .wrapper import constants
 
@@ -88,13 +90,13 @@ def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors
         if class_ids is not None:
             master_config.ClearField('class_id')
             master_config.ClearField('class_weight')
-            for class_id, class_weight in class_ids.iteritems():
+            for class_id, class_weight in iteritems(class_ids):
                 master_config.class_id.append(class_id)
                 master_config.class_weight.append(class_weight)
 
         if scores is not None:
             master_config.ClearField('score_config')
-            for name, config in scores.iteritems():
+            for name, config in iteritems(scores):
                 score_config = master_config.score_config.add()
                 score_config.name = name
                 score_config.type = _score_type(config)
@@ -102,7 +104,7 @@ def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors
 
         if regularizers is not None:
             master_config.ClearField('regularizer_config')
-            for name, config_tau_gamma in regularizers.iteritems():
+            for name, config_tau_gamma in iteritems(regularizers):
                 regularizer_config = master_config.regularizer_config.add()
                 regularizer_config.name = name
                 regularizer_config.type = _regularizer_type(config)
@@ -475,7 +477,7 @@ class MasterComponent(object):
             args.ClearField('topic_name')
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
-        for nwt_source_name, source_weight in models.iteritems():
+        for nwt_source_name, source_weight in iteritems(models):
             args.nwt_source_name.append(nwt_source_name)
             args.source_weight.append(source_weight)
 

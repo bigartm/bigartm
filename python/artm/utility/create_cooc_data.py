@@ -19,6 +19,7 @@ import glob
 import time
 import artm
 
+from six import iteritems
 from six.moves import range
 
 
@@ -62,7 +63,7 @@ def __save_dictionary(cooc_dictionary, dictionary):
     with open('cooc_data.txt', 'w') as fout:
         for index, token_class_id in enumerate(dictionary):
             if token_class_id in cooc_dictionary:
-                for key, value in cooc_dictionary[token_class_id].iteritems():
+                for key, value in iteritems(cooc_dictionary[token_class_id]):
                     fout.write('{0} {1} {2}\n'.format(index, dict_for_search[key], value))
 
 

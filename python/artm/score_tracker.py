@@ -1,3 +1,5 @@
+from six import iteritems
+
 __all__ = [
     'SparsityPhiScoreTracker',
     'ItemsProcessedScoreTracker',
@@ -62,9 +64,9 @@ def _get_score(score_name, master, field_attrs, last=False):
 
 
 def _set_properties(class_ref, attr_data):
-    for name, params in attr_data.iteritems():
+    for name, params in iteritems(attr_data):
         _p = [name, 'optional', 'scalar', 'topic_name']
-        for k, v in params.iteritems():
+        for k, v in iteritems(params):
             _p[0] = v if k == 'proto_name' else _p[0]
             _p[1] = v if k == 'proto_qualifier' else _p[1]
             _p[2] = v if k == 'proto_type' else _p[2]
