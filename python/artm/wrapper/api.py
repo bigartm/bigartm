@@ -7,6 +7,7 @@ import sys
 import ctypes
 
 import numpy
+import six
 from google import protobuf
 
 from . import utils
@@ -59,12 +60,15 @@ class LibArtm(object):
 
     def version(self):
         self.cdll.ArtmGetVersion.restype = ctypes.c_char_p
-        return self.cdll.ArtmGetVersion()
+        ver = self.cdll.ArtmGetVersion()
+        return ver if six.PY2 else ver.decode('utf-8')
 
     def _check_error(self, error_code):
         if error_code < -1:
             self.cdll.ArtmGetLastErrorMessage.restype = ctypes.c_char_p
             error_message = self.cdll.ArtmGetLastErrorMessage()
+            if six.PY3:
+                error_message = error_message.decode('utf-8')
 
             # remove exception name from error message
             error_message = error_message.split(':', 1)[-1].strip()

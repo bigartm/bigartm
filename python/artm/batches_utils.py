@@ -78,7 +78,7 @@ class BatchVectorizer(object):
 
         self._target_folder = target_folder
         if self._remove_batches:
-            self._target_folder = os.path.join(data_path, format(uuid.uuid1().urn).translate(None, ':'))
+            self._target_folder = os.path.join(data_path, format(uuid.uuid1().urn).replace(':', ''))
 
         self._batches_list = []
         self._weights = []
@@ -220,7 +220,7 @@ class BatchVectorizer(object):
                         batch.token.append(token)
 
                     item.token_id.append(batch_vocab[token])
-                    item.token_weight.append(value)
+                    item.token_weight.append(value.item())
 
             if ((item_id + 1) % self._batch_size == 0 and item_id != 0) or ((item_id + 1) == n_wd.shape[1]):
                 filename = os.path.join(self._target_folder, '{}.batch'.format(batch.id))
@@ -233,7 +233,7 @@ class BatchVectorizer(object):
         self._weights += [data_weight for i in range(len(batch_filenames))]
 
         dictionary_data = messages.DictionaryData()
-        dictionary_data.name = uuid.uuid1().urn.translate(None, ':')
+        dictionary_data.name = uuid.uuid1().urn.replace(':', '')
         for key, value in iteritems(global_vocab):
             dictionary_data.token.append(key)
             dictionary_data.token_tf.append(value[0])
