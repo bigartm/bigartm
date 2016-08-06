@@ -13,6 +13,8 @@
 
 # Author: Murat Apishev (great-mel@yandex.ru)
 
+from __future__ import print_function
+
 import os
 import sys
 import glob
@@ -134,7 +136,7 @@ if __name__ == "__main__":
     if len(batches_list) < 1 or len(dictionaries_list) < 1:
         raise RuntimeError('No batches or dictionary were found in given folder')
     else:
-        print '{} batches were found, start processing'.format(len(batches_list))
+        print('{} batches were found, start processing'.format(len(batches_list)))
 
     temp_dict = artm.messages.DictionaryData()
     with open(dictionaries_list[0], 'rb') as fin:
@@ -144,13 +146,13 @@ if __name__ == "__main__":
     global_cooc_dictionary = {}
     for index, filename in enumerate(batches_list):
         local_time_start = time.time()
-        print 'Process batch: {}'.format(index)
+        print('Process batch: {}'.format(index))
         current_batch = artm.messages.Batch()
         with open(filename, 'rb') as fin:
             current_batch.ParseFromString(fin.read())
         __process_batch(global_cooc_dictionary, current_batch, merge_modalities, window_size)
 
-        print 'Finished batch, elapsed time: {}'.format(time.time() - local_time_start)
+        print('Finished batch, elapsed time: {}'.format(time.time() - local_time_start))
 
     __save_dictionary(global_cooc_dictionary, global_dictionary)
-    print 'Finished collection, elapsed time: {}'.format(time.time() - global_time_start)
+    print('Finished collection, elapsed time: {}'.format(time.time() - global_time_start))
