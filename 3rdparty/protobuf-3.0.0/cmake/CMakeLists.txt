@@ -26,7 +26,7 @@ cmake_dependent_option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime librari
 if (MSVC)
   set(protobuf_WITH_ZLIB_DEFAULT OFF)
 else (MSVC)
-  set(protobuf_WITH_ZLIB_DEFAULT ON)
+  set(protobuf_WITH_ZLIB_DEFAULT OFF)  # we need to disable zlib
 endif (MSVC)
 option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
 set(protobuf_DEBUG_POSTFIX "d"

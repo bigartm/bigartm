@@ -1,3 +1,4 @@
+syntax = "proto2";
 // File messages.proto defines all messages that can be transefer in or out from BigARTM library.
 package artm;
 

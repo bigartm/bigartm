@@ -1,3 +1,4 @@
+syntax = "proto2";
 package artm.core;
 
 message FloatArray {
