@@ -80,7 +80,7 @@ class LibArtm(object):
         error_code = self.cdll.ArtmCopyRequestedMessage(length, message_blob)
         self._check_error(error_code)
         message = func()
-        message.ParseFromString(message_blob)
+        message.ParseFromString(message_blob.raw)
         return message
 
     def _wrap_call(self, func, spec):
@@ -116,8 +116,8 @@ class LibArtm(object):
                 arg_value = arg_casted
 
                 # construct c-style arguments
-                if issubclass(arg_type, basestring):
-                    arg_cstr_p = ctypes.create_string_buffer(arg_value)
+                if issubclass(arg_type, str):
+                    arg_cstr_p = ctypes.create_string_buffer(arg_value.encode('utf-8'))
                     c_args.append(arg_cstr_p)
 
                 elif issubclass(arg_type, protobuf.message.Message):
