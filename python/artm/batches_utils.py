@@ -206,6 +206,7 @@ class BatchVectorizer(object):
                 global_vocab[key][2] = False  # all tokens haven't appeared in this item yet
 
             for token_id, value in enumerate(column):
+                value = value.item()
                 if value > GLOB_EPS:
                     token = vocab[token_id]
                     if token not in global_vocab:
@@ -220,7 +221,7 @@ class BatchVectorizer(object):
                         batch.token.append(token)
 
                     item.token_id.append(batch_vocab[token])
-                    item.token_weight.append(value.item())
+                    item.token_weight.append(value)
 
             if ((item_id + 1) % self._batch_size == 0 and item_id != 0) or ((item_id + 1) == n_wd.shape[1]):
                 filename = os.path.join(self._target_folder, '{}.batch'.format(batch.id))

@@ -104,8 +104,8 @@ class Dictionary(object):
         self._reset()
         dictionary_data = messages.DictionaryData()
         with codecs.open(dictionary_path, 'r', encoding) as fin:
-            dictionary_data.name = fin.next().split(' ')[1][0: -1]
-            fin.next()  # skip comment line
+            dictionary_data.name = fin.readline().split(' ')[1][0: -1]
+            fin.readline()  # skip comment line
 
             for line in fin:
                 line_list = line.split(' ')
