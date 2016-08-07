@@ -48,9 +48,8 @@ def test_func():
 
         phi = hier.get_level(1).get_phi()
         assert phi.shape == (vocab_size, num_topics_level1)
-        theta = hier.get_level(1).get_theta()
-        assert theta.shape == (num_topics_level1, num_docs)
-        
+        # theta = hier.get_level(1).get_theta()
+        # assert theta.shape == (num_topics_level1, num_docs)
         psi = hier.get_level(1).get_psi()
         support = psi.values.max(axis=1).min()
         
