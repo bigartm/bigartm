@@ -5,6 +5,8 @@ import os
 import numpy
 import pytest
 
+from six.moves import range
+
 import artm
 
 def test_func():
@@ -55,7 +57,7 @@ def test_func():
         assert len(n_wd_batch_vectorizer.batches_list) == num_n_wd_batches
         assert len(glob.glob(os.path.join(temp_target_folder, '*.batch'))) == num_n_wd_batches
 
-        for i in xrange(num_n_wd_batches):
+        for i in range(num_n_wd_batches):
             with open(n_wd_batch_vectorizer.batches_list[i].filename, 'rb') as fin:
                 batch = artm.messages.Batch()
                 batch.ParseFromString(fin.read())

@@ -4,6 +4,8 @@ import tempfile
 import os
 import pytest
 
+from six.moves import range
+
 import artm
 
 def test_func():
@@ -15,8 +17,8 @@ def test_func():
     
     def _check_num_tokens_in_saved_text_dictionary(file_name, filtered=False):
         with open(file_name, 'r') as fin:
-            fin.next()
-            fin.next()
+            fin.readline()
+            fin.readline()
             counter = 0
             for line in fin:
                 counter += 1
@@ -46,7 +48,7 @@ def test_func():
         _check_num_tokens_in_saved_text_dictionary(os.path.join(batches_folder, 'saved_text_dict_3.txt'))
 
         dictionary_data = artm.messages.DictionaryData()
-        for i in xrange(num_tokens):
+        for i in range(num_tokens):
             dictionary_data.token.append('{}_'.format(i))
             dictionary_data.class_id.append('@default_class')
             dictionary_data.token_value.append(0.0)

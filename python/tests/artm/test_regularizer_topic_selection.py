@@ -4,6 +4,8 @@ import tempfile
 import os
 import pytest
 
+from six.moves import range
+
 import artm
 
 
@@ -38,7 +40,7 @@ def test_func():
         assert 8 == topics_left
 
         # the following asssertion fails on travis-ci builds, but passes locally
-        for i in xrange(num_collection_passes):
+        for i in range(num_collection_passes):
             assert abs(model.score_tracker['PerplexityScore'].value[i] - perplexity_value[i]) < perplexity_eps
 
         model.fit_online(batch_vectorizer=batch_vectorizer)
