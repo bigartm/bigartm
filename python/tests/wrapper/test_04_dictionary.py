@@ -1,7 +1,11 @@
+from __future__ import print_function
+
 import os
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -90,10 +94,10 @@ def test_func():
 
         # Initialize model
         master.initialize_model(model_name=pwt,
-                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                 dictionary_name=dictionary_name)
 
-        for iter in xrange(num_outer_iterations):
+        for iter in range(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
             master.clear_score_cache()
             master.process_batches(pwt=pwt,
@@ -114,9 +118,9 @@ def test_func():
             string += ': Collection perp. = {0:.1f}'.format(perplexity_col_score.value)
             string += ', Document perp. = {0:.1f}'.format(perplexity_doc_score.value)
             string += ', Zero words = {0}'.format(perplexity_doc_score.zero_words)
-            print string
+            print(string)
 
-            print perplexity_col_score.value, expected_perp_col_value_on_iteration[iter]
+            print(perplexity_col_score.value, expected_perp_col_value_on_iteration[iter])
             assert abs(perplexity_col_score.value - expected_perp_col_value_on_iteration[iter]) < perplexity_tol
             assert abs(perplexity_doc_score.value - expected_perp_doc_value_on_iteration[iter]) < perplexity_tol
             assert perplexity_doc_score.zero_words - expected_perp_zero_words_on_iteration[iter] == 0
