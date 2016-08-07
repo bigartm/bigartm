@@ -11,7 +11,7 @@ def dict_to_message(record, message_type):
         if isinstance(values[0], dict):
             for v in values:
                 cmd = message.add()
-                parse_dict(v,cmd)
+                parse_dict(v, cmd)
         else:
             message.extend(values)
 

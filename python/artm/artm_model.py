@@ -442,7 +442,7 @@ class ARTM(object):
 
             for _ in update_after_final:
                 self._num_online_processed_batches += update_every
-                update_count = self._num_online_processed_batches / update_every
+                update_count = self._num_online_processed_batches // update_every
                 rho = pow(tau0 + update_count, -kappa)
                 apply_weight_final.append(rho)
                 decay_weight_final.append(1 - rho)
