@@ -15,24 +15,8 @@ namespace regularizer {
 
 void HierarchySparsingThetaAgent::Apply(int item_index, int inner_iter, int topics_size,
                                         const float* n_td, float* r_td) const {
-  if (!(regularization_on)) return;
-  assert(topics_size == topic_weight.size());
-  assert(inner_iter < alpha_weight.size());
-  if (topics_size != topic_weight.size()) return;
-  if (inner_iter >= alpha_weight.size()) return;
-
-  int topic_sum = 0;
-  for (int topic_id = 0; topic_id < topics_size; ++topic_id)
-    topic_sum += n_td[topic_id];
-
-  for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-    if (n_td[topic_id] > 0.0f)
-      r_td[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] *
-      (prior_parent_topic_probability
-      - n_td[topic_id] / topic_sum  // it is theta_td(topic_id, item_id)
-      * parent_topic_proportion[item_index]
-      / topic_proportion[topic_id]);
-  }
+  LOG_FIRST_N(ERROR, 1) << "HierarchySparsingTheta regularizer can not be applied with opt_for_avx=False. "
+                        << "Regularization will be skipped.";
 }
 
 void HierarchySparsingThetaAgent::Apply(int inner_iter,
@@ -53,7 +37,7 @@ void HierarchySparsingThetaAgent::Apply(int inner_iter,
     n_d.push_back(item_sum);
   }
 
-  // count topic_proportion (n_t)
+  // count topics proportion (n_t)
   for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
     topic_sum = 0;
     for (int item_id = 0; item_id < items_num; ++item_id) {
@@ -107,19 +91,6 @@ std::shared_ptr<RegularizeThetaAgent>
   } else {
     for (int i = 0; i < args.num_document_passes(); ++i)
       agent->alpha_weight.push_back(1.0f);
-  }
-
-  if (config_.topic_proportion_size()) {
-    if (topic_size != config_.topic_proportion_size()) {
-      LOG(ERROR) << "ProcessBatchesArgs.num_topics() != HierarchySparsingThetaConfig.topic_proportion_size()";
-      return nullptr;
-    }
-
-    for (int i = 0; i < config_.topic_proportion_size(); ++i)
-      agent->topic_proportion.push_back(config_.topic_proportion(i));
-  } else {
-    for (int i = 0; i < topic_size; ++i)
-      agent->topic_proportion.push_back(1.0f);
   }
 
   if (config_.parent_topic_proportion_size()) {

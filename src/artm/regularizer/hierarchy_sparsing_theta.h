@@ -26,22 +26,14 @@ The parameters of the regularizer:
 - alpha_iter (an array of additional coefficients, one per document pass,
 an array of floats with length == number of inner iterations,
 if not passed 1.0 is used as value)
-- topic_proportion  (an array of p(topic) values,
-p(topic) = \sum_{supertopic} p(topic|supertopic) * p(supertopic)   (*),
-an array of floats with length == count(topics),
-if not passed 1.0 is used as value)
 - parent_topic_proportion (an array of p(supertopic) values,
 an array of floats with length == count(supertopics),
 if not passed 1.0 is used as value)
 
 !Note!
-* topic_proportion is necessary argument, if it is not passed,
-regularizer will work incorrectly! The simpliest way to compute it
-is to summarize psi matrix by rows.
 * parent_topic_proportion is optional argument. But if you pass it,
 remember to take these values into account when computing p(topic)
 in formula (*)!
-
 */
 
 #ifndef SRC_ARTM_REGULARIZER_HIERARCHY_SPARSING_THETA_H_
@@ -67,7 +59,6 @@ class HierarchySparsingThetaAgent : public RegularizeThetaAgent {
 
   std::vector<float> topic_weight;              // tau for every topic
   std::vector<float> alpha_weight;              // iteration coef
-  std::vector<float> topic_proportion;          // p(topic)
   std::vector<float> parent_topic_proportion;   // p(supertopic)
   double prior_parent_topic_probability;        // 1.0 / count(supertopics)
   bool regularization_on = true;                // true if current batch is parent phi batch

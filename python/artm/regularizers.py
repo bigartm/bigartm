@@ -631,7 +631,7 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
     _type = const.RegularizerType_HierarchySparsingTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None,
-                 alpha_iter=None, topic_proportion=None,
+                 alpha_iter=None,
                  parent_topic_proportion=None, config=None):
         """
         :description: this regularizer affects psi matrix that contains p(topic|supertopic) values.
@@ -646,12 +646,9 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
         :type topic_names: list of str
         :param config: the low-level config of this regularizer
         :type config: protobuf object
-        :param topic_proportion: list of p(topic) values counted from psi matrix\
-                           p(topic) = \sum_{supertopic} p(topic|supertopic) * p(supertopic)
-        :type topic_proportion: list of float
         :param parent_topic_proportion: list of p(supertopic) values
                            that are p(topic) of parent level model
-        :type topic_proportion: list of float
+        :type parent_topic_proportion: list of float
         """
         BaseRegularizerTheta.__init__(self,
                                       name=name,
@@ -659,9 +656,6 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
                                       config=config,
                                       topic_names=topic_names,
                                       alpha_iter=alpha_iter)
-        if topic_proportion is not None:
-            for elem in topic_proportion:
-                self._config.topic_proportion.append(elem)
         if parent_topic_proportion is not None:
             for elem in parent_topic_proportion:
                 self._config.parent_topic_proportion.append(elem)

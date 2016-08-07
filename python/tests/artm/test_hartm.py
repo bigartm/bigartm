@@ -53,7 +53,7 @@ def test_func():
         psi = hier.get_level(1).get_psi()
         support = psi.values.max(axis=1).min()
         
-        assert(support - 0.0978 < zero_eps)
+        assert(abs(support - 0.0978 < zero_eps))
         
     finally:
         shutil.rmtree(batches_folder)

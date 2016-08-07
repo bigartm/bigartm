@@ -176,14 +176,8 @@ message BitermsPhiConfig {
 // Represents a configuration of a HierarchySparsing Theta regularizer
 message HierarchySparsingThetaConfig {
   repeated string topic_name = 1;
-  repeated float topic_proportion = 2;  // user counted value p(topic)
-                                        // If ProcessBatchesArgs.opt_for_avx == False, this value is computed 
-                                        // automatically by HierarchySparsingRegularizer,
-                                        // user's value is overwritten
-                                        // If ProcessBatchesArgs.opt_for_avx == True, this value is necessary,
-                                        // otherwise it will be set to 1.0 and regularizer will work incorrectly
-  repeated float parent_topic_proportion = 3;  // user counted value p(supertopic), optional
-  repeated float alpha_iter = 4;
+  repeated float parent_topic_proportion = 2;  // user counted value p(supertopic), optional
+  repeated float alpha_iter = 3;
 }
 
 // Represents the transform functions
