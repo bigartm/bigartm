@@ -147,8 +147,8 @@ def test_func():
     for (en, ru) in zip(ens, rus):
         next_item = batch.item.add()
         next_item.id = len(batch.item) - 1
-        append(string.split(ru.lower()), ru_dic, next_item, russian_class)
-        append(string.split(en.lower()), en_dic, next_item, english_class)
+        append(ru.lower().split(), ru_dic, next_item, russian_class)
+        append(en.lower().split(), en_dic, next_item, english_class)
 
     batches_folder = tempfile.mkdtemp()
     try:
