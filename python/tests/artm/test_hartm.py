@@ -1,8 +1,6 @@
 import shutil
-import glob
 import tempfile
 import os
-import pytest
 
 import artm
 
@@ -19,7 +17,7 @@ def test_func():
     num_docs = 3430
     zero_eps = 0.001
 
-    data_path = "D:/Chirkova/bigartm_rep/bigartm/test_data" #os.environ.get('BIGARTM_UNITTEST_DATA')
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     batches_folder = tempfile.mkdtemp()
     parent_batch_folder = tempfile.mkdtemp()
 

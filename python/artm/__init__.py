@@ -1,5 +1,6 @@
 from artm_model import ARTM, version
 from lda_model import LDA
+from hierarchy_utils import hARTM
 from dictionary import *
 from regularizers import *
 from scores import *
