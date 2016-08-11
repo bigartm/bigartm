@@ -10,21 +10,18 @@ language:
 
 python:
   - "2.7"
-
-virtualenv:
-  system_site_packages: true
+  - "3.4"
 
 addons:
   apt:
     sources:
-      - boost-latest                # for boost 1.55
-      - ubuntu-toolchain-r-test     # for g++-4.9
+      - boost-latest                       # for boost 1.55
+      - ubuntu-toolchain-r-test            # for g++-4.9
+      - george-edison55-precise-backports  # for cmake 3
     packages:
       - cmake
+      - cmake-data
       - libboost1.55-all-dev
-      - python-numpy
-      - python-pandas
-      - python-virtualenv
       - g++-4.9
 
 env:
@@ -33,9 +30,10 @@ env:
 before_install:
   - pip install pep8
   - pip install -U pytest
+  - pip install pandas protobuf==3.0.0
 
 install:
-  - ./codestyle_checks.sh
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi
   - mkdir build
   - pushd build && export CXX=$COMPILER && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./src/bigartm/bigartm && popd
   - pushd python && python setup.py install && popd
