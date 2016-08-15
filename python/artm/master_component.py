@@ -28,6 +28,8 @@ def _regularizer_type(config):
         return constants.RegularizerType_TopicSelectionTheta
     elif isinstance(config, messages.BitermsPhiConfig):
         return constants.RegularizerType_BitermsPhi
+    elif isinstance(config, messages.HierarchySparsingThetaConfig):
+        return constants.RegularizerType_HierarchySparsingTheta
 
 
 def _score_type(config):
