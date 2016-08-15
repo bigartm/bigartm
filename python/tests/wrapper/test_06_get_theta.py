@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+
+from __future__ import print_function
+
 import os
 import numpy
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range, zip
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -51,10 +56,10 @@ def test_func():
 
         # Initialize model
         master.initialize_model(model_name=pwt,
-                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                 dictionary_name=dictionary_name)
 
-        for iter in xrange(num_outer_iterations):
+        for iter in range(num_outer_iterations):
             # Invoke one scan of the collection and normalize Phi
             master.clear_score_cache()
             master.process_batches(pwt, nwt, num_document_passes, batches_folder)
@@ -66,7 +71,7 @@ def test_func():
         # This does not require 'master.config().cache_theta = True'
         theta_snippet_score = master.get_score('ThetaSnippetScore')
 
-        print 'Option 1. ThetaSnippetScore.'
+        print('Option 1. ThetaSnippetScore.')
         snippet_tuples = zip(theta_snippet_score.values, theta_snippet_score.item_id)
         print_string = ''
         for values, item_id in snippet_tuples:
@@ -74,7 +79,7 @@ def test_func():
             for value in values.value:
                 print_string += '{0:.3f}\t'.format(value)
                 assert(abs(value - theta_value) < theta_tol)
-            print print_string
+            print(print_string)
             print_string = ''
 
         # Option 2.
@@ -85,8 +90,8 @@ def test_func():
         master.clear_theta_cache()
         print_string = 'Option 2. Full ThetaMatrix cached during last iteration,'
         print_string += '#items = {0}'.format(len(theta_matrix_info.item_id))
-        print print_string
-        print theta_numpy_matrix
+        print(print_string)
+        print(theta_numpy_matrix)
         assert numpy.count_nonzero(theta_numpy_matrix) == theta_numpy_matrix.size
         assert len(theta_matrix_info.item_id) == total_num_items
 
@@ -110,8 +115,8 @@ def test_func():
                 theta_matrix_info = master.get_theta_info()
                 _, theta_numpy_matrix = master.get_theta_matrix()
                 master.clear_theta_cache()
-                print 'Option 3. ThetaMatrix from cache, online, #items = {0}'.format(len(theta_matrix_info.item_id))
-                print theta_numpy_matrix
+                print('Option 3. ThetaMatrix from cache, online, #items = {0}'.format(len(theta_matrix_info.item_id)))
+                print(theta_numpy_matrix)
                 assert numpy.count_nonzero(theta_numpy_matrix) == theta_numpy_matrix.size
                 assert len(theta_matrix_info.item_id) in pair_num_items
 
@@ -123,9 +128,9 @@ def test_func():
                                               num_document_passes=1,
                                               batches=[batches[0]],
                                               find_theta=True)
-        print 'Option 4. ThetaMatrix for test batch, #item {0}'.format(len(info.item_id))
+        print('Option 4. ThetaMatrix for test batch, #item {0}'.format(len(info.item_id)))
         assert numpy.count_nonzero(matrix) == matrix.size
         assert len(info.item_id) in num_items
-        print matrix
+        print(matrix)
     finally:
         shutil.rmtree(batches_folder)

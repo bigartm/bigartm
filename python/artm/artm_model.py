@@ -6,10 +6,12 @@ import shutil
 import tempfile
 
 from pandas import DataFrame
+from six import iteritems
+from six.moves import range, zip
 
 from . import wrapper
-from wrapper import constants as const
-from wrapper import messages_pb2
+from .wrapper import constants as const
+from .wrapper import messages_pb2
 from . import master_component as mc
 
 from .regularizers import Regularizers
@@ -32,7 +34,7 @@ SCORE_TRACKER = {
 
 def _topic_selection_regularizer_func(self, regularizers):
     topic_selection_regularizer_name = []
-    for name, regularizer in regularizers.data.iteritems():
+    for name, regularizer in iteritems(regularizers.data):
         if regularizer.type == const.RegularizerType_TopicSelectionTheta:
             topic_selection_regularizer_name.append(name)
 
@@ -115,7 +117,7 @@ class ARTM(object):
         if topic_names is not None:
             self._topic_names = topic_names
         elif num_topics is not None:
-            self._topic_names = ['topic_{}'.format(i) for i in xrange(num_topics)]
+            self._topic_names = ['topic_{}'.format(i) for i in range(num_topics)]
         else:
             raise ValueError('Either num_topics or topic_names parameter should be set')
 
@@ -378,7 +380,7 @@ class ARTM(object):
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
-        for _ in xrange(num_collection_passes):
+        for _ in range(num_collection_passes):
             # temp code for easy using of TopicSelectionThetaRegularizer from Python
             _topic_selection_regularizer_func(self, self._regularizers)
 
@@ -440,7 +442,7 @@ class ARTM(object):
 
             for _ in update_after_final:
                 self._num_online_processed_batches += update_every
-                update_count = self._num_online_processed_batches / update_every
+                update_count = self._num_online_processed_batches // update_every
                 rho = pow(tau0 + update_count, -kappa)
                 apply_weight_final.append(rho)
                 decay_weight_final.append(1 - rho)

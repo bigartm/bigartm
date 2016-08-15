@@ -3,9 +3,12 @@ import glob
 import uuid
 import shutil
 
+from six import iteritems
+from six.moves import range, zip
+
 from . import wrapper
-from wrapper import constants as const
-from wrapper import messages_pb2 as messages
+from .wrapper import constants as const
+from .wrapper import messages_pb2 as messages
 
 from .dictionary import Dictionary
 
@@ -75,7 +78,7 @@ class BatchVectorizer(object):
 
         self._target_folder = target_folder
         if self._remove_batches:
-            self._target_folder = os.path.join(data_path, format(uuid.uuid1().urn).translate(None, ':'))
+            self._target_folder = os.path.join(data_path, format(uuid.uuid1().urn).replace(':', ''))
 
         self._batches_list = []
         self._weights = []
@@ -162,7 +165,7 @@ class BatchVectorizer(object):
             lib.ArtmParseCollection(parser_config)
             batch_filenames = glob.glob(os.path.join(target_f, '*.batch'))
             self._batches_list += [Batch(filename) for filename in batch_filenames]
-            self._weights += [data_w for i in xrange(len(batch_filenames))]
+            self._weights += [data_w for i in range(len(batch_filenames))]
 
             # next code will be processed only if for-loop has only one iteration
             if self._dictionary is not None:
@@ -178,10 +181,10 @@ class BatchVectorizer(object):
                 if len(self._batches_list) < 1:
                     raise RuntimeError('No batches were found')
 
-                self._weights += [data_w for i in xrange(len(batch_filenames))]
+                self._weights += [data_w for i in range(len(batch_filenames))]
             else:
                 self._batches_list += [Batch(os.path.join(data_p, batch)) for batch in batches]
-                self._weights += [data_w for i in xrange(len(batches))]
+                self._weights += [data_w for i in range(len(batches))]
 
             # next code will be processed only if for-loop has only one iteration
             if self._dictionary is not None:
@@ -203,6 +206,7 @@ class BatchVectorizer(object):
                 global_vocab[key][2] = False  # all tokens haven't appeared in this item yet
 
             for token_id, value in enumerate(column):
+                value = value.item()
                 if value > GLOB_EPS:
                     token = vocab[token_id]
                     if token not in global_vocab:
@@ -227,11 +231,11 @@ class BatchVectorizer(object):
 
         batch_filenames = glob.glob(os.path.join(self._target_folder, '*.batch'))
         self._batches_list += [Batch(filename) for filename in batch_filenames]
-        self._weights += [data_weight for i in xrange(len(batch_filenames))]
+        self._weights += [data_weight for i in range(len(batch_filenames))]
 
         dictionary_data = messages.DictionaryData()
-        dictionary_data.name = uuid.uuid1().urn.translate(None, ':')
-        for key, value in global_vocab.iteritems():
+        dictionary_data.name = uuid.uuid1().urn.replace(':', '')
+        for key, value in iteritems(global_vocab):
             dictionary_data.token.append(key)
             dictionary_data.token_tf.append(value[0])
             dictionary_data.token_df.append(value[1])

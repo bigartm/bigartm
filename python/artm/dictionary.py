@@ -3,8 +3,10 @@ import os
 import glob
 import codecs
 
+from six.moves import range
+
 from . import wrapper
-from wrapper import messages_pb2 as messages
+from .wrapper import messages_pb2 as messages
 from . import master_component
 
 __all__ = [
@@ -84,7 +86,7 @@ class Dictionary(object):
             fout.write(u'name: {}\n'.format(dictionary_data.name))
             fout.write(u'token, class_id, token_value, token_tf, token_df\n')
 
-            for i in xrange(len(dictionary_data.token)):
+            for i in range(len(dictionary_data.token)):
                 fout.write(u'{0}, {1}, {2}, {3}, {4}\n'.format(dictionary_data.token[i],
                                                                dictionary_data.class_id[i],
                                                                dictionary_data.token_value[i],
@@ -102,8 +104,8 @@ class Dictionary(object):
         self._reset()
         dictionary_data = messages.DictionaryData()
         with codecs.open(dictionary_path, 'r', encoding) as fin:
-            dictionary_data.name = fin.next().split(' ')[1][0: -1]
-            fin.next()  # skip comment line
+            dictionary_data.name = fin.readline().split(' ')[1][0: -1]
+            fin.readline()  # skip comment line
 
             for line in fin:
                 line_list = line.split(' ')

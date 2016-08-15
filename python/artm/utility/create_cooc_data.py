@@ -13,11 +13,16 @@
 
 # Author: Murat Apishev (great-mel@yandex.ru)
 
+from __future__ import print_function
+
 import os
 import sys
 import glob
 import time
 import artm
+
+from six import iteritems
+from six.moves import range, zip
 
 
 HELP_STR = '\nUsage: python create_cooc_dictionary'
@@ -60,7 +65,7 @@ def __save_dictionary(cooc_dictionary, dictionary):
     with open('cooc_data.txt', 'w') as fout:
         for index, token_class_id in enumerate(dictionary):
             if token_class_id in cooc_dictionary:
-                for key, value in cooc_dictionary[token_class_id].iteritems():
+                for key, value in iteritems(cooc_dictionary[token_class_id]):
                     fout.write('{0} {1} {2}\n'.format(index, dict_for_search[key], value))
 
 
@@ -68,8 +73,8 @@ def __process_batch(global_cooc_dictionary, batch, merge_modalities, window_size
     batch_dictionary = __create_batch_dictionary(batch)
 
     def __process_window(token_ids, token_weights):
-        for i in xrange(len(token_ids)):
-            for j in xrange(i + 1, len(token_ids)):
+        for i in range(len(token_ids)):
+            for j in range(i + 1, len(token_ids)):
                 value = min(token_weights[i], token_weights[j])
                 token_1 = batch_dictionary[token_ids[i]]
                 token_2 = batch_dictionary[token_ids[j]]
@@ -109,7 +114,7 @@ def __process_batch(global_cooc_dictionary, batch, merge_modalities, window_size
 
     for item in batch.item:
         real_window_size = window_size if window_size > 0 else len(item.token_id)
-        for window_start_id in xrange(0, len(item.token_id) - real_window_size + 1):
+        for window_start_id in range(0, len(item.token_id) - real_window_size + 1):
             window = {}
             for i, w in zip(item.token_id[window_start_id: (window_start_id + real_window_size)],
                             item.token_weight[window_start_id: (window_start_id + real_window_size)]):
@@ -131,7 +136,7 @@ if __name__ == "__main__":
     if len(batches_list) < 1 or len(dictionaries_list) < 1:
         raise RuntimeError('No batches or dictionary were found in given folder')
     else:
-        print '{} batches were found, start processing'.format(len(batches_list))
+        print('{} batches were found, start processing'.format(len(batches_list)))
 
     temp_dict = artm.messages.DictionaryData()
     with open(dictionaries_list[0], 'rb') as fin:
@@ -141,13 +146,13 @@ if __name__ == "__main__":
     global_cooc_dictionary = {}
     for index, filename in enumerate(batches_list):
         local_time_start = time.time()
-        print 'Process batch: {}'.format(index)
+        print('Process batch: {}'.format(index))
         current_batch = artm.messages.Batch()
         with open(filename, 'rb') as fin:
             current_batch.ParseFromString(fin.read())
         __process_batch(global_cooc_dictionary, current_batch, merge_modalities, window_size)
 
-        print 'Finished batch, elapsed time: {}'.format(time.time() - local_time_start)
+        print('Finished batch, elapsed time: {}'.format(time.time() - local_time_start))
 
     __save_dictionary(global_cooc_dictionary, global_dictionary)
-    print 'Finished collection, elapsed time: {}'.format(time.time() - global_time_start)
+    print('Finished collection, elapsed time: {}'.format(time.time() - global_time_start))

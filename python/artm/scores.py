@@ -1,8 +1,8 @@
 import uuid
 
 from . import wrapper
-from wrapper import messages_pb2 as messages
-from wrapper import constants as const
+from .wrapper import messages_pb2 as messages
+from .wrapper import constants as const
 
 
 GLOB_EPS = 1e-37

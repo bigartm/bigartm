@@ -1,8 +1,12 @@
+from __future__ import print_function
+
 import os
 import uuid
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -43,7 +47,7 @@ def test_func():
 
         # Initialize model
         master.initialize_model(model_name=pwt,
-                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                 dictionary_name=dictionary_name)
         phi_matrix_info = master.get_phi_info(model=pwt)
         
@@ -62,6 +66,6 @@ def test_func():
         print_string = 'Number of topic in new model is'
         print_string += ' {0} and number of tokens is {1}'.format(phi_matrix_info_new.num_topics,
                                                                   len(phi_matrix_info.token))
-        print print_string
+        print(print_string)
     finally:
         shutil.rmtree(batches_folder)

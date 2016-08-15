@@ -97,8 +97,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'pandas',
-        'numpy',
-        'protobuf==2.6.1'
+        'numpy'
     ],
     # this option must solve problem with installing
     # numpy as dependency during `setup.py install` execution

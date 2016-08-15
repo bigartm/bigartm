@@ -7,6 +7,8 @@ import sys
 import ctypes
 
 import numpy
+import six
+from six.moves import zip
 from google import protobuf
 
 from . import utils
@@ -59,12 +61,15 @@ class LibArtm(object):
 
     def version(self):
         self.cdll.ArtmGetVersion.restype = ctypes.c_char_p
-        return self.cdll.ArtmGetVersion()
+        ver = self.cdll.ArtmGetVersion()
+        return ver if six.PY2 else ver.decode('utf-8')
 
     def _check_error(self, error_code):
         if error_code < -1:
             self.cdll.ArtmGetLastErrorMessage.restype = ctypes.c_char_p
             error_message = self.cdll.ArtmGetLastErrorMessage()
+            if six.PY3:
+                error_message = error_message.decode('utf-8')
 
             # remove exception name from error message
             error_message = error_message.split(':', 1)[-1].strip()
@@ -80,7 +85,7 @@ class LibArtm(object):
         error_code = self.cdll.ArtmCopyRequestedMessage(length, message_blob)
         self._check_error(error_code)
         message = func()
-        message.ParseFromString(message_blob)
+        message.ParseFromString(message_blob.raw)
         return message
 
     def _wrap_call(self, func, spec):
@@ -116,8 +121,8 @@ class LibArtm(object):
                 arg_value = arg_casted
 
                 # construct c-style arguments
-                if issubclass(arg_type, basestring):
-                    arg_cstr_p = ctypes.create_string_buffer(arg_value)
+                if issubclass(arg_type, str):
+                    arg_cstr_p = ctypes.create_string_buffer(arg_value.encode('utf-8'))
                     c_args.append(arg_cstr_p)
 
                 elif issubclass(arg_type, protobuf.message.Message):

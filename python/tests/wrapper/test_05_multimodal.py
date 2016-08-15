@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import os
 import uuid
 import string
@@ -7,6 +9,8 @@ import itertools
 import tempfile
 import shutil
 import pytest
+
+from six.moves import range, zip
 
 import artm.wrapper
 import artm.wrapper.messages_pb2 as messages
@@ -16,12 +20,12 @@ def _print_top_tokens(top_tokens_score, expected_values_topic, tolerance):
     top_tokens_triplets = zip(top_tokens_score.topic_index,
                               zip(top_tokens_score.token,
                                   top_tokens_score.weight))
-    for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda (topic_index, _): topic_index):
+    for topic_index, group in itertools.groupby(top_tokens_triplets, key=lambda triplet: triplet[0]):
         print_string = u'Topic#{0} : '.format(topic_index)
         for _, (token, weight) in group:
             print_string += u' {0}({1:.3f})'.format(token, weight)
             assert abs(expected_values_topic[topic_index][token] - weight) < tolerance
-        print print_string
+        print(print_string)
 
 def test_func():
     # Set some constants
@@ -127,7 +131,7 @@ def test_func():
 
     def append(tokens, dic, item, class_id):
         for token in tokens:
-            if not dic.has_key(token):              # New token discovered:
+            if token not in dic:              # New token discovered:
                 dic[token] = len(batch.token)       # 1. update ru_dic or en_dic
                 batch.token.append(token)           # 2. update batch.token and batch.class_id
                 batch.class_id.append(class_id)
@@ -143,8 +147,8 @@ def test_func():
     for (en, ru) in zip(ens, rus):
         next_item = batch.item.add()
         next_item.id = len(batch.item) - 1
-        append(string.split(ru.lower()), ru_dic, next_item, russian_class)
-        append(string.split(en.lower()), en_dic, next_item, english_class)
+        append(ru.lower().split(), ru_dic, next_item, russian_class)
+        append(en.lower().split(), en_dic, next_item, english_class)
 
     batches_folder = tempfile.mkdtemp()
     try:
@@ -166,10 +170,10 @@ def test_func():
 
         # Initialize model
         master.initialize_model(model_name=pwt,
-                                topic_names=['topic_{}'.format(i) for i in xrange(num_topics)],
+                                topic_names=['topic_{}'.format(i) for i in range(num_topics)],
                                 dictionary_name=dictionary_name)
 
-        for iter in xrange(num_outer_iterations):
+        for iter in range(num_outer_iterations):
             # Invoke one scan of the collection, regularize and normalize Phi
             master.clear_score_cache()
             master.process_batches(pwt, nwt, num_document_passes, batches_folder,
@@ -183,12 +187,12 @@ def test_func():
         sp_phi_rus = master.get_score('SparsityPhiRus')
         sp_phi_eng = master.get_score('SparsityPhiEng')
 
-        print 'Top tokens per russian topic:'
+        print('Top tokens per russian topic:')
         _print_top_tokens(top_tokens_rus, expected_values_rus_topic, tolerance)
-        print 'Top tokens per english topic:'
+        print('Top tokens per english topic:')
         _print_top_tokens(top_tokens_eng, expected_values_eng_topic, tolerance)
 
-        print '\nSparsity Phi: russian {0:.3f}, english {1:.3f}'.format(sp_phi_rus.value, sp_phi_eng.value)
+        print('\nSparsity Phi: russian {0:.3f}, english {1:.3f}'.format(sp_phi_rus.value, sp_phi_eng.value))
         assert abs(expected_sparsity_values['russian'] - sp_phi_rus.value) < tolerance
         assert abs(expected_sparsity_values['english'] - sp_phi_eng.value) < tolerance
     finally:

@@ -36,6 +36,12 @@ option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
 option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
 option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
 
+if (MSVC)
+set(PYTHON python CACHE INTERNAL "Python command")
+else (MSVC)
+set(PYTHON python2 CACHE INTERNAL "Python command")
+endif (MSVC)
+
 if (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
   option(BUILD_BIGARTM_CLI_STATIC "Request build of static executable bigartm (for Linux only)" ON)
 endif (BUILD_BIGARTM_CLI AND UNIX AND NOT APPLE)
@@ -50,6 +56,7 @@ set(BUILD_gflags_LIB ON)
 set(BUILD_gflags_nothreads_LIB OFF)
 set(rpcz_build_static ON)
 set(rpcz_build_shared ON)
+set(protobuf_BUILD_TESTS OFF)
 
 # set compiler flags
 if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR
