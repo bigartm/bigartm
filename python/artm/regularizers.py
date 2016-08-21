@@ -17,6 +17,7 @@ __all__ = [
     'SmoothPtdwRegularizer',
     'TopicSelectionThetaRegularizer',
     'BitermsPhiRegularizer',
+    'HierarchySparsingThetaRegularizer'
 ]
 
 
@@ -623,3 +624,38 @@ class BitermsPhiRegularizer(BaseRegularizerPhi):
                                     topic_names=topic_names,
                                     class_ids=class_ids,
                                     dictionary=dictionary)
+
+
+class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
+    _config_message = messages.HierarchySparsingThetaConfig
+    _type = const.RegularizerType_HierarchySparsingTheta
+
+    def __init__(self, name=None, tau=1.0, topic_names=None,
+                 alpha_iter=None,
+                 parent_topic_proportion=None, config=None):
+        """
+        :description: this regularizer affects psi matrix that contains p(topic|supertopic) values.
+
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param float tau: the coefficient of regularization for this regularizer
+        :param alpha_iter: list of additional coefficients of regularization on each iteration\
+                           over document. Should have length equal to model.num_document_passes
+        :type alpha_iter: list of str
+        :param topic_names: list of names of topics to regularize,\
+                                     will regularize all topics if not specified
+        :type topic_names: list of str
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        :param parent_topic_proportion: list of p(supertopic) values
+                           that are p(topic) of parent level model
+        :type parent_topic_proportion: list of float
+        """
+        BaseRegularizerTheta.__init__(self,
+                                      name=name,
+                                      tau=tau,
+                                      config=config,
+                                      topic_names=topic_names,
+                                      alpha_iter=alpha_iter)
+        if parent_topic_proportion is not None:
+            for elem in parent_topic_proportion:
+                self._config.parent_topic_proportion.append(elem)

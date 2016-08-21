@@ -8,6 +8,19 @@ For this reason we recommend to review :doc:`messages`.
 For further reference about Python API refer to :doc:`/python_interface/artm_model`,
 `Q & A <https://github.com/bigartm/bigartm/wiki/Q&A>`_ or `tutorials <https://github.com/bigartm/bigartm-book/blob/master/README.md>`_.
 
+v0.8.2
+------
+
+.. warning::
+
+   BigARTM 3rdparty dependency had been upgraded from ``protobuf 2.6.1`` to ``protobuf 3.0.0``.
+   This may affect you upgrade from previous version of bigartm.
+   Pelase report any issues at `bigartm-users@googlegroups.com <https://groups.google.com/group/bigartm-users>`_.
+
+* Add support for python 3.0
+* Add hARTM class to support hierarchy model
+* Add HierarchySparsingTheta for advanced inference of hierarchical models
+
 v0.8.1
 ------
 
