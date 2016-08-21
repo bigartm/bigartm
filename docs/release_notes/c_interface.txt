@@ -1,6 +1,15 @@
 Changes in c_interface
 ======================
 
+v0.8.2
+------
+
+.. warning::
+
+   BigARTM 3rdparty dependency had been upgraded from ``protobuf 2.6.1`` to ``protobuf 3.0.0``.
+   This may affect you upgrade from previous version of bigartm.
+   Pelase report any issues at `bigartm-users@googlegroups.com <https://groups.google.com/group/bigartm-users>`_.
+
 v0.8.0
 ------
 
