@@ -38,7 +38,8 @@ def test_func():
         
         level0.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
         
-        level1 = hier.add_level(num_topics=num_topics_level1, parent_level_weight=parent_level_weight, tmp_files_path=parent_batch_folder)
+        hier.tmp_files_path = parent_batch_folder
+        level1 = hier.add_level(num_topics=num_topics_level1, parent_level_weight=parent_level_weight)
         
         level1.initialize(dictionary=dictionary)
         

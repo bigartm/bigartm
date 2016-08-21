@@ -21,7 +21,6 @@ class hARTM(object):
         :Description: a class for constructing topic hierarchy that is
                       a sequence of tied artm.ARTM() models (levels)
 
-        Common parameters for all hierarchy levels:
         :param int num_processors: how many threads will be used for model training, if\
                                  not specified then number of threads will be detected by the lib
         :param dict class_ids: list of class_ids and their weights to be used in model,\
@@ -320,6 +319,7 @@ class hARTM(object):
         """
         for level in self._levels:
             level.dispose()
+        self._levels = []
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.dispose()
@@ -387,7 +387,7 @@ class hARTM(object):
         with open(info_filename[0]) as fin:
             info = pickle.load(fin)
         model_filenames = glob.glob(os.path.join(path, "*.model"))
-        if len({len(info["parent_level_weight"]) + 1, len(info["parent_level_weight"]) + 1, len(model_filenames) / 2}) > 1:
+        if len({len(info["parent_level_weight"]) + 1, len(model_filenames) / 2}) > 1:
             raise ValueError("Given path is not hARTM safe")
         self._levels = []
         sorted_model_filenames = sorted(model_filenames)
@@ -523,12 +523,12 @@ class ARTM_Level(artm.ARTM):
              * To get psi matrix use get_psi() method.
                Other methods are as in ARTM class.
         """
-        if not model_name in {"n_wt", "p_wt"}:
+        if model_name not in {"n_wt", "p_wt"}:
             raise ValueError(
                 "Parameter model_name should be either 'n_wt' or 'p_wt'")
         self._parent_model = parent_model
         self._phi_batch_weight = phi_batch_weight
-        self._level = 1 if not "_level" in dir(
+        self._level = 1 if "_level" not in dir(
             parent_model) else parent_model._level + 1
         self._name = "level" + str(self._level)
         self._phi_batch_path = os.path.join(
@@ -598,7 +598,8 @@ class ARTM_Level(artm.ARTM):
 
     def fit_offline(self, batch_vectorizer, num_collection_passes=1, *args, **kwargs):
         modified_batch_vectorizer = artm.BatchVectorizer(batches=[''], data_path=batch_vectorizer.data_path,
-                                                         batch_size=batch_vectorizer.batch_size, gather_dictionary=False)
+                                                         batch_size=batch_vectorizer.batch_size,
+                                                         gather_dictionary=False)
 
         del modified_batch_vectorizer.batches_list[0]
         del modified_batch_vectorizer.weights[0]
@@ -610,7 +611,7 @@ class ARTM_Level(artm.ARTM):
         modified_batch_vectorizer.weights.append(self._phi_batch_weight)
         # import_batches_args = artm.wrapper.messages_pb2.ImportBatchesArgs(
         #                           batch=[self.parent_batch])
-        #self._lib.ArtmImportBatches(self.master.master_id, import_batches_args)
+        # self._lib.ArtmImportBatches(self.master.master_id, import_batches_args)
 
         super(ARTM_Level, self).fit_offline(modified_batch_vectorizer, num_collection_passes=num_collection_passes,
                                             *args, **kwargs)
