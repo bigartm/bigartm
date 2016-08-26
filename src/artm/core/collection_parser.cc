@@ -74,6 +74,8 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
     pos = docword.tellg();
     std::getline(docword, str);
     if (!boost::starts_with(str.c_str(), "%")) {
+      // FIXME (JeanPaulShapo) there can be failures when reading from standard input
+      // there's no guarantee that seekg successfully move stream pointer, especially with std::cin
       docword.seekg(pos);
       break;
     }
@@ -115,26 +117,27 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   ::artm::Item* item = nullptr;
   int prev_item_id = -1;
 
-  int64_t total_token_weight = 0;
+  float total_token_weight = 0;
   int64_t total_items_count = 0;
   int token_weight_zero = 0;
+  int total_triples_count = 0;
 
   int item_id, token_id;
   float token_weight;
-  int index = 1;
-  std::getline(docword, str);  // skip end of previos line
+  int line_no = 1;
+  std::getline(docword, str);  // skip end of previous line
 
   while (!docword.eof()) {
     std::getline(docword, str);
     boost::algorithm::trim(str);
-    ++index;
+    ++line_no;
     if (str.empty()) continue;
 
     std::vector<std::string> strs;
     boost::split(strs, str, boost::is_any_of("\t "));
     if (strs.size() != 3) {
       std::stringstream ss;
-      ss << "Error at line" << index << " or " << index + 2 << ", file " << config_.docword_file_path()
+      ss << "Error at line" << line_no << " or " << line_no + 2 << ", file " << config_.docword_file_path()
          << ". Expected format: item_id token_id n_wd";
       BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
     }
@@ -150,7 +153,7 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
       std::stringstream ss;
       ss << "Failed to parse line '" << item_id << " " << (token_id + 1) << " " << token_weight << "' in "
          << config_.docword_file_path();
-      if (token_id == -1) {
+      if (token_id == -1 && config_.use_unity_based_indices()) {
         ss << ". wordID column appears to be zero-based in the docword file being parsed. "
            << "UCI format defines wordID column to be unity-based. "
            << "Please, set CollectionParserConfig.use_unity_based_indices=false "
@@ -207,7 +210,21 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   }
 
   LOG_IF(WARNING, token_weight_zero > 0) << "Found " << token_weight_zero << " tokens with zero "
-                                        << "occurrencies. All these tokens were ignored.";
+    << "occurrencies. All these tokens were ignored.";
+  { // Count number of missed tokens
+    auto missed_tokens = std::count_if(token_map->begin(), token_map->end(),
+        [](const TokenMap::value_type &token_info) {
+          return !(token_info.second.items_count);
+        });
+    // Warn if some tokens are not included in any document
+    LOG_IF(WARNING, missed_tokens) << missed_tokens << " aren't present in parsed collection";
+  }
+  // Warn if possible number of parsed documents doesn't equal to expected one
+  LOG_IF(WARNING, num_docs != total_items_count) << "Expected " << num_docs << " documents to parse, found "
+    << total_items_count;
+  // Warn if number of triples doesn't equal to expected one
+  LOG_IF(WARNING, num_tokens != total_triples_count) << "Expected " << num_tokens
+    << " triples describing collection, found " << total_triples_count;
 }
 
 CollectionParser::TokenMap CollectionParser::ParseVocabBagOfWordsUci() {
