@@ -9,73 +9,101 @@ from .wrapper import messages_pb2 as messages
 from .wrapper import constants
 
 
+REGULARIZERS = (
+    (
+        messages.SmoothSparseThetaConfig,
+        constants.RegularizerType_SmoothSparseTheta
+    ), (
+        messages.SmoothSparsePhiConfig,
+        constants.RegularizerType_SmoothSparsePhi
+    ), (
+        messages.DecorrelatorPhiConfig,
+        constants.RegularizerType_DecorrelatorPhi
+    ), (
+        messages.LabelRegularizationPhiConfig,
+        constants.RegularizerType_LabelRegularizationPhi
+    ), (
+        messages.SpecifiedSparsePhiConfig,
+        constants.RegularizerType_SpecifiedSparsePhi
+    ), (
+        messages.ImproveCoherencePhiConfig,
+        constants.RegularizerType_ImproveCoherencePhi
+    ), (
+        messages.SmoothPtdwConfig,
+        constants.RegularizerType_SmoothPtdw
+    ), (
+        messages.TopicSelectionThetaConfig,
+        constants.RegularizerType_TopicSelectionTheta
+    ), (
+        messages.BitermsPhiConfig,
+        constants.RegularizerType_BitermsPhi
+    ), (
+        messages.HierarchySparsingThetaConfig,
+        constants.RegularizerType_HierarchySparsingTheta
+    ),
+)
+
+SCORES = (
+    (
+        constants.ScoreType_Perplexity,
+        messages.PerplexityScoreConfig,
+        messages.PerplexityScore
+    ), (
+        constants.ScoreType_SparsityTheta,
+        messages.SparsityThetaScoreConfig,
+        messages.SparsityThetaScore
+    ), (
+        constants.ScoreType_SparsityPhi,
+        messages.SparsityPhiScoreConfig,
+        messages.SparsityPhiScore
+    ), (
+        constants.ScoreType_ItemsProcessed,
+        messages.ItemsProcessedScoreConfig,
+        messages.ItemsProcessedScore
+    ), (
+        constants.ScoreType_TopTokens,
+        messages.TopTokensScoreConfig,
+        messages.TopTokensScore
+    ), (
+        constants.ScoreType_ThetaSnippet,
+        messages.ThetaSnippetScoreConfig,
+        messages.ThetaSnippetScore
+    ), (
+        constants.ScoreType_TopicKernel,
+        messages.TopicKernelScoreConfig,
+        messages.TopicKernelScore
+    ), (
+        constants.ScoreType_TopicMassPhi,
+        messages.TopicMassPhiScoreConfig,
+        messages.TopicMassPhiScore
+    ), (
+        constants.ScoreType_ClassPrecision,
+        messages.ClassPrecisionScoreConfig,
+        messages.ClassPrecisionScore
+    ), (
+        constants.ScoreType_BackgroundTokensRatio,
+        messages.BackgroundTokensRatioScoreConfig,
+        messages.BackgroundTokensRatioScore
+    ),
+)
+
+
 def _regularizer_type(config):
-    if isinstance(config, messages.SmoothSparseThetaConfig):
-        return constants.RegularizerType_SmoothSparseTheta
-    elif isinstance(config, messages.SmoothSparsePhiConfig):
-        return constants.RegularizerType_SmoothSparsePhi
-    elif isinstance(config, messages.DecorrelatorPhiConfig):
-        return constants.RegularizerType_DecorrelatorPhi
-    elif isinstance(config, messages.LabelRegularizationPhiConfig):
-        return constants.RegularizerType_LabelRegularizationPhi
-    elif isinstance(config, messages.SpecifiedSparsePhiConfig):
-        return constants.RegularizerType_SpecifiedSparsePhi
-    elif isinstance(config, messages.ImproveCoherencePhiConfig):
-        return constants.RegularizerType_ImproveCoherencePhi
-    elif isinstance(config, messages.SmoothPtdwConfig):
-        return constants.RegularizerType_SmoothPtdw
-    elif isinstance(config, messages.TopicSelectionThetaConfig):
-        return constants.RegularizerType_TopicSelectionTheta
-    elif isinstance(config, messages.BitermsPhiConfig):
-        return constants.RegularizerType_BitermsPhi
-    elif isinstance(config, messages.HierarchySparsingThetaConfig):
-        return constants.RegularizerType_HierarchySparsingTheta
+    for mcls, const in REGULARIZERS:
+        if isinstance(config, mcls):
+            return const
 
 
 def _score_type(config):
-    if isinstance(config, messages.PerplexityScoreConfig):
-        return constants.ScoreType_Perplexity
-    elif isinstance(config, messages.SparsityThetaScoreConfig):
-        return constants.ScoreType_SparsityTheta
-    elif isinstance(config, messages.SparsityPhiScoreConfig):
-        return constants.ScoreType_SparsityPhi
-    elif isinstance(config, messages.ItemsProcessedScoreConfig):
-        return constants.ScoreType_ItemsProcessed
-    elif isinstance(config, messages.TopTokensScoreConfig):
-        return constants.ScoreType_TopTokens
-    elif isinstance(config, messages.ThetaSnippetScoreConfig):
-        return constants.ScoreType_ThetaSnippet
-    elif isinstance(config, messages.TopicKernelScoreConfig):
-        return constants.ScoreType_TopicKernel
-    elif isinstance(config, messages.TopicMassPhiScoreConfig):
-        return constants.ScoreType_TopicMassPhi
-    elif isinstance(config, messages.ClassPrecisionScoreConfig):
-        return constants.ScoreType_ClassPrecision
-    elif isinstance(config, messages.BackgroundTokensRatioScoreConfig):
-        return constants.ScoreType_BackgroundTokensRatio
+    for const, ccls, _ in SCORES:
+        if isinstance(config, ccls):
+            return const
 
 
 def _score_data_func(score_data_type):
-    if score_data_type == constants.ScoreType_Perplexity:
-        return messages.PerplexityScore
-    elif score_data_type == constants.ScoreType_SparsityTheta:
-        return messages.SparsityThetaScore
-    elif score_data_type == constants.ScoreType_SparsityPhi:
-        return messages.SparsityPhiScore
-    elif score_data_type == constants.ScoreType_ItemsProcessed:
-        return messages.ItemsProcessedScore
-    elif score_data_type == constants.ScoreType_TopTokens:
-        return messages.TopTokensScore
-    elif score_data_type == constants.ScoreType_ThetaSnippet:
-        return messages.ThetaSnippetScore
-    elif score_data_type == constants.ScoreType_TopicKernel:
-        return messages.TopicKernelScore
-    elif score_data_type == constants.ScoreType_TopicMassPhi:
-        return messages.TopicMassPhiScore
-    elif score_data_type == constants.ScoreType_ClassPrecision:
-        return messages.ClassPrecisionScore
-    elif score_data_type == constants.ScoreType_BackgroundTokensRatio:
-        return messages.BackgroundTokensRatioScore
+    for const, _, mfunc in SCORES:
+        if score_data_type == const:
+            return mfunc
 
 
 def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors,
