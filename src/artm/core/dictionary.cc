@@ -547,6 +547,30 @@ float Dictionary::CountTopicCoherence(const std::vector<core::Token>& tokens_to_
   return 2.0f / (k * (k - 1)) * coherence_value;
 }
 
+bool DictionaryEntry::operator==(const DictionaryEntry& rhs) const {
+  if (token_ == rhs.token_ &&
+    token_value_ == rhs.token_value_ &&
+    token_tf_ == rhs.token_tf_ &&
+    token_df_ == rhs.token_df_) return true;
+  return false;
+}
+
+bool DictionaryEntry::operator!=(const DictionaryEntry& rhs) const {
+  return !(*this == rhs);
+}
+
+bool Dictionary::operator==(const Dictionary& rhs) const {
+  if (entries_ == rhs.entries_ &&
+    cooc_values_ == rhs.cooc_values_ &&
+    num_items_in_collection_ == rhs.num_items_in_collection_) return true;
+  return false;
+}
+
+bool Dictionary::operator!=(const Dictionary& rhs) const {
+  return !(*this == rhs);
+}
+
+
 }  // namespace core
 }  // namespace artm
 // vim: set ts=2 sw=2:

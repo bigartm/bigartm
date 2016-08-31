@@ -9,6 +9,11 @@
 #include <unordered_map>
 #include <utility>
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/version.hpp"
+#include "boost/serialization/unordered_map.hpp"
+#include "boost/serialization/vector.hpp"
+
 #include "artm/core/common.h"
 #include "artm/core/thread_safe_holder.h"
 #include "artm/core/token.h"
@@ -27,13 +32,27 @@ typedef ThreadSafeCollectionHolder<std::string, Dictionary> ThreadSafeDictionary
 // DictionaryEntry represents one entry in the dictionary, associated with a specific token.
 class DictionaryEntry {
  public:
+  // Default constructor - used for serialization only
+  DictionaryEntry() : token_(), token_value_(0.0f), token_tf_(0.0f), token_df_(0.0f) {}
+
   DictionaryEntry(Token token, float value, float tf, float df)
     : token_(token), token_value_(value), token_tf_(tf), token_df_(df) { }
+
+  bool operator==(const DictionaryEntry& rhs) const;
+  bool operator!=(const DictionaryEntry& rhs) const;
 
   const Token& token() const { return token_; }
   float token_value() const { return token_value_; }
   float token_tf() const { return token_tf_; }
   float token_df() const { return token_df_; }
+
+  template<class Archive>
+  void serialize(Archive &ar, const unsigned int version) {  // NOLINT
+    ar & token_;
+    ar & token_value_;
+    ar & token_tf_;
+    ar & token_df_;
+  }
 
  private:
   Token token_;
@@ -52,6 +71,9 @@ class Dictionary {
  public:
   explicit Dictionary(const artm::DictionaryData& data);
   Dictionary() { }
+
+  bool operator==(const Dictionary& rhs) const;
+  bool operator!=(const Dictionary& rhs) const;
 
   static std::vector<std::shared_ptr<artm::DictionaryData> > ImportData(const ImportDictionaryArgs& args);
 
@@ -84,6 +106,18 @@ class Dictionary {
 
   float CountTopicCoherence(const std::vector<core::Token>& tokens_to_score);
 
+  template<class Archive>
+  void serialize(Archive &ar, const unsigned int version) {  // NOLINT
+    ar & entries_;
+    ar & cooc_values_;
+    ar & num_items_in_collection_;
+
+    if (Archive::is_loading::value) {
+      for (int token_index = 0; token_index < entries_.size(); ++token_index)
+        token_index_.insert(std::make_pair(entries_[token_index].token(), token_index));
+    }
+  }
+
  private:
   std::vector<DictionaryEntry> entries_;
   std::unordered_map<Token, int, TokenHasher> token_index_;
@@ -93,5 +127,8 @@ class Dictionary {
 
 }  // namespace core
 }  // namespace artm
+
+BOOST_CLASS_VERSION(::artm::core::DictionaryEntry, 0)  // NOLINT
+BOOST_CLASS_VERSION(::artm::core::Dictionary, 0)  // NOLINT
 
 #endif  // SRC_ARTM_CORE_DICTIONARY_H_
