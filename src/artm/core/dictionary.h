@@ -11,7 +11,6 @@
 
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/version.hpp"
-#include "boost/serialization/unordered_map.hpp"
 #include "boost/serialization/vector.hpp"
 
 #include "artm/core/common.h"
@@ -109,8 +108,36 @@ class Dictionary {
   template<class Archive>
   void serialize(Archive &ar, const unsigned int version) {  // NOLINT
     ar & entries_;
-    ar & cooc_values_;
     ar & num_items_in_collection_;
+
+    // ar & cooc_values_; //
+    if (Archive::is_loading::value) {
+      size_t cooc_size;
+      ar & cooc_size;
+      for (size_t cooc_item = 0; cooc_item < cooc_size; cooc_item++) {
+        int left, right;
+        float value;
+        ar & left;
+        ar & right;
+        ar & value;
+        cooc_values_[left][right] = value;
+      }
+    } else {
+      size_t cooc_size = 0;
+      for (auto& iter1 : cooc_values_) cooc_size += iter1.second.size();
+      ar & cooc_size;
+      for (auto& iter1 : cooc_values_) {
+        for (auto& iter2 : iter1.second) {
+          int left = iter1.first;
+          int right = iter2.first;
+          float value = iter2.second;
+          ar & left;
+          ar & right;
+          ar & value;
+        }
+      }
+    }
+    // ar & cooc_values_; //
 
     if (Archive::is_loading::value) {
       for (int token_index = 0; token_index < entries_.size(); ++token_index)
