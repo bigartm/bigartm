@@ -241,6 +241,7 @@ struct artm_options {
   std::string topics;
   std::string use_modality;
   std::string predict_class;
+  time_t rand_seed;
 
   // Learning
   int num_collection_passes;
@@ -1046,6 +1047,8 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     initialize_model_args.set_model_name(pwt_model_name);
     initialize_model_args.mutable_topic_name()->CopyFrom(master_config.topic_name());
     initialize_model_args.set_dictionary_name(options.main_dictionary_name);
+    // specify random seed
+    initialize_model_args.set_seed(static_cast< int >(options.rand_seed));
     master_component->InitializeModel(initialize_model_args);
 
     if (options.update_every > 0) {
@@ -1260,6 +1263,7 @@ int main(int argc, char * argv[]) {
     po::options_description ohter_options("Other options");
     ohter_options.add_options()
       ("help,h", "display this help message")
+      ("rand-seed", po::value< time_t >(&options.rand_seed), "specify seed for random number generator, use system timer when not specified")
       ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response file")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
