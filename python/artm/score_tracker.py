@@ -1,14 +1,15 @@
 from six import iteritems
 from six.moves import zip
 
+
 __all__ = [
-    'SparsityPhiScoreTracker',
-    'ItemsProcessedScoreTracker',
     'PerplexityScoreTracker',
     'SparsityThetaScoreTracker',
+    'SparsityPhiScoreTracker',
+    'ItemsProcessedScoreTracker',
+    'TopTokensScoreTracker',
     'ThetaSnippetScoreTracker',
     'TopicKernelScoreTracker',
-    'TopTokensScoreTracker',
     'TopicMassPhiScoreTracker',
     'ClassPrecisionScoreTracker',
     'BackgroundTokensRatioScoreTracker'
