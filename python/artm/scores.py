@@ -8,14 +8,15 @@ from .wrapper import constants as const
 GLOB_EPS = 1e-37
 
 __all__ = [
-    'SparsityPhiScore',
-    'ItemsProcessedScore',
     'PerplexityScore',
     'SparsityThetaScore',
+    'SparsityPhiScore',
+    'ItemsProcessedScore',
+    'TopTokensScore',
     'ThetaSnippetScore',
     'TopicKernelScore',
-    'TopTokensScore',
     'TopicMassPhiScore',
+    'ClassPrecisionScore',
     'BackgroundTokensRatioScore'
 ]
 
@@ -146,7 +147,7 @@ class BaseScore(object):
     def name(self, name):
         raise RuntimeError("It's impossible to change score name")
 
-    @name.setter
+    @model_name.setter
     def model_name(self, model_name):
         raise RuntimeError("It's impossible to change score model_name")
 
@@ -617,6 +618,45 @@ class TopicMassPhiScore(BaseScore):
     @eps.setter
     def eps(self, eps):
         _reconfigure_field(self, eps, 'eps')
+
+
+class ClassPrecisionScore(BaseScore):
+    _config_message = messages.ClassPrecisionScoreConfig
+    _type = const.ScoreType_ClassPrecision
+
+    def __init__(self, name=None):
+        """
+        :param str name: the identifier of score, will be auto-generated if not specified
+        """
+        BaseScore.__init__(self,
+                           name=name,
+                           class_id=None,
+                           topic_names=None,
+                           model_name=None)
+
+    @property
+    def topic_names(self):
+        raise KeyError('No topic_names parameter')
+
+    @property
+    def class_id(self):
+        raise KeyError('No class_id parameter')
+
+    @property
+    def model_name(self):
+        raise KeyError('No model_name parameter')
+
+    @topic_names.setter
+    def topic_names(self, topic_names):
+        raise KeyError('No topic_names parameter')
+
+    @class_id.setter
+    def class_id(self, class_id):
+        raise KeyError('No class_id parameter')
+
+    @model_name.setter
+    def model_name(self, model_name):
+        raise KeyError('No model_name parameter')
 
 
 class BackgroundTokensRatioScore(BaseScore):
