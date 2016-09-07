@@ -764,12 +764,32 @@ class ScoreHelper {
        if (output_.is_open()) output_ << sep << score_value;
      }
      if (output_.is_open()) output_ << std::endl;
-     std::cerr << "================= Iteration " << iter << " took " << elapsed_ms << std::endl;
+     std::cerr << "================= Iteration " << iter << " took " << formatMilliseconds(elapsed_ms) << std::endl;
    }
 
    void showScores() {
      for (auto& score_name : score_name_)
        showScore(score_name.first, score_name.second);
+   }
+
+   static std::string formatMilliseconds(long long elapsed) noexcept {
+     if (elapsed < 0) {
+       return "<error>";
+     }
+     int ms = elapsed % 1000;
+     elapsed /= 1000;
+     int s = elapsed % 60;
+     elapsed /= 60;
+     int m = elapsed % 60;
+     elapsed /= 60;
+     int h = elapsed % 24;
+     int days = elapsed / 24;
+     char buffer[128] = {};
+     sprintf(buffer, "%02d:%02d:%02d.%03d", h, m, s, ms);
+     if (days > 0) {
+       return std::to_string(days) + " days " + buffer;
+     }
+     return buffer;
    }
 };
 
