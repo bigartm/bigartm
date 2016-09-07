@@ -241,6 +241,7 @@ struct artm_options {
   std::string topics;
   std::string use_modality;
   std::string predict_class;
+  time_t rand_seed;
 
   // Learning
   int num_collection_passes;
@@ -649,7 +650,7 @@ class ScoreHelper {
      score_name_.push_back(std::make_pair(score, score_config.type()));
    }
 
-   std::string showScore(std::string& score_name, ::artm::ScoreType type) {
+   std::string showScore(const std::string& score_name, ::artm::ScoreType type) {
      std::string retval;
      GetScoreValueArgs get_score_args;
      get_score_args.set_score_name(score_name);
@@ -749,8 +750,8 @@ class ScoreHelper {
      CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
      const std::string sep = artm_options_.csv_separator;
      output_ << "Iteration" << sep << "Time(ms)";
-     for (int i = 0; i < score_name_.size(); ++i) {
-       output_ << sep << escape.apply(score_name_[i].first);
+     for (const auto& score_name : score_name_) {
+       output_ << sep << escape.apply(score_name.first);
      }
      output_ << std::endl;
    }
@@ -759,8 +760,8 @@ class ScoreHelper {
      CsvEscape escape(artm_options_.csv_separator.size() == 1 ? artm_options_.csv_separator[0] : '\0');
      const std::string sep = artm_options_.csv_separator;
      if (output_.is_open()) output_ << iter << sep << elapsed_ms;
-     for (int i = 0; i < score_name_.size(); ++i) {
-       std::string score_value = showScore(score_name_[i].first, score_name_[i].second);
+     for (const auto& score_name: score_name_) {
+       std::string score_value = showScore(score_name.first, score_name.second);
        if (output_.is_open()) output_ << sep << score_value;
      }
      if (output_.is_open()) output_ << std::endl;
@@ -768,7 +769,7 @@ class ScoreHelper {
    }
 
    void showScores() {
-     for (auto& score_name : score_name_)
+     for (const auto& score_name : score_name_)
        showScore(score_name.first, score_name.second);
    }
 
@@ -1066,6 +1067,8 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     initialize_model_args.set_model_name(pwt_model_name);
     initialize_model_args.mutable_topic_name()->CopyFrom(master_config.topic_name());
     initialize_model_args.set_dictionary_name(options.main_dictionary_name);
+    // specify random seed
+    initialize_model_args.set_seed(static_cast< int >(options.rand_seed));
     master_component->InitializeModel(initialize_model_args);
 
     if (options.update_every > 0) {
@@ -1280,6 +1283,7 @@ int main(int argc, char * argv[]) {
     po::options_description ohter_options("Other options");
     ohter_options.add_options()
       ("help,h", "display this help message")
+      ("rand-seed", po::value< time_t >(&options.rand_seed), "specify seed for random number generator, use system timer when not specified")
       ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response file")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
