@@ -773,7 +773,7 @@ class ScoreHelper {
        showScore(score_name.first, score_name.second);
    }
 
-   static std::string formatMilliseconds(long long elapsed) noexcept {
+   static std::string formatMilliseconds(long long elapsed) {
      if (elapsed < 0) {
        return "<error>";
      }
@@ -1258,7 +1258,7 @@ int main(int argc, char * argv[]) {
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
       ("reuse-theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
-      ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
+      ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken()->zero_tokens(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
       ("threads", po::value(&options.threads)->default_value(-1), "number of concurrent processors (default: auto-detect)")
       ("async", po::bool_switch(&options.async)->default_value(false), "invoke asynchronous version of the online algorithm")
     ;
@@ -1343,6 +1343,7 @@ int main(int argc, char * argv[]) {
     // options.read_uci_vocab   = "D:\\datasets\\vocab.kos.txt";
 
     bool show_help = (vm.count("help") > 0);
+    bool show_help_regularizer = show_help && (vm.count("regularizer") > 0);
 
     // Show help if user neither provided batch folder, nor docword/vocab files
     if (options.read_vw_corpus.empty() &&
@@ -1351,6 +1352,39 @@ int main(int argc, char * argv[]) {
         options.load_model.empty() &&
         options.use_dictionary.empty())
       show_help = true;
+
+    if (show_help_regularizer) {
+      std::cerr << "List of regularizers available in BigARTM CLI:\n\n";
+      std::cerr << "\t--regularizer \"tau SmoothTheta #topics\"\n";
+      std::cerr << "\t--regularizer \"tau SparseTheta #topics\"\n";
+      std::cerr << "\t--regularizer \"tau SmoothPhi #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau SparsePhi #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau Decorrelation #topics @class_ids\"\n";
+      std::cerr << "\nList of regularizers available in BigARTM, but not exposed in CLI:\n\n";
+      std::cerr << "\t--regularizer \"tau TopicSelectionTheta\"\n";
+      std::cerr << "\t--regularizer \"tau SpecifiedSparsePhi\"\n";
+      std::cerr << "\t--regularizer \"tau LabelRegularizationPhi\"\n";
+      std::cerr << "\t--regularizer \"tau ImproveCoherencePhi\"\n";
+      std::cerr << "\t--regularizer \"tau BitermsPhi\"\n";
+      std::cerr << "\t--regularizer \"tau SmoothPtdw\"\n";
+      std::cerr << "\t--regularizer \"tau HierarchySparsingTheta\"\n\n";
+      std::cerr << "If you are interested to see any of these regularizers in BigARTM CLI please send a message to\n";
+      std::cerr << "\tbigartm-users@googlegroups.com.\n\n";
+      std::cerr << "By default all regularizers act on the full set of topics and modalities.\n";
+      std::cerr << "To limit action onto specific set of topics use hash sign (#), followed by\n";
+      std::cerr << "list of topics (for example, #topic1;topic2) or topic groups (#obj).\n";
+      std::cerr << "Similarly, to limit action onto specific set of class ids use at sign (@),\n";
+      std::cerr << "by the list of class ids (for example, @default_class).\n";
+      std::cerr << "Some regularizers accept a dictionary. To specify the dictionary use exclamation mark (!),\n";
+      std::cerr << "followed by the path to the dictionary(.dict file in your file system).\n";
+      std::cerr << "Depending on regularizer the dictinoary can be either optional or required.\n";
+      std::cerr << "Some regularizers expect an dictinoary with tokens and their frequencies;\n";
+      std::cerr << "Other regularizers expect an dictinoary with tokens co-occurencies;\n";
+      std::cout << "For more information about regularizers refer to wiki-page:\n";
+      std::cout << "\n\thttps://github.com/bigartm/bigartm/wiki/Implemented-regularizers\n\n";
+      std::cerr << "To get full help run `bigartm --help` without --regularizer switch.\n";
+      return 0;
+    }
 
     if (show_help) {
       std::cerr << all_options;
@@ -1410,7 +1444,7 @@ int main(int argc, char * argv[]) {
       std::cerr << std::endl;
       std::cerr << "* Configure logger to output into stderr:\n";
       std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
-      return 1;
+      return 0;
     }
 
     fixScoreLevel(&options);
