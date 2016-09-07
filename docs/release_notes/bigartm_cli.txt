@@ -1,6 +1,11 @@
 Changes in BigARTM CLI
 ======================
 
+v0.8.2
+------
+
+* added option ``--rand-seed`` to initialize random number generator; without this options, RNG will be set using system time
+
 v0.8.0
 ------
 
