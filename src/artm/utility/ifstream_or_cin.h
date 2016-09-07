@@ -34,6 +34,17 @@ class ifstream_or_cin {
 
   std::istream& get_stream() { return file_.is_open() ? file_ : std::cin; }
 
+  size_t size() {
+    if (!file_.is_open()) {
+      return 0;
+    }
+    size_t pos = file_.tellg();
+    file_.seekg(0, std::ios::end);
+    size_t size = file_.tellg();
+    file_.seekg(pos, std::ios::beg);
+    return size;
+  }
+
  private:
   boost::iostreams::stream<mapped_file_source> file_;
 };

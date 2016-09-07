@@ -20,7 +20,7 @@ set(GENERATED_PROTO_FILES ${GENERATED_PROTO_FILES}
   ${CMAKE_CURRENT_LIST_DIR}/messages.pb.h
   ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.cc
   ${CMAKE_CURRENT_LIST_DIR}/core/internals.pb.h)
-    
+
 set_source_files_properties(${GENERATED_PROTO_FILES} PROPERTIES GENERATED TRUE)
 
 if (MSVC)
@@ -44,8 +44,15 @@ set(ARTM_VERSION_PATCH 1)
 # to the source code
 configure_file (
   "${CMAKE_CURRENT_LIST_DIR}/version.h.in"
-  "${CMAKE_CURRENT_LIST_DIR}/version.h"
+  "${CMAKE_CURRENT_BINARY_DIR}/version.h"
   )
+
+configure_file(
+  "${CMAKE_CURRENT_LIST_DIR}/utility/progress_printer.cc.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/utility/progress_printer.cc"
+  )
+
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/..")
 
 # make separate objective files for every 'external' *.pb.cc file
 # rationale - compiling every *.pb.cc file for different targets
@@ -154,6 +161,8 @@ set(SRC_LIST
 	utility/blas.cc
 	utility/blas.h
 	utility/ifstream_or_cin.h
+	${CMAKE_CURRENT_BINARY_DIR}/utility/progress_printer.cc
+	utility/progress_printer.h
 )
 
 FILE(GLOB_RECURSE SRC_LIST_OTHER
