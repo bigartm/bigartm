@@ -1259,7 +1259,7 @@ int main(int argc, char * argv[]) {
       ("kappa", po::value(&options.kappa)->default_value(0.7f), "[online algorithm] exponent option from online update formula")
       ("reuse-theta", po::bool_switch(&options.b_reuse_theta)->default_value(false), "reuse theta between iterations")
       ("regularizer", po::value< std::vector<std::string> >(&options.regularizer)->multitoken(), "regularizers (SmoothPhi,SparsePhi,SmoothTheta,SparseTheta,Decorrelation)")
-      ("threads", po::value(&options.threads)->default_value(0), "number of concurrent processors (default: auto-detect)")
+      ("threads", po::value(&options.threads)->default_value(-1), "number of concurrent processors (default: auto-detect)")
       ("async", po::bool_switch(&options.async)->default_value(false), "invoke asynchronous version of the online algorithm")
     ;
 
