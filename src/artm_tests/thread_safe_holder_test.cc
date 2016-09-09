@@ -2,8 +2,11 @@
 
 #include "artm/core/thread_safe_holder.h"
 
-#include <boost/thread/mutex.hpp>
-#include <boost/utility.hpp>
+#include <future>  // NOLINT
+
+#include "boost/thread/mutex.hpp"
+#include "boost/thread/future.hpp"
+#include "boost/utility.hpp"
 
 #include "gtest/gtest.h"
 
@@ -28,4 +31,20 @@ TEST(ThreadSafeHolder, Basic) {
   EXPECT_FALSE(collection_holder.has_key(key3));
   collection_holder.erase(key1);
   EXPECT_FALSE(collection_holder.has_key(key1));
+}
+
+// To run this particular test:
+// artm_tests.exe --gtest_filter=Async.*
+TEST(Async, Boost) {
+  int input = 123;
+  boost::unique_future<int> fut = boost::async(boost::launch::async, [input](){ return input; });
+  int output = fut.get();
+  ASSERT_EQ(input, output);
+}
+
+TEST(Async, Std) {
+  int input = 123;
+  std::future<int> fut = std::async(std::launch::async, [input](){ return input; });
+  int output = fut.get();
+  ASSERT_EQ(input, output);
 }
