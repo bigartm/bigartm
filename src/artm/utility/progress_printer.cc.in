@@ -17,19 +17,13 @@
 namespace artm {
 namespace utility {
 
-ProgressPrinter::ProgressPrinter(size_t max) noexcept : max_(max), pos_(0) {
+ProgressPrinter::ProgressPrinter(size_t max) : max_(max), pos_(0) {
   if (!isatty(fileno(stderr))) {  // disable in non-interactive mode
     max_ = 0;
   }
-  #ifdef _WIN32
-  // Windows terminal does not support ANSI codes until 10
-  // http://superuser.com/a/1105718
-  // TODO(v.markovtsev): activate ANSI for Windows 10 via SetConsoleMode()
-  max_ = 0;
-  #endif
 }
 
-void ProgressPrinter::Add(int delta) noexcept {
+void ProgressPrinter::Add(int delta) {
   size_t npos = pos_ + delta;
   if (npos < pos_ && delta > 0) {  // max range overflow
     npos = max_;
@@ -39,7 +33,7 @@ void ProgressPrinter::Add(int delta) noexcept {
   Set(npos);
 }
 
-void ProgressPrinter::Set(size_t pos) noexcept {
+void ProgressPrinter::Set(size_t pos) {
   if (max_ == 0) {
     return;  // no-op, progress is disabled
   }
@@ -48,7 +42,7 @@ void ProgressPrinter::Set(size_t pos) noexcept {
   int pct = static_cast<int>((pos_ * 100) / max_);
   if (pct != prevpct) {
     // ANSI code \033[<N>D moves cursor to N positions backwards
-    fprintf(stderr, " %3d%%\033[5D", pct);
+    fprintf(stderr, " %3d%%\b\b\b\b\b", pct);
     fflush(stderr);
   }
 }

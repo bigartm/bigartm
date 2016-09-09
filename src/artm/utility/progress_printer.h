@@ -10,10 +10,10 @@ namespace utility {
 
 class ProgressPrinter {
  public:
-  explicit ProgressPrinter(size_t max) noexcept;
-  void Add(int delta) noexcept;
-  void Set(size_t pos) noexcept;
-  size_t max() const noexcept { return max_; }
+  explicit ProgressPrinter(size_t max);
+  void Add(int delta);
+  void Set(size_t pos);
+  size_t max() const { return max_; }
 
  private:
   size_t max_;
