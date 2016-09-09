@@ -36,9 +36,9 @@ option(BUILD_TESTS "Indicates whether to build artm_tests" ON)
 option(BUILD_BIGARTM_CLI "Indicates whether to build bigartm-CLI executable" ON)
 option(BUILD_INTERNAL_PYTHON_API "Indicates whether to build Python API" ON)
 
-if (MSVC)
+if (MSVC OR APPLE)
 set(PYTHON python CACHE INTERNAL "Python command")
-else (MSVC)
+else (MSVC OR APPLE)
 set(PYTHON python2 CACHE INTERNAL "Python command")
 endif (MSVC)
 
@@ -57,6 +57,9 @@ set(BUILD_gflags_nothreads_LIB OFF)
 set(rpcz_build_static ON)
 set(rpcz_build_shared ON)
 set(protobuf_BUILD_TESTS OFF)
+
+include(CheckIncludeFiles)
+check_include_files(unistd.h HAVE_UNISTD_H)
 
 # set compiler flags
 if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR

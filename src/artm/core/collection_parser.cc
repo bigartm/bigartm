@@ -20,6 +20,7 @@
 #include "glog/logging.h"
 
 #include "artm/utility/ifstream_or_cin.h"
+#include "artm/utility/progress_printer.h"
 
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
@@ -66,12 +67,14 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
     config_.name_type() == CollectionParserConfig_BatchNameType_Guid);
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
+  utility::ProgressPrinter progress(stream_or_cin.size());
 
   // Skip all lines starting with "%" and parse N, W, NNZ from the first line after that.
   auto pos = docword.tellg();
   std::string str;
   while (true) {
     pos = docword.tellg();
+    progress.Set(pos);
     std::getline(docword, str);
     if (!boost::starts_with(str.c_str(), "%")) {
       // FIXME (JeanPaulShapo) there can be failures when reading from standard input
@@ -366,12 +369,14 @@ void CollectionParser::ParseVowpalWabbit() {
     config_.name_type() == CollectionParserConfig_BatchNameType_Guid);
   ifstream_or_cin stream_or_cin(config_.docword_file_path());
   std::istream& docword = stream_or_cin.get_stream();
+  utility::ProgressPrinter progress(stream_or_cin.size());
 
   std::string str;
   int line_no = 0;
   while (!docword.eof()) {
     std::getline(docword, str);
     line_no++;
+    progress.Set(docword.tellg());
     if (docword.eof())
       break;
 

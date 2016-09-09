@@ -93,7 +93,7 @@ class ProgressScope {
      if (std::uncaught_exception()) {
        std::cerr << "Failed\n";
      } else {
-       std::cerr << "OK.\n";
+       std::cerr << "OK.  \n";  // the whitespaces are for a reason
      }
    }
 };
