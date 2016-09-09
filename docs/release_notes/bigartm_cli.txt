@@ -5,6 +5,7 @@ v0.8.2
 ------
 
 * added option ``--rand-seed`` to initialize random number generator; without this options, RNG will be set using system time
+* speedup parsing large files in VowpalWabbit format
 
 v0.8.0
 ------

@@ -48,3 +48,24 @@ TEST(Async, Std) {
   int output = fut.get();
   ASSERT_EQ(input, output);
 }
+
+TEST(Async, MultipleTasks) {
+  std::mutex lock;
+  int counter = 0;
+
+  auto func = [&counter, &lock](){
+    {
+      std::lock_guard<std::mutex> guard(lock);
+      counter++;
+    }
+  };
+
+  const int num_threads = 4;
+  std::vector<std::shared_future<void>> tasks;
+  for (int i = 0; i < num_threads; i++)
+    tasks.push_back(std::move(std::async(std::launch::async, func)));
+  for (int i = 0; i < num_threads; i++)
+    tasks[i].wait();
+
+  ASSERT_EQ(counter, num_threads);
+}
