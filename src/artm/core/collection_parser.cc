@@ -376,9 +376,20 @@ void CollectionParser::ParseVowpalWabbit() {
   std::mutex lock;
   int global_line_no = 0;
 
+  // The function defined below works as follows:
+  // 1. Acquire lock for reading from docword file
+  // 2. Read num_items_per_batch lines from docword file, and store them in a local buffer (vector<string>)
+  // 3. Release the lock
+  // 4. Parse strings, form a batch, and save it to disk
+  // Steps 1-4 are repeated in a while loop until there is no content left in docword file.
+  // Multiple copies of the function can work in parallel.
   auto func = [&docword, &global_line_no, &progress, &batch_name_generator, &lock, config]() {
     while (true) {
+      // The following variable remembers at which line the batch has started.
+      // It helps to create informative error message (including line number)
+      // if later the code discovers a problem when parsing the line.
       int first_line_no_for_batch = -1;
+
       std::vector<std::string> all_strs_for_batch;
       std::string batch_name;
       BatchCollector batch_collector;
@@ -480,6 +491,11 @@ void CollectionParser::ParseVowpalWabbit() {
     }
   }
 
+  Helpers::CreateFolderIfNotExists(config.target_folder());
+
+  // The func may throw an exception if docword is malformed.
+  // This exception will be re-thrown on the main thread.
+  // http://stackoverflow.com/questions/14222899/exception-propagation-and-stdfuture
   std::vector<std::shared_future<void>> tasks;
   for (int i = 0; i < num_threads; i++)
     tasks.push_back(std::move(std::async(std::launch::async, func)));

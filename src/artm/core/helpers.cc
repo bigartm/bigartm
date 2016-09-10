@@ -195,15 +195,18 @@ void Helpers::LoadMessage(const std::string& full_filename,
     FixAndValidateMessage(batch);
 }
 
-void Helpers::SaveMessage(const std::string& filename, const std::string& disk_path,
-                          const ::google::protobuf::Message& message) {
+void Helpers::CreateFolderIfNotExists(const std::string& disk_path) {
   boost::filesystem::path dir(disk_path);
   if (!boost::filesystem::is_directory(dir)) {
     if (!boost::filesystem::create_directory(dir))
       BOOST_THROW_EXCEPTION(DiskWriteException("Unable to create folder '" + disk_path + "'"));
   }
+}
 
-  boost::filesystem::path full_filename = dir / boost::filesystem::path(filename);
+void Helpers::SaveMessage(const std::string& filename, const std::string& disk_path,
+                          const ::google::protobuf::Message& message) {
+  CreateFolderIfNotExists(disk_path);
+  boost::filesystem::path full_filename = boost::filesystem::path(disk_path) / boost::filesystem::path(filename);
   if (boost::filesystem::exists(full_filename))
     LOG(WARNING) << "File already exists: " << full_filename.string();
 
