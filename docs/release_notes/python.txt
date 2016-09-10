@@ -20,6 +20,14 @@ v0.8.2
 * Add support for python 3.0
 * Add hARTM class to support hierarchy model
 * Add HierarchySparsingTheta for advanced inference of hierarchical models
+* Enable replacing regularizers in ARTM-like models:
+
+  .. code-block:: python
+
+    # using operator[]-like style
+    model.regularizers['somename'] = SomeRegularizer(...)
+    # using keyword argument overwrite in add function
+    model.regularizers.add(SomeRegularizer(name='somename', ...), overwrite=True)
 
 v0.8.1
 ------
