@@ -61,6 +61,7 @@ int HandleErrorCode(int artm_error_code);
 
 void ParseCollection(const CollectionParserConfig& config);
 void ConfigureLogging(const ConfigureLoggingArgs& args);
+Batch LoadBatch(std::string filename);
 
 class Matrix {
  public:
