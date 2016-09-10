@@ -845,6 +845,13 @@ class BatchVectorizer {
       collection_parser_config.set_target_folder(batch_folder_);
       collection_parser_config.set_num_items_per_batch(options_.batch_size);
       collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);
+
+      // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
+      std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
+      for (auto& class_id : class_ids)
+        if (!class_id.first.empty())
+          collection_parser_config.add_class_id(class_id.first);
+
       ::artm::ParseCollection(collection_parser_config);
     }
     else if (!options_.use_batches.empty()) {
@@ -1445,6 +1452,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt \n";
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt \n";
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt \n";
+      std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-enru.txt.zip \n";
       std::cerr << std::endl;
       std::cerr << "* Parse docword and vocab files from UCI bag-of-word format; then fit topic model with 20 topics:\n";
       std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
@@ -1457,6 +1465,9 @@ int main(int argc, char * argv[]) {
       std::cerr << std::endl;
       std::cerr << "* Re-save batches back into VW format:\n";
       std::cerr << "  bigartm --use-batches mmro_batches --write-vw-corpus vw.mmro.txt\n";
+      std::cerr << std::endl;
+      std::cerr << "* Parse only specific modalities from VW file, and save them as a new VW file:\n";
+      std::cerr << "  bigartm --read-vw-corpus vw.wiki-enru.txt --use-modality @russian --write-vw-corpus vw.wiki-ru.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Load and filter the dictionary on document frequency; save the result into a new file:\n";
       std::cerr << "  bigartm --use-dictionary mmro.dict --dictionary-min-df 5 dictionary-max-df 40% --save-dictionary mmro-filter.dict\n";
