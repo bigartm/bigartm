@@ -1,5 +1,6 @@
 import uuid
 import random
+import warnings
 
 from . import wrapper
 from .wrapper import messages_pb2 as messages
@@ -70,11 +71,17 @@ class Regularizers(object):
         self._data = {}
         self._master = master
 
-    def add(self, regularizer):
-        if regularizer.name not in self._data:
-            self._master.create_regularizer(regularizer.name, regularizer.config, regularizer.tau, regularizer.gamma)
-            regularizer._master = self._master
-            self._data[regularizer.name] = regularizer
+    def add(self, regularizer, overwrite=False):
+        name = regularizer.name
+        if name in self._data and not overwrite:
+            raise AttributeError("Unable to replace existing regularizer.\
+If you really want to do it use overwrite=True argument")
+        # next statement represents ternary operator
+        register_func = (self._master.create_regularizer if name not in self._data else
+                         self._master.reconfigure_regularizer)
+        register_func(name, regularizer.config, regularizer.tau, regularizer.gamma)
+        regularizer._master = self._master
+        self._data[name] = regularizer
 
     def __getitem__(self, name):
         if name in self._data:
@@ -82,7 +89,23 @@ class Regularizers(object):
         else:
             raise KeyError('No regularizer with name {0}'.format(name))
 
+    def __setitem__(self, name, regularizer):
+        # typical usecase:
+        # regs[name] = SomeRegularizer(name=None, arguments)
+        # or
+        # regs[name] = SomeRegularizer(arguments)
+        # reset name of regularizer
+        # hack to make name substitution: we directly use _name
+        regularizer._name = name
+        self.add(regularizer, overwrite=True)
+
     def size(self):
+        warnings.warn(DeprecationWarning(
+            "Function 'size' is deprecated and will be removed soon,\
+ use built-in function 'len' instead"))
+        return len(self._data.keys())
+
+    def __len__(self):
         return len(self._data.keys())
 
     @property
