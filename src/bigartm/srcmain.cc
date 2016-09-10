@@ -481,7 +481,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 
   RegularizerConfig* config = master_config->add_regularizer_config();
 
-  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation, TopicSelection
+  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation, TopicSelection, LabelRegularization, ImproveCoherence, Biterms
   std::string regularizer_type = boost::to_lower_copy(strs[1]);
   if (regularizer_type == "smooththeta" || regularizer_type == "sparsetheta") {
     ::artm::SmoothSparseThetaConfig specific_config;
@@ -535,6 +535,48 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 
     // Force disable opt_for_avx because it is incompatible with TopicSelection regularizer
     master_config->set_opt_for_avx(false);
+  }
+  else if (regularizer_type == "labelregularization") {
+    ::artm::LabelRegularizationPhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_LabelRegularizationPhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+  }
+  else if (regularizer_type == "improvecoherence") {
+    ::artm::ImproveCoherencePhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_ImproveCoherencePhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+  }
+  else if (regularizer_type == "biterms") {
+    ::artm::BitermsPhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_BitermsPhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
   } else {
     throw std::invalid_argument(std::string("Unknown regularizer type: " + strs[1]));
   }
@@ -1431,11 +1473,11 @@ int main(int argc, char * argv[]) {
       std::cerr << "\t--regularizer \"tau SparsePhi #topics @class_ids !dictionary\"\n";
       std::cerr << "\t--regularizer \"tau Decorrelation #topics @class_ids\"\n";
       std::cerr << "\t--regularizer \"tau TopicSelection #topics\"\n";
+      std::cerr << "\t--regularizer \"tau LabelRegularization #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau ImproveCoherence #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau Biterms #topics @class_ids !dictionary\"\n";
       std::cerr << "\nList of regularizers available in BigARTM, but not exposed in CLI:\n\n";
       std::cerr << "\t--regularizer \"tau SpecifiedSparsePhi\"\n";
-      std::cerr << "\t--regularizer \"tau LabelRegularizationPhi\"\n";
-      std::cerr << "\t--regularizer \"tau ImproveCoherencePhi\"\n";
-      std::cerr << "\t--regularizer \"tau BitermsPhi\"\n";
       std::cerr << "\t--regularizer \"tau SmoothPtdw\"\n";
       std::cerr << "\t--regularizer \"tau HierarchySparsingTheta\"\n\n";
       std::cerr << "If you are interested to see any of these regularizers in BigARTM CLI please send a message to\n";
