@@ -14,6 +14,12 @@ namespace regularizer {
 
 void TopicSelectionThetaAgent::Apply(int item_index, int inner_iter, int topics_size,
                                      const float* n_td, float* r_td) const {
+  if (topic_value.empty()) {
+    LOG_FIRST_N(ERROR, 1) << "TopicSelectionThetaAgent regularizer can not be applied with opt_for_avx=False. "
+                          << "Regularization will be skipped.";
+    return;
+  }
+
   assert(topics_size == topic_weight.size());
   assert(inner_iter < alpha_weight.size());
   if (topics_size != topic_weight.size()) return;
@@ -23,6 +29,45 @@ void TopicSelectionThetaAgent::Apply(int item_index, int inner_iter, int topics_
     if (n_td[topic_id] > 0.0f)
       r_td[topic_id] += alpha_weight[inner_iter] * topic_weight[topic_id] * topic_value[topic_id] * n_td[topic_id];
   }
+}
+
+void TopicSelectionThetaAgent::Apply(int inner_iter,
+                                     const ::artm::utility::LocalThetaMatrix<float>& n_td,
+                                     ::artm::utility::LocalThetaMatrix<float>* r_td) const {
+  int topics_num = n_td.num_topics(), items_num = n_td.num_items();
+
+  assert(topics_num == topic_weight.size());
+  assert(inner_iter < alpha_weight.size());
+  if (topics_num != topic_weight.size()) return;
+  if (inner_iter >= alpha_weight.size()) return;
+
+  auto local_topic_value = topic_value;
+  if (local_topic_value.empty()) {
+    std::vector<double> n_t(topics_num, 0.0);
+    double n = 0.0;
+
+    // count n_t
+    for (int item_id = 0; item_id < items_num; ++item_id)
+      for (int topic_id = 0; topic_id < topics_num; ++topic_id)
+        n_t[topic_id] += n_td(topic_id, item_id);
+
+    // count n = sum(n_t)
+    for (int topic_id = 0; topic_id < topics_num; ++topic_id)
+      n += n_t[topic_id];
+
+    for (int topic_id = 0; topic_id < topics_num; ++topic_id) {
+      double val = n_t[topic_id] * topics_num;
+      local_topic_value.push_back((val > 0) ? static_cast<float>(n / val) : 0.0f);
+    }
+  }
+
+  for (int item_id = 0; item_id < items_num; ++item_id)
+    for (int topic_id = 0; topic_id < topics_num; ++topic_id)
+      if (n_td(topic_id, item_id) > 0.0f)
+        (*r_td)(topic_id, item_id) += alpha_weight[inner_iter] *
+                                      topic_weight[topic_id] *
+                                      local_topic_value[topic_id] *
+                                      n_td(topic_id, item_id);
 }
 
 TopicSelectionTheta::TopicSelectionTheta(const TopicSelectionThetaConfig& config) : config_(config) { }
@@ -57,8 +102,8 @@ TopicSelectionTheta::CreateRegularizeThetaAgent(const Batch& batch,
     for (int i = 0; i < topic_size; ++i)
       agent->topic_value.push_back(config_.topic_value(i));
   } else {
-    for (int i = 0; i < topic_size; ++i)
-      agent->topic_value.push_back(1.0f);
+    // Keep topic_value empty, and assume we are running in opt_for_avx mode.
+    // Then topic_value will be calculated from local theta matrix (per batch).
   }
 
   agent->topic_weight.resize(topic_size, 0.0f);

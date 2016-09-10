@@ -14,6 +14,7 @@ v0.8.2
 * speedup parsing large files in VowpalWabbit format
 * when ``--use-modality`` is specified, the batches saved with ``--save-batches`` will only include tokens from these modalities.
   Other tokens will be ignored during parsing. This option is implemented for both VW and UCI BOW formats.
+* implement ``TopicSelection`` regularizer in BigARTM CLI
 
 v0.8.0
 ------
