@@ -1,6 +1,12 @@
 Changes in Protobuf Messages
 ============================
 
+v0.8.2
+------
+
+* added ``CollectionParserConfig.num_threads`` to control the number of threads that perform parsing.
+  At the moment the feature is only implemented for VW-format.
+
 v0.8.0
 ------
 
