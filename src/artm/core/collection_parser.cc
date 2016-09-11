@@ -74,7 +74,6 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
   std::string str;
   while (true) {
     pos = docword.tellg();
-    progress.Set(pos);
     std::getline(docword, str);
     if (!boost::starts_with(str.c_str(), "%")) {
       // FIXME (JeanPaulShapo) there can be failures when reading from standard input
@@ -134,6 +133,7 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
     std::getline(docword, str);
     boost::algorithm::trim(str);
     ++line_no;
+    progress.Set(docword.tellg());
     if (str.empty()) continue;
 
     std::vector<std::string> strs;
