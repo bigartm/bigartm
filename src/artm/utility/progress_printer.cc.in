@@ -42,7 +42,19 @@ void ProgressPrinter::Set(size_t pos) {
   int pct = static_cast<int>((pos_ * 100) / max_);
   if (pct != prevpct) {
     // ANSI code \033[<N>D moves cursor to N positions backwards
-    fprintf(stderr, " %3d%%\b\b\b\b\b", pct);
+    // Windows terminal does not support ANSI codes until 10
+    // http://superuser.com/a/1105718
+    // As a workaround for windows we use \b\b\b\b\b.
+    // This sounds like a bug because \b stands for backspace, e.g. it should remove previous character,
+    // But on Windows terminal it only moves the cursor one position back (no erase).
+
+    fprintf(stderr, " %3d%%"
+#ifdef _WIN32
+                            "\b\b\b\b\b"
+#else
+                            "\033[5D"
+#endif
+                                        , pct);
     fflush(stderr);
   }
 }
