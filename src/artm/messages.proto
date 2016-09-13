@@ -428,6 +428,7 @@ message CollectionParserConfig {
   optional bool use_unity_based_indices = 6 [default = true];
   optional BatchNameType name_type = 7 [default = Guid];
   optional int32 num_threads = 8;
+  repeated string class_id = 9;
 }
 
 // Represents an argument of 'initialize model' operation

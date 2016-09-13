@@ -26,6 +26,7 @@
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
+#include "artm/core/protobuf_helpers.h"
 
 using ::artm::utility::ifstream_or_cin;
 
@@ -58,6 +59,13 @@ std::string BatchNameGenerator::next_name(const Batch& batch) {
   }
 
   return old_next_name;
+}
+
+static bool useClassId(const ClassId& class_id, const CollectionParserConfig& config) {
+  if (config.class_id_size() == 0) return true;
+  if (class_id.empty() || class_id == DefaultClass)
+    return is_member(std::string(), config.class_id()) || is_member(DefaultClass, config.class_id());
+  return is_member(class_id, config.class_id());
 }
 
 CollectionParser::CollectionParser(const ::artm::CollectionParserConfig& config)
@@ -190,6 +198,10 @@ void CollectionParser::ParseDocwordBagOfWordsUci(TokenMap* token_map) {
       total_items_count++;
       LOG_IF(INFO, total_items_count % 100000 == 0) << total_items_count << " documents parsed.";
     }
+
+    // Skip token when it is not among modalities that user has requested to parse
+    if (!useClassId((*token_map)[token_id].class_id, config_))
+      continue;
 
     auto iter = batch_dictionary.find(token_id);
     if (iter == batch_dictionary.end()) {
@@ -442,6 +454,10 @@ void CollectionParser::ParseVowpalWabbit() {
               class_id = DefaultClass;
             continue;
           }
+
+          // Skip token when it is not among modalities that user has requested to parse
+          if (!useClassId(class_id, config))
+            continue;
 
           float token_weight = 1.0f;
           std::string token = elem;

@@ -6,6 +6,9 @@ v0.8.2
 
 * added ``CollectionParserConfig.num_threads`` to control the number of threads that perform parsing.
   At the moment the feature is only implemented for VW-format.
+* added ``CollectionParserConfig.class_id`` (repeated string) to control which modalities should be parsed.
+  If token's class_id is not from this list, it will be excluded from the resulting batches.
+  When the list is empty, all modalities are included (this is the default behavior, as before).
 
 v0.8.0
 ------

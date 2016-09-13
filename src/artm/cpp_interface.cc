@@ -62,10 +62,8 @@ int ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
   return HandleErrorCode(func(master_id, blob.size(), StringAsArray(&blob)));
 }
 
-template<typename ResultT, typename FuncT>
-ResultT ArtmRequest(int master_id, FuncT func) {
-  int length = func(master_id);
-
+template<typename ResultT>
+ResultT ArtmCopyResult(int length) {
   std::string result_blob;
   result_blob.resize(length);
   HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
@@ -75,17 +73,16 @@ ResultT ArtmRequest(int master_id, FuncT func) {
   return result;
 }
 
+template<typename ResultT, typename FuncT>
+ResultT ArtmRequest(int master_id, FuncT func) {
+  int length = func(master_id);
+  return ArtmCopyResult<ResultT>(length);
+}
+
 template<typename ResultT, typename ArgsT, typename FuncT>
 ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
   int length = ArtmExecute(master_id, args, func);
-
-  std::string result_blob;
-  result_blob.resize(length);
-  HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
-
-  ResultT result;
-  result.ParseFromString(result_blob);
-  return result;
+  return ArtmCopyResult<ResultT>(length);
 }
 
 template<typename ResultT, typename ArgsT, typename FuncT>
@@ -109,6 +106,11 @@ void ParseCollection(const CollectionParserConfig& config) {
 
 void ConfigureLogging(const ConfigureLoggingArgs& args) {
   ArtmExecute(args, ArtmConfigureLogging);
+}
+
+Batch LoadBatch(std::string filename) {
+  int length = ArtmRequestLoadBatch(filename.c_str());
+  return ArtmCopyResult<Batch>(length);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -230,6 +230,7 @@ struct artm_options {
   std::string read_cooc;
   std::string use_batches;
   int batch_size;
+  bool b_guid_batch_name;
 
   // Dictionary
   std::string use_dictionary;
@@ -265,6 +266,7 @@ struct artm_options {
   std::string write_predictions;
   std::string write_class_predictions;
   std::string write_scores;
+  std::string write_vw_corpus;
   std::string csv_separator;
   int score_level;
   std::vector<std::string> score;
@@ -384,6 +386,7 @@ bool verifyOptions(const artm_options& options) {
   ok &= verifyWritableFile(options.write_dictionary_readable, options.force);
   ok &= verifyWritableFile(options.write_predictions, options.force);
   ok &= verifyWritableFile(options.write_class_predictions, options.force);
+  ok &= verifyWritableFile(options.write_vw_corpus, options.force);
 
   return ok;
 }
@@ -478,7 +481,7 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 
   RegularizerConfig* config = master_config->add_regularizer_config();
 
-  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation
+  // SmoothPhi, SparsePhi, SmoothTheta, SparseTheta, Decorrelation, TopicSelection, LabelRegularization, ImproveCoherence, Biterms
   std::string regularizer_type = boost::to_lower_copy(strs[1]);
   if (regularizer_type == "smooththeta" || regularizer_type == "sparsetheta") {
     ::artm::SmoothSparseThetaConfig specific_config;
@@ -517,6 +520,61 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
 
     config->set_name(regularizer);
     config->set_type(::artm::RegularizerType_DecorrelatorPhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+  }
+  else if (regularizer_type == "topicselection") {
+    ::artm::TopicSelectionThetaConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_TopicSelectionTheta);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+
+    // Force disable opt_for_avx because it is incompatible with TopicSelection regularizer
+    master_config->set_opt_for_avx(false);
+  }
+  else if (regularizer_type == "labelregularization") {
+    ::artm::LabelRegularizationPhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_LabelRegularizationPhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+  }
+  else if (regularizer_type == "improvecoherence") {
+    ::artm::ImproveCoherencePhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_ImproveCoherencePhi);
+    config->set_config(specific_config.SerializeAsString());
+    config->set_tau(tau);
+  }
+  else if (regularizer_type == "biterms") {
+    ::artm::BitermsPhiConfig specific_config;
+    for (auto& topic_name : topic_names)
+      specific_config.add_topic_name(topic_name);
+    for (auto& class_id : class_ids)
+      specific_config.add_class_id(class_id.first);
+    if (!dictionary_name.empty())
+      specific_config.set_dictionary_name(dictionary_name);
+
+    config->set_name(regularizer);
+    config->set_type(::artm::RegularizerType_BitermsPhi);
     config->set_config(specific_config.SerializeAsString());
     config->set_tau(tau);
   } else {
@@ -841,6 +899,14 @@ class BatchVectorizer {
         collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
       collection_parser_config.set_target_folder(batch_folder_);
       collection_parser_config.set_num_items_per_batch(options_.batch_size);
+      collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);
+
+      // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
+      std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
+      for (auto& class_id : class_ids)
+        if (!class_id.first.empty())
+          collection_parser_config.add_class_id(class_id.first);
+
       ::artm::ParseCollection(collection_parser_config);
     }
     else if (!options_.use_batches.empty()) {
@@ -936,6 +1002,47 @@ void WriteClassPredictions(const artm_options& options,
     output << theta_metadata.item_id(index) << sep;
     output << (theta_metadata.item_title_size() == 0 ? "" : escape.apply(theta_metadata.item_title(index))) << sep;
     output << theta_metadata.topic_name(max_index) << std::endl;
+  }
+}
+
+void WriteVwCorpus(const artm_options& options, const std::string& batch_folder) {
+  ProgressScope scope(std::string("Saving batches as Vowpal Wabbit corpus ") + options.write_vw_corpus);
+  auto batch_file_names = findFilesInDirectory(batch_folder, ".batch");
+  if (batch_file_names.empty())
+    throw std::string("No batches found in ") + batch_folder + ", unabel to  active_class_id = defaultwrite VW corpus";
+
+  auto remove_spaces = [](const std::string& input) {
+    std::string retval = input;
+    std::replace_if(retval.begin(), retval.end(), boost::is_any_of(" \t"), '_');
+    return retval;
+  };
+
+  std::ofstream output(options.write_vw_corpus);
+  const std::string default_class_id = "@default_class";
+  for (auto batch_file_name : batch_file_names) {
+    Batch batch = artm::LoadBatch(batch_file_name.string());
+    std::string active_class_id = default_class_id;
+
+    for (auto& item : batch.item()) {
+      if (item.title().empty())
+        output << item.id();
+      else
+        output << remove_spaces(item.title());
+      for (int i = 0; i < item.token_id_size(); ++i) {
+        int token_id = item.token_id(i);
+        float token_weight = (item.token_weight_size() > 0) ? item.token_weight(i) : 1.0f;
+        std::string class_id = (batch.class_id_size() > 0) ? batch.class_id(token_id) : std::string();
+        if (class_id.empty()) class_id = default_class_id;
+        if (class_id != active_class_id) {
+          output << " |" << class_id;
+          active_class_id = class_id;
+        }
+        output << " " << remove_spaces(batch.token(token_id));
+        if (token_weight != 1.0f)
+          output << ":" << std::setprecision(2) << token_weight;
+      }
+      output << std::endl;
+    }
   }
 }
 
@@ -1214,6 +1321,9 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       WriteClassPredictions(options, theta_metadata, theta_matrix);
   }
 
+  if (!options.write_vw_corpus.empty())
+    WriteVwCorpus(options, batch_vectorizer.batch_folder());
+
   return 0;
 }
 
@@ -1273,6 +1383,7 @@ int main(int argc, char * argv[]) {
       ("write-predictions", po::value(&options.write_predictions)->default_value(""), "write prediction in a human-readable format")
       ("write-class-predictions", po::value(&options.write_class_predictions)->default_value(""), "write class prediction in a human-readable format")
       ("write-scores", po::value(&options.write_scores)->default_value(""), "write scores in a human-readable format")
+      ("write-vw-corpus", po::value(&options.write_vw_corpus)->default_value(""), "convert batches into plain text file in Vowpal Wabbit format")
       ("force", po::bool_switch(&options.force)->default_value(false), "force overwrite existing output files")
       ("csv-separator", po::value(&options.csv_separator)->default_value(";"), "columns separator for --write-model-readable and --write-predictions. Use \\t or TAB to indicate tab.")
       ("score-level", po::value< int >(&options.score_level)->default_value(2), "score level (0, 1, 2, or 3")
@@ -1284,6 +1395,7 @@ int main(int argc, char * argv[]) {
     ohter_options.add_options()
       ("help,h", "display this help message")
       ("rand-seed", po::value< time_t >(&options.rand_seed), "specify seed for random number generator, use system timer when not specified")
+      ("guid-batch-name", po::bool_switch(&options.b_guid_batch_name)->default_value(false), "applies to save-batches and indicate that batch names should be guids (not sequential codes)")
       ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response file")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
@@ -1360,12 +1472,12 @@ int main(int argc, char * argv[]) {
       std::cerr << "\t--regularizer \"tau SmoothPhi #topics @class_ids !dictionary\"\n";
       std::cerr << "\t--regularizer \"tau SparsePhi #topics @class_ids !dictionary\"\n";
       std::cerr << "\t--regularizer \"tau Decorrelation #topics @class_ids\"\n";
+      std::cerr << "\t--regularizer \"tau TopicSelection #topics\"\n";
+      std::cerr << "\t--regularizer \"tau LabelRegularization #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau ImproveCoherence #topics @class_ids !dictionary\"\n";
+      std::cerr << "\t--regularizer \"tau Biterms #topics @class_ids !dictionary\"\n";
       std::cerr << "\nList of regularizers available in BigARTM, but not exposed in CLI:\n\n";
-      std::cerr << "\t--regularizer \"tau TopicSelectionTheta\"\n";
       std::cerr << "\t--regularizer \"tau SpecifiedSparsePhi\"\n";
-      std::cerr << "\t--regularizer \"tau LabelRegularizationPhi\"\n";
-      std::cerr << "\t--regularizer \"tau ImproveCoherencePhi\"\n";
-      std::cerr << "\t--regularizer \"tau BitermsPhi\"\n";
       std::cerr << "\t--regularizer \"tau SmoothPtdw\"\n";
       std::cerr << "\t--regularizer \"tau HierarchySparsingTheta\"\n\n";
       std::cerr << "If you are interested to see any of these regularizers in BigARTM CLI please send a message to\n";
@@ -1395,6 +1507,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/docword.kos.txt \n";
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vocab.kos.txt \n";
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.mmro.txt \n";
+      std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-enru.txt.zip \n";
       std::cerr << std::endl;
       std::cerr << "* Parse docword and vocab files from UCI bag-of-word format; then fit topic model with 20 topics:\n";
       std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
@@ -1404,6 +1517,12 @@ int main(int argc, char * argv[]) {
       std::cerr << std::endl;
       std::cerr << "* Parse VW format from standard input; note usage of single dash '-' after --read-vw-corpus:\n";
       std::cerr << "  cat vw.mmro.txt | bigartm --read-vw-corpus - --save-batches mmro2_batches --save-dictionary mmro2.dict\n";
+      std::cerr << std::endl;
+      std::cerr << "* Re-save batches back into VW format:\n";
+      std::cerr << "  bigartm --use-batches mmro_batches --write-vw-corpus vw.mmro.txt\n";
+      std::cerr << std::endl;
+      std::cerr << "* Parse only specific modalities from VW file, and save them as a new VW file:\n";
+      std::cerr << "  bigartm --read-vw-corpus vw.wiki-enru.txt --use-modality @russian --write-vw-corpus vw.wiki-ru.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Load and filter the dictionary on document frequency; save the result into a new file:\n";
       std::cerr << "  bigartm --use-dictionary mmro.dict --dictionary-min-df 5 dictionary-max-df 40% --save-dictionary mmro-filter.dict\n";
