@@ -2,6 +2,7 @@ import os
 import glob
 import uuid
 import shutil
+import numpy as np
 
 from six import iteritems
 from six.moves import range, zip
@@ -60,21 +61,17 @@ class BatchVectorizer(object):
                               target_folder if not data_format == 'batches')\
                               should also be lists; one weight corresponds to\
                               one path from the data_path list;
-        :param array n_wd: numpy.array with n_wd counters
+        :param array n_wd: matrix with n_wd counters
         :param dict vocabulary: dict with vocabulary, key - index of n_wd, value - token
         :param bool gather_dictionary: create or not the default dictionary in vectorizer;\
                                        if data_format == 'bow_n_wd' - automatically set to True;\
                                        and if data_weight is list - automatically set to False
         """
         self._remove_batches = False
-        if data_format == 'bow_n_wd':
-            self._remove_batches = True
+        if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
+            self._remove_batches = target_folder is None
         elif data_format == 'batches':
             self._remove_batches = False
-        elif data_format == 'vowpal_wabbit':
-            self._remove_batches = True if target_folder is None else False
-        elif data_format == 'bow_uci':
-            self._remove_batches = True if target_folder is None else False
 
         self._target_folder = target_folder
         if self._remove_batches:
@@ -116,7 +113,7 @@ class BatchVectorizer(object):
     def __del__(self):
         self.__dispose()
 
-    def _populate_data(self, data_weight):
+    def _populate_data(self, data_weight, is_batches=False):
         """
         This method create lists of input parameters for processing.
         It converts input scalars to lists if it is necessary.
@@ -126,7 +123,7 @@ class BatchVectorizer(object):
             if len(self._data_path) != len(data_weight):
                 raise IOError('Lists for data_path and data_weight should have the same length')
             data_weights = data_weight
-            if data_format == 'batches':
+            if is_batches:
                 target_folders = ['' for p in data_paths]
             else:
                 if len(self._data_path) != len(self._target_folder):
@@ -172,7 +169,7 @@ class BatchVectorizer(object):
                 self._dictionary.gather(data_path=target_f)
 
     def _parse_batches(self, data_weight=None, batches=None):
-        data_paths, data_weights, target_folders = self._populate_data(data_weight)
+        data_paths, data_weights, target_folders = self._populate_data(data_weight, True)
         for (data_p, data_w, target_f) in zip(data_paths, data_weights, target_folders):
             if batches is None:
                 batch_filenames = glob.glob(os.path.join(data_p, '*.batch'))
@@ -205,8 +202,8 @@ class BatchVectorizer(object):
             for key in global_vocab.keys():
                 global_vocab[key][2] = False  # all tokens haven't appeared in this item yet
 
-            for token_id, value in enumerate(column):
-                value = value.item()
+            col = column if isinstance(column, type(np.zeros([0]))) else column.tolist()[0]
+            for token_id, value in enumerate(col):
                 if value > GLOB_EPS:
                     token = vocab[token_id]
                     if token not in global_vocab:
@@ -221,7 +218,7 @@ class BatchVectorizer(object):
                         batch.token.append(token)
 
                     item.token_id.append(batch_vocab[token])
-                    item.token_weight.append(value)
+                    item.token_weight.append(float(value))
 
             if ((item_id + 1) % self._batch_size == 0 and item_id != 0) or ((item_id + 1) == n_wd.shape[1]):
                 filename = os.path.join(self._target_folder, '{}.batch'.format(batch.id))
@@ -237,9 +234,9 @@ class BatchVectorizer(object):
         dictionary_data.name = uuid.uuid1().urn.replace(':', '')
         for key, value in iteritems(global_vocab):
             dictionary_data.token.append(key)
-            dictionary_data.token_tf.append(value[0])
-            dictionary_data.token_df.append(value[1])
-            dictionary_data.token_value.append(value[0] / global_n)
+            dictionary_data.token_tf.append(int(value[0]))
+            dictionary_data.token_df.append(int(value[1]))
+            dictionary_data.token_value.append(float(value[0]) / global_n)
 
         self._dictionary.create(dictionary_data)
 
