@@ -139,6 +139,43 @@ void PhiMatrixFrame::Swap(PhiMatrixFrame* rhs) {
 }
 
 // =======================================================
+// PackedValues methods
+// =======================================================
+
+PackedValues::PackedValues() {}
+
+PackedValues::PackedValues(int size) {
+  values_.resize(size, 0.0f);
+}
+
+PackedValues::PackedValues(const PackedValues& rhs)
+    : values_(rhs.values_), bitmask_(rhs.bitmask_), ptr_(rhs.ptr_) {}
+
+PackedValues::PackedValues(const float* values, int size) {
+  values_.resize(size); memcpy(&values_[0], values, sizeof(float) * size);
+}
+
+bool PackedValues::is_packed() const {
+  return false;
+}
+
+float PackedValues::get(int index) const {
+  return values_[index];
+}
+
+float* PackedValues::unpack() {
+  return &values_[0];
+}
+
+void PackedValues::pack() {
+}
+
+void PackedValues::reset(int size) {
+  values_.resize(size, 0.0f);
+}
+
+
+// =======================================================
 // DensePhiMatrix methods
 // =======================================================
 
@@ -148,18 +185,14 @@ DensePhiMatrix::DensePhiMatrix(const ModelName& model_name,
 
 DensePhiMatrix::DensePhiMatrix(const DensePhiMatrix& rhs) : PhiMatrixFrame(rhs), values_() {
   for (int token_index = 0; token_index < rhs.token_size(); ++token_index) {
-    float* values = new float[topic_size()];
-    values_.push_back(values);
-    memcpy(values, rhs.values_[token_index], sizeof(float) * topic_size());
+    values_.push_back(PackedValues(rhs.values_[token_index]));
   }
 }
 
 DensePhiMatrix::DensePhiMatrix(const AttachedPhiMatrix& rhs)
     : PhiMatrixFrame(rhs), values_() {
   for (int token_index = 0; token_index < rhs.token_size(); ++token_index) {
-    float* values = new float[topic_size()];
-    values_.push_back(values);
-    memcpy(values, rhs.values_[token_index], sizeof(float) * topic_size());
+    values_.push_back(PackedValues(rhs.values_[token_index], rhs.topic_size()));
   }
 }
 
@@ -167,10 +200,26 @@ std::shared_ptr<PhiMatrix> DensePhiMatrix::Duplicate() const {
   return std::shared_ptr<PhiMatrix>(new DensePhiMatrix(*this));
 }
 
+float DensePhiMatrix::get(int token_id, int topic_id) const {
+  return values_[token_id].get(topic_id);
+}
+
+void DensePhiMatrix::set(int token_id, int topic_id, float value) {
+  values_[token_id].unpack()[topic_id] = value;
+  if ((topic_id + 1) == topic_size())
+    values_[token_id].pack();
+}
+
+void DensePhiMatrix::increase(int token_id, int topic_id, float increment) {
+  values_[token_id].unpack()[topic_id] += increment;
+  if ((topic_id + 1) == topic_size())
+    values_[token_id].pack();
+}
+
 void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment) {
   const int topic_size = this->topic_size();
   assert(increment.size() == topic_size);
-  float* values = values_[token_id];
+  float* values = values_[token_id].unpack();
 
   this->Lock(token_id);
   for (int topic_index = 0; topic_index < topic_size; ++topic_index)
@@ -179,28 +228,24 @@ void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment)
 }
 
 void DensePhiMatrix::Clear() {
-  std::for_each(values_.begin(), values_.end(), [&](float* value) {  // NOLINT
-    delete[] value;
-  });
   values_.clear();
-
   PhiMatrixFrame::Clear();
 }
 
 int DensePhiMatrix::AddToken(const Token& token) {
-  float* values = new float[topic_size()];
-  values_.push_back(values);
-  memset(values, 0, sizeof(float)* topic_size());
+  int token_id = token_index(token);
+  if (token_id != -1)
+    return token_id;
 
+  values_.push_back(PackedValues(topic_size()));
   int retval = PhiMatrixFrame::AddToken(token);
   assert(retval == (values_.size() - 1));
   return retval;
 }
 
 void DensePhiMatrix::Reset() {
-  std::for_each(values_.begin(), values_.end(), [&](float* value) {  // NOLINT
-    for (int i = 0; i < topic_size(); ++i) value[i] = 0.0f;
-  });
+  for (PackedValues& value : values_)
+    value.reset(topic_size());
 }
 
 void DensePhiMatrix::Reshape(const PhiMatrix& phi_matrix) {
