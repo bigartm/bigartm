@@ -93,6 +93,27 @@ class PhiMatrixFrame : public PhiMatrix {
 class DensePhiMatrix;
 class AttachedPhiMatrix;
 
+// PackedValues class represents one row of Phi matrix.
+// Sparse rows (with many zeros) might be packed for memory efficiency.
+class PackedValues {
+ public:
+  PackedValues();
+  explicit PackedValues(int size);
+  explicit PackedValues(const PackedValues& rhs);
+  PackedValues(const float* values, int size);
+
+  bool is_packed() const;
+  float get(int index) const;
+  float* unpack();
+  void pack();
+  void reset(int size);
+
+ private:
+  std::vector<float> values_;
+  std::vector<bool> bitmask_;
+  std::vector<int> ptr_;
+};
+
 // DensePhiMatrix class implements PhiMatrix interface as a dense matrix.
 // The class owns the memory allocated to store the elements.
 class DensePhiMatrix : public PhiMatrixFrame {
@@ -104,9 +125,9 @@ class DensePhiMatrix : public PhiMatrixFrame {
 
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
-  virtual float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
-  virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
-  virtual void increase(int token_id, int topic_id, float increment) { values_[token_id][topic_id] += increment; }
+  virtual float get(int token_id, int topic_id) const;
+  virtual void set(int token_id, int topic_id, float value);
+  virtual void increase(int token_id, int topic_id, float increment);
   virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
 
   virtual void Clear();
@@ -121,7 +142,7 @@ class DensePhiMatrix : public PhiMatrixFrame {
   explicit DensePhiMatrix(const AttachedPhiMatrix& rhs);
   DensePhiMatrix& operator=(const PhiMatrixFrame&);
 
-  std::vector<float*> values_;
+  std::vector<PackedValues> values_;
 };
 
 // DensePhiMatrix class implements PhiMatrix interface as a dense matrix.
