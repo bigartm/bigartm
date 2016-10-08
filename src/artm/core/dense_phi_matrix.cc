@@ -142,36 +142,91 @@ void PhiMatrixFrame::Swap(PhiMatrixFrame* rhs) {
 // PackedValues methods
 // =======================================================
 
-PackedValues::PackedValues() {}
+PackedValues::PackedValues() : values_(), bitmask_(), ptr_() {}
 
-PackedValues::PackedValues(int size) {
-  values_.resize(size, 0.0f);
+PackedValues::PackedValues(int size) : values_(), bitmask_(), ptr_() {
+  bitmask_.resize(size, false);
 }
 
 PackedValues::PackedValues(const PackedValues& rhs)
     : values_(rhs.values_), bitmask_(rhs.bitmask_), ptr_(rhs.ptr_) {}
 
-PackedValues::PackedValues(const float* values, int size) {
+PackedValues::PackedValues(const float* values, int size) : values_(), bitmask_(), ptr_() {
   values_.resize(size); memcpy(&values_[0], values, sizeof(float) * size);
+  pack();
 }
 
 bool PackedValues::is_packed() const {
-  return false;
+  return !bitmask_.empty();
 }
 
 float PackedValues::get(int index) const {
-  return values_[index];
+  if (is_packed()) {
+    if (!bitmask_[index])
+      return 0.0f;
+    const auto sparse_ptr = std::lower_bound(ptr_.begin(), ptr_.end(), index);
+    const int sparse_index = sparse_ptr - ptr_.begin();
+    return values_[sparse_index];
+  } else {
+    return values_[index];
+  }
 }
 
 float* PackedValues::unpack() {
+  if (is_packed()) {
+    const int full_size = bitmask_.size();
+    const int sparse_size = values_.size();
+    if (values_.size() != ptr_.size())
+      assert(values_.size() == ptr_.size());
+
+    std::vector<float> values(full_size, 0.0f);
+    for (int i = 0; i < sparse_size; ++i)
+      values[ptr_[i]] = values_[i];
+
+    values_.swap(values);
+
+    bitmask_.clear();
+    ptr_.clear();
+  }
+
   return &values_[0];
 }
 
 void PackedValues::pack() {
+  if (is_packed())
+    return;
+
+  int num_zeros = 0;
+  for (auto value : values_)
+    if (value == 0)
+      num_zeros++;
+
+  // pack iff at 60% of elements (or more) are zeros
+  if (num_zeros < (3 * values_.size() / 5))
+    return;
+
+  bitmask_.resize(values_.size(), false);
+  ptr_.resize(values_.size() - num_zeros);
+  std::vector<float> values(values_.size() - num_zeros, 0.0f);
+
+  int sparse_index = 0;
+  for (int i = 0; i < values_.size(); ++i) {
+    if (values_[i] == 0)
+      continue;
+
+    ptr_[sparse_index] = i;
+    values[sparse_index] = values_[i];
+    bitmask_[i] = true;
+    sparse_index++;
+  }
+
+  values_.swap(values);
 }
 
 void PackedValues::reset(int size) {
-  values_.resize(size, 0.0f);
+  bitmask_.resize(size, false);
+  values_.clear();
+  ptr_.clear();
 }
 
 
@@ -219,11 +274,12 @@ void DensePhiMatrix::increase(int token_id, int topic_id, float increment) {
 void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment) {
   const int topic_size = this->topic_size();
   assert(increment.size() == topic_size);
-  float* values = values_[token_id].unpack();
 
   this->Lock(token_id);
+  float* values = values_[token_id].unpack();
   for (int topic_index = 0; topic_index < topic_size; ++topic_index)
     values[topic_index] += increment[topic_index];
+  values_[token_id].pack();
   this->Unlock(token_id);
 }
 
