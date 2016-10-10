@@ -473,6 +473,8 @@ message FilterDictionaryArgs {
   optional float max_df_rate = 7;
   optional float min_tf = 8;
   optional float max_tf = 9;
+
+  optional int64 max_dictionary_size = 10;
 }
 
 message GatherDictionaryArgs {

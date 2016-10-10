@@ -2,6 +2,7 @@
 
 #include "artm/core/dictionary.h"
 
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <map>
@@ -402,8 +403,12 @@ Dictionary::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollect
 
   float size = static_cast<float>(src_dictionary_ptr->num_items_in_collection_);
 
+  std::vector<bool> entries_mask(src_entries.size(), false);
+  std::vector<float> df_values;
+
   int accepted_tokens_count = 0;
-  for (auto& entry : src_entries) {
+  for (int entry_index = 0; entry_index < src_entries.size(); entry_index++) {
+    auto& entry = src_entries[entry_index];
     if (!args.has_class_id() || (entry.token().class_id == args.class_id())) {
       if (args.has_min_df() && entry.token_df() < args.min_df()) continue;
       if (args.has_max_df() && entry.token_df() >= args.max_df()) continue;
@@ -415,7 +420,28 @@ Dictionary::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollect
       if (args.has_max_tf() && entry.token_tf() >= args.max_tf()) continue;
     }
 
+    entries_mask[entry_index] = true;  // pass all filters
+    df_values.push_back(entry.token_df());
+  }
+
+  // Handle max_dictionary_size
+  if (args.has_max_dictionary_size() && (args.max_dictionary_size() < df_values.size())) {
+    std::sort(df_values.begin(), df_values.end());
+    float max_df_due_to_size = df_values[args.max_dictionary_size()];
+
+    for (int entry_index = 0; entry_index < src_entries.size(); entry_index++) {
+      auto& entry = src_entries[entry_index];
+      if (entry.token_df() >= max_df_due_to_size)
+        entries_mask[entry_index] = false;
+    }
+  }
+
+  for (int entry_index = 0; entry_index < src_entries.size(); entry_index++) {
+    if (!entries_mask[entry_index])
+      continue;
+
     // all filters were passed, add token to the new dictionary
+    auto& entry = src_entries[entry_index];
     Token token = entry.token();
     accepted_tokens_count += 1;
     dictionary_data->add_token(token.keyword);
