@@ -10,6 +10,8 @@ v0.8.2
    This may affect you upgrade from previous version of bigartm.
    Pelase report any issues at `bigartm-users@googlegroups.com <https://groups.google.com/group/bigartm-users>`_.
 
+* Change ``ArtmParseCollection`` to return ``CollectionParserInfo`` message
+
 v0.8.0
 ------
 

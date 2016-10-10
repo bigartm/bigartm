@@ -15,6 +15,10 @@ v0.8.2
 * when ``--use-modality`` is specified, the batches saved with ``--save-batches`` will only include tokens from these modalities.
   Other tokens will be ignored during parsing. This option is implemented for both VW and UCI BOW formats.
 * implement ``TopicSelection``, ``LabelRegularization``, ``ImproveCoherence``, ``Biterms`` regularizer in BigARTM CLI
+* added option ``--dictionary-size`` to give user an easy option to limit his dictionary size
+* add more diagnostics information about dictionary size (before and after filtering)
+* add strict verification of scores and regularizers; for example, BigARTM CLI will raise an exception for this input:
+  ``bigartm -t obj:10,back:5 --regularizer "0.5 SparsePhi #obj*"``. There shouldn't be star sign in ``#obj*``.
 
 v0.8.0
 ------
