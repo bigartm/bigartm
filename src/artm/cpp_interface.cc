@@ -100,8 +100,9 @@ void ArtmRequestMatrix(int no_rows, int no_cols, Matrix* matrix) {
   HandleErrorCode(ArtmCopyRequestedObject(length, reinterpret_cast<char*>(matrix->get_data())));
 }
 
-void ParseCollection(const CollectionParserConfig& config) {
-  ArtmExecute(config, ArtmParseCollection);
+CollectionParserInfo ParseCollection(const CollectionParserConfig& config) {
+  int length = ArtmExecute(config, ArtmParseCollection);
+  return ArtmCopyResult<CollectionParserInfo>(length);
 }
 
 void ConfigureLogging(const ConfigureLoggingArgs& args) {

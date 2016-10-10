@@ -59,7 +59,7 @@ int HandleErrorCode(int artm_error_code);
 
 #undef DEFINE_EXCEPTION_TYPE
 
-void ParseCollection(const CollectionParserConfig& config);
+CollectionParserInfo ParseCollection(const CollectionParserConfig& config);
 void ConfigureLogging(const ConfigureLoggingArgs& args);
 Batch LoadBatch(std::string filename);
 
