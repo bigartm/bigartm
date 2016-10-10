@@ -42,11 +42,10 @@ before_install:
   # Useful for debugging any issues with conda
   - conda info -a
   - pip install pep8
-  - pip install -U pytest
   - pip install protobuf==3.0.0
 
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pandas pytest
   - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then ./codestyle_checks.sh; fi
   - mkdir build
   - pushd build && export CXX=$COMPILER && cmake -DBUILD_BIGARTM_CLI_STATIC=OFF .. && make -j2 && file ./src/bigartm/bigartm && popd
