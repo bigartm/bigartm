@@ -204,6 +204,8 @@ std::vector<std::string> parseTopics(const std::string& topics) {
 std::vector<std::string> parseTopics(const std::string& topics, const std::string& topic_groups) {
   std::vector<std::string> result;
 
+  auto all_topics = parseTopics(topic_groups);
+  auto all_topics_set = std::set<std::string>(all_topics.begin(), all_topics.end());
   std::vector<std::pair<std::string, std::vector<std::string>>> pairs = parseTopicGroups(topic_groups);
   std::vector<std::string> topic_names = parseTopics(topics);
   for (auto& topic_name : topic_names) {
@@ -218,7 +220,8 @@ std::vector<std::string> parseTopics(const std::string& topics, const std::strin
     }
 
     if (!found)
-      result.push_back(topic_name);
+      if (all_topics_set.find(topic_name) != all_topics_set.end())
+        result.push_back(topic_name);
   }
 
   return result;
@@ -471,12 +474,18 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
     std::string elem = strs[i];
     if (elem.empty())
       continue;
-    if (elem[0] == '#')
+    if (elem[0] == '#') {
       topic_names = parseTopics(elem.substr(1, elem.size() - 1), topics);
-    else if (elem[0] == '@')
+      if (topic_names.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+    }  else if (elem[0] == '@') {
       class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
-    else if (elem[0] == '!')
+      if (class_ids.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+    } else if (elem[0] == '!') {
       dictionary_path = elem.substr(1, elem.size() - 1);
+      if (dictionary_path.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+    } else {
+      throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + regularizer + "'");
+    }
   }
 
   std::string dictionary_name = addToDictionaryMap(dictionary_map, dictionary_path);
@@ -619,12 +628,18 @@ class ScoreHelper {
        std::string elem = strs[i];
        if (elem.empty())
          continue;
-       if (elem[0] == '#')
+       if (elem[0] == '#') {
          topic_names = parseTopics(elem.substr(1, elem.size() - 1), topics);
-       else if (elem[0] == '@')
+         if (topic_names.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+       } else if (elem[0] == '@') {
          class_ids = parseKeyValuePairs<float>(elem.substr(1, elem.size() - 1));
-       else if (elem[0] == '!')
+         if (class_ids.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+       } else if (elem[0] == '!') {
          dictionary_path = elem.substr(1, elem.size() - 1);
+         if (dictionary_path.empty()) throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+       } else {
+         throw std::invalid_argument(std::string("Error in '") + elem + "' from '" + score + "'");
+       }
      }
 
      std::string dictionary_name = addToDictionaryMap(dictionary_map_, dictionary_path);
