@@ -325,6 +325,9 @@ inline std::string DescribeErrors(const ::artm::FilterDictionaryArgs& message) {
   if (!message.has_dictionary_target_name())
      ss << "FilterDictionaryArgs has no target dictionary name; ";
 
+  if (message.has_max_dictionary_size() && (message.max_dictionary_size() <= 0))
+    ss << "FilterDictionaryArgs.max_dictionary_size must be positive integer; ";
+
   return ss.str();
 }
 

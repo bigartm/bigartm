@@ -241,6 +241,7 @@ struct artm_options {
   std::string use_dictionary;
   std::string dictionary_min_df;
   std::string dictionary_max_df;
+  int dictionary_size;
 
   // Model
   std::string load_model;
@@ -1153,7 +1154,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     std::cout << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
 
   // Step 3.2. Filter dictionary
-  if (!options.dictionary_max_df.empty() || !options.dictionary_min_df.empty()) {
+  if (!options.dictionary_max_df.empty() || !options.dictionary_min_df.empty() || (options.dictionary_size > 0)) {
     {
       ProgressScope scope("Filtering dictionary based on user thresholds", "");
       ::artm::FilterDictionaryArgs filter_dictionary_args;
@@ -1176,6 +1177,9 @@ int execute(const artm_options& options, int argc, char* argv[]) {
           std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
       }
 
+      if (options.dictionary_size > 0)
+        filter_dictionary_args.set_max_dictionary_size(options.dictionary_size);
+
       master_component->FilterDictionary(filter_dictionary_args);
     }
     std::cout << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
@@ -1186,7 +1190,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     ExportDictionaryArgs export_dictionary_args;
     export_dictionary_args.set_dictionary_name(options.main_dictionary_name);
     export_dictionary_args.set_file_name(options.save_dictionary);
-    if (options.force) boost::filesystem::remove(options.save_dictionary);
+    if (options.force) boost::filesystem::remove(options.save_dictionary + ".dict");
     master_component->ExportDictionary(export_dictionary_args);
   }
 
@@ -1389,6 +1393,7 @@ int main(int argc, char * argv[]) {
     dictionary_options.add_options()
       ("dictionary-min-df", po::value(&options.dictionary_min_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
       ("dictionary-max-df", po::value(&options.dictionary_max_df)->default_value(""), "filter out tokens present in less than N documents / less than P% of documents")
+      ("dictionary-size", po::value(&options.dictionary_size)->default_value(0), "limit dictionary size by filtering out tokens with high document frequency")
       ("use-dictionary", po::value(&options.use_dictionary)->default_value(""), "filename of binary dictionary file to use")
     ;
 
