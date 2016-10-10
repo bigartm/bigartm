@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <string>
 #include <map>
 #include <memory>
@@ -426,12 +427,12 @@ Dictionary::Filter(const FilterDictionaryArgs& args, ThreadSafeDictionaryCollect
 
   // Handle max_dictionary_size
   if (args.has_max_dictionary_size() && (args.max_dictionary_size() < df_values.size())) {
-    std::sort(df_values.begin(), df_values.end());
-    float max_df_due_to_size = df_values[args.max_dictionary_size()];
+    std::sort(df_values.begin(), df_values.end(), std::greater<float>());
+    float min_df_due_to_size = df_values[args.max_dictionary_size()];
 
     for (int entry_index = 0; entry_index < src_entries.size(); entry_index++) {
       auto& entry = src_entries[entry_index];
-      if (entry.token_df() >= max_df_due_to_size)
+      if (entry.token_df() <= min_df_due_to_size)
         entries_mask[entry_index] = false;
     }
   }
