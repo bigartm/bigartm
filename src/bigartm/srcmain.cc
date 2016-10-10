@@ -1151,7 +1151,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     has_dictionary = true;
   }
   if (has_dictionary)
-    std::cout << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
+    std::cerr << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
 
   // Step 3.2. Filter dictionary
   if (!options.dictionary_max_df.empty() || !options.dictionary_min_df.empty() || (options.dictionary_size > 0)) {
@@ -1182,7 +1182,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
 
       master_component->FilterDictionary(filter_dictionary_args);
     }
-    std::cout << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
+    std::cerr << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
   }
 
   if (!options.save_dictionary.empty()) {
@@ -1537,8 +1537,8 @@ int main(int argc, char * argv[]) {
       std::cerr << "Depending on regularizer the dictinoary can be either optional or required.\n";
       std::cerr << "Some regularizers expect an dictinoary with tokens and their frequencies;\n";
       std::cerr << "Other regularizers expect an dictinoary with tokens co-occurencies;\n";
-      std::cout << "For more information about regularizers refer to wiki-page:\n";
-      std::cout << "\n\thttps://github.com/bigartm/bigartm/wiki/Implemented-regularizers\n\n";
+      std::cerr << "For more information about regularizers refer to wiki-page:\n";
+      std::cerr << "\n\thttps://github.com/bigartm/bigartm/wiki/Implemented-regularizers\n\n";
       std::cerr << "To get full help run `bigartm --help` without --regularizer switch.\n";
       return 0;
     }
