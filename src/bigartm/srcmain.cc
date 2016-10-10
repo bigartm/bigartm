@@ -85,17 +85,19 @@ class CsvEscape {
 
 class ProgressScope {
  public:
-   explicit ProgressScope(const std::string& message)  {
+   explicit ProgressScope(const std::string& message, std::string newline = "\n") : newline_(newline) {
      std::cerr << message << "... ";
    }
 
    ~ProgressScope() {
      if (std::uncaught_exception()) {
-       std::cerr << "Failed\n";
+       std::cerr << "Failed" << newline_;
      } else {
-       std::cerr << "OK.  \n";  // the whitespaces are for a reason
+       std::cerr << "OK.  " << newline_;  // the whitespaces are for a reason
      }
    }
+ private:
+  std::string newline_;
 };
 
 bool parseNumberOrPercent(std::string str, double* value, bool* fraction ) {
@@ -1053,6 +1055,14 @@ void WriteVwCorpus(const artm_options& options, const std::string& batch_folder)
   }
 }
 
+int get_dictionary_size(const MasterModel& master, std::string dictionary_name) {
+  auto info = master.info();
+  for (int i = 0; i < info.dictionary_size(); ++i)
+    if (info.dictionary(i).name() == dictionary_name)
+      return info.dictionary(i).num_entries();
+  return -1;
+}
+
 int execute(const artm_options& options, int argc, char* argv[]) {
   const std::string pwt_model_name = options.pwt_model_name;
 
@@ -1106,46 +1116,54 @@ int execute(const artm_options& options, int argc, char* argv[]) {
   final_score_helper.setMasterModel(master_component.get());
 
   // Step 3.1. Parse or import the main dictionary
+  bool has_dictionary = false;
   if (!options.use_dictionary.empty()) {
-    ProgressScope scope(std::string("Loading dictionary file from ") + options.use_dictionary);
+    ProgressScope scope(std::string("Loading dictionary file from ") + options.use_dictionary, "");
     ImportDictionaryArgs import_dictionary_args;
     import_dictionary_args.set_file_name(options.use_dictionary);
     import_dictionary_args.set_dictionary_name(options.main_dictionary_name);
     master_component->ImportDictionary(import_dictionary_args);
+    has_dictionary = true;
   } else if (options.isDictionaryRequired()) {
-    ProgressScope scope(std::string("Gathering dictionary from batches"));
+    ProgressScope scope(std::string("Gathering dictionary from batches"), "");
     ::artm::GatherDictionaryArgs gather_dictionary_args;
     gather_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
     gather_dictionary_args.set_data_path(batch_vectorizer.batch_folder());
     if (!options.read_cooc.empty()) gather_dictionary_args.set_cooc_file_path(options.read_cooc);
     if (!options.read_uci_vocab.empty()) gather_dictionary_args.set_vocab_file_path(options.read_uci_vocab);
     master_component->GatherDictionary(gather_dictionary_args);
+    has_dictionary = true;
   }
+  if (has_dictionary)
+    std::cout << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
 
   // Step 3.2. Filter dictionary
   if (!options.dictionary_max_df.empty() || !options.dictionary_min_df.empty()) {
-    ProgressScope scope("Filtering dictionary based on user thresholds");
-    ::artm::FilterDictionaryArgs filter_dictionary_args;
-    filter_dictionary_args.set_dictionary_name(options.main_dictionary_name);
-    filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
-    bool fraction;
-    double value;
-    if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
-      if (fraction) filter_dictionary_args.set_min_df_rate(value);
-      else filter_dictionary_args.set_min_df(value);
-    } else {
-      if (!options.dictionary_min_df.empty())
-        std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
-    }
-    if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
-      if (fraction) filter_dictionary_args.set_max_df_rate(value);
-      else filter_dictionary_args.set_max_df(value);
-    } else {
-      if (!options.dictionary_max_df.empty())
-        std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
-    }
+    {
+      ProgressScope scope("Filtering dictionary based on user thresholds", "");
+      ::artm::FilterDictionaryArgs filter_dictionary_args;
+      filter_dictionary_args.set_dictionary_name(options.main_dictionary_name);
+      filter_dictionary_args.set_dictionary_target_name(options.main_dictionary_name);
+      bool fraction;
+      double value;
+      if (parseNumberOrPercent(options.dictionary_min_df, &value, &fraction))  {
+        if (fraction) filter_dictionary_args.set_min_df_rate(value);
+        else filter_dictionary_args.set_min_df(value);
+      } else {
+        if (!options.dictionary_min_df.empty())
+          std::cerr << "Error in parameter 'dictionary_min_df', the option will be ignored (" << options.dictionary_min_df << ")\n";
+      }
+      if (parseNumberOrPercent(options.dictionary_max_df, &value, &fraction))  {
+        if (fraction) filter_dictionary_args.set_max_df_rate(value);
+        else filter_dictionary_args.set_max_df(value);
+      } else {
+        if (!options.dictionary_max_df.empty())
+          std::cerr << "Error in parameter 'dictionary_max_df', the option will be ignored (" << options.dictionary_max_df << ")\n";
+      }
 
-    master_component->FilterDictionary(filter_dictionary_args);
+      master_component->FilterDictionary(filter_dictionary_args);
+    }
+    std::cout << "Dictionary size: " << get_dictionary_size(*master_component, options.main_dictionary_name) << "\n";
   }
 
   if (!options.save_dictionary.empty()) {
