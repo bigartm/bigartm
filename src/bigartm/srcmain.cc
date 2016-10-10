@@ -888,26 +888,33 @@ class BatchVectorizer {
       if (error)
         throw std::runtime_error(std::string("Unable to create batch folder: ") + batch_folder_);
 
-      ProgressScope scope("Parsing text collection");
-      ::artm::CollectionParserConfig collection_parser_config;
-      if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_BagOfWordsUci);
-      else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_VowpalWabbit);
-      else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_CollectionFormat");
+      ::artm::CollectionParserInfo parser_info;
+      {
+        ProgressScope scope("Parsing text collection");
+        ::artm::CollectionParserConfig collection_parser_config;
+        if (parse_uci_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_BagOfWordsUci);
+        else if (parse_vw_format) collection_parser_config.set_format(CollectionParserConfig_CollectionFormat_VowpalWabbit);
+        else throw std::runtime_error("Internal error in bigartm.exe - unable to determine CollectionParserConfig_CollectionFormat");
 
-      collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
-      if (!options_.read_uci_vocab.empty())
-        collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
-      collection_parser_config.set_target_folder(batch_folder_);
-      collection_parser_config.set_num_items_per_batch(options_.batch_size);
-      collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);
+        collection_parser_config.set_docword_file_path(parse_vw_format ? options_.read_vw_corpus : options_.read_uci_docword);
+        if (!options_.read_uci_vocab.empty())
+          collection_parser_config.set_vocab_file_path(options_.read_uci_vocab);
+        collection_parser_config.set_target_folder(batch_folder_);
+        collection_parser_config.set_num_items_per_batch(options_.batch_size);
+        collection_parser_config.set_name_type(options_.b_guid_batch_name ? CollectionParserConfig_BatchNameType_Guid : CollectionParserConfig_BatchNameType_Code);
 
-      // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
-      std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
-      for (auto& class_id : class_ids)
-        if (!class_id.first.empty())
-          collection_parser_config.add_class_id(class_id.first);
+        // If user specifies specific modalities "use_modality", pass it to collection parser to limit set of modalities available in batches
+        std::vector<std::pair<std::string, float>> class_ids = parseKeyValuePairs<float>(options_.use_modality);
+        for (auto& class_id : class_ids)
+          if (!class_id.first.empty())
+            collection_parser_config.add_class_id(class_id.first);
 
-      ::artm::ParseCollection(collection_parser_config);
+        parser_info = ::artm::ParseCollection(collection_parser_config);
+      }
+
+      std::cerr << parser_info.num_batches() << " batches created with total of ";
+      std::cerr << parser_info.num_items() << " items, and " << parser_info.dictionary_size() << " words in the dictionary; ";
+      std::cerr << "NNZ = " << parser_info.num_tokens() << ", average token weight is " << parser_info.total_token_weight() / parser_info.num_tokens() << "\n";
     }
     else if (!options_.use_batches.empty()) {
       batch_folder_ = options_.use_batches;

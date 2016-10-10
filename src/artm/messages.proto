@@ -431,6 +431,15 @@ message CollectionParserConfig {
   repeated string class_id = 9;
 }
 
+// Misc statistics produced by collection parser
+message CollectionParserInfo {
+  optional int64 num_items = 1;
+  optional int64 num_batches = 2;
+  optional int64 dictionary_size = 3;
+  optional int64 num_tokens = 4;
+  optional float total_token_weight = 5;
+}
+
 // Represents an argument of 'initialize model' operation
 message InitializeModelArgs {
   optional string model_name = 1;

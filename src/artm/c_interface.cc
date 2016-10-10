@@ -292,8 +292,9 @@ int ArtmParseCollection(int length, const char* collection_parser_config) {
     ParseFromArray(collection_parser_config, length, &config);
     ::artm::core::ValidateMessage(config, /* throw_error =*/ true);
     ::artm::core::CollectionParser collection_parser(config);
-    collection_parser.Parse();
-    return ARTM_SUCCESS;
+    ::artm::CollectionParserInfo result = collection_parser.Parse();
+    result.SerializeToString(last_message());
+    return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 

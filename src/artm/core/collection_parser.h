@@ -38,7 +38,7 @@ class CollectionParser : boost::noncopyable {
 
   // Parses the collection from disk according to all options,
   // specified in CollectionParserConfig.
-  void Parse();
+  CollectionParserInfo Parse();
 
  private:
   struct CollectionParserTokenInfo {
@@ -58,8 +58,8 @@ class CollectionParser : boost::noncopyable {
 
   // ParseDocwordBagOfWordsUci is also used to parse MatrixMarket format, because
   // the format of docword file is the same for both.
-  void ParseDocwordBagOfWordsUci(TokenMap* token_map);
-  void ParseVowpalWabbit();
+  CollectionParserInfo ParseDocwordBagOfWordsUci(TokenMap* token_map);
+  CollectionParserInfo ParseVowpalWabbit();
 
   TokenMap ParseVocabBagOfWordsUci();
   TokenMap ParseVocabMatrixMarket();
