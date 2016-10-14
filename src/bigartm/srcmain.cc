@@ -252,6 +252,7 @@ struct artm_options {
 
   // Learning
   int num_collection_passes;
+  int num_collection_passes_depr;
   int time_limit;
   int num_document_passes;
   int update_every;
@@ -1407,7 +1408,8 @@ int main(int argc, char * argv[]) {
 
     po::options_description learning_options("Learning");
     learning_options.add_options()
-      ("num_collection_passes,p", po::value(&options.num_collection_passes)->default_value(0), "number of outer iterations (passes through the collection)")
+      ("num_collection_passes", po::value(&options.num_collection_passes_depr)->default_value(0), "[deprecated]")
+      ("num-collection-passes,p", po::value(&options.num_collection_passes)->default_value(0), "number of outer iterations (passes through the collection)")
       ("num-document-passes", po::value(&options.num_document_passes)->default_value(10), "number of inner iterations (passes through the document)")
       ("update-every", po::value(&options.update_every)->default_value(0), "[online algorithm] requests an update of the model after update_every document")
       ("tau0", po::value(&options.tau0)->default_value(1024), "[online algorithm] weight option from online update formula")
@@ -1465,6 +1467,9 @@ int main(int argc, char * argv[]) {
       std::cerr << "Press any key to continue. ";
       getchar();
     }
+
+    if (options.num_collection_passes_depr > 0 && options.num_collection_passes == 0)
+      options.num_collection_passes = options.num_collection_passes_depr;
 
     if (vm.count("response-file") && !options.response_file.empty()) {
       // Load the file and tokenize it
@@ -1555,7 +1560,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  wget https://s3-eu-west-1.amazonaws.com/artm/vw.wiki-enru.txt.zip \n";
       std::cerr << std::endl;
       std::cerr << "* Parse docword and vocab files from UCI bag-of-word format; then fit topic model with 20 topics:\n";
-      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
+      std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num-collection-passes 10\n";
       std::cerr << std::endl;
       std::cerr << "* Parse VW format; then save the resulting batches and dictionary:\n";
       std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --save-batches mmro_batches --save-dictionary mmro.dict\n";
@@ -1576,7 +1581,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --use-dictionary mmro.dict --write-dictionary-readable mmro.dict.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Use batches to fit a model with 20 topics; then save the model in a binary format:\n";
-      std::cerr << "  bigartm --use-batches mmro_batches --num_collection_passes 10 -t 20 --save-model mmro.model\n";
+      std::cerr << "  bigartm --use-batches mmro_batches --num-collection-passes 10 -t 20 --save-model mmro.model\n";
       std::cerr << std::endl;
       std::cerr << "* Load the model and export it in a human-readable format:\n";
       std::cerr << "  bigartm --load-model mmro.model --write-model-readable mmro.model.txt\n";
@@ -1585,19 +1590,19 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --read-vw-corpus vw.mmro.txt --load-model mmro.model --write-predictions mmro.predict.txt\n";
       std::cerr << std::endl;
       std::cerr << "* Fit model with two modalities (@default_class and @target), and use it to predict @target label:\n";
-      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --num_collection_passes 10 --save-model model.bin\n";
+      std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --num-collection-passes 10 --save-model model.bin\n";
       std::cerr << "  bigartm --use-batches <batches> --use-modality @default_class,@target --topics 50 --load-model model.bin\n";
       std::cerr << "          --write-predictions pred.txt --csv-separator=tab\n";
       std::cerr << "          --predict-class @target --write-class-predictions pred_class.txt --score ClassPrecision\n";
       std::cerr << std::endl;
       std::cerr << "* Fit simple regularized model (increase sparsity up to 60-70%):\n";
       std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2\n";
-      std::cerr << "          --num_collection_passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt\n";
+      std::cerr << "          --num-collection-passes 10 --batch-size 50 --topics 20 --write-model-readable model.txt\n";
       std::cerr << "          --regularizer \"0.05 SparsePhi\" \"0.05 SparseTheta\"\n";
       std::cerr << std::endl;
       std::cerr << "* Fit more advanced regularize model, with 10 sparse objective topics, and 2 smooth background topics:\n";
       std::cerr << "  bigartm -d docword.kos.txt -v vocab.kos.txt --dictionary-max-df 50% --dictionary-min-df 2\n";
-      std::cerr << "          --num_collection_passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt\n";
+      std::cerr << "          --num-collection-passes 10 --batch-size 50 --topics obj:10;background:2 --write-model-readable model.txt\n";
       std::cerr << "          --regularizer \"0.05 SparsePhi #obj\"\n";
       std::cerr << "          --regularizer \"0.05 SparseTheta #obj\"\n";
       std::cerr << "          --regularizer \"0.25 SmoothPhi #background\"\n";
@@ -1607,7 +1612,7 @@ int main(int argc, char * argv[]) {
       std::cerr << "  bigartm --use-batches old_folder --save-batches new_folder\n";
       std::cerr << std::endl;
       std::cerr << "* Configure logger to output into stderr:\n";
-      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10\n";
+      std::cerr << "  tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num-collection-passes 10\n";
       return 0;
     }
 
