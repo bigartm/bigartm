@@ -45,7 +45,7 @@ You may also get more information about builtin regularizers by typing ``bigartm
                                             matrix
 
     Learning:
-      -p [ --num_collection_passes ] arg (=0)
+      -p [ --num-collection-passes ] arg (=0)
                                             number of outer iterations (passes 
                                             through the collection)
       --num-document-passes arg (=10)       number of inner iterations (passes 
