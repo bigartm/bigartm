@@ -9,8 +9,10 @@ For a detailed description of ``bigartm`` command line interface refer to
 `bigartm.exe notebook <http://nbviewer.ipython.org/github/bigartm/bigartm-book/blob/master/junk/cli/BigARTM_CommandLineInferface.ipynb>`_ (in Russian).
 
 In brief, you need to download some input data (a textual collection represented in bag-of-words format).
-We recommend to download *vocab* and *docword* files by links provided in :doc:`/download` section of the tutorial.
-Then you can use ``bigartm`` as described by ``bigartm --help``:
+We recommend to download sample colections in **vowpal wabbit** format by links provided in :doc:`/download` section of the tutorial.
+Then you can use ``bigartm`` as described by ``bigartm --help``.
+You may also get more information about builtin regularizers by typing ``bigartm --help --regularizer``.
+
 
 .. code-block:: bash
 
@@ -174,3 +176,46 @@ Then you can use ``bigartm`` as described by ``bigartm --help``:
 
     * Configure logger to output into stderr:
       tset GLOG_logtostderr=1 & bigartm -d docword.kos.txt -v vocab.kos.txt -t 20 --num_collection_passes 10
+
+
+Additional information about regularizers:
+
+.. code-block:: bash
+
+    >bigartm.exe --regularizer --help
+    List of regularizers available in BigARTM CLI:
+
+            --regularizer "tau SmoothTheta #topics"
+            --regularizer "tau SparseTheta #topics"
+            --regularizer "tau SmoothPhi #topics @class_ids !dictionary"
+            --regularizer "tau SparsePhi #topics @class_ids !dictionary"
+            --regularizer "tau Decorrelation #topics @class_ids"
+            --regularizer "tau TopicSelection #topics"
+            --regularizer "tau LabelRegularization #topics @class_ids !dictionary"
+            --regularizer "tau ImproveCoherence #topics @class_ids !dictionary"
+            --regularizer "tau Biterms #topics @class_ids !dictionary"
+
+    List of regularizers available in BigARTM, but not exposed in CLI:
+
+            --regularizer "tau SpecifiedSparsePhi"
+            --regularizer "tau SmoothPtdw"
+            --regularizer "tau HierarchySparsingTheta"
+
+    If you are interested to see any of these regularizers in BigARTM CLI please send a message to
+            bigartm-users@googlegroups.com.
+
+    By default all regularizers act on the full set of topics and modalities.
+    To limit action onto specific set of topics use hash sign (#), followed by
+    list of topics (for example, #topic1;topic2) or topic groups (#obj).
+    Similarly, to limit action onto specific set of class ids use at sign (@),
+    by the list of class ids (for example, @default_class).
+    Some regularizers accept a dictionary. To specify the dictionary use exclamation mark (!),
+    followed by the path to the dictionary(.dict file in your file system).
+    Depending on regularizer the dictinoary can be either optional or required.
+    Some regularizers expect an dictinoary with tokens and their frequencies;
+    Other regularizers expect an dictinoary with tokens co-occurencies;
+    For more information about regularizers refer to wiki-page:
+
+            https://github.com/bigartm/bigartm/wiki/Implemented-regularizers
+
+    To get full help run `bigartm --help` without --regularizer switch.
