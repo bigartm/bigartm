@@ -261,7 +261,7 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
   fin >> version;
   if (version != 0) {
     std::stringstream ss;
-    ss << "Unsupported fromat version: " << static_cast<int>(version);
+    ss << "Unsupported format version: " << static_cast<int>(version);
     BOOST_THROW_EXCEPTION(DiskReadException(ss.str()));
   }
 
