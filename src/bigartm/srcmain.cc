@@ -866,7 +866,8 @@ class ScoreHelper {
        if (output_.is_open()) output_ << sep << score_value;
      }
      if (output_.is_open()) output_ << std::endl;
-     std::cerr << "================= Iteration " << iter << " took " << formatMilliseconds(elapsed_ms) << std::endl;
+     if (iter > 0)
+      std::cerr << "================= Iteration " << iter << " took " << formatMilliseconds(elapsed_ms) << std::endl;
    }
 
    void showScores() {
@@ -1314,7 +1315,11 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     }
 
     CuckooWatch timer;
-    if (iter == 0) std::cerr << "================= Processing started.\n";
+    if (iter == 0) {
+      std::cerr << "================= Scores before processing.\n";
+      score_helper.showScores(0, 0);
+      std::cerr << "================= Processing started.\n";
+    }
 
     if (options.update_every > 0) {  // online algorithm
       FitOnlineMasterModelArgs fit_online_args;
