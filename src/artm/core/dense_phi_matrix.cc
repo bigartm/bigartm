@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "artm/core/helpers.h"
+#include "artm/utility/memory_usage.h"
 
 namespace artm {
 namespace core {
@@ -50,6 +51,14 @@ void TokenCollection::Clear() {
 
 int TokenCollection::token_size() const {
   return static_cast<int>(token_to_token_id_.size());
+}
+
+int64_t TokenCollection::ByteSize() const {
+  int64_t retval = 0;
+  retval += artm::utility::getMemoryUsage(token_id_to_token_);
+  retval += artm::utility::getMemoryUsage(token_to_token_id_);
+  for (auto& token : token_id_to_token_) retval += 2 * (token.keyword.size() + token.class_id.size());
+  return retval;
 }
 
 // =======================================================
@@ -136,6 +145,10 @@ void PhiMatrixFrame::Swap(PhiMatrixFrame* rhs) {
   topic_name_.swap(rhs->topic_name_);
   token_collection_.Swap(&rhs->token_collection_);
   spin_locks_.swap(rhs->spin_locks_);
+}
+
+int64_t PhiMatrixFrame::ByteSize() const {
+  return token_collection_.ByteSize();
 }
 
 // =======================================================
@@ -229,6 +242,12 @@ void PackedValues::reset(int size) {
   ptr_.clear();
 }
 
+int64_t PackedValues::ByteSize() const {
+  return ::artm::utility::getMemoryUsage(values_) +
+         ::artm::utility::getMemoryUsage(bitmask_) +
+         ::artm::utility::getMemoryUsage(ptr_);
+}
+
 
 // =======================================================
 // DensePhiMatrix methods
@@ -286,6 +305,12 @@ void DensePhiMatrix::increase(int token_id, const std::vector<float>& increment)
 void DensePhiMatrix::Clear() {
   values_.clear();
   PhiMatrixFrame::Clear();
+}
+
+int64_t DensePhiMatrix::ByteSize() const {
+  int64_t retval = PhiMatrixFrame::ByteSize();
+  for (auto& value : values_) retval += value.ByteSize();
+  return retval;
 }
 
 int DensePhiMatrix::AddToken(const Token& token) {

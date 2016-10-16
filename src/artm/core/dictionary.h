@@ -82,6 +82,7 @@ class Dictionary {
   size_t num_items() const { return num_items_in_collection_; }
   const std::string& name() const { return name_; }
   bool has_valid_cooc_state() const;
+  int64_t ByteSize() const;
 
   const std::vector<DictionaryEntry>& entries() const { return entries_; }
   const std::unordered_map<Token, int, TokenHasher>& token_index() const { return token_index_; }
