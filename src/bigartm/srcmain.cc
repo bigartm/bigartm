@@ -1237,6 +1237,46 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     import_model_args.set_model_name(pwt_model_name);
     import_model_args.set_file_name(options.load_model);
     master_component->ImportModel(import_model_args);
+
+    // Retrieve topic names and tokens of the imported model.
+    // Verify the model has all topic names, requested by the used.
+    // If not, find the remaining topics and initialize random matrix.
+    // Use "MergeModel" operation to join loaded model with randomly initialized "remainder".
+    // The tmp_dictionary ensures that both models have the same tokens in their dictionary.
+    ::artm::GetTopicModelArgs get_topic_model_args;
+    get_topic_model_args.set_eps(1.001f);
+    get_topic_model_args.set_matrix_layout(::artm::MatrixLayout_Sparse);
+    ::artm::TopicModel imported_model = master_component->GetTopicModel(get_topic_model_args);
+
+    std::set<std::string> remaining_topics;
+    for (auto& topic_name : master_config.topic_name()) remaining_topics.insert(topic_name);
+    for (auto& topic_name : imported_model.topic_name()) remaining_topics.erase(topic_name);
+    if (!remaining_topics.empty()) {
+      DictionaryData tmp_dictionary;
+      tmp_dictionary.set_name("cd85d76c-5869-41d9-93ca-f96f5f118fb8-temporary-dictionary");
+      for (int token_id = 0; token_id < imported_model.token_size(); token_id++) {
+        tmp_dictionary.add_token(imported_model.token(token_id));
+        tmp_dictionary.add_class_id(imported_model.class_id(token_id));
+      }
+      master_component->CreateDictionary(tmp_dictionary);
+
+      InitializeModelArgs tmp_model;
+      tmp_model.set_model_name("cd85d76c-5869-41d9-93ca-f96f5f118fb8-temporary-model");
+      for (auto& topic_name : remaining_topics) tmp_model.add_topic_name(topic_name);
+      tmp_model.set_dictionary_name(tmp_dictionary.name());
+      tmp_model.set_seed(static_cast< int >(options.rand_seed));
+      master_component->InitializeModel(tmp_model);
+
+      MergeModelArgs merge_model_args;
+      merge_model_args.add_nwt_source_name(pwt_model_name); merge_model_args.add_source_weight(1.0f);
+      merge_model_args.add_nwt_source_name(tmp_model.model_name()); merge_model_args.add_source_weight(1.0f);
+      merge_model_args.set_nwt_target_name(pwt_model_name);
+      merge_model_args.mutable_topic_name()->CopyFrom(master_config.topic_name());
+      master_component->MergeModel(merge_model_args);
+
+      master_component->DisposeDictionary(tmp_dictionary.name());
+      master_component->DisposeModel(tmp_model.model_name());
+    }
   } else if (options.isModelRequired()) {
     ProgressScope scope("Initializing random model from dictionary");
     InitializeModelArgs initialize_model_args;
