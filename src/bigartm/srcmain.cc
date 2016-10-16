@@ -2,12 +2,14 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <fstream>
+#include <future>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include <set>
-#include <fstream>
+#include <thread>
+#include <vector>
 
 #include "boost/lexical_cast.hpp"
 #include "boost/tokenizer.hpp"
@@ -41,6 +43,15 @@ class CuckooWatch {
  private:
   std::chrono::time_point<std::chrono::system_clock> start_;
 };
+
+static std::string formatByteSize(long long bytes) {
+  std::stringstream ss;
+  int unit = 1024 * 1024;  // MB;
+  if (bytes < unit)
+    return "<1 MB";
+  ss << bytes / unit << " MB";
+  return ss.str();
+}
 
 std::vector<boost::filesystem::path> findFilesInDirectory(std::string root, std::string ext) {
   std::vector<boost::filesystem::path> retval;
@@ -289,6 +300,7 @@ struct artm_options {
   int log_level;
   bool b_paused;
   bool b_disable_avx_opt;
+  int profile;
 
   artm_options() {
     pwt_model_name = "pwt";
@@ -595,6 +607,17 @@ void configureRegularizer(const std::string& regularizer, const std::string& top
   }
 }
 
+void output_profile_information(const MasterModel& master) {
+  auto info = master.info();
+  for (auto& model : info.model())
+    std::cerr << "\tModel " << model.name() << ": " << formatByteSize(model.byte_size()) << ", |T|=" << model.num_topics() << ", |W| = " << model.num_tokens() << ";\n";
+  for (auto& dict : info.dictionary())
+    std::cerr << "\tDictionary " << dict.name() << ": " << formatByteSize(dict.byte_size()) << ", |W|=" << dict.num_entries() << ";\n";
+  int64_t cache_size = 0;
+  for (auto& cache_entity : info.cache_entry()) cache_size += cache_entity.byte_size();
+  std::cerr << "\tCache size: " << formatByteSize(cache_size) << " in total across " << info.cache_entry_size() << " entries;\n";
+}
+
 class ScoreHelper {
  private:
    const artm_options& artm_options_;
@@ -801,10 +824,11 @@ class ScoreHelper {
      }
      else if (type == ::artm::ScoreType_PeakMemory) {
        auto score_data = master_->GetScoreAs< ::artm::PeakMemoryScore>(get_score_args);
-       std::cerr << "PeakMemory      = " << score_data.value() / 1024 << "KB";
+       std::cerr << "PeakMemory      = " << formatByteSize(score_data.value());
        if (boost::to_lower_copy(score_name) != "peakmemory") std::cerr << "\t(" << score_name << ")";
        std::cerr << "\n";
        retval = boost::lexical_cast<std::string>(score_data.value());
+       output_profile_information(*master_);
      }
      else {
        throw std::invalid_argument("Unknown score config type: " + boost::lexical_cast<std::string>(type));
@@ -1267,13 +1291,27 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       for (auto& batch_file_name : batch_file_names)
         fit_online_args.add_batch_filename(batch_file_name.string());
 
-      master_component->FitOnlineModel(fit_online_args);
+      std::future<void> future = std::async(std::launch::async, [master_component, fit_online_args]() {
+        master_component->FitOnlineModel(fit_online_args);
+      });
+
+      const int timeout_sec = options.profile > 0 ? options.profile : 60;
+      while (future.wait_for(std::chrono::seconds(timeout_sec)) != std::future_status::ready) {
+        if (options.profile > 0) { output_profile_information(*master_component); std::cerr << "===========================================\n"; }
+      }
     } else {
       FitOfflineMasterModelArgs fit_offline_args;
       for (auto& batch_file_name : batch_file_names)
         fit_offline_args.add_batch_filename(batch_file_name.string());
 
-      master_component->FitOfflineModel(fit_offline_args);
+      std::future<void> future = std::async(std::launch::async, [master_component, fit_offline_args]() {
+        master_component->FitOfflineModel(fit_offline_args);
+      });
+
+      const int timeout_sec = options.profile > 0 ? options.profile : 60;
+      while (future.wait_for(std::chrono::seconds(timeout_sec)) != std::future_status::ready) {
+        if (options.profile > 0) { output_profile_information(*master_component); std::cerr << "===========================================\n"; }
+      }
     }
 
     score_helper.showScores(iter + 1, timer.elapsed_ms());
@@ -1448,6 +1486,7 @@ int main(int argc, char * argv[]) {
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
       ("disk-cache-folder", po::value(&options.disk_cache_folder)->default_value(""), "disk cache folder")
       ("disable-avx-opt", po::bool_switch(&options.b_disable_avx_opt)->default_value(false), "disable AVX optimization (gives similar behavior of the Processor component to BigARTM v0.5.4)")
+      ("profile", po::value(&options.profile)->default_value(0), "output diagnostics information; the value indicate frequency (in seconds)")
       ("time-limit", po::value(&options.time_limit)->default_value(0), "limit execution time in milliseconds")
       ("log-dir", po::value(&options.log_dir), "target directory for logging (GLOG_log_dir)")
       ("log-level", po::value(&options.log_level), "min logging level (GLOG_minloglevel; INFO=0, WARNING=1, ERROR=2, and FATAL=3)")

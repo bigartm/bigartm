@@ -110,3 +110,4 @@ src/artm/score/topic_mass_phi.h
 src/artm/score/background_tokens_ratio.h
 src/artm/utility/blas.h
 src/artm/utility/ifstream_or_cin.h
+src/artm/utility/memory_usage.h

@@ -26,6 +26,7 @@ class TokenCollection {
   void Clear();
   int  AddToken(const Token& token);
   void Swap(TokenCollection* rhs);
+  int64_t ByteSize() const;
 
   int token_size() const;
   bool has_token(const Token& token) const;
@@ -70,6 +71,7 @@ class PhiMatrixFrame : public PhiMatrix {
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const;
   virtual const std::string& topic_name(int topic_id) const;
   virtual ModelName model_name() const;
+  virtual int64_t ByteSize() const;
 
   void Clear();
   virtual int AddToken(const Token& token);
@@ -101,6 +103,7 @@ class PackedValues {
   explicit PackedValues(int size);
   explicit PackedValues(const PackedValues& rhs);
   PackedValues(const float* values, int size);
+  virtual int64_t ByteSize() const;
 
   bool is_packed() const;
   float get(int index) const;
@@ -122,6 +125,7 @@ class DensePhiMatrix : public PhiMatrixFrame {
                           const google::protobuf::RepeatedPtrField<std::string>& topic_name);
 
   virtual ~DensePhiMatrix() { Clear(); }
+  virtual int64_t ByteSize() const;
 
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
@@ -153,6 +157,7 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
  public:
   AttachedPhiMatrix(int address_length, float* address, PhiMatrixFrame* source);
   virtual ~AttachedPhiMatrix() { values_.clear(); }  // DO NOT delete this memory; AttachedPhiMatrix do not own it.
+  virtual int64_t ByteSize() const { return 0; }
 
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 

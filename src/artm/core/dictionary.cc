@@ -1,6 +1,7 @@
 // Copyright 2014, Additive Regularization of Topic Models.
 
 #include "artm/core/dictionary.h"
+#include "artm/utility/memory_usage.h"
 
 namespace artm {
 namespace core {
@@ -73,6 +74,21 @@ bool Dictionary::has_valid_cooc_state() const {
     return true;
 
   return (cooc_dfs_.size() == cooc_tfs_.size()) && (cooc_dfs_.size() == cooc_values_.size());
+}
+
+int64_t Dictionary::ByteSize() const {
+  int64_t retval = 0;
+  retval += ::artm::utility::getMemoryUsage(entries_);
+  retval += ::artm::utility::getMemoryUsage(token_index_);
+  retval += ::artm::utility::getMemoryUsage(cooc_values_);
+  retval += ::artm::utility::getMemoryUsage(cooc_tfs_);
+  retval += ::artm::utility::getMemoryUsage(cooc_dfs_);
+  for (auto& entry : cooc_values_) retval += ::artm::utility::getMemoryUsage(entry.second);
+  for (auto& entry : cooc_tfs_) retval += ::artm::utility::getMemoryUsage(entry.second);
+  for (auto& entry : cooc_dfs_) retval += ::artm::utility::getMemoryUsage(entry.second);
+  for (auto& entry : entries_)
+    retval += 2 * (entry.token().keyword.size() + entry.token().class_id.size());
+  return retval;
 }
 
 const std::unordered_map<int, float>* Dictionary::cooc_info_impl(const Token& token, const CoocMap& cooc_map) const {

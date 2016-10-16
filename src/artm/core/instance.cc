@@ -145,6 +145,7 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
     MasterComponentInfo::DictionaryInfo* info = master_info->add_dictionary();
     info->set_name(name);
     info->set_num_entries(dict->size());
+    info->set_byte_size(dict->ByteSize());
   }
 
   for (auto& name : batches_.keys()) {
@@ -166,6 +167,7 @@ void Instance::RequestMasterComponentInfo(MasterComponentInfo* master_info) cons
       info->set_num_tokens(p_wt->token_size());
       info->set_num_topics(p_wt->topic_size());
       info->set_type(typeid(*p_wt).name());
+      info->set_byte_size(p_wt->ByteSize());
     }
   }
 

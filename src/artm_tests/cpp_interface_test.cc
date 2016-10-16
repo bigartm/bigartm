@@ -420,6 +420,9 @@ TEST(CppInterface, ProcessBatchesApi) {
   master_info = master.info();
   ASSERT_EQ(master_info.dictionary_size(), 2);
   EXPECT_EQ(master_info.dictionary(0).num_entries(), 1);
+  ASSERT_GE(master_info.model_size(), 1);
+  for (auto& model_info : master_info.model())
+    EXPECT_GT(model_info.byte_size(), 0);
 
   {
     artm::MasterModel master_clone(api.Duplicate(::artm::DuplicateMasterComponentArgs()));

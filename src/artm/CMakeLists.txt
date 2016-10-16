@@ -165,6 +165,7 @@ set(SRC_LIST
 	utility/blas.cc
 	utility/blas.h
 	utility/ifstream_or_cin.h
+	utility/memory_usage.h
 	${CMAKE_CURRENT_BINARY_DIR}/utility/progress_printer.cc
 	utility/progress_printer.h
 )
