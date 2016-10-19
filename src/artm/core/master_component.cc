@@ -20,6 +20,7 @@
 #include "artm/regularizer_interface.h"
 #include "artm/score_calculator_interface.h"
 
+#include "artm/core/dictionary_operations.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/helpers.h"
 #include "artm/core/batch_manager.h"
@@ -121,18 +122,13 @@ void MasterComponent::DisposeRegularizer(const std::string& name) {
   instance_->DisposeRegularizer(name);
 }
 
-void MasterComponent::CreateDictionary(const DictionaryData& data) {
-  DisposeDictionary(data.name());
-
-  auto dictionary = std::make_shared<Dictionary>(data);
-  instance_->dictionaries()->set(data.name(), dictionary);
+void MasterComponent::AddDictionary(std::shared_ptr<Dictionary> dictionary) {
+  DisposeDictionary(dictionary->name());
+  instance_->dictionaries()->set(dictionary->name(), dictionary);
 }
 
-void MasterComponent::AppendDictionary(const DictionaryData& data) {
-  auto dict_ptr = instance_->dictionaries()->get(data.name());
-  if (dict_ptr == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " + data.name() + " does not exist"));
-  dict_ptr->Append(data);
+void MasterComponent::CreateDictionary(const DictionaryData& data) {
+  AddDictionary(DictionaryOperations::Create(data));
 }
 
 void MasterComponent::DisposeDictionary(const std::string& name) {
@@ -143,25 +139,13 @@ void MasterComponent::DisposeDictionary(const std::string& name) {
 }
 
 void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
-  Dictionary::Export(args, instance_->dictionaries());
+  DictionaryOperations::Export(args, instance_->dictionaries());
 }
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
-  auto import_data = Dictionary::ImportData(args);
-
-  int token_size = import_data.front()->token_size();
-  if (token_size <= 0)
-    BOOST_THROW_EXCEPTION(CorruptedMessageException("Unable to read from " + args.file_name()));
-
-  import_data.front()->set_name(args.dictionary_name());
-  CreateDictionary(*(import_data.front()));
-
-  for (int i = 1; i < import_data.size(); ++i) {
-    import_data.at(i)->set_name(args.dictionary_name());
-    AppendDictionary(*import_data.at(i));
-  }
-
-  LOG(INFO) << "Import completed, token_size = " << token_size;
+  auto dictionary = DictionaryOperations::Import(args);
+  AddDictionary(dictionary);
+  LOG(INFO) << "Import completed, token_size = " << dictionary->size();
 }
 
 void MasterComponent::Request(::artm::MasterModelConfig* result) {
@@ -178,7 +162,7 @@ void MasterComponent::Request(const GetDictionaryArgs& args, DictionaryData* res
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
       args.dictionary_name() + " does not exist or has no tokens"));
-  dict_ptr->StoreIntoDictionaryData(result);
+  DictionaryOperations::StoreIntoDictionaryData(dict_ptr, result);
   result->set_name(args.dictionary_name());
 }
 
@@ -353,17 +337,11 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
-  auto data = Dictionary::Filter(args, instance_->dictionaries());
-  CreateDictionary(*(data.first));
-  if (data.second->cooc_first_index_size() > 0)
-    AppendDictionary(*(data.second));
+  AddDictionary(DictionaryOperations::Filter(args, instance_->dictionaries()));
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
-  auto data = Dictionary::Gather(args, *instance_->batches());
-  CreateDictionary(*(data.first));
-  if (data.second->cooc_first_index_size() > 0)
-    AppendDictionary(*(data.second));
+  AddDictionary(DictionaryOperations::Gather(args, *instance_->batches()));
 }
 
 void MasterComponent::ReconfigureMasterModel(const MasterModelConfig& config) {

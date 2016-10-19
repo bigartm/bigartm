@@ -13,6 +13,7 @@
 #include "boost/utility.hpp"
 
 #include "artm/core/common.h"
+#include "artm/core/dictionary.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
 
@@ -94,8 +95,8 @@ class MasterComponent : boost::noncopyable {
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
 
+  void AddDictionary(std::shared_ptr<Dictionary> dictionary);
   void CreateDictionary(const DictionaryData& data);
-  void AppendDictionary(const DictionaryData& data);
 
   void AttachModel(const AttachModelArgs& args, int address_length, float* address);
 

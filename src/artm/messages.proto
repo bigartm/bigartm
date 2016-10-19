@@ -460,6 +460,8 @@ message DictionaryData {
   repeated int32 cooc_second_index = 8;
   repeated float cooc_value = 9;
   optional int64 num_items_in_collection = 10;  // number of documents in the collection
+  repeated float cooc_tf = 11; // these two arrays should be either empty or with size
+  repeated float cooc_df = 12; // equal to cooc_value and consistent with cooc indices
 }
 
 message FilterDictionaryArgs {
