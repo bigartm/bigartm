@@ -49,7 +49,7 @@ class LibArtm(object):
             cdll = ctypes.CDLL(lib_name)
         except OSError as e:
             exception_message = (
-                e.message + '\n'
+                '{e}\n'
                 'Failed to load artm shared library. '
                 'Try to add the location of `{default_lib_name}` file into your PATH '
                 'system variable, or to set ARTM_SHARED_LIBRARY - a specific system variable '
