@@ -16,17 +16,16 @@ class DictionaryOperations {
  public:
   static std::shared_ptr<Dictionary> Create(const DictionaryData& data);
 
-  static void Export(const ExportDictionaryArgs& args, ThreadSafeDictionaryCollection* dictionaries);
+  static void Export(const ExportDictionaryArgs& args, const Dictionary& dict);
 
   static std::shared_ptr<Dictionary> Import(const ImportDictionaryArgs& args);
 
   static std::shared_ptr<Dictionary> Gather(const GatherDictionaryArgs& args,
     const ThreadSafeCollectionHolder<std::string, Batch>& mem_batches);
 
-  static std::shared_ptr<Dictionary> Filter(const FilterDictionaryArgs& args,
-    ThreadSafeDictionaryCollection* dictionaries);
+  static std::shared_ptr<Dictionary> Filter(const FilterDictionaryArgs& args, const Dictionary& dict);
 
-  static void StoreIntoDictionaryData(std::shared_ptr<Dictionary> dictionary, DictionaryData* data);
+  static void StoreIntoDictionaryData(const Dictionary& dict, DictionaryData* data);
 };
 
 }  // namespace core

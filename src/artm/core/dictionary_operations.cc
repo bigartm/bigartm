@@ -46,7 +46,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Create(const DictionaryData& d
   return dictionary;
 }
 
-void DictionaryOperations::Export(const ExportDictionaryArgs& args, ThreadSafeDictionaryCollection* dictionaries) {
+void DictionaryOperations::Export(const ExportDictionaryArgs& args, const Dictionary& dict) {
   std::string file_name = args.file_name();
   if (!boost::algorithm::ends_with(file_name, ".dict")) {
     LOG(WARNING) << "The exporting dictionary should have .dict extension, it will be added to file name";
@@ -60,22 +60,17 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, ThreadSafeDi
   if (!fout.is_open())
     BOOST_THROW_EXCEPTION(DiskReadException("Unable to create file " + file_name));
 
-  std::shared_ptr<Dictionary> dict_ptr = dictionaries->get(args.dictionary_name());
-  if (dict_ptr == nullptr)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
-      args.dictionary_name() + " does not exist or has no tokens"));
-
-  if (!dict_ptr->has_valid_cooc_state()) {
+  if (!dict.has_valid_cooc_state()) {
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
       args.dictionary_name() + " has invalid cooc state (num values: " +
-      std::to_string(dict_ptr->cooc_values().size()) +
-      ", num tfs: " + std::to_string(dict_ptr->cooc_tfs().size()) +
-      ", num dfs: " + std::to_string(dict_ptr->cooc_dfs().size()) + ")"));
+      std::to_string(dict.cooc_values().size()) +
+      ", num tfs: " + std::to_string(dict.cooc_tfs().size()) +
+      ", num dfs: " + std::to_string(dict.cooc_dfs().size()) + ")"));
   }
 
   LOG(INFO) << "Exporting dictionary " << args.dictionary_name() << " to " << file_name;
 
-  const int token_size = static_cast<int>(dict_ptr->size());
+  const int token_size = static_cast<int>(dict.size());
 
   // ToDo: MelLain
   // Add ability to save and load several token_dict_data
@@ -86,9 +81,9 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, ThreadSafeDi
 
   DictionaryData token_dict_data;
   token_dict_data.set_name(args.dictionary_name());
-  token_dict_data.set_num_items_in_collection(dict_ptr->num_items());
+  token_dict_data.set_num_items_in_collection(dict.num_items());
   for (int token_id = 0; token_id < token_size; ++token_id) {
-    auto entry = dict_ptr->entry(token_id);
+    auto entry = dict.entry(token_id);
     token_dict_data.add_token(entry->token().keyword);
     token_dict_data.add_class_id(entry->token().class_id);
     token_dict_data.add_token_value(entry->token_value());
@@ -104,12 +99,12 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, ThreadSafeDi
   DictionaryData cooc_dict_data;
   int current_cooc_length = 0;
   const int max_cooc_length = 10 * 1000 * 1000;
-  if (dict_ptr->cooc_values().size()) {
+  if (dict.cooc_values().size()) {
     for (int token_id = 0; token_id < token_size; ++token_id) {
-      auto entry = dict_ptr->entry(token_id);
-      auto cooc_values_info = dict_ptr->token_cooc_values(entry->token());
-      auto cooc_tfs_info = dict_ptr->token_cooc_tfs(entry->token());
-      auto cooc_dfs_info = dict_ptr->token_cooc_dfs(entry->token());
+      auto entry = dict.entry(token_id);
+      auto cooc_values_info = dict.token_cooc_values(entry->token());
+      auto cooc_tfs_info = dict.token_cooc_tfs(entry->token());
+      auto cooc_dfs_info = dict.token_cooc_dfs(entry->token());
 
       if (cooc_values_info != nullptr) {
         for (auto iter = cooc_values_info->begin(); iter != cooc_values_info->end(); ++iter) {
@@ -147,7 +142,7 @@ void DictionaryOperations::Export(const ExportDictionaryArgs& args, ThreadSafeDi
   }
 
   fout.close();
-  LOG(INFO) << "Export completed, token_size = " << dict_ptr->size();
+  LOG(INFO) << "Export completed, token_size = " << dict.size();
 }
 
 std::shared_ptr<Dictionary> DictionaryOperations::Import(const ImportDictionaryArgs& args) {
@@ -426,21 +421,14 @@ std::shared_ptr<Dictionary> DictionaryOperations::Gather(const GatherDictionaryA
   return dictionary;
 }
 
-std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryArgs& args,
-  ThreadSafeDictionaryCollection* dictionaries) {
+std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryArgs& args, const Dictionary& dict) {
   auto dictionary = std::make_shared<Dictionary>(Dictionary(args.dictionary_target_name()));
 
-  auto src_dictionary_ptr = dictionaries->get(args.dictionary_name());
-  if (src_dictionary_ptr == nullptr) {
-    LOG(ERROR) << "Dictionary::Filter(): filter was requested for non-exists dictionary '"
-      << args.dictionary_name() << "', operation was aborted";
-  }
-
-  auto& src_entries = src_dictionary_ptr->entries();
-  auto& dictionary_token_index = src_dictionary_ptr->token_index();
+  auto& src_entries = dict.entries();
+  auto& dictionary_token_index = dict.token_index();
   std::unordered_map<int, int> old_index_new_index;
 
-  float size = static_cast<float>(src_dictionary_ptr->num_items());
+  float size = static_cast<float>(dict.num_items());
   std::vector<bool> entries_mask(src_entries.size(), false);
   std::vector<float> df_values;
   int accepted_tokens_count = 0;
@@ -487,7 +475,7 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
       accepted_tokens_count - 1));
   }
 
-  auto& cooc_values = src_dictionary_ptr->cooc_values();
+  auto& cooc_values = dict.cooc_values();
 
   for (auto iter = cooc_values.begin(); iter != cooc_values.end(); ++iter) {
     auto first_index_iter = old_index_new_index.find(iter->first);
@@ -505,11 +493,11 @@ std::shared_ptr<Dictionary> DictionaryOperations::Filter(const FilterDictionaryA
   return dictionary;
 }
 
-void DictionaryOperations::StoreIntoDictionaryData(std::shared_ptr<Dictionary> dictionary, DictionaryData* data) {
-  data->set_name(dictionary->name());
-  data->set_num_items_in_collection(dictionary->num_items());
-  auto& entries = dictionary->entries();
-  for (int i = 0; i < dictionary->size(); ++i) {
+void DictionaryOperations::StoreIntoDictionaryData(const Dictionary& dict, DictionaryData* data) {
+  data->set_name(dict.name());
+  data->set_num_items_in_collection(dict.num_items());
+  auto& entries = dict.entries();
+  for (int i = 0; i < dict.size(); ++i) {
     data->add_token(entries[i].token().keyword);
     data->add_class_id(entries[i].token().class_id);
     data->add_token_value(entries[i].token_value());

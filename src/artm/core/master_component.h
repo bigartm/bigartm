@@ -95,7 +95,6 @@ class MasterComponent : boost::noncopyable {
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
 
-  void AddDictionary(std::shared_ptr<Dictionary> dictionary);
   void CreateDictionary(const DictionaryData& data);
 
   void AttachModel(const AttachModelArgs& args, int address_length, float* address);
@@ -112,6 +111,8 @@ class MasterComponent : boost::noncopyable {
                                  ::artm::ThetaMatrix* theta_matrix);
 
   void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure);
+
+  void AddDictionary(std::shared_ptr<Dictionary> dictionary);
 
   std::shared_ptr<Instance> instance_;
 };

@@ -139,7 +139,12 @@ void MasterComponent::DisposeDictionary(const std::string& name) {
 }
 
 void MasterComponent::ExportDictionary(const ExportDictionaryArgs& args) {
-  DictionaryOperations::Export(args, instance_->dictionaries());
+  std::shared_ptr<Dictionary> dict_ptr = instance_->dictionaries()->get(args.dictionary_name());
+  if (dict_ptr == nullptr)
+    BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
+    args.dictionary_name() + " does not exist or has no tokens"));
+
+  DictionaryOperations::Export(args, *dict_ptr);
 }
 
 void MasterComponent::ImportDictionary(const ImportDictionaryArgs& args) {
@@ -162,7 +167,7 @@ void MasterComponent::Request(const GetDictionaryArgs& args, DictionaryData* res
   if (dict_ptr == nullptr)
     BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
       args.dictionary_name() + " does not exist or has no tokens"));
-  DictionaryOperations::StoreIntoDictionaryData(dict_ptr, result);
+  DictionaryOperations::StoreIntoDictionaryData(*dict_ptr, result);
   result->set_name(args.dictionary_name());
 }
 
@@ -337,7 +342,13 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
-  AddDictionary(DictionaryOperations::Filter(args, instance_->dictionaries()));
+  auto src_dictionary_ptr = instance_->dictionaries()->get(args.dictionary_name());
+  if (src_dictionary_ptr == nullptr) {
+    LOG(ERROR) << "Dictionary::Filter(): filter was requested for non-exists dictionary '"
+      << args.dictionary_name() << "', operation was aborted";
+  }
+
+  AddDictionary(DictionaryOperations::Filter(args, *src_dictionary_ptr));
 }
 
 void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
