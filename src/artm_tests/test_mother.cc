@@ -38,6 +38,7 @@ RegularizerConfig TestMother::GenerateRegularizerConfig() const {
 std::vector<std::shared_ptr< ::artm::Batch>>
 TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryData* dictionary) {
   std::vector<std::shared_ptr< ::artm::Batch>> retval;
+  bool first_iter = true;
   for (int iBatch = 0; iBatch < batches_size; ++iBatch) {
     ::artm::Batch batch;
     batch.set_id(artm::test::Helpers::getUniqueString());
@@ -48,7 +49,7 @@ TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryDat
       str << "token" << i;
       batch.add_token(str.str());
 
-      if (dictionary != nullptr)
+      if (dictionary != nullptr && first_iter)
         dictionary->add_token(str.str());
     }
 
@@ -63,6 +64,7 @@ TestMother::GenerateBatches(int batches_size, int nTokens, ::artm::DictionaryDat
     }
 
     retval.push_back(std::make_shared< ::artm::Batch>(batch));
+    first_iter = false;
   }
   return retval;
 }

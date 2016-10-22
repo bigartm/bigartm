@@ -360,8 +360,16 @@ inline std::string DescribeErrors(const ::artm::DictionaryData& message) {
     ss << "DictionaryData general token fields have inconsistent sizes; ";
   }
 
-  if (message.cooc_first_index_size() != message.cooc_second_index_size() ||
-      message.cooc_first_index_size() != message.cooc_value_size()) {
+  bool fst_size = message.cooc_first_index_size();
+  bool snd_size = message.cooc_second_index_size();
+  bool val_size = message.cooc_value_size();
+  bool tf_size = message.cooc_tf_size();
+  bool df_size = message.cooc_df_size();
+
+  if ((fst_size != snd_size) ||
+      (fst_size != val_size) ||
+      (tf_size != df_size) ||
+      (tf_size > 0 && tf_size != fst_size)) {
     ss << "DictionaryData cooc fields have inconsistent sizes; ";
   }
 

@@ -91,6 +91,8 @@ set(SRC_LIST
 	core/dense_phi_matrix.h
 	core/dictionary.cc
 	core/dictionary.h
+	core/dictionary_operations.cc
+	core/dictionary_operations.h
 	core/exceptions.h
 	core/helpers.cc
 	core/helpers.h
