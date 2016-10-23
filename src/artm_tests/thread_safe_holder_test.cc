@@ -35,13 +35,6 @@ TEST(ThreadSafeHolder, Basic) {
 
 // To run this particular test:
 // artm_tests.exe --gtest_filter=Async.*
-TEST(Async, Boost) {
-  int input = 123;
-  boost::unique_future<int> fut = boost::async(boost::launch::async, [input](){ return input; });
-  int output = fut.get();
-  ASSERT_EQ(input, output);
-}
-
 TEST(Async, Std) {
   int input = 123;
   std::future<int> fut = std::async(std::launch::async, [input](){ return input; });
