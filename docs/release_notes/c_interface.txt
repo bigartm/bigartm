@@ -11,6 +11,15 @@ v0.8.2
    Pelase report any issues at `bigartm-users@googlegroups.com <https://groups.google.com/group/bigartm-users>`_.
 
 * Change ``ArtmParseCollection`` to return ``CollectionParserInfo`` message
+* Add APIs to enable JSON serialization for all input and output protobuf messages
+
+  - ``ArtmSetProtobufMessageFormatToJson()``
+  - ``ArtmSetProtobufMessageFormatToBinary()``
+  - ``ArtmProtobufMessageFormatIsJson()``
+
+  The default setting is, as before, to serialize all message into binary buffer.
+  Current limitation is that ``RegularizerConfig.config``, ``ScoreConfig.config`` and ``ScoreData.data``
+  still require binary serialization.
 
 v0.8.0
 ------

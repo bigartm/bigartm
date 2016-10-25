@@ -105,6 +105,8 @@ set(SRC_LIST
 	core/processor_input.cc
 	core/processor_input.h
 	core/protobuf_helpers.h
+	core/protobuf_serialization.h
+	core/protobuf_serialization.cc
 	core/phi_matrix.h
 	core/phi_matrix_operations.cc
 	core/phi_matrix_operations.h

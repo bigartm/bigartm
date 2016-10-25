@@ -229,10 +229,12 @@ TEST(MultipleClasses, BasicTest) {
   ASSERT_EQ(matrix_theta.no_columns(), nTopics);
   for (int token_index = 0; token_index < nTokens; ++token_index)
     for (int topic_index = 0; topic_index < nTopics; ++topic_index)
-      EXPECT_EQ(matrix_phi(token_index, topic_index), topic_model1.token_weights(token_index).value(topic_index));
+      ASSERT_APPROX_EQ(matrix_phi(token_index, topic_index),
+                       topic_model1.token_weights(token_index).value(topic_index));
   for (int topic_index = 0; topic_index < nTopics; ++topic_index)
     for (int item_index = 0; item_index < nDocs; ++item_index)
-      EXPECT_EQ(matrix_theta(item_index, topic_index), theta_matrix1.item_weights(item_index).value(topic_index));
+      ASSERT_APPROX_EQ(matrix_theta(item_index, topic_index),
+                       theta_matrix1.item_weights(item_index).value(topic_index));
 
   // ToDo: validate matrix_phi and matrix_theta
 

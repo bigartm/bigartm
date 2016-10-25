@@ -86,6 +86,10 @@ extern "C" {
   DLL_PUBLIC const char* ArtmGetLastErrorMessage();
   DLL_PUBLIC const char* ArtmGetVersion();
   DLL_PUBLIC int ArtmConfigureLogging(int length, const char* configure_logging_args);
+
+  DLL_PUBLIC int ArtmSetProtobufMessageFormatToJson();
+  DLL_PUBLIC int ArtmSetProtobufMessageFormatToBinary();
+  DLL_PUBLIC int ArtmProtobufMessageFormatIsJson();
 }
 
 #endif  // SRC_ARTM_C_INTERFACE_H_

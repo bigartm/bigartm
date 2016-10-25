@@ -6,6 +6,8 @@
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
 
+#include "google/protobuf/util/json_util.h"
+
 #include "artm/c_interface.h"
 #include "artm/cpp_interface.h"
 #include "artm/core/exceptions.h"
@@ -27,8 +29,12 @@ TEST(CppInterface, Version) {
   EXPECT_GT(version.size(), 0);
 }
 
-// artm_tests.exe --gtest_filter=CppInterface.BasicTest
-TEST(CppInterface, BasicTest) {
+void RunBasicTest(bool serialize_as_json) {
+  if (serialize_as_json)
+    ArtmSetProtobufMessageFormatToJson();
+  else
+    ArtmSetProtobufMessageFormatToBinary();
+
   artm::ConfigureLoggingArgs log_args;
   log_args.set_minloglevel(2);
   artm::ConfigureLogging(log_args);
@@ -256,6 +262,19 @@ TEST(CppInterface, BasicTest) {
 
   try { boost::filesystem::remove_all(target_path); }
   catch (...) {}
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.BasicTest
+TEST(CppInterface, BasicTest) {
+  bool wasJson = ArtmProtobufMessageFormatIsJson();
+  try { RunBasicTest(false); } catch (...) {}
+  wasJson ? ArtmSetProtobufMessageFormatToJson() : ArtmSetProtobufMessageFormatToBinary();
+}
+
+TEST(CppInterface, BasicTestJson) {
+  bool wasJson = ArtmProtobufMessageFormatIsJson();
+  RunBasicTest(true);
+  wasJson ? ArtmSetProtobufMessageFormatToJson() : ArtmSetProtobufMessageFormatToBinary();
 }
 
 // artm_tests.exe --gtest_filter=CppInterface.ProcessBatchesApi
@@ -496,8 +515,8 @@ TEST(CppInterface, AttachModel) {
   // Verify that it is possible to modify the attached matrix
   for (int token_index = 0; token_index < nwt_merge_model.token_size(); ++token_index) {
     for (int topic_index = 0; topic_index < nwt_merge_model.num_topics(); ++topic_index) {
-      EXPECT_EQ(attached_nwt_merge(token_index, topic_index),
-                nwt_merge_model.token_weights(token_index).value(topic_index));
+      ASSERT_APPROX_EQ(attached_nwt_merge(token_index, topic_index),
+                       nwt_merge_model.token_weights(token_index).value(topic_index));
       attached_nwt_merge(token_index, topic_index) = 2.0f * token_index + 3.0f * topic_index;
     }
   }
@@ -505,8 +524,8 @@ TEST(CppInterface, AttachModel) {
   ::artm::TopicModel updated_model = master.GetTopicModel(get_model_args);
   for (int token_index = 0; token_index < nwt_merge_model.token_size(); ++token_index) {
     for (int topic_index = 0; topic_index < nwt_merge_model.num_topics(); ++topic_index) {
-      EXPECT_EQ(updated_model.token_weights(token_index).value(topic_index),
-                2.0f * token_index + 3.0f * topic_index);
+      ASSERT_APPROX_EQ(updated_model.token_weights(token_index).value(topic_index),
+                       2.0f * token_index + 3.0f * topic_index);
     }
   }
 
@@ -626,4 +645,16 @@ TEST(CppInterface, Dictionaries) {
 
   try { boost::filesystem::remove(import_args.file_name()); }
   catch (...) {}
+}
+
+// artm_tests.exe --gtest_filter=ProtobufMessages.Json
+TEST(ProtobufMessages, Json) {
+  ::artm::MasterModelConfig config, config2;
+  config.set_num_processors(12);
+  std::string json;
+  ASSERT_EQ(::google::protobuf::util::MessageToJsonString(config, &json),
+            ::google::protobuf::util::Status::OK);
+  ASSERT_EQ(::google::protobuf::util::JsonStringToMessage("{num_processors:12}", &config2),
+            ::google::protobuf::util::Status::OK);
+  ASSERT_EQ(config.num_processors(), config2.num_processors());
 }

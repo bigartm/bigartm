@@ -6,6 +6,8 @@
 
 #include <iostream>  // NOLINT
 
+#include "google/protobuf/util/json_util.h"
+
 #include "artm/cpp_interface.h"
 
 namespace artm {
@@ -16,6 +18,23 @@ inline char* StringAsArray(std::string* str) {
 
 inline std::string GetLastErrorMessage() {
   return std::string(ArtmGetLastErrorMessage());
+}
+
+static void ParseMessageFromString(const std::string& string, google::protobuf::Message* message) {
+  if (ArtmProtobufMessageFormatIsJson()) {
+    ::google::protobuf::util::JsonStringToMessage(string, message);
+  } else {
+    message->ParseFromString(string);
+  }
+}
+
+static void SerializeMessageToString(const google::protobuf::Message& message, std::string* output) {
+  if (ArtmProtobufMessageFormatIsJson()) {
+    ::google::protobuf::util::MessageToJsonString(message, output);
+  } else {
+    output->clear();
+    message.SerializeToString(output);
+  }
 }
 
 int HandleErrorCode(int artm_error_code) {
@@ -51,14 +70,14 @@ int HandleErrorCode(int artm_error_code) {
 template<typename ArgsT, typename FuncT>
 int ArtmExecute(const ArgsT& args, FuncT func) {
   std::string blob;
-  args.SerializeToString(&blob);
+  SerializeMessageToString(args, &blob);
   return HandleErrorCode(func(blob.size(), StringAsArray(&blob)));
 }
 
 template<typename ArgsT, typename FuncT>
 int ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
   std::string blob;
-  args.SerializeToString(&blob);
+  SerializeMessageToString(args, &blob);
   return HandleErrorCode(func(master_id, blob.size(), StringAsArray(&blob)));
 }
 
@@ -69,7 +88,7 @@ ResultT ArtmCopyResult(int length) {
   HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
 
   ResultT result;
-  result.ParseFromString(result_blob);
+  ParseMessageFromString(result_blob, &result);
   return result;
 }
 
