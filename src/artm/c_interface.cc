@@ -21,6 +21,7 @@
 #include "artm/core/template_manager.h"
 #include "artm/core/collection_parser.h"
 #include "artm/core/batch_manager.h"
+#include "artm/core/protobuf_serialization.h"
 
 typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::MasterComponent>> MasterComponentManager;
 typedef artm::core::TemplateManager<std::shared_ptr< ::artm::core::BatchManager>> AsyncProcessBatchesManager;
@@ -118,8 +119,11 @@ static char* StringAsArray(std::string* str) {
 }
 
 static void ParseFromArray(const char* buffer, int length, google::protobuf::Message* message) {
-  if (!message->ParseFromArray(buffer, length))
-    BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException("Unable to parse the message"));
+  ::artm::core::ProtobufSerialization::singleton().ParseFromArray(buffer, length, message);
+}
+
+static void SerializeToString(const google::protobuf::Message& message, std::string* output) {
+  ::artm::core::ProtobufSerialization::singleton().SerializeToString(message, output);
 }
 
 // =========================================================================
@@ -151,6 +155,20 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
     LOG_IF(INFO, !description.empty()) << "EnableLogging with " << description;
     return ARTM_SUCCESS;
   } CATCH_EXCEPTIONS;
+}
+
+int ArtmSetProtobufMessageFormatToJson() {
+  ::artm::core::ProtobufSerialization::singleton().SetFormatToJson();
+  return ARTM_SUCCESS;
+}
+
+int ArtmSetProtobufMessageFormatToBinary() {
+  ::artm::core::ProtobufSerialization::singleton().SetFormatToBinary();
+  return ARTM_SUCCESS;
+}
+
+int ArtmProtobufMessageFormatIsJson() {
+  return ::artm::core::ProtobufSerialization::singleton().IsJson();
 }
 
 int ArtmCopyRequestImpl(int length, char* address, std::string* source) {
@@ -293,7 +311,7 @@ int ArtmParseCollection(int length, const char* collection_parser_config) {
     ::artm::core::ValidateMessage(config, /* throw_error =*/ true);
     ::artm::core::CollectionParser collection_parser(config);
     ::artm::CollectionParserInfo result = collection_parser.Parse();
-    result.SerializeToString(last_message());
+    SerializeToString(result, last_message());
     return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
@@ -303,7 +321,7 @@ int ArtmRequestLoadBatch(const char* filename) {
     EnableLogging();
     auto batch = std::make_shared< ::artm::Batch>();
     ::artm::core::Helpers::LoadMessage(filename, batch.get());
-    batch->SerializeToString(last_message());
+    SerializeToString(*batch, last_message());
     return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
@@ -477,7 +495,7 @@ int ArtmRequest(int master_id) {
     ResultT result;
     master_component(master_id)->Request(&result);
     ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
-    result.SerializeToString(last_message());
+    SerializeToString(result, last_message());
     return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
@@ -493,7 +511,7 @@ int ArtmRequest(int master_id, int length, const char* args_blob) {
     LOG_IF(INFO, !description.empty()) << "Pass " << description << " to MasterComponent::Request";
     master_component(master_id)->Request(args, &result);
     ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
-    result.SerializeToString(last_message());
+    SerializeToString(result, last_message());
     return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
@@ -509,7 +527,7 @@ int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
     LOG_IF(INFO, !description.empty()) << "Pass " << description << " to MasterComponent::Request (extended)";
     master_component(master_id)->Request(args, &result, last_message_ex());
     ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
-    result.SerializeToString(last_message());
+    SerializeToString(result, last_message());
     return static_cast<int>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }

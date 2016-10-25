@@ -11,6 +11,8 @@
 
 #include "gtest/gtest.h"
 
+#include "google/protobuf/util/json_util.h"
+
 #include "artm/cpp_interface.h"
 #include "artm/core/common.h"
 
@@ -216,7 +218,10 @@ TEST(Supcry, TransformAfterOverwrite) {
   // Step 3. Import topic model
   topic_model->set_name("garbage");  // to test ArtmOverwriteTopicModelNamed
   std::string blob;
-  topic_model->SerializeToString(&blob);
+  if (ArtmProtobufMessageFormatIsJson())
+    ::google::protobuf::util::MessageToJsonString(*topic_model, &blob);
+  else
+    topic_model->SerializeToString(&blob);
   ArtmOverwriteTopicModelNamed(master_model.id(), blob.size(), &*(blob.begin()), /*name=*/ nullptr);
 
   // Step 4. Find theta matrix
