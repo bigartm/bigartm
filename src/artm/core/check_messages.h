@@ -14,6 +14,7 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/internals.pb.h"
 #include "artm/core/token.h"
+#include "artm/core/protobuf_serialization.h"
 
 namespace artm {
 namespace core {
@@ -459,6 +460,74 @@ inline std::string DescribeErrors(const ::artm::CollectionParserConfig& message)
 template<typename T>
 inline void FixMessage(T* message) {}
 
+#define FIX_REGULARIZER_CONFIG(T, U) if (message->type() == T) { message->set_config(ProtobufSerialization::ConvertJsonToBinary< U>(message->config_json())); fixed = true; }  // NOLINT
+#define FIX_SCORE_CONFIG(T, U) if (message->type() == T) { message->set_config(ProtobufSerialization::ConvertJsonToBinary< U>(message->config_json())); fixed = true; }  // NOLINT
+#define FIX_SCORE_DATA(T, U) if (message->type() == T) { message->set_data_json( ProtobufSerialization::ConvertBinaryToJson< U>(message->data())); fixed = true; }  // NOLINT
+
+template<>
+inline void FixMessage(::artm::RegularizerConfig* message) {
+  if (ProtobufSerialization::singleton().IsJson() && message->has_config_json() && !message->has_config()) {
+    bool fixed = false;
+    FIX_REGULARIZER_CONFIG(RegularizerType_SmoothSparseTheta, ::artm::SmoothSparseThetaConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_SmoothSparsePhi, ::artm::SmoothSparsePhiConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_DecorrelatorPhi, ::artm::DecorrelatorPhiConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_MultiLanguagePhi, ::artm::MultiLanguagePhiConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_LabelRegularizationPhi, ::artm::LabelRegularizationPhiConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_SpecifiedSparsePhi, ::artm::SpecifiedSparsePhiConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_ImproveCoherencePhi, ::artm::ImproveCoherencePhiConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_SmoothPtdw, ::artm::SmoothPtdwConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_TopicSelectionTheta, ::artm::TopicSelectionThetaConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_BitermsPhi, ::artm::BitermsPhiConfig);
+    FIX_REGULARIZER_CONFIG(RegularizerType_HierarchySparsingTheta, ::artm::HierarchySparsingThetaConfig);
+    if (!fixed) BOOST_THROW_EXCEPTION(InternalError("Given RegularizerType is not supported for json serialization"));
+  }
+}
+
+template<>
+inline void FixMessage(::artm::ScoreConfig* message) {
+  if (ProtobufSerialization::singleton().IsJson() && message->has_config_json() && !message->has_config()) {
+    bool fixed = false;
+    FIX_SCORE_CONFIG(ScoreType_Perplexity, ::artm::PerplexityScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_SparsityTheta, ::artm::SparsityThetaScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_SparsityPhi, ::artm::SparsityPhiScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_ItemsProcessed, ::artm::ItemsProcessedScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_TopTokens, ::artm::TopTokensScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_ThetaSnippet, ::artm::ThetaSnippetScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_TopicKernel, ::artm::TopicKernelScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_TopicMassPhi, ::artm::TopicMassPhiScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_ClassPrecision, ::artm::ClassPrecisionScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_PeakMemory, ::artm::PeakMemoryScoreConfig);
+    FIX_SCORE_CONFIG(ScoreType_BackgroundTokensRatio, ::artm::BackgroundTokensRatioScoreConfig);
+    if (!fixed) BOOST_THROW_EXCEPTION(InternalError("Given ScoreType is not supported for json serialization"));
+  }
+
+  if (message->type() == ScoreType_TopTokens)
+    FixPackedMessage<TopTokensScoreConfig>(message->mutable_config());
+}
+
+template<>
+inline void FixMessage(::artm::ScoreData* message) {
+  if (ProtobufSerialization::singleton().IsJson() && message->has_data() && !message->has_data_json()) {
+    bool fixed = false;
+    FIX_SCORE_DATA(ScoreType_Perplexity, ::artm::PerplexityScore);
+    FIX_SCORE_DATA(ScoreType_SparsityTheta, ::artm::SparsityThetaScore);
+    FIX_SCORE_DATA(ScoreType_SparsityPhi, ::artm::SparsityPhiScore);
+    FIX_SCORE_DATA(ScoreType_ItemsProcessed, ::artm::ItemsProcessedScore);
+    FIX_SCORE_DATA(ScoreType_TopTokens, ::artm::TopTokensScore);
+    FIX_SCORE_DATA(ScoreType_ThetaSnippet, ::artm::ThetaSnippetScore);
+    FIX_SCORE_DATA(ScoreType_TopicKernel, ::artm::TopicKernelScore);
+    FIX_SCORE_DATA(ScoreType_TopicMassPhi, ::artm::TopicMassPhiScore);
+    FIX_SCORE_DATA(ScoreType_ClassPrecision, ::artm::ClassPrecisionScore);
+    FIX_SCORE_DATA(ScoreType_PeakMemory, ::artm::PeakMemoryScore);
+    FIX_SCORE_DATA(ScoreType_BackgroundTokensRatio, ::artm::BackgroundTokensRatioScore);
+    if (!fixed) BOOST_THROW_EXCEPTION(InternalError("Given ScoreType is not supported for json de-serialization"));
+  }
+}
+
+#undef FIX_REGULARIZER_CONFIG
+#undef FIX_SCORE_CONFIG
+#undef FIX_SCORE_DATA
+
 template<>
 inline void FixMessage(::artm::TopicModel* message) {
   const int token_size = message->token_size();
@@ -558,10 +627,13 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
   if (message->reuse_theta())
     message->set_cache_theta(true);
 
+  for (int i = 0; i < message->regularizer_config_size(); ++i) {
+    FixMessage(message->mutable_regularizer_config(i));
+  }
+
   for (int i = 0; i < message->score_config_size(); ++i) {
     ScoreConfig* score_config = message->mutable_score_config(i);
-    if (score_config->type() == ScoreType_TopTokens)
-      FixPackedMessage<TopTokensScoreConfig>(score_config->mutable_config());
+    FixMessage(score_config);
 
     if (!score_config->has_model_name())
       score_config->set_model_name(message->pwt_name());
@@ -605,6 +677,18 @@ template<>
 inline void FixMessage(::artm::ImportBatchesArgs* message) {
   for (int i = 0; i < message->batch_size(); ++i)
     FixMessage(message->mutable_batch(i));
+}
+
+template<>
+inline void FixMessage(::artm::ProcessBatchesResult* message) {
+  for (int i = 0; i < message->score_data_size(); ++i)
+    FixMessage(message->mutable_score_data(i));
+}
+
+template<>
+inline void FixMessage(::artm::ScoreArray* message) {
+  for (int i = 0; i < message->score_size(); ++i)
+    FixMessage(message->mutable_score(i));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

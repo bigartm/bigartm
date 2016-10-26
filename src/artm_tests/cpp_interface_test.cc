@@ -20,6 +20,7 @@
 #include "artm_tests/api.h"
 
 namespace fs = boost::filesystem;
+namespace pb = google::protobuf;
 
 TEST(CppInterface, Canary) {
 }
@@ -55,7 +56,10 @@ void RunBasicTest(bool serialize_as_json) {
   const int nTopics = master_config.topic_name_size();
 
   ::artm::ScoreConfig* score_config = master_config.add_score_config();
-  score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
+  if (serialize_as_json)
+    pb::util::MessageToJsonString(::artm::PerplexityScoreConfig(), score_config->mutable_config_json());
+  else
+    score_config->set_config(::artm::PerplexityScoreConfig().SerializeAsString());
   score_config->set_type(::artm::ScoreType_Perplexity);
   score_config->set_name("PerplexityScore");
 
@@ -69,7 +73,10 @@ void RunBasicTest(bool serialize_as_json) {
   artm::DecorrelatorPhiConfig decor_config;
   reg_decor_config->set_name("decorrelator");
   reg_decor_config->set_type(artm::RegularizerType_DecorrelatorPhi);
-  reg_decor_config->set_config(decor_config.SerializeAsString());
+  if (serialize_as_json)
+    pb::util::MessageToJsonString(decor_config, reg_decor_config->mutable_config_json());
+  else
+    reg_decor_config->set_config(decor_config.SerializeAsString());
   reg_decor_config->set_tau(1.0);
 
   // Create master component
@@ -135,6 +142,7 @@ void RunBasicTest(bool serialize_as_json) {
     ::artm::GetScoreValueArgs get_score_args;
     get_score_args.set_score_name("PerplexityScore");
     auto perplexity = master_component.GetScoreAs< ::artm::PerplexityScore>(get_score_args);
+    if (serialize_as_json) EXPECT_FALSE(master_component.GetScore(get_score_args).data_json().empty());
 
     if (iter > 0)
       EXPECT_EQ(perplexity.value(), previous_perplexity);
