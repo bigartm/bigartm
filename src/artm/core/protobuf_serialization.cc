@@ -47,5 +47,28 @@ void ProtobufSerialization::SerializeToString(const google::protobuf::Message& m
   }
 }
 
+std::string ProtobufSerialization::ConvertJsonToBinary(const std::string& json,
+                                                       google::protobuf::Message* temporary) {
+  if (pb::util::JsonStringToMessage(json, temporary) != pb::util::Status::OK)
+    BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException("Unable to parse the message from json format"));
+
+  std::string output;
+  if (!temporary->SerializeToString(&output))
+    BOOST_THROW_EXCEPTION(::artm::core::InvalidOperation("Unable to serialize the message"));
+  return output;
+}
+
+std::string ProtobufSerialization::ConvertBinaryToJson(const std::string& binary,
+                                                       google::protobuf::Message* temporary) {
+  if (!temporary->ParseFromString(binary))
+    BOOST_THROW_EXCEPTION(::artm::core::CorruptedMessageException("Unable to parse the message"));
+
+  std::string output;
+  if (pb::util::MessageToJsonString(*temporary, &output) != pb::util::Status::OK)
+    BOOST_THROW_EXCEPTION(::artm::core::InvalidOperation("Unable to serialize the message to json format"));
+
+  return output;
+}
+
 }  // namespace core
 }  // namespace artm

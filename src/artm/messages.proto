@@ -94,6 +94,7 @@ message RegularizerConfig {
   optional bytes config = 3;
   optional float tau = 4;
   optional double gamma = 5;
+  optional string config_json = 6;
 }
 
 // Represents a configuration of a SmoothSparse Theta regularizer
@@ -214,6 +215,7 @@ message ScoreConfig {
   optional ScoreType type = 2 [default = ScoreType_Unknown];
   optional bytes config = 3;
   optional string model_name = 4;
+  optional string config_json = 5;
 }
 
 // Represents a result of score calculation
@@ -221,6 +223,7 @@ message ScoreData {
   optional string name = 1;
   optional ScoreType type = 2 [default = ScoreType_Unknown];
   optional bytes data = 3;
+  optional string data_json = 4;
 }
 
 message ScoreArray {

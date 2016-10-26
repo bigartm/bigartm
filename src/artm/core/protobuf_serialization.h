@@ -28,6 +28,21 @@ class ProtobufSerialization {
   void SerializeToString(const google::protobuf::Message& message, std::string* output);
   std::string SerializeAsString(const google::protobuf::Message& message);
 
+  template<typename T>
+  static std::string ConvertJsonToBinary(const std::string& json) {
+    T temporary;
+    return ConvertJsonToBinary(json, &temporary);
+  }
+
+  template<typename T>
+  static std::string ConvertBinaryToJson(const std::string& binary) {
+    T temporary;
+    return ConvertBinaryToJson(binary, &temporary);
+  }
+
+  static std::string ConvertJsonToBinary(const std::string& json, google::protobuf::Message* temporary);
+  static std::string ConvertBinaryToJson(const std::string& binary, google::protobuf::Message* temporary);
+
  private:
   ProtobufSerialization() : use_json_format_(false) {}
   bool use_json_format_;

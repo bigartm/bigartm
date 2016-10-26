@@ -18,8 +18,10 @@ v0.8.2
   - ``ArtmProtobufMessageFormatIsJson()``
 
   The default setting is, as before, to serialize all message into binary buffer.
-  Current limitation is that ``RegularizerConfig.config``, ``ScoreConfig.config`` and ``ScoreData.data``
-  still require binary serialization.
+  Note that for with json serialization one should use ``RegularizerConfig.config_json``,
+  ``ScoreConfig.config_json`` and ``ScoreData.data_json`` instead of
+  ``RegularizerConfig.config``, ``ScoreConfig.config`` and ``ScoreData.data``.
+
 
 v0.8.0
 ------
