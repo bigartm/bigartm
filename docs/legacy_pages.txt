@@ -19,6 +19,5 @@ Legacy pages are kept to preserve existing user's links (favourites in browser, 
    stories/cloud_service
    ref/algorithm
    ref/messages
-   ref/c_interface
    ref/cpp_interface
    ref/windows_distribution

@@ -1,24 +1,225 @@
-============================
-Plain C interface of BigARTM
-============================
+==================
+Low-level API in C
+==================
 
-This document explains all public methods of the low level BigARTM interface.
+This document explains all public methods of the low level BigARTM interface, written in plain C language.
 
 Introduction
 ------------
 
-The goal of low level BigARTM interface is to expose all functionality of the library
-in a set of simple functions written in good old plain C language.
+The goal of low level API is to expose all functionality of the library
+in a set of simple functions written in plain C language.
 This makes it easier to consume BigARTM from various programming environments.
-For example, the :doc:`python_interface` of BigARTM uses `ctypes <https://docs.python.org/2/library/ctypes.html>`_
+For example, the :doc:`../python_interface` of BigARTM uses `ctypes <https://docs.python.org/2/library/ctypes.html>`_
 module to call the low level BigARTM interface.
 Most programming environments also have similar functionality:
 `PInvoke <http://msdn.microsoft.com/en-us/library/aa288468(v=vs.71).aspx>`_ in C#,
 `loadlibrary <http://www.mathworks.se/help/matlab/matlab_external/calling-functions-in-shared-libraries.html>`_ in Matlab,
 etc.
 
-Note that most methods in this API accept a serialized binary representation of some Google Protocol Buffer message.
-Please, refer to :doc:`messages` for more details about each particular message.
+Typical methods of low-level API may look as follows:
+
+.. code-block:: bash
+
+   int ArtmCreateMasterModel(int length, const char* master_model_config);
+   int ArtmFitOfflineMasterModel(int master_id, int lenght, const char* fit_offline_master_model_args);
+   int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
+ 
+This methods, similarly to most other methods in low level API,
+accept a serialized binary representation of some Google Protocol Buffer message.
+From BigARTM v0.8.2 it is also possible to pass JSON-serialized protobuf message.
+This might be useful if you are planing to use low-level C interface from environment where
+configuring protobuf libraries would be challenging.
+Please, refer to :doc:`messages` for more details about each particular message,
+and `Protobuf documentation <https://developers.google.com/protocol-buffers/docs/proto3#json>`_ regarding JSON mapping.
+
+Note that this documentation is incomplete.
+For the actual list the methods of low-level C API please refer to
+`c_interface.h <https://github.com/bigartm/bigartm/blob/master/src/artm/c_interface.h>`_.
+Same is true about messages documentation.
+It is always recommended to review the
+`messages.proto <https://github.com/bigartm/bigartm/blob/master/src/artm/messages.proto>`_ definition.
+
+If you plan to implement a high-wrapper around low-level API we recoomend to review
+the source code of existing wrappers
+`cpp_interface.h <https://github.com/bigartm/bigartm/blob/master/src/artm/cpp_interface.h>`_,
+`cpp_interface.cc <https://github.com/bigartm/bigartm/blob/master/src/artm/cpp_interface.cc>`_ (for C++ wrapper)
+and `spec.py <https://github.com/bigartm/bigartm/blob/master/python/artm/wrapper/spec.py>`_,
+`api.py <https://github.com/bigartm/bigartm/blob/master/python/artm/wrapper/api.py>`_ (for python wrapper).
+
+List of all methods with corresponding protobuf types
+-----------------------------------------------------
+
+.. code-block:: bash
+
+                              ArtmConfigureLogging           (           artm.ConfigureLoggingArgs);
+  const char*               = ArtmGetVersion();
+  const char*               = ArtmGetLastErrorMessage();
+
+  artm.CollectionParserInfo = ArtmParseCollection            (           artm.CollectionParserConfig);
+  
+  master_id                 = ArtmCreateMasterModel          (           artm.MasterModelConfig);
+                              ArtmReconfigureMasterModel     (master_id, artm.MasterModelConfig);
+                              ArtmDisposeMasterComponent     (master_id);
+
+                              ArtmImportBatches              (master_id, artm.ImportBatchesArgs);
+
+                              ArtmGatherDictionary           (master_id, artm.GatherDictionaryArgs);
+                              ArtmFilterDictionary           (master_id, artm.FilterDictionaryArgs);
+                              ArtmCreateDictionary           (master_id, artm.DictionaryData);
+                              ArtmImportDictionary           (master_id, artm.ImportDictionaryArgs);
+                              ArtmExportDictionary           (master_id, artm.ExportDictionaryArgs);
+  artm.DictionaryData       = ArtmRequestDictionary          (master_id, artm.GetDictionaryArgs);
+
+                              ArtmInitializeModel            (master_id, artm.InitializeModelArgs);
+                              ArtmExportModel                (master_id, artm.ExportModel);
+                              ArtmImportModel                (master_id, artm.ImportModel);
+                              ArtmOverwriteTopicModel        (master_id, artm.TopicModel);
+
+                              ArtmFitOfflineMasterModel      (master_id, artm.FitOfflineMasterModelArgs);
+                              ArtmFitOnlineMasterModel       (master_id, attm.FitOnlineMasterModelArgs);
+  artm.ThetaMatrix          = ArtmRequestTransformMasterModel(master_id, artm.TransformMasterModelArgs);
+  artm.ThetaMatrix          = ArtmRequestTransformMasterModelExternal(master_id, artm.TransformMasterModelArgs);
+
+  artm.MasterModelConfig    = ArtmRequestMasterModelConfig   (master_id);
+  artm.ThetaMatrix          = ArtmRequestThetaMatrix         (master_id, artm.GetThetaMatrix);
+  artm.ThetaMatrix          = ArtmRequestThetaMatrixExternal (master_id, artm.GetThetaMatrix);
+  artm.TopicModel           = ArtmRequestTopicModel          (master_id, artm.GetTopicModel);
+  artm.TopicModel           = ArtmRequestTopicModelExternal  (master_id, artm.GetTopicModel);
+  artm.ScoreData            = ArtmRequestScore               (master_id, artm.GetScoreValueArgs);
+  artm.ScoreArray           = ArtmRequestScoreArray          (master_id, artm.GetScoreArrayArgs);
+  artm.MasterComponentInfo  = ArtmRequestMasterComponentInfo (master_id, artm.GetMasterComponentInfoArgs);
+
+                              ArtmDisposeModel               (master_id, const char* model_name);
+                              ArtmDisposeDictionary          (master_id, const char* dictionary_name);
+                              ArtmDisposeBatch               (master_id, const char* batch_name);
+                              ArtmClearThetaCache            (master_id, artm.ClearThetaCacheArgs);
+                              ArtmClearScoreCache            (master_id, artm.ClearScoreCacheArgs);
+                              ArtmClearScoreArrayCache       (master_id, artm.ClearScoreArrayCacheArgs);
+
+                              ArtmCopyRequestedMessage        (int length, char* address);
+                              ArtmCopyRequestedObject         (int length, char* address);
+  
+                              ArtmSetProtobufMessageFormatToJson();
+                              ArtmSetProtobufMessageFormatToBinary();
+  int                       = ArtmProtobufMessageFormatIsJson();
+
+Below we give a short description of these methods.
+
+  * ``ArtmConfigureLogging`` allows to configure logging parameters; this method is optional, you may not use it
+  * ``ArtmGetVersion`` returns the version of BigARTM library
+  * ``ArtmParseCollection`` parse collection in VW or UCI-BOW formats, creates batches and stores them to disk
+  * ``ArtmCreateMasterModel`` / ``ArtmReconfigureMasterModel`` / ``ArtmDisposeMasterComponent``
+    create master model / updates its parameters / dispose given instance of master model.
+  * ``ArtmImportBatches`` loads batches from disk into memory for quicker processing.
+    This is optional, most methods that require batches can work directly with files on disk.
+  * ``ArtmGatherDictionary`` / ``ArtmFilterDictionary`` / ``ArtmImportDictionary`` / ``ArtmExportDictionary``
+    Main methods to work with dictionaries. *Gather* initialized the dictionary based on a folder with batches,
+    *Filter* eliminates tokens based on their frequency, *Import*/*Export* save and re-load dictionary to/from disk.
+  * You may also created the dictionary from ``artm.DictionaryData`` message, that contains the list of all tokens to be included in the dictionary.
+    To do this use method ``ArtmCreateDictionary`` (to create a dictionary) and ``ArtmRequestDictionary``
+    (to retrieve ``artm.DictionaryData`` for an existing dictionary). 
+  * ``ArtmInitializeModel`` / ``ArtmExportModel`` / ``ArtmImportModel`` handle *models*
+    (e.g. matrices of size ``|T|*|W|`` such as *pwt*, *nwt* or *rwt*).
+    *Initialize** fills the matrix with random ``0..1`` values.
+    *Export* and *Import* saves the matrix to disk and re-loads it back.
+  * ``ArtmOverwriteTopicModel`` allows to overwite values in topic model
+    (for example to manually specify initial approximation).
+  * ``ArtmFitOfflineMasterModel`` --- fit the model with *offline* algorithm
+  * ``ArtmFitOnlineMasterModel`` --- fit the model with *online* algorithm
+  * ``ArtmRequestTransformMasterModel`` --- apply the model to new data
+  * ``ArtmRequestMasterModelConfig`` --- retrieve configuration of master model
+  * ``ArtmRequestThetaMatrix`` --- retrieve cached theta matrix
+  * ``ArtmRequestTopicModel`` --- retrieve a model (e.g. pwt, nwt or rwt matrix)
+  * ``ArtmRequestScore`` -- retrieve score (such as perplexity, sparsity, etc)
+  * ``ArtmRequestScoreArray`` -- retrieve historical information for a given score
+  * ``ArtmRequestMasterComponentInfo`` -- retrieve diagnostics information and internal state of the master model
+  * ``ArtmDisposeModel`` / ``ArtmDisposeDictionary`` / ``ArtmDisposeBatch`` -- dispose specific objects
+  * ``ArtmClearThetaCache`` / ``ArtmClearScoreCache`` / ``ArtmClearScoreArrayCache`` -- clear specific caches
+  * ``ArtmSetProtobufMessageFormatToJson`` / ``ArtmSetProtobufMessageFormatToBinary`` /
+    ``ArtmProtobufMessageFormatIsJson`` -- configure the low-level API to work with
+    JSON-serialized protobuf messages instead of binary-serialized protobuf messages
+
+The following operations are less important part of low-level BigARTM CLI.
+In most cases you won'e need them, unless you have a very specific needs.
+
+.. code-block:: bash
+
+  master_id                 = ArtmDuplicateMasterComponent     (master_id, artm.DuplicateMasterComponentArgs);
+                              ArtmCreateRegularizer            (master_id, artm.RegularizerConfig);
+                              ArtmReconfigureRegularizer       (master_id, artm.RegularizerConfig);
+                              ArtmDisposeRegularizer           (master_id, const char* regularizer_name);
+                              ArtmOverwriteTopicModelNamed     (master_id, artm.TopicModel, const char* name);
+                              ArtmCreateDictionaryNamed        (master_id, artm.DictionaryData, const char* name);
+                              ArtmAttachModel                  (master_id, artm.AttachModelArgs, int address_length, char* address);
+  artm.ProcessBatchesResult = ArtmRequestProcessBatches        (master_id, artm.ProcessBatchesArgs);
+  artm.ProcessBatchesResult = ArtmRequestProcessBatchesExternal(master_id, artm.ProcessBatchesArgs);
+                              ArtmAsyncProcessBatches          (master_id, artm.ProcessBatchesArgs);
+                              ArtmMergeModel                   (master_id, artm.MergeModelArgs);
+                              ArtmRegularizeModel              (master_id, artm.RegularizeModelArgs);
+                              ArtmNormalizeModel               (master_id, artm.NormalizeModelArgs);
+  artm.Batch                = ArtmRequestLoadBatch             (           const char* filename);
+                              ArtmAwaitOperation               (           int operation_id, artm.AwaitOperationArgs);
+                              ArtmSaveBatch                    (           const char* disk_path, artm.Batch);
+
+
+Protocol for retrieving results
+-------------------------------
+
+The methods in low-level API can be split into two groups ---
+those that *execute* certain action, and those that *request* certain data.
+For example ``ArtmCreateMasterModel`` and ``ArtmFitOfflineMasterModel``
+just execute an action, while ``ArtmRequestTopicModel`` is a request for data.
+Naming convention is that such requests always start with ``ArtmRequest`` prefix.
+
+1. To call execute-action method is fairly straighforward ---
+first you create a protobuf message that describe the arguments of the operation.
+For example, ``ArtmCreateMasterModel`` expects ``artm.MasterModelConfig`` message,
+as defined in the documentation of ``ArtmCreateMasterModel``. 
+Then you serialize protobuf message,
+and pass it to the method along with the length of the serialized message.
+In some cases you also pass the *master_id*, returned by ``ArtmCreateMasterModel``,
+as described in details futher below on this page.
+The execute-action method will typically return an error code,
+with zero value (or ``ARTM_SUCCESS``) indicating successfull execution. 
+
+2. To call request-data method is more tricky.
+First you follow the same procedure as when calling an execute-action method,
+e.g. create and serialize protobuf message and pass it to your ``ArtmRequestXxx`` operation.
+For example, ``ArtmRequestTopicModel`` expects ``artm.GetTopicModelArgs`` message. 
+Then the method like ``ArtmRequestTopicModel`` will return the size (in bytes)
+of the memory buffer that needs to be allocated by caller.
+To fill this buffer with actual data you need to call method
+
+.. code-block:: bash
+
+   int ArtmCopyRequestedMessage(int length, char* address)
+
+where ``address`` give a pointer to the memory buffer,
+and ``length`` must give the length of the buffer
+(e.g. must match the value returned by ``ArtmRequestXxx`` call).
+After ``ArtmCopyRequestedMessage`` the buffer will contain protobuf-serialized message.
+To deserialize this message you need to know its protobuf type,
+which will be defined by the documentation of the ``ArtmRequestXxx`` method that you are calling.
+For ``ArtmRequestTopicModel`` it will be a ``artm.TopicModel`` message.
+
+3. Note that few ``ArtmRequestXxx`` methods has a more complex protocol that require two subsequent calls ---
+first, to ``ArtmCopyRequestedMessage``, and then to ``ArtmCopyRequestedObject``.
+If that's the case the name of the method will be ``ArtmRequestXxxExternal``
+(for example ``ArtmRequestThetaMatrixExternal`` or ``ArtmRequestTopicModelExternal``).
+Typically this is used to copy out large objects, such as theta or phi matrices,
+and store them directly as dense matrices, bypassing protobuf serialization.
+For more information see
+`cpp_interface.cc <https://github.com/bigartm/bigartm/blob/master/src/artm/cpp_interface.cc>`_.
+
+A side-note on thread safety:
+in between calls to ``ArtmRequestXxx`` and ``ArtmCopyRequestedMessage``
+the result is stored in a thread local storage.
+This allows you to call multiple ``ArtmRequestXxx`` methods from different threads.
+
+
+Error handling
+--------------
 
 All methods in this API return an integer value.
 Negative return values represent an error code.
@@ -26,609 +227,39 @@ See :ref:`error codes <error-codes>` for the list of all error codes.
 To get corresponding error message as string use :c:func:`ArtmGetLastErrorMessage`.
 Non-negative return values represent a success, and for some API methods
 might also incorporate some useful information.
-For example, :c:func:`ArtmCreateMasterComponent` returns the ID of newly created master component,
+For example, :c:func:`ArtmCreateMasterModel` returns the ID of newly created master component,
 and :c:func:`ArtmRequestTopicModel` returns the length of the buffer that should be allocated before
 calling :c:func:`ArtmCopyRequestedMessage`.
 
 
-ArtmCreateMasterComponent
--------------------------
-
-.. c:function::  int ArtmCreateMasterComponent(int length, const char* master_component_config)
-
-   Creates a master component.
-
-   :param const_char* master_component_config:
-      Serialized :ref:`MasterComponentConfig` message,
-      describing the configuration of the master component.
-
-   :param int length: The length in bytes of the *master_component_config* message.
-
-   :return: In case of success, a non-negative ID of the master component,
-            otherwise one of the :ref:`error codes <error-codes>`.
-
-   The ID, returned by this operation, is required by most methods in this API.
-   Several master components may coexist in the same process.
-   In such case any two master components with different IDs can not share any common data,
-   and thus they are completely independent from each other.
-
-
-ArtmReconfigureMasterComponent
-------------------------------
-
-.. c:function::  int ArtmReconfigureMasterComponent(int master_id, int length, const char* master_component_config)
-
-   Changes the configuration of the master component.
-
-   :param int master_id: The ID of a master component
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* master_component_config:
-      Serialized :ref:`MasterComponentConfig` message,
-      describing the new configuration of the master component.
-
-   :param int length: The length in bytes of the *master_component_config* message.
-
-   :return: A zero value if operation succeeded, otherwise one of the :ref:`error codes <error-codes>`.
-
-
-ArtmDisposeMasterComponent
---------------------------
-
-.. c:function::  int ArtmDisposeMasterComponent(int master_id)
-
-   Disposes master component together with all its models, regularizers and dictionaries.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :return: This operation always returns :c:macro:`ARTM_SUCCESS`.
-
-   This operation releases memory and other unmanaged resources, used by the master component.
-
-   After this operation the *master_id* value becames invalid and must not be used in other operations.
-
-
-ArtmCreateModel
----------------
-
-.. c:function::  int ArtmCreateModel(int master_id, int length, const char* model_config)
-
-   Defines a new topic model.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* model_config:
-      Serialized :ref:`ModelConfig` message,
-      describing the configuration of the topic model.
-
-   :param int length: The length in bytes of the *model_config* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-   Note that this method only defines the configuration a topic model,
-   but does not tune it. Use :c:func:`ArtmInvokeIteration` method
-   to process the collection of textual documents, and then :c:func:`ArtmRequestTopicModel`
-   to retrieve the resulting topic model.
-
-   It is important to notice that *model_config* must have a unique value in the :attr:`ModelConfig.name` field,
-   that can be further used to identify the model (for example in :c:func:`ArtmRequestTopicModel` call).
-
-
-ArtmReconfigureModel
---------------------
-
-.. c:function::  int ArtmReconfigureModel(int master_id, int length, const char* model_config)
-
-   Updates the configuration of topic model.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* model_config:
-      Serialized :ref:`ModelConfig` message,
-      describing the new configuration of the topic model.
-
-   :param int length: The length in bytes of the *model_config* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-
-ArtmDisposeModel
-----------------
-
-.. c:function::  int ArtmDisposeModel(int master_id, const char* model_name)
-
-   Explicitly delete a specific topic model.
-   All regularizers within specific master component are also deleted automatically by :c:func:`ArtmDisposeMasterComponent`.
-
-   After :c:func:`ArtmDisposeModel` the *model_name* became invalid and shell not be used in
-   :c:func:`ArtmRequestScore`, :c:func:`ArtmRequestTopicModel`, :c:func:`ArtmRequestThetaMatrix`
-   or any other method (or protobuf message) that require *model_name*.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* model_name:  A string identified of the model that should be deleted.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-ArtmCreateRegularizer
----------------------
-
-.. c:function::  int ArtmCreateRegularizer(int master_id, int length, const char* regularizer_config)
-
-   Creates a new regularizer.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* regularizer_config:
-      Serialized :ref:`RegularizerConfig` message,
-      describing the configuration of a new regularizer.
-
-   :param int length: The length in bytes of the *regularizer_config* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-   This operation only creates the regularizer so that it can be used by topic models.
-   To actually apply the regularizer you should include its name in
-   :attr:`ModelConfig.regularizer_name` list of a model config.
-
-
-ArtmReconfigureRegularizer
---------------------------
-
-.. c:function::  int ArtmReconfigureRegularizer(int master_id, int length, const char* regularizer_config)
-
-   Updates the configuration of the regularizer.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* regularizer_config:
-      Serialized :ref:`RegularizerConfig` message,
-      describing the configuration of a new regularizer.
-
-   :param int length: The length in bytes of the *regularizer_config* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-ArtmDisposeRegularizer
-----------------------
-
-.. c:function::  int ArtmDisposeRegularizer(int master_id, const char* regularizer_name)
-
-   Explicitly delete a specific regularizer.
-   All regularizers within specific master component are also deleted automatically by :c:func:`ArtmDisposeMasterComponent`.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-   
-   :param const_char* regularizer_name:  A string identified of the regularizer that should be deleted.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-ArtmCreateDictionary
---------------------
-
-.. c:function::  int ArtmCreateDictionary(int master_id, int length, const char* dictionary_config)
-
-   Creates a new dictionary.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* dictionary_config:
-      Serialized :ref:`DictionaryConfig` message,
-      describing the configuration of a new dictionary.
-
-   :param int length: The length in bytes of the *dictionary_config* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-ArtmReconfigureDictionary
--------------------------
-
-.. c:function::  int ArtmReconfigureDictionary(int master_id, int length, const char* dictionary_config)
-
-   Updates the dictionary.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* dictionary_config:
-      Serialized :ref:`DictionaryConfig` message,
-      describing the new configuration of the dictionary.
-
-   :param int length: The length in bytes of the *dictionary_config* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-ArtmDisposeDictionary
----------------------
-
-.. c:function::  int ArtmDisposeDictionary(int master_id, const char* dictionary_name)
-
-   Explicitly delete a specific dictionary.
-   All dictionaries within specific master component are also deleted automatically by :c:func:`ArtmDisposeMasterComponent`.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* dictionary_name:  A string identified of the dictionary that should be deleted.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-ArtmAddBatch
-------------
-
-.. c:function::  int ArtmAddBatch(int master_id, int length, const char* add_batch_args)
-
-   Adds batch for processing.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* add_batch_args:
-      Serialized :ref:`AddBatchArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *add_batch_args* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-
-ArtmInvokeIteration
--------------------
-
-.. c:function::  int ArtmInvokeIteration(int master_id, int length, const char* invoke_iteration_args)
-
-   Invokes several iterations over the collection. 
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const char* invoke_iteration_args:
-      Serialized :ref:`InvokeIterationArgs` message,
-      describing the arguments of this operation.
-
-   :param int length:
-      The length in bytes of the *invoke_iteration_args* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-
-ArtmSynchronizeModel
---------------------
-
-.. c:function::  int ArtmSynchronizeModel(int master_id, int length, const char* sync_model_args)
-
-   Synchronizes topic model.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* sync_model_args:
-      Serialized :ref:`SynchronizeModelArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *sync_model_args* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-   This operation updates the Phi matrix of the topic model with all model increments, collected
-   since last call to ArtmSynchronizeModel. In addition, this operation invokes
-   all Phi-regularizers for the requested topic model.
-
-
-ArtmInitializeModel
--------------------
-
-.. c:function::  int ArtmInitializeModel(int master_id, int length, const char* init_model_args)
-
-   Initializes the phi matrix of a topic model with some random initial approximation.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* init_model_args:
-      Serialized :ref:`InitializeModelArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *init_model_args* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-
-ArtmExportModel
----------------
-
-.. c:function::  int ArtmExportModel(int master_id, int length, const char* export_model_args)
-
-   Exports phi matrix into a file.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* export_model_args:
-      Serialized :ref:`ExportModelArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *export_model_args* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-
-ArtmImportModel
----------------
-
-.. c:function::  int ArtmImportModel(int master_id, int length, const char* import_model_args)
-
-   Import phi matrix from a file.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* import_model_args:
-      Serialized :ref:`ImportModelArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *import_model_args* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-ArtmWaitIdle
-------------
-
-.. c:function::  int ArtmWaitIdle(int master_id, int length, const char* wait_idle_args)
-
-   Awaits for ongoing iterations. 
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* wait_idle_args:
-      Serialized :ref:`WaitIdleArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *wait_idle_args* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-ArtmOverwriteTopicModel
------------------------
-
-.. c:function::  int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model)
-
-   This operation schedules an update of an entire topic model or of it subpart.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* topic_model:
-      Serialized :ref:`TopicModel` message,
-      describing the new topic model.
-
-   :param int length: The length in bytes of the *topic_model* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
-   Note that this operation only schedules the update of a topic model.
-   To make sure the update is completed you must call :c:func:`ArtmWaitIdle`
-   and :c:func:`ArtmSynchronizeModel`.
-   Remember that by default :c:func:`ArtmSynchronizeModel` will calculate
-   all regularizers enabled in the configuration of the topic model.
-   The may result in a different topic model than the one you passed as *topic_model* parameter.
-   To avoid this behavior set :attr:`SynchronizeModelArgs.invoke_regularizers` to ``false``.
-
-ArtmRequestThetaMatrix
-----------------------
-
-.. c:function::  int ArtmRequestThetaMatrix(int master_id, int length, const char* get_theta_args)
-
-   Requests theta matrix. Use :cpp:func:`ArtmCopyRequestedMessage` to copy the resulting message.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* get_theta_args:
-      Serialized :ref:`GetThetaMatrixArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *get_theta_args* message.
-
-   :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
-            This will populate the buffer with :ref:`ThetaMatrix` message, carrying the requested information.
-            In case of a failure, returns one of the :ref:`error codes <error-codes>`.
-
-ArtmRequestTopicModel
----------------------
-
-.. c:function::  int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args)
-
-   Requests topic model.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* get_model_args:
-      Serialized :ref:`GetTopicModelArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *get_model_args* message.
-
-   :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
-            This will populate the buffer with :ref:`TopicModel` message, carrying the requested information.
-            In case of a failure, returns one of the :ref:`error codes <error-codes>`.
-
-ArtmRequestRegularizerState
----------------------------
-
-.. c:function::  int ArtmRequestRegularizerState(int master_id, const char* regularizer_name)
-
-   Requests state of a specific regularizer.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char* regularizer_name:  A string identified of the regularizer.
-
-   :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
-            This will populate the buffer with :ref:`RegularizerInternalState` message, carrying the requested information.
-            In case of a failure, returns one of the :ref:`error codes <error-codes>`.
-
-ArtmRequestScore
-----------------
-
-.. c:function::  int ArtmRequestScore(int master_id, int length, const char* get_score_args)
-
-   Request the result of score calculation.
-
-   :param int master_id: The ID of a master component,
-      returned by :c:func:`ArtmCreateMasterComponent` method.
-
-   :param const_char*: get_score_args:
-      Serialized :ref:`GetScoreValueArgs` message,
-      describing the arguments of this operation.
-
-   :param int length: The length in bytes of the *get_score_args* message.
-
-   :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
-            This will populate the buffer with :ref:`ScoreData` message, carrying the requested information.
-            In case of a failure, returns one of the :ref:`error codes <error-codes>`.
-
-
-.. _ArtmRequestParseCollection:
-
-ArtmRequestParseCollection
---------------------------
-
-.. c:function::  int ArtmRequestParseCollection(int length, const char* collection_parser_config)
-
-   Parses a text collection into a set of batches and stores them on disk.
-   Returns a :ref:`DictionaryConfig` message that lists all tokens, occured in the collection.
-   
-   Check the description of :ref:`CollectionParserConfig` message for more details about this operation.
-
-   :param const_char*: collection_parser_config:
-      Serialized :ref:`CollectionParserConfig` message,
-      describing the configuration the collection parser.
-
-   :param int length: The length in bytes of the *collection_parser_config* message.
-
-   :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
-            The buffer will contain :ref:`DictionaryConfig` message,
-            that lists all unique tokens from the collection being parsed.
-            In case of a failure, returns one of the :ref:`error codes <error-codes>`.
-
-.. warning::
-
-   The following error most likelly indicate that you are trying to parse a very large file
-   in 32 bit version of BigARTM.
-
-   ``InternalError :  failed mapping view: The parameter is incorrect``
-
-   Try to use 64 bit BigARTM to workaround this issue.
-
-.. _ArtmRequestLoadDictionary:
-
-ArtmRequestLoadDictionary
--------------------------
-
-.. c:function::  int ArtmRequestLoadDictionary(const char* filename)
-
-   Loads a :ref:`DictionaryConfig` message from disk.
-
-   :param const_char*: filename:
-            A full file name of a file that contains a serialized DictionaryConfig message.
-
-   :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
-            The buffer will contain the resulting :ref:`DictionaryConfig` message.
-            In case of a failure, returns one of the :ref:`error codes <error-codes>`.
-
-This method can be used to load  :attr:`CollectionParserConfig.dictionary_file_name` or :attr:`CollectionParserConfig.cooccurrence_file_name` dictionaries,
-saved by :ref:`ArtmRequestParseCollection` method.
-
-.. _ArtmRequestLoadBatch:
-
-ArtmRequestLoadBatch
---------------------
-
-.. c:function::  int ArtmRequestLoadBatch(const char* filename)
-
-   Loads a :ref:`Batch` message from disk.
-
-   :param const_char*: filename:
-            A full file name of a file that contains a serialized Batch message.
-
-   :return: In case of success, returns the length in bytes of a buffer that should be allocated on callers site
-            and then passed to :c:func:`ArtmCopyRequestedMessage` method.
-            The buffer will contain the resulting :ref:`Batch` message.
-            In case of a failure, returns one of the :ref:`error codes <error-codes>`.
-
-This method can be used to load batches saved by :ref:`ArtmRequestParseCollection` method or :ref:`ArtmSaveBatch` method.
-
-.. ArtmCopyRequestedMessage:
-
-ArtmCopyRequestedMessage
+MasterId and MasterModel
 ------------------------
 
-.. c:function::  int ArtmCopyRequestedMessage(int length, char* address)
+The concept of *Master Model* is central in low-level API.
+Almost any interaction with the low-level API starts by calling 
+method ``ArtmCreateMasterModel``, which creates an instance of so-called *Master Model* (or *Master Component*),
+and returns its ``master_id`` -- an integer identifier that refers to that instance.
+You need ``master_id`` in the remaining methods of the low-level API,
+such as ``ArtmFitOfflineMasterModel``.
+``master_id`` creates a context, or scope, that isolate different models from each other.
+An operation applied to a specific ``master_id`` will not affect other master components.
+Each master model occupy some memory --- potentially a very large amount,
+depending on the number of topics and tokens in the model.
+Once you are done with a specific instance of master component you need to dispose its resources
+by calling ``ArtmDisposeMasterComponent(master_id)``.
+After that ``master_id`` is no longer valid, and it must not be used as argument to other methods.
 
-  Copies the result of the last request.
+You may use method ``ArtmRequestMasterComponentInfo`` to retrieve
+internal diagnostics information about master component.
+It will reveal its internal state and tell the config of the master component,
+the list of scores and regularizers, the list of phi matrices,
+the list of dictionaries, cache entries, and other informatino
+that will help to understand how master component is functioning.
 
-  :param const_char*: address: Target memory location to copy the data.
-
-  :param int length: The length in bytes of the *address* buffer.
-
-  :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-        otherwise returns one of the :ref:`error codes <error-codes>`.
-
-.. _ArtmSaveBatch:
-
-ArtmSaveBatch
--------------
-
-.. c:function::  int ArtmSaveBatch(const char* disk_path, int length, const char* batch)
-
-   Saves a :ref:`Batch` message to disk.
-
-   :param const_char*: disk_path:
-            A floder where to save the batch.
-
-   :param const_char* batch:
-            Serialized :ref:`Batch` message to save.
-
-   :param int length: The length in bytes of the *batch* message.
-
-   :return: Returns :c:macro:`ARTM_SUCCESS` value if operation succeeded,
-            otherwise returns one of the :ref:`error codes <error-codes>`.
-
+Note there might be confusion between terms *MasterComponent* and *MasterModel*,
+throughout this page as well as in the actual naming of the methods.
+This is due to historical reasons,
+and for all practical purposes you may think that this terms refer to the same thing.
 
 ArtmGetLastErrorMessage
 -----------------------
@@ -661,7 +292,7 @@ Error codes
 
 .. c:macro:: ARTM_STILL_WORKING
 
-   This error code is applicable only to :c:func:`ArtmWaitIdle`.
+   This error code is applicable only to :c:func:`ArtmAwaitOperation`.
    It indicates that library is still processing the collection.
    Try to retrieve results later.
 
