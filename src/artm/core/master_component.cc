@@ -28,6 +28,7 @@
 #include "artm/core/check_messages.h"
 #include "artm/core/instance.h"
 #include "artm/core/processor.h"
+#include "artm/core/protobuf_helpers.h"
 #include "artm/core/phi_matrix_operations.h"
 #include "artm/core/score_manager.h"
 #include "artm/core/dense_phi_matrix.h"
@@ -324,21 +325,32 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
-  LOG(INFO) << "InitializeModel() with "
-            << args.topic_name_size() << " topics and "
-            << dict->size() << " tokens";
-
   auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
   for (int index = 0; index < dict->size(); ++index) {
     ::artm::core::Token token = dict->entry(index)->token();
+    if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id()))
+      continue;
     std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
     int token_id = new_ttm->AddToken(token);
     new_ttm->increase(token_id, vec);
   }
 
-  PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
+  if (new_ttm->token_size() == 0) {
+    std::stringstream ss;
+    ss << "Unable to initialize matrix from " << args.dictionary_name() << " dictionary. ";
+    ss << "Either the dictionary is empty, or no tokens in the dictionary matches class_id(s), ";
+    ss << "listed in the configuration of the model";
+    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+  }
 
+  PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
   instance_->SetPhiMatrix(args.model_name(), new_ttm);
+
+  LOG(INFO) << "InitializeModel() created matrix with "
+            << args.topic_name_size() << " topics and "
+            << new_ttm->token_size() << " tokens; "
+            << dict->size() - new_ttm->token_size()
+            << " tokens other present were present in the dictionary, but excluded from the model";
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
