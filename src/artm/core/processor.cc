@@ -552,8 +552,8 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
 
         if (p_dw_val == 0) continue;
         const float Z = 1.0f / p_dw_val;
-        for (int k = 0; k < num_topics; ++k)
-          ptdw_ptr[k] *= Z;
+          for (int k = 0; k < num_topics; ++k)
+              ptdw_ptr[k] *= Z;
       }
 
       ptdw_agents.Apply(d, inner_iter, &local_ptdw);
