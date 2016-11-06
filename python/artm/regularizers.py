@@ -19,6 +19,7 @@ __all__ = [
     'TopicSelectionThetaRegularizer',
     'BitermsPhiRegularizer',
     'HierarchySparsingThetaRegularizer'
+    'TopicSegmentationPtdwRegularizer'
 ]
 
 
@@ -682,3 +683,36 @@ class HierarchySparsingThetaRegularizer(BaseRegularizerTheta):
         if parent_topic_proportion is not None:
             for elem in parent_topic_proportion:
                 self._config.parent_topic_proportion.append(elem)
+
+
+class TopicSegmentationPtdwRegularizer(BaseRegularizer):
+    _config_message = messages.TopicSegmentationPtdwConfig
+    _type = const.RegularizerType_TopicSegmentationPtdw
+
+    def __init__(self, name=None, window=None, threshold=None, background_topic_names=None, config=None):
+        """
+        :param str name: the identifier of regularizer, will be auto-generated if not specified
+        :param int window: a number of words to the one side over which smoothing will be performed
+        :param float threshold: probability threshold for a word to be a topic-changing word
+        :param background_topic_names: list of names of topics to be considered background, will not consider background topics if not specified
+        :type background_topic_names: list of str
+        :param config: the low-level config of this regularizer
+        :type config: protobuf object
+        """
+
+        BaseRegularizer.__init__(self,
+                                 name=name,
+                                 tau=0,
+                                 gamma=None,
+                                 config=config)
+        if window is not None:
+            self._config.window = window
+            self._window = window
+
+        if threshold is not None:
+            self._config.threshold = threshold
+            self._threshold = threshold
+
+        if background_topic_names is not None:
+            for topic_name in background_topic_names:
+                self._config.background_topic_names.append(topic_name)
