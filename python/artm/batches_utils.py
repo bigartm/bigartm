@@ -23,7 +23,7 @@ GLOB_EPS = 1e-37
 
 class Batch(object):
     def __init__(self, filename):
-        self._filename = os.path.abspath(filename)
+        self._filename = filename
 
     def __repr__(self):
         return 'Batch({0})'.format(self._filename)
