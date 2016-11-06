@@ -55,6 +55,7 @@ static void set_last_error(const std::string& error) {
     last_error_.reset(new std::string());
   }
 
+  LOG(ERROR) << error;
   last_error_->assign(error);
 }
 
