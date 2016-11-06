@@ -694,7 +694,8 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param int window: a number of words to the one side over which smoothing will be performed
         :param float threshold: probability threshold for a word to be a topic-changing word
-        :param background_topic_names: list of names of topics to be considered background, will not consider background topics if not specified
+        :param background_topic_names: list of names of topics to be considered background,\
+                                will not consider background topics if not specified
         :type background_topic_names: list of str
         :param config: the low-level config of this regularizer
         :type config: protobuf object

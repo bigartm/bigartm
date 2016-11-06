@@ -30,6 +30,7 @@
 #include "artm/regularizer/topic_selection_theta.h"
 #include "artm/regularizer/biterms_phi.h"
 #include "artm/regularizer/hierarchy_sparsing_theta.h"
+#include "artm/regularizer/topic_segmentation_ptdw.h"
 
 #include "artm/score/items_processed.h"
 #include "artm/score/sparsity_theta.h"
@@ -268,6 +269,12 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
     case artm::RegularizerType_HierarchySparsingTheta: {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::HierarchySparsingThetaConfig,
         ::artm::regularizer::HierarchySparsingTheta);
+      break;
+    }
+
+    case artm::RegularizerType_TopicSegmentationPtdw: {
+      CREATE_OR_RECONFIGURE_REGULARIZER(::artm::TopicSegmentationPtdwConfig,
+        ::artm::regularizer::TopicSegmentationPtdw);
       break;
     }
 
