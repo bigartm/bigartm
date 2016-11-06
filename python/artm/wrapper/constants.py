@@ -16,6 +16,7 @@ RegularizerType_SmoothPtdw = 7
 RegularizerType_TopicSelectionTheta = 8
 RegularizerType_BitermsPhi = 9
 RegularizerType_HierarchySparsingTheta = 10
+RegularizerType_TopicSegmentationPtdw = 11
 TransformConfig_TransformType_Logarithm = 0
 TransformConfig_TransformType_Polynomial = 1
 TransformConfig_TransformType_Constant = 2
