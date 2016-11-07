@@ -284,6 +284,8 @@ message ItemsProcessedScoreConfig {
 message ItemsProcessedScore {
   optional int32 value = 1 [default = 0];
   optional int32 num_batches = 2 [default = 0];
+  optional double token_weight = 3 [default = 0];
+  optional double token_weight_in_effect = 4 [default = 0];
 }
 
 // Represents a configuration of a top tokens score

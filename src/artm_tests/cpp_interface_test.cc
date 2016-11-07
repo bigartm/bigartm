@@ -83,7 +83,8 @@ void RunBasicTest(bool serialize_as_json) {
   artm::MasterModel master_component(master_config);
   ::artm::test::Api api(master_component);
 
-  EXPECT_EQ(master_component.info().score_size(), 1);
+  EXPECT_GT(master_component.info().score_size(), 1);
+  EXPECT_EQ(master_component.info().score(0).name(), "PerplexityScore");
   EXPECT_EQ(master_component.info().regularizer_size(), 1);
 
   // Load doc-token matrix

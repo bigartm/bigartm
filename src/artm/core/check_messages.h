@@ -638,6 +638,11 @@ inline void FixMessage(::artm::MasterModelConfig* message) {
     if (!score_config->has_model_name())
       score_config->set_model_name(message->pwt_name());
   }
+
+  ScoreConfig* items_processed_score = message->add_score_config();
+  items_processed_score->set_name("^^^ItemsProcessedScore^^^");
+  items_processed_score->set_type(ScoreType_ItemsProcessed);
+  items_processed_score->set_config(::artm::ItemsProcessedScore().SerializeAsString());
 }
 
 template<>
@@ -909,6 +914,17 @@ inline std::string DescribeMessage(const ::artm::ConfigureLoggingArgs& message) 
   ss << ", stop_logging_if_full_disk=" <<
     (message.has_stop_logging_if_full_disk() ? (message.stop_logging_if_full_disk() ? "yes" : "no") : "");
 
+  return ss.str();
+}
+
+template<>
+inline std::string DescribeMessage(const ::artm::ItemsProcessedScore& message) {
+  std::stringstream ss;
+  ss << "ItemsProcessed";
+  ss << ", num_items=" << message.value();
+  ss << ", num_batches=" << message.num_batches();
+  ss << ", token_weight=" << message.token_weight();
+  ss << ", token_weight_in_effect=" << message.token_weight_in_effect();
   return ss.str();
 }
 

@@ -130,7 +130,7 @@ def test_func():
         info = model.info
         assert info is not None
         assert len(info.config.topic_name) == num_topics
-        assert len(info.score) == len(model.score_tracker)
+        assert len(info.score) >= len(model.score_tracker)
         assert len(info.regularizer) == len(model.regularizers.data)
         assert len(info.cache_entry) > 0
 

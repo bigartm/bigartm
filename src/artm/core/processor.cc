@@ -617,7 +617,7 @@ CalcScores(ScoreCalculatorInterface* score_calc, const Batch& batch,
     score_calc->AppendScore(item, token_dict, p_wt, args, theta_vec, score.get());
   }
 
-  score_calc->AppendScore(batch, score.get());
+  score_calc->AppendScore(batch, p_wt, args, score.get());
 
   return score;
 }

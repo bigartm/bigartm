@@ -654,6 +654,25 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args, ::artm::ThetaMatri
   instance_->cache_manager()->RequestThetaMatrix(args, result);
 }
 
+static void ValidateProcessedItems(std::string method_description, MasterComponent* master) {
+  ::artm::GetScoreValueArgs get_items_processed;
+  ::artm::ScoreData items_processed_data;
+  get_items_processed.set_score_name("^^^ItemsProcessedScore^^^");
+  master->Request(get_items_processed, &items_processed_data);
+  ::artm::ItemsProcessedScore items_processed;
+  items_processed.ParseFromString(items_processed_data.data());
+  LOG(INFO) << method_description << ": " << DescribeMessage(items_processed);
+  if (items_processed.num_batches() == 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation(method_description + ": no batches to process"));
+  if (items_processed.value() == 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation(method_description + ": no items to process --- all batches were empty"));
+  if (items_processed.token_weight() == 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation(method_description + ": no tokens to process --- all items were empty"));
+  if (items_processed.token_weight_in_effect() == 0)
+    BOOST_THROW_EXCEPTION(InvalidOperation(method_description +
+      ": no tokens in effect --- either tokens not present in the model, or tokens were ignored due to class_id"));
+}
+
 void MasterComponent::Request(const GetThetaMatrixArgs& args,
                               ::artm::ThetaMatrix* result,
                               std::string* external) {
@@ -700,6 +719,7 @@ void MasterComponent::Request(const TransformMasterModelArgs& args, ::artm::Thet
   BatchManager batch_manager;
   RequestProcessBatchesImpl(process_batches_args, &batch_manager,
                             /* async =*/ false, /*score_manager =*/ nullptr, result);
+  ValidateProcessedItems("Transform", this);
 }
 
 void MasterComponent::Request(const TransformMasterModelArgs& args,
@@ -1032,6 +1052,8 @@ void MasterComponent::FitOnline(const FitOnlineMasterModelArgs& args) {
   } else {
     artm_executor.ExecuteOnlineAlgorithm(&iter);
   }
+
+  ValidateProcessedItems("FitOnline", this);
 }
 
 void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
@@ -1066,6 +1088,8 @@ void MasterComponent::FitOffline(const FitOfflineMasterModelArgs& args) {
   ArtmExecutor artm_executor(*config, this);
   OfflineBatchesIterator iter(args.batch_filename(), args.batch_weight());
   artm_executor.ExecuteOfflineAlgorithm(args.num_collection_passes(), &iter);
+
+  ValidateProcessedItems("FitOffline", this);
 }
 
 }  // namespace core
