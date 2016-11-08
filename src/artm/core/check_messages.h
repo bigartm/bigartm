@@ -311,7 +311,7 @@ inline std::string DescribeErrors(const ::artm::InitializeModelArgs& message) {
   }
 
   if (!message.has_dictionary_name()) {
-    ss << "InitializeModelArgs.dictionary_name is not defined; ";
+    // Allow this to initialize an existing model
   }
 
   return ss.str();
@@ -433,10 +433,18 @@ inline std::string DescribeErrors(const ::artm::ImportBatchesArgs& message) {
   return ss.str();
 }
 
+inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) {
+  std::stringstream ss;
+
+  if (message.source_weight_size() != 0 && message.source_weight_size() != message.nwt_source_name_size())
+    ss << "Length mismatch in fields MergeModelArgs.source_weight and MergeModelArgs.nwt_source_name";
+
+  return ss.str();
+}
+
 // Empty ValidateMessage routines
 inline std::string DescribeErrors(const ::artm::GetTopicModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::GetThetaMatrixArgs& message) { return std::string(); }
-inline std::string DescribeErrors(const ::artm::MergeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::NormalizeModelArgs& message) { return std::string(); }
 inline std::string DescribeErrors(const ::artm::RegularizerConfig& message) { return std::string(); }
@@ -694,6 +702,14 @@ template<>
 inline void FixMessage(::artm::ScoreArray* message) {
   for (int i = 0; i < message->score_size(); ++i)
     FixMessage(message->mutable_score(i));
+}
+
+template<>
+inline void FixMessage(::artm::MergeModelArgs* message) {
+  if (message->source_weight().empty()) {
+    for (int i = 0; i < message->nwt_source_name_size(); ++i)
+      message->add_source_weight(1.0f);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
