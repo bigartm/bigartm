@@ -29,6 +29,9 @@ v0.8.2
     # using keyword argument overwrite in add function
     model.regularizers.add(SomeRegularizer(name='somename', ...), overwrite=True)
 
+* Better error reporting: raise exception in fit_offline, fit_online and transform if there is no data to process)
+* Better support for changes in topic names, with reconfigure(), initialize() and merge_model()
+
 v0.8.1
 ------
 
