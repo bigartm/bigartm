@@ -66,10 +66,32 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
 }
 
 void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure) {
-  if (!reconfigure)
+  if (!reconfigure) {
     instance_ = std::make_shared<Instance>(config);
-  else
+  } else {
+    auto old_config = instance_->config();
     instance_->Reconfigure(config);
+
+    // If there is a change in config.topic_name, update all phi matrices to new set of topics
+    // Topics that were removed from the config will be also removed from phi matrices.
+    // New topics will be initialized with zeros.
+    if (!repeated_field_equals(old_config->topic_name(), config.topic_name())) {
+      auto model_names = instance_->models()->keys();
+      for (auto model_name : model_names) {
+        auto model = instance_->GetPhiMatrixSafe(model_name);
+
+        // Ignore models where set of topics doesn't match the old config
+        if (!repeated_field_equals(model->topic_name(), old_config->topic_name()))
+          continue;
+
+        MergeModelArgs merge;
+        merge.add_nwt_source_name(model_name);
+        merge.add_source_weight(1.0f);
+        merge.set_nwt_target_name(model_name);
+        MergeModel(merge);
+      }
+    }
+  }
 
   if (reconfigure) {  // remove all regularizers
     instance_->regularizers()->clear();
@@ -312,27 +334,47 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     FixMessage(mutable_args);
   }
 
-  auto dict = instance_->dictionaries()->get(args.dictionary_name());
-  if (dict == nullptr) {
-    std::stringstream ss;
-    ss << "Dictionary '" << args.dictionary_name() << "' does not exist";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  }
+  std::shared_ptr<PhiMatrix> new_ttm;
+  int excluded_tokens = 0;
+  if (args.has_dictionary_name()) {
+    auto dict = instance_->dictionaries()->get(args.dictionary_name());
+    if (dict == nullptr) {
+      std::stringstream ss;
+      ss << "Dictionary '" << args.dictionary_name() << "' does not exist";
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
 
-  if (dict->size() == 0) {
-    std::stringstream ss;
-    ss << "Dictionary '" << args.dictionary_name() << "' has no entries";
-    BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
-  }
+    if (dict->size() == 0) {
+      std::stringstream ss;
+      ss << "Dictionary '" << args.dictionary_name() << "' has no entries";
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
 
-  auto new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
-  for (int index = 0; index < dict->size(); ++index) {
-    ::artm::core::Token token = dict->entry(index)->token();
-    if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id()))
-      continue;
-    std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
-    int token_id = new_ttm->AddToken(token);
-    new_ttm->increase(token_id, vec);
+    new_ttm = std::make_shared< ::artm::core::DensePhiMatrix>(args.model_name(), args.topic_name());
+    for (int index = 0; index < dict->size(); ++index) {
+      ::artm::core::Token token = dict->entry(index)->token();
+      if (config->class_id_size() > 0 && !is_member(token.class_id, config->class_id()))
+        continue;
+      int token_id = new_ttm->AddToken(token);
+    }
+
+    excluded_tokens = dict->size() - new_ttm->token_size();
+    LOG_IF(INFO, excluded_tokens > 0)
+      << excluded_tokens
+      << " tokens were present in the dictionary, but excluded from the model";
+
+  } else {
+    // Initialize without dictionary from an existing model
+    std::shared_ptr<const PhiMatrix> ttm = instance_->GetPhiMatrix(args.model_name());
+    if (ttm == nullptr) {
+      std::stringstream ss;
+      ss << "Invalid usage of InitializeModelArgs --- ";
+      ss << "InitializeModelArgs.dictionary is empty, and model '" << args.model_name() << "' does not exist; ";
+      BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
+    }
+
+    new_ttm = ttm->Duplicate();
+    PhiMatrixOperations::AssignValue(0.0f, new_ttm.get());
   }
 
   if (new_ttm->token_size() == 0) {
@@ -343,14 +385,18 @@ void MasterComponent::InitializeModel(const InitializeModelArgs& args) {
     BOOST_THROW_EXCEPTION(InvalidOperation(ss.str()));
   }
 
+  for (int token_index = 0; token_index < new_ttm->token_size(); token_index++) {
+    Token token = new_ttm->token(token_index);
+    std::vector<float> vec = Helpers::GenerateRandomVector(new_ttm->topic_size(), token, args.seed());
+    new_ttm->increase(token_index, vec);
+  }
+
   PhiMatrixOperations::FindPwt(*new_ttm, new_ttm.get());
   instance_->SetPhiMatrix(args.model_name(), new_ttm);
 
-  LOG(INFO) << "InitializeModel() created matrix with "
-            << args.topic_name_size() << " topics and "
-            << new_ttm->token_size() << " tokens; "
-            << dict->size() - new_ttm->token_size()
-            << " tokens other present were present in the dictionary, but excluded from the model";
+  LOG(INFO) << "InitializeModel() created matrix " << new_ttm->model_name()
+            << " with " << args.topic_name_size() << " topics and "
+            << new_ttm->token_size() << " tokens; ";
 }
 
 void MasterComponent::FilterDictionary(const FilterDictionaryArgs& args) {
@@ -550,6 +596,13 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
   if (merge_model_args.nwt_source_name_size() != merge_model_args.source_weight_size())
     BOOST_THROW_EXCEPTION(InvalidOperation(
       "MergeModelArgs.nwt_source_name_size() != MergeModelArgs.source_weight_size()"));
+
+  std::shared_ptr<MasterModelConfig> config = instance_->config();
+  if (config != nullptr) {
+    MergeModelArgs* mutable_args = const_cast<MergeModelArgs*>(&merge_model_args);
+    if (merge_model_args.topic_name_size() == 0) mutable_args->mutable_topic_name()->CopyFrom(config->topic_name());
+    FixMessage(mutable_args);
+  }
 
   std::shared_ptr<DensePhiMatrix> nwt_target;
   std::stringstream ss;

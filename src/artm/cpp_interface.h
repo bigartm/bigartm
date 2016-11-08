@@ -120,6 +120,7 @@ class MasterModel {
   void ExportModel(const ExportModelArgs& args);
   void FitOnlineModel(const FitOnlineMasterModelArgs& args);
   void FitOfflineModel(const FitOfflineMasterModelArgs& args);
+  void MergeModel(const MergeModelArgs& args);
   void DisposeModel(const std::string& model_name);
 
   // Apply model to batches

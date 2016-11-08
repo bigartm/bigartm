@@ -43,6 +43,7 @@ class PhiMatrixOperations {
   // Checks whether two PhiMatrix instances has same set of tokens and topic names.
   // The order of the tokens and topics must also match.
   static bool HasEqualShape(const PhiMatrix& first, const PhiMatrix& second);
+  static void AssignValue(float value, PhiMatrix* phi_matrix);
 };
 
 }  // namespace core

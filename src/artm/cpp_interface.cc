@@ -285,6 +285,10 @@ void MasterModel::FitOfflineModel(const FitOfflineMasterModelArgs& args) {
   ArtmExecute(id_, args, ArtmFitOfflineMasterModel);
 }
 
+void MasterModel::MergeModel(const MergeModelArgs& args) {
+  ArtmExecute(id_, args, ArtmMergeModel);
+}
+
 void MasterModel::DisposeBatch(const std::string& batch_name) {
   ArtmDisposeBatch(id_, batch_name.c_str());
 }

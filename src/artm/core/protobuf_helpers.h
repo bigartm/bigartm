@@ -70,6 +70,15 @@ bool is_member(const V& value, const T& set) {
   return false;
 }
 
+template<class T>
+bool repeated_field_equals(const T& f1, const T& f2) {
+  if (f1.size() != f2.size()) return false;
+  for (int i = 0; i < f1.size(); i++)
+    if (f1.Get(i) != f2.Get(i))
+      return false;
+  return true;
+}
+
 }  // namespace core
 }  // namespace artm
 

@@ -406,5 +406,11 @@ bool PhiMatrixOperations::HasEqualShape(const PhiMatrix& first, const PhiMatrix&
   return true;
 }
 
+void PhiMatrixOperations::AssignValue(float value, PhiMatrix* phi_matrix) {
+  for (int token_index = 0; token_index < phi_matrix->token_size(); token_index++)
+    for (int topic_index = 0; topic_index < phi_matrix->topic_size(); topic_index++)
+      phi_matrix->set(token_index, topic_index, value);
+}
+
 }  // namespace core
 }  // namespace artm

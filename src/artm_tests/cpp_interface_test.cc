@@ -12,6 +12,7 @@
 #include "artm/cpp_interface.h"
 #include "artm/core/exceptions.h"
 #include "artm/core/common.h"
+#include "artm/core/protobuf_helpers.h"
 
 #include "artm/core/internals.pb.h"
 #include "artm/core/helpers.h"
@@ -666,4 +667,54 @@ TEST(ProtobufMessages, Json) {
   ASSERT_EQ(::google::protobuf::util::JsonStringToMessage("{num_processors:12}", &config2),
             ::google::protobuf::util::Status::OK);
   ASSERT_EQ(config.num_processors(), config2.num_processors());
+}
+
+// artm_tests.exe --gtest_filter=CppInterface.ReconfigureTopics
+TEST(CppInterface, ReconfigureTopics) {
+  ::artm::MasterModelConfig config;
+  config.add_topic_name("t1"); config.add_topic_name("t2"); config.add_topic_name("t3");
+  ::artm::DictionaryData dict; dict.add_token("token"); dict.set_name("d");
+
+  ::artm::MasterModel mm(config);
+  mm.CreateDictionary(dict);
+
+  ::artm::InitializeModelArgs init; init.set_dictionary_name("d");
+  mm.InitializeModel(init);
+  auto m1 = mm.GetTopicModel();
+  ASSERT_TRUE(::artm::core::repeated_field_equals(m1.topic_name(), config.topic_name()));
+
+  config.clear_topic_name();
+  config.add_topic_name("t3"); config.add_topic_name("t1"); config.add_topic_name("t4");
+  mm.Reconfigure(config);
+  auto m2 = mm.GetTopicModel();
+  ASSERT_TRUE(::artm::core::repeated_field_equals(m2.topic_name(), config.topic_name()));
+  ASSERT_EQ(m2.token_weights(0).value(0), m1.token_weights(0).value(2));  // "t3"
+  ASSERT_EQ(m2.token_weights(0).value(1), m1.token_weights(0).value(0));  // "t1"
+  ASSERT_EQ(m2.token_weights(0).value(2), 0);  // "t4" (new topic)
+
+  ::artm::MergeModelArgs merge;
+  merge.add_topic_name("t4");  // used just to provide the set of tokens
+  merge.add_nwt_source_name(m1.name());
+  merge.set_nwt_target_name("tmp");
+  mm.MergeModel(merge);
+
+  init.clear_dictionary_name();
+  init.set_model_name("tmp");
+  mm.InitializeModel(init);
+  ::artm::GetTopicModelArgs get_model; get_model.set_model_name("tmp");
+  auto m3 = mm.GetTopicModel(get_model);
+  ASSERT_TRUE(::artm::core::repeated_field_equals(m3.topic_name(), merge.topic_name()));
+  ASSERT_NE(m3.token_weights(0).value(0), 0.0f);
+
+  merge.clear_topic_name();
+  merge.clear_nwt_source_name();
+  merge.add_nwt_source_name(m1.name());
+  merge.add_nwt_source_name("tmp");
+  merge.set_nwt_target_name(m1.name());
+  mm.MergeModel(merge);
+  auto m4 = mm.GetTopicModel();
+  ASSERT_TRUE(::artm::core::repeated_field_equals(m4.topic_name(), config.topic_name()));
+  ASSERT_EQ(m4.token_weights(0).value(0), m2.token_weights(0).value(0));  // t3, from m2
+  ASSERT_EQ(m4.token_weights(0).value(1), m2.token_weights(0).value(1));  // t1, from m2
+  ASSERT_EQ(m4.token_weights(0).value(2), m3.token_weights(0).value(0));  // t4, from m3
 }
