@@ -1315,6 +1315,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     ProgressScope scope(std::string("Saving model in readable format to ") + options.write_model_readable);
     GetTopicModelArgs get_topic_model_args;
     get_topic_model_args.set_model_name(pwt_model_name);
+    get_topic_model_args.mutable_class_id()->CopyFrom(master_config.class_id());
     CsvEscape escape(options.csv_separator.size() == 1 ? options.csv_separator[0] : '\0');
     ::artm::Matrix matrix;
     ::artm::TopicModel model = master_component->GetTopicModel(get_topic_model_args, &matrix);
