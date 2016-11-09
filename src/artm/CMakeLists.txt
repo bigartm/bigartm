@@ -127,6 +127,8 @@ set(SRC_LIST
 	regularizer/topic_selection_theta.h
 	regularizer/biterms_phi.cc
 	regularizer/biterms_phi.h
+	regularizer/topic_segmentation_ptdw.cc
+	regularizer/topic_segmentation_ptdw.h
 	score/class_precision.cc
 	score/class_precision.h
 	score/items_processed.cc

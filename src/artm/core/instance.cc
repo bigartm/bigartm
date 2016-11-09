@@ -29,6 +29,7 @@
 #include "artm/regularizer/smooth_ptdw.h"
 #include "artm/regularizer/topic_selection_theta.h"
 #include "artm/regularizer/biterms_phi.h"
+#include "artm/regularizer/topic_segmentation_ptdw.h"
 
 #include "artm/score/items_processed.h"
 #include "artm/score/sparsity_theta.h"
@@ -260,6 +261,12 @@ void Instance::CreateOrReconfigureRegularizer(const RegularizerConfig& config) {
       CREATE_OR_RECONFIGURE_REGULARIZER(::artm::BitermsPhiConfig,
         ::artm::regularizer::BitermsPhi);
       break;
+    }
+
+    case artm::RegularizerType_TopicSegmentationPtdw: {
+        CREATE_OR_RECONFIGURE_REGULARIZER(::artm::TopicSegmentationPtdwConfig,
+                                        ::artm::regularizer::TopicSegmentationPtdw);
+        break;
     }
 
     default:
