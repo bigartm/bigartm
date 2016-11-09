@@ -1279,7 +1279,7 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     score_helper.showScores(iter + 1, timer.elapsed_ms());
   }  // iter
 
-  if ((options.num_collection_passes > 0) || (options.time_limit > 0))
+  if ((options.num_collection_passes > 0) || (options.time_limit > 0) || (options.score_level == 0 && !options.final_score.empty()))
     final_score_helper.showScores();
 
   if (!options.save_model.empty()) {
