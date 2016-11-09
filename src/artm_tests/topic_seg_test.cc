@@ -32,25 +32,11 @@ TEST(Regularizer, TopicSegmentationPtdw) {
     artm::Item* item = batch.add_item();
     item->set_id(0);
     item->set_title("doc0");
-    item->add_token_id(0);
-    item->add_token_weight(1.0);
-    item->add_token_id(1);
-    item->add_token_weight(1.0);
-    item->add_token_id(2);
-    item->add_token_weight(1.0);
-    item->add_token_id(0);
-    item->add_token_weight(1.0);
-    item->add_token_id(3);
-    item->add_token_weight(1.0);
-    item->add_token_id(2);
-    item->add_token_weight(1.0);
-    item->add_token_id(1);
-    item->add_token_weight(1.0);
-    item->add_token_id(4);
-    item->add_token_weight(1.0);
-    item->add_token_id(5);
-    item->add_token_weight(1.0);
-
+    std::vector<int> token_sequence = {0, 1, 2, 0, 3, 2, 1, 4, 5};
+    for (auto e : token_sequence) {
+        item->add_token_id(e);
+        item->add_token_weight(1.0);
+    }
 
     std::vector<std::shared_ptr< ::artm::Batch>> batches;
     batches.push_back(std::make_shared< ::artm::Batch>(batch));
