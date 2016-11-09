@@ -17,7 +17,7 @@ __all__ = [
     'SmoothPtdwRegularizer',
     'TopicSelectionThetaRegularizer',
     'BitermsPhiRegularizer',
-    'TopicSegmentationPtdwRegularizer'
+    'TopicSegmentationPtdwRegularizer',
 ]
 
 
@@ -644,7 +644,7 @@ class TopicSegmentationPtdwRegularizer(BaseRegularizer):
 
         BaseRegularizer.__init__(self,
                                  name=name,
-                                 tau=0,
+                                 tau=1.0,
                                  gamma=None,
                                  config=config)
         if window is not None:

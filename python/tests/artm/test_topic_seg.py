@@ -43,24 +43,25 @@ def test_func():
         
         model_reg.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
         model.fit_offline(batch_vectorizer=batch_vectorizer, num_collection_passes=num_collection_passes)
-        model_reg.regularizers.add(artm.TopicSegmentationPtdwRegularizer(name='TopicSegmentation', window=window,\
-                                                                         threshold=threshold, background_topic_names=background_topics))
-        
+        model_reg.regularizers.add(artm.TopicSegmentationPtdwRegularizer(name='TopicSegmentation', window=window, threshold=threshold, background_topic_names=background_topics))
         ptdw = model.transform(batch_vectorizer=batch_vectorizer, theta_matrix_type='dense_ptdw')
         ptdw_reg = model_reg.transform(batch_vectorizer=batch_vectorizer, theta_matrix_type='dense_ptdw')
         
         doc_ids = np.random.choice(np.arange(3430), size=500)  #choose some documents randomly
         for doc_id in doc_ids:
             doc_df = ptdw[ptdw.columns[doc_id]]
-            token_id = window + np.random.choice(np.arange(doc_df.shape[1] - 2 * window))  #choose the token randomly somewhere from the inner part of the document
+            token_id = window + np.random.choice(np.arange(doc_df.shape[1] - 2 * window))
             
             weights = []
-            def f(x):
-                weights.append(1 - (x[0] + x[1] + x[2]))
-                return x * (1 - (x[0] + x[1] + x[2]))
-            left_dist = doc_df.iloc[:, token_id - window : token_id].apply(f, axis=0).sum(axis=1) / sum(weights)
+            
+            def __f(x):
+                temp = 1 - (x[0] + x[1] + x[2])
+                weights.append(temp)
+                return x * temp
+            
+            left_dist = doc_df.iloc[:, token_id - window : token_id].apply(__f, axis=0).sum(axis=1) / sum(weights)
             weights = []
-            right_dist = doc_df.iloc[:, token_id : token_id + window].apply(f, axis=0).sum(axis=1) / sum(weights)
+            right_dist = doc_df.iloc[:, token_id : token_id + window].apply(__f, axis=0).sum(axis=1) / sum(weights)
             
             l = left_dist.argmax()
             r = right_dist.argmax()

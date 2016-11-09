@@ -40,8 +40,7 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter, ::artm::u
     for (int k = 0; k < num_topics; ++k) {
         if (k == main_topic) {
             (*ptdw)(0, k) = 1;
-        }
-        else {
+        } else {
             (*ptdw)(0, k) = 0;
         }
     }
@@ -70,9 +69,17 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter, ::artm::u
             }
             left_weights -= 1 - background_probability[i - h - 1];
         }
-        l_topic = std::distance(left_distribution.begin(), std::max_element(left_distribution.begin(), left_distribution.end()));
-        r_topic = std::distance(right_distribution.begin(), std::max_element(right_distribution.begin(), right_distribution.end()));
-        changes_topic = ((left_distribution[l_topic]/left_weights - right_distribution[l_topic]/right_weights) / 2 + (right_distribution[r_topic]/right_weights - left_distribution[r_topic]/left_weights) / 2 > threshold_topic_change);
+        std::vector<double>::iterator lb = left_distribution.begin();
+        std::vector<double>::iterator le = left_distribution.end();
+        std::vector<double>::iterator rb = right_distribution.begin();
+        std::vector<double>::iterator re = right_distribution.end();
+        l_topic = std::distance(lb, std::max_element(lb, le));
+        r_topic = std::distance(rb, std::max_element(rb, re));
+        double ll = left_distribution[l_topic];
+        double rl = right_distribution[l_topic];
+        double rr = right_distribution[r_topic];
+        double lr = left_distribution[r_topic];
+        changes_topic = ((ll/left_weights-rl/right_weights)/2+(rr/right_weights-lr/left_weights)/2>threshold_topic_change);
         if (changes_topic) {
             main_topic = r_topic;
         }
