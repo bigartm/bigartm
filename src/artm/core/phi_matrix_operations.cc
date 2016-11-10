@@ -119,7 +119,8 @@ void PhiMatrixOperations::RetrieveExternalTopicModel(const PhiMatrix& phi_matrix
 }
 
 void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& topic_model,
-                                                   float apply_weight, PhiMatrix* phi_matrix) {
+                                                   float apply_weight, bool add_missing_tokens,
+                                                   PhiMatrix* phi_matrix) {
   if (!ValidateMessage(topic_model, /* throw_error=*/ false)) return;
 
   const bool has_sparse_format = (topic_model.topic_indices_size() > 0);
@@ -164,8 +165,11 @@ void PhiMatrixOperations::ApplyTopicModelOperation(const ::artm::TopicModel& top
 
     int current_token_id = phi_matrix->token_index(token);
     {  // previously this corresponded to TopicModel_OperationType_Increment case
-      if (current_token_id == -1)
+      if (current_token_id == -1) {
+        if (!add_missing_tokens)
+          continue;
         current_token_id = phi_matrix->AddToken(token);
+      }
 
       if (optimized_execution && !has_sparse_format_local && (counters.value_size() == this_topic_size)) {
         for (int topic_index = 0; topic_index < this_topic_size; ++topic_index)

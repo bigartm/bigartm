@@ -718,3 +718,43 @@ TEST(CppInterface, ReconfigureTopics) {
   ASSERT_EQ(m4.token_weights(0).value(1), m2.token_weights(0).value(1));  // t1, from m2
   ASSERT_EQ(m4.token_weights(0).value(2), m3.token_weights(0).value(0));  // t4, from m3
 }
+
+// artm_tests.exe --gtest_filter=CppInterface.MergeModelWithDictionary
+TEST(CppInterface, MergeModelWithDictionary) {
+  ::artm::MasterModelConfig config;
+  config.add_topic_name("t1");
+  ::artm::DictionaryData dict1; dict1.set_name("d1"); dict1.add_token("t1"); dict1.add_token("t2");
+  ::artm::DictionaryData dict2; dict2.set_name("d2"); dict2.add_token("t3"); dict2.add_token("t1");
+  ::artm::DictionaryData dict3; dict3.set_name("d3"); dict3.add_token("t1"); dict3.add_token("t4");
+  dict3.add_token("t2");
+
+  ::artm::MasterModel mm(config);
+  mm.CreateDictionary(dict1);
+  mm.CreateDictionary(dict2);
+  mm.CreateDictionary(dict3);
+
+  ::artm::InitializeModelArgs init;
+  init.set_dictionary_name("d1"); init.set_model_name("m1"); mm.InitializeModel(init);
+  init.set_dictionary_name("d2"); init.set_model_name("m2"); mm.InitializeModel(init);
+
+  ::artm::GetTopicModelArgs get_model;
+  get_model.set_model_name("m1"); auto m1 = mm.GetTopicModel(get_model);
+  get_model.set_model_name("m2"); auto m2 = mm.GetTopicModel(get_model);
+
+  ::artm::MergeModelArgs merge;
+  merge.add_nwt_source_name("m1");
+  merge.add_nwt_source_name("m2");
+  merge.set_nwt_target_name("m");
+  merge.set_dictionary_name("d3");
+  mm.MergeModel(merge);
+  get_model.set_model_name("m"); auto m = mm.GetTopicModel(get_model);
+
+  ASSERT_EQ(m.token_size(), 3);
+  ASSERT_EQ(m.token(0), "t1");
+  ASSERT_EQ(m.token(1), "t4");
+  ASSERT_EQ(m.token(2), "t2");
+
+  ASSERT_EQ(m.token_weights(0).value(0), m1.token_weights(0).value(0) + m2.token_weights(1).value(0));
+  ASSERT_EQ(m.token_weights(1).value(0), 0.0f);
+  ASSERT_EQ(m.token_weights(2).value(0), m1.token_weights(1).value(0));
+}

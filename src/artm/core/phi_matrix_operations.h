@@ -24,7 +24,7 @@ class PhiMatrixOperations {
 
   // Apply protobuf message 'topic_model' to phi_matrix
   static void ApplyTopicModelOperation(
-    const ::artm::TopicModel& topic_model, float apply_weight, PhiMatrix* phi_matrix);
+    const ::artm::TopicModel& topic_model, float apply_weight, bool add_missing_tokens, PhiMatrix* phi_matrix);
 
   // Calculate phi matrix regularizers (r_wt)
   static void InvokePhiRegularizers(
