@@ -21,7 +21,7 @@ def test_func():
     window = 3
     threshold = 0.2
 
-    data_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    data_path = os.environ.get('BIGARTM_UNITTEST_DATA')
     batches_folder = tempfile.mkdtemp()
 
     try:
