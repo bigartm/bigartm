@@ -82,6 +82,8 @@ void SpinLock::Unlock() {
 PhiMatrixFrame::PhiMatrixFrame(const ModelName& model_name,
                                const google::protobuf::RepeatedPtrField<std::string>& topic_name)
     : model_name_(model_name), topic_name_(), token_collection_(), spin_locks_() {
+  if (topic_name.size() == 0)
+    BOOST_THROW_EXCEPTION(artm::core::InvalidOperation("Can not create model " + model_name + " with 0 topics"));
   for (auto iter = topic_name.begin(); iter != topic_name.end(); ++iter) {
     topic_name_.push_back(*iter);
   }
@@ -185,6 +187,16 @@ float PackedValues::get(int index) const {
   }
 }
 
+void PackedValues::get(std::vector<float>* buffer) const {
+  if (is_packed()) {
+    buffer->assign(buffer->size(), 0.0f);
+    for (int i = 0; i < ptr_.size(); i++)
+      buffer->at(ptr_[i]) = values_[i];
+  } else {
+    buffer->assign(values_.begin(), values_.end());
+  }
+}
+
 float* PackedValues::unpack() {
   if (is_packed()) {
     const int full_size = bitmask_.size();
@@ -278,6 +290,11 @@ float DensePhiMatrix::get(int token_id, int topic_id) const {
   return values_[token_id].get(topic_id);
 }
 
+void DensePhiMatrix::get(int token_id, std::vector<float>* buffer) const {
+  assert(topic_size() > 0 && buffer->size() == topic_size());
+  values_[token_id].get(buffer);
+}
+
 void DensePhiMatrix::set(int token_id, int topic_id, float value) {
   values_[token_id].unpack()[topic_id] = value;
   if ((topic_id + 1) == topic_size())
@@ -367,6 +384,11 @@ AttachedPhiMatrix::AttachedPhiMatrix(int address_length, float* address, PhiMatr
 
 std::shared_ptr<PhiMatrix> AttachedPhiMatrix::Duplicate() const {
   return std::shared_ptr<PhiMatrix>(new DensePhiMatrix(*this));
+}
+
+void AttachedPhiMatrix::get(int token_id, std::vector<float>* buffer) const {
+  assert(topic_size() > 0 && buffer->size() == topic_size());
+  memcpy(&buffer->at(0), values_[token_id], sizeof(float) * topic_size());
 }
 
 void AttachedPhiMatrix::increase(int token_id, const std::vector<float>& increment) {

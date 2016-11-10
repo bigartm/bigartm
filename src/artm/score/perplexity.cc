@@ -88,6 +88,7 @@ void Perplexity::AppendScore(
     }
   }
 
+  std::vector<float> helper_vector(topic_size, 0.0f);
   for (int token_index = 0; token_index < item.token_weight_size(); ++token_index) {
     double sum = 0.0;
     const artm::core::Token& token = token_dict[item.token_id(token_index)];
@@ -105,8 +106,9 @@ void Perplexity::AppendScore(
 
     int p_wt_token_index = p_wt.token_index(token);
     if (p_wt_token_index != ::artm::core::PhiMatrix::kUndefIndex) {
+      p_wt.get(p_wt_token_index, &helper_vector);
       for (int topic_index = 0; topic_index < topic_size; topic_index++) {
-        sum += theta[topic_index] * p_wt.get(p_wt_token_index, topic_index);
+        sum += theta[topic_index] * helper_vector[topic_index];
       }
     }
     if (sum == 0.0) {
