@@ -40,6 +40,9 @@ REGULARIZERS = (
     ), (
         messages.HierarchySparsingThetaConfig,
         constants.RegularizerType_HierarchySparsingTheta
+    ), (
+        messages.TopicSegmentationPtdwConfig,
+        constants.RegularizerType_TopicSegmentationPtdw
     ),
 )
 
