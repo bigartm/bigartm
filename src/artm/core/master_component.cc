@@ -298,7 +298,7 @@ void MasterComponent::ImportModel(const ImportModelArgs& args) {
     if (target == nullptr)
       target = std::make_shared<DensePhiMatrix>(args.model_name(), topic_model.topic_name());
 
-    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, target.get());
+    PhiMatrixOperations::ApplyTopicModelOperation(topic_model, 1.0f, /* add_missing_tokens = */ true, target.get());
   }
 
   fin.close();
@@ -604,7 +604,33 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
     FixMessage(mutable_args);
   }
 
-  std::shared_ptr<DensePhiMatrix> nwt_target;
+  if (merge_model_args.topic_name_size() == 0) {
+    // Auto-detect topic names from a source matrix (the first one in the list)
+    for (int i = 0; i < merge_model_args.nwt_source_name_size(); ++i) {
+      ModelName model_name = merge_model_args.nwt_source_name(i);
+      std::shared_ptr<const PhiMatrix> phi_matrix = instance_->GetPhiMatrix(model_name);
+      if (phi_matrix != nullptr) {
+        const_cast<MergeModelArgs*>(&merge_model_args)->mutable_topic_name()->CopyFrom(phi_matrix->topic_name());
+        break;
+      }
+    }
+  }
+
+  std::shared_ptr<DensePhiMatrix> nwt_target = std::make_shared<DensePhiMatrix>(
+    merge_model_args.nwt_target_name(), merge_model_args.topic_name());
+
+  std::shared_ptr<Dictionary> dictionary = nullptr;
+  if (merge_model_args.has_dictionary_name()) {
+    dictionary = instance_->dictionaries()->get(merge_model_args.dictionary_name());
+    if (dictionary == nullptr || dictionary->size() == 0) {
+      BOOST_THROW_EXCEPTION(InvalidOperation("Dictionary " +
+        merge_model_args.dictionary_name() + " does not exist or has no tokens"));
+    }
+
+    for (int token_index = 0; token_index < dictionary->size(); token_index++)
+      nwt_target->AddToken(dictionary->entry(token_index)->token());
+  }
+
   std::stringstream ss;
   for (int i = 0; i < merge_model_args.nwt_source_name_size(); ++i) {
     ModelName model_name = merge_model_args.nwt_source_name(i);
@@ -619,16 +645,11 @@ void MasterComponent::MergeModel(const MergeModelArgs& merge_model_args) {
     }
     const PhiMatrix& n_wt = *phi_matrix;
 
-    if (nwt_target == nullptr) {
-      nwt_target = std::make_shared<DensePhiMatrix>(
-        merge_model_args.nwt_target_name(),
-        merge_model_args.topic_name_size() != 0 ? merge_model_args.topic_name() : n_wt.topic_name());
-    }
-
     if (n_wt.token_size() > 0) {
       ::artm::TopicModel topic_model;
       PhiMatrixOperations::RetrieveExternalTopicModel(n_wt, GetTopicModelArgs(), &topic_model);
-      PhiMatrixOperations::ApplyTopicModelOperation(topic_model, weight, nwt_target.get());
+      const bool add_missing_tokens = (dictionary == nullptr);
+      PhiMatrixOperations::ApplyTopicModelOperation(topic_model, weight, add_missing_tokens, nwt_target.get());
     }
   }
 
@@ -699,7 +720,7 @@ void MasterComponent::OverwriteTopicModel(const ::artm::TopicModel& args) {
     if (!args.has_name()) const_cast< ::artm::TopicModel*>(&args)->set_name(config->pwt_name());
 
   auto target = std::make_shared<DensePhiMatrix>(args.name(), args.topic_name());
-  PhiMatrixOperations::ApplyTopicModelOperation(args, 1.0f, target.get());
+  PhiMatrixOperations::ApplyTopicModelOperation(args, 1.0f, /* add_missing_tokens = */ true, target.get());
   instance_->SetPhiMatrix(args.name(), target);
 }
 

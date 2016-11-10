@@ -11,6 +11,7 @@ v0.8.2
   When the list is empty, all modalities are included (this is the default behavior, as before).
 * added ``CollectionParserInfo`` message to export diagnostics information from ``ArtmParseCollection``
 * added ``FilterDictionaryArgs.max_dictionary_size`` to give user an easy option to limit his dictionary size
+* added ``MergeModelArgs.dictionary_name`` to define the set of tokens in the resulting matrix
 
 v0.8.0
 ------
