@@ -15,7 +15,7 @@ namespace artm {
 namespace regularizer {
 
 void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter,
-                                       ::artm::utility::DenseMatrix<float>* ptdw) const {
+                                       ::artm::utility::LocalPhiMatrix<float>* ptdw) const {
   int local_token_size = ptdw->no_rows();
   int num_topics = ptdw->no_columns();
   std::vector<double> background_probability(local_token_size, 0.0);
@@ -100,7 +100,8 @@ void TopicSegmentationPtdwAgent::Apply(int item_index, int inner_iter,
 }
 
 std::shared_ptr<RegularizePtdwAgent>
-TopicSegmentationPtdw::CreateRegularizePtdwAgent(const Batch& batch, const ProcessBatchesArgs& args, double tau) {
+TopicSegmentationPtdw::CreateRegularizePtdwAgent(const Batch& batch,
+                                                 const ProcessBatchesArgs& args, double tau) {
   TopicSegmentationPtdwAgent* agent = new TopicSegmentationPtdwAgent(config_, args, tau);
   std::shared_ptr<RegularizePtdwAgent> retval(agent);
   return retval;

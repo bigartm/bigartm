@@ -27,7 +27,7 @@ class TopicSegmentationPtdwAgent : public RegularizePtdwAgent {
   TopicSegmentationPtdwAgent(const TopicSegmentationPtdwConfig& config, const ProcessBatchesArgs& args, double tau)
     : config_(config), args_(args), tau_(tau) {}
 
-  virtual void Apply(int item_index, int inner_iter, ::artm::utility::DenseMatrix<float>* ptdw) const;
+  virtual void Apply(int item_index, int inner_iter, ::artm::utility::LocalPhiMatrix<float>* ptdw) const;
 };
 
 class TopicSegmentationPtdw : public RegularizerInterface {
