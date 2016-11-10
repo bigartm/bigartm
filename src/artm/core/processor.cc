@@ -392,6 +392,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
   }
   LocalPhiMatrix<float> local_phi(max_local_token_size, num_topics);
   LocalThetaMatrix<float> r_td(num_topics, 1);
+  std::vector<float> helper_vector(num_topics, 0.0f);
 
   for (int d = 0; d < docs_count; ++d) {
     float* ntd_ptr = &n_td(0, d);
@@ -406,7 +407,8 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
       if (token_id[w] == ::artm::core::PhiMatrix::kUndefIndex) continue;
       item_has_tokens = true;
       float* local_phi_ptr = &local_phi(i - begin_index, 0);
-      for (int k = 0; k < num_topics; ++k) local_phi_ptr[k] = p_wt.get(token_id[w], k);
+      p_wt.get(token_id[w], &helper_vector);
+      for (int k = 0; k < num_topics; ++k) local_phi_ptr[k] = helper_vector[k];
     }
 
     if (!item_has_tokens) continue;  // continue to the next item
@@ -472,8 +474,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
   std::vector<float> n_wt_local(num_topics, 0.0f);
   for (int w = 0; w < tokens_count; ++w) {
     if (token_id[w] == -1) continue;
-    for (int k = 0; k < num_topics; ++k)
-      p_wt_local[k] = p_wt.get(token_id[w], k);
+    p_wt.get(token_id[w], &p_wt_local);
 
     for (int i = sparse_nwd.row_ptr()[w]; i < sparse_nwd.row_ptr()[w + 1]; ++i) {
       int d = sparse_nwd.col_ind()[i];

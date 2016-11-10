@@ -107,6 +107,7 @@ class PackedValues {
 
   bool is_packed() const;
   float get(int index) const;
+  void get(std::vector<float>* buffer) const;
   float* unpack();
   void pack();
   void reset(int size);
@@ -130,6 +131,7 @@ class DensePhiMatrix : public PhiMatrixFrame {
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
   virtual float get(int token_id, int topic_id) const;
+  virtual void get(int token_id, std::vector<float>* buffer) const;
   virtual void set(int token_id, int topic_id, float value);
   virtual void increase(int token_id, int topic_id, float increment);
   virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
@@ -162,6 +164,7 @@ class AttachedPhiMatrix : boost::noncopyable, public PhiMatrixFrame {
   virtual std::shared_ptr<PhiMatrix> Duplicate() const;
 
   virtual float get(int token_id, int topic_id) const { return values_[token_id][topic_id]; }
+  virtual void get(int token_id, std::vector<float>* buffer) const;
   virtual void set(int token_id, int topic_id, float value) { values_[token_id][topic_id] = value; }
   virtual void increase(int token_id, int topic_id, float increment) { values_[token_id][topic_id] += increment; }
   virtual void increase(int token_id, const std::vector<float>& increment);  // must be thread-safe
