@@ -81,6 +81,8 @@ std::shared_ptr<Score> TopTokens::CalculateScore(const artm::core::PhiMatrix& p_
     for (int token_index = first_index; token_index >= last_index; token_index--) {
       ::artm::core::Token token = tokens[p_wt_local[token_index].second];
       float weight = p_wt_local[token_index].first;
+      if (weight < config_.eps())
+        continue;
       top_tokens_score->add_token(token.keyword);
       top_tokens_score->add_weight(weight);
       top_tokens_score->add_topic_index(topic_ids[i]);

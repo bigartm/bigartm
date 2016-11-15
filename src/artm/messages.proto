@@ -294,6 +294,7 @@ message TopTokensScoreConfig {
   optional string class_id = 2 [default = "@default_class"];
   repeated string topic_name = 3;
   optional string cooccurrence_dictionary_name = 4;
+  optional float eps = 5 [default = 1e-37];
 }
 
 // Represents a result of calculation of a top tokens score
