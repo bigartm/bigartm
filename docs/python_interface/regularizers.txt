@@ -1,7 +1,7 @@
 Regularizers
 ================
 
-This page describes KlFunctionInfo and *Regularizer classes.
+This page describes *KlFunctionInfo* and *Regularizer* classes.
 
 See `detailed description of regularizers <https://github.com/bigartm/bigartm/wiki/Implemented-regularizers>`_ for understanding their sense.
 
