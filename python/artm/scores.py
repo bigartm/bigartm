@@ -242,17 +242,14 @@ class PerplexityScore(BaseScore):
     _config_message = messages.PerplexityScoreConfig
     _type = const.ScoreType_Perplexity
 
-    def __init__(self, name=None, class_ids=None, topic_names=None,
-                 dictionary=None, use_unigram_document_model=None):
+    def __init__(self, name=None, class_ids=None, topic_names=None, dictionary=None):
         """
         :param str name: the identifier of score, will be auto-generated if not specified
         :param class_ids: class_id to score, means that tokens of all class_ids will be used
         :type class_ids: list of str
-        :param dictionary: BigARTM collection dictionary, won't use\
-                            dictionary if not specified
+        :param dictionary: BigARTM collection dictionary, is strongly recommended to\
+                           be used for correct replacing of zero counters.
         :type dictionary: str or reference to Dictionary object
-        :param bool use_unigram_document_model: use unigram document/collection model\
-                            if token's counter == 0
         """
         BaseScore.__init__(self,
                            name=name,
@@ -272,22 +269,13 @@ class PerplexityScore(BaseScore):
             dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
             self._dictionary_name = dictionary_name
             self._config.dictionary_name = dictionary_name
-
-        self._use_unigram_document_model = True
-        if use_unigram_document_model is not None:
-            self._use_unigram_document_model = use_unigram_document_model
-            if use_unigram_document_model is True:
-                self._config.model_type = const.PerplexityScoreConfig_Type_UnigramDocumentModel
-            else:
-                self._config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
+            self._config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
+        else:
+            self._config.model_type = const.PerplexityScoreConfig_Type_UnigramDocumentModel
 
     @property
     def dictionary(self):
         return self._dictionary_name
-
-    @property
-    def use_unigram_document_model(self):
-        return self._use_unigram_document_model
 
     @property
     def class_ids(self):
@@ -307,19 +295,14 @@ class PerplexityScore(BaseScore):
 
     @dictionary.setter
     def dictionary(self, dictionary):
+        if len(self._dictionary_name) == 0:
+            score_config = messages.PerplexityScoreConfig()
+            score_config.CopyFrom(self._config)
+            score_config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
+            self._master.reconfigure_score(self._name, score_config)
+
         dictionary_name = dictionary if isinstance(dictionary, str) else dictionary.name
         _reconfigure_field(self, dictionary_name, 'dictionary_name')
-
-    @use_unigram_document_model.setter
-    def use_unigram_document_model(self, use_unigram_document_model):
-        self._use_unigram_document_model = use_unigram_document_model
-        score_config = messages.PerplexityScoreConfig()
-        score_config.CopyFrom(self._config)
-        if use_unigram_document_model is True:
-            score_config.model_type = const.PerplexityScoreConfig_Type_UnigramDocumentModel
-        else:
-            score_config.model_type = const.PerplexityScoreConfig_Type_UnigramCollectionModel
-        self._master.reconfigure_score(self._name, score_config)
 
     @class_ids.setter
     def class_ids(self, class_ids):

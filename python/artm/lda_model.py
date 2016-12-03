@@ -75,9 +75,7 @@ class LDA(object):
         if self._dictionary is None:
             self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name))
         else:
-            self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name,
-                                                            use_unigram_document_model=False,
-                                                            dictionary=self._dictionary))
+            self._internal_model.scores.add(PerplexityScore(name=self._perp_score_name, dictionary=self._dictionary))
 
         self._internal_model.scores.add(SparsityThetaScore(name=self._sp_theta_score_name))
         self._internal_model.scores.add(SparsityPhiScore(name=self._sp_phi_score_name))

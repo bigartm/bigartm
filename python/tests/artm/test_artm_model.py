@@ -86,9 +86,7 @@ def test_func():
         model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='DecorrelatorPhi', tau=decor_tau))
 
         model.scores.add(artm.SparsityThetaScore(name='SparsityThetaScore'))
-        model.scores.add(artm.PerplexityScore(name='PerplexityScore',
-                                              use_unigram_document_model=False,
-                                              dictionary=dictionary))
+        model.scores.add(artm.PerplexityScore(name='PerplexityScore', dictionary=dictionary))
         model.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
         model.scores.add(artm.TopTokensScore(name='TopTokensScore', num_tokens=num_tokens))
         model.scores.add(artm.TopicKernelScore(name='TopicKernelScore',
@@ -153,9 +151,7 @@ def test_func():
         model.regularizers.add(artm.DecorrelatorPhiRegularizer(name='DecorrelatorPhi', tau=decor_rel_tau))
         model.regularizers['DecorrelatorPhi'].gamma = 0.0
 
-        model.scores.add(artm.PerplexityScore(name='PerplexityScore',
-                                              use_unigram_document_model=False,
-                                              dictionary=dictionary))
+        model.scores.add(artm.PerplexityScore(name='PerplexityScore', dictionary=dictionary))
         model.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
 
         model.num_document_passes = num_document_passes
