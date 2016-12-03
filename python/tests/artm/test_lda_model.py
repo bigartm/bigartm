@@ -38,9 +38,7 @@ def test_func():
         model_artm.regularizers.add(artm.SmoothSparseThetaRegularizer(name='SparseTheta', tau=alpha))
 
         model_artm.scores.add(artm.SparsityThetaScore(name='SparsityThetaScore'))
-        model_artm.scores.add(artm.PerplexityScore(name='PerplexityScore',
-                                                   use_unigram_document_model=False,
-                                                   dictionary=dictionary))
+        model_artm.scores.add(artm.PerplexityScore(name='PerplexityScore', dictionary=dictionary))
         model_artm.scores.add(artm.SparsityPhiScore(name='SparsityPhiScore'))
         model_artm.scores.add(artm.TopTokensScore(name='TopTokensScore', num_tokens=num_tokens))
 

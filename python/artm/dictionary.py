@@ -133,10 +133,14 @@ class Dictionary(object):
                       represented as batches and load it in the lib
 
         :param str data_path: full path to batches folder
-        :param str cooc_file_path: full path to the file with cooc info
+        :param str cooc_file_path: full path to the file with cooc info. Cooc info is a file with three\
+                                   columns, first two a the zero-based indices of tokens in vocab file,\
+                                   and third one is a value of their coocurance in collection (or another)\
+                                   pairwise statistic.
         :param str vocab_file_path: full path to the file with vocabulary.\
                       If given, the dictionary token will have the same order, as in\
-                      this file, otherwise the order will be random
+                      this file, otherwise the order will be random.\
+                      If given, the tokens from batches, that are not presented in vocab, will be skipped.
         :param bool symmetric_cooc_values: if the cooc matrix should considered\
                       to be symmetric or not
         """
