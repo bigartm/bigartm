@@ -13,13 +13,15 @@
 namespace artm {
 namespace regularizer {
 
-void SmoothSparseThetaAgent::Apply(const std::string& item_title, int inner_iter,
+void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter,
                                    int topics_size, const float* n_td, float* r_td) const {
+  assert(item_index  > 0 && item_index <= batch_.item_size())
   assert(topics_size == topic_weight.size());
   assert(inner_iter < alpha_weight.size());
   if (topics_size != topic_weight.size()) return;
   if (inner_iter >= alpha_weight.size()) return;
-
+  const Item& item = batch_.item(item_index);
+  const std::string& item_title = item.has_title() ? item.title() : std::string();
   bool use_specific_items = (item_topic_multiplier_ != nullptr);
   bool use_specific_multiplier = (use_specific_items &&
                                   item_topic_multiplier_->begin()->second.size() == topics_size);
@@ -27,7 +29,7 @@ void SmoothSparseThetaAgent::Apply(const std::string& item_title, int inner_iter
 
   if (use_specific_items) {
     auto iter = item_topic_multiplier_->find(item_title);
-    if (iter == item_topic_multiplier_->end())
+    if (item_title.empty() || iter == item_topic_multiplier_->end())
       return;
 
     for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
@@ -56,7 +58,8 @@ SmoothSparseTheta::SmoothSparseTheta(const SmoothSparseThetaConfig& config)
 std::shared_ptr<RegularizeThetaAgent>
 SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
                                               const ProcessBatchesArgs& args, double tau) {
-  SmoothSparseThetaAgent* agent = new SmoothSparseThetaAgent(transform_function_,
+  SmoothSparseThetaAgent* agent = new SmoothSparseThetaAgent(batch,
+                                                             transform_function_,
                                                              item_topic_multiplier_,
                                                              universal_topic_multiplier_);
   std::shared_ptr<SmoothSparseThetaAgent> retval(agent);

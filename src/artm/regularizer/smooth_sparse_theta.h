@@ -42,19 +42,22 @@ typedef std::unordered_map<std::string, std::vector<double> > ItemTopicMultiplie
 
 class SmoothSparseThetaAgent : public RegularizeThetaAgent {
  public:
-  explicit SmoothSparseThetaAgent(std::shared_ptr<artm::core::TransformFunction> func,
+  explicit SmoothSparseThetaAgent(const Batch& batch,
+                                  std::shared_ptr<artm::core::TransformFunction> func,
                                   std::shared_ptr<ItemTopicMultiplier> item_topic_multiplier,
                                   std::shared_ptr<std::vector<double> > universal_topic_multiplier)
-    : transform_function_(func)
+    : batch_(batch)
+    , transform_function_(func)
     , item_topic_multiplier_(item_topic_multiplier)
     , universal_topic_multiplier_(universal_topic_multiplier) { }
 
-  void Apply(const std::string& item_title, int inner_iter,
+  void Apply(int item_index, int inner_iter,
              int topics_size, const float* n_td, float* r_td) const override;
 
  private:
   friend class SmoothSparseTheta;
 
+  const Batch& batch_;
   std::vector<float> topic_weight;
   std::vector<float> alpha_weight;
 

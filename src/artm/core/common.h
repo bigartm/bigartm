@@ -36,8 +36,6 @@ const int UnknownId = -1;
 
 const std::string kBatchExtension = ".batch";
 
-const std::string DefaultTitle = "default_title";
-
 const int kIdleLoopFrequency = 1;  // 1 ms
 
 const int kBatchNameLength = 6;

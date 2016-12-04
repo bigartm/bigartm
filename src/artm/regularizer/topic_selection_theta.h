@@ -34,10 +34,10 @@ namespace regularizer {
 
 class TopicSelectionThetaAgent : public RegularizeThetaAgent {
  public:
-  void Apply(const std::string& item_title, int inner_iter,
+  void Apply(int item_index, int inner_iter,
              int topics_size, const float* n_td, float* r_td) const override;
   void Apply(int inner_iter, const ::artm::utility::LocalThetaMatrix<float>& n_td,
-             ::artm::utility::LocalThetaMatrix<float>* r_td, const Batch& batch) const override;
+             ::artm::utility::LocalThetaMatrix<float>* r_td) const override;
 
  private:
   friend class TopicSelectionTheta;

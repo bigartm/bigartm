@@ -12,7 +12,7 @@
 namespace artm {
 namespace regularizer {
 
-void TopicSelectionThetaAgent::Apply(const std::string& item_title, int inner_iter, int topics_size,
+void TopicSelectionThetaAgent::Apply(int item_index, int inner_iter, int topics_size,
                                      const float* n_td, float* r_td) const {
   if (topic_value.empty()) {
     LOG_FIRST_N(ERROR, 1) << "TopicSelectionThetaAgent regularizer can not be applied with opt_for_avx=False. "
@@ -33,8 +33,7 @@ void TopicSelectionThetaAgent::Apply(const std::string& item_title, int inner_it
 
 void TopicSelectionThetaAgent::Apply(int inner_iter,
                                      const ::artm::utility::LocalThetaMatrix<float>& n_td,
-                                     ::artm::utility::LocalThetaMatrix<float>* r_td,
-                                     const Batch& batch) const {
+                                     ::artm::utility::LocalThetaMatrix<float>* r_td) const {
   int topics_num = n_td.num_topics(), items_num = n_td.num_items();
 
   assert(topics_num == topic_weight.size());
