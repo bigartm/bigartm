@@ -99,8 +99,7 @@ google::protobuf::RepeatedPtrField<std::string> SmoothSparseTheta::topics_to_reg
 void SmoothSparseTheta::ReconfigureImpl() {
   if (config_.has_transform_config()) {
     transform_function_ = artm::core::TransformFunction::create(config_.transform_config());
-  }
-  else {
+  } else {
     transform_function_ = artm::core::TransformFunction::create();
   }
 

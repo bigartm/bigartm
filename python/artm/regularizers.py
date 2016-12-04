@@ -317,7 +317,7 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
     _type = const.RegularizerType_SmoothSparseTheta
 
     def __init__(self, name=None, tau=1.0, topic_names=None, alpha_iter=None,
-	             kl_function_info=None, doc_titles=None, doc_topic_coef=None, config=None):
+                 kl_function_info=None, doc_titles=None, doc_topic_coef=None, config=None):
         """
         :param str name: the identifier of regularizer, will be auto-generated if not specified
         :param float tau: the coefficient of regularization for this regularizer
@@ -342,7 +342,8 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
                                of doc_titles, and each inner list length equal to num of topics.\
                                Means case 1 with unique list of additional multipliers for each\
                                document from doc_titles. Other documents will not be regularized\
-                               according to description of doc_titles parameter.
+                               according to description of doc_titles parameter.\
+                               Note, that doc_topic_coef and topic_names are both using.
         :type doc_topic_coef: list of doubles or list of lists of doubles
         :param config: the low-level config of this regularizer
         :type config: protobuf object
@@ -410,6 +411,7 @@ class SmoothSparseThetaRegularizer(BaseRegularizerTheta):
                 ref.value.append(coef)
         self._doc_topic_coef = doc_topic_coef
         self._master.reconfigure_regularizer(self.name, self._config, self.tau, self.gamma)
+
 
 class DecorrelatorPhiRegularizer(BaseRegularizerPhi):
     _config_message = messages.DecorrelatorPhiConfig

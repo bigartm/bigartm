@@ -90,7 +90,8 @@ class RegularizePtdwAgentCollection : public RegularizePtdwAgent {
 
 class NormalizeThetaAgent : public RegularizeThetaAgent {
  public:
-  virtual void Apply(const std::string& item_title, int inner_iter, int topics_size, const float* n_td, float * r_td) const {
+  virtual void Apply(const std::string& item_title, int inner_iter,
+                     int topics_size, const float* n_td, float * r_td) const {
     float sum = 0.0f;
     for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
       float val = n_td[topic_index] + r_td[topic_index];
