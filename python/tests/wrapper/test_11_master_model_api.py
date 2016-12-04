@@ -31,16 +31,16 @@ def test_func():
     num_document_passes = 10
     num_outer_iterations = 8
 
-    perplexity_tol = 2.0
+    perplexity_tol = 0.001
     expected_perplexity_value_on_iteration = {
-        0: 6703,
-        1: 2426,
-        2: 2276,
-        3: 1814,
-        4: 1742,
-        5: 1637,
-        6: 1612,
-        7: 1581,
+        0: 6703.161,
+        1: 2426.277,
+        2: 2276.476,
+        3: 1814.072,
+        4: 1742.911,
+        5: 1637.142,
+        6: 1612.946,
+        7: 1581.725
     }
     sparsity_tol = 0.001
     expected_phi_sparsity_value_on_iteration = {
@@ -51,7 +51,7 @@ def test_func():
         4: 0.380,
         5: 0.438,
         6: 0.483,
-        7: 0.516,
+        7: 0.516
     }
     expected_theta_sparsity_value_on_iteration = {
         0: 0.009,
