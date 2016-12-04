@@ -57,14 +57,16 @@ class RegularizeThetaAgentCollection : public RegularizeThetaAgent {
 
   bool empty() const { return agents_.empty(); }
 
-  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const {
+  virtual void Apply(const std::string& item_title, int inner_iter, int topics_size,
+                     const float* n_td, float* r_td) const {
     for (auto& agent : agents_)
-      agent->Apply(item_index, inner_iter, topics_size, n_td, r_td);
+      agent->Apply(item_title, inner_iter, topics_size, n_td, r_td);
   }
 
-  virtual void Apply(int inner_iter, const LocalThetaMatrix<float>& n_td, LocalThetaMatrix<float>* r_td) const {
+  virtual void Apply(int inner_iter, const LocalThetaMatrix<float>& n_td,
+                     LocalThetaMatrix<float>* r_td, const Batch& batch) const {
     for (auto& agent : agents_)
-      agent->Apply(inner_iter, n_td, r_td);
+      agent->Apply(inner_iter, n_td, r_td, batch);
   }
 };
 
@@ -88,7 +90,8 @@ class RegularizePtdwAgentCollection : public RegularizePtdwAgent {
 
 class NormalizeThetaAgent : public RegularizeThetaAgent {
  public:
-  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float * r_td) const {
+  virtual void Apply(const std::string& item_title, int inner_iter,
+                     int topics_size, const float* n_td, float * r_td) const {
     float sum = 0.0f;
     for (int topic_index = 0; topic_index < topics_size; ++topic_index) {
       float val = n_td[topic_index] + r_td[topic_index];
@@ -434,7 +437,8 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
         theta_ptr[k] *= ntd_ptr[k];
 
       r_td.InitializeZeros();
-      theta_agents.Apply(d, inner_iter, num_topics, theta_ptr, r_td.get_data());
+      std::string item_title = batch.item(d).has_title() ? batch.item(d).title() : DefaultTitle;
+      theta_agents.Apply(item_title, inner_iter, num_topics, theta_ptr, r_td.get_data());
     }
   }
   } else {
@@ -458,7 +462,7 @@ InferThetaAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch,
     AssignDenseMatrixByProduct(*theta_matrix, helper_td, theta_matrix);
 
     helper_td.InitializeZeros();  // from now this represents r_td
-    theta_agents.Apply(inner_iter, *theta_matrix, &helper_td);
+    theta_agents.Apply(inner_iter, *theta_matrix, &helper_td, batch);
   }
   }
 
@@ -572,7 +576,8 @@ InferPtdwAndUpdateNwtSparse(const ProcessBatchesArgs& args, const Batch& batch, 
           theta_ptr[k] = ntd_ptr[k];
 
         r_td.InitializeZeros();
-        theta_agents.Apply(d, inner_iter, num_topics, theta_ptr, r_td.get_data());
+        std::string item_title = batch.item(d).has_title() ? batch.item(d).title() : DefaultTitle;
+        theta_agents.Apply(item_title, inner_iter, num_topics, theta_ptr, r_td.get_data());
       } else {  // update n_wt matrix (on the last iteration)
         if (nwt_writer != nullptr) {
           std::vector<float> values(num_topics, 0.0f);
