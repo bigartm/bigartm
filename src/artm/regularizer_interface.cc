@@ -2,7 +2,6 @@
 
 #include "artm/regularizer_interface.h"
 
-#include "artm/core/common.h"
 #include "artm/core/dictionary.h"
 
 namespace artm {
