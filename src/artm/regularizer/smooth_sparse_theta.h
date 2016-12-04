@@ -51,8 +51,7 @@ class SmoothSparseThetaAgent : public RegularizeThetaAgent {
     , item_topic_multiplier_(item_topic_multiplier)
     , universal_topic_multiplier_(universal_topic_multiplier) { }
 
-  void Apply(int item_index, int inner_iter,
-             int topics_size, const float* n_td, float* r_td) const override;
+  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const;
 
  private:
   friend class SmoothSparseTheta;

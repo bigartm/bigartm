@@ -19,9 +19,8 @@ void RegularizeThetaAgent::Apply(int inner_iter,
 
   // The default implementation just calls Apply() for all items
   // Custom implementation may implement any other method that jointly acts on all items within a batch.
-  for (int item_index = 0; item_index < n_td.num_items(); ++item_index) {
+  for (int item_index = 0; item_index < n_td.num_items(); ++item_index)
     this->Apply(item_index, inner_iter, n_td.num_topics(), &(n_td)(0, item_index), &(*r_td)(0, item_index));  // NOLINT
-  }
 }
 
 }  // namespace artm

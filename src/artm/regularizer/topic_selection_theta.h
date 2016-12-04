@@ -34,10 +34,9 @@ namespace regularizer {
 
 class TopicSelectionThetaAgent : public RegularizeThetaAgent {
  public:
-  void Apply(int item_index, int inner_iter,
-             int topics_size, const float* n_td, float* r_td) const override;
-  void Apply(int inner_iter, const ::artm::utility::LocalThetaMatrix<float>& n_td,
-             ::artm::utility::LocalThetaMatrix<float>* r_td) const override;
+  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const;
+  virtual void Apply(int inner_iter, const ::artm::utility::LocalThetaMatrix<float>& n_td,
+                     ::artm::utility::LocalThetaMatrix<float>* r_td) const;
 
  private:
   friend class TopicSelectionTheta;
