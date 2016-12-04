@@ -2,6 +2,7 @@
 
 #include "artm/regularizer_interface.h"
 
+#include "artm/core/common.h"
 #include "artm/core/dictionary.h"
 
 namespace artm {
@@ -12,14 +13,16 @@ std::shared_ptr< ::artm::core::Dictionary> RegularizerInterface::dictionary(cons
 
 void RegularizeThetaAgent::Apply(int inner_iter,
                                  const ::artm::utility::LocalThetaMatrix<float>& n_td,
-                                 ::artm::utility::LocalThetaMatrix<float>* r_td) const {
+                                 ::artm::utility::LocalThetaMatrix<float>* r_td, const Batch& batch) const {
   if (!n_td.is_equal_size(*r_td))
     LOG(ERROR) << "Size mismatch between n_td and r_rd";
 
   // The default implementation just calls Apply() for all items
   // Custom implementation may implement any other method that jointly acts on all items within a batch.
-  for (int item_index = 0; item_index < n_td.num_items(); ++item_index)
-    this->Apply(item_index, inner_iter, n_td.num_topics(), &(n_td)(0, item_index), &(*r_td)(0, item_index));  // NOLINT
+  for (int item_index = 0; item_index < n_td.num_items(); ++item_index) {
+    std::string item_title = batch.item(item_index).has_title() ? batch.item(item_index).title() : core::DefaultTitle;
+    this->Apply(item_title, inner_iter, n_td.num_topics(), &(n_td)(0, item_index), &(*r_td)(0, item_index));  // NOLINT
+  }
 }
 
 }  // namespace artm

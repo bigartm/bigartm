@@ -32,7 +32,8 @@ class RegularizeThetaAgent {
   virtual ~RegularizeThetaAgent() {}
 
   // Define how theta regularizer applies to an individual item.
-  virtual void Apply(int item_index, int inner_iter, int topics_size, const float* n_td, float* r_td) const {}
+  virtual void Apply(const std::string& item_title, int inner_iter,
+                     int topics_size, const float* n_td, float* r_td) const {}
 
   // The following method allows to calculate regularization for all elements of the theta matrix.
   // This seems convenient, however we do not recommended to overwrite this method.
@@ -42,7 +43,7 @@ class RegularizeThetaAgent {
   // See code in processor.cc for more details.
   virtual void Apply(int inner_iter,
                      const ::artm::utility::LocalThetaMatrix<float>& n_td,
-                     ::artm::utility::LocalThetaMatrix<float>* r_td) const;
+                     ::artm::utility::LocalThetaMatrix<float>* r_td, const Batch& batch) const;
 };
 
 class RegularizePtdwAgent {

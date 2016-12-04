@@ -28,13 +28,13 @@ def test_func():
     num_document_passes = 10
     num_outer_iterations = 5
 
-    perplexity_tol = 0.001
+    perplexity_tol = 2.0
     expected_perplexity_value_on_iteration = {
-        0: 6710.208,
-        1: 2434.135,
-        2: 2202.418,
-        3: 1936.493,
-        4: 1774.600
+        0: 6710,
+        1: 2434,
+        2: 2202,
+        3: 1936,
+        4: 1774,
     }
 
     batches_folder = tempfile.mkdtemp()

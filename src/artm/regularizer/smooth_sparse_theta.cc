@@ -3,6 +3,7 @@
 // Author: Murat Apishev (great-mel@yandex.ru)
 
 #include <vector>
+#include <utility>
 
 #include "glog/logging.h"
 #include "artm/core/protobuf_helpers.h"
@@ -12,32 +13,52 @@
 namespace artm {
 namespace regularizer {
 
-void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter, int topics_size,
-                                   const float* n_td, float* r_td) const {
+void SmoothSparseThetaAgent::Apply(const std::string& item_title, int inner_iter,
+                                   int topics_size, const float* n_td, float* r_td) const {
   assert(topics_size == topic_weight.size());
   assert(inner_iter < alpha_weight.size());
   if (topics_size != topic_weight.size()) return;
   if (inner_iter >= alpha_weight.size()) return;
 
-  for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
-    double value = transform_function_->apply(n_td[topic_id]);
-    r_td[topic_id] += value > 0.0f ? alpha_weight[inner_iter] * topic_weight[topic_id] * value : 0.0f;
+  bool use_specific_items = (item_topic_multiplier_ != nullptr);
+  bool use_specific_multiplier = (use_specific_items &&
+                                  item_topic_multiplier_->begin()->second.size() == topics_size);
+  bool use_universal_multiplier = (!use_specific_multiplier && universal_topic_multiplier_ != nullptr);
+
+  if (use_specific_items) {
+    auto iter = item_topic_multiplier_->find(item_title);
+    if (iter == item_topic_multiplier_->end())
+      return;
+
+    for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
+      double mult = use_specific_multiplier ? iter->second[topic_id] :
+        (use_universal_multiplier ? (*universal_topic_multiplier_)[topic_id]: 1.0);
+      double value = transform_function_->apply(n_td[topic_id]);
+      r_td[topic_id] += value > 0.0f ? mult * alpha_weight[inner_iter] * topic_weight[topic_id] * value : 0.0f;
+    }
+  } else {
+    for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
+      double mult = use_universal_multiplier ? (*universal_topic_multiplier_)[topic_id] : 1.0;
+      double value = transform_function_->apply(n_td[topic_id]);
+      r_td[topic_id] += value > 0.0f ? mult * alpha_weight[inner_iter] * topic_weight[topic_id] * value : 0.0f;
+    }
   }
 }
 
 SmoothSparseTheta::SmoothSparseTheta(const SmoothSparseThetaConfig& config)
-    : config_(config),
-      transform_function_(nullptr) {
-  if (config.has_transform_config())
-    transform_function_ = artm::core::TransformFunction::create(config.transform_config());
-  else
-    transform_function_ = artm::core::TransformFunction::create();
+    : config_(config)
+    , transform_function_(nullptr)
+    , item_topic_multiplier_(nullptr)
+    , universal_topic_multiplier_(nullptr) {
+  ReconfigureImpl();
 }
 
 std::shared_ptr<RegularizeThetaAgent>
 SmoothSparseTheta::CreateRegularizeThetaAgent(const Batch& batch,
                                               const ProcessBatchesArgs& args, double tau) {
-  SmoothSparseThetaAgent* agent = new SmoothSparseThetaAgent(transform_function_);
+  SmoothSparseThetaAgent* agent = new SmoothSparseThetaAgent(transform_function_,
+                                                             item_topic_multiplier_,
+                                                             universal_topic_multiplier_);
   std::shared_ptr<SmoothSparseThetaAgent> retval(agent);
 
   const int topic_size = args.topic_name_size();
@@ -75,6 +96,41 @@ google::protobuf::RepeatedPtrField<std::string> SmoothSparseTheta::topics_to_reg
   return config_.topic_name();
 }
 
+void SmoothSparseTheta::ReconfigureImpl() {
+  if (config_.has_transform_config()) {
+    transform_function_ = artm::core::TransformFunction::create(config_.transform_config());
+  }
+  else {
+    transform_function_ = artm::core::TransformFunction::create();
+  }
+
+  if (config_.item_topic_multiplier_size() == 1) {
+    universal_topic_multiplier_.reset(
+      new std::vector<double>(config_.item_topic_multiplier(0).value().begin(),
+                              config_.item_topic_multiplier(0).value().end()));
+  }
+
+  if (config_.item_title_size() > 0) {
+    item_topic_multiplier_.reset(new ItemTopicMultiplier());
+    if (config_.item_topic_multiplier_size() == config_.item_title_size()) {
+      for (int i = 0; i < config_.item_title_size(); ++i) {
+        item_topic_multiplier_->insert(std::make_pair(config_.item_title(i),
+                                       std::vector<double>(config_.item_topic_multiplier(i).value().begin(),
+                                       config_.item_topic_multiplier(i).value().end())));
+        auto m_ptr = config_.mutable_item_topic_multiplier(i);
+        m_ptr->clear_value();
+      }
+    } else {
+      LOG(WARNING) << "SmoothSparseThetaConfig.item_topic_multilplier has incorrect size or is empty";
+      for (int i = 0; i < config_.item_title_size(); ++i) {
+        item_topic_multiplier_->insert(std::make_pair(config_.item_title(i), std::vector<double>()));
+      }
+    }
+  }
+
+  config_.clear_item_title();
+}
+
 bool SmoothSparseTheta::Reconfigure(const RegularizerConfig& config) {
   std::string config_blob = config.config();
   SmoothSparseThetaConfig regularizer_config;
@@ -84,11 +140,7 @@ bool SmoothSparseTheta::Reconfigure(const RegularizerConfig& config) {
   }
 
   config_.CopyFrom(regularizer_config);
-
-  if (config_.has_transform_config())
-    transform_function_ = artm::core::TransformFunction::create(config_.transform_config());
-  else
-    transform_function_ = artm::core::TransformFunction::create();
+  ReconfigureImpl();
 
   return true;
 }
