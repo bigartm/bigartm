@@ -103,6 +103,8 @@ message SmoothSparseThetaConfig {
   repeated string topic_name = 1;
   repeated float alpha_iter = 2;
   optional TransformConfig transform_config = 3;
+  repeated string item_title = 4;
+  repeated DoubleArray item_topic_multiplier = 5;
 }
 
 // Represents a configuration of a SmoothSparse Phi regularizer
