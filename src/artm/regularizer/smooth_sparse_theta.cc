@@ -20,17 +20,31 @@ void SmoothSparseThetaAgent::Apply(int item_index, int inner_iter,
   assert(inner_iter < alpha_weight.size());
   if (topics_size != topic_weight.size()) return;
   if (inner_iter >= alpha_weight.size()) return;
+
   const Item& item = batch_.item(item_index);
   const std::string& item_title = item.has_title() ? item.title() : std::string();
+
   bool use_specific_items = (item_topic_multiplier_ != nullptr);
   bool use_specific_multiplier = (use_specific_items &&
-                                  item_topic_multiplier_->begin()->second.size() == topics_size);
+                                  item_topic_multiplier_->begin()->second.size() > 0);
   bool use_universal_multiplier = (!use_specific_multiplier && universal_topic_multiplier_ != nullptr);
+
+  if (use_universal_multiplier && universal_topic_multiplier_->size() != topics_size) {
+    LOG(ERROR) << "Universal topic coefs vector has length != topic_size ("
+               << universal_topic_multiplier_->size() << " instead of " << topics_size << ")";;
+    return;
+  }
 
   if (use_specific_items) {
     auto iter = item_topic_multiplier_->find(item_title);
     if (item_title.empty() || iter == item_topic_multiplier_->end())
       return;
+
+    if (use_specific_multiplier && iter->second.size() != topics_size) {
+      LOG(ERROR) << "Topic coefs vector for item " << iter->first << " has length != topic_size ("
+                 << iter->second.size() << " instead of " << topics_size << ")";
+      return;
+    }
 
     for (int topic_id = 0; topic_id < topics_size; ++topic_id) {
       double mult = use_specific_multiplier ? iter->second[topic_id] :
