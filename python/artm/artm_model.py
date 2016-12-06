@@ -8,6 +8,8 @@ import tempfile
 from pandas import DataFrame
 from six import iteritems
 from six.moves import range, zip
+from multiprocessing.pool import ThreadPool
+import tqdm
 
 from . import wrapper
 from .wrapper import constants as const
@@ -30,6 +32,14 @@ SCORE_TRACKER = {
     const.ScoreType_ClassPrecision: score_tracker.ClassPrecisionScoreTracker,
     const.ScoreType_BackgroundTokensRatio: score_tracker.BackgroundTokensRatioScoreTracker,
 }
+
+
+def _run_from_ipython():
+    try:
+        get_ipython().config
+        return True
+    except:
+        return False
 
 
 def _topic_selection_regularizer_func(self, regularizers):
@@ -113,6 +123,7 @@ class ARTM(object):
         self._reuse_theta = True
         self._theta_columns_naming = 'id'
         self._seed = -1
+        self._pool = ThreadPool(processes=1)
 
         if topic_names is not None:
             self._topic_names = topic_names
@@ -363,6 +374,19 @@ class ARTM(object):
         else:
             self._seed = seed
 
+    # ========== PRIVATE METHODS ==========
+    def _wait_for_batches_processed(self, async_result, num_batches):
+        progress = tqdm.tqdm_notebook if _run_from_ipython() else tqdm.tqdm
+        with progress(total=num_batches, desc='Batch', leave=False) as batch_tqdm:
+            previous_num_batches = 0
+            while not async_result.ready():
+                async_result.wait(1)
+                current_num_batches = self.master.get_score(
+                    score_name='^^^ItemsProcessedScore^^^').num_batches
+                batch_tqdm.update(current_num_batches - previous_num_batches)
+                previous_num_batches = current_num_batches
+            return async_result.get()
+
     # ========== METHODS ==========
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=1):
         """
@@ -380,14 +404,17 @@ class ARTM(object):
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
-        for _ in range(num_collection_passes):
+
+        progress = tqdm.tnrange if _run_from_ipython() else tqdm.trange
+        for _ in progress(num_collection_passes, desc='Pass'):
             # temp code for easy using of TopicSelectionThetaRegularizer from Python
             _topic_selection_regularizer_func(self, self._regularizers)
 
             self._synchronizations_processed += 1
-            self.master.fit_offline(batch_filenames=batches_list,
-                                    batch_weights=batch_vectorizer.weights,
-                                    num_collection_passes=1)
+            self._wait_for_batches_processed(
+                self._pool.apply_async(func=self.master.fit_offline,
+                                       args=(batches_list, batch_vectorizer.weights, 1, None)),
+                len(batches_list))
 
             for name in self.scores.data.keys():
                 if name not in self.score_tracker:
@@ -455,12 +482,12 @@ class ARTM(object):
         # temp code for easy using of TopicSelectionThetaRegularizer from Python
         _topic_selection_regularizer_func(self, self._regularizers)
 
-        self.master.fit_online(batch_filenames=batches_list,
-                               batch_weights=batch_vectorizer.weights,
-                               update_after=update_after_final,
-                               apply_weight=apply_weight_final,
-                               decay_weight=decay_weight_final,
-                               async=async)
+        self._wait_for_batches_processed(
+            self._pool.apply_async(func=self.master.fit_online,
+                                   args=(batches_list, batch_vectorizer.weights,
+                                         update_after_final, apply_weight_final,
+                                         decay_weight_final, async)),
+            len(batches_list))
 
         for name in self.scores.data.keys():
             if name not in self.score_tracker:
@@ -665,10 +692,12 @@ class ARTM(object):
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
 
+        theta_info, numpy_ndarray = self._wait_for_batches_processed(
+            self._pool.apply_async(func=self.master.transform,
+                                   args=(None, batches_list, theta_matrix_type_real, predict_class_id)),
+            len(batches_list))
+
         if theta_matrix_type is not None:
-            theta_info, numpy_ndarray = self.master.transform(batch_filenames=batches_list,
-                                                              theta_matrix_type=theta_matrix_type_real,
-                                                              predict_class_id=predict_class_id)
             document_ids = []
             if self._theta_columns_naming == 'title':
                 document_ids = [item_title for item_title in theta_info.item_title]
@@ -680,10 +709,6 @@ class ARTM(object):
                                          columns=document_ids,
                                          index=topic_names)
             return theta_data_frame
-        else:
-            self.master.transform(batch_filenames=batches_list,
-                                  theta_matrix_type=theta_matrix_type_real,
-                                  predict_class_id=predict_class_id)
 
     def initialize(self, dictionary=None):
         """

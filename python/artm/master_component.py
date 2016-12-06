@@ -845,3 +845,4 @@ class MasterComponent(object):
             return theta_matrix_info, numpy_ndarray
         else:
             self._lib.ArtmRequestTransformMasterModel(self.master_id, args)
+            return None, None

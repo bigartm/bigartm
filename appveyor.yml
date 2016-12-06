@@ -47,6 +47,7 @@ install:
   - conda update -q conda
   - conda info -a
   - conda install numpy pandas pytest
+  - conda install -c conda-forge tqdm
 
 # scripts to run before build
 before_build:
