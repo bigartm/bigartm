@@ -47,6 +47,11 @@ configure_file (
   "${CMAKE_CURRENT_BINARY_DIR}/version.h"
   )
 
+configure_file (
+  "${CMAKE_CURRENT_LIST_DIR}/version.rc.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/version.rc"
+  @ONLY)
+
 configure_file(
   "${CMAKE_CURRENT_LIST_DIR}/utility/progress_printer.cc.in"
   "${CMAKE_CURRENT_BINARY_DIR}/utility/progress_printer.cc"
@@ -208,7 +213,8 @@ set(ARTM_LIB_DEPS  artm-static
                    ${PROTOBUF_LIBRARIES}
                    ${GLOG_LIBRARIES})
 
-add_library(artm SHARED ${SRC_LIST})
+add_library(artm SHARED ${SRC_LIST}
+    ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
 target_link_libraries(artm ${ARTM_LIB_DEPS})
 
