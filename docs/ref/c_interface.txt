@@ -261,6 +261,71 @@ throughout this page as well as in the actual naming of the methods.
 This is due to historical reasons,
 and for all practical purposes you may think that this terms refer to the same thing.
 
+ArtmConfigureLogging
+--------------------
+
+You may use ``ArtmConfigureLogging`` call to set logging parameters,
+such as verbosity level or directory to output logs.
+You are not require to call ``ArtmConfigureLogging``,
+in which case logging is automaticaly initialized to INFO level,
+and logs are placed in the active working folder.
+
+Note that you can set log directory just one time.
+Once it is set you can not change it afterwards.
+Method ``ArtmConfigureLogging`` will return error code ``INVALID_OPERATION``
+if it detects an attempt to change logging folder after logging had been initialized.
+In order to set log directory the call to ``ArtmConfigureLogging``
+must happen prior to calling any other methods in low-level C API.
+(with exception to ``ArtmSetProtobufMessageFormatToJson``,
+``ArtmSetProtobufMessageFormatToBinary`` and ``ArtmProtobufMessageFormatIsJson``).
+This is because methods in ``c_interface`` may automatically initialize logging
+into current working directory, which later can not be changed.
+
+Setting log directory require that target folder already exist on disk.
+
+The following parameters can be customized with ``ArtmConfigureLogging``.
+
+.. code-block:: bash
+
+    message ConfigureLoggingArgs {
+      // If specified, logfiles are written into this directory
+      // instead of the default logging directory.
+      optional string log_dir = 1;
+
+      // Messages logged at a lower level than this
+      // do not actually get logged anywhere
+      optional int32 minloglevel = 2;
+
+      // Log messages at a level >= this flag are automatically
+      // sent to stderr in addition to log files.
+      optional int32 stderrthreshold = 3;
+
+      // Log messages go to stderr instead of logfiles
+      optional bool logtostderr = 4;
+
+      // color messages logged to stderr (if supported by terminal)
+      optional bool colorlogtostderr = 5;
+
+      // log messages go to stderr in addition to logfiles
+      optional bool alsologtostderr = 6;
+
+      // Buffer log messages for at most this many seconds
+      optional int32 logbufsecs = 7;
+
+      // Buffer log messages logged at this level or lower
+      // (-1 means do not buffer; 0 means buffer INFO only; ...)
+      optional int32 logbuflevel = 8;
+
+      // approx. maximum log file size (in MB). A value of 0 will be silently overridden to 1.
+      optional int32 max_log_size = 9;
+
+      // Stop attempting to log to disk if the disk is full.
+      optional bool stop_logging_if_full_disk = 10;
+    }
+
+We recommend to set ``logbuflevel = -1`` to not buffer log messages.
+However by default BigARTM does not set this parameter, using the same default as provided by glog.
+
 ArtmGetLastErrorMessage
 -----------------------
 
