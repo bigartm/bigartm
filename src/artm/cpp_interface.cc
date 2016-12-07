@@ -37,7 +37,7 @@ static void SerializeMessageToString(const google::protobuf::Message& message, s
   }
 }
 
-int HandleErrorCode(int artm_error_code) {
+int64_t HandleErrorCode(int64_t artm_error_code) {
   // All error codes are negative. Any non-negative value is a success.
   if (artm_error_code >= 0) {
     return artm_error_code;
@@ -68,21 +68,21 @@ int HandleErrorCode(int artm_error_code) {
 }
 
 template<typename ArgsT, typename FuncT>
-int ArtmExecute(const ArgsT& args, FuncT func) {
+int64_t ArtmExecute(const ArgsT& args, FuncT func) {
   std::string blob;
   SerializeMessageToString(args, &blob);
   return HandleErrorCode(func(blob.size(), StringAsArray(&blob)));
 }
 
 template<typename ArgsT, typename FuncT>
-int ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
+int64_t ArtmExecute(int master_id, const ArgsT& args, FuncT func) {
   std::string blob;
   SerializeMessageToString(args, &blob);
   return HandleErrorCode(func(master_id, blob.size(), StringAsArray(&blob)));
 }
 
 template<typename ResultT>
-ResultT ArtmCopyResult(int length) {
+ResultT ArtmCopyResult(int64_t length) {
   std::string result_blob;
   result_blob.resize(length);
   HandleErrorCode(ArtmCopyRequestedMessage(length, StringAsArray(&result_blob)));
@@ -94,13 +94,13 @@ ResultT ArtmCopyResult(int length) {
 
 template<typename ResultT, typename FuncT>
 ResultT ArtmRequest(int master_id, FuncT func) {
-  int length = func(master_id);
+  int64_t length = func(master_id);
   return ArtmCopyResult<ResultT>(length);
 }
 
 template<typename ResultT, typename ArgsT, typename FuncT>
 ResultT ArtmRequest(int master_id, const ArgsT& args, FuncT func) {
-  int length = ArtmExecute(master_id, args, func);
+  int64_t length = ArtmExecute(master_id, args, func);
   return ArtmCopyResult<ResultT>(length);
 }
 
@@ -115,12 +115,12 @@ void ArtmRequestMatrix(int no_rows, int no_cols, Matrix* matrix) {
 
   matrix->resize(no_rows, no_cols);
 
-  int length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
+  int64_t length = sizeof(float) * matrix->no_columns() * matrix->no_rows();
   HandleErrorCode(ArtmCopyRequestedObject(length, reinterpret_cast<char*>(matrix->get_data())));
 }
 
 CollectionParserInfo ParseCollection(const CollectionParserConfig& config) {
-  int length = ArtmExecute(config, ArtmParseCollection);
+  int64_t length = ArtmExecute(config, ArtmParseCollection);
   return ArtmCopyResult<CollectionParserInfo>(length);
 }
 
@@ -129,7 +129,7 @@ void ConfigureLogging(const ConfigureLoggingArgs& args) {
 }
 
 Batch LoadBatch(std::string filename) {
-  int length = ArtmRequestLoadBatch(filename.c_str());
+  int64_t length = ArtmRequestLoadBatch(filename.c_str());
   return ArtmCopyResult<Batch>(length);
 }
 
