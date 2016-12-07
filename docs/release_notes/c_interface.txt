@@ -23,6 +23,9 @@ v0.8.2
   ``RegularizerConfig.config``, ``ScoreConfig.config`` and ``ScoreData.data``.
 
 * Revisit documentation for c_interface
+* Change integer types in c_interface from ``int`` to ``int64_t`` (from ``stdint.h``).
+  This allows to validate 2 GB limit for protobuf messages,
+  and also to passing larger objects in ``ArtmCopyRequestedObject``.
 
 
 v0.8.0

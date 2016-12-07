@@ -125,7 +125,7 @@ static char* StringAsArray(std::string* str) {
   return str->empty() ? NULL : &*str->begin();
 }
 
-static void ParseFromArray(const char* buffer, int length, google::protobuf::Message* message) {
+static void ParseFromArray(const char* buffer, int64_t length, google::protobuf::Message* message) {
   ::artm::core::ProtobufSerialization::singleton().ParseFromArray(buffer, length, message);
 }
 
@@ -153,7 +153,7 @@ const char* ArtmGetVersion() {
   return version.c_str();
 }
 
-int ArtmConfigureLogging(int length, const char* configure_logging_args) {
+int64_t ArtmConfigureLogging(int64_t length, const char* configure_logging_args) {
   try {
     ::artm::ConfigureLoggingArgs args;
     ParseFromArray(configure_logging_args, length, &args);
@@ -164,21 +164,21 @@ int ArtmConfigureLogging(int length, const char* configure_logging_args) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmSetProtobufMessageFormatToJson() {
+int64_t ArtmSetProtobufMessageFormatToJson() {
   ::artm::core::ProtobufSerialization::singleton().SetFormatToJson();
   return ARTM_SUCCESS;
 }
 
-int ArtmSetProtobufMessageFormatToBinary() {
+int64_t ArtmSetProtobufMessageFormatToBinary() {
   ::artm::core::ProtobufSerialization::singleton().SetFormatToBinary();
   return ARTM_SUCCESS;
 }
 
-int ArtmProtobufMessageFormatIsJson() {
+int64_t ArtmProtobufMessageFormatIsJson() {
   return ::artm::core::ProtobufSerialization::singleton().IsJson();
 }
 
-int ArtmCopyRequestImpl(int length, char* address, std::string* source) {
+int64_t ArtmCopyRequestImpl(int64_t length, char* address, std::string* source) {
   try {
     if (source == nullptr) {
       std::stringstream ss;
@@ -187,7 +187,7 @@ int ArtmCopyRequestImpl(int length, char* address, std::string* source) {
       return ARTM_INVALID_OPERATION;
     }
 
-    if (length != static_cast<int>(source->size())) {
+    if (length != static_cast<int64_t>(source->size())) {
       std::stringstream ss;
       ss << "Invalid 'length' parameter ";
       ss << "(" << source->size() << " expected, found " << length << ").";
@@ -201,17 +201,17 @@ int ArtmCopyRequestImpl(int length, char* address, std::string* source) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCopyRequestedMessage(int length, char* address) {
+int64_t ArtmCopyRequestedMessage(int64_t length, char* address) {
   LOG(INFO) << "ArtmCopyRequestedMessage is copying " << length << " bytes...";
   return ArtmCopyRequestImpl(length, address, last_message());
 }
 
-int ArtmCopyRequestedObject(int length, char* address) {
+int64_t ArtmCopyRequestedObject(int64_t length, char* address) {
   LOG(INFO) << "ArtmCopyRequestedObject is copying " << length << " bytes...";
   return ArtmCopyRequestImpl(length, address, last_message_ex());
 }
 
-int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
+int64_t ArtmSaveBatch(const char* disk_path, int64_t length, const char* batch) {
   try {
     EnableLogging();
     artm::Batch batch_object;
@@ -222,7 +222,7 @@ int ArtmSaveBatch(const char* disk_path, int length, const char* batch) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicate_master_args) {
+int64_t ArtmDuplicateMasterComponent(int master_id, int64_t length, const char* duplicate_master_args) {
   try {
     EnableLogging();
 
@@ -234,7 +234,7 @@ int ArtmDuplicateMasterComponent(int master_id, int length, const char* duplicat
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmCreateMasterModel(int length, const char* master_model_config) {
+int64_t ArtmCreateMasterModel(int64_t length, const char* master_model_config) {
   try {
     EnableLogging();
 
@@ -248,7 +248,7 @@ int ArtmCreateMasterModel(int length, const char* master_model_config) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batches_args) {
+int64_t ArtmAsyncProcessBatches(int master_id, int64_t length, const char* process_batches_args) {
   try {
     artm::ProcessBatchesArgs args;
     ParseFromArray(process_batches_args, length, &args);
@@ -266,7 +266,7 @@ int ArtmAsyncProcessBatches(int master_id, int length, const char* process_batch
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmAwaitOperation(int operation_id, int length, const char* await_operation_args) {
+int64_t ArtmAwaitOperation(int operation_id, int64_t length, const char* await_operation_args) {
   try {
     artm::AwaitOperationArgs args;
     ParseFromArray(await_operation_args, length, &args);
@@ -293,7 +293,7 @@ int ArtmAwaitOperation(int operation_id, int length, const char* await_operation
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmAttachModel(int master_id, int length, const char* attach_model_args, int address_length, char* address) {
+int64_t ArtmAttachModel(int master_id, int64_t length, const char* attach_model_args, int64_t address_length, char* address) {
   try {
     artm::AttachModelArgs args;
     ParseFromArray(attach_model_args, length, &args);
@@ -302,7 +302,7 @@ int ArtmAttachModel(int master_id, int length, const char* attach_model_args, in
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmDisposeMasterComponent(int master_id) {
+int64_t ArtmDisposeMasterComponent(int master_id) {
   try {
     MasterComponentManager::singleton().Erase(master_id);
     LOG(INFO) << "Disposing MasterComponent (id=" << master_id << ")...";
@@ -310,7 +310,7 @@ int ArtmDisposeMasterComponent(int master_id) {
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmParseCollection(int length, const char* collection_parser_config) {
+int64_t ArtmParseCollection(int64_t length, const char* collection_parser_config) {
   try {
     EnableLogging();
     artm::CollectionParserConfig config;
@@ -319,17 +319,17 @@ int ArtmParseCollection(int length, const char* collection_parser_config) {
     ::artm::core::CollectionParser collection_parser(config);
     ::artm::CollectionParserInfo result = collection_parser.Parse();
     SerializeToString(result, last_message());
-    return static_cast<int>(last_message()->size());
+    return static_cast<int64_t>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestLoadBatch(const char* filename) {
+int64_t ArtmRequestLoadBatch(const char* filename) {
   try {
     EnableLogging();
     auto batch = std::make_shared< ::artm::Batch>();
     ::artm::core::Helpers::LoadMessage(filename, batch.get());
     SerializeToString(*batch, last_message());
-    return static_cast<int>(last_message()->size());
+    return static_cast<int64_t>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 
@@ -339,7 +339,7 @@ int ArtmRequestLoadBatch(const char* filename) {
 
 // Execute a method of MasterComponent with explicitly provided args
 template<typename FuncT>
-int ArtmExecute(int master_id, const char* args, FuncT func) {
+int64_t ArtmExecute(int master_id, const char* args, FuncT func) {
   try {
     LOG(INFO) << "Pass " << args << " to " << typeid(FuncT).name();
     (master_component(master_id).get()->*func)(args);
@@ -349,7 +349,7 @@ int ArtmExecute(int master_id, const char* args, FuncT func) {
 
 // Execute a method of MasterComponent with args parsed from a protobuf blob
 template<typename ArgsT, typename FuncT>
-int ArtmExecute(int master_id, int length, const char* args_blob, FuncT func) {
+int64_t ArtmExecute(int master_id, int64_t length, const char* args_blob, FuncT func) {
   try {
     ArgsT args;
     ParseFromArray(args_blob, length, &args);
@@ -363,7 +363,7 @@ int ArtmExecute(int master_id, int length, const char* args_blob, FuncT func) {
 
 // Execute a method of MasterComponent with args parsed from a protobuf blob (name is overwritten)
 template<typename ArgsT, typename FuncT>
-int ArtmExecute(int master_id, int length, const char* args_blob, const char* name, FuncT func) {
+int64_t ArtmExecute(int master_id, int64_t length, const char* args_blob, const char* name, FuncT func) {
   try {
     ArgsT args;
     ParseFromArray(args_blob, length, &args);
@@ -381,114 +381,114 @@ int ArtmExecute(int master_id, int length, const char* args_blob, const char* na
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmImportBatches(int master_id, int length, const char* args) {
+int64_t ArtmImportBatches(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ImportBatchesArgs>(master_id, length, args, &MasterComponent::ImportBatches);
 }
 
-int ArtmMergeModel(int master_id, int length, const char* args) {
+int64_t ArtmMergeModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::MergeModelArgs>(master_id, length, args, &MasterComponent::MergeModel);
 }
 
-int ArtmRegularizeModel(int master_id, int length, const char* args) {
+int64_t ArtmRegularizeModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::RegularizeModelArgs>(master_id, length, args, &MasterComponent::RegularizeModel);
 }
 
-int ArtmNormalizeModel(int master_id, int length, const char* args) {
+int64_t ArtmNormalizeModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::NormalizeModelArgs>(master_id, length, args, &MasterComponent::NormalizeModel);
 }
 
-int ArtmOverwriteTopicModel(int master_id, int length, const char* topic_model) {
+int64_t ArtmOverwriteTopicModel(int master_id, int64_t length, const char* topic_model) {
   return ArtmExecute< ::artm::TopicModel>(master_id, length, topic_model, &MasterComponent::OverwriteTopicModel);
 }
 
-int ArtmOverwriteTopicModelNamed(int master_id, int length, const char* topic_model, const char* name) {
+int64_t ArtmOverwriteTopicModelNamed(int master_id, int64_t length, const char* topic_model, const char* name) {
   return ArtmExecute< ::artm::TopicModel>(master_id, length, topic_model, name, &MasterComponent::OverwriteTopicModel);
 }
 
-int ArtmInitializeModel(int master_id, int length, const char* args) {
+int64_t ArtmInitializeModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::InitializeModelArgs>(master_id, length, args, &MasterComponent::InitializeModel);
 }
 
-int ArtmExportModel(int master_id, int length, const char* args) {
+int64_t ArtmExportModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ExportModelArgs>(master_id, length, args, &MasterComponent::ExportModel);
 }
 
-int ArtmImportModel(int master_id, int length, const char* args) {
+int64_t ArtmImportModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ImportModelArgs>(master_id, length, args, &MasterComponent::ImportModel);
 }
 
-int ArtmCreateRegularizer(int master_id, int length, const char* config) {
+int64_t ArtmCreateRegularizer(int master_id, int64_t length, const char* config) {
   return ArtmExecute< ::artm::RegularizerConfig>(
     master_id, length, config, &MasterComponent::CreateOrReconfigureRegularizer);
 }
 
-int ArtmReconfigureRegularizer(int master_id, int length, const char* config) {
+int64_t ArtmReconfigureRegularizer(int master_id, int64_t length, const char* config) {
   return ArtmExecute< ::artm::RegularizerConfig>(
     master_id, length, config, &MasterComponent::CreateOrReconfigureRegularizer);
 }
 
-int ArtmGatherDictionary(int master_id, int length, const char* args) {
+int64_t ArtmGatherDictionary(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::GatherDictionaryArgs>(master_id, length, args, &MasterComponent::GatherDictionary);
 }
 
-int ArtmFilterDictionary(int master_id, int length, const char* args) {
+int64_t ArtmFilterDictionary(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::FilterDictionaryArgs>(master_id, length, args, &MasterComponent::FilterDictionary);
 }
 
-int ArtmCreateDictionary(int master_id, int length, const char* data) {
+int64_t ArtmCreateDictionary(int master_id, int64_t length, const char* data) {
   return ArtmExecute< ::artm::DictionaryData>(master_id, length, data, &MasterComponent::CreateDictionary);
 }
 
-int ArtmCreateDictionaryNamed(int master_id, int length, const char* data, const char* name) {
+int64_t ArtmCreateDictionaryNamed(int master_id, int64_t length, const char* data, const char* name) {
   return ArtmExecute< ::artm::DictionaryData>(master_id, length, data, name, &MasterComponent::CreateDictionary);
 }
 
-int ArtmImportDictionary(int master_id, int length, const char* args) {
+int64_t ArtmImportDictionary(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ImportDictionaryArgs>(master_id, length, args, &MasterComponent::ImportDictionary);
 }
 
-int ArtmExportDictionary(int master_id, int length, const char* args) {
+int64_t ArtmExportDictionary(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ExportDictionaryArgs>(master_id, length, args, &MasterComponent::ExportDictionary);
 }
 
-int ArtmReconfigureMasterModel(int master_id, int length, const char* config) {
+int64_t ArtmReconfigureMasterModel(int master_id, int64_t length, const char* config) {
   return ArtmExecute< ::artm::MasterModelConfig>(master_id, length, config, &MasterComponent::ReconfigureMasterModel);
 }
 
-int ArtmFitOfflineMasterModel(int master_id, int length, const char* args) {
+int64_t ArtmFitOfflineMasterModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::FitOfflineMasterModelArgs>(master_id, length, args, &MasterComponent::FitOffline);
 }
 
-int ArtmFitOnlineMasterModel(int master_id, int length, const char* args) {
+int64_t ArtmFitOnlineMasterModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::FitOnlineMasterModelArgs>(master_id, length, args, &MasterComponent::FitOnline);
 }
 
-int ArtmClearThetaCache(int master_id, int length, const char* args) {
+int64_t ArtmClearThetaCache(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ClearThetaCacheArgs>(master_id, length, args, &MasterComponent::ClearThetaCache);
 }
 
-int ArtmClearScoreCache(int master_id, int length, const char* args) {
+int64_t ArtmClearScoreCache(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ClearScoreCacheArgs>(master_id, length, args, &MasterComponent::ClearScoreCache);
 }
 
-int ArtmClearScoreArrayCache(int master_id, int length, const char* args) {
+int64_t ArtmClearScoreArrayCache(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::ClearScoreArrayCacheArgs>(master_id, length, args,
                                                         &MasterComponent::ClearScoreArrayCache);
 }
 
-int ArtmDisposeRegularizer(int master_id, const char* name) {
+int64_t ArtmDisposeRegularizer(int master_id, const char* name) {
   return ArtmExecute(master_id, name, &MasterComponent::DisposeRegularizer);
 }
 
-int ArtmDisposeModel(int master_id, const char* name) {
+int64_t ArtmDisposeModel(int master_id, const char* name) {
   return ArtmExecute(master_id, name, &MasterComponent::DisposeModel);
 }
 
-int ArtmDisposeDictionary(int master_id, const char* name) {
+int64_t ArtmDisposeDictionary(int master_id, const char* name) {
   return ArtmExecute(master_id, name, &MasterComponent::DisposeDictionary);
 }
 
-int ArtmDisposeBatch(int master_id, const char* name) {
+int64_t ArtmDisposeBatch(int master_id, const char* name) {
   return ArtmExecute(master_id, name, &MasterComponent::DisposeBatch);
 }
 
@@ -497,18 +497,18 @@ int ArtmDisposeBatch(int master_id, const char* name) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename ResultT>
-int ArtmRequest(int master_id) {
+int64_t ArtmRequest(int master_id) {
   try {
     ResultT result;
     master_component(master_id)->Request(&result);
     ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
     SerializeToString(result, last_message());
-    return static_cast<int>(last_message()->size());
+    return static_cast<int64_t>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 
 template<typename ArgsT, typename ResultT>
-int ArtmRequest(int master_id, int length, const char* args_blob) {
+int64_t ArtmRequest(int master_id, int64_t length, const char* args_blob) {
   try {
     ArgsT args;
     ResultT result;
@@ -519,12 +519,12 @@ int ArtmRequest(int master_id, int length, const char* args_blob) {
     master_component(master_id)->Request(args, &result);
     ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
     SerializeToString(result, last_message());
-    return static_cast<int>(last_message()->size());
+    return static_cast<int64_t>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 
 template<typename ArgsT, typename ResultT>
-int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
+int64_t ArtmRequestExternal(int master_id, int64_t length, const char* args_blob) {
   try {
     ArgsT args;
     ResultT result;
@@ -535,70 +535,70 @@ int ArtmRequestExternal(int master_id, int length, const char* args_blob) {
     master_component(master_id)->Request(args, &result, last_message_ex());
     ::artm::core::FixAndValidateMessage(&result, /* throw_error =*/ false);
     SerializeToString(result, last_message());
-    return static_cast<int>(last_message()->size());
+    return static_cast<int64_t>(last_message()->size());
   } CATCH_EXCEPTIONS;
 }
 
-int ArtmRequestScore(int master_id, int length, const char* args) {
+int64_t ArtmRequestScore(int master_id, int64_t length, const char* args) {
   return ArtmRequest< ::artm::GetScoreValueArgs,
                       ::artm::ScoreData>(master_id, length, args);
 }
 
-int ArtmRequestScoreArray(int master_id, int length, const char* args) {
+int64_t ArtmRequestScoreArray(int master_id, int64_t length, const char* args) {
   return ArtmRequest< ::artm::GetScoreArrayArgs,
                       ::artm::ScoreArray>(master_id, length, args);
 }
 
-int ArtmRequestDictionary(int master_id, int length, const char* args) {
+int64_t ArtmRequestDictionary(int master_id, int64_t length, const char* args) {
   return ArtmRequest< ::artm::GetDictionaryArgs,
                       ::artm::DictionaryData>(master_id, length, args);
 }
 
-int ArtmRequestMasterComponentInfo(int master_id, int length, const char* args) {
+int64_t ArtmRequestMasterComponentInfo(int master_id, int64_t length, const char* args) {
   return ArtmRequest< ::artm::GetMasterComponentInfoArgs,
                       ::artm::MasterComponentInfo>(master_id, length, args);
 }
 
-int ArtmRequestProcessBatches(int master_id, int length, const char* args) {
+int64_t ArtmRequestProcessBatches(int master_id, int64_t length, const char* args) {
   return ArtmRequest< ::artm::ProcessBatchesArgs,
                       ::artm::ProcessBatchesResult>(master_id, length, args);
 }
 
-int ArtmRequestProcessBatchesExternal(int master_id, int length, const char* args) {
+int64_t ArtmRequestProcessBatchesExternal(int master_id, int64_t length, const char* args) {
   return ArtmRequestExternal< ::artm::ProcessBatchesArgs,
                               ::artm::ProcessBatchesResult>(master_id, length, args);
 }
 
-int ArtmRequestMasterModelConfig(int master_id) {
+int64_t ArtmRequestMasterModelConfig(int master_id) {
   return ArtmRequest< ::artm::MasterModelConfig>(master_id);
 }
 
-int ArtmRequestThetaMatrix(int master_id, int length, const char* args) {
+int64_t ArtmRequestThetaMatrix(int master_id, int64_t length, const char* args) {
   return ArtmRequest< ::artm::GetThetaMatrixArgs,
                       ::artm::ThetaMatrix>(master_id, length, args);
 }
 
-int ArtmRequestThetaMatrixExternal(int master_id, int length, const char* args) {
+int64_t ArtmRequestThetaMatrixExternal(int master_id, int64_t length, const char* args) {
   return ArtmRequestExternal< ::artm::GetThetaMatrixArgs,
                               ::artm::ThetaMatrix>(master_id, length, args);
 }
 
-int ArtmRequestTopicModel(int master_id, int length, const char* args) {
+int64_t ArtmRequestTopicModel(int master_id, int64_t length, const char* args) {
   return ArtmRequest< ::artm::GetTopicModelArgs,
                       ::artm::TopicModel>(master_id, length, args);
 }
 
-int ArtmRequestTopicModelExternal(int master_id, int length, const char* args) {
+int64_t ArtmRequestTopicModelExternal(int master_id, int64_t length, const char* args) {
   return ArtmRequestExternal< ::artm::GetTopicModelArgs,
                               ::artm::TopicModel>(master_id, length, args);
 }
 
-int ArtmRequestTransformMasterModel(int master_id, int length, const char* args) {
+int64_t ArtmRequestTransformMasterModel(int master_id, int64_t length, const char* args) {
   return ArtmRequest< ::artm::TransformMasterModelArgs,
                       ::artm::ThetaMatrix>(master_id, length, args);
 }
 
-int ArtmRequestTransformMasterModelExternal(int master_id, int length, const char* args) {
+int64_t ArtmRequestTransformMasterModelExternal(int master_id, int64_t length, const char* args) {
   return ArtmRequestExternal< ::artm::TransformMasterModelArgs,
                               ::artm::ThetaMatrix>(master_id, length, args);
 }

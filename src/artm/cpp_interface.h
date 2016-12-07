@@ -55,7 +55,7 @@ DEFINE_EXCEPTION_TYPE(InvalidOperationException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskReadException, std::runtime_error);
 DEFINE_EXCEPTION_TYPE(DiskWriteException, std::runtime_error);
 
-int HandleErrorCode(int artm_error_code);
+int64_t HandleErrorCode(int64_t artm_error_code);
 
 #undef DEFINE_EXCEPTION_TYPE
 

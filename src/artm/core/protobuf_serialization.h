@@ -3,6 +3,8 @@
 #ifndef SRC_ARTM_CORE_PROTOBUF_SERIALIZATION_H_
 #define SRC_ARTM_CORE_PROTOBUF_SERIALIZATION_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "google/protobuf/message.h"
@@ -24,7 +26,7 @@ class ProtobufSerialization {
   bool IsBinary() { return !use_json_format_; }
 
   void ParseFromString(const std::string& string, google::protobuf::Message* message);
-  void ParseFromArray(const char* buffer, int length, google::protobuf::Message* message);
+  void ParseFromArray(const char* buffer, int64_t length, google::protobuf::Message* message);
   void SerializeToString(const google::protobuf::Message& message, std::string* output);
   std::string SerializeAsString(const google::protobuf::Message& message);
 

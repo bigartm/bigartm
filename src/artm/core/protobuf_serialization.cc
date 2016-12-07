@@ -25,7 +25,9 @@ void ProtobufSerialization::ParseFromString(const std::string& string, google::p
   }
 }
 
-void ProtobufSerialization::ParseFromArray(const char* buffer, int length, google::protobuf::Message* message) {
+void ProtobufSerialization::ParseFromArray(const char* buffer, int64_t length, google::protobuf::Message* message) {
+  if (length < 0 || length >= 2147483647)
+    BOOST_THROW_EXCEPTION(CorruptedMessageException("Protobuf message is too long"));
   ParseFromString((length >= 0) ? std::string(buffer, length) : std::string(buffer), message);
 }
 
