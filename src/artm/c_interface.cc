@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>  // NOLINT
 
+#include "boost/filesystem.hpp"
 #include "boost/thread/tss.hpp"
 #include "boost/thread/thread.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
@@ -62,19 +63,13 @@ static void set_last_error(const std::string& error) {
 static void EnableLogging(artm::ConfigureLoggingArgs* args) {
   static bool logging_enabled = false;
 
-  if (logging_enabled && args != nullptr && args->has_log_dir())
-    LOG(WARNING) << "Logging directory can't be change after the logging started.";
-
-  // Special treatment for log_dir
-  if (!logging_enabled) {
-    std::string log_dir = args != nullptr && args->has_log_dir() ? args->log_dir() : ".";
-    FLAGS_log_dir = log_dir;
-
-    ::google::InitGoogleLogging(log_dir.c_str());
-
-    logging_enabled = true;
-    LOG(INFO) << "Logging enabled to " << log_dir.c_str();
-  }
+  if (logging_enabled && args != nullptr && args->has_log_dir() && (FLAGS_log_dir != args->log_dir()))
+    BOOST_THROW_EXCEPTION(::artm::core::InvalidOperation(
+      "Logging directory can't be change after the logging started."));
+  if (!logging_enabled && args != nullptr && args->has_log_dir())
+    if (!boost::filesystem::exists(args->log_dir()) || !boost::filesystem::is_directory(args->log_dir()))
+      BOOST_THROW_EXCEPTION(::artm::core::InvalidOperation(
+        "Can not enable logging to " + args->log_dir() + ", check that the folder exist"));
 
   // Setting all other flags except log_dir
   if (args != nullptr) {
@@ -94,6 +89,17 @@ static void EnableLogging(artm::ConfigureLoggingArgs* args) {
     // ::google::SetVLOGLevel() is not supported in non-gcc compilers
     // https://groups.google.com/forum/#!topic/google-glog/f8D7qpXLWXw
     // if (args->has_v()) FLAGS_v = args->v();
+  }
+
+  // Special treatment for log_dir
+  if (!logging_enabled) {
+    std::string log_dir = args != nullptr && args->has_log_dir() ? args->log_dir() : ".";
+    FLAGS_log_dir = log_dir;
+
+    ::google::InitGoogleLogging("bigartm");
+
+    logging_enabled = true;
+    LOG(INFO) << "Logging enabled to " << log_dir.c_str();
   }
 }
 
