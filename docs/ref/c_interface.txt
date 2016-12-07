@@ -22,7 +22,7 @@ Typical methods of low-level API may look as follows:
 .. code-block:: bash
 
    int ArtmCreateMasterModel(int length, const char* master_model_config);
-   int ArtmFitOfflineMasterModel(int master_id, int lenght, const char* fit_offline_master_model_args);
+   int ArtmFitOfflineMasterModel(int master_id, int length, const char* fit_offline_master_model_args);
    int ArtmRequestTopicModel(int master_id, int length, const char* get_model_args);
  
 This methods, similarly to most other methods in low level API,
