@@ -293,7 +293,8 @@ int64_t ArtmAwaitOperation(int operation_id, int64_t length, const char* await_o
   } CATCH_EXCEPTIONS;
 }
 
-int64_t ArtmAttachModel(int master_id, int64_t length, const char* attach_model_args, int64_t address_length, char* address) {
+int64_t ArtmAttachModel(int master_id, int64_t length, const char* attach_model_args,
+                        int64_t address_length, char* address) {
   try {
     artm::AttachModelArgs args;
     ParseFromArray(attach_model_args, length, &args);
