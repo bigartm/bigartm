@@ -187,3 +187,7 @@ class Dictionary(object):
         :Description: returns a copy the dictionary loaded in lib with another name.
         """
         raise NotImplementedError()
+
+    def __repr__(self):
+        descr = next(x for x in self._master.get_info().dictionary if x.name == self.name)
+        return 'artm.Dictionary(name={0}, num_entries={1})'.format(descr.name, descr.num_entries)

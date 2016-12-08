@@ -773,6 +773,12 @@ class ARTM(object):
             self.master.reconfigure_topic_name(topic_names=topic_names)
             self._topic_names = topic_names
 
+    def __repr__(self):
+        num_tokens = next((x.num_tokens for x in self.info.model if x.name == self._model_pwt), None)
+        class_ids = ', class_ids={0}'.format(list(self.class_ids.keys())) if self.class_ids else ''
+        return 'artm.ARTM(num_topics={0}, num_tokens={1}{2})'.format(
+            self.num_topics, num_tokens, class_ids)
+
 
 def version():
     return ARTM(num_topics=1).library_version
