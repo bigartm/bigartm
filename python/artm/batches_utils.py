@@ -36,7 +36,7 @@ class Batch(object):
 class BatchVectorizer(object):
     def __init__(self, batches=None, collection_name=None, data_path='', data_format='batches',
                  target_folder=None, batch_size=1000, batch_name_type='code', data_weight=1.0,
-                 n_wd=None, vocabulary=None, gather_dictionary=True):
+                 n_wd=None, vocabulary=None, gather_dictionary=True, class_ids=None):
         """
         :param str collection_name: the name of text collection (required if data_format == 'bow_uci')
         :param str data_path: 1) if data_format == 'bow_uci' => folder containing\
@@ -66,6 +66,8 @@ class BatchVectorizer(object):
         :param bool gather_dictionary: create or not the default dictionary in vectorizer;\
                                        if data_format == 'bow_n_wd' - automatically set to True;\
                                        and if data_weight is list - automatically set to False
+        :param class_ids: list of class ids to parse and include in batches
+        :type class_ids: list of str
         """
         self._remove_batches = False
         if data_format == 'bow_n_wd' or data_format == 'vowpal_wabbit' or data_format == 'bow_uci':
@@ -91,12 +93,13 @@ class BatchVectorizer(object):
         elif data_format == 'batches':
             self._parse_batches(data_weight=data_weight, batches=batches)
         elif data_format == 'vowpal_wabbit':
-            self._parse_uci_or_vw(data_weight=data_weight, format='vw')
+            self._parse_uci_or_vw(data_weight=data_weight, format='vw', class_ids=class_ids)
         elif data_format == 'bow_uci':
             self._parse_uci_or_vw(data_weight=data_weight,
                                   format='uci',
                                   col_name=collection_name,
-                                  batch_name_type=batch_name_type)
+                                  batch_name_type=batch_name_type,
+                                  class_ids=class_ids)
         else:
             raise IOError('Unknown data format')
 
@@ -138,13 +141,17 @@ class BatchVectorizer(object):
 
         return data_paths, data_weights, target_folders
 
-    def _parse_uci_or_vw(self, data_weight=None, format=None, col_name=None, batch_name_type=None):
+    def _parse_uci_or_vw(self, data_weight=None, format=None, col_name=None, batch_name_type=None, class_ids=None):
         data_paths, data_weights, target_folders = self._populate_data(data_weight)
         for (data_p, data_w, target_f) in zip(data_paths, data_weights, target_folders):
             parser_config = messages.CollectionParserConfig()
 
             parser_config.num_items_per_batch = self._batch_size
             parser_config.target_folder = target_f
+
+            if class_ids is not None:
+                for class_id in class_ids:
+                    parser_config.class_id.append(class_id)
 
             if format == 'uci':
                 parser_config.docword_file_path = os.path.join(data_p, 'docword.{0}.txt'.format(col_name))
