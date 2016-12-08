@@ -66,6 +66,9 @@ class Scores(object):
     def data(self):
         return self._data
 
+    def __repr__(self):
+        return '[{0}]'.format(', '.join(self._data))
+
 
 class BaseScore(object):
 

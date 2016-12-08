@@ -288,3 +288,7 @@ class BatchVectorizer(object):
         :return: Dictionary object, if parameter gather_dictionary was True, else None
         """
         return self._dictionary
+
+    def __repr__(self):
+        return 'artm.BatchVectorizer(data_path="{0}", num_batches={1})'.format(
+            self._data_path, self.num_batches)
