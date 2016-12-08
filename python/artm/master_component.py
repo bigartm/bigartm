@@ -109,8 +109,9 @@ def _score_data_func(score_data_type):
             return mfunc
 
 
-def _prepare_config(topic_names, class_ids, scores, regularizers, num_processors,
-                    pwt_name, nwt_name, num_document_passes, reuse_theta, cache_theta, args=None):
+def _prepare_config(topic_names=None, class_ids=None, scores=None, regularizers=None, num_processors=None,
+                    pwt_name=None, nwt_name=None, num_document_passes=None, reuse_theta=None, cache_theta=None,
+                    args=None):
         master_config = messages.MasterModelConfig()
 
         if args is not None:
@@ -221,6 +222,13 @@ class MasterComponent(object):
 
         self._config = master_config
         self._lib.ArtmReconfigureMasterModel(self.master_id, master_config)
+
+    def reconfigure_topic_name(self, topic_names=None):
+        master_config = _prepare_config(topic_names=topic_names,
+                                        args=self._config)
+
+        self._config = master_config
+        self._lib.ArtmReconfigureTopicName(self.master_id, master_config)
 
     def import_dictionary(self, filename, dictionary_name):
         """

@@ -97,6 +97,7 @@ class MasterModel {
 
   MasterModelConfig config() const;
   void Reconfigure(const MasterModelConfig& config);
+  void ReconfigureTopicName(const MasterModelConfig& config);
 
   // Operations to work with dictionary through disk
   void GatherDictionary(const GatherDictionaryArgs& args);

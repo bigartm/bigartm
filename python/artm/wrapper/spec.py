@@ -203,6 +203,10 @@ ARTM_API = [
         [('master_id', int), ('config', messages.MasterModelConfig)],
     ),
     CallSpec(
+        'ArtmReconfigureTopicName',
+        [('master_id', int), ('config', messages.MasterModelConfig)],
+    ),
+    CallSpec(
         'ArtmFitOfflineMasterModel',
         [('master_id', int), ('config', messages.FitOfflineMasterModelArgs)],
     ),

@@ -92,6 +92,7 @@ class MasterComponent : boost::noncopyable {
   void OverwriteTopicModel(const ::artm::TopicModel& topic_model);
 
   void ReconfigureMasterModel(const MasterModelConfig& config);
+  void ReconfigureTopicName(const MasterModelConfig& config);
 
   void CreateOrReconfigureRegularizer(const RegularizerConfig& config);
 
@@ -110,7 +111,8 @@ class MasterComponent : boost::noncopyable {
                                  ScoreManager* score_manager,
                                  ::artm::ThetaMatrix* theta_matrix);
 
-  void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure);
+  void CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure,
+                                          bool change_topic_name);
 
   void AddDictionary(std::shared_ptr<Dictionary> dictionary);
 

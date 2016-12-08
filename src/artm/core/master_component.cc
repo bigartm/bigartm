@@ -65,16 +65,25 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
   theta_matrix->clear_item_weights();
 }
 
-void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig& config, bool reconfigure) {
+void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig& config,
+                                                         bool reconfigure,
+                                                         bool change_topic_name) {
   if (!reconfigure) {
     instance_ = std::make_shared<Instance>(config);
   } else {
     auto old_config = instance_->config();
+    if (!change_topic_name && (old_config->topic_name_size() != config.topic_name_size()))
+      BOOST_THROW_EXCEPTION(InvalidOperation(
+        "ArtmReconfigureMasterModel can not change number of topics; use ArtmReconfigureTopicName"));
+
     instance_->Reconfigure(config);
 
     // If there is a change in config.topic_name, update all phi matrices to new set of topics
-    // Topics that were removed from the config will be also removed from phi matrices.
-    // New topics will be initialized with zeros.
+    // 1. If change_topic_names is true:
+    //    Topics that were removed from the config will be also removed from phi matrices.
+    //    New topics will be initialized with zeros.
+    // 2. If change_topic_names is false:
+    //    Topic names will be set as new labels.
     if (!repeated_field_equals(old_config->topic_name(), config.topic_name())) {
       auto model_names = instance_->models()->keys();
       for (auto model_name : model_names) {
@@ -84,11 +93,16 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
         if (!repeated_field_equals(model->topic_name(), old_config->topic_name()))
           continue;
 
-        MergeModelArgs merge;
-        merge.add_nwt_source_name(model_name);
-        merge.add_source_weight(1.0f);
-        merge.set_nwt_target_name(model_name);
-        MergeModel(merge);
+        if (change_topic_name) {
+          MergeModelArgs merge;
+          merge.add_nwt_source_name(model_name);
+          merge.add_source_weight(1.0f);
+          merge.set_nwt_target_name(model_name);
+          MergeModel(merge);
+        } else {
+          for (int topic_index = 0; topic_index < config.topic_name_size(); topic_index++)
+            (const_cast<PhiMatrix*>(model.get()))->set_topic_name(topic_index, config.topic_name(topic_index));
+        }
       }
     }
   }
@@ -104,7 +118,7 @@ void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig
 
 MasterComponent::MasterComponent(const MasterModelConfig& config)
     : instance_(nullptr) {
-  CreateOrReconfigureMasterComponent(config, /*reconfigure =*/ false);
+  CreateOrReconfigureMasterComponent(config, /*reconfigure =*/ false, /*change_topic_name*/ false);
 }
 
 MasterComponent::MasterComponent(const MasterComponent& rhs)
@@ -414,7 +428,15 @@ void MasterComponent::GatherDictionary(const GatherDictionaryArgs& args) {
 }
 
 void MasterComponent::ReconfigureMasterModel(const MasterModelConfig& config) {
-  CreateOrReconfigureMasterComponent(config, /*reconfigure = */ true);
+  CreateOrReconfigureMasterComponent(config,
+                                     /*reconfigure = */ true,
+                                     /*change_topic_name = */ false);
+}
+
+void MasterComponent::ReconfigureTopicName(const MasterModelConfig& config) {
+  CreateOrReconfigureMasterComponent(config,
+                                     /*reconfigure = */ true,
+                                     /*change_topic_name = */ true);
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result) {

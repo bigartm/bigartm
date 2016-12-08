@@ -159,6 +159,10 @@ void MasterModel::Reconfigure(const MasterModelConfig& config) {
   ArtmExecute(id_, config, ArtmReconfigureMasterModel);
 }
 
+void MasterModel::ReconfigureTopicName(const MasterModelConfig& config) {
+  ArtmExecute(id_, config, ArtmReconfigureTopicName);
+}
+
 TopicModel MasterModel::GetTopicModel() {
   GetTopicModelArgs args;
   args.set_model_name(config().pwt_name());

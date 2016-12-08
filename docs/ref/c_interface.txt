@@ -60,6 +60,7 @@ List of all methods with corresponding protobuf types
   
   master_id                 = ArtmCreateMasterModel          (           artm.MasterModelConfig);
                               ArtmReconfigureMasterModel     (master_id, artm.MasterModelConfig);
+                              ArtmReconfigureTopicName       (master_id, artm.MasterModelConfig);
                               ArtmDisposeMasterComponent     (master_id);
 
                               ArtmImportBatches              (master_id, artm.ImportBatchesArgs);
@@ -325,6 +326,42 @@ The following parameters can be customized with ``ArtmConfigureLogging``.
 
 We recommend to set ``logbuflevel = -1`` to not buffer log messages.
 However by default BigARTM does not set this parameter, using the same default as provided by glog.
+
+ArtmReconfigureTopicName
+------------------------
+
+To explain ``ArtmReconfigureTopicName`` we need to first start with ``ArtmReconfigureMasterModel``.
+``ArtmReconfigureMasterModel`` allow user to rename topics, but the number of topics must stay the same,
+and the order and the content of all existing phi matrices remains unchanged.
+On contrary, ``ArtmReconfigureTopicName`` may change the number of topics by adding or removing topics,
+as well as reorder columns of existing phi matrices.
+In ``ArtmReconfigureMasterModel`` the list of topic names is treated
+as new identifiers that should be set for existing columns.
+In ``ArtmReconfigureTopicName`` the list of topic names is matched against previous topic names.
+New topic names are added to phi matrices, topic names removed from the list are excluded from phi matrices,
+and topic names present in both old and new lists are re-ordered accordingly to match new topic name list.
+
+Examples for ``ArtmReconfigureMasterModel``:
+
+* ``t1, t2, t3`` -> ``t4, t5, t6`` sets new topic names for existing columns in phi matrices.
+
+Examples for ``ArtmReconfigureTopicName``:
+
+* ``t1, t2, t3`` -> ``t1, t2, t3, t4`` adds a new column to phi matrices, initialized with zeros
+* ``t1, t2, t3`` -> ``t1, t2`` removes last column from phi matrices
+* ``t1, t2, t3`` -> ``t2, t3`` removes the first column from phi matrices
+* ``t1, t2, t3`` -> ``t3, t2`` removes the first column from phi matrices and swaps the remaining two columns
+* ``t1, t2, t3`` -> ``t4, t5, t6`` removes all columns from phi matrices and creates three new columns, initialized with zeros
+
+Note that both ``ArtmReconfigureTopicName`` and ``ArtmReconfigureMasterModel`` only affect phi matrices
+where set of topic names match the configuration of the master model.
+User-created matrices with custom set of topic names,
+for example created via ``ArtmMergeModel``, will stay unchanged.
+
+If you change topic names you should also consider changing your configuration of scores and regularizers.
+Also take into account that ``ArtmReconfigureTopicName`` and ``ArtmReconfigureMasterModel`` do not update theta cache.
+It is a good idea to call ``ArtmClearThetaCache`` after changing topic names.
+
 
 ArtmGetLastErrorMessage
 -----------------------

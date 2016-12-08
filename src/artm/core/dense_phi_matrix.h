@@ -70,6 +70,7 @@ class PhiMatrixFrame : public PhiMatrix {
   virtual int token_index(const Token& token) const;
   virtual google::protobuf::RepeatedPtrField<std::string> topic_name() const;
   virtual const std::string& topic_name(int topic_id) const;
+  virtual void set_topic_name(int topic_id, const std::string& topic_name);
   virtual ModelName model_name() const;
   virtual int64_t ByteSize() const;
 

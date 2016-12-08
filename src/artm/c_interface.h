@@ -22,6 +22,7 @@ extern "C" {
   DLL_PUBLIC int64_t ArtmDuplicateMasterComponent(int master_id, int64_t length, const char* duplicate_master_args);
   DLL_PUBLIC int64_t ArtmCreateMasterModel(int64_t length, const char* master_model_config);
   DLL_PUBLIC int64_t ArtmReconfigureMasterModel(int master_id, int64_t length, const char* master_model_config);
+  DLL_PUBLIC int64_t ArtmReconfigureTopicName(int master_id, int64_t length, const char* master_model_config);
   DLL_PUBLIC int64_t ArtmDisposeMasterComponent(int master_id);
 
   DLL_PUBLIC int64_t ArtmDisposeModel(int master_id, const char* model_name);
