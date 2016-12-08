@@ -296,6 +296,7 @@ class MasterComponent(object):
                           min_df=None, max_df=None,
                           min_df_rate=None, max_df_rate=None,
                           min_tf=None, max_tf=None,
+                          max_dictionary_size=None,
                           args=None):
 
         """
@@ -308,6 +309,8 @@ class MasterComponent(object):
         :param float max_df_rate: max df rate to pass the filter
         :param float min_tf: min tf value to pass the filter
         :param float max_tf: max tf value to pass the filter
+        :param float max_dictionary_size: give an easy option to limit dictionary size;
+                                          rare tokens will be excluded until dictionary reaches given size.
         :param args: an instance of FilterDictionaryArgs
         """
         filter_args = messages.FilterDictionaryArgs()
@@ -331,6 +334,8 @@ class MasterComponent(object):
             filter_args.min_tf = min_tf
         if max_tf is not None:
             filter_args.max_tf = max_tf
+        if max_dictionary_size is not None:
+            filter_args.max_dictionary_size = max_dictionary_size
 
         self._lib.ArtmFilterDictionary(self.master_id, filter_args)
 
@@ -502,7 +507,7 @@ class MasterComponent(object):
 
         self._lib.ArtmNormalizeModel(self.master_id, args)
 
-    def merge_model(self, models, nwt, topic_names=None):
+    def merge_model(self, models, nwt, topic_names=None, dictionary_name=None):
         """
         Merge multiple nwt-increments together.
 
@@ -512,6 +517,7 @@ class MasterComponent(object):
                 The matrix will be created by this operation.
         :param topic_names: names of topics in the resulting model. By default model\
                 names are taken from the first model in the list.
+        :param dictionary_name: name of dictionary that defines which tokens to include in merged model
         :type topic_names: list of str
         """
         args = messages.MergeModelArgs(nwt_target_name=nwt)
@@ -519,6 +525,8 @@ class MasterComponent(object):
             args.ClearField('topic_name')
             for topic_name in topic_names:
                 args.topic_name.append(topic_name)
+        if dictionary_name is not None:
+            args.dictionary_name = dictionary_name
         for nwt_source_name, source_weight in iteritems(models):
             args.nwt_source_name.append(nwt_source_name)
             args.source_weight.append(source_weight)

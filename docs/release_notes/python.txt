@@ -39,6 +39,9 @@ v0.8.2
 * Better support for changes in topic names, with reconfigure(), initialize() and merge_model()
 * Show progress bars in ``fit_offline``, ``fit_online`` and ``transform``.
 * Add ``ARTM.reshape_topics`` method to add/remove/reorder topics.
+* Add ``max_dictionary_size`` parameter to ``Dictionary.filter()``
+* Add ``class_ids`` parameter to ``BatchVectorizer.__init__()``
+* Add ``dictionary_name`` parameter to ``MasterComponent.merge_model()``
 
 v0.8.1
 ------
