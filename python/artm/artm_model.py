@@ -242,6 +242,24 @@ class ARTM(object):
 
     @property
     def topic_names(self):
+        """
+        :Description: Gets or sets the list of topic names of the model.
+
+        :Note:
+          * Setting topic name allows you to put new labels on the existing topics.
+            To add, remove or reorder topics use ARTM.reshape_topics() method.
+          * In ARTM topic names are used just as string identifiers,
+            which give a unique name to each column of the phi matrix.
+            Typically you want to set topic names as something like "topic0", "topic1", etc.
+            Later operations like get_phi() allow you to specify which topics you need to retrieve.
+            Most regularizers allow you to limit the set of topics they act upon.
+            If you configure a rich set of regularizers it is important design
+            your topic names according to how they are regularizerd. For example,
+            you may use names obj0, obj1, ..., objN for *objective* topics
+            (those where you enable sparsity regularizers),
+            and back0, back1, ..., backM for *background* topics
+            (those where you enable smoothing regularizers).
+        """
         return self._topic_names
 
     @property
@@ -740,6 +758,20 @@ class ARTM(object):
         self._synchronizations_processed = 0
         self._num_online_processed_batches = 0
         self._phi_cached = None
+
+    def reshape_topics(self, topic_names):
+        """
+        :Description: update topic names of the model.
+
+        Adds, removes, and reorders columns of phi matrices
+        according to the new set of topic names.
+        New topics are initialized with zeros.
+        """
+        if not topic_names:
+            raise IOError('Number of topic names should be non-negative')
+        else:
+            self.master.reconfigure_topic_name(topic_names=topic_names)
+            self._topic_names = topic_names
 
 
 def version():

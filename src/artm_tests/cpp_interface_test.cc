@@ -688,7 +688,7 @@ TEST(CppInterface, ReconfigureTopics) {
 
   config.clear_topic_name();
   config.add_topic_name("t3"); config.add_topic_name("t1"); config.add_topic_name("t4");
-  mm.Reconfigure(config);
+  mm.ReconfigureTopicName(config);
   auto m2 = mm.GetTopicModel();
   ASSERT_TRUE(::artm::core::repeated_field_equals(m2.topic_name(), config.topic_name()));
   ASSERT_EQ(m2.token_weights(0).value(0), m1.token_weights(0).value(2));  // "t3"

@@ -456,6 +456,10 @@ int64_t ArtmReconfigureMasterModel(int master_id, int64_t length, const char* co
   return ArtmExecute< ::artm::MasterModelConfig>(master_id, length, config, &MasterComponent::ReconfigureMasterModel);
 }
 
+int64_t ArtmReconfigureTopicName(int master_id, int64_t length, const char* config) {
+  return ArtmExecute< ::artm::MasterModelConfig>(master_id, length, config, &MasterComponent::ReconfigureTopicName);
+}
+
 int64_t ArtmFitOfflineMasterModel(int master_id, int64_t length, const char* args) {
   return ArtmExecute< ::artm::FitOfflineMasterModelArgs>(master_id, length, args, &MasterComponent::FitOffline);
 }

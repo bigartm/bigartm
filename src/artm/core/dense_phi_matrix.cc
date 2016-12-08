@@ -116,6 +116,10 @@ const std::string& PhiMatrixFrame::topic_name(int topic_id) const {
   return topic_name_[topic_id];
 }
 
+void PhiMatrixFrame::set_topic_name(int topic_id, const std::string& topic_name) {
+  topic_name_[topic_id] = topic_name;
+}
+
 std::string PhiMatrixFrame::model_name() const {
   return model_name_;
 }
