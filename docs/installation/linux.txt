@@ -42,7 +42,7 @@ and build it via CMake as in the following script.
    cd ~
    git clone --branch=stable https://github.com/bigartm/bigartm.git
    cd bigartm
-   mkdir build && cd build
+   mkdir build && cd build && rm -f CMakeCache.txt
    cmake ..
    make
 
