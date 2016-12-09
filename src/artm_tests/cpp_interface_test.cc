@@ -14,7 +14,6 @@
 #include "artm/core/common.h"
 #include "artm/core/protobuf_helpers.h"
 
-#include "artm/core/internals.pb.h"
 #include "artm/core/helpers.h"
 
 #include "artm_tests/test_mother.h"

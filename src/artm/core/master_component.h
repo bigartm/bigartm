@@ -14,7 +14,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/dictionary.h"
-#include "artm/core/internals.pb.h"
 #include "artm/core/thread_safe_holder.h"
 
 namespace artm {

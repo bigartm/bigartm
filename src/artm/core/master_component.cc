@@ -614,7 +614,7 @@ void MasterComponent::RequestProcessBatchesImpl(const ProcessBatchesArgs& proces
   // The code below must not use cache_manger in async mode.
   // Since cache_manager lives on stack it will be destroyed once we return from this function.
   // Therefore, no pointers to cache_manager should exist upon return from RequestProcessBatchesImpl.
-  CacheManager cache_manager;
+  CacheManager cache_manager("");
 
   bool return_theta = false;
   bool return_ptdw = false;
