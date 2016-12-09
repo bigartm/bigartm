@@ -42,7 +42,8 @@ v0.8.2
 * Add ``max_dictionary_size`` parameter to ``Dictionary.filter()``
 * Add ``class_ids`` parameter to ``BatchVectorizer.__init__()``
 * Add ``dictionary_name`` parameter to ``MasterComponent.merge_model()``
-* Add ``ARTM.transform_sparse()`` for sparse retrieval of theta matrix
+* Add ``ARTM.transform_sparse()`` and ``ARTM.get_theta_sparse()`` for sparse retrieval of theta matrix
+* Add ``ARTM.get_phi_sparse()`` for sparse retrieval of phi matrix
 
 v0.8.1
 ------

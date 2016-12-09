@@ -411,6 +411,7 @@ message TopicModel {
   repeated FloatArray token_weights = 5;
   repeated string class_id = 6;
   repeated IntArray topic_indices = 8;
+  optional int64 num_values = 9;  // NNZ for sparse retrieval
 }
 
 // Represents a theta matrix.

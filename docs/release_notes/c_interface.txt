@@ -27,6 +27,7 @@ v0.8.2
   This allows to validate 2 GB limit for protobuf messages,
   and also to passing larger objects in ``ArtmCopyRequestedObject``.
 * Add ``ArtmReconfigureTopicName`` method to add/remove/reorder topic names
+* Support sparse format for external retrieval of theta and phi matrices
 
 
 v0.8.0
