@@ -394,16 +394,19 @@ class ARTM(object):
 
     # ========== PRIVATE METHODS ==========
     def _wait_for_batches_processed(self, async_result, num_batches):
-        progress = tqdm.tqdm_notebook if _run_from_ipython() else tqdm.tqdm
-        with progress(total=num_batches, desc='Batch', leave=False) as batch_tqdm:
-            previous_num_batches = 0
-            while not async_result.ready():
-                async_result.wait(1)
-                current_num_batches = self.master.get_score(
-                    score_name='^^^ItemsProcessedScore^^^').num_batches
-                batch_tqdm.update(current_num_batches - previous_num_batches)
-                previous_num_batches = current_num_batches
-            return async_result.get()
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            progress = tqdm.tqdm_notebook if _run_from_ipython() else tqdm.tqdm
+            with progress(total=num_batches, desc='Batch', leave=False) as batch_tqdm:
+                previous_num_batches = 0
+                while not async_result.ready():
+                    async_result.wait(1)
+                    current_num_batches = self.master.get_score(
+                        score_name='^^^ItemsProcessedScore^^^').num_batches
+                    batch_tqdm.update(current_num_batches - previous_num_batches)
+                    previous_num_batches = current_num_batches
+                return async_result.get()
 
     # ========== METHODS ==========
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=1):
@@ -423,21 +426,24 @@ class ARTM(object):
         # outer cycle is needed because of TopicSelectionThetaRegularizer
         # and current ScoreTracker implementation
 
-        progress = tqdm.tnrange if _run_from_ipython() else tqdm.trange
-        for _ in progress(num_collection_passes, desc='Pass'):
-            # temp code for easy using of TopicSelectionThetaRegularizer from Python
-            _topic_selection_regularizer_func(self, self._regularizers)
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            progress = tqdm.tnrange if _run_from_ipython() else tqdm.trange
+            for _ in progress(num_collection_passes, desc='Pass'):
+                # temp code for easy using of TopicSelectionThetaRegularizer from Python
+                _topic_selection_regularizer_func(self, self._regularizers)
 
-            self._synchronizations_processed += 1
-            self._wait_for_batches_processed(
-                self._pool.apply_async(func=self.master.fit_offline,
-                                       args=(batches_list, batch_vectorizer.weights, 1, None)),
-                len(batches_list))
+                self._synchronizations_processed += 1
+                self._wait_for_batches_processed(
+                    self._pool.apply_async(func=self.master.fit_offline,
+                                           args=(batches_list, batch_vectorizer.weights, 1, None)),
+                    len(batches_list))
 
-            for name in self.scores.data.keys():
-                if name not in self.score_tracker:
-                    self.score_tracker[name] =\
-                        SCORE_TRACKER[self.scores[name].type](self.scores[name])
+                for name in self.scores.data.keys():
+                    if name not in self.score_tracker:
+                        self.score_tracker[name] =\
+                            SCORE_TRACKER[self.scores[name].type](self.scores[name])
 
         self._phi_cached = None
 
