@@ -387,7 +387,7 @@ void Instance::Reconfigure(const MasterModelConfig& master_config) {
 
   if (!is_configured_) {
     // First reconfiguration.
-    cache_manager_.reset(new CacheManager());
+    cache_manager_.reset(new CacheManager(master_config.disk_cache_path()));
     score_manager_.reset(new ScoreManager(this));
     score_tracker_.reset(new ScoreTracker());
 

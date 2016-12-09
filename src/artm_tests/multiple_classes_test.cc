@@ -11,7 +11,6 @@
 #include "artm/core/exceptions.h"
 #include "artm/core/common.h"
 
-#include "artm/core/internals.pb.h"
 #include "artm_tests/test_mother.h"
 #include "artm_tests/api.h"
 

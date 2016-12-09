@@ -1,24 +1,2 @@
 syntax = "proto2";
 package artm.core;
-
-message FloatArray {
-  repeated float value = 1 [packed = true];
-}
-
-message IntArray {
-  repeated int32 value = 1 [packed = true];
-}
-
-message DataLoaderCacheEntry {
-  optional string batch_uuid = 2;
-  repeated int32 item_id = 3;
-  repeated FloatArray theta = 4;
-  repeated string topic_name = 5;
-
-  // If filename is set then this DataLoaderCacheEntry is incomplete
-  // ('theta' field is missing). Full message can be loaded from 'filename' file.
-  optional string filename = 6;
-
-  repeated string item_title = 7;
-  repeated IntArray topic_index = 8;
-}

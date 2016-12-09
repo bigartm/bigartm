@@ -11,7 +11,6 @@
 #include "artm/core/helpers.h"
 #include "artm/core/token.h"
 
-#include "artm/core/internals.pb.h"
 #include "artm/core/call_on_destruction.h"
 
 #include "artm_tests/test_mother.h"

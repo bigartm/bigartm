@@ -12,7 +12,6 @@
 #include "boost/utility.hpp"
 
 #include "artm/core/common.h"
-#include "artm/core/internals.pb.h"
 #include "artm/core/processor_input.h"
 #include "artm/core/thread_safe_holder.h"
 

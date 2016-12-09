@@ -12,7 +12,6 @@
 
 #include "artm/core/common.h"
 #include "artm/core/exceptions.h"
-#include "artm/core/internals.pb.h"
 #include "artm/core/token.h"
 #include "artm/core/protobuf_serialization.h"
 
