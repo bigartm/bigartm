@@ -65,10 +65,55 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
   theta_matrix->clear_item_weights();
 }
 
+static void HandleSparseTopicModelRequest(::artm::TopicModel* topic_model, std::string* lm) {
+  if (topic_model->topic_indices_size() == 0)
+    BOOST_THROW_EXCEPTION(InternalError("topic_model->topic_indices_size() == 0"));
+
+  int32_t coo_token = 0;
+  std::vector<int32_t> coo_token_index;
+  std::vector<int32_t> coo_topic_index;
+  std::vector<float> coo_weight;
+  ::google::protobuf::RepeatedPtrField<std::string> token;
+  ::google::protobuf::RepeatedPtrField<std::string> class_id;
+
+  for (int token_index = 0; token_index < topic_model->token_weights_size(); ++token_index) {
+    const artm::IntArray& topic_indices = topic_model->topic_indices(token_index);
+    const artm::FloatArray& token_weights = topic_model->token_weights(token_index);
+    if (token_weights.value_size() == 0)
+      continue;
+
+    for (int value_index = 0; value_index < topic_indices.value_size(); ++value_index) {
+      coo_token_index.push_back(coo_token);
+      coo_topic_index.push_back(topic_indices.value(value_index));
+      coo_weight.push_back(token_weights.value(value_index));
+    }
+
+    coo_token++;
+    if (topic_model->token_size() > 0) token.Add()->assign(topic_model->token(token_index));
+    if (topic_model->class_id_size() > 0) class_id.Add()->assign(topic_model->class_id(token_index));
+  }
+
+  if (coo_weight.empty())
+    BOOST_THROW_EXCEPTION(InvalidOperation("No data to return for sparse phi matrix"));
+
+  int64_t num_values = coo_weight.size();
+  int64_t byte_size = sizeof(int32_t) * num_values;  // assert(sizeof(float) == sizeof(int32_t)
+  lm->resize(3 * byte_size);
+  memcpy(&(*lm)[0], &coo_token_index[0], byte_size);
+  memcpy(&(*lm)[byte_size], &coo_topic_index[0], byte_size);
+  memcpy(&(*lm)[2 * byte_size], &coo_weight[0], byte_size);
+  topic_model->mutable_token()->Swap(&token);
+  topic_model->mutable_class_id()->Swap(&class_id);
+  topic_model->clear_token_weights();
+  topic_model->clear_topic_indices();
+  topic_model->set_num_values(num_values);
+}
+
 static void HandleSparseThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, std::string* lm) {
   if (theta_matrix->topic_indices_size() == 0)
     BOOST_THROW_EXCEPTION(InternalError("theta_matrix->topic_indices_size() == 0"));
 
+  int32_t coo_item = 0;
   std::vector<int32_t> coo_item_index;
   std::vector<int32_t> coo_topic_index;
   std::vector<float> coo_weight;
@@ -82,11 +127,12 @@ static void HandleSparseThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, st
       continue;
 
     for (int value_index = 0; value_index < topic_indices.value_size(); ++value_index) {
-      coo_item_index.push_back(static_cast<int32_t>(item_id.size()));
+      coo_item_index.push_back(coo_item);
       coo_topic_index.push_back(topic_indices.value(value_index));
       coo_weight.push_back(item_weights.value(value_index));
     }
 
+    coo_item++;
     if (theta_matrix->item_id_size() > 0) item_id.Add(theta_matrix->item_id(item_index));
     if (theta_matrix->item_title_size() > 0) item_title.Add()->assign(theta_matrix->item_title(item_index));
   }
@@ -103,6 +149,7 @@ static void HandleSparseThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, st
   theta_matrix->mutable_item_id()->Swap(&item_id);
   theta_matrix->mutable_item_title()->Swap(&item_title);
   theta_matrix->clear_item_weights();
+  theta_matrix->clear_topic_indices();
   theta_matrix->set_num_values(num_values);
 }
 
@@ -490,11 +537,11 @@ void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel*
 }
 
 void MasterComponent::Request(const GetTopicModelArgs& args, ::artm::TopicModel* result, std::string* external) {
-  if (args.matrix_layout() != artm::MatrixLayout_Dense)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestTopicModelExternal"));
-
   Request(args, result);
-  HandleExternalTopicModelRequest(result, external);
+  if (args.matrix_layout() == artm::MatrixLayout_Sparse)
+    HandleSparseTopicModelRequest(result, external);
+  else
+    HandleExternalTopicModelRequest(result, external);
 }
 
 void MasterComponent::Request(const GetScoreValueArgs& args, ScoreData* result) {
@@ -524,8 +571,10 @@ void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResu
       "Dense or Sparse matrix format is required for ArtmRequestProcessBatchesExternal"));
 
   Request(args, result);
-  if (is_sparse_theta) HandleSparseThetaMatrixRequest(result->mutable_theta_matrix(), external);
-  else HandleExternalThetaMatrixRequest(result->mutable_theta_matrix(), external);
+  if (is_sparse_theta)
+    HandleSparseThetaMatrixRequest(result->mutable_theta_matrix(), external);
+  else
+    HandleExternalThetaMatrixRequest(result->mutable_theta_matrix(), external);
 }
 
 void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
@@ -817,8 +866,10 @@ void MasterComponent::Request(const GetThetaMatrixArgs& args,
                               ::artm::ThetaMatrix* result,
                               std::string* external) {
   Request(args, result);
-  if (args.matrix_layout() == artm::MatrixLayout_Sparse) HandleSparseThetaMatrixRequest(result, external);
-  else HandleExternalThetaMatrixRequest(result, external);
+  if (args.matrix_layout() == artm::MatrixLayout_Sparse)
+    HandleSparseThetaMatrixRequest(result, external);
+  else
+    HandleExternalThetaMatrixRequest(result, external);
 }
 
 // ToDo(sashafrey): what should be the default cache policy for TransformMasterModel?
@@ -871,8 +922,10 @@ void MasterComponent::Request(const TransformMasterModelArgs& args,
       "Dense or sparse matrix format is required for ArtmRequestProcessBatchesExternal"));
 
   Request(args, result);
-  if (is_sparse_theta) HandleSparseThetaMatrixRequest(result, external);
-  else HandleExternalThetaMatrixRequest(result, external);
+  if (is_sparse_theta)
+    HandleSparseThetaMatrixRequest(result, external);
+  else
+    HandleExternalThetaMatrixRequest(result, external);
 }
 
 class BatchesIterator {

@@ -621,6 +621,62 @@ class ARTM(object):
 
         return phi_data_frame
 
+    def get_phi_sparse(self, topic_names=None, class_ids=None, model_name=None, eps=None):
+        """
+        :Description: get phi matrix in sparse format
+
+        :param topic_names: list with topics to extract, None value means all topics
+        :type topic_names: list of str
+        :param class_ids: list with class ids to extract, None means all class ids
+        :type class_ids: list of str
+        :param str model_name: self.model_pwt by default, self.model_nwt is also\
+                      reasonable to extract unnormalized counters
+        :param float eps: threshold to consider values as zero
+
+        :return:
+          * a 3-tuple of (data, rows, columns), where
+          * data --- scipy.sparse.csr_matrix with values
+          * columns --- the names of topics in topic model;
+          * rows --- the tokens of topic model;
+        """
+        from scipy import sparse
+
+        if not self._initialized:
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
+
+        args = messages.GetTopicModelArgs()
+        args.matrix_layout = wrapper.constants.MatrixLayout_Sparse
+        if model_name is not None:
+            args.model_name = model_name
+        if eps is not None:
+            args.eps = eps
+        if topic_names is not None:
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
+        if class_ids is not None:
+            for class_id in class_ids:
+                args.class_id.append(class_id)
+
+        topic_model = self._lib.ArtmRequestTopicModelExternal(self.master.master_id, args)
+
+        numpy_ndarray = numpy.zeros(shape=(3 * topic_model.num_values, 1), dtype=numpy.float32)
+        self._lib.ArtmCopyRequestedObject(numpy_ndarray)
+
+        row_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
+                                   count=topic_model.num_values, offset=0)
+        col_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
+                                   count=topic_model.num_values, offset=4*topic_model.num_values)
+        data = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.float32,
+                                count=topic_model.num_values, offset=8*topic_model.num_values)
+
+        # Rows correspond to tokens; get tokens from topic_model.token
+        # Columns correspond to topics; get topic names from topic_model.topic_name
+        data = sparse.csr_matrix((data, (row_ind, col_ind)),
+                                 shape=(len(topic_model.token), len(topic_model.topic_name)))
+        rows = list(topic_model.topic_name)
+        columns = list(topic_model.token)
+        return data, rows, columns
+
     def get_theta(self, topic_names=None):
         """
         :Description: get Theta matrix for training set of documents (or cached after transform)
@@ -689,7 +745,6 @@ class ARTM(object):
         numpy_ndarray = numpy.zeros(shape=(3 * theta.num_values, 1), dtype=numpy.float32)
         self._lib.ArtmCopyRequestedObject(numpy_ndarray)
 
-        byte_size = 4 * theta.num_values  # 4 == sizeof(float) == sizeof(int32)
         col_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
                                    count=theta.num_values, offset=0)
         row_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
