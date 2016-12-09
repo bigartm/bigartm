@@ -1265,7 +1265,8 @@ int execute(const artm_options& options, int argc, char* argv[]) {
       tmp_model.set_model_name("cd85d76c-5869-41d9-93ca-f96f5f118fb8-temporary-model");
       for (auto& topic_name : remaining_topics) tmp_model.add_topic_name(topic_name);
       tmp_model.set_dictionary_name(tmp_dictionary.name());
-      tmp_model.set_seed(static_cast< int >(options.rand_seed));
+      if (options.rand_seed != -1)
+        tmp_model.set_seed(static_cast< int >(options.rand_seed));
       master_component->InitializeModel(tmp_model);
 
       MergeModelArgs merge_model_args;
@@ -1285,7 +1286,8 @@ int execute(const artm_options& options, int argc, char* argv[]) {
     initialize_model_args.mutable_topic_name()->CopyFrom(master_config.topic_name());
     initialize_model_args.set_dictionary_name(options.main_dictionary_name);
     // specify random seed
-    initialize_model_args.set_seed(static_cast< int >(options.rand_seed));
+    if (options.rand_seed != -1)
+      initialize_model_args.set_seed(static_cast< int >(options.rand_seed));
     master_component->InitializeModel(initialize_model_args);
 
     if (options.update_every > 0) {
@@ -1525,7 +1527,7 @@ int main(int argc, char * argv[]) {
     po::options_description ohter_options("Other options");
     ohter_options.add_options()
       ("help,h", "display this help message")
-      ("rand-seed", po::value< time_t >(&options.rand_seed), "specify seed for random number generator, use system timer when not specified")
+      ("rand-seed", po::value< time_t >(&options.rand_seed)->default_value(-1), "specify seed for random number generator")
       ("guid-batch-name", po::bool_switch(&options.b_guid_batch_name)->default_value(false), "applies to save-batches and indicate that batch names should be guids (not sequential codes)")
       ("response-file", po::value<std::string>(&options.response_file)->default_value(""), "response file")
       ("paused", po::bool_switch(&options.b_paused)->default_value(false), "start paused and waits for a keystroke (allows to attach a debugger)")
