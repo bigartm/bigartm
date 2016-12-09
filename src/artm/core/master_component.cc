@@ -65,6 +65,47 @@ static void HandleExternalThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, 
   theta_matrix->clear_item_weights();
 }
 
+static void HandleSparseThetaMatrixRequest(::artm::ThetaMatrix* theta_matrix, std::string* lm) {
+  if (theta_matrix->topic_indices_size() == 0)
+    BOOST_THROW_EXCEPTION(InternalError("theta_matrix->topic_indices_size() == 0"));
+
+  std::vector<int32_t> coo_item_index;
+  std::vector<int32_t> coo_topic_index;
+  std::vector<float> coo_weight;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32> item_id;
+  ::google::protobuf::RepeatedPtrField<std::string> item_title;
+
+  for (int item_index = 0; item_index < theta_matrix->item_weights_size(); ++item_index) {
+    const artm::IntArray& topic_indices = theta_matrix->topic_indices(item_index);
+    const artm::FloatArray& item_weights = theta_matrix->item_weights(item_index);
+    if (item_weights.value_size() == 0)
+      continue;
+
+    for (int value_index = 0; value_index < topic_indices.value_size(); ++value_index) {
+      coo_item_index.push_back(static_cast<int32_t>(item_id.size()));
+      coo_topic_index.push_back(topic_indices.value(value_index));
+      coo_weight.push_back(item_weights.value(value_index));
+    }
+
+    if (theta_matrix->item_id_size() > 0) item_id.Add(theta_matrix->item_id(item_index));
+    if (theta_matrix->item_title_size() > 0) item_title.Add()->assign(theta_matrix->item_title(item_index));
+  }
+
+  if (coo_weight.empty())
+    BOOST_THROW_EXCEPTION(InvalidOperation("No data to return for sparse theta matrix"));
+
+  int64_t num_values = coo_weight.size();
+  int64_t byte_size = sizeof(int32_t) * num_values;  // assert(sizeof(float) == sizeof(int32_t)
+  lm->resize(3 * byte_size);
+  memcpy(&(*lm)[0], &coo_item_index[0], byte_size);
+  memcpy(&(*lm)[byte_size], &coo_topic_index[0], byte_size);
+  memcpy(&(*lm)[2 * byte_size], &coo_weight[0], byte_size);
+  theta_matrix->mutable_item_id()->Swap(&item_id);
+  theta_matrix->mutable_item_title()->Swap(&item_title);
+  theta_matrix->clear_item_weights();
+  theta_matrix->set_num_values(num_values);
+}
+
 void MasterComponent::CreateOrReconfigureMasterComponent(const MasterModelConfig& config,
                                                          bool reconfigure,
                                                          bool change_topic_name) {
@@ -477,11 +518,14 @@ void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResu
 void MasterComponent::Request(const ProcessBatchesArgs& args, ProcessBatchesResult* result, std::string* external) {
   const bool is_dense_theta = args.theta_matrix_type() == artm::ThetaMatrixType_Dense;
   const bool is_dense_ptdw = args.theta_matrix_type() == artm::ThetaMatrixType_DensePtdw;
-  if (!is_dense_theta && !is_dense_ptdw)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestProcessBatchesExternal"));
+  const bool is_sparse_theta = args.theta_matrix_type() == artm::ThetaMatrixType_Sparse;
+  if (!is_dense_theta && !is_dense_ptdw && !is_sparse_theta)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "Dense or Sparse matrix format is required for ArtmRequestProcessBatchesExternal"));
 
   Request(args, result);
-  HandleExternalThetaMatrixRequest(result->mutable_theta_matrix(), external);
+  if (is_sparse_theta) HandleSparseThetaMatrixRequest(result->mutable_theta_matrix(), external);
+  else HandleExternalThetaMatrixRequest(result->mutable_theta_matrix(), external);
 }
 
 void MasterComponent::AsyncRequestProcessBatches(const ProcessBatchesArgs& process_batches_args,
@@ -772,11 +816,9 @@ static void ValidateProcessedItems(std::string method_description, MasterCompone
 void MasterComponent::Request(const GetThetaMatrixArgs& args,
                               ::artm::ThetaMatrix* result,
                               std::string* external) {
-  if (args.matrix_layout() != artm::MatrixLayout_Dense)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestThetaMatrixExternal"));
-
   Request(args, result);
-  HandleExternalThetaMatrixRequest(result, external);
+  if (args.matrix_layout() == artm::MatrixLayout_Sparse) HandleSparseThetaMatrixRequest(result, external);
+  else HandleExternalThetaMatrixRequest(result, external);
 }
 
 // ToDo(sashafrey): what should be the default cache policy for TransformMasterModel?
@@ -823,11 +865,14 @@ void MasterComponent::Request(const TransformMasterModelArgs& args,
                               std::string* external) {
   const bool is_dense_theta = args.theta_matrix_type() == artm::ThetaMatrixType_Dense;
   const bool is_dense_ptdw = args.theta_matrix_type() == artm::ThetaMatrixType_DensePtdw;
-  if (!is_dense_theta && !is_dense_ptdw)
-    BOOST_THROW_EXCEPTION(InvalidOperation("Dense matrix format is required for ArtmRequestProcessBatchesExternal"));
+  const bool is_sparse_theta = args.theta_matrix_type() == artm::ThetaMatrixType_Sparse;
+  if (!is_dense_theta && !is_dense_ptdw && !is_sparse_theta)
+    BOOST_THROW_EXCEPTION(InvalidOperation(
+      "Dense or sparse matrix format is required for ArtmRequestProcessBatchesExternal"));
 
   Request(args, result);
-  HandleExternalThetaMatrixRequest(result, external);
+  if (is_sparse_theta) HandleSparseThetaMatrixRequest(result, external);
+  else HandleExternalThetaMatrixRequest(result, external);
 }
 
 class BatchesIterator {

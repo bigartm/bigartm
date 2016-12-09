@@ -421,6 +421,7 @@ message ThetaMatrix {
   optional int32 num_topics = 5;
   repeated string item_title = 6;
   repeated IntArray topic_indices = 7;
+  optional int64 num_values = 8;  // NNZ for sparse retrieval
 }
 
 // Represents a configuration of a collection parser.

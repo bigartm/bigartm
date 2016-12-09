@@ -850,7 +850,7 @@ class MasterComponent(object):
         if predict_class_id is not None:
             args.predict_class_id = predict_class_id
 
-        if theta_matrix_type != constants.ThetaMatrixType_None:
+        if theta_matrix_type not in [constants.ThetaMatrixType_None, constants.ThetaMatrixType_Cache]:
             theta_matrix_info = self._lib.ArtmRequestTransformMasterModelExternal(self.master_id, args)
 
             num_rows = len(theta_matrix_info.item_id)

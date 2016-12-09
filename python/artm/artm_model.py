@@ -4,6 +4,7 @@ import uuid
 import glob
 import shutil
 import tempfile
+import numpy
 
 from pandas import DataFrame
 from six import iteritems
@@ -622,7 +623,7 @@ class ARTM(object):
 
     def get_theta(self, topic_names=None):
         """
-        :Description: get Theta matrix for training set of documents
+        :Description: get Theta matrix for training set of documents (or cached after transform)
 
         :param topic_names: list with topics to extract, None means all topics
         :type topic_names: list of str
@@ -655,6 +656,55 @@ class ARTM(object):
                                      index=use_topic_names)
         return theta_data_frame
 
+    def get_theta_sparse(self, topic_names=None, eps=None):
+        """
+        :Description: get Theta matrix in sparse format
+
+        :param topic_names: list with topics to extract, None means all topics
+        :type topic_names: list of str
+        :param float eps: threshold to consider values as zero
+
+        :return:
+          * a 3-tuple of (data, rows, columns), where
+          * data --- scipy.sparse.csr_matrix with values
+          * columns --- the ids of documents;
+          * rows --- the names of topics in topic model;
+        """
+        from scipy import sparse
+
+        if self.cache_theta is False:
+            raise ValueError('cache_theta == False. Set ARTM.cache_theta = True')
+        if not self._initialized:
+            raise RuntimeError('Model does not exist yet. Use ARTM.initialize()/ARTM.fit_*()')
+
+        args = messages.GetThetaMatrixArgs()
+        args.matrix_layout = wrapper.constants.MatrixLayout_Sparse
+        if eps is not None:
+            args.eps = eps
+        if topic_names is not None:
+            for topic_name in topic_names:
+                args.topic_name.append(topic_name)
+        theta = self._lib.ArtmRequestThetaMatrixExternal(self.master.master_id, args)
+
+        numpy_ndarray = numpy.zeros(shape=(3 * theta.num_values, 1), dtype=numpy.float32)
+        self._lib.ArtmCopyRequestedObject(numpy_ndarray)
+
+        byte_size = 4 * theta.num_values  # 4 == sizeof(float) == sizeof(int32)
+        col_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
+                                   count=theta.num_values, offset=0)
+        row_ind = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.int32,
+                                   count=theta.num_values, offset=4*theta.num_values)
+        data = numpy.frombuffer(numpy_ndarray.tobytes(), dtype=numpy.float32,
+                                count=theta.num_values, offset=8*theta.num_values)
+
+        # Rows correspond to topics; get topic names from theta.topic_name
+        # Columns correspond to items; get item IDs from theta.item_id
+        data = sparse.csr_matrix((data, (row_ind, col_ind)),
+                                 shape=(len(theta.topic_name), len(theta.item_id)))
+        rows = list(theta.topic_name)
+        columns = list(theta.item_title) if self._theta_columns_naming == 'title' else list(theta.item_id)
+        return data, rows, columns
+
     def remove_theta(self):
         """
         :Description: removes cached theta matrix
@@ -676,7 +726,7 @@ class ARTM(object):
 
         :param object_reference batch_vectorizer: an instance of BatchVectorizer class
         :param str theta_matrix_type: type of matrix to be returned, possible values:
-                'dense_theta', 'dense_ptdw', None, default='dense_theta'
+                'dense_theta', 'dense_ptdw', 'cache', None, default='dense_theta'
         :param str predict_class_id: class_id of a target modality to predict.\
                 When this option is enabled the resulting columns of theta matrix will\
                 correspond to unique labels of a target modality. The values will represent\
@@ -713,6 +763,8 @@ class ARTM(object):
         elif theta_matrix_type == 'sparse_ptdw':
             theta_matrix_type_real = const.ThetaMatrixType_SparsePtdw
             raise NotImplementedError('Sparse format is currently unavailable from Python')
+        elif theta_matrix_type == 'cache':
+            theta_matrix_type_real = const.ThetaMatrixType_Cache
 
         batches_list = [batch.filename for batch in batch_vectorizer.batches_list]
 
@@ -721,7 +773,7 @@ class ARTM(object):
                                    args=(None, batches_list, theta_matrix_type_real, predict_class_id)),
             len(batches_list))
 
-        if theta_matrix_type is not None:
+        if theta_matrix_type is not None and theta_matrix_type != 'cache':
             document_ids = []
             if self._theta_columns_naming == 'title':
                 document_ids = [item_title for item_title in theta_info.item_title]
@@ -747,47 +799,11 @@ class ARTM(object):
           * columns --- the ids of documents;
           * rows --- the names of topics in topic model;
         """
-        from scipy import sparse
         old_cache_theta = self.cache_theta
         self.cache_theta = True
-        self._lib.ArtmClearThetaCache(self.master.master_id,
-                                      messages.ClearThetaCacheArgs())
-
-        args = messages.TransformMasterModelArgs()
-        for batch in batch_vectorizer.batches_list:
-            args.batch_filename.append(batch.filename)
-        args.theta_matrix_type = wrapper.constants.ThetaMatrixType_Cache
-
-        self._wait_for_batches_processed(
-            self._pool.apply_async(func=self._lib.ArtmRequestTransformMasterModel,
-                                   args=(self.master.master_id, args)),
-            len(batch_vectorizer.batches_list))
-
-        args = messages.GetThetaMatrixArgs()
-        args.matrix_layout = wrapper.constants.MatrixLayout_Sparse
-        if eps is not None:
-            args.eps = eps
-        theta = self._lib.ArtmRequestThetaMatrix(self.master.master_id, args)
-
-        # restore previous cache_theta value
+        self.transform(batch_vectorizer=batch_vectorizer, theta_matrix_type='cache')
+        data, rows, columns = self.get_theta_sparse(eps=eps)
         self.cache_theta = old_cache_theta
-
-        data = []
-        row_ind = []
-        col_ind = []
-        for i in range(len(theta.item_id)):  # for each item
-            for topic_index, topic_weight in zip(theta.topic_indices[i].value,
-                                                 theta.item_weights[i].value):
-                data.append(topic_weight)
-                row_ind.append(topic_index)
-                col_ind.append(i)
-
-        # Rows correspond to topics; get topic names from theta.topic_name
-        # Columns correspond to items; get item IDs from theta.item_id
-        data = sparse.csr_matrix((data, (row_ind, col_ind)),
-                                 shape=(len(theta.topic_name), len(theta.item_id)))
-        rows = list(theta.topic_name)
-        columns = list(theta.item_title) if self._theta_columns_naming == 'title' else list(theta.item_id)
         return data, rows, columns
 
     def initialize(self, dictionary=None):
