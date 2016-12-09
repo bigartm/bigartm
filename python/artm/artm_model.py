@@ -13,7 +13,7 @@ import tqdm
 
 from . import wrapper
 from .wrapper import constants as const
-from .wrapper import messages_pb2
+from .wrapper import messages_pb2 as messages
 from . import master_component as mc
 
 from .regularizers import Regularizers
@@ -727,6 +727,62 @@ class ARTM(object):
                                          columns=document_ids,
                                          index=topic_names)
             return theta_data_frame
+
+    def transform_sparse(self, batch_vectorizer, eps=None):
+        """
+        :Description: find Theta matrix for new documents as sparse scipy matrix
+
+        :param object_reference batch_vectorizer: an instance of BatchVectorizer class
+        :param float eps: threshold to consider values as zero
+
+        :return:
+          * a 3-tuple of (data, rows, columns), where
+          * data --- scipy.sparse.csr_matrix with values
+          * columns --- the ids of documents;
+          * rows --- the names of topics in topic model;
+        """
+        from scipy import sparse
+        old_cache_theta = self.cache_theta
+        self.cache_theta = True
+        self._lib.ArtmClearThetaCache(self.master.master_id,
+                                      messages.ClearThetaCacheArgs())
+
+        args = messages.TransformMasterModelArgs()
+        for batch in batch_vectorizer.batches_list:
+            args.batch_filename.append(batch.filename)
+        args.theta_matrix_type = wrapper.constants.ThetaMatrixType_Cache
+
+        self._wait_for_batches_processed(
+            self._pool.apply_async(func=self._lib.ArtmRequestTransformMasterModel,
+                                   args=(self.master.master_id, args)),
+            len(batch_vectorizer.batches_list))
+
+        args = messages.GetThetaMatrixArgs()
+        args.matrix_layout = wrapper.constants.MatrixLayout_Sparse
+        if eps is not None:
+            args.eps = eps
+        theta = self._lib.ArtmRequestThetaMatrix(self.master.master_id, args)
+
+        # restore previous cache_theta value
+        self.cache_theta = old_cache_theta
+
+        data = []
+        row_ind = []
+        col_ind = []
+        for i in range(len(theta.item_id)):  # for each item
+            for topic_index, topic_weight in zip(theta.topic_indices[i].value,
+                                                 theta.item_weights[i].value):
+                data.append(topic_weight)
+                row_ind.append(topic_index)
+                col_ind.append(i)
+
+        # Rows correspond to topics; get topic names from theta.topic_name
+        # Columns correspond to items; get item IDs from theta.item_id
+        data = sparse.csr_matrix((data, (row_ind, col_ind)),
+                                 shape=(len(theta.topic_name), len(theta.item_id)))
+        rows = list(theta.topic_name)
+        columns = list(theta.item_title) if self._theta_columns_naming == 'title' else list(theta.item_id)
+        return data, rows, columns
 
     def initialize(self, dictionary=None):
         """
