@@ -3,9 +3,8 @@ Downloads
 
 * **Windows**
 
-  * Latest 32 bit release: `BigARTM_v0.8.1_vs12_win32_RelWithDebInfo <https://github.com/bigartm/bigartm/releases/download/v0.8.1/BigARTM_v0.8.1_vs12_win32_RelWithDebInfo.7z>`_
-  * Latest 64 bit release: `BigARTM_v0.8.1_vs12_win64_RelWithDebInfo <https://github.com/bigartm/bigartm/releases/download/v0.8.1/BigARTM_v0.8.1_vs12_win64_RelWithDebInfo.7z>`_
-  * Latest build from master branch: `BigARTM_master_vs14_win64_Release.7z <https://ci.appveyor.com/api/projects/bigartm/bigartm/artifacts/BigARTM.7z?branch=master>`_ (warning, use this with caution)
+  * Latest 64 bit release: `BigARTM_v0.8.2_win64 <https://github.com/bigartm/bigartm/releases/download/v0.8.2/BigARTM_v0.8.2_win64.7z>`_
+  * Latest build from master branch: `BigARTM_master_win64.7z <https://ci.appveyor.com/api/projects/bigartm/bigartm/artifacts/BigARTM.7z?branch=master&job=Environment%3A%20JOB%3Dpython3%2C%20PYTHON_VERSION%3D3.5%2C%20MINICONDA%3DC%3A%5CMiniconda35-x64>`_ (warning, use this with caution)
   * All previous releases are available at https://github.com/bigartm/bigartm/releases
 
   Please refer to :doc:`tutorials/windows_basic` for step by step installation procedure.
